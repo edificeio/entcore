@@ -25,7 +25,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SqlResult {
@@ -113,6 +115,8 @@ public class SqlResult {
 		JsonArray r = body.getArray("results");
 		JsonArray result = new JsonArray();
 		if (f != null && r != null) {
+			JsonArray jsonbAttributes = body.getArray("jsonb_fields");
+			List ja = (jsonbAttributes != null) ? jsonbAttributes.toList() : new ArrayList<>();
 			for (Object o : r) {
 				if (!(o instanceof JsonArray)) continue;
 				JsonArray a = (JsonArray) o;
@@ -123,6 +127,8 @@ public class SqlResult {
 						j.putBoolean((String) f.get(i), (Boolean) item);
 					} else if (item instanceof Number) {
 						j.putNumber((String) f.get(i), (Number) item);
+					} else if (item != null && ja.contains(f.get(i))) {
+						j.putObject((String) f.get(i), new JsonObject(item.toString()));
 					} else if (item != null) {
 						j.putString((String) f.get(i), item.toString());
 					} else {
@@ -187,50 +193,65 @@ public class SqlResult {
 	}
 
 	public static Handler<Message<JsonObject>> validUniqueResultHandler(
-			final Handler<Either<String, JsonObject>> handler) {
+			final Handler<Either<String, JsonObject>> handler, final String... jsonbFields) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				if (jsonbFields != null && jsonbFields.length > 0) {
+					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+				}
 				handler.handle(validUniqueResult(event));
 			}
 		};
 	}
 
 	public static Handler<Message<JsonObject>> validUniqueResultHandler(final int idx,
-			final Handler<Either<String, JsonObject>> handler) {
+			final Handler<Either<String, JsonObject>> handler, final String... jsonbFields) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				if (jsonbFields != null && jsonbFields.length > 0) {
+					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+				}
 				handler.handle(validUniqueResult(idx, event));
 			}
 		};
 	}
 
 	public static Handler<Message<JsonObject>> validResultHandler(final int idx,
-			final Handler<Either<String, JsonArray>> handler) {
+			final Handler<Either<String, JsonArray>> handler, final String... jsonbFields) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				if (jsonbFields != null && jsonbFields.length > 0) {
+					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+				}
 				handler.handle(validResult(idx, event));
 			}
 		};
 	}
 
 	public static Handler<Message<JsonObject>> validResultHandler(
-			final Handler<Either<String, JsonArray>> handler) {
+			final Handler<Either<String, JsonArray>> handler, final String... jsonbFields) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				if (jsonbFields != null && jsonbFields.length > 0) {
+					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+				}
 				handler.handle(validResult(event));
 			}
 		};
 	}
 
 	public static Handler<Message<JsonObject>> validResultsHandler(
-			final Handler<Either<String, JsonArray>> handler) {
+			final Handler<Either<String, JsonArray>> handler, final String... jsonbFields) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
+				if (jsonbFields != null && jsonbFields.length > 0) {
+					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+				}
 				handler.handle(validResults(event));
 			}
 		};
