@@ -315,13 +315,13 @@ module.directive('lightbox', function($compile){
                             return $(parent).css('overflow-x') !== 'visible' || $(parent).css('overflow-y') !== 'visible'
                         }),
                         zIndex: _.chain(parentElements)
-                            .map(function(parent){ 
+                            .map(function(parent){
                                 var index = '';
                                 if($(parent).attr('style') && $(parent).attr('style').indexOf('z-index') !== -1){
                                     index = $(parent).css('z-index')
                                 }
                                 return {
-                                    element: $(parent), 
+                                    element: $(parent),
                                     index: index
                                 }
                             })
@@ -4682,7 +4682,7 @@ module.directive('appTitle', function($compile){
 			var maxWidth = ui.breakpoints.tablette;
 
 			function setHeader(){
-				var header = element.html();
+				var header = $('app-title').html();
 				var mobileheader = $('header.main .application-title');
 				if($(window).width() <= maxWidth && !mobileheader.length){
 					$('header.main').append($compile(header)(scope));
@@ -4773,17 +4773,16 @@ module.directive('subtitle', function () {
 });
 
 module.directive('whereami', function () {
-	//only on default mailboxes
+	//only on mailboxes
 	return {
 		restrict: 'A',
 		scope: false,
 		link: function (scope, element, attributes) {
-			var current = $('nav.side-nav h2+ul a.selected').text();
+			var current = $('nav.side-nav a.selected').text();
 			element.text(current);
 		}
 	}
 });
-
 
 $(document).ready(function(){
 	setTimeout(function(){

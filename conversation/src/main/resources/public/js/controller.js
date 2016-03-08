@@ -150,7 +150,10 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			}, 10)
 		})
 		folder.mails.sync()
-		$scope.openView('folder', 'main');
+		$scope.viewsContainers['main'] = null;
+		$timeout(function(){
+			$scope.openView('folder', 'main');
+		}, 10)
 	};
 
 	$scope.isParentOf = function(folder, targetFolder){
