@@ -85,7 +85,7 @@ public class DB {
 								public void handle(AsyncResult<Buffer> bufferAsyncResult) {
 									if (bufferAsyncResult.succeeded()) {
 										String script = bufferAsyncResult.result().toString();
-										script = script.replaceAll("(\r|\n|\t)", " ");
+										script = script.replaceAll("\\-\\-\\s.*(\r|\n|$)", "").replaceAll("(\r|\n|\t)", " ");
 										s.raw(script);
 										newFiles.addArray(new JsonArray().add(filename));
 									} else {
