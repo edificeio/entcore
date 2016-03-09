@@ -42,6 +42,11 @@ public class SmtpSender extends BusMailSender implements EmailSender {
 	}
 
 	@Override
+	public void hardBounces(Date date, Handler<Either<String, List<Bounce>>> handler) {
+
+	}
+
+	@Override
 	public void hardBounces(Date startDate, Date endDate, Handler<Either<String, List<Bounce>>> handler) {
 
 	}

@@ -133,6 +133,7 @@ project(':directory') {
 project(':infra') {
   dependencies {
     compile project(':common')
+    compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
     compile "fr.wseduc:web-utils:$webUtilsVersion"
   }
 }

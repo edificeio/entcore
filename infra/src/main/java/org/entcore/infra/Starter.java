@@ -19,9 +19,13 @@
 
 package org.entcore.infra;
 
+import fr.wseduc.cron.CronTrigger;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
+import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
@@ -35,6 +39,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Starter extends BaseServer {
@@ -100,6 +105,15 @@ public class Starter extends BaseServer {
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
 		addController(new MonitoringController());
+		EmailFactory emailFactory = new EmailFactory(vertx, container);
+		try {
+			new CronTrigger(vertx, config.getString("hard-bounces-cron", "0 0 7 * * ? *"))
+					.schedule(new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),
+							new TimelineHelper(vertx, getEventBus(vertx), container)));
+		} catch (ParseException e) {
+			log.error(e.getMessage(), e);
+			vertx.stop();
+		}
 	}
 
 	private void deployPreRequiredModules(final JsonArray array, final VoidHandler handler) {
