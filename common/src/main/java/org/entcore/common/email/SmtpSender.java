@@ -19,18 +19,31 @@
 
 package org.entcore.common.email;
 
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.Bounce;
 import fr.wseduc.webutils.email.BusMailSender;
 import fr.wseduc.webutils.email.EmailSender;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
 public class SmtpSender extends BusMailSender implements EmailSender {
+
+	private final ObjectMapper mapper;
 
 	public SmtpSender(Vertx vertx, Container container) {
 		super(vertx, container);
@@ -39,16 +52,62 @@ public class SmtpSender extends BusMailSender implements EmailSender {
 			node = "";
 		}
 		emailAddress = node + "wse.email";
+		mapper = new ObjectMapper();
+		SimpleModule simpleModule = new SimpleModule("BsonDateModule", new Version(1, 0, 0, null, "org.entcore", "common"));
+		simpleModule.addDeserializer(Date.class, new BsonDateDeserializer());
+		mapper.registerModule(simpleModule);
+		mapper.addMixInAnnotations(Bounce.class, BounceMixIn.class);
 	}
 
 	@Override
 	public void hardBounces(Date date, Handler<Either<String, List<Bounce>>> handler) {
-
+		Calendar c = Calendar.getInstance();
+		c.setTime(date);
+		c.add(Calendar.DATE, 1);
+		hardBounces(date, c.getTime(), handler);
 	}
 
 	@Override
-	public void hardBounces(Date startDate, Date endDate, Handler<Either<String, List<Bounce>>> handler) {
+	public void hardBounces(Date startDate, Date endDate, final Handler<Either<String, List<Bounce>>> handler) {
+		final JsonObject query = new JsonObject()
+				.putObject("date", new JsonObject()
+						.putObject("$gte", new JsonObject().putNumber("$date", removeTime(startDate).getTime()))
+						.putObject("$lt", new JsonObject().putNumber("$date", removeTime(endDate).getTime())));
+		MongoDb.getInstance().find("bounces", query, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				try {
+					if ("ok".equals(event.body().getString("status"))) {
+						JsonArray l = event.body().getArray("results");
+						if (l == null || l.size() == 0) {
+							handler.handle(new Either.Right<String, List<Bounce>>(
+									Collections.<Bounce>emptyList()));
+							return;
+						}
+						List<Bounce> bounces = mapper.readValue(l.encode(), new TypeReference<List<Bounce>>(){});
+						handler.handle(new Either.Right<String, List<Bounce>>(bounces));
+					} else {
+						handler.handle(new Either.Left<String, List<Bounce>>(event.body().getString("message")));
+					}
+				} catch (RuntimeException | IOException e) {
+					handler.handle(new Either.Left<String, List<Bounce>>(e.getMessage()));
+					log.error(e.getMessage(), e);
+				}
+			}
+		});
+	}
 
+	private Date removeTime(Date date) {
+		if (date == null) {
+			return null;
+		}
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal.getTime();
 	}
 
 }
