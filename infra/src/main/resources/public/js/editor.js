@@ -2013,7 +2013,6 @@ window.RTE = (function () {
 								}
 							}
 							instance.selection.replaceHTML(table.outerHTML);
-							element.find('popover-content').addClass('hidden');
 							instance.trigger('contentupdated');
 						});
 
