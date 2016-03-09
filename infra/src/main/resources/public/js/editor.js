@@ -2263,8 +2263,8 @@ window.RTE = (function () {
 			    return {
 			        restrict: 'E',
 			        template: '' +
-			            '<button class="editor-toolbar-opener"></button>' +
-			            '<button class="close-focus">OK</button>' +
+			            '<button type="button" class="editor-toolbar-opener"></button>' +
+			            '<button type="button" class="close-focus">OK</button>' +
 			            '<editor-toolbar></editor-toolbar>' +
 			            '<contextual-menu><ul></ul></contextual-menu>' +
 			            '<popover>' +
