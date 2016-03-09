@@ -22,6 +22,9 @@ Behaviours.register('directory', {
 						this.$apply('search');
 					}.bind(this));
 				},
+				viewUserInfos: function(userId){
+				    window.location.href = '/userbook/annuaire#/' + userId;
+				},
 				removeGroup: function(index, group){
 					this.source.groups.splice(index, 1);
 					this.search.groups.push(group);
