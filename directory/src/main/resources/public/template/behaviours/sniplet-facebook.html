@@ -3,12 +3,12 @@
 	<div class="dominos">
 		<div class="item" ng-repeat="user in group.users">
 			<section class="domino" ng-class="colorFromType(user.type)">
-				<div class="top">
+				<div class="top" ng-click="viewUserInfos(user.id)">
 					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed twelve cell" />
 				</div>
 				<div class="bottom">
 					<div class="content">
-						<a>[[user.displayName]]</a>
+						<a ng-click="viewUserInfos(user.id)">[[user.displayName]]</a>
 						<br /><span class="medium-text" translate content="directory.[[user.type.toLowerCase()]]"></span>
 						<div class="mood three">
 							<i class="liquid [[user.mood]]"></i>
