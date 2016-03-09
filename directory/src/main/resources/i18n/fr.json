@@ -278,7 +278,7 @@
     "email.user.created.info": "Votre demande de création de classe a été validée.",
     "error.missing.mail": "Veuillez renseigner votre adresse courrielle",
     "fill.manual": "Remplissez manuellement le tableau ci-dessous (onglet élèves et onglet parents) ou",
-    "findkids": "Rechercher des enfants",
+    "findkids": "Pour ajouter un compte parent, vous devez d'abord rechercher l'élève auquel il est rattaché",
     "import.invalid.relative": "Aucun parent importé. Vous devez importer les élèves en premier.",
     "import.invalid.student": "Aucun élève importé.",
     "info.passwords.sent": "Le(s) nouveau(x) mot(s) de passe a/ont été envoyé(s) à votre adresse courrielle",
