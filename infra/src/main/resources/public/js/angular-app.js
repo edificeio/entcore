@@ -389,6 +389,10 @@ module.directive('slider', function($compile, $parse){
 				element.children('.filled').width(cursor.position().left);
 			};
 
+			$(window).on('resize', function () {
+			    applyValue(ngModel(scope));
+			});
+
 			scope.$watch(function(){
 				return ngModel(scope);
 			}, applyValue);
