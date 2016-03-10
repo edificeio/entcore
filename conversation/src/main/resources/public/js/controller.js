@@ -150,10 +150,11 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			}, 10)
 		})
 		folder.mails.sync()
-		$scope.viewsContainers['main'] = null;
+		$scope.openView('folder', 'main');
+
 		$timeout(function(){
-			$scope.openView('folder', 'main');
-		}, 10)
+			$('body').trigger('whereami.update');
+		}, 100)
 	};
 
 	$scope.isParentOf = function(folder, targetFolder){

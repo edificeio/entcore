@@ -548,9 +548,14 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 	};
 
 	$scope.openFolder = function(folder){
+
 		if(template.contains('documents', 'viewer')){
 			template.open('documents', 'icons');
 		}
+
+		$timeout(function(){
+			$('body').trigger('whereami.update');
+		}, 100)
 
 		if(folder.folder && folder.folder.indexOf('Trash') === 0)
 			return
