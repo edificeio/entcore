@@ -117,7 +117,8 @@ Behaviours.register('workspace', {
 
 		http().postFile('/workspace/document?protected=true&application=media-library', formData).done(function(data){
 			file.loading = false;
-			this.loadResources(function(resources){
+			this.loadResources(function (resources) {
+			    file.title = splitName[0];
 				callback(resources, data);
 			});
 		}.bind(this));
