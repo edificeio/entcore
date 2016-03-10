@@ -1441,8 +1441,12 @@ var calendar = {
 
 calendar.Calendar.prototype.addScheduleItems = function(items){
 	var schedule = this;
-	items = _.filter(items, function(item){ return moment(item.end).year() >= schedule.firstDay.year()});
-	items = _.filter(items, function(item){ return moment(item.end).month() >= schedule.firstDay.month()});
+	items = _.filter(items, function (item) {
+	    return moment(item.end).year() >= schedule.firstDay.year()
+	});
+	_.filter(items, function (item) {
+	    return moment(item.end).month() >= schedule.firstDay.month() || moment(item.end).year() > schedule.firstDay.year()
+	});
 	items.forEach(function(item){
 		var startDay = moment(item.beginning);
 		var endDay = moment(item.end);
