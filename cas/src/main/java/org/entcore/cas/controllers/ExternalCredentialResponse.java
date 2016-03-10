@@ -1,5 +1,5 @@
 /*
- * Copyright © WebServices pour l'Éducation, 2014
+ * Copyright © WebServices pour l'Éducation, 2016
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -19,24 +19,30 @@
 
 package org.entcore.cas.controllers;
 
-import fr.wseduc.cas.endpoint.CredentialResponse;
 import fr.wseduc.cas.entities.LoginTicket;
 import fr.wseduc.cas.http.Request;
 import fr.wseduc.cas.http.Response;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Map;
 
-public class EntCoreCredentialResponse extends CredentialResponse {
+public class ExternalCredentialResponse extends EntCoreCredentialResponse {
+
+	private final String uri;
+	private final String host;
+
+	public ExternalCredentialResponse(String uri, String host) {
+		this.uri = uri;
+		this.host = host;
+	}
 
 	@Override
-	public void loginRequestorResponse(Request request, LoginTicket loginTicket,
-			String service, boolean renew, boolean gateway, String method) {
+	public void loginRequestorResponse(Request request, LoginTicket loginTicket, String service,
+			boolean renew, boolean gateway, String method) {
 		Response response = request.getResponse();
 		try {
-			response.putHeader("Location", "/auth/login?callback=" +
-					URLEncoder.encode("/cas/login?" + serializeParams(request), "UTF-8"));
+			response.putHeader("Location", uri + "?callback=" +
+					URLEncoder.encode(host + "/cas/login?" + serializeParams(request), "UTF-8"));
 			response.setStatusCode(302);
 		} catch (UnsupportedEncodingException e) {
 			response.setStatusCode(500);
@@ -44,23 +50,6 @@ public class EntCoreCredentialResponse extends CredentialResponse {
 		} finally {
 			response.close();
 		}
-	}
-
-	protected String serializeParams(Request request) throws UnsupportedEncodingException {
-		StringBuilder sb = new StringBuilder();
-		for (Map.Entry<String, String> entry : request.getParameterMap().entrySet()) {
-			sb.append("&").append(entry.getKey()).append("=").append(
-					URLEncoder.encode(entry.getValue(), "UTF-8"));
-		}
-		return sb.length() > 0 ? sb.substring(1) : "";
-	}
-
-	@Override
-	public void loggedIn(Request request) {
-		Response response = request.getResponse();
-		response.putHeader("Location", "/");
-		response.setStatusCode(302);
-		response.close();
 	}
 
 }

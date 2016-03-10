@@ -19,17 +19,17 @@
 
 package org.entcore.cas;
 
+import fr.wseduc.cas.endpoint.CredentialResponse;
 import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
-import org.entcore.cas.http.VertxHttpClientFactory;
 import org.entcore.common.http.BaseServer;
 
-import fr.wseduc.cas.data.DataHandlerFactory;
 import fr.wseduc.cas.endpoint.CasValidator;
 import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.cas.endpoint.SamlValidator;
-import fr.wseduc.cas.http.HttpClientFactory;
 import org.vertx.java.core.Handler;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
 public class Cas extends BaseServer {
@@ -39,16 +39,21 @@ public class Cas extends BaseServer {
 		super.start();
 
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
-		HttpClientFactory httpClientFactory = new VertxHttpClientFactory(vertx);
 
 		final ConfigurationController configurationController = new ConfigurationController();
 		configurationController.setRegisteredServices(dataHandlerFactory.getServices());
 		addController(configurationController);
 		configurationController.loadPatterns();
 
+		CredentialResponse credentialResponse;
+		if (isNotEmpty(config.getString("external-login-uri")) && isNotEmpty(config.getString("host"))) {
+			credentialResponse = new ExternalCredentialResponse(config.getString("external-login-uri"), config.getString("host"));
+		} else {
+			credentialResponse = new EntCoreCredentialResponse();
+		}
 		Credential credential = new Credential();
 		credential.setDataHandlerFactory(dataHandlerFactory);
-		credential.setCredentialResponse(new EntCoreCredentialResponse());
+		credential.setCredentialResponse(credentialResponse);
 		CredentialController credentialController = new CredentialController();
 		credentialController.setCredential(credential);
 		addController(credentialController);
