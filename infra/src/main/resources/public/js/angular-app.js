@@ -4784,6 +4784,9 @@ module.directive('whereami', function () {
 		scope: false,
 		link: function (scope, element, attributes) {
 			var current = $('nav.side-nav a.selected').text();
+			$('body').on('whereami.update', function(){
+				element.text($('nav.side-nav a.selected').text());
+			})
 			element.text(current);
 		}
 	}
