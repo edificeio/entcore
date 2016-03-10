@@ -1749,7 +1749,6 @@ window.RTE = (function () {
 									return scope.linker.search.text !== '' && (lang.removeAccents(resource.title.toLowerCase()).indexOf(lang.removeAccents(scope.linker.search.text).toLowerCase()) !== -1 ||
 										resource._id === scope.linker.search.text);
 								});
-								scope.linker.resource.title = scope.linker.search.text;
 								if(typeof cb === 'function'){
 									cb();
 								}
@@ -1759,8 +1758,9 @@ window.RTE = (function () {
 						scope.linker.createResource = function(){
 							Behaviours.loadBehaviours(scope.linker.params.appPrefix, function(appBehaviour){
 								appBehaviour.create(scope.linker.resource, function(){
-									scope.linker.searchApplication();
 									scope.linker.search.text = scope.linker.resource.title;
+									
+									scope.linker.searchApplication();
 									scope.$apply();
 								});
 							});
