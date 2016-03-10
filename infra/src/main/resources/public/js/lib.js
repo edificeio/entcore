@@ -1327,6 +1327,9 @@ var Behaviours = (function(){
 }());
 
 var calendar = {
+    setCalendar: function(cal){
+        model.calendar = cal;
+    },
 	getHours: function(scheduleItem, day){
 		var startTime = 7;
 		var endTime = 20;

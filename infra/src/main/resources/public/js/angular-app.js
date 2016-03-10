@@ -748,7 +748,7 @@ module.directive('calendar', function($compile){
 					} else{
 						model.calendar = new calendar.Calendar({ week: moment(model.calendar.dayForWeek).week(), year: moment(model.calendar.dayForWeek).year() });
 					}
-
+					model.trigger('calendar.date-change');
 					refreshCalendar();
 				};
 
@@ -767,9 +767,10 @@ module.directive('calendar', function($compile){
 				};
 			};
 
-			model.calendar.on('date-change', function(){
-				refreshCalendar();
-			})
+			calendar.setCalendar = function (cal) {
+			    model.calendar = cal;
+			    refreshCalendar();
+			};
 
 			$timeout(function(){
 				refreshCalendar();
