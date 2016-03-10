@@ -33,6 +33,7 @@ public final class AAFHandler extends DefaultHandler {
 
 	private String currentTag = "";
 	private String currentAttribute = "";
+	private StringBuilder s;
 	private JsonObject currentStructure;
 	private final JsonObject mapping;
 	private final ImportProcessing processing;
@@ -41,10 +42,12 @@ public final class AAFHandler extends DefaultHandler {
 	public AAFHandler(ImportProcessing processing) {
 		this.processing = processing;
 		this.mapping = JsonUtil.loadFromResource(processing.getMappingResource());
+		this.s = new StringBuilder();
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		s = new StringBuilder();
 		currentTag = localName;
 		switch (localName) {
 			case "addRequest" :
@@ -58,6 +61,12 @@ public final class AAFHandler extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
+		switch (currentTag) {
+			case "id" : addExternalId(s.toString());
+				break;
+			case "value" : addValueInAttribute(s.toString());
+				break;
+		}
 		currentTag = "";
 		switch (localName) {
 			case "addRequest" :
@@ -71,13 +80,7 @@ public final class AAFHandler extends DefaultHandler {
 
 	@Override
 	public void characters(char[] ch, int start, int length) throws SAXException {
-		final String s = new String(ch, start, length);
-		switch (currentTag) {
-			case "id" : addExternalId(s);
-				break;
-			case "value" : addValueInAttribute(s);
-				break;
-		}
+		s.append(new String(ch, start, length));
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
