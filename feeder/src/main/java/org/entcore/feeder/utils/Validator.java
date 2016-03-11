@@ -47,7 +47,7 @@ public class Validator {
 	private static final Map<String, Pattern> patterns = new HashMap<>();
 	static {
 		patterns.put("email", Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$"));
-		patterns.put("zipCode", Pattern.compile("^[0-9]{5}$"));
+		patterns.put("zipCode", Pattern.compile("^[A-Za-z0-9\\-\\s]{4,9}$")); // ^[0-9]{5}$
 		patterns.put("phone", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")); // "^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$"
 		patterns.put("mobile", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$"));
 		patterns.put("notEmpty", Pattern.compile("^(?=\\s*\\S).*$"));
