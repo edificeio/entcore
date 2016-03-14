@@ -4832,6 +4832,18 @@ $(document).ready(function(){
 	}, 10);
 });
 
+function SearchPortal($scope, $window) {
+	'use strict';
+	$scope.launchSearch = function(event) {
+		var words = $scope.mysearch;
+		if (event != "link") event.stopPropagation();
+		if ((event == "link" ||  event.keyCode == 13)) {
+			words = (!words || words === '') ? ' ' : words;
+			$scope.mysearch = "";
+			$window.location.href = '/searchengine#/' + words;
+		}
+	};
+}
 
 function Account($scope){
 	"use strict";
