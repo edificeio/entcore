@@ -129,6 +129,17 @@ public class Sql {
 		return sb.append(")").toString();
 	}
 
+	public static String arrayPrepared(Object[] array) {
+		StringBuilder sb = new StringBuilder("(ARRAY[");
+		if (array != null && array.length > 0) {
+			for (int i = 0; i< array.length; i++) {
+				sb.append("?,");
+			}
+			sb.deleteCharAt(sb.length() - 1);
+		}
+		return sb.append("])").toString();
+	}
+
 	public static Object parseId(String id) {
 		try {
 			return Integer.valueOf(id);
