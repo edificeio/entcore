@@ -33,6 +33,8 @@ import org.entcore.common.http.filter.HttpActionFilter;
 import org.entcore.common.http.filter.ResourceProviderFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.search.SearchingEvents;
+import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
@@ -46,11 +48,13 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.Set;
 
 public abstract class BaseServer extends Server {
 
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler;
+	private SearchingHandler searchingHandler;
 	private String schema;
 	private boolean oauthClientGrant = false;
 
@@ -67,6 +71,7 @@ public abstract class BaseServer extends Server {
 		}
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
+		searchingHandler = new SearchingHandler(getEventBus(vertx));
 
 		Config.getInstance().setConfig(config);
 		initModulesHelpers(node);
@@ -81,6 +86,7 @@ public abstract class BaseServer extends Server {
 			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
 		}
 		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
+		vertx.eventBus().registerLocalHandler("search.searching", this.searchingHandler);
 
 		loadI18nAssetsFiles();
 
@@ -168,6 +174,13 @@ public abstract class BaseServer extends Server {
 
 	protected BaseServer setRepositoryEvents(RepositoryEvents repositoryEvents) {
 		repositoryHandler.setRepositoryEvents(repositoryEvents);
+		return this;
+	}
+
+	protected BaseServer setSearchingEvents(final SearchingEvents searchingEvents) {
+		searchingHandler.setSearchingEvents(searchingEvents);
+		final Set<String> set = vertx.sharedData().getSet(SearchingHandler.class.getName());
+		set.add(searchingEvents.getClass().getSimpleName());
 		return this;
 	}
 
