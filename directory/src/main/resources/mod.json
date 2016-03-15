@@ -1,6 +1,6 @@
 {
 	"main":"org.entcore.directory.Directory",
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"port": 8003,
 	"mode": "dev",
 	"wp-connector.address":"wpconnector.address",

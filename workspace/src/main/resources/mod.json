@@ -1,6 +1,6 @@
 {
 	"main":"org.entcore.workspace.Workspace",
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"port": 8011,
 	"mode": "dev",
 	"host" : "http://localhost:8011",

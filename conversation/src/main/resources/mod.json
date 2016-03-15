@@ -2,7 +2,7 @@
 	"main":"org.entcore.conversation.Conversation",
 	"port": 8019,
 	"mode": "dev",
-	"auto-redeploy": true,
+	"auto-redeploy": false,
     "host" : "http://localhost:8019",
     "app-name" : "Messagerie",
     "app-address" : "http://localhost:8019/conversation/conversation",
