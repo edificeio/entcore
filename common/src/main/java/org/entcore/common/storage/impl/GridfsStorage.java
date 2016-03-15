@@ -20,12 +20,16 @@
 package org.entcore.common.storage.impl;
 
 import com.mongodb.QueryBuilder;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.http.ETag;
+import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageException;
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -53,6 +57,7 @@ public class GridfsStorage implements Storage {
 	private final String gridfsAddress;
 	private final String bucket;
 	private final Vertx vertx;
+	private final MongoDb mongoDb = MongoDb.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(GridfsStorage.class);
 
 	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
@@ -423,6 +428,36 @@ public class GridfsStorage implements Storage {
 	@Override
 	public String getBucket() {
 		return bucket;
+	}
+
+	@Override
+	public void stats(final AsyncResultHandler<BucketStats> handler) {
+		mongoDb.command(new JsonObject().putString("collStats", bucket + ".chunks").encode(), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonObject chunksStats = event.body().getObject("result");
+				if ("ok".equals(event.body().getString("status")) && chunksStats != null) {
+					final BucketStats bucketStats = new BucketStats();
+					bucketStats.setStorageSize(chunksStats.getLong("size"));
+					mongoDb.command(new JsonObject().putString("collStats", bucket + ".files").encode(),
+							new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							final JsonObject filesStats = event.body().getObject("result");
+							if ("ok".equals(event.body().getString("status")) && filesStats != null) {
+								bucketStats.setObjectNumber(filesStats.getLong("count"));
+								handler.handle(new DefaultAsyncResult<>(bucketStats));
+							} else {
+								handler.handle(new DefaultAsyncResult<BucketStats>(
+										new StorageException(event.body().getString("message"))));
+							}
+						}
+					});
+				} else {
+					handler.handle(new DefaultAsyncResult<BucketStats>(new StorageException(event.body().getString("message"))));
+				}
+			}
+		});
 	}
 
 	private static class Chunk {
