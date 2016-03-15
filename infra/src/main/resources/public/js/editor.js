@@ -1393,9 +1393,11 @@ window.RTE = (function () {
 			RTE.baseToolbarConf.option('image', function(instance){
 				return {
 				    template: '<i ng-click="imageOption.display.pickFile = true" tooltip="editor.option.image"></i>' +
-					'<lightbox show="imageOption.display.pickFile" on-close="imageOption.display.pickFile = false;">' +
+					'<div ng-if="imageOption.display.pickFile">' +
+                    '<lightbox show="imageOption.display.pickFile" on-close="imageOption.display.pickFile = false;">' +
 					'<media-library ng-change="updateContent()" multiple="true" ng-model="imageOption.display.files" file-format="\'img\'" visibility="imageOption.visibility"></media-library>' +
-					'</lightbox>',
+					'</lightbox>' +
+                    '</div>',
 				    link: function (scope, element, attributes) {
 				        ui.extendSelector.touchEvents('[contenteditable] img');
 
@@ -1497,10 +1499,12 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('sound', function(instance){
 				return {
-					template: '<i ng-click="display.pickFile = true" tooltip="editor.option.sound"></i>' +
+				    template: '<i ng-click="display.pickFile = true" tooltip="editor.option.sound"></i>' +
+                    '<div ng-if="display.pickFile">' +
 					'<lightbox show="display.pickFile" on-close="display.pickFile = false;">' +
 					'<media-library ng-change="updateContent()" ng-model="display.file" file-format="\'audio\'"></media-library>' +
-					'</lightbox>',
+					'</lightbox>' +
+                    '</div>',
 					link: function(scope, element, attributes){
 						instance.editZone.addClass('drawing-zone');
 						scope.display = {};
