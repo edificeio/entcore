@@ -991,7 +991,7 @@ module.directive('colorSelect', function($compile){
 		replace: true,
 		template: '' +
 			'<div class="color-picker" ng-class="{ opened: pickColor }">' +
-				'<button class="colors-opener"></button>' +
+				'<button class="colors-opener" type="button"></button>' +
 				'<div class="colors-list">' +
 					'<button type="button" ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
 				'</div>' +
