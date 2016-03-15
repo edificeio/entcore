@@ -9,6 +9,7 @@ function MainController($rootScope, $scope, template, lang, model){
 	template.open('widgets', 'widgets');
 	template.open('settings', 'settings');
 	template.open('notifications', 'notifications');
+	template.open('notifspanel', 'notifspanel');
 
 	$scope.template = template;
 	$scope.lang = lang;
@@ -60,6 +61,16 @@ function Personalization($rootScope, $scope, model, ui){
 	$scope.togglePanel = function($event){
 		$scope.showPanel = !$scope.showPanel;
 		$event.stopPropagation();
+	};
+
+	$scope.display = {};
+
+	$scope.showNotifs = function() {
+		$scope.dispaly.showNotifsPanel = true;
+	};
+
+	$scope.hideNotifs = function() {
+		$scope.dispaly.showNotifsPanel = false;
 	};
 
 	$rootScope.$on('close-panel', function(e){
