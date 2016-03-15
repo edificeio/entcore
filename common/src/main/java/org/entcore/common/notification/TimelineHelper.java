@@ -44,17 +44,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TimelineHelper {
 
 	private static final String TIMELINE_ADDRESS = "wse.timeline";
-	private final static String messagesDir = "./i18n/timeline";
+	private final static String messagesDir = "./view/notify/i18n";
 	private final EventBus eb;
 	private final Renders render;
 	private final Vertx vertx;
+	private final TimelineNotificationHelper notificationHelper;
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
 
 	public TimelineHelper(Vertx vertx, EventBus eb, Container container) {
 		this.eb = eb;
 		this.render = new Renders(vertx, container);
 		this.vertx = vertx;
+		this.notificationHelper = TimelineNotificationHelper.getInstance(vertx);
 		loadTimelineI18n();
+	}
+
+	public void notifyTimeline(HttpServerRequest request,  String notificationName,
+			UserInfos sender, List<String> recipients, JsonObject params){
+		notifyTimeline(request, notificationName, sender, recipients, null, null, params);
+	}
+	public void notifyTimeline(HttpServerRequest request,  String notificationName,
+			UserInfos sender, List<String> recipients, String resource, JsonObject params){
+		notifyTimeline(request, notificationName, sender, recipients, resource, null, params);
+	}
+	public void notifyTimeline(HttpServerRequest request,  String notificationName,
+			UserInfos sender, List<String> recipients, String resource, String subResource, JsonObject params){
+		JsonObject notification = notificationHelper.getNotification(notificationName);
+		notifyTimeline(request, sender, notification.getString("type"), notification.getString("event-type"),
+				recipients, resource, subResource, notification.getString("template"), params);
 	}
 
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,

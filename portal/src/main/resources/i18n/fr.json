@@ -3,6 +3,7 @@
   "admin.appRegistry": "Applications",
   "admin.communication": "Règles de communication",
   "admin.directory": "Annuaire",
+  "admin.timeline": "Configuration des notifications",
   "admin.keyring" : "Trousseau",
   "admin.header": "Console d'administration",
   "admin.history": "Historique",

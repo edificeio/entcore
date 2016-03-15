@@ -45,7 +45,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	@Override
-	public void get(final UserInfos user, List<String> types, int offset, int limit,
+	public void get(final UserInfos user, List<String> types, int offset, int limit, JsonObject restrictionFilter,
 			final Handler<JsonObject> result) {
 		final String recipient = user.getUserId();
 		final String externalId = user.getExternalId();
@@ -67,6 +67,15 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 						typesFilter.addObject(new JsonObject().putString("type", t));
 					}
 					query.putArray("$or", typesFilter);
+				}
+			}
+			if(restrictionFilter != null && restrictionFilter.size() > 0){
+				for(String type : restrictionFilter.toMap().keySet()){
+					for(Object eventType : restrictionFilter.getArray(type, new JsonArray())){
+						query.putArray("$and", new JsonArray()
+							.add(new JsonObject().putObject("type", new JsonObject().putString("$ne", type)))
+							.add(new JsonObject().putObject("event-type", new JsonObject().putString("$ne", eventType.toString()))));
+					}
 				}
 			}
 			JsonObject sort = new JsonObject().putNumber("date", -1);

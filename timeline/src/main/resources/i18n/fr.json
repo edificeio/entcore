@@ -19,5 +19,16 @@
     "timeline.nothingnew": "Aucune nouvelle pour le moment !",
     "timeline.title": "Fil de nouveautés",
     "userbook": "Utilisateurs",
-    "workspace": "Espace documentaire"
+    "workspace": "Espace documentaire",
+    "admin.timeline": "Notifications",
+    "admin.timeline.header": "Paramétrage des notifications",
+    "admin.timeline.intro": "Cet écran vous permet de configurer différentes options pour chaque notification, par application.<br><ul><li><strong>Restreindre les notifications:</strong><br>Permet de restreindre les notifications de façon à ce qu'elles ne soient publiées via un seul canal, c'est à dire uniquement dans le fil de nouveauté ou bien uniquement par mail.</li><li><strong>Fréquence de mail par défaut:</strong><br>Définit la fréquence configurée par défaut pour chaque utilisateur qui n'a pas encore changé ses préférences.</li></ul>",
+    "timeline.restriction": "Restreindre les notifications",
+    "NONE": "Pas de restriction",
+    "INTERNAL": "Fil de nouveauté",
+    "EXTERNAL": "Notifications mail",
+    "timeline.defaultFrequency": "Fréquence de mail par défaut",
+    "IMMEDIATE": "Mail instantané",
+    "DAILY": "Mail journalier",
+    "WEEKLY": "Mail hebdomadaire"
 }
