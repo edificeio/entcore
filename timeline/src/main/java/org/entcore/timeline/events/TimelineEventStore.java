@@ -19,7 +19,7 @@ public interface TimelineEventStore {
 
 	void delete(String resource, Handler<JsonObject> result);
 
-	void get(UserInfos recipient, List<String> types, int offset, int limit, Handler<JsonObject> result);
+	void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter, Handler<JsonObject> result);
 
 	void deleteSubResource(String resource, Handler<JsonObject> result);
 
