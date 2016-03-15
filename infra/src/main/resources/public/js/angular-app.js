@@ -993,13 +993,13 @@ module.directive('colorSelect', function($compile){
 			'<div class="color-picker" ng-class="{ opened: pickColor }">' +
 				'<button class="colors-opener"></button>' +
 				'<div class="colors-list">' +
-					'<button ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
+					'<button type="button" ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
 				'</div>' +
 			'</div>',
 		link: function(scope, element, attributes){
 			scope.colors = ['orange', 'pink', 'purple', 'blue', 'green', 'black', 'white', 'transparent'];
 			scope.setColor = function(color){
-				scope.ngModel = color;
+			    scope.ngModel = color;
 			};
 
 			element.find('.colors-opener').on('click', function(e){
