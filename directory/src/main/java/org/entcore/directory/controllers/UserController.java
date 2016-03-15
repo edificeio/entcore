@@ -63,7 +63,6 @@ import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 public class UserController extends BaseController {
 
-	private static final String NOTIFICATION_TYPE = "USERBOOK";
 	private UserService userService;
 	private UserBookService userBookService;
 	private TimelineHelper notification;
@@ -189,16 +188,12 @@ public class UserController extends BaseController {
 						.putString("motto", motto)
 						.putString("moodImg", mood);
 				if (mood != null && !mood.trim().isEmpty()) {
-					notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-						NOTIFICATION_TYPE + "_MOOD", userIds,
-						user.getUserId() + System.currentTimeMillis() + "mood",
-						"notify-mood.html", params);
+					notification.notifyTimeline(request, "userbook.userbook_mood", user, userIds,
+						user.getUserId() + System.currentTimeMillis() + "mood", params);
 				}
 				if (motto != null && !motto.trim().isEmpty()) {
-					notification.notifyTimeline(request, user, NOTIFICATION_TYPE,
-							NOTIFICATION_TYPE + "_MOTTO", userIds,
-							user.getUserId() + System.currentTimeMillis() + "motto",
-							"notify-motto.html", params);
+					notification.notifyTimeline(request, "userbook.userbook_motto", user, userIds,
+							user.getUserId() + System.currentTimeMillis() + "motto", params);
 				}
 			}
 		});
