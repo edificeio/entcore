@@ -1,7 +1,7 @@
 {
 	"main":"org.entcore.auth.Auth",
 	"port": 8009,
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"mode": "dev",
 	"authenticationServer" : {
 		"loginURL" : "http://localhost:8009/login",

@@ -1,6 +1,6 @@
 {
 	"main":"org.entcore.registry.AppRegistry",
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"port": 8012,
 	"mode": "dev",
 	"address" : "wse.app.registry"

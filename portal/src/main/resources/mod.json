@@ -1,7 +1,7 @@
 {
 	"main":"org.entcore.portal.Portal",
 	"port": 8017,
-	"auto-redeploy": true,
+	"auto-redeploy": false,
 	"mode": "dev",
 	"skin": "raw",
 	"assets-path" : ".",

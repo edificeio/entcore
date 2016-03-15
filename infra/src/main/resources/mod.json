@@ -2,7 +2,7 @@
   "main": "org.entcore.infra.Starter",
   "port": 8001,
   "mode": "dev",
-  "auto-redeploy": true,
+  "auto-redeploy": false,
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "app-registry": {
