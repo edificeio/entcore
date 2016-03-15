@@ -21,6 +21,8 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.swift.SwiftClient;
 import fr.wseduc.swift.storage.StorageObject;
+import fr.wseduc.webutils.DefaultAsyncResult;
+import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
@@ -218,6 +220,23 @@ public class SwiftStorage implements Storage {
 	@Override
 	public String getBucket() {
 		return container;
+	}
+
+	@Override
+	public void stats(final AsyncResultHandler<BucketStats> handler) {
+		swiftClient.headContainer(container, new AsyncResultHandler<JsonObject>() {
+			@Override
+			public void handle(AsyncResult<JsonObject> event) {
+				if (event.succeeded()) {
+					BucketStats bucketStats = new BucketStats();
+					bucketStats.setObjectNumber(event.result().getLong("X-Container-Object-Count"));
+					bucketStats.setStorageSize(event.result().getLong("X-Container-Bytes-Used"));
+					handler.handle(new DefaultAsyncResult<>(bucketStats));
+				} else {
+					handler.handle(new DefaultAsyncResult<BucketStats>(event.cause()));
+				}
+			}
+		});
 	}
 
 }

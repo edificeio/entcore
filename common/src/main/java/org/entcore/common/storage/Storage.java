@@ -20,6 +20,7 @@
 package org.entcore.common.storage;
 
 import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -56,5 +57,7 @@ public interface Storage {
 	String getProtocol();
 
 	String getBucket();
+
+	void stats(AsyncResultHandler<BucketStats> handler);
 
 }
