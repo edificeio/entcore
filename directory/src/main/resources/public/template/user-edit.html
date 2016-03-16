@@ -15,25 +15,26 @@
  ~ This program is distributed in the hope that it will be useful,
  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- ~
+ ~ edit
  -->
 
-<div class="cell four height-four reduce-block-six avatar">
 
-	<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
-		<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
-	</div>
-	<div class="fluid cell twelve" ng-if="!account.edit.userbook">
-		<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
-		<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
-	</div>
-</div>
+<div class="row reduce-block-six twelve-mobile user-infos">
+	<article class="rigid-grid cell twelve small-text">
 
-<div class="margin-four reduce-block-six twelve-mobile user-infos">
-	<article class="fluid cell twelve small-text">
+		<div class="cell four height-four reduce-block-six avatar">
+			<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
+				<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
+			</div>
+			<div class="fluid cell twelve" ng-if="!account.edit.userbook">
+				<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
+				<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
+			</div>
+		</div>
+
 		<h2>[[account.displayName]]</h2>
-		<form name="userForm" novalidate>
 
+		<form class="sheet" name="userForm" novalidate>
 			<div class="row">
 				<div class="four cell">
 					<i18n>userBook.profile.login</i18n>
@@ -134,5 +135,6 @@
 				<em class="six cell">[[account.schoolName]]</em>
 			</div>
 		</form>
+
 	</article>
 </div>

@@ -15,25 +15,24 @@
  ~ This program is distributed in the hope that it will be useful,
  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- ~
+ ~ infos
  -->
 
-<div class="row rigid-grid">
 
-	<div class="four cell reduce-block-six height-four avatar">
-		<div class="twelve cell fluid clip">
-			<img ng-src="/userbook/avatar/[[currentUser.id]]?thumbnail=381x381" />
+ <div class="row reduce-block-six twelve-mobile user-infos">
+ 	<article class="rigid-grid cell twelve small-text">
+
+		<div class="cell four height-four reduce-block-six avatar">
+			<div class="twelve cell fluid clip">
+				<img ng-src="/userbook/avatar/[[currentUser.id]]?thumbnail=381x381" />
+			</div>
 		</div>
-	</div>
 
-	<div class="margin-four reduce-block-six height-four twelve-mobile user-infos">
-		<article class="twelve cell medium-text">
+		<div class="sheet">
+			<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
 
-			<div class="row">
-				<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
-				<div class="right-magnet">
-					<i class="[[currentUser.mood]] liquid text-flow"></i>
-				</div>
+			<div class="right-magnet">
+				<i class="[[currentUser.mood]] liquid text-flow"></i>
 			</div>
 
 			<div class="row" ng-if="currentUser.type && currentUser.type.length">
@@ -73,8 +72,8 @@
 					[[currentUser.motto]]
 				</em>
 			</div>
-		</article>
-	</div>
+		</div>
+	</article>
 </div>
 
 <div class="row reduce-block-six">
