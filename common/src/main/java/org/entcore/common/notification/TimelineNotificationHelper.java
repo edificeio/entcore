@@ -57,7 +57,10 @@ public class TimelineNotificationHelper {
 	}
 
 	public JsonObject getNotification(String name){
-		return new JsonObject(sharedMap.get(name));
+		String stringResult = sharedMap.get(name);
+		if(stringResult == null)
+			return new JsonObject();
+		return new JsonObject(stringResult);
 	}
 
 	private void registerNotification(String fullName, JsonObject notification){
@@ -108,58 +111,58 @@ public class TimelineNotificationHelper {
 		processNotification(path, appName);
 	}
 
-	private void processNotification(String path, final String type){
+	private void processNotification(final String path, final String type){
 		final File pathFile = new File(path);
 		final String notificationName = pathFile.getName().substring(0, pathFile.getName().lastIndexOf('.'));
 		final String propsFilePath = path.substring(0, path.lastIndexOf(".")) + ".json";
-		final String templatePath = pathFile.getAbsolutePath().substring(pathFile.getAbsolutePath().indexOf("notify/"));
+		//final String templatePath = pathFile.getAbsolutePath().substring(pathFile.getAbsolutePath().indexOf("notify/"));
 
-		//Default values
-		final String fullName = type + "." + notificationName;
-		final String defaultFrequency = Frequencies.DAILY.name();
-		final String restriction = Restrictions.NONE.name();
-		final String template = templatePath;
-
-		vertx.fileSystem().exists(propsFilePath, new Handler<AsyncResult<Boolean>>() {
-			public void handle(AsyncResult<Boolean> ar) {
-				if(ar.succeeded()){
-					if(ar.result()){
-						vertx.fileSystem().readFile(propsFilePath, new Handler<AsyncResult<Buffer>>() {
-							public void handle(AsyncResult<Buffer> ar) {
-								if(ar.succeeded()){
-									JsonObject props = new JsonObject(ar.result().toString("UTF-8"));
-
-									// Overrides
-									registerNotification(fullName, new JsonObject()
-										.putString("type", type.toUpperCase())
-										.putString("event-type", notificationName.toUpperCase())
-										.putString("template", props.getString("template", template))
-										.putString("defaultFrequency", props.getString("default-frequency", defaultFrequency))
-										.putString("restriction", props.getString("restrict", restriction))
-									);
-								} else {
-									registerNotification(fullName, new JsonObject()
-										.putString("type", type.toUpperCase())
-										.putString("event-type", notificationName.toUpperCase())
-										.putString("template", template)
-										.putString("defaultFrequency", defaultFrequency)
-										.putString("restriction", restriction)
-									);
-								}
-							}
-						});
-					} else {
-						registerNotification(fullName, new JsonObject()
-							.putString("type", type.toUpperCase())
-							.putString("event-type", notificationName.toUpperCase())
-							.putString("template", template)
-							.putString("defaultFrequency", defaultFrequency)
-							.putString("restriction", restriction)
-						);
-					}
+		vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
+			public void handle(AsyncResult<Buffer> templateAsync) {
+				if(templateAsync.failed()){
+					log.error("Cannot read template at path : " + path);
+					return;
 				}
+
+				final String fullName = (type + "." + notificationName).toLowerCase();
+
+				//Default values
+				final JsonObject notificationJson = new JsonObject()
+						.putString("type", type.toLowerCase())
+						.putString("event-type", notificationName.toLowerCase())
+						.putString("template", templateAsync.result().toString())
+						.putString("defaultFrequency", Frequencies.DAILY.name())
+						.putString("restriction", Restrictions.NONE.name());
+
+				vertx.fileSystem().exists(propsFilePath, new Handler<AsyncResult<Boolean>>() {
+					public void handle(AsyncResult<Boolean> ar) {
+						if(ar.succeeded()){
+							if(ar.result()){
+								vertx.fileSystem().readFile(propsFilePath, new Handler<AsyncResult<Buffer>>() {
+									public void handle(AsyncResult<Buffer> ar) {
+										if(ar.succeeded()){
+											JsonObject props = new JsonObject(ar.result().toString("UTF-8"));
+
+											// Overrides
+											registerNotification(fullName, notificationJson
+												.putString("defaultFrequency", props.getString("default-frequency", notificationJson.getString("defaultFrequency")))
+												.putString("restriction", props.getString("restrict", notificationJson.getString("restriction")))
+											);
+										} else {
+											registerNotification(fullName, notificationJson);
+										}
+									}
+								});
+							} else {
+								registerNotification(fullName, notificationJson);
+							}
+						}
+					}
+				});
 			}
 		});
+
+
 
 	}
 

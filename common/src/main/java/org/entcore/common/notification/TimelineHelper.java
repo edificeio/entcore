@@ -44,7 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TimelineHelper {
 
 	private static final String TIMELINE_ADDRESS = "wse.timeline";
-	private final static String messagesDir = "./view/notify/i18n";
+	private final static String messagesDir = "./i18n/timeline";
 	private final EventBus eb;
 	private final Renders render;
 	private final Vertx vertx;
@@ -70,8 +70,32 @@ public class TimelineHelper {
 	public void notifyTimeline(HttpServerRequest request,  String notificationName,
 			UserInfos sender, List<String> recipients, String resource, String subResource, JsonObject params){
 		JsonObject notification = notificationHelper.getNotification(notificationName);
-		notifyTimeline(request, sender, notification.getString("type"), notification.getString("event-type"),
-				recipients, resource, subResource, notification.getString("template"), params);
+
+		JsonArray r = new JsonArray();
+		for (String userId: recipients) {
+			r.addObject(new JsonObject().putString("userId", userId).putNumber("unread", 1));
+		}
+		final JsonObject event = new JsonObject()
+				.putString("action", "add")
+				.putString("type", notification.getString("type"))
+				.putString("event-type", notification.getString("event-type"))
+				.putArray("recipients", r);
+		if (resource != null) {
+			event.putString("resource", resource);
+		}
+		if (sender != null) {
+			event.putString("sender", sender.getUserId());
+		}
+		if (subResource != null && !subResource.trim().isEmpty()) {
+			event.putString("sub-resource", subResource);
+		}
+		Long date = params.getLong("timeline-publish-date");
+		if (date != null) {
+			event.putObject("date", new JsonObject().putNumber("$date", date));
+			params.removeField("timeline-publish-date");
+		}
+		event.putObject("params", params);
+		eb.send(TIMELINE_ADDRESS, event);
 	}
 
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
