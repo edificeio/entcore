@@ -16,7 +16,7 @@ public class LogSearchingEvents implements SearchingEvents {
 
 	@Override
 	public void searchResource(List<String> appFilters, String userId, JsonArray groupIds, JsonArray searchWords,
-							   Integer page, Integer limit, JsonArray columnsHeader,
+							   Integer page, Integer limit, JsonArray columnsHeader, String locale,
 							   Handler<Either<String, JsonArray>> handler) {
 		log.info("Search : " + userId + ", words attributes : " + searchWords.toString() +
 				", requested engine : " + appFilters.toString());
