@@ -41,8 +41,9 @@ public class SearchingHandler implements Handler<Message<JsonObject>> {
 		final JsonArray groupIds = message.body().getArray("groupIds", new JsonArray());
 		final JsonArray columnsHeader = message.body().getArray("columnsHeader", new JsonArray());
 		final List<String> appFilters = message.body().getArray("appFilters", new JsonArray()).toList();
+		final String locale = message.body().getString("locale", "fr");
 
-		searchingEvents.searchResource(appFilters, userId, groupIds, searchWords, page, limit, columnsHeader, new Handler<Either<String, JsonArray>>() {
+		searchingEvents.searchResource(appFilters, userId, groupIds, searchWords, page, limit, columnsHeader, locale, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {

@@ -11,5 +11,5 @@ import java.util.List;
  */
 public interface SearchingEvents {
 	void searchResource(List<String> appFilters, String userId, JsonArray groupIds, JsonArray searchWords, Integer page, Integer limit,
-						JsonArray columnsHeader, Handler<Either<String, JsonArray>> handler);
+						JsonArray columnsHeader, String locale, Handler<Either<String, JsonArray>> handler);
 }
