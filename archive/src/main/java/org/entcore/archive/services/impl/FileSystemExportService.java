@@ -322,10 +322,8 @@ public class FileSystemExportService implements ExportService {
 				.putString("resourceUri", "/archive/export/" + exportId)
 				.putString("resourceName", exportId + ".zip");
 
-		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject()
-				.putObject("headers", new JsonObject().putString("Accept-Language", locale))), null,
-				Archive.ARCHIVES.toUpperCase(), Archive.ARCHIVES.toUpperCase() + "_" + status.toUpperCase(),
-				recipients, null, "notify-" + status + ".html", params);
+		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject().putObject("headers", new JsonObject().putString("Accept-Language", locale))),
+				"archive.archives" +  "_" + status, null, recipients, params);
 	}
 
 	private void sendExportEmail(final String exportId, final String locale, final String status, final String host) {
