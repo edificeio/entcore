@@ -1,6 +1,4 @@
 {
     "default-frequency": "DAILY",
-    "restrict": "EXTERNAL",
-    "template": "notify/userbook/userbook_mood.html",
-    "external-template": "notify/userbook/userbook_mood.external.html"
+    "restrict": "EXTERNAL"
 }
