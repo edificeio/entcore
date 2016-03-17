@@ -3,13 +3,9 @@ package org.entcore.timeline.events;
 import fr.wseduc.mongodb.MongoDb;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
-
-import fr.wseduc.webutils.Server;
 
 import java.util.List;
 
@@ -81,10 +77,12 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			JsonObject sort = new JsonObject().putNumber("date", -1);
 			JsonObject keys = new JsonObject()
 			.putNumber("message", 1)
+			.putNumber("params", 1)
 			.putNumber("date", 1)
 			.putNumber("sender", 1)
 			.putNumber("recipients.$", 1)
 			.putNumber("comments", 1)
+			.putNumber("type", 1)
 			.putNumber("event-type", 1)
 			.putNumber("resource", 1)
 			.putNumber("sub-resource", 1)

@@ -1,14 +1,20 @@
 package org.entcore.timeline.controllers;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.Writer;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.http.BaseController;
@@ -16,6 +22,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
@@ -24,6 +31,9 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 import org.vertx.java.platform.Container;
+
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Template;
 
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -43,7 +53,9 @@ public class TimelineController extends BaseController {
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private ConcurrentMap<String, String> eventsI18n;
+	private HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 	private Map<String, String> registeredNotifications;
+
 
 	private final String TIMELINE_CONFIG_COLLECTION = "timeline.config";
 
@@ -60,6 +72,34 @@ public class TimelineController extends BaseController {
 		} else {
 			registeredNotifications = vertx.sharedData().getMap("notificationsMap");
 		}
+	}
+
+	/* Override i18n to use additional timeline translations */
+	@Override
+	protected void setLambdaTemplateRequest(final HttpServerRequest request, Map<String, Object> ctx) {
+		super.setLambdaTemplateRequest(request, ctx);
+
+		ctx.put("i18n", new Mustache.Lambda() {
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException {
+				String key = frag.execute();
+				String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
+				String firstTranslation = I18n.getInstance().translate(key, language);
+				if(!firstTranslation.equals(key)){
+					out.write(firstTranslation);
+				} else {
+					JsonObject timelineI18n;
+					if(!lazyEventsI18n.containsKey(language)){
+						String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+						timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+						lazyEventsI18n.put(language, timelineI18n);
+					} else {
+						timelineI18n = lazyEventsI18n.get(language);
+					}
+					out.write(timelineI18n.getString(key, key));
+				}
+			}
+		});
 	}
 
 	@Get("/timeline")
@@ -84,7 +124,9 @@ public class TimelineController extends BaseController {
 	public void registeredNotifications(HttpServerRequest request){
 		JsonArray reply = new JsonArray();
 		for(String key : registeredNotifications.keySet()){
-			reply.add(new JsonObject(registeredNotifications.get(key)).putString("key", key));
+			JsonObject notif = new JsonObject(registeredNotifications.get(key)).putString("key", key);
+			notif.removeField("template");
+			reply.add(notif);
 		}
 		renderJson(request, reply);
 	}
@@ -118,9 +160,46 @@ public class TimelineController extends BaseController {
 							} catch (NumberFormatException e) {}
 
 							store.get(user, types, offset, 25, notifs.right().getValue(), new Handler<JsonObject>() {
-								public void handle(JsonObject res) {
+								public void handle(final JsonObject res) {
 									if (res != null && "ok".equals(res.getString("status"))) {
-										renderJson(request, res);
+										JsonArray results = res.getArray("results", new JsonArray());
+										final JsonArray compiledResults = new JsonArray();
+
+										final AtomicInteger countdown = new AtomicInteger(results.size());
+										final VoidHandler endHandler = new VoidHandler() {
+											protected void handle() {
+												if(countdown.decrementAndGet() == 0){
+													res.putArray("results", compiledResults);
+													renderJson(request, res);
+												}
+											}
+										};
+										if(results.size() == 0)
+											endHandler.handle(null);
+
+										for(Object notifObj: results){
+											final JsonObject notif = (JsonObject) notifObj;
+											if(!notif.getString("message", "").isEmpty()){
+												compiledResults.add(notif);
+												endHandler.handle(null);
+												continue;
+											}
+
+											String key = notif.getString("type", "").toLowerCase() + "." +
+													notif.getString("event-type", "").toLowerCase();
+											JsonObject registeredNotif = new JsonObject(registeredNotifications.get(key));
+
+											StringReader reader = new StringReader(registeredNotif.getString("template", ""));
+											processTemplate(request, notif.getObject("params", new JsonObject()),
+													key, reader, new Handler<Writer>() {
+												public void handle(Writer writer) {
+													notif.putString("message", writer.toString());
+													compiledResults.add(notif);
+													endHandler.handle(null);
+												}
+											});
+										}
+
 									} else {
 										renderError(request, res);
 									}
