@@ -1,4 +1,6 @@
 {
+  "archive.archives_error": "Erreur lors de la création de l'archive",
+  "archive.archives_ok": "Création de l'archive terminée",
   "timeline.archive.success" : "Vous pouvez télécharger l'archive : ",
   "timeline.archive.error" : "Une erreur est survenue lors de la création de l'archive",
   "timeline.archive.link" : "cliquez ici pour lancer le téléchargement",
