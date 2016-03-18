@@ -28,6 +28,7 @@ import static org.entcore.auth.oauth.OAuthAuthorizationResponse.unauthorizedClie
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -74,8 +75,10 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
+import org.vertx.java.core.spi.cluster.ClusterManager;
 import org.vertx.java.platform.Container;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
@@ -100,6 +103,8 @@ public class AuthController extends BaseController {
 	private static final Tracer trace = TracerFactory.getTracer("auth");
 	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
+	private Map<Object, Object> invalidEmails;
+
 	public enum AuthEvent { ACTIVATION, LOGIN, SMS }
 	private Pattern passwordPattern;
 	private String smsProvider;
@@ -127,6 +132,17 @@ public class AuthController extends BaseController {
 		if(server != null && server.get("smsProvider") != null)
 			smsProvider = (String) server.get("smsProvider");
 		slo = container.config().getBoolean("slo", false);
+		if (server != null) {
+			Boolean cluster = (Boolean) server.get("cluster");
+			if (Boolean.TRUE.equals(cluster)) {
+				ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+				invalidEmails = cm.getSyncMap("invalidEmails");
+			} else {
+				invalidEmails = vertx.sharedData().getMap("invalidEmails");
+			}
+		} else {
+			invalidEmails = new HashMap<>();
+		}
 	}
 
 	@Get("/oauth2/auth")
@@ -525,7 +541,7 @@ public class AuthController extends BaseController {
 					password.trim().isEmpty() || !password.equals(confirmPassword) ||
 					!passwordPattern.matcher(password).matches() ||
 					(container.config().getObject("mandatory", new JsonObject()).getBoolean("mail", false)
-					  && (email == null || email.trim().isEmpty())) ||
+					  && (email == null || email.trim().isEmpty() || invalidEmails.containsKey(email))) ||
 					(container.config().getObject("mandatory", new JsonObject()).getBoolean("phone", false)
 					  && (phone == null || phone.trim().isEmpty())) ||
 					(email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email)) ||
