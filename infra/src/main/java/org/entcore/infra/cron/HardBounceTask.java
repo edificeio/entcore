@@ -20,6 +20,7 @@
 package org.entcore.infra.cron;
 
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.Bounce;
@@ -39,16 +40,20 @@ import java.util.*;
 public class HardBounceTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(HardBounceTask.class);
+	public static final String PLATFORM_ITEM_TYPE = "INVALID_EMAIL";
 	private final EmailSender emailSender;
 	private final int relativeDay;
 	private final TimelineHelper timeline;
+	private final Map<Object, Object> invalidEmails;
 	private static final String TYPE = "SYSTEM";
+	public static final String PLATEFORM_COLLECTION = "platform";
 	private static final String EVENT_TYPE = TYPE + "_HARD_BOUNCE";
 
-	public HardBounceTask(EmailSender emailSender, int relativeDay, TimelineHelper timeline) {
+	public HardBounceTask(EmailSender emailSender, int relativeDay, TimelineHelper timeline, Map<Object, Object> invalidEmails) {
 		this.emailSender = emailSender;
 		this.relativeDay = relativeDay;
 		this.timeline = timeline;
+		this.invalidEmails = invalidEmails;
 	}
 
 	@Override
@@ -64,12 +69,20 @@ public class HardBounceTask implements Handler<Long> {
 					Set<String> emails = new HashSet<>();
 					for (Bounce b : r.right().getValue()) {
 						if (Utils.isNotEmpty(b.getEmail())) {
-							emails.add(b.getEmail());
+							if (emails.add(b.getEmail())) {
+								invalidEmails.put(b.getEmail(), "");
+							}
 						}
 					}
 					if (emails.isEmpty()) {
 						return;
 					}
+
+					JsonObject q = new JsonObject().putString("type", PLATFORM_ITEM_TYPE);
+					JsonObject modifier = new JsonObject().putObject("$addToSet", new JsonObject().putObject("invalid-emails",
+							new JsonObject().putArray("$each", new JsonArray(emails.toArray()))));
+					MongoDb.getInstance().update(PLATEFORM_COLLECTION, q, modifier, true, false);
+
 					String query = "MATCH (u:User) WHERE u.email IN {emails} REMOVE u.email RETURN collect(distinct u.id) as ids";
 					JsonObject params = new JsonObject().putArray("emails", new JsonArray(emails.toArray()));
 					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {

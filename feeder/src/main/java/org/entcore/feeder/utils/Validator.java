@@ -42,6 +42,7 @@ public class Validator {
 	private static final Logger log = LoggerFactory.getLogger(Validator.class);
 	//private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
 	private static ConcurrentMap<Object, Object> logins;
+	private static Map<Object, Object> invalidEmails;
 	private static final String[] alphabet =
 			{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 	private static final Map<String, Pattern> patterns = new HashMap<>();
@@ -332,6 +333,10 @@ public class Validator {
 			return "Missing validator: " + validator;
 		}
 		if (value instanceof String && p.matcher((String) value).matches()) {
+			if ("email".equals(validator) && !"emailAcademy".equals(attr) &&
+					invalidEmails != null && invalidEmails.containsKey(value)) {
+				return "Attribute " + attr + " contains an invalid email: " + value;
+			}
 			return null;
 		} else {
 			return "Attribute " + attr + " contains an invalid value: " + value;
@@ -385,6 +390,16 @@ public class Validator {
 				}
 			}
 		});
+		if (invalidEmails == null) {
+			ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+			Boolean cluster = (Boolean) server.get("cluster");
+			if (Boolean.TRUE.equals(cluster)) {
+				ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+				invalidEmails = cm.getSyncMap("invalidEmails");
+			} else {
+				invalidEmails = vertx.sharedData().getMap("invalidEmails");
+			}
+		}
 	}
 
 }

@@ -20,6 +20,7 @@
 package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.mongodb.MongoDb;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
@@ -34,12 +35,15 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.FileProps;
+import org.vertx.java.core.impl.VertxInternal;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
+import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Starter extends BaseServer {
@@ -92,6 +96,7 @@ public class Starter extends BaseServer {
 								deployModules(config.getArray("external-modules", new JsonArray()), false);
 								deployModules(config.getArray("one-modules", new JsonArray()), true);
 								registerGlobalWidgets(config.getString("widgets-path", "../../assets/widgets"));
+								loadInvalidEmails();
 							}
 						}
 					});
@@ -105,11 +110,37 @@ public class Starter extends BaseServer {
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
 		addController(new MonitoringController());
+	}
+
+	private void loadInvalidEmails() {
+		final Map<Object, Object> invalidEmails;
+		if (cluster) {
+			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+			invalidEmails = cm.getSyncMap("invalidEmails");
+		} else {
+			invalidEmails = vertx.sharedData().getMap("invalidEmails");
+		}
+		if (invalidEmails != null && invalidEmails.isEmpty()) {
+			MongoDb.getInstance().findOne(HardBounceTask.PLATEFORM_COLLECTION, new JsonObject()
+					.putString("type", HardBounceTask.PLATFORM_ITEM_TYPE), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonObject res = event.body().getObject("result");
+					if ("ok".equals(event.body().getString("status")) && res != null && res.getArray("invalid-emails") != null) {
+						for (Object o : res.getArray("invalid-emails")) {
+							invalidEmails.put(o, "");
+						}
+					} else {
+						log.error(event.body().getString("message"));
+					}
+				}
+			});
+		}
 		EmailFactory emailFactory = new EmailFactory(vertx, container);
 		try {
 			new CronTrigger(vertx, config.getString("hard-bounces-cron", "0 0 7 * * ? *"))
 					.schedule(new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),
-							new TimelineHelper(vertx, getEventBus(vertx), container)));
+							new TimelineHelper(vertx, getEventBus(vertx), container), invalidEmails));
 		} catch (ParseException e) {
 			log.error(e.getMessage(), e);
 			vertx.stop();
