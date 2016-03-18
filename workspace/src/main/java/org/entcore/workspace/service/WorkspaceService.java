@@ -394,7 +394,7 @@ public class WorkspaceService extends BaseController {
 			params.putString("resourceUri", pathPrefix + "/document/" + resource);
 		}
 
-		final String template = isFolder ? "notify-share-folder.html" : "notify-share.html";
+		final String notificationName = WORKSPACE_NAME + "." + (isFolder ? "notify-share-folder" : "notify-share");
 
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
 				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
@@ -402,8 +402,7 @@ public class WorkspaceService extends BaseController {
 					public void handle(Message<JsonObject> event) {
 						if ("ok".equals(event.body().getString("status")) && event.body().getObject("result") != null) {
 							params.putString("resourceName", event.body().getObject("result").getString("name", ""));
-							notification.notifyTimeline(request, user, WORKSPACE_NAME, WORKSPACE_NAME + "_SHARE",
-									recipients, resource, template, params);
+							notification.notifyTimeline(request, notificationName, user, recipients, resource, params);
 						} else {
 							log.error("Unable to send timeline notification : missing name on resource " + resource);
 						}
@@ -648,8 +647,8 @@ public class WorkspaceService extends BaseController {
 	private void notifyEmptySpaceIsSmall(String userId) {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
-		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), null, WORKSPACE_NAME,
-				WORKSPACE_NAME + "_STORAGE", recipients, null, "notify-storage.html", null);
+		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), WORKSPACE_NAME + ".notify-storage",
+				null, recipients, null, new JsonObject());
 	}
 
 	@Post("/folder")
@@ -1555,7 +1554,7 @@ public class WorkspaceService extends BaseController {
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
 
-		final String template = isFolder ? "notify-comment-folder.html" : "notify-comment.html";
+		final String notifyName = WORKSPACE_NAME + "." + (isFolder ? "notify-comment-folder" : "notify-comment");
 
 		//Retrieve the document from DB
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
@@ -1587,16 +1586,7 @@ public class WorkspaceService extends BaseController {
 									if(o != null && recipients.contains(o)) {
 										recipients.remove(o);
 									}
-
-									notification.notifyTimeline(
-											request,
-											user,
-											WORKSPACE_NAME,
-											WORKSPACE_NAME + "_SHARE",
-											recipients,
-											id,
-											template,
-											sharedNotifParams);
+									notification.notifyTimeline(request, notifyName, user, recipients, id, sharedNotifParams);
 								}
 							};
 
@@ -1615,15 +1605,7 @@ public class WorkspaceService extends BaseController {
 									ownerNotif.putString("resourceUri", pathPrefix + "/workspace");
 								}
 
-								notification.notifyTimeline(
-										request,
-										user,
-										WORKSPACE_NAME,
-										WORKSPACE_NAME + "_SHARE",
-										ownerList,
-										id,
-										template,
-										ownerNotif);
+								notification.notifyTimeline(request, notifyName, user, ownerList, id, ownerNotif);
 							}
 
 						}
