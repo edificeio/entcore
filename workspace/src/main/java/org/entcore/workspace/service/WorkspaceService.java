@@ -394,7 +394,7 @@ public class WorkspaceService extends BaseController {
 			params.putString("resourceUri", pathPrefix + "/document/" + resource);
 		}
 
-		final String notificationName = WORKSPACE_NAME + "." + (isFolder ? "notify-share-folder" : "notify-share");
+		final String notificationName = WORKSPACE_NAME + "." + (isFolder ? "share-folder" : "share");
 
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", resource),
 				new JsonObject().putNumber("name", 1), new Handler<Message<JsonObject>>() {
@@ -647,7 +647,7 @@ public class WorkspaceService extends BaseController {
 	private void notifyEmptySpaceIsSmall(String userId) {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
-		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), WORKSPACE_NAME + ".notify-storage",
+		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), WORKSPACE_NAME + ".storage",
 				null, recipients, null, new JsonObject());
 	}
 
@@ -1554,7 +1554,7 @@ public class WorkspaceService extends BaseController {
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
 
-		final String notifyName = WORKSPACE_NAME + "." + (isFolder ? "notify-comment-folder" : "notify-comment");
+		final String notifyName = WORKSPACE_NAME + "." + (isFolder ? "comment-folder" : "comment");
 
 		//Retrieve the document from DB
 		mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().putString("_id", id), new Handler<Message<JsonObject>>() {
