@@ -206,8 +206,7 @@ public class ConversationController extends BaseController {
 			if (!(o instanceof String)) continue;
 			recipients.add((String) o);
 		}
-		notification.notifyTimeline(request, user, type, type + "_SENT",
-				recipients, id, "notification/notify-send-message.html", params);
+		notification.notifyTimeline(request, "messagerie.send-message", user, recipients, id, params);
 	}
 
 	@Get("list/:folder")
@@ -1096,8 +1095,8 @@ public class ConversationController extends BaseController {
 	private void notifyEmptySpaceIsSmall(String userId) {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
-		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), null, conversationName,
-				conversationName + "_STORAGE", recipients, null, "notification/notify-storage.html", new JsonObject());
+		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()),
+				"messagerie.storage", null, recipients, null, new JsonObject());
 	}
 
 }
