@@ -84,6 +84,9 @@ public final class AAFHandler extends DefaultHandler {
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
+		if (s == null || s.isEmpty()) {
+			return;
+		}
 		JsonObject j = mapping.getObject(currentAttribute);
 		if (j == null) {
 			throw new SAXException("Unknown attribute " + currentAttribute);
