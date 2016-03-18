@@ -1424,6 +1424,7 @@ window.RTE = (function () {
 							    label: 'editor.remove.image',
 							    action: function (e) {
 							        $(e.target).remove();
+							        instance.trigger('contentupdated');
 							    }
 							},
                             {
