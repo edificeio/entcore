@@ -187,7 +187,14 @@ public class TimelineController extends BaseController {
 
 											String key = notif.getString("type", "").toLowerCase() + "." +
 													notif.getString("event-type", "").toLowerCase();
-											JsonObject registeredNotif = new JsonObject(registeredNotifications.get(key));
+
+											String stringifiedRegisteredNotif = registeredNotifications.get(key);
+											if(stringifiedRegisteredNotif == null){
+												log.error("Failed to retrieve registered from the shared map notification with key : " + key);
+												endHandler.handle(null);
+												continue;
+											}
+											JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
 
 											StringReader reader = new StringReader(registeredNotif.getString("template", ""));
 											processTemplate(request, notif.getObject("params", new JsonObject()),
