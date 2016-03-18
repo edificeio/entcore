@@ -4655,8 +4655,8 @@ module.directive('sideNav', function(){
 				maxWidth = parseInt(attributes.maxWidth);
 			}
 			function addRemoveEvents(){
-				element.height($(window).height());
 				if($(window).width() <= maxWidth){
+					element.height($(window).height());
 					var body = $('body');
 
 					if($('.mobile-nav-opener').hasClass('visible')){
@@ -4672,6 +4672,8 @@ module.directive('sideNav', function(){
 						element.removeClass('slide');
 						$('body').removeClass('point-out');
 					});
+				}else {
+					element.height('auto');
 				}
 			}
 			addRemoveEvents();
