@@ -314,8 +314,7 @@ module.directive('lightbox', function($compile){
                         overflow: _.filter(parentElements, function(parent) {
                             return $(parent).css('overflow-x') !== 'visible' || $(parent).css('overflow-y') !== 'visible'
                         }),
-                        zIndex: _.chain(parentElements)
-                            .map(function(parent){
+                        zIndex: _.map(parentElements, function (parent) {
                                 var index = '';
                                 if($(parent).attr('style') && $(parent).attr('style').indexOf('z-index') !== -1){
                                     index = $(parent).css('z-index')
@@ -325,7 +324,6 @@ module.directive('lightbox', function($compile){
                                     index: index
                                 }
                             })
-                            .filter(function(parentObj){ return parentObj.index > 0 }).value()
                     };
 
                     //Removing overflow properties
@@ -361,7 +359,17 @@ module.directive('lightbox', function($compile){
 			});
 
 			scope.$on("$destroy", function() {
-				$('body').css({ overflow: 'auto' });
+			    $('body').css({ overflow: 'auto' });
+
+			    if (scope.backup) {
+			        //Restoring stored elements properties
+			        _.forEach(scope.backup.overflow, function (element) {
+			            $(element).css('overflow', '')
+			        })
+			        _.forEach(scope.backup.zIndex, function (elementObj) {
+			            elementObj.element.css('z-index', elementObj.index)
+			        })
+			    }
 			});
 		}
 	}
