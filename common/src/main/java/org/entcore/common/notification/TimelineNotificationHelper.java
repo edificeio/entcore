@@ -57,7 +57,7 @@ public class TimelineNotificationHelper {
 	}
 
 	public JsonObject getNotification(String name){
-		String stringResult = sharedMap.get(name);
+		String stringResult = sharedMap.get(name.toLowerCase());
 		if(stringResult == null)
 			return new JsonObject();
 		return new JsonObject(stringResult);
@@ -128,8 +128,9 @@ public class TimelineNotificationHelper {
 
 				//Default values
 				final JsonObject notificationJson = new JsonObject()
-						.putString("type", type.toLowerCase())
-						.putString("event-type", notificationName.toLowerCase())
+						.putString("type", type.toUpperCase())
+						.putString("event-type", notificationName.toUpperCase())
+						.putString("app-name", Config.getConf().getString("app-name"))
 						.putString("template", templateAsync.result().toString())
 						.putString("defaultFrequency", Frequencies.DAILY.name())
 						.putString("restriction", Restrictions.NONE.name());
