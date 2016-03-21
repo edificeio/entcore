@@ -2729,6 +2729,7 @@ window.RTE = (function () {
 						element.children('.selected-value').on('click', function(){
 						    if (element.children('.options').hasClass('hidden')) {
 						        setTimeout(function () {
+						            element.parent().css({ 'z-index': 9999 });
 						            element.parents('editor-toolbar').each(function(index, item) {
                                         $(item).css({
                                             'margin-top': '-' + item.scrollTop + 'px',
@@ -2745,6 +2746,7 @@ window.RTE = (function () {
 								element.children('.options').height(element.children('.options')[0].scrollHeight);
 							}
 						    else {
+						        element.parent().css({ 'z-index': '' });
 						        element.parents().css({ overflow: '' });
 						        element.parents('editor-toolbar').each(function (index, item) {
 						            $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
