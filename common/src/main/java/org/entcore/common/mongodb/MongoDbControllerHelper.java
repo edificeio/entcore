@@ -58,7 +58,6 @@ public abstract class MongoDbControllerHelper extends ControllerHelper {
 		setShareService(new MongoDbShareService(eb, this.mongo,
 				sharedCollection, securedActions, groupedActions));
 		setCrudService(new MongoDbCrudService(sharedCollection));
-		setTimelineEventType(sharedCollection.toUpperCase());
 	}
 
 }

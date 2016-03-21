@@ -98,11 +98,20 @@ public class TimelineHelper {
 		eb.send(TIMELINE_ADDRESS, event);
 	}
 
+	/**
+	 * @deprecated
+	 * Notification system was refactored in version 1.16.1
+	 */
+	@Deprecated
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, String eventType,
 							   List<String> recipients, String resource, String template, JsonObject params) {
 		notifyTimeline(request, sender, type, eventType, recipients, resource, null, template, params);
 	}
-
+	/**
+	 * @deprecated
+	 * Notification system was refactored in version 1.16.1
+	 */
+	@Deprecated
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, final String eventType,
 			List<String> recipients, String resource, String subResource, String template, JsonObject params) {
 		JsonArray r = new JsonArray();
