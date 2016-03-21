@@ -357,24 +357,24 @@ window.RTE = (function () {
 						}
 						else{
 							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
-								el.html(item.textContent.substring(that.range.startOffset));
-								item.parentNode.insertBefore(el[0], item.nextSibling);
+							    node.html(item.textContent.substring(that.range.startOffset));
+							    item.parentNode.insertBefore(node[0], item.nextSibling);
 								item.textContent = item.textContent.substring(0, that.range.startOffset);
 							}
 							else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
-								el.text(item.textContent.substring(0, that.range.endOffset));
-								item.parentNode.insertBefore(el[0], item);
+							    node.text(item.textContent.substring(0, that.range.endOffset));
+								item.parentNode.insertBefore(node[0], item);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
 							else if(that.range.startContainer === that.range.endContainer && index === 0){
-								el.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
+							    node.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
 								var textBefore = document.createTextNode('');
 								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-								item.parentNode.insertBefore(el[0], item);
-								item.parentNode.insertBefore(textBefore, el[0]);
+								item.parentNode.insertBefore(node[0], item);
+								item.parentNode.insertBefore(textBefore, node[0]);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
-							addedNodes.push(el[0]);
+							addedNodes.push(node[0]);
 						}
 					});
 					addedNodes.forEach(that.selectNode);
