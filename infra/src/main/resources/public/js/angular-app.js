@@ -2628,7 +2628,7 @@ module.directive('gridCell', function($compile){
 			});
 
 			scope.$watch('h', function(newVal, oldVal){
-			    if ($(window).width() <= ui.breakpoints.tablette) {
+				if(ui.breakpoints.checkMaxWidth("tablette")){
 			        element.removeClass('height-' + cellSizes[newVal]);
 			    }
 			    else {
@@ -2640,7 +2640,7 @@ module.directive('gridCell', function($compile){
 			});
 
 			$(window).on('resize', function () {
-			    if ($(window).width() <= ui.breakpoints.tablette) {
+				if(ui.breakpoints.checkMaxWidth("tablette")){
 			        element.removeClass('height-' + cellSizes[scope.h]);
 			    }
 			    else {
@@ -3269,7 +3269,7 @@ module.directive('sharePanel', function($compile){
 		templateUrl: '/' + infraPrefix + '/public/template/share-panel.html',
 		link: function($scope, $element, $attributes){
 			function chooseTemplate(){
-				if($(window).width() <= ui.breakpoints.fatMobile){
+				if(ui.breakpoints.checkMaxWidth("fatMobile")){
 					$scope.mobile =true;
 					$scope.shareTable = '/' + infraPrefix + '/public/template/share-panel-table-mobile.html';
 				}else{
@@ -4655,7 +4655,8 @@ module.directive('sideNav', function(){
 				maxWidth = parseInt(attributes.maxWidth);
 			}
 			function addRemoveEvents(){
-				if($(window).width() <= maxWidth){
+				if(ui.breakpoints.checkMaxWidth(maxWidth)){
+
 					element.height($(window).height());
 					var body = $('body');
 
@@ -4694,14 +4695,15 @@ module.directive('appTitle', function($compile){
 		link: function(scope, element, attributes){
 			element.addClass('zero-mobile');
 			element.find('h1').addClass('application-title');
-			var maxWidth = ui.breakpoints.tablette;
 
 			function setHeader(){
 				var header = $('app-title').html();
 				var mobileheader = $('header.main .application-title');
-				if($(window).width() <= maxWidth && !mobileheader.length){
-					$('header.main').append($compile(header)(scope));
-				}else if($(window).width() > maxWidth){
+
+				if(ui.breakpoints.checkMaxWidth("tablette")){
+					if(!mobileheader.length)
+						$('header.main').append($compile(header)(scope));
+				} else {
 					mobileheader.remove();
 				}
 			}
@@ -4722,40 +4724,42 @@ module.directive('microbox', function($compile){
 			var content = element.html();
 
 			return function(scope, element, attributes){
-				var maxWidth = ui.breakpoints.tablette;
 				var title = lang.translate(attributes.title);
 				var closeBox = lang.translate(attributes.close);
 				element.addClass('zero-mobile');
 
 				function setBox(apply){
+					if(ui.breakpoints.checkMaxWidth("tablette")){
 
-					if($(window).width() <= maxWidth && !$('.microbox-wrapper').length){
-						//creer la box
-						$('body').append('<div class="microbox-wrapper zero">'+
-							'<div class="microbox-content">'+
-							'<i class="close-2x"></i>'+
-							'<div class="microbox-material"></div>'+
-							'<button class="microbox-close">'+ closeBox +'</button>'+
-							'</div></div>');
+						if (!$('.microbox-wrapper').length){
+							//creer la box
+							$('body').append('<div class="microbox-wrapper zero">'+
+								'<div class="microbox-content">'+
+								'<i class="close-2x"></i>'+
+								'<div class="microbox-material"></div>'+
+								'<button class="microbox-close">'+ closeBox +'</button>'+
+								'</div></div>');
 
-						$('.microbox-material').html($compile(content)(scope));
-						element.after('<button class="microbox">'+ title +'</button>');
+							$('.microbox-material').html($compile(content)(scope));
+							element.after('<button class="microbox">'+ title +'</button>');
 
-						$('button.microbox').on('click', function(){
-							if($('.microbox-wrapper').hasClass('zero')){
-								$('.microbox-wrapper').removeClass('zero');
+							$('button.microbox').on('click', function(){
+								if($('.microbox-wrapper').hasClass('zero')){
+									$('.microbox-wrapper').removeClass('zero');
+								}
+							});
+
+							$('button.microbox-close, .microbox-content i.close-2x').on('click', function(){
+								if(!$('.microbox-wrapper').hasClass('zero')){
+									$('.microbox-wrapper').addClass('zero');
+								}
+							});
+
+							if(apply){
+								scope.$apply();
 							}
-						});
-
-						$('button.microbox-close, .microbox-content i.close-2x').on('click', function(){
-							if(!$('.microbox-wrapper').hasClass('zero')){
-								$('.microbox-wrapper').addClass('zero');
-							}
-						});
-
-						if(apply)
-							scope.$apply();
-					} else if($(window).width() > maxWidth){
+						}
+					}else{
 						$('.microbox-wrapper').remove();
 						$('button.microbox').remove();
 					}

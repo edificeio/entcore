@@ -305,7 +305,15 @@ ui.extendSelector = {
 ui.breakpoints = {
 	tablette: 800,
 	fatMobile: 550,
-	smallMobile:420
+	smallMobile: 420,
+	checkMaxWidth: function(size){
+		if(this[size]){
+			return window.matchMedia("(max-width: " + this[size] + "px)").matches
+		} else {
+			return window.matchMedia("(max-width: " + size + "px)").matches
+		}
+
+	}
 }
 
 ui.extendElement = {
