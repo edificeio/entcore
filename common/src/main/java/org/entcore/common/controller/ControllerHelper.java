@@ -52,7 +52,6 @@ public abstract class ControllerHelper extends BaseController {
 
 	protected ShareService shareService;
 	protected TimelineHelper notification;
-	protected String timelineEventType;
 	protected CrudService crudService;
 
 	@Override
@@ -98,16 +97,16 @@ public abstract class ControllerHelper extends BaseController {
 		});
 	}
 
-	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate) {
-		shareJsonSubmit(request, notifyShareTemplate, true, null, null);
+	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName) {
+		shareJsonSubmit(request, notificationName, true, null, null);
 	}
 
-	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate,
+	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName,
 			final boolean checkIsOwner) {
-		shareJsonSubmit(request, notifyShareTemplate, checkIsOwner, null, null);
+		shareJsonSubmit(request, notificationName, checkIsOwner, null, null);
 	}
 
-	protected void shareJsonSubmit(final HttpServerRequest request, final String notifyShareTemplate,
+	protected void shareJsonSubmit(final HttpServerRequest request, final String notificationName,
 			final boolean checkIsOwner, final JsonObject params, final String resourceNameAttribute) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -157,9 +156,9 @@ public abstract class ControllerHelper extends BaseController {
 						if (event.isRight()) {
 							JsonObject n = event.right().getValue()
 									.getObject("notify-timeline");
-							if (n != null && notifyShareTemplate != null) {
+							if (n != null && notificationName != null) {
 								notifyShare(request, id, user, new JsonArray().add(n),
-										notifyShareTemplate, params, resourceNameAttribute);
+										notificationName, params, resourceNameAttribute);
 							}
 							renderJson(request, event.right().getValue());
 						} else {
@@ -239,7 +238,7 @@ public abstract class ControllerHelper extends BaseController {
 	}
 
 	private void notifyShare(final HttpServerRequest request, final String resource,
-			final UserInfos user, JsonArray sharedArray, final String notifyShareTemplate,
+			final UserInfos user, JsonArray sharedArray, final String notificationName,
 			final JsonObject params, final String resourceNameAttribute) {
 		final List<String> recipients = new ArrayList<>();
 		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
@@ -265,7 +264,7 @@ public abstract class ControllerHelper extends BaseController {
 								}
 							}
 							if (remaining.decrementAndGet() < 1) {
-								sendNotify(request, resource, user, recipients, notifyShareTemplate,
+								sendNotify(request, resource, user, recipients, notificationName,
 										params, resourceNameAttribute);
 							}
 						}
@@ -274,12 +273,12 @@ public abstract class ControllerHelper extends BaseController {
 			}
 		}
 		if (remaining.get() < 1) {
-			sendNotify(request, resource, user, recipients, notifyShareTemplate, params, resourceNameAttribute);
+			sendNotify(request, resource, user, recipients, notificationName, params, resourceNameAttribute);
 		}
 	}
 
 	private void sendNotify(final HttpServerRequest request, final String resource,
-			final UserInfos user, final List<String> recipients, final String notifyShareTemplate,
+			final UserInfos user, final List<String> recipients, final String notificationName,
 			JsonObject p, final String resourceNameAttribute) {
 		if (p == null) {
 			p = new JsonObject()
@@ -295,8 +294,7 @@ public abstract class ControllerHelper extends BaseController {
 					String attr = (resourceNameAttribute != null && !resourceNameAttribute.trim().isEmpty()) ?
 							resourceNameAttribute : "name";
 					params.putString("resourceName", r.right().getValue().getString(attr, ""));
-					notification.notifyTimeline(request, user, timelineEventType, timelineEventType + "_SHARE",
-							recipients, resource, notifyShareTemplate, params);
+					notification.notifyTimeline(request, notificationName, user, recipients, params);
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);
 				}
@@ -395,10 +393,6 @@ public abstract class ControllerHelper extends BaseController {
 
 	public void setShareService(ShareService shareService) {
 		this.shareService = shareService;
-	}
-
-	public void setTimelineEventType(String timelineEventType) {
-		this.timelineEventType = timelineEventType;
 	}
 
 }
