@@ -2308,7 +2308,7 @@ window.RTE = (function () {
                         var editZone = element.find('[contenteditable=true]');
                         var htmlZone = element.children('textarea');
 			            var highlightZone = element.children('code');
-                        document.execCommand('styleWithCSS', true);
+			            document.execCommand("styleWithCSS", false, true);
 
                         if(attributes.inline !== undefined){
                             element.children('editor-toolbar').addClass('inline');
