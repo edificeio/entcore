@@ -1625,31 +1625,6 @@ window.RTE = (function () {
 							    }
 							}
 						]);
-                        
-                        // style placed here temporarily to avoid rebuilding css
-                        // to be moved in 1.16
-                        $(
-                            '<style>' +
-                                '[contenteditable] mathjax{' +
-                                    'display: block;' +
-                                    'float: left;' +
-                                    'position: relative;' +
-                                    'border: 1px solid #ccc;' +
-                                '}' +
-                                '[contenteditable] mathjax::after{' +
-                                    'display: block;' +
-                                    'content: " ";' +
-                                    'height: 100%;' +
-                                    'width: 100%;' +
-                                    'position: absolute;' +
-                                    'top: 0;' +
-                                    'left: 0;' +
-                                    '-moz-user-select: none;' +
-                                    '-webkit-user-select: none;' +
-                                    'user-select: none;' +
-                                '}' +
-                            '</style>'
-                        ).appendTo('head');
 					}
 				}
 			});
