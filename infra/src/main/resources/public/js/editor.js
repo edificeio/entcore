@@ -1112,7 +1112,7 @@ window.RTE = (function () {
 						});
 
 						scope.$watch('backColor', function () {
-						    if (scope.backColor[0] === '#') {
+						    if (typeof scope.backColor === 'string' && scope.backColor[0] === '#') {
 						        var rgb = {
 						            r: parseInt(scope.backColor.substring(1, 3), 16),
 						            g: parseInt(scope.backColor.substring(3, 5), 16),
