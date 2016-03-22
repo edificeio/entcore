@@ -1050,8 +1050,12 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('color', function(instance){
 				return {
-					template: '<input tooltip="editor.option.color" type="color" />',
-					link: function (scope, element, attributes) { 
+				    template: '<i tooltip="editor.option.color"></i>' +
+                        '<input tooltip="editor.option.color" type="color" />',
+					link: function (scope, element, attributes) {
+					    element.on('click', 'i', function () {
+					        element.find('input').click();
+					    });
 						if(!$.spectrum){
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
@@ -1087,7 +1091,7 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('backgroundColor', function(instance){
 				return {
-					template: '<input tooltip="editor.option.backgroundcolor" type="color" />',
+					template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" />',
 					link: function(scope, element, attributes){
 						if(!$.spectrum){
 							$.spectrum = {};
@@ -1108,6 +1112,20 @@ window.RTE = (function () {
 						});
 
 						scope.$watch('backColor', function () {
+						    if (scope.backColor[0] === '#') {
+						        var rgb = {
+						            r: parseInt(scope.backColor.substring(1, 3), 16),
+						            g: parseInt(scope.backColor.substring(3, 5), 16),
+						            b: parseInt(scope.backColor.substring(5, 7), 16)
+						        }
+						        if (rgb.r > 130 && rgb.g > 130 && rgb.b > 130) {
+						            element.find('i').css({ 'color': '#000' });
+						        }
+						        else {
+						            element.find('i').css({ 'color': '#fff' });
+						        }
+						    }
+						    
 						    if(scope.backColor !== eval(instance.selection.css('background-color'))) {
 						        instance.selection.css({ 'background-color': scope.backColor });
 						    }
