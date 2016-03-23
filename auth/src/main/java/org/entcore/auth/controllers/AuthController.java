@@ -754,13 +754,21 @@ public class AuthController extends BaseController {
 		RequestUtils.bodyToJson(request, new org.vertx.java.core.Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject json) {
-				String userId = request.params().get("userId");
+				final String userId = request.params().get("userId");
 				boolean block = json.getBoolean("block", true);
 				userAuthAccount.blockUser(userId, block, new org.vertx.java.core.Handler<Boolean>() {
 					@Override
 					public void handle(Boolean r) {
 						if (Boolean.TRUE.equals(r)) {
 							request.response().end();
+							UserUtils.deletePermanentSession(eb, userId, null, new org.vertx.java.core.Handler<Boolean>() {
+								@Override
+								public void handle(Boolean event) {
+									if (!event) {
+										log.error("Error delete permanent session with userId : " + userId);
+									}
+								}
+							});
 						} else {
 							badRequest(request);
 						}
