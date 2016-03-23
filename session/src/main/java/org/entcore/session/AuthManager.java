@@ -33,14 +33,12 @@ import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
 	protected Map<String, String> sessions;
-	protected Map<String, LoginInfo> logins;
+	protected Map<String, List<LoginInfo>> logins;
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 	private static final String SESSIONS_COLLECTION = "sessions";
@@ -157,7 +155,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		LoginInfo info = logins.get(userId);
+		LoginInfo info = getLoginInfo(userId);
 		if (info == null && !message.body().getBoolean("allowDisconnectedUser", false)) {
 			sendError(message, "Invalid userId.");
 			return;
@@ -187,6 +185,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+	}
+
+	private LoginInfo getLoginInfo(String userId) {
+		List<LoginInfo> loginInfos = logins.get(userId);
+		if (loginInfos != null && !loginInfos.isEmpty()) {
+			return loginInfos.get(loginInfos.size() - 1);
+		}
+		return null;
 	}
 
 	private JsonObject unmarshal(String s) {
@@ -312,14 +318,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					});
 					try {
 						sessions.put(sessionId, infos.encode());
-						logins.put(userId, new LoginInfo(timerId, sessionId));
+						addLoginInfo(userId, timerId, sessionId);
 					} catch (HazelcastSerializationException e) {
 						logger.error("Error putting session in hazelcast map");
 						try {
 							if (sessions instanceof IMap) {
 								((IMap) sessions).putAsync(sessionId, infos.encode());
 							}
-							logins.put(userId, new LoginInfo(timerId, sessionId));
+							addLoginInfo(userId, timerId, sessionId);
 						} catch (HazelcastSerializationException e1) {
 							logger.error("Error putting async session in hazelcast map", e1);
 						}
@@ -343,6 +349,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		});
+	}
+
+	private void addLoginInfo(String userId, long timerId, String sessionId) {
+		List<LoginInfo> loginInfos = logins.get(userId);
+		if (loginInfos == null) {
+			loginInfos = new ArrayList<>();
+		}
+		loginInfos.add(new LoginInfo(timerId, sessionId));
+		logins.put(userId, loginInfos);
 	}
 
 	private void doDrop(final Message<JsonObject> message) {
@@ -391,7 +406,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		JsonObject s =  unmarshal(sessions.remove(sessionId));
 		if (s != null) {
 			final String userId = s.getString("userId");
-			LoginInfo info = logins.remove(userId);
+			LoginInfo info = removeLoginInfo(sessionId, userId);
 			if (config.getBoolean("slo", false)) {
 				eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
 			}
@@ -404,6 +419,31 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			res.putObject("sessionMetadata", meta);
 		}
 		sendOK(message, res);
+	}
+
+	private LoginInfo removeLoginInfo(String sessionId, String userId) {
+		List<LoginInfo> loginInfos = logins.get(userId);
+		LoginInfo loginInfo = null;
+		if (loginInfos != null && sessionId != null) {
+			boolean found = false;
+			int idx = 0;
+			for (LoginInfo i : loginInfos) {
+				if (sessionId.equals(i.sessionId)) {
+					found = true;
+					break;
+				}
+				idx++;
+			}
+			if (found) {
+				loginInfo = loginInfos.remove(idx);
+				if (loginInfos.isEmpty()) {
+					logins.remove(userId);
+				} else {
+					logins.put(userId, loginInfos);
+				}
+			}
+		}
+		return loginInfo;
 	}
 
 
@@ -438,7 +478,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return null;
 		}
 
-		LoginInfo info = logins.get(userId);
+		LoginInfo info = getLoginInfo(userId);
 		if (info == null) {
 			sendError(message, "Invalid userId.");
 			return null;
@@ -463,15 +503,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		LoginInfo info = logins.get(userId);
-		if (info == null) {
+		List<LoginInfo> infos = logins.get(userId);
+		if (infos == null || infos.isEmpty()) {
 			sendError(message, "Invalid userId.");
 			return;
 		}
-		try {
-			sessions.put(info.sessionId, session.encode());
-		} catch (HazelcastSerializationException e) {
-			logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
+		for (LoginInfo info : infos) {
+			try {
+				sessions.put(info.sessionId, session.encode());
+			} catch (HazelcastSerializationException e) {
+				logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
+			}
 		}
 	}
 
