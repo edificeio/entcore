@@ -218,6 +218,7 @@ window.RTE = (function () {
 					    if (((range.intersectsNode && range.intersectsNode(item)) || (!range.intersectsNode && $(range.commonAncestorContainer).find(item).length > 0))
                             && item !== range.startContainer.parentNode
                             && item !== range.endContainer.parentNode
+                            && item !== range.endContainer
                             && !$(item).find(range.startContainer.parentNode).length
                             && !$(item).find(range.endContainer.parentNode).length) {
 							selector.push(item);
@@ -1113,12 +1114,12 @@ window.RTE = (function () {
 
 						scope.$watch('backColor', function () {
 						    if (typeof scope.backColor === 'string' && scope.backColor[0] === '#') {
-						        var rgb = {
+						        var rgbColor = {
 						            r: parseInt(scope.backColor.substring(1, 3), 16),
 						            g: parseInt(scope.backColor.substring(3, 5), 16),
 						            b: parseInt(scope.backColor.substring(5, 7), 16)
 						        }
-						        if (rgb.r > 130 && rgb.g > 130 && rgb.b > 130) {
+						        if (rgbColor.r > 130 && rgbColor.g > 130 && rgbColor.b > 130) {
 						            element.find('i').css({ 'color': '#000' });
 						        }
 						        else {
@@ -1279,6 +1280,9 @@ window.RTE = (function () {
 						];
 
 						instance.on('selectionchange', function (e) {
+                            if(!e){
+                                return;
+                            }
 						    var testElement = e.selection.$();
 						    if (instance.selection.isEmpty()) {
 						        testElement = instance.selection.elementAtCaret();
@@ -2010,7 +2014,7 @@ window.RTE = (function () {
 									row.append(cell);
 								}
 							}
-							instance.selection.replaceHTML(table.outerHTML);
+							instance.selection.replaceHTML('<div>' + table.outerHTML + '</div>');
 							instance.trigger('contentupdated');
 						});
 
@@ -2294,6 +2298,11 @@ window.RTE = (function () {
                                 element.find('editor-toolbar').removeClass('opened');
                             }
                         });
+                        
+                        element.find('.editor-toolbar-opener').on('touchstart', function(){
+                            e.preventDefault();
+                        });
+                        
                         document.execCommand("enableObjectResizing", false, false);
                         document.execCommand("enableInlineTableEditing", null, false);
 
