@@ -2288,7 +2288,7 @@ window.RTE = (function () {
                             $('body').css({ overflow: 'auto' });
                         });
 
-                        element.find('.editor-toolbar-opener').on('click', function(){
+                        element.find('.editor-toolbar-opener').on('click', function(e){
                             if(!$(this).hasClass('active')){
                                 $(this).addClass('active');
                                 element.find('editor-toolbar').addClass('opened');
@@ -2300,7 +2300,11 @@ window.RTE = (function () {
                         });
                         
                         element.find('.editor-toolbar-opener').on('touchstart', function(){
-                            e.preventDefault();
+                            setTimeout(function(){
+                                var sel = window.getSelection();
+                                sel.removeAllRanges();
+                                sel.addRange(editorInstance.selection.range);
+                            }, 100);
                         });
                         
                         document.execCommand("enableObjectResizing", false, false);
