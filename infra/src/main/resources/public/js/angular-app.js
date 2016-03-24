@@ -3477,6 +3477,7 @@ module.directive('progressBar', function($compile){
 module.directive('datePicker', function($compile){
 	return {
 		scope: {
+			minDate: '=',
 			ngModel: '=',
 			ngChange: '&'
 		},
@@ -3491,8 +3492,12 @@ module.directive('datePicker', function($compile){
                     element.datepicker('setValue', moment(scope.ngModel).format('DD/MM/YYYY'));
 			});
 
+			scope.$watch('minDate', function(newVal){
+				setNewDate();
+			});
+
 			function setNewDate(){
-				var minDate = scope.$parent.$eval(attributes.minDate);
+				var minDate = scope.minDate;
 				var date = element.val().split('/');
 				var temp = date[0];
 				date[0] = date[1];
