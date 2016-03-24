@@ -183,7 +183,8 @@ public class UserController extends BaseController {
 					userIds.add(u.getString("id"));
 				}
 				JsonObject params = new JsonObject()
-						.putString("uri", pathPrefix + "/annuaire#" + user.getUserId() + "#" + user.getType())
+						.putString("uri", container.config().getString("host", "http://localhost:8003") +
+								pathPrefix + "/annuaire#" + user.getUserId() + "#" + user.getType())
 						.putString("username", user.getUsername())
 						.putString("motto", motto)
 						.putString("moodImg", mood);

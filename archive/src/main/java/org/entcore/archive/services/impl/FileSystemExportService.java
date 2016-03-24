@@ -31,6 +31,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -319,7 +320,8 @@ public class FileSystemExportService implements ExportService {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
 		final JsonObject params = new JsonObject()
-				.putString("resourceUri", "/archive/export/" + exportId)
+				.putString("resourceUri", Config.getConf().getString("host", "http://localhost:8004") +
+						"/archive/export/" + exportId)
 				.putString("resourceName", exportId + ".zip");
 
 		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject().putObject("headers", new JsonObject().putString("Accept-Language", locale))),

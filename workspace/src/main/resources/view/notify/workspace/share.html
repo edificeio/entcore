@@ -18,11 +18,8 @@
  ~
  -->
 
-<span ng-if='"{{resourceName}}".indexOf(".json") === -1'><a href="{{uri}}">{{username}}</a>
+<span>
+    <a href="{{uri}}">{{username}}</a>
 	<br /><span>{{#i18n}}timeline.workspace.shared.document{{/i18n}}</span>
 	<a href="{{resourceUri}}">{{resourceName}}</a>.
-</span>
-<span ng-if='"{{resourceName}}".indexOf(".json") !== -1'><a href="{{uri}}">{{username}}</a>
-	<br /><span>{{#i18n}}timeline.workspace.shared.scrapbook{{/i18n}}</span>
-	<a ng-href='/scrapbook#/view-scrapbook/[[("{{resourceUri}}".split("/document/")[1])]]'>[[("{{resourceName}}".split(".json")[0])]]</a>.
 </span>
