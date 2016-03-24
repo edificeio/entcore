@@ -2767,6 +2767,7 @@ window.RTE = (function () {
 								return;
 							}
 
+						    element.parent().css({ 'z-index': '' });
 							element.parents().css({ overflow: '' });
 							element.parents('editor-toolbar').each(function (index, item) {
 							    $(item).css({ 'margin-top': '', 'min-height': '', height: '' })
