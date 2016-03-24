@@ -307,7 +307,8 @@ public class TimelineHelper {
 							log.error("[sendImmediateMails] Issue while retrieving users preferences.");
 						}
 						//Process template once
-						processTimelineTemplate(templateParameters, notificationName, notification.getString("template", ""), new Handler<String>(){
+						templateParameters.putString("innerTemplate", notification.getString("template", ""));
+						processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html", new Handler<String>(){
 							public void handle(final String processedTemplate) {
 								final List<Object> to = new ArrayList<Object>();
 								// For each user preference
