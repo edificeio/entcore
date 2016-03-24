@@ -19,13 +19,17 @@
 
 package org.entcore.common.notification;
 
+import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
+
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.file.FileProps;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
@@ -34,7 +38,9 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
+
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,19 +50,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TimelineHelper {
 
 	private static final String TIMELINE_ADDRESS = "wse.timeline";
+	private static final String USERBOOK_ADDRESS = "userbook.preferences";
 	private final static String messagesDir = "./i18n/timeline";
+	private EmailSender emailSender;
 	private final EventBus eb;
 	private final Renders render;
 	private final Vertx vertx;
-	private final TimelineNotificationHelper notificationHelper;
+	private final TimelineNotificationsLoader notificationsLoader;
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
 
 	public TimelineHelper(Vertx vertx, EventBus eb, Container container) {
 		this.eb = eb;
 		this.render = new Renders(vertx, container);
 		this.vertx = vertx;
-		this.notificationHelper = TimelineNotificationHelper.getInstance(vertx);
+		this.notificationsLoader = TimelineNotificationsLoader.getInstance(vertx);
 		loadTimelineI18n();
+		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		emailSender = emailFactory.getSender();
 	}
 
 	public void notifyTimeline(HttpServerRequest request,  String notificationName,
@@ -67,9 +77,9 @@ public class TimelineHelper {
 			UserInfos sender, List<String> recipients, String resource, JsonObject params){
 		notifyTimeline(request, notificationName, sender, recipients, resource, null, params);
 	}
-	public void notifyTimeline(HttpServerRequest request,  String notificationName,
-			UserInfos sender, List<String> recipients, String resource, String subResource, JsonObject params){
-		JsonObject notification = notificationHelper.getNotification(notificationName);
+	public void notifyTimeline(final HttpServerRequest request, final String notificationName,
+			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params){
+		final JsonObject notification = notificationsLoader.getNotification(notificationName);
 
 		JsonArray r = new JsonArray();
 		for (String userId: recipients) {
@@ -95,7 +105,14 @@ public class TimelineHelper {
 			params.removeField("timeline-publish-date");
 		}
 		event.putObject("params", params);
-		eb.send(TIMELINE_ADDRESS, event);
+		eb.send(TIMELINE_ADDRESS, event, new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				JsonObject result = event.body();
+				if(!"error".equals(result.getString("status", "error"))){
+					sendImmediateMails(request, notificationName, notification, params, recipients);
+				}
+			}
+		});
 	}
 
 	/**
@@ -217,6 +234,142 @@ public class TimelineHelper {
 				}
 			}
 		}
+	}
+
+	public void translateTimeline(JsonArray keys, String language, final Handler<JsonArray> handler){
+		eb.send(TIMELINE_ADDRESS, new JsonObject()
+				.putString("action", "translate-timeline")
+				.putString("language", language)
+				.putArray("i18nKeys", keys),
+				new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				handler.handle(event.body().getArray("translations", new JsonArray()));
+			}
+		});
+	}
+
+	public void processTimelineTemplate(JsonObject parameters, String notificationName, String template, final Handler<String> handler){
+		eb.send(TIMELINE_ADDRESS, new JsonObject()
+				.putString("action", "process-timeline-template")
+				.putObject("request", new JsonObject())
+				.putObject("parameters", parameters)
+				.putString("resourceName", notificationName)
+				.putString("template", template), new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				handler.handle(event.body().getString("processedTemplate", ""));
+			}
+		});
+	}
+
+	public void getNotificationProperties(String notificationName, final Handler<JsonObject> handler){
+		eb.send(TIMELINE_ADDRESS, new JsonObject()
+				.putString("action", "get-notification-properties")
+				.putString("key", notificationName), new Handler<Message<JsonObject>>() {
+				public void handle(Message<JsonObject> event) {
+					if(!"error".equals(event.body().getString("status", "error"))){
+						handler.handle(event.body().getObject("result"));
+					} else {
+						handler.handle(null);
+					}
+				}
+			}
+		);
+	}
+
+	private void getUsersPreferences(JsonArray userIds, final Handler<JsonArray> handler){
+		eb.send(USERBOOK_ADDRESS, new JsonObject()
+			.putString("action", "get.userlist")
+			.putString("application", "timeline")
+			.putArray("userIds", userIds), new Handler<Message<JsonObject>>() {
+				public void handle(Message<JsonObject> event) {
+					if(!"error".equals(event.body().getString("status"))){
+						handler.handle(event.body().getArray("results"));
+					} else {
+						handler.handle(null);
+					}
+				}
+		});
+	}
+
+	private void sendImmediateMails(final HttpServerRequest request, final String notificationName, final JsonObject notification,
+			final JsonObject templateParameters, final List<String> recipientIds){
+		//Get notification properties (mixin : admin console configuration which overrides default properties)
+		getNotificationProperties(notificationName, new Handler<JsonObject>() {
+			public void handle(final JsonObject properties) {
+				if(properties == null){
+					log.error("[sendImmediateMails] Issue while retrieving notification (" + notificationName + ") properties.");
+					return;
+				}
+				//Get users preferences (overrides notification properties)
+				getUsersPreferences(new JsonArray(recipientIds.toArray()), new Handler<JsonArray>() {
+					public void handle(final JsonArray userList) {
+						if(userList == null){
+							log.error("[sendImmediateMails] Issue while retrieving users preferences.");
+						}
+						//Process template once
+						processTimelineTemplate(templateParameters, notificationName, notification.getString("template", ""), new Handler<String>(){
+							public void handle(final String processedTemplate) {
+								final List<Object> to = new ArrayList<Object>();
+								// For each user preference
+								for(Object userObj : userList){
+									JsonObject userPref = ((JsonObject) userObj);
+									JsonObject notificationPreference = userPref
+										.getObject("preferences", new JsonObject())
+											.getObject("config", new JsonObject()
+													.getObject(notificationName, new JsonObject()));
+									// If the frequency is IMMEDIATE
+									// and the restriction is not INTERNAL (timeline only)
+									// and if the user has provided an email
+									if(TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(
+											notificationPreference.getString("defaultFrequency", properties.getString("defaultFrequency"))) &&
+										!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
+											notificationPreference.getString("restriction", properties.getString("restriction"))) &&
+										userPref.getString("userMail") != null){
+										to.add(userPref.getString("userMail"));
+									}
+								}
+
+								// If there are receivers (users with the 'immediate mail' setting)
+								if(to.size() > 0){
+									//On completion : log
+									final Handler<Message<JsonObject>> completionHandler = new Handler<Message<JsonObject>>(){
+										public void handle(Message<JsonObject> event) {
+											if("error".equals(event.body().getString("status", "error"))){
+												log.error("[Timeline immediate emails] Error while sending mails : " + event.body());
+											} else {
+												log.debug("[Timeline immediate emails] Immediate mails sent.");
+											}
+										}
+
+									};
+
+									//Translate mail title
+									//TODO : Server side default language
+									JsonArray keys = new JsonArray()
+										.add("timeline.immediate.mail.subject.header")
+										.add(notificationName.toLowerCase());
+									translateTimeline(keys, "fr", new Handler<JsonArray>() {
+										public void handle(JsonArray translations) {
+											//Send mail containing the "immediate" notification
+											emailSender.sendEmail(request,
+												to,
+												null,
+												null,
+												translations.get(0).toString() + translations.get(1).toString(),
+												processedTemplate,
+												null,
+												false,
+												completionHandler);
+										}
+									});
+								}
+
+							}
+						});
+					}
+				});
+			}
+		});
 	}
 
 }

@@ -16,14 +16,14 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 
-public class TimelineNotificationHelper {
+public class TimelineNotificationsLoader {
 
 	private final Vertx vertx;
 	private final static String notifyDir = "./view/notify";
-	private static final Logger log = LoggerFactory.getLogger(TimelineNotificationHelper.class);
+	private static final Logger log = LoggerFactory.getLogger(TimelineNotificationsLoader.class);
 	private final Map<String, String> sharedMap;
 	private final static String sharedMapName = "notificationsMap";
-	private static TimelineNotificationHelper instance = null;
+	private static TimelineNotificationsLoader instance = null;
 
 	public static enum Frequencies {
 		IMMEDIATE,
@@ -36,14 +36,14 @@ public class TimelineNotificationHelper {
 		NONE
 	}
 
-	public static TimelineNotificationHelper getInstance(Vertx vertx){
+	public static TimelineNotificationsLoader getInstance(Vertx vertx){
 		if(instance == null){
-			instance = new TimelineNotificationHelper(vertx);
+			instance = new TimelineNotificationsLoader(vertx);
 		}
 		return instance;
 	}
 
-	private TimelineNotificationHelper(Vertx vertx){
+	private TimelineNotificationsLoader(Vertx vertx){
 		this.vertx = vertx;
 		scanNotifications();
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
@@ -162,8 +162,6 @@ public class TimelineNotificationHelper {
 				});
 			}
 		});
-
-
 
 	}
 

@@ -523,6 +523,75 @@ public class UserBookController extends BaseController {
 		}
 	}
 
+	@BusAddress("userbook.preferences")
+	public void getUserPreferences(final Message<JsonObject> message){
+		final HttpServerRequest request = new JsonHttpServerRequest(message.body().getObject("request"));
+		final String application = message.body().getString("application");
+		final String action = message.body().getString("action");
+
+		if (action == null) {
+			log.warn("[@BusAddress](userbook.preferences) Invalid action.");
+			message.reply(new JsonObject().putString("status", "error")
+					.putString("message", "Invalid action."));
+			return;
+		}
+
+		switch(action){
+			case "get.currentuser":
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					public void handle(UserInfos user) {
+						getUserPrefs(user, request, application, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> result) {
+								if(result.isLeft()){
+									message.reply(new JsonObject()
+										.putString("status", "error")
+										.putString("message", result.left().getValue()));
+								} else {
+									message.reply(new JsonObject()
+										.putString("status", "ok")
+										.putObject("value", result.right().getValue()));
+								}
+							}
+						});
+					}
+				});
+				break;
+			case "get.userlist":
+				final JsonArray userIds = message.body().getArray("userIds", new JsonArray());
+				String query =
+						"MATCH (u:User)WHERE u.id IN {userIds} " +
+						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf)  " +
+						"RETURN COLLECT({userId: u.id, userMail: u.email, preferences: uac}) AS preferences";
+				neo.execute(query,
+					new JsonObject().putArray("userIds", userIds),
+					Neo4jResult.validResultHandler(new Handler<Either<String,JsonArray>>() {
+						public void handle(Either<String, JsonArray> event) {
+							if(event.isLeft()){
+								message.reply(new JsonObject().putString("status", "error")
+									.putString("message", event.left().getValue()));
+								return;
+							}
+							JsonArray results = ((JsonObject) event.right().getValue().get(0)).getArray("preferences", new JsonArray());
+							for(Object resultObj : results){
+								JsonObject result = (JsonObject) resultObj;
+								JsonObject prefs = new JsonObject(result.getObject("preferences", new JsonObject())
+										.getObject("data", new JsonObject()).getString(application, "{}"));
+								result.putObject("preferences", prefs);
+							}
+							message.reply(new JsonObject().putString("status", "ok")
+								.putArray("results", results));
+						}
+					}));
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "Invalid action."));
+				break;
+		}
+
+
+	}
+
 	@Get("/avatar/:id")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
@@ -644,24 +713,12 @@ public class UserBookController extends BaseController {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					final String application = request.params().get("application").replaceAll("\\W+", "");
-
-					UserUtils.getSession(eb, request, new Handler<JsonObject>() {
-						public void handle(JsonObject session) {
-							final JsonObject cache = session.getObject("cache");
-
-							if(cache.containsField("preferences")){
-								renderJson(request, new JsonObject().putString("preference", cache.getObject("preferences").getString(application)));
+					getUserPrefs(user, request, application, new  Handler<Either<String, JsonObject>>(){
+						public void handle(Either<String, JsonObject> event) {
+							if(event.isLeft()){
+								badRequest(request, event.left().getValue());
 							} else {
-								refreshPreferences(user, request, new Handler<Either<String, JsonObject>>(){
-									public void handle(Either<String, JsonObject> event) {
-										if(event.isLeft()) {
-											log.error(event.left().getValue());
-											badRequest(request);
-										} else {
-											renderJson(request, new JsonObject().putString("preference", event.right().getValue().getString(application)));
-										}
-									}
-								});
+								renderJson(request, event.right().getValue());
 							}
 						}
 					});
@@ -670,6 +727,35 @@ public class UserBookController extends BaseController {
 				}
 			}
 		});
+	}
+
+	private void getUserPrefs(final UserInfos user, final HttpServerRequest request, final String application, final Handler<Either<String, JsonObject>> handler){
+		if (user != null) {
+			UserUtils.getSession(eb, request, new Handler<JsonObject>() {
+				public void handle(JsonObject session) {
+					final JsonObject cache = session.getObject("cache");
+
+					if(cache.containsField("preferences")){
+						handler.handle(new Either.Right<String, JsonObject>(
+								new JsonObject().putString("preference", cache.getObject("preferences").getString(application))));
+					} else {
+						refreshPreferences(user, request, new Handler<Either<String, JsonObject>>(){
+							public void handle(Either<String, JsonObject> event) {
+								if(event.isLeft()) {
+									log.error(event.left().getValue());
+									handler.handle(new Either.Left<String, JsonObject>("refresh.preferences.failed"));
+								} else {
+									handler.handle(new Either.Right<String, JsonObject>(
+										new JsonObject().putString("preference", event.right().getValue().getString(application))));
+								}
+							}
+						});
+					}
+				}
+			});
+		} else {
+			handler.handle(new Either.Left<String, JsonObject>("bad.user"));
+		}
 	}
 
 	private void refreshPreferences(final UserInfos user, final HttpServerRequest request, final Handler<Either<String, JsonObject>> handler){

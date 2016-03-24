@@ -38,7 +38,9 @@ import com.samskivert.mustache.Template;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.common.notification.TimelineNotificationHelper;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
@@ -56,46 +58,59 @@ public class TimelineController extends BaseController {
 	private HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 	private Map<String, String> registeredNotifications;
 
+	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
+	@SuppressWarnings("unused")
+	private TimelineHelper timelineHelper;
 
 	private final String TIMELINE_CONFIG_COLLECTION = "timeline.config";
 
-	public void init(Vertx vertx, Container container,
-			RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
 		store = new DefaultTimelineEventStore();
-		configService = new DefaultTimelineConfigService(TIMELINE_CONFIG_COLLECTION);
+		configService = new DefaultTimelineConfigService(
+				TIMELINE_CONFIG_COLLECTION);
 		eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
-		Boolean cluster = (Boolean) vertx.sharedData().getMap("server").get("cluster");
+		timelineHelper = new TimelineHelper(vertx, eb, container);
+		Boolean cluster = (Boolean) vertx.sharedData().getMap("server")
+				.get("cluster");
 		if (Boolean.TRUE.equals(cluster)) {
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			registeredNotifications = cm.getSyncMap("notificationsMap");
 		} else {
-			registeredNotifications = vertx.sharedData().getMap("notificationsMap");
+			registeredNotifications = vertx.sharedData()
+					.getMap("notificationsMap");
 		}
 	}
 
 	/* Override i18n to use additional timeline translations */
 	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request, Map<String, Object> ctx) {
+	protected void setLambdaTemplateRequest(final HttpServerRequest request,
+			Map<String, Object> ctx) {
 		super.setLambdaTemplateRequest(request, ctx);
 
 		ctx.put("i18n", new Mustache.Lambda() {
 			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
+			public void execute(Template.Fragment frag, Writer out)
+					throws IOException {
 				String key = frag.execute();
-				String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
-				String firstTranslation = I18n.getInstance().translate(key, language);
-				if(!firstTranslation.equals(key)){
-					out.write(firstTranslation);
+				String language = Utils.getOrElse(
+						request.headers().get("Accept-Language"), "fr", false);
+
+				JsonObject timelineI18n;
+				if (!lazyEventsI18n.containsKey(language)) {
+					String i18n = eventsI18n
+							.get(language.split(",")[0].split("-")[0]);
+					timelineI18n = new JsonObject(
+							"{" + i18n.substring(0, i18n.length() - 1) + "}");
+					lazyEventsI18n.put(language, timelineI18n);
 				} else {
-					JsonObject timelineI18n;
-					if(!lazyEventsI18n.containsKey(language)){
-						String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-						timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-						lazyEventsI18n.put(language, timelineI18n);
-					} else {
-						timelineI18n = lazyEventsI18n.get(language);
-					}
+					timelineI18n = lazyEventsI18n.get(language);
+				}
+
+				if (timelineI18n.getString(key, key).equals(key)) {
+					out.write(I18n.getInstance().translate(key, language));
+				} else {
 					out.write(timelineI18n.getString(key, key));
 				}
 			}
@@ -111,20 +126,23 @@ public class TimelineController extends BaseController {
 	@Get("/i18nNotifications")
 	@SecuredAction(value = "timeline.i18n", type = ActionType.AUTHENTICATED)
 	public void i18n(HttpServerRequest request) {
-		String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
+		String language = Utils.getOrElse(
+				request.headers().get("Accept-Language"), "fr", false);
 		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
 		if (i18n == null) {
 			i18n = eventsI18n.get("fr");
 		}
-		renderJson(request, new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}"));
+		renderJson(request, new JsonObject(
+				"{" + i18n.substring(0, i18n.length() - 1) + "}"));
 	}
 
 	@Get("/registeredNotifications")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-	public void registeredNotifications(HttpServerRequest request){
+	public void registeredNotifications(HttpServerRequest request) {
 		JsonArray reply = new JsonArray();
-		for(String key : registeredNotifications.keySet()){
-			JsonObject notif = new JsonObject(registeredNotifications.get(key)).putString("key", key);
+		for (String key : registeredNotifications.keySet()) {
+			JsonObject notif = new JsonObject(registeredNotifications.get(key))
+					.putString("key", key);
 			notif.removeField("template");
 			reply.add(notif);
 		}
@@ -145,62 +163,89 @@ public class TimelineController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					getExternalNotifications(new Handler<Either<String, JsonObject>>() {
+					getExternalNotifications(
+							new Handler<Either<String, JsonObject>>() {
 						public void handle(Either<String, JsonObject> notifs) {
-							if(notifs.isLeft()){
+							if (notifs.isLeft()) {
 								badRequest(request, notifs.left().getValue());
 								return;
 							}
 
 							String page = request.params().get("page");
-							List<String> types = request.params().getAll("type");
+							List<String> types = request.params()
+									.getAll("type");
 							int offset = 0;
 							try {
 								offset = 25 * Integer.parseInt(page);
-							} catch (NumberFormatException e) {}
+							} catch (NumberFormatException e) {
+							}
 
-							store.get(user, types, offset, 25, notifs.right().getValue(), new Handler<JsonObject>() {
+							store.get(user, types, offset, 25,
+									notifs.right().getValue(),
+									new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
-									if (res != null && "ok".equals(res.getString("status"))) {
-										JsonArray results = res.getArray("results", new JsonArray());
+									if (res != null && "ok"
+											.equals(res.getString("status"))) {
+										JsonArray results = res.getArray(
+												"results", new JsonArray());
 										final JsonArray compiledResults = new JsonArray();
 
-										final AtomicInteger countdown = new AtomicInteger(results.size());
+										final AtomicInteger countdown = new AtomicInteger(
+												results.size());
 										final VoidHandler endHandler = new VoidHandler() {
 											protected void handle() {
-												if(countdown.decrementAndGet() == 0){
-													res.putArray("results", compiledResults);
+												if (countdown
+														.decrementAndGet() == 0) {
+													res.putArray("results",
+															compiledResults);
 													renderJson(request, res);
 												}
 											}
 										};
-										if(results.size() == 0)
+										if (results.size() == 0)
 											endHandler.handle(null);
 
-										for(Object notifObj: results){
+										for (Object notifObj : results) {
 											final JsonObject notif = (JsonObject) notifObj;
-											if(!notif.getString("message", "").isEmpty()){
+											if (!notif.getString("message", "")
+													.isEmpty()) {
 												compiledResults.add(notif);
 												endHandler.handle(null);
 												continue;
 											}
 
-											String key = notif.getString("type", "").toLowerCase() + "." +
-													notif.getString("event-type", "").toLowerCase();
+											String key = notif
+													.getString("type", "")
+													.toLowerCase()
+													+ "."
+													+ notif.getString(
+															"event-type", "")
+															.toLowerCase();
 
-											String stringifiedRegisteredNotif = registeredNotifications.get(key);
-											if(stringifiedRegisteredNotif == null){
-												log.error("Failed to retrieve registered from the shared map notification with key : " + key);
+											String stringifiedRegisteredNotif = registeredNotifications
+													.get(key);
+											if (stringifiedRegisteredNotif == null) {
+												log.error(
+														"Failed to retrieve registered from the shared map notification with key : "
+																+ key);
 												endHandler.handle(null);
 												continue;
 											}
-											JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
+											JsonObject registeredNotif = new JsonObject(
+													stringifiedRegisteredNotif);
 
-											StringReader reader = new StringReader(registeredNotif.getString("template", ""));
-											processTemplate(request, notif.getObject("params", new JsonObject()),
-													key, reader, new Handler<Writer>() {
-												public void handle(Writer writer) {
-													notif.putString("message", writer.toString());
+											StringReader reader = new StringReader(
+													registeredNotif.getString(
+															"template", ""));
+											processTemplate(request,
+													notif.getObject("params",
+															new JsonObject()),
+													key, reader,
+													new Handler<Writer>() {
+												public void handle(
+														Writer writer) {
+													notif.putString("message",
+															writer.toString());
 													compiledResults.add(notif);
 													endHandler.handle(null);
 												}
@@ -222,37 +267,6 @@ public class TimelineController extends BaseController {
 		});
 	}
 
-	private void getExternalNotifications(final Handler<Either<String, JsonObject>> handler){
-		configService.list(new Handler<Either<String,JsonArray>>() {
-			public void handle(Either<String, JsonArray> event) {
-				if(event.isLeft()){
-					handler.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
-					return;
-				}
-				final JsonObject restricted = new JsonObject();
-				for(String key : registeredNotifications.keySet()){
-					JsonObject notif = new JsonObject(registeredNotifications.get(key));
-					String restriction = notif.getString("restriction", TimelineNotificationHelper.Restrictions.NONE.name());
-					for(Object notifConfigObj : event.right().getValue()){
-						JsonObject notifConfig = (JsonObject) notifConfigObj;
-						if(notifConfig.getString("key", "").equals(key)){
-							restriction = notifConfig.getString("restriction", restriction);
-							break;
-						}
-					}
-					if(restriction.equals(TimelineNotificationHelper.Restrictions.EXTERNAL.name())){
-						if(!restricted.containsField(notif.getString("type"))){
-							restricted.putArray("type", new JsonArray());
-						}
-						restricted.getArray("type").add(notif.getString("event-type"));
-					}
-				}
-				handler.handle(new Either.Right<String, JsonObject>(restricted));
-			}
-		});
-
-	}
-
 	@Get("/types")
 	@SecuredAction(value = "timeline.auth", type = ActionType.AUTHENTICATED)
 	public void listTypes(final HttpServerRequest request) {
@@ -268,27 +282,29 @@ public class TimelineController extends BaseController {
 	@Post("/publish")
 	@SecuredAction("timeline.publish")
 	public void publish(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, pathPrefix + "publish", new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject json) {
-				store.add(json, new Handler<JsonObject>() {
+		RequestUtils.bodyToJson(request, pathPrefix + "publish",
+				new Handler<JsonObject>() {
 					@Override
-					public void handle(JsonObject res) {
-						if ("ok".equals(res.getString("status"))) {
-							created(request);
-						} else {
-							badRequest(request, res.getString("message"));
-						}
+					public void handle(JsonObject json) {
+						store.add(json, new Handler<JsonObject>() {
+							@Override
+							public void handle(JsonObject res) {
+								if ("ok".equals(res.getString("status"))) {
+									created(request);
+								} else {
+									badRequest(request,
+											res.getString("message"));
+								}
+							}
+						});
 					}
 				});
-			}
-		});
 	}
 
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
-	public void adminPage(final HttpServerRequest request){
+	public void adminPage(final HttpServerRequest request) {
 		renderView(request);
 	}
 
@@ -301,7 +317,7 @@ public class TimelineController extends BaseController {
 	@Put("/config")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(SuperAdminFilter.class)
-	public void updateConfig(final HttpServerRequest request){
+	public void updateConfig(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject data) {
 				configService.upsert(data, defaultResponseHandler(request));
@@ -314,16 +330,14 @@ public class TimelineController extends BaseController {
 		if (message == null) {
 			return;
 		}
-		JsonObject json = message.body();
+		final JsonObject json = message.body();
 		if (json == null) {
 			message.reply(new JsonObject().putString("status", "error")
 					.putString("message", "Invalid body."));
 			return;
 		}
 
-		Handler<JsonObject> handler = new Handler<JsonObject>() {
-
-			@Override
+		final Handler<JsonObject> handler = new Handler<JsonObject>() {
 			public void handle(JsonObject event) {
 				message.reply(event);
 			}
@@ -339,18 +353,18 @@ public class TimelineController extends BaseController {
 
 		switch (action) {
 		case "add":
-			store.add(json, handler);
+			store.add(json, new Handler<JsonObject>() {
+				public void handle(JsonObject result) {
+					handler.handle(result);
+				}
+			});
 			break;
 		case "get":
 			UserInfos u = new UserInfos();
 			u.setUserId(json.getString("recipient"));
 			u.setExternalId(json.getString("externalId"));
-			store.get(u,
-					null,
-					json.getInteger("offset", 0),
-					json.getInteger("limit", 25),
-					null,
-					handler);
+			store.get(u, null, json.getInteger("offset", 0),
+					json.getInteger("limit", 25), null, handler);
 			break;
 		case "delete":
 			store.delete(json.getString("resource"), handler);
@@ -361,14 +375,143 @@ public class TimelineController extends BaseController {
 			store.listTypes(new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray types) {
-					message.reply(new JsonObject().putString("status", "ok").putArray("types", types));
+					message.reply(new JsonObject().putString("status", "ok")
+							.putArray("types", types));
 				}
 			});
+			break;
+		case "get-notification-properties":
+			getNotificationProperties(json.getString("key"),
+					new Handler<Either<String, JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isLeft()) {
+								message.reply(new JsonObject()
+										.putString("status", "error")
+										.putString("message",
+												event.left().getValue()));
+							} else {
+								message.reply(new JsonObject()
+										.putString("status", "ok")
+										.putObject("result",
+												event.right().getValue()));
+							}
+						}
+					});
+			break;
+		case "process-timeline-template":
+			final HttpServerRequest request = new JsonHttpServerRequest(
+					message.body().getObject("request", new JsonObject()));
+			final JsonObject parameters = message.body().getObject("parameters",
+					new JsonObject());
+			final String resourceName = message.body().getString("resourceName",
+					"");
+			final StringReader templateReader = new StringReader(
+					message.body().getString("template"));
+			processTemplate(request, parameters, resourceName, templateReader,
+					new Handler<Writer>() {
+						public void handle(Writer writer) {
+							message.reply(
+									new JsonObject().putString("status", "ok")
+											.putString("processedTemplate",
+													writer.toString()));
+						}
+					});
+			break;
+		case "translate-timeline":
+			final JsonArray i18nKeys = message.body().getArray("i18nKeys", new JsonArray());
+			final String language = message.body().getString("language", "fr");
+			String i18n = eventsI18n
+				.get(language.split(",")[0].split("-")[0]);
+			JsonObject timelineI18n = new JsonObject(
+					"{" + i18n.substring(0, i18n.length() - 1) + "}");
+			JsonArray translations = new JsonArray();
+			for(Object keyObj : i18nKeys){
+				String key = (String) keyObj;
+				translations.add(timelineI18n.getString(key, key));
+			}
+			message.reply(new JsonObject()
+				.putString("status", "ok")
+				.putArray("translations", translations));
 			break;
 		default:
 			message.reply(new JsonObject().putString("status", "error")
 					.putString("message", "Invalid action."));
 		}
+	}
+
+	private void getExternalNotifications(
+			final Handler<Either<String, JsonObject>> handler) {
+		configService.list(new Handler<Either<String, JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isLeft()) {
+					handler.handle(new Either.Left<String, JsonObject>(
+							event.left().getValue()));
+					return;
+				}
+				final JsonObject restricted = new JsonObject();
+				for (String key : registeredNotifications.keySet()) {
+					JsonObject notif = new JsonObject(
+							registeredNotifications.get(key));
+					String restriction = notif.getString("restriction",
+							TimelineNotificationsLoader.Restrictions.NONE
+									.name());
+					for (Object notifConfigObj : event.right().getValue()) {
+						JsonObject notifConfig = (JsonObject) notifConfigObj;
+						if (notifConfig.getString("key", "").equals(key)) {
+							restriction = notifConfig.getString("restriction",
+									restriction);
+							break;
+						}
+					}
+					if (restriction
+							.equals(TimelineNotificationsLoader.Restrictions.EXTERNAL
+									.name())) {
+						if (!restricted
+								.containsField(notif.getString("type"))) {
+							restricted.putArray("type", new JsonArray());
+						}
+						restricted.getArray("type")
+								.add(notif.getString("event-type"));
+					}
+				}
+				handler.handle(
+						new Either.Right<String, JsonObject>(restricted));
+			}
+		});
+	}
+
+	private void getNotificationProperties(final String notificationKey,
+			final Handler<Either<String, JsonObject>> handler) {
+		configService.list(new Handler<Either<String, JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isLeft()) {
+					handler.handle(new Either.Left<String, JsonObject>(
+							event.left().getValue()));
+					return;
+				}
+				final String notificationStr = registeredNotifications
+						.get(notificationKey.toLowerCase());
+				if (notificationStr == null) {
+					handler.handle(new Either.Left<String, JsonObject>(
+							"invalid.notification.key"));
+					return;
+				}
+				final JsonObject notification = new JsonObject(notificationStr);
+				for (Object notifConfigObj : event.right().getValue()) {
+					JsonObject notifConfig = (JsonObject) notifConfigObj;
+					if (notifConfig.getString("key", "")
+							.equals(notificationKey.toLowerCase())) {
+						notification.putString("defaultFrequency",
+								notifConfig.getString("defaultFrequency", ""));
+						notification.putString("restriction",
+								notifConfig.getString("restriction", ""));
+						break;
+					}
+				}
+				handler.handle(
+						new Either.Right<String, JsonObject>(notification));
+			}
+		});
 	}
 
 }
