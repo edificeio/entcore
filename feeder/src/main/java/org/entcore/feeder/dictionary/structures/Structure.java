@@ -328,7 +328,7 @@ public class Structure {
 				"<-[:DEPENDS]-(fg:FunctionGroup {name : ps.name + '-AdminLocal'})<-[:IN]-(u:User)" +
 				"-[rf:HAS_FUNCTION]-(f:Function {name : 'AdminLocal'}) " +
 				"SET rf.scope = coalesce(rf.scope, []) + s.id " +
-				"WITH s as n, f, u " +
+				"WITH DISTINCT s as n, f, u " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
 				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
 				"CREATE UNIQUE n<-[:DEPENDS]-fg, fg<-[:IN]-u ";
