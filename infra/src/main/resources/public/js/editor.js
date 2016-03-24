@@ -937,6 +937,18 @@ window.RTE = (function () {
 								element.removeClass('toggled');
 							}
 
+							instance.editZone.find('mathjax').each(function (index, item) {
+							    var sel = window.getSelection();
+							    var range = sel.getRangeAt(0);
+							    if (range.intersectsNode && range.intersectsNode(item)) {
+							        if (element.hasClass('toggled')) {
+							            $(item).css({ float: 'left' });
+							        }
+							    }
+							});
+
+							MathJax.Hub.Rerender();
+
 							instance.trigger('justify-changed');
 						});
 
