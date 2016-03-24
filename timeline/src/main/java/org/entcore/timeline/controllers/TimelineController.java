@@ -34,6 +34,7 @@ import org.vertx.java.platform.Container;
 
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
+import com.samskivert.mustache.Template.Fragment;
 
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -83,10 +84,9 @@ public class TimelineController extends BaseController {
 		}
 	}
 
-	/* Override i18n to use additional timeline translations */
+	/* Override i18n to use additional timeline translations and nested templates */
 	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request,
-			Map<String, Object> ctx) {
+	protected void setLambdaTemplateRequest(final HttpServerRequest request, final Map<String, Object> ctx) {
 		super.setLambdaTemplateRequest(request, ctx);
 
 		ctx.put("i18n", new Mustache.Lambda() {
@@ -113,6 +113,15 @@ public class TimelineController extends BaseController {
 				} else {
 					out.write(timelineI18n.getString(key, key));
 				}
+			}
+		});
+
+		ctx.put("nested", new Mustache.Lambda() {
+			public void execute(Fragment frag, Writer out) throws IOException {
+				String nestedTemplateName = frag.execute();
+				String nestedTemplate = (String) ctx.get(nestedTemplateName);
+				if(nestedTemplate != null)
+					Mustache.compiler().compile(nestedTemplate).execute(ctx, out);
 			}
 		});
 	}
@@ -405,17 +414,29 @@ public class TimelineController extends BaseController {
 					new JsonObject());
 			final String resourceName = message.body().getString("resourceName",
 					"");
-			final StringReader templateReader = new StringReader(
-					message.body().getString("template"));
-			processTemplate(request, parameters, resourceName, templateReader,
-					new Handler<Writer>() {
-						public void handle(Writer writer) {
-							message.reply(
-									new JsonObject().putString("status", "ok")
-											.putString("processedTemplate",
-													writer.toString()));
-						}
-					});
+			if(message.body().getBoolean("reader", false)){
+				final StringReader templateReader = new StringReader(
+						message.body().getString("template"));
+				processTemplate(request, parameters, resourceName, templateReader, new Handler<Writer>() {
+					public void handle(Writer writer) {
+						message.reply(
+							new JsonObject()
+								.putString("status", "ok")
+								.putString("processedTemplate", writer.toString()));
+					}
+				});
+
+			} else {
+				processTemplate(request, message.body().getString("template", ""), parameters, new Handler<String>() {
+					public void handle(String template) {
+						message.reply(
+							new JsonObject()
+							 	.putString("status", "ok")
+								.putString("processedTemplate", template));
+					}
+				});
+			}
+
 			break;
 		case "translate-timeline":
 			final JsonArray i18nKeys = message.body().getArray("i18nKeys", new JsonArray());
