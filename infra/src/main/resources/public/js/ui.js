@@ -224,7 +224,6 @@ var ui = (function(){
 				}
 				var setHeight = function () {
 				    animationTimer = setTimeout(function () {
-				        $(this).height(0);
 				        $(this).height(this.scrollHeight);
 				        setHeight();
 				    }.bind(this), 50);
