@@ -3492,9 +3492,11 @@ module.directive('datePicker', function($compile){
                     element.datepicker('setValue', moment(scope.ngModel).format('DD/MM/YYYY'));
 			});
 
-			scope.$watch('minDate', function(newVal){
-				setNewDate();
-			});
+			if(scope.minDate){
+				scope.$watch('minDate', function(newVal){
+					setNewDate();
+				});
+			}
 
 			function setNewDate(){
 				var minDate = scope.minDate;
