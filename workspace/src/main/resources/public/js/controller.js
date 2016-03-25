@@ -697,6 +697,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		if($event){
 			$event.preventDefault();
 		}
+		$scope.targetDocument = document;
 		$scope.selectedDocuments().forEach(function(document){
 			document.selected = false;
 			document.showComments = false;
