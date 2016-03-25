@@ -5,7 +5,7 @@ function TimelineAdminController($scope, model){
     $scope.typesMap = {}
 
     $scope.constants = {
-        "defaultFrequency": [{label: "IMMEDIATE"}, {label: "DAILY"}, {label: "WEEKLY"}],
+        "defaultFrequency": [{label: "NEVER"}, {label: "IMMEDIATE"}, {label: "DAILY"}, {label: "WEEKLY"}],
         "restriction": [{label: "NONE"}, {label: "INTERNAL"}, {label: "EXTERNAL"}]
     }
 
