@@ -407,10 +407,20 @@ window.RTE = (function () {
 					that.moveCaret(el[0], 1);
 				}
 				else if (that.selectedElements.length === 1 &&
-                    that.range.startOffset === 0 && that.range.endOffset === that.selectedElements[0].textContent.length) {
+                    (
+                        (
+                            that.range.startOffset === 0 &&
+                            that.range.endOffset === that.selectedElements[0].textContent.length
+                        ) || that.range.endContainer !== that.selectedElements[0]
+                    )
+                ) {
 				    var element = that.selectedElements[0];
 				    if (element.nodeType !== 1) {
-				        element = element.parentNode;
+				        var el = document.createElement('span');
+				        el.textContent = element.textContent;
+				        element.parentNode.insertBefore(el, element.nextSibling);
+				        element.remove();
+				        element = el;
 				    }
 				    $(element).css(css);
 				    that.selectNode(element);
