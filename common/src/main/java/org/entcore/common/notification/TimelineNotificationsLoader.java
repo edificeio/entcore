@@ -26,6 +26,7 @@ public class TimelineNotificationsLoader {
 	private static TimelineNotificationsLoader instance = null;
 
 	public static enum Frequencies {
+		NEVER,
 		IMMEDIATE,
 		DAILY,
 		WEEKLY

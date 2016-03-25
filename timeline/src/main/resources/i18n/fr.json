@@ -30,5 +30,6 @@
     "timeline.defaultFrequency": "Fréquence de mail par défaut",
     "IMMEDIATE": "Mail instantané",
     "DAILY": "Mail journalier",
-    "WEEKLY": "Mail hebdomadaire"
+    "WEEKLY": "Mail hebdomadaire",
+    "NEVER": "Jamais"
 }
