@@ -4370,6 +4370,8 @@ module.directive('help', function(){
 					$('#' + $(e.target).attr('href').split('#')[1]).slideDown();
 				});
 				element.find('a').first().click();
+				scope.display.read = true;
+				scope.$apply('display');
 			};
 
 			element.children('i.help').on('click', function () {
@@ -4381,8 +4383,6 @@ module.directive('help', function(){
                         .done(function (content) {
                             helpText = content;
                             setHtml(helpText);
-                            scope.display.read = true;
-                            scope.$apply('display');
                         })
                         .e404(function () {
                             helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
