@@ -2874,9 +2874,17 @@ window.RTE = (function () {
 							loader.openFile({
 								async: true,
 								ajax: false,
-								url: '/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
+								url: '/infra/public/mathjax/MathJax.js',
 								success: function(){
-									MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+								    MathJax.Hub.Config({
+								        messageStyle: 'none',
+								        tex2jax: { preview: 'none' },
+								        jax: ["input/TeX", "output/CommonHTML"],
+								        extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
+								        TeX: {
+								            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+								        }
+								    });
 					            	MathJax.Hub.Typeset();
 								}
 							});
@@ -2885,7 +2893,15 @@ window.RTE = (function () {
                         scope.updateFormula = function(newVal){
                             element.text('$$' + newVal + '$$');
 							if (window.MathJax && window.MathJax.Hub) {
-							    MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
+							    MathJax.Hub.Config({
+							        messageStyle: 'none',
+							        tex2jax: { preview: 'none' },
+							        jax: ["input/TeX", "output/CommonHTML"],
+							        extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
+							        TeX: {
+							            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+							        }
+							    });
 							    MathJax.Hub.Typeset();
 							}
                         };
