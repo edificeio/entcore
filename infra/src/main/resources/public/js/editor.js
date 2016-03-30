@@ -327,13 +327,17 @@ window.RTE = (function () {
 				else{
 					this.selectedElements.forEach(function(item){
 						var el = $(element[0].outerHTML);
-						el.html(item.innerHTML || item.textContent);
+						
 						if(!item.parentNode){
 							return;
 						}
 						if (item.nodeType !== 1 && item.parentNode.nodeName !== 'DIV') {
 						    item = item.parentNode;
+						    if (item.nodeName === 'A') {
+						        item = item.parentNode;
+						    }
 						}
+						el.html(item.innerHTML || item.textContent);
 						item.parentNode.replaceChild(el[0], item);
 						that.selectNode(el[0]);
 					});
