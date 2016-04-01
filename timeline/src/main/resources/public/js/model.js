@@ -23,8 +23,10 @@ function Skin(data){
 	}
 }
 
+function RegisteredNotification(){}
+
 model.build = function (){
-	this.makeModels([Notification, NotificationType, Widget, Skin]);
+	this.makeModels([Notification, NotificationType, Widget, Skin, RegisteredNotification]);
 
 	this.collection(Notification, {
 		page: 0,
@@ -103,4 +105,12 @@ model.build = function (){
 			}.bind(this));
 		}
 	});
+
+    this.collection(RegisteredNotification, {
+        sync: function(){
+            http().get('/timeline/registeredNotifications').done(function(data){
+                this.load(data)
+            }.bind(this));
+        }
+    });
 };
