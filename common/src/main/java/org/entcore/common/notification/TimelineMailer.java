@@ -417,8 +417,7 @@ public class TimelineMailer {
 										}
 										if(templates.size() > 0){
 											JsonObject templateParams = new JsonObject()
-													.putArray("nestedTemplatesArray", templates)
-													.putArray("notifications", notifications);
+													.putArray("nestedTemplatesArray", templates);
 											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html", new Handler<String>() {
 												public void handle(final String processedTemplate) {
 													//On completion : log
@@ -511,7 +510,6 @@ public class TimelineMailer {
 	public void sendWeeklyMails(int dayDelta, final Handler<Either<String, JsonObject>> handler){
 
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
-		final TimelineNotificationsLoader notificationsLoader = TimelineNotificationsLoader.getInstance(vertx);
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final Calendar weekDate = Calendar.getInstance();
 		weekDate.add(Calendar.DAY_OF_MONTH, dayDelta - 7);
