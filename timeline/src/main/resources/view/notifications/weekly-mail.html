@@ -1,0 +1,14 @@
+{{#i18n}}timeline.weekly.mail.header{{/i18n}}
+{{#notifications}}
+<div style="{{#i18n}}timeline.weekly.mail.notification.div.style{{/i18n}}">
+    <div style="{{#i18n}}timeline.weekly.mail.notification.type.div.style{{/i18n}}">
+        <a href="{{link}}">{{#i18n}}{{type}}{{/i18n}}</a>
+    </div>
+    <ul style="{{#i18n}}timeline.weekly.mail.notification.event-types.ul.style{{/i18n}}">
+        {{#event-types}}
+            <li style="{{#i18n}}timeline.weekly.mail.notification.event-type.li.style{{/i18n}}">{{count}} : {{#i18n}}{{notificationName}}{{/i18n}}</li>
+        {{/event-types}}
+    </ul>
+</div>
+{{/notifications}}
+{{#i18n}}timeline.weekly.mail.footer{{/i18n}}

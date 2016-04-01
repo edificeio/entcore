@@ -181,6 +181,7 @@ project(':archive') {
 project(':timeline') {
   dependencies {
     compile project(':common')
+    compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
   }
 }
 
