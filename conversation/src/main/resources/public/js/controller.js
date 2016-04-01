@@ -273,6 +273,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			$scope.newItem.subject = $scope.mail.subject;
 		}
 
+		$scope.newItem.cc = $scope.mail.cc;
 		$scope.newItem.body = format[mailType].content + '<blockquote>' + $scope.mail.body + '</blockquote>';
 	}
 
