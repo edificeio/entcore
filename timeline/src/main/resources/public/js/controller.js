@@ -87,7 +87,15 @@ function Personalization($rootScope, $scope, model, ui){
 		$scope.dispaly.showNotifsPanel = false;
 	};
 
+	$('lightbox[show="display.showNotifsPanel"]').on('click', function(event){
+		event.stopPropagation()
+	});
+
 	$rootScope.$on('close-panel', function(e){
 		$scope.showPanel = false;
 	})
+}
+
+function Notifications($scope, model, lang){
+
 }
