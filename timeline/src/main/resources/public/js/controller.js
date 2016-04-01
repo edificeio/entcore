@@ -18,7 +18,9 @@ function MainController($rootScope, $scope, template, lang, model){
 function Timeline($scope, date, model, lang){
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
+    $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
+    $scope.filtered = {}
 
 	model.on('notifications.change, notificationTypes.change', function(e){
 		if(!$scope.$$phase){
@@ -46,6 +48,18 @@ function Timeline($scope, date, model, lang){
 	$scope.loadPage = function(){
 		model.notifications.sync(true);
 	}
+
+    $scope.filterTypes = function(typeObj){
+        var type = typeObj.data
+        var matchingNotifs = $scope.registeredNotifications.filter(function(notif){ return notif.type === type })
+        if(matchingNotifs.length < 1)
+            return true
+        return model.me.apps.some(function(app){
+            return _.some(matchingNotifs, function(n){
+                return app.name.toLowerCase() === n.type.toLowerCase() || (n["app-name"] && app.name.toLowerCase() === n["app-name"].toLowerCase())
+            })
+        })
+    }
 }
 
 function Personalization($rootScope, $scope, model, ui){
