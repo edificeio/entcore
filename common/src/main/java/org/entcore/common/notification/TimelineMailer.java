@@ -160,7 +160,7 @@ public class TimelineMailer {
 	 * @param handler : Handles the users
 	 */
 	private void getImpactedUsers(int page, final Handler<Either<String, JsonArray>> handler){
-		String query = "MATCH (u:User) WHERE u.email IS NOT NULL AND length(u.email) > 0 WITH u SKIP {skip} LIMIT {limit} RETURN u.email as mail, u.id as id";
+		String query = "MATCH (u:User) WHERE u.activationCode IS NULL AND u.email IS NOT NULL AND length(u.email) > 0 WITH u SKIP {skip} LIMIT {limit} RETURN u.email as mail, u.id as id";
 		JsonObject params = new JsonObject()
 			.putNumber("skip", page * USERS_LIMIT)
 			.putNumber("limit", USERS_LIMIT);

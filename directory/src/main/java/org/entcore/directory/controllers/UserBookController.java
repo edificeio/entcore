@@ -559,7 +559,7 @@ public class UserBookController extends BaseController {
 			case "get.userlist":
 				final JsonArray userIds = message.body().getArray("userIds", new JsonArray());
 				String query =
-						"MATCH (u:User)WHERE u.id IN {userIds} " +
+						"MATCH (u:User)WHERE u.id IN {userIds} AND u.activationCode IS NULL " +
 						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf)  " +
 						"RETURN COLLECT({userId: u.id, userMail: u.email, preferences: uac}) AS preferences";
 				neo.execute(query,
