@@ -29,12 +29,20 @@ public class TimelineNotificationsLoader {
 		NEVER,
 		IMMEDIATE,
 		DAILY,
-		WEEKLY
+		WEEKLY;
+
+		public static String defaultFrequency(){
+			return Frequencies.WEEKLY.name();
+		}
 	}
 	public static enum Restrictions {
 		INTERNAL,
 		EXTERNAL,
-		NONE
+		NONE;
+
+		public static String defaultRestriction(){
+			return Restrictions.NONE.name();
+		}
 	}
 
 	public static TimelineNotificationsLoader getInstance(Vertx vertx){
@@ -132,9 +140,10 @@ public class TimelineNotificationsLoader {
 						.putString("type", type.toUpperCase())
 						.putString("event-type", notificationName.toUpperCase())
 						.putString("app-name", Config.getConf().getString("app-name"))
+						.putString("app-address", Config.getConf().getString("host", "") + Config.getConf().getString("app-address", "/"))
 						.putString("template", templateAsync.result().toString())
-						.putString("defaultFrequency", Frequencies.DAILY.name())
-						.putString("restriction", Restrictions.NONE.name());
+						.putString("defaultFrequency", Frequencies.defaultFrequency())
+						.putString("restriction", Restrictions.defaultRestriction());
 
 				vertx.fileSystem().exists(propsFilePath, new Handler<AsyncResult<Boolean>>() {
 					public void handle(AsyncResult<Boolean> ar) {

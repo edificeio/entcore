@@ -5,5 +5,15 @@
     "timeline.immediate.mail.notification.div.style": "padding: 10px; margin: 10px; border-bottom: 1px solid black; border-top: 1px solid black;",
     "timeline.immediate.mail.action.button.style": "font-size: 16px; line-height: 30px; text-decoration: none;",
     "timeline.immediate.mail.action.div.style": "text-align: center;",
-    "timeline.immediate.mail.action.text": "Afficher dans l'ENT"
+    "timeline.immediate.mail.action.text": "Afficher dans l'ENT",
+    "timeline.daily.mail.subject.header": "[ENT] Vos notifications de la journée",
+    "timeline.daily.mail.header": "<div style='margin: 0px 10px 10px 10px;'>Aujourd'hui, vous avez reçu les notifications suivantes :</div>",
+    "timeline.daily.mail.footer": "<div style='margin: 10px 0px 10px 10px;'>L'équipe ENT core.</div>",
+    "timeline.weekly.mail.subject.header": "[ENT] quoi de neuf cette semaine ?",
+    "timeline.weekly.mail.header": "<div style='margin: 0px 10px 10px 10px;'>Bonjour, <br/><br/>Voici les nouveautés de la semaine dans votre ENT :</div>",
+    "timeline.weekly.mail.notification.div.style": "padding: 10px; margin: 10px; border-bottom: 1px solid black; border-top: 1px solid black;",
+    "timeline.weekly.mail.notification.type.div.style": "padding: 10px; margin: 10px; border-bottom: 1px solid black; border-top: 1px solid black;",
+    "timeline.weekly.mail.notification.event-types.ul.style": "padding: 10px",
+    "timeline.weekly.mail.notification.event-types.li.style": "padding: 10px; margin: 10px; border-top: 1px solid black;",
+    "timeline.weekly.mail.footer": "<div style='margin: 10px 0px 10px 10px;'>A bientôt sur votre ENT.</div>"
 }

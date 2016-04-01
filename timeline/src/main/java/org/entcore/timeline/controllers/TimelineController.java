@@ -41,6 +41,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.notification.TimelineMailer;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
@@ -65,6 +66,8 @@ public class TimelineController extends BaseController {
 
 	private final String TIMELINE_CONFIG_COLLECTION = "timeline.config";
 
+	private TimelineMailer mailer;
+
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
@@ -82,6 +85,7 @@ public class TimelineController extends BaseController {
 			registeredNotifications = vertx.sharedData()
 					.getMap("notificationsMap");
 		}
+		mailer = new TimelineMailer(vertx, eb, container);
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -122,6 +126,22 @@ public class TimelineController extends BaseController {
 				String nestedTemplate = (String) ctx.get(nestedTemplateName);
 				if(nestedTemplate != null)
 					Mustache.compiler().compile(nestedTemplate).execute(ctx, out);
+			}
+		});
+
+		ctx.put("nestedArray", new Mustache.Lambda() {
+			public void execute(Fragment frag, Writer out) throws IOException {
+				String nestedTemplatePos = frag.execute();
+				JsonArray nestedArray = new JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
+				try {
+					JsonObject nestedTemplate = (JsonObject) nestedArray.get(Integer.parseInt(nestedTemplatePos) - 1);
+					ctx.putAll(nestedTemplate.getObject("params", new JsonObject()).toMap());
+					Mustache.compiler()
+						.compile(nestedTemplate.getString("template", ""))
+						.execute(ctx, out);
+				} catch(NumberFormatException e) {
+					log.error("Mustache compiler error while parsing a nested template array lambda.");
+				}
 			}
 		});
 	}
@@ -334,6 +354,20 @@ public class TimelineController extends BaseController {
 		});
 	}
 
+	@Get("/performDailyMailing")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(SuperAdminFilter.class)
+	public void performDailyMailing(final HttpServerRequest request) {
+		mailer.sendDailyMails(0, defaultResponseHandler(request));
+	}
+
+	@Get("/performWeeklyMailing")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(SuperAdminFilter.class)
+	public void performWeeklyMailing(final HttpServerRequest request) {
+		mailer.sendWeeklyMails(0, defaultResponseHandler(request));
+	}
+
 	@BusAddress("wse.timeline")
 	public void busApi(final Message<JsonObject> message) {
 		if (message == null) {
@@ -406,6 +440,40 @@ public class TimelineController extends BaseController {
 							}
 						}
 					});
+			break;
+		case "list-notifications-defaults":
+			configService.list(new Handler<Either<String,JsonArray>>() {
+				public void handle(Either<String, JsonArray> event) {
+					if (event.isLeft()) {
+						message.reply(new JsonObject()
+								.putString("status", "error")
+								.putString("message",
+										event.left().getValue()));
+					} else {
+						JsonArray config = event.right().getValue();
+
+						JsonArray notificationsList = new JsonArray();
+						for (String key : registeredNotifications.keySet()) {
+							JsonObject notif = new JsonObject(registeredNotifications.get(key));
+							notif.putString("key", key);
+							for(Object notifConfigObj: config){
+								JsonObject notifConfig = (JsonObject) notifConfigObj;
+								if (notifConfig.getString("key", "").equals(key)) {
+									notif.putString("defaultFrequency",
+											notifConfig.getString("defaultFrequency", notif.getString("defaultFrequency")));
+									notif.putString("restriction",
+											notifConfig.getString("restriction", notif.getString("restriction")));
+									break;
+								}
+							}
+							notificationsList.add(notif);
+						}
+						message.reply(new JsonObject()
+								.putString("status", "ok")
+								.putArray("results", notificationsList));
+					}
+				}
+			});
 			break;
 		case "process-timeline-template":
 			final HttpServerRequest request = new JsonHttpServerRequest(
