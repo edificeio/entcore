@@ -20,7 +20,7 @@
 
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
         <ul>
-            <li ng-repeat="group in structure.manualGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
+            <li ng-repeat="group in structure.groups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
                 [[group.name]]
             </li>
         </ul>
@@ -64,7 +64,7 @@
             <input class="six cell" type="text" ng-model="groupSelected.name"/>
         </div>
         <hr class="separator">
-        <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">
+        <nav ng-if="groupSelected.type === 'ManualGroup'" class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">
             <select style="width: 95%"
                     ng-model="groupUsersStructure"
                     ng-init="groupUsersStructure = structure"

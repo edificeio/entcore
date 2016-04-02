@@ -241,8 +241,8 @@ Classe.prototype.toString = function(){
 }
 
 //Manual groups
-function ManualGroup(){}
-ManualGroup.prototype = {
+function Group(){}
+Group.prototype = {
     save: function(structure, hook){
         var that = this
 
@@ -328,10 +328,10 @@ function Structure(){
 
     this.collection(User, {})
 
-    this.collection(ManualGroup, {
+    this.collection(Group, {
         sync: function(hook){
             var that = this
-            return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-request' }).done(function(groups){
+            return http().get('group/admin/list', {structureId: that.model.id }, { requestName: 'groups-request' }).done(function(groups){
                 that.load(groups)
                 that.forEach(function(group){ group.getUsers() })
                 hookCheck(hook)
@@ -556,7 +556,7 @@ function CrossUsers(){
 }
 
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate, Level])
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, Group, Duplicate, Level])
 
     this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()

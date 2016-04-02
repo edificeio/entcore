@@ -283,7 +283,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			onClick: function(){ $scope.scrollOpts.reset() },
 			onStructureClick: function(structure){
 				$scope.viewStructure(structure)
-				structure.manualGroups.sync($scope.refreshScope)
+				structure.groups.sync($scope.refreshScope)
 			},
 			requestName : "groups-request"
 		},
@@ -898,12 +898,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	//Groups
 	$scope.initGroup = function(){
-		var newGroup = new ManualGroup()
+		var newGroup = new Group()
 		return newGroup
 	}
 
 	$scope.refreshGroups = function(structure){
-		structure.manualGroups.sync($scope.refreshScope)
+		structure.groups.sync($scope.refreshScope)
 	}
 	$scope.saveGroup = function(group){
 		group.save($scope.structure, function(){ $scope.refreshGroups($scope.structure)})
@@ -922,9 +922,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		})
 	}
 	$scope.removeUserFromGroup = function(user, group){
-		group.removeUser(user, function(){
-			group.getUsers($scope.refreshScope)
-		})
+		if(group.type === 'Group'){
+			group.removeUser(user, function(){
+				group.getUsers($scope.refreshScope)
+			})
+		}
 	}
 
 	//Structures
