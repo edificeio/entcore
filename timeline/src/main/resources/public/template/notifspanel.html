@@ -1,51 +1,53 @@
-<h2><i18n>panel.notifications</i18n></h2>
-
 <div class="row">
-    <span>Adresse mail utilisée :</span>
-    <span class="disabled">tototata@gmail.com</span>
-    <a class="contextual-link">Modifier</a>
-</div>
-
-<div class="responsive-table">
-
-    <table class="fixed-head">
-        <tr>
-          <th></th>
-          <th>Immédiat</th>
-          <th>Quotidien</th>
-          <th>Hebdomadaire</th>
-          <th>Jamais</th>
-        </tr>
-    </table>
+    <h2><i18n>panel.notifications</i18n></h2>
 
     <div class="row">
-        <table>
-          <thead ng-class="{ slided: notifxt.slided}">
-              <tr>
-                <td><i ng-click="notifxt.slided = notifxt.slided ? false : true "  class="arrow"></i>Actualités</td>
-                <td data-label="Immédiat"><input type="radio" value="immediate" name="actu"/></td>
-                <td data-label="Quotidien"><input type="radio" value="daily" name="actu"/></td>
-                <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="actu"/></td>
-                <td data-label="Jamais"><input type="radio" value="never" name="actu"/></td>
-              </tr>
-          </thead>
-          <tbody slide="notifxt.slided">
-            <tr>
-                <td>Nouveau fil</td>
-                <td data-label="Immédiat"><input type="radio" value="immediate" name="nf"/></td>
-                <td data-label="Quotidien"><input type="radio" value="daily" name="nf"/></td>
-                <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="nf"/></td>
-                <td data-label="Jamais"><input type="radio" value="never" name="nf"/></td>
-            </tr>
-            <tr>
-                <td>Billet soumis</td>
-                <td data-label="Immédiat"><input type="radio" value="immediate" name="bs"/></td>
-                <td data-label="Quotidien"><input type="radio" value="daily" name="bs"/></td>
-                <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="bs"/></td>
-                <td data-label="Jamais"><input type="radio" value="never" name="bs"/></td>
-            </tr>
-          </tbody>
-        </table>
+        <span>Adresse mail utilisée :</span>
+        <span class="disabled">tototata@gmail.com</span>
+        <a class="contextual-link">Modifier</a>
     </div>
 
+    <div class="responsive-table">
+
+        <table class="fixed-head">
+            <tr>
+              <th></th>
+              <th>Immédiat</th>
+              <th>Quotidien</th>
+              <th>Hebdomadaire</th>
+              <th>Jamais</th>
+            </tr>
+        </table>
+
+        <div class="row">
+            <table>
+              <thead ng-class="{ slided: notifxt.slided}">
+                  <tr>
+                    <td><i ng-click="notifxt.slided = notifxt.slided ? false : true "  class="arrow"></i>Actualités</td>
+                    <td data-label="Immédiat"><input type="radio" value="immediate" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Quotidien"><input type="radio" value="daily" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Jamais"><input type="radio" value="never" name="actu" ng-click="notifByApp()"/></td>
+                  </tr>
+              </thead>
+              <tbody slide="notifxt.slided">
+                <tr>
+                    <td>Nouveau fil</td>
+                    <td data-label="Immédiat"><input type="radio" value="immediate" name="nf"/></td>
+                    <td data-label="Quotidien"><input type="radio" value="daily" name="nf"/></td>
+                    <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="nf"/></td>
+                    <td data-label="Jamais"><input type="radio" value="never" name="nf"/></td>
+                </tr>
+                <tr>
+                    <td>Billet soumis</td>
+                    <td data-label="Immédiat"><input type="radio" value="immediate" name="bs"/></td>
+                    <td data-label="Quotidien"><input type="radio" value="daily" name="bs"/></td>
+                    <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="bs"/></td>
+                    <td data-label="Jamais"><input type="radio" value="never" name="bs"/></td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+
+    </div>
 </div>
