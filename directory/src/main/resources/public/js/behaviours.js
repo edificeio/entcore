@@ -37,7 +37,7 @@ Behaviours.register('directory', {
 				loadGroups: function(){
 					var that = this
 					http().get('/userbook/structure/' + this.search.structure.id).done(function(structure){
-						this.search.groups = structure.profileGroups.concat(structure.manualGroups);
+						this.search.groups = structure.profileGroups.concat(structure.groups);
 						_.map(this.search.groups, function(group){ group.translatedName = that.groupTranslation(group.name) })
 						this.$apply('search');
 					}.bind(this));

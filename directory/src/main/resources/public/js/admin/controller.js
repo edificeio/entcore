@@ -439,8 +439,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showGuests: true,
 		showFeedModeManual: true,
 		showFeedModeAuto: true,
-		showLocalAdmin: false
+		showLocalAdmin: false,
+		showManualsGroups : true,
+		showProfilesGroups : true,
+		showFunctionalsGroups : true
 	}
+
 	$scope.toggleFilter = function(filterName){
 		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
 	}
@@ -464,6 +468,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			filterRelative && filterStudents && filterGuests &&
 			filterFeedAuto && filterFeedManual && filterLocalAdmin
 	}
+
+	$scope.structureGroupsFilteringFunction = function(group){
+		var filterByInput = $rootScope.filterStructureGroups ? $scope.fairInclusion(group.name, $rootScope.filterStructureGroups) : true;
+		var filterManualGroups = group.type === 'ManualGroup' ? $scope.userFilters.showManualsGroups : true;
+		var filterProfilesGroups = group.type === 'ProfileGroup' ? $scope.userFilters.showProfilesGroups : true;
+		var filterFunctionalesGroups = group.type === 'FunctionalGroup' ? $scope.userFilters.showFunctionalsGroups : true;
+		var filterClassGroup = group.classes === null ? true : $scope.filterClassGroup(group, $scope.structure);
+
+		return filterByInput && filterManualGroups && filterProfilesGroups
+		&& filterFunctionalesGroups && filterClassGroup;
+	}
+
+	$scope.filterClassGroup = function(group, structure){
+		var b = false;
+		_.each(group.classes, function(classe){
+			b = b || (structure.classes.findWhere({id : classe.id})).selected
+		});
+		return b;
+	}
+
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){
 			return (input && user.displayName) ? $scope.fairInclusion(user.displayName, input) : true
