@@ -20,6 +20,7 @@
 package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
+import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.SwiftStorage;
 import org.vertx.java.core.Vertx;
@@ -33,6 +34,7 @@ public class StorageFactory {
 
 	private final Vertx vertx;
 	private JsonObject swift;
+	private JsonObject fs;
 	private String gridfsAddress;
 
 	public StorageFactory(Vertx vertx) {
@@ -46,9 +48,15 @@ public class StorageFactory {
 		if (s != null) {
 			this.swift = new JsonObject(s);
 		}
+		s = (String) server.get("file-system");
+		if (s != null) {
+			this.fs = new JsonObject(s);
+		}
 		this.gridfsAddress = (String) server.get("gridfsAddress");
 		if (config != null && config.getObject("swift") != null) {
 			this.swift = config.getObject("swift");
+		} else if (config != null && config.getString("file-system") != null) {
+			this.fs = config.getObject("file-system");
 		} else if (config != null && config.getString("gridfs-address") != null) {
 			this.gridfsAddress = config.getString("gridfs-address");
 		}
@@ -67,6 +75,8 @@ public class StorageFactory {
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
+		} else if (fs != null) {
+			storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false));
 		} else {
 			storage = new GridfsStorage(vertx, Server.getEventBus(vertx), gridfsAddress);
 		}

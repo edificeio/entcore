@@ -76,6 +76,10 @@ public class Starter extends BaseServer {
 			if (emailConfig != null) {
 				serverMap.put("emailConfig", emailConfig.encode());
 			}
+			JsonObject filesystem = config.getObject("file-system");
+			if (filesystem != null) {
+				serverMap.put("file-system", filesystem.encode());
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			initModulesHelpers(node);
 
