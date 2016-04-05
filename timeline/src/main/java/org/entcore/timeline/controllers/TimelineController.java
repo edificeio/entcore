@@ -206,12 +206,9 @@ public class TimelineController extends BaseController {
 							int offset = 0;
 							try {
 								offset = 25 * Integer.parseInt(page);
-							} catch (NumberFormatException e) {
-							}
+							} catch (NumberFormatException e) {}
 
-							store.get(user, types, offset, 25,
-									notifs.right().getValue(),
-									new Handler<JsonObject>() {
+							store.get(user, types, offset, 25, notifs.right().getValue(), new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
 									if (res != null && "ok"
 											.equals(res.getString("status"))) {
@@ -223,10 +220,8 @@ public class TimelineController extends BaseController {
 												results.size());
 										final VoidHandler endHandler = new VoidHandler() {
 											protected void handle() {
-												if (countdown
-														.decrementAndGet() == 0) {
-													res.putArray("results",
-															compiledResults);
+												if (countdown.decrementAndGet() <= 0) {
+													res.putArray("results", compiledResults);
 													renderJson(request, res);
 												}
 											}
@@ -236,51 +231,33 @@ public class TimelineController extends BaseController {
 
 										for (Object notifObj : results) {
 											final JsonObject notif = (JsonObject) notifObj;
-											if (!notif.getString("message", "")
-													.isEmpty()) {
+											if (!notif.getString("message", "").isEmpty()) {
 												compiledResults.add(notif);
 												endHandler.handle(null);
 												continue;
 											}
 
-											String key = notif
-													.getString("type", "")
-													.toLowerCase()
-													+ "."
-													+ notif.getString(
-															"event-type", "")
-															.toLowerCase();
+											String key = notif.getString("type", "").toLowerCase()
+												+ "."
+												+ notif.getString("event-type", "").toLowerCase();
 
-											String stringifiedRegisteredNotif = registeredNotifications
-													.get(key);
+											String stringifiedRegisteredNotif = registeredNotifications.get(key);
 											if (stringifiedRegisteredNotif == null) {
-												log.error(
-														"Failed to retrieve registered from the shared map notification with key : "
-																+ key);
+												log.error("Failed to retrieve registered from the shared map notification with key : " + key);
 												endHandler.handle(null);
 												continue;
 											}
-											JsonObject registeredNotif = new JsonObject(
-													stringifiedRegisteredNotif);
+											JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
 
-											StringReader reader = new StringReader(
-													registeredNotif.getString(
-															"template", ""));
-											processTemplate(request,
-													notif.getObject("params",
-															new JsonObject()),
-													key, reader,
-													new Handler<Writer>() {
-												public void handle(
-														Writer writer) {
-													notif.putString("message",
-															writer.toString());
+											StringReader reader = new StringReader(registeredNotif.getString("template", ""));
+											processTemplate(request,notif.getObject("params",new JsonObject()),key, reader, new Handler<Writer>() {
+												public void handle(Writer writer) {
+													notif.putString("message", writer.toString());
 													compiledResults.add(notif);
 													endHandler.handle(null);
 												}
 											});
 										}
-
 									} else {
 										renderError(request, res);
 									}

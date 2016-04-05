@@ -54,11 +54,15 @@ function Timeline($scope, date, model, lang){
         var matchingNotifs = $scope.registeredNotifications.filter(function(notif){ return notif.type === type })
         if(matchingNotifs.length < 1)
             return true
-        return model.me.apps.some(function(app){
+        var access = model.me.apps.some(function(app){
             return _.some(matchingNotifs, function(n){
                 return app.name.toLowerCase() === n.type.toLowerCase() || (n["app-name"] && app.name.toLowerCase() === n["app-name"].toLowerCase())
             })
         })
+        if(!access){
+            typeObj.selected = false
+        }
+        return access
     }
 }
 
