@@ -26,27 +26,6 @@
 					</div>
 				</div>
 			</div>
-			<div class="row">
-				<div class="twelve cell my-notifications">
-					<h2><i18n>panel.notifications</i18n></h2>
-					<div class="row">
-						<p>
-							<i18n>panel.notifications.desc</i18n>
-						</p>
-						<button ng-click="display.showNotifsPanel = true; $event.stopPropagation();">
-							<i class="bell"></i>
-							<i18n>panel.notifications.set</i18n>
-						</button>
-
-						<lightbox show="display.showNotifsPanel" on-close="display.showNotifsPanel = false">
-							<div>
-								<div ng-include="template.containers.notifspanel"></div>
-							</div>
-						</lightbox>
-
-					</div>
-				</div>
-			</div>
 		</div>
 	</div>
 	<ul class="icons-tabs">

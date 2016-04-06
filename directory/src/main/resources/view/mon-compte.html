@@ -45,6 +45,22 @@
 				</h1>
 			</app-title>
 
+			<div class="cell my-notifications" ng-if="me.userId === account.id && account.email.length">
+				<div class="row">
+					<button ng-click="" tooltip="panel.notifications.desc">
+						<i class="bell"></i>
+						<i18n>panel.notifications.set</i18n>
+					</button>
+				</div>
+			</div>
+			<div class="cell my-notifications" ng-if="me.userId === account.id && !account.email">
+				<div class="row">
+					<button ng-click="" tooltip="panel.notifications.desc" ng-disabled="true" class="disabled">
+						<i class="bell"></i>
+						<i18n>panel.notifications.activate</i18n>
+					</button>
+				</div>
+			</div>
 
 			<div class="row rigid-grid" ng-include="viewsContainers.user"></div>
 			<div class="row user-book" ng-include="viewsContainers.userbook"></div>
