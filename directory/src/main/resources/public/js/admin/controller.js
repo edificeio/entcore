@@ -386,17 +386,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
     // Angular user styling (depends on its role / isolated)
     $scope.userStyle = function(user){
-		return {
-			'user-style': true,
-			'teacher': user.type === "Teacher",
-			'personnel': user.type === "Personnel",
-			'relative': user.type === "Relative",
-			'student': user.type === "Student",
-			'guest': user.type === "Guest",
-			'isolated': user.isolated,
-			'not-active': user.code
-		}
+			return {
+				'user-style': true,
+				'teacher': user.type === "Teacher",
+				'personnel': user.type === "Personnel",
+				'relative': user.type === "Relative",
+				'student': user.type === "Student",
+				'guest': user.type === "Guest",
+				'isolated': user.isolated,
+				'not-active': user.code
+			}
     }
+
+		$scope.groupStyle = function(group){
+			return{
+				'user-style' : true,
+				'student' : group.type === "ProfileGroup",
+				'personnel' : group.type === "FunctionalGroup",
+				'guest' : group.type === "ManualGroup"
+			}
+		}
 
     // Angular user list ordering
     $scope.typeOrdering = function(user){
@@ -414,11 +423,32 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     }
     $scope.userOrdering = ['lastName', $scope.typeOrdering]
 
+		$scope.groupTypeOrdering = function(group){
+			switch(group.type){
+				case "ProfileGroup" :
+					return 0
+				case "FunctionalGroup" :
+					return 1
+				case "ManualGroup" :
+					return 3
+			}
+			return 100
+		}
+
+		$scope.groupOrdering = ['name', $scope.groupTypeOrdering]
+
     $scope.switchOrdering = function(){
         var temp = $scope.userOrdering[0]
         $scope.userOrdering[0] = $scope.userOrdering[1]
         $scope.userOrdering[1] = temp
     }
+
+		$scope.switchGroupOrdering = function(){
+			var temp = $scope.groupOrdering[0]
+			$scope.groupOrdering[0] = $scope.groupOrdering[1]
+			$scope.groupOrdering[1] = temp
+		}
+
 
 	$scope.setShowWhat = function(what){
 		$scope.showWhat = what
@@ -946,7 +976,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		})
 	}
 	$scope.removeUserFromGroup = function(user, group){
-		if(group.type === 'Group'){
+		if(group.type === 'ManualGroup'){
 			group.removeUser(user, function(){
 				group.getUsers($scope.refreshScope)
 			})

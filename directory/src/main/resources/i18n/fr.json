@@ -318,6 +318,7 @@
     "sniplet.facebook.title": "Trombinoscope",
     "tooltip.users.filtersTooltip": "Afficher/Cacher les filtres",
     "tooltip.users.switchOrdering": "Ordonner par nom / profil",
+    "tooltip.users.switchGroupOrdering": "Ordonner par nom / type",
     "user.added": "Utilisateur ajouté",
     "user.removed.info": "Cet utilisateur a été supprimé !",
     "userBook.account.classFiles": "Voir les cahiers de la classe",

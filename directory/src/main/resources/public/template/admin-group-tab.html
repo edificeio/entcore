@@ -12,21 +12,30 @@
     <nav class="vertical cell search-container-left">
 
         <div class="horizontal-buttons-container">
+            <button ng-click="showWhat === 'showFilters' ? setShowWhat('showCurrentGroup') : setShowWhat('showFilters')"
+                    tooltip="tooltip.users.filtersTooltip"
+                    class="glyph-button filter-icon">
+            </button>
+            <!-- Order toggle button -->
+            <button ng-click="switchGroupOrdering()"
+                    tooltip="tooltip.users.switchGroupOrdering"
+                    class="sort-button">
+            </button>
             <!-- Creation button -->
             <button ng-click="setShowWhat('showGroupCreation')" tooltip="directory.tooltip.createGroup"
                     class="glyph-button plus-icon">
             </button>
-            <button ng-click="showWhat === 'showFilters' ? setShowWhat('showCurrentGroup') : setShowWhat('showFilters')"
-                    tooltip="tooltip.users.filtersTooltip"
-                    class="glyph-button filter-icon">
+            <button ng-click="setShowWhat('showLegend')"
+                    tooltip="directory.tooltip.legend"
+                    class="glyph-button question-mark-icon">
             </button>
         </div>
 
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="$root.filterStructureGroups"/>
         <ul>
           <!-- <li ng-repeat="group in structure.groups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0"> -->
-            <li ng-repeat="group in structure.groups.all | filter: structureGroupsFilteringFunction | orderBy: 'name'" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
-                [[group.name]]
+            <li ng-repeat="group in structure.groups.all | filter: structureGroupsFilteringFunction | orderBy: groupOrdering" ng-click="$parent.groupSelected = group; setShowWhat('showCurrentGroup')" style="padding-left: 0">
+                <span ng-class="groupStyle(group)">[[group.name]]</span>
             </li>
         </ul>
     </nav>
@@ -106,9 +115,12 @@
     <div ng-if="showWhat === 'showFilters'" class="search-container-view">
         <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.filterResults")]]</h1>
 
+        <div class="row angle-container">
+            <span style="font-size: 18px; font-weight: bold;">[[lang.translate("directory.admin.type.groups")]]</span>
+        </div>
         <!-- Groups types -->
         <ul class="selectable-list">
-            <h3><i18n>directory.admin.type.groups</i18n></h3>
+            <!-- <h3><i18n>directory.admin.type.groups</i18n></h3> -->
             <li ng-class="{selected : userFilters.showManualsGroups}" ng-click="toggleFilter('showManualsGroups')">
                 [[lang.translate("directory.admin.manualGroups")]]
             </li>
@@ -131,5 +143,22 @@
                 [[class.name]]
             </li>
         </ul>
+    </div>
+
+    <!-- Legend -->
+    <div ng-if="showWhat === 'showLegend'" class="search-container-view">
+        <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.tooltip.legend")]]</h1>
+        <div class="legend-separator first">
+            <div class="legend-square black"></div>
+            <label class="legend-label" ng-class="groupStyle({type: 'profileGroups'})">[[lang.translate("directory.admin.profileGroups")]]</label>
+        </div>
+        <div class="legend-separator">
+            <div class="legend-square teal"></div>
+            <label class="legend-label" ng-class="groupStyle({type: 'functionalGroups'})">[[lang.translate("directory.admin.functionalGroups")]]</label>
+        </div>
+        <div class="legend-separator">
+            <div class="legend-square blue"></div>
+            <label class="legend-label" ng-class="groupStyle({type: 'manualGroups'})">[[lang.translate("directory.admin.manualGroups")]]</label>
+        </div>
     </div>
 </article>
