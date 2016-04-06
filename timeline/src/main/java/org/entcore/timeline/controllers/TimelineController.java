@@ -490,6 +490,7 @@ public class TimelineController extends BaseController {
 				.get(language.split(",")[0].split("-")[0]);
 			JsonObject timelineI18n = new JsonObject(
 					"{" + i18n.substring(0, i18n.length() - 1) + "}");
+			timelineI18n.mergeIn(I18n.getInstance().load(language));
 			JsonArray translations = new JsonArray();
 			for(Object keyObj : i18nKeys){
 				String key = (String) keyObj;
