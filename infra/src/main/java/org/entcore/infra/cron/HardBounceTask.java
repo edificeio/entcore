@@ -45,9 +45,7 @@ public class HardBounceTask implements Handler<Long> {
 	private final int relativeDay;
 	private final TimelineHelper timeline;
 	private final Map<Object, Object> invalidEmails;
-	private static final String TYPE = "SYSTEM";
 	public static final String PLATEFORM_COLLECTION = "platform";
-	private static final String EVENT_TYPE = TYPE + "_HARD_BOUNCE";
 
 	public HardBounceTask(EmailSender emailSender, int relativeDay, TimelineHelper timeline, Map<Object, Object> invalidEmails) {
 		this.emailSender = emailSender;
@@ -109,9 +107,8 @@ public class HardBounceTask implements Handler<Long> {
 		if (userIds == null) return;
 
 		List<String> recipients = userIds.toList();
-		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject()), null,
-				TYPE, EVENT_TYPE,
-				recipients, null, "notify-delete-email.html", new JsonObject());
+		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject()),
+				"userbook.delete-email", null, recipients, null, new JsonObject());
 	}
 
 }
