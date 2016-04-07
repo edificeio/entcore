@@ -549,7 +549,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct child.id) as childrenIds, " +
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
-				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP";
+				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions";
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
 				"<-[:PROVIDE]-(app:Application) " +
@@ -571,22 +571,30 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					"application: app.name, " +
 					"mandatory: ANY(a IN authorizations WHERE HAS(a.mandatory) AND a.mandatory = true)"+
 				"}) as widgets";
+		final String query4 = "MATCH (s:Structure) return s.id as id, s.externalId as externalId";
 		JsonObject params = new JsonObject();
 		params.putString("id", userId);
 		JsonArray statements = new JsonArray()
 				.add(new JsonObject().putString("statement", query).putObject("parameters", params))
 				.add(new JsonObject().putString("statement", query2).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query3).putObject("parameters", params));
+				.add(new JsonObject().putString("statement", query3).putObject("parameters", params))
+				.add(new JsonObject().putString("statement", query4));
 		executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonArray results = message.body().getArray("results");
-				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 3 &&
+				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 4 &&
 						results.<JsonArray>get(0).size() > 0 && results.<JsonArray>get(1).size() > 0) {
 					JsonObject j = results.<JsonArray>get(0).get(0);
 					JsonObject j2 = results.<JsonArray>get(1).get(0);
 					JsonObject j3 = results.<JsonArray>get(2).get(0);
+					JsonObject structureMapping = new JsonObject();
+					for (Object o : results.<JsonArray>get(3)) {
+						if (!(o instanceof JsonObject)) continue;
+						JsonObject jsonObject = (JsonObject) o;
+						structureMapping.putString(jsonObject.getString("externalId"), jsonObject.getString("id"));
+					}
 					j.putString("userId", userId);
 					JsonObject functions = new JsonObject();
 					JsonArray actions = new JsonArray();
@@ -612,6 +620,38 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("prefix", (String) a.get(6))
 						);
 					}
+					for (Object o : j.getArray("aafFunctions", new JsonArray())) {
+						if (o == null) continue;
+						String [] sf = o.toString().split("\\$");
+						if (sf.length == 5) {
+							JsonObject jo = functions.getObject(sf[1]);
+							if (jo == null) {
+								jo = new JsonObject().putString("code", sf[1])
+										.putString("functionName", sf[2])
+										.putArray("scope", new JsonArray())
+										.putArray("structureExternalIds", new JsonArray())
+										.putObject("subjects", new JsonObject());
+								functions.putObject(sf[1], jo);
+							}
+							JsonObject subject = jo.getObject("subjects").getObject(sf[3]);
+							if (subject == null) {
+								subject = new JsonObject()
+										.putString("subjectCode", sf[3])
+										.putString("subjectName", sf[4])
+										.putArray("scope", new JsonArray())
+										.putArray("structureExternalIds", new JsonArray());
+								jo.getObject("subjects").putObject(sf[3], subject);
+							}
+							jo.getArray("structureExternalIds").addString(sf[0]);
+							subject.getArray("structureExternalIds").addString(sf[0]);
+							String sid = structureMapping.getString(sf[0]);
+							if (sid != null) {
+								jo.getArray("scope").addString(sid);
+								subject.getArray("scope").addString(sid);
+							}
+						}
+					}
+					j.removeField("aafFunctions");
 					for (Object o : j.getArray("functions", new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;

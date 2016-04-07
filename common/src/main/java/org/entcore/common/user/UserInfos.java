@@ -176,7 +176,10 @@ public class UserInfos {
 
 	public static class Function {
 		private String code;
+		private String functionName;
 		private List<String> scope;
+		private List<String> structureExternalIds;
+		private Map<String, Subject> subjects;
 
 		public List<String> getScope() {
 			return scope;
@@ -192,6 +195,30 @@ public class UserInfos {
 
 		public void setCode(String code) {
 			this.code = code;
+		}
+
+		public String getFunctionName() {
+			return functionName;
+		}
+
+		public void setFunctionName(String functionName) {
+			this.functionName = functionName;
+		}
+
+		public Map<String, Subject> getSubjects() {
+			return subjects;
+		}
+
+		public void setSubjects(Map<String, Subject> subjects) {
+			this.subjects = subjects;
+		}
+
+		public List<String> getStructureExternalIds() {
+			return structureExternalIds;
+		}
+
+		public void setStructureExternalIds(List<String> structureExternalIds) {
+			this.structureExternalIds = structureExternalIds;
 		}
 	}
 
@@ -413,6 +440,45 @@ public class UserInfos {
 	@JsonAnyGetter
 	public Map<String, Object> getOtherProperties() {
 		return otherProperties;
+	}
+
+	public static class Subject {
+		private String subjectCode;
+		private String subjectName;
+		private List<String> scope;
+		private List<String> structureExternalIds;
+
+		public String getSubjectCode() {
+			return subjectCode;
+		}
+
+		public void setSubjectCode(String subjectCode) {
+			this.subjectCode = subjectCode;
+		}
+
+		public String getSubjectName() {
+			return subjectName;
+		}
+
+		public void setSubjectName(String subjectName) {
+			this.subjectName = subjectName;
+		}
+
+		public List<String> getScope() {
+			return scope;
+		}
+
+		public void setScope(List<String> scope) {
+			this.scope = scope;
+		}
+
+		public List<String> getStructureExternalIds() {
+			return structureExternalIds;
+		}
+
+		public void setStructureExternalIds(List<String> structureExternalIds) {
+			this.structureExternalIds = structureExternalIds;
+		}
 	}
 
 }
