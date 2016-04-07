@@ -1,4 +1,4 @@
 {
-    "default-frequency": "DAILY",
-    "restrict": "EXTERNAL"
+    "default-frequency": "NEVER",
+    "restrict": "INTERNAL"
 }
