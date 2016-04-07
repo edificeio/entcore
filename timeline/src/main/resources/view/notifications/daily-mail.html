@@ -1,7 +1,8 @@
 {{#i18n}}timeline.daily.mail.header{{/i18n}}
-{{#nestedTemplatesArray}}
+{{#notificationDates}}
     <div style="{{#i18n}}timeline.daily.mail.notification.div.style{{/i18n}}">
+        <div>{{.}}</div>
         {{#nestedArray}}{{-index}}{{/nestedArray}}
     </div>
-{{/nestedTemplatesArray}}
+{{/notificationDates}}
 {{#i18n}}timeline.daily.mail.footer{{/i18n}}

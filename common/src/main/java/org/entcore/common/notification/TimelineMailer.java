@@ -1,9 +1,11 @@
 package org.entcore.common.notification;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.email.EmailFactory;
@@ -402,6 +404,9 @@ public class TimelineMailer {
 											return;
 										}
 
+										/* TODO : Locale */
+										SimpleDateFormat formatter = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss", Locale.FRANCE);
+										final JsonArray dates = new JsonArray();
 										final JsonArray templates = new JsonArray();
 
 										for(Object notificationObj : notifications){
@@ -420,11 +425,13 @@ public class TimelineMailer {
 												templates.add(new JsonObject()
 													.putString("template", notificationsDefaults.getObject(notificationName, new JsonObject()).getString("template", ""))
 													.putObject("params", notification.getObject("params", new JsonObject())));
+												dates.add(formatter.format(MongoDb.parseIsoDate(notification.getObject("date"))));
 											}
 										}
 										if(templates.size() > 0){
 											JsonObject templateParams = new JsonObject()
-													.putArray("nestedTemplatesArray", templates);
+												.putArray("nestedTemplatesArray", templates)
+												.putArray("notificationDates", dates);
 											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html", new Handler<String>() {
 												public void handle(final String processedTemplate) {
 													//On completion : log
