@@ -192,8 +192,7 @@ public class TimelineController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					getExternalNotifications(
-							new Handler<Either<String, JsonObject>>() {
+					getExternalNotifications(new Handler<Either<String, JsonObject>>() {
 						public void handle(Either<String, JsonObject> notifs) {
 							if (notifs.isLeft()) {
 								badRequest(request, notifs.left().getValue());
@@ -201,8 +200,7 @@ public class TimelineController extends BaseController {
 							}
 
 							String page = request.params().get("page");
-							List<String> types = request.params()
-									.getAll("type");
+							List<String> types = request.params().getAll("type");
 							int offset = 0;
 							try {
 								offset = 25 * Integer.parseInt(page);
@@ -210,14 +208,11 @@ public class TimelineController extends BaseController {
 
 							store.get(user, types, offset, 25, notifs.right().getValue(), new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
-									if (res != null && "ok"
-											.equals(res.getString("status"))) {
-										JsonArray results = res.getArray(
-												"results", new JsonArray());
+									if (res != null && "ok".equals(res.getString("status"))) {
+										JsonArray results = res.getArray("results", new JsonArray());
 										final JsonArray compiledResults = new JsonArray();
 
-										final AtomicInteger countdown = new AtomicInteger(
-												results.size());
+										final AtomicInteger countdown = new AtomicInteger(results.size());
 										final VoidHandler endHandler = new VoidHandler() {
 											protected void handle() {
 												if (countdown.decrementAndGet() <= 0) {
@@ -329,6 +324,37 @@ public class TimelineController extends BaseController {
 				configService.upsert(data, defaultResponseHandler(request));
 			}
 		});
+	}
+
+	@Get("/notifications-defaults")
+	@SecuredAction("timeline.external.notifications")
+	public void mixinConfig(final HttpServerRequest request){
+		configService.list(new Handler<Either<String,JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isLeft()){
+					badRequest(request);
+					return;
+				}
+				JsonArray admcDefaults = event.right().getValue();
+				JsonArray reply = new JsonArray();
+
+				for (String key : registeredNotifications.keySet()) {
+					JsonObject notif = new JsonObject(registeredNotifications.get(key)).putString("key", key);
+					notif.removeField("template");
+					for(Object admcDefaultObj : admcDefaults){
+						JsonObject admcDefault = (JsonObject) admcDefaultObj;
+						if(admcDefault.getString("key", "").equals(key)){
+							notif.mergeIn(admcDefault);
+							notif.removeField("_id");
+							break;
+						}
+					}
+					reply.add(notif);
+				}
+				renderJson(request, reply);
+			}
+		});
+
 	}
 
 	@Get("/performDailyMailing")
@@ -455,13 +481,10 @@ public class TimelineController extends BaseController {
 		case "process-timeline-template":
 			final HttpServerRequest request = new JsonHttpServerRequest(
 					message.body().getObject("request", new JsonObject()));
-			final JsonObject parameters = message.body().getObject("parameters",
-					new JsonObject());
-			final String resourceName = message.body().getString("resourceName",
-					"");
+			final JsonObject parameters = message.body().getObject("parameters", new JsonObject());
+			final String resourceName = message.body().getString("resourceName", "");
 			if(message.body().getBoolean("reader", false)){
-				final StringReader templateReader = new StringReader(
-						message.body().getString("template"));
+				final StringReader templateReader = new StringReader(message.body().getString("template"));
 				processTemplate(request, parameters, resourceName, templateReader, new Handler<Writer>() {
 					public void handle(Writer writer) {
 						message.reply(
