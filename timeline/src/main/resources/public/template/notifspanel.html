@@ -1,10 +1,10 @@
 <div class="row my-notifications">
-    <h2><i18n>panel.notifications</i18n></h2>
+    <h2><i18n>xtnotifications.title</i18n></h2>
 
     <div class="row">
-        <span>Adresse mail utilisée :</span>
+        <span><i18n>xtnotifications.mail</i18n></span>
         <span class="disabled">tototata@gmail.com</span>
-        <a class="contextual-link">Modifier</a>
+        <a class="contextual-link" href="/userbook/mon-compte"><i18n>xtnotifications.mail.change</i18n></a>
     </div>
 
     <div class="responsive-table">
@@ -24,10 +24,10 @@
               <thead ng-class="{ slided: notifxt.slided}">
                   <tr>
                     <td><i ng-click="notifxt.slided = notifxt.slided ? false : true "  class="arrow"></i>Actualités</td>
-                    <td data-label="Immédiat"><input type="radio" value="immediate" name="actu" ng-click="notifByApp()"/></td>
-                    <td data-label="Quotidien"><input type="radio" value="daily" name="actu" ng-click="notifByApp()"/></td>
-                    <td data-label="Hebdomadaire"><input type="radio" value="weekly" name="actu" ng-click="notifByApp()"/></td>
-                    <td data-label="Jamais"><input type="radio" value="never" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Immédiat"><input type="radio" value="IMMEDIATE" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Quotidien"><input type="radio" value="DAILY" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Hebdomadaire"><input type="radio" value="WEEKLY" name="actu" ng-click="notifByApp()"/></td>
+                    <td data-label="Jamais"><input type="radio" value="NEVER" name="actu" ng-click="notifByApp()"/></td>
                   </tr>
               </thead>
               <tbody slide="notifxt.slided">
@@ -50,4 +50,11 @@
         </div>
 
     </div>
+
+        <div class="right-magnet">
+            <a class="button" href="/timeline/preferencesView">
+                <i18n>xtnotifications.validate</i18n>
+            </a>
+        </div>
+
 </div>
