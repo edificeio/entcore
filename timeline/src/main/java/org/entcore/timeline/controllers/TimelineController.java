@@ -152,6 +152,12 @@ public class TimelineController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/preferencesView")
+	@SecuredAction(value = "timeline.preferencesView", type = ActionType.AUTHENTICATED)
+	public void preferencesView(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@Get("/i18nNotifications")
 	@SecuredAction(value = "timeline.i18n", type = ActionType.AUTHENTICATED)
 	public void i18n(HttpServerRequest request) {
