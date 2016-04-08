@@ -526,7 +526,7 @@ public class TimelineMailer {
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final Calendar weekDate = Calendar.getInstance();
-		weekDate.add(Calendar.DAY_OF_MONTH, dayDelta - 7);
+		weekDate.add(Calendar.DAY_OF_MONTH, dayDelta - 6);
 		weekDate.set(Calendar.HOUR_OF_DAY, 0);
 		weekDate.set(Calendar.MINUTE, 0);
 		weekDate.set(Calendar.SECOND, 0);
