@@ -25,8 +25,16 @@ function Appli(data){
 Preference.prototype.getinfo = function(){
     //recup en json preferences
     http().get('/userbook/preference/timeline').done(function(data){
-        this.content = data;
+        this.preference = JSON.parse(data.preference)
     }.bind(this))
+}
+
+//met à jour les préférences sur le serveur
+Preference.prototype.putinfo = function(){
+    var json = {
+        "preference": JSON.stringify(this.preference)
+    }
+    http().putJson('/userbook/preference/timeline', json)
 }
 
 // appeler à la fin
@@ -40,8 +48,8 @@ model.build = function(){
     this.preference.getinfo();
     //recupère la liste des applis
     this.collection(Appli, {
-        sync: function(){
-            http().get('/timeline/registeredNotifications').done(function(data){
+        list: function(){
+            http().get('/timeline/notifications-defaults').done(function(data){
 
                 //on recupe la liste des TYPES d'action et les groupes par appli > (objet qui contient tableaux)
                 //map permet d'attribuer les noms en tableaux (tableau qui contient les objets)
@@ -51,7 +59,9 @@ model.build = function(){
                         appActions: item,
                         appName: item[0]['app-name'],
                         type: item[0]['type'],
-                        appAddress: item[0]['app-address']
+                        appAddress: item[0]['app-address'],
+                        key: item[0]['app-address'],
+                        eventType: item[0]['event-type']
                     }
                 })
 
