@@ -227,6 +227,7 @@ public class UserInfos {
 	private String firstName;
 	private String lastName;
 	private String username;
+	private String birthDate;
 	private List<String> classNames;
 	private List<String> structureNames;
 	private List<String> uai;
@@ -276,6 +277,14 @@ public class UserInfos {
 
 	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public String getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
 	}
 
 	public List<Action> getAuthorizedActions() {
