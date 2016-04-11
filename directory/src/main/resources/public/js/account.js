@@ -58,6 +58,10 @@ function MyAccount($scope, lang, date, notify, route){
 		}
 	});
 
+	Behaviours.loadBehaviours('directory', function(){
+		model.me.workflow.load(['directory'])
+	})
+
 	function init(){
 		$scope.me = model.me;
 		model.account.on('change', function(){

@@ -46,7 +46,8 @@
 			</app-title>
 
 
-			<div class="cell my-notifications" ng-if="me.userId === account.id && account.email.length">
+			<div class="cell my-notifications" ng-if="me.userId === account.id && account.email.length"
+				workflow="directory.externalNotifications">
 				<div class="row">
 					<a class="button" tooltip="panel.notifications.desc" href="/timeline/preferencesView">
 						<i class="bell"></i>
@@ -54,7 +55,8 @@
 					</a>
 				</div>
 			</div>
-			<div class="cell my-notifications" ng-if="me.userId === account.id && !account.email">
+			<div class="cell my-notifications" ng-if="me.userId === account.id && !account.email"
+				workflow="directory.externalNotifications">
 				<div class="row">
 					<a tooltip="panel.notifications.desc" ng-disabled="true" class="button disabled">
 						<i class="bell"></i>

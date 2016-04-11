@@ -1,6 +1,11 @@
 console.log('directory behaviours loaded');
 
 Behaviours.register('directory', {
+	rights:{
+		workflow: {
+			externalNotifications: "org.entcore.timeline.controllers.TimelineController|mixinConfig"
+		}
+	},
 	sniplets: {
 		facebook: {
 			title: 'sniplet.facebook.title',
