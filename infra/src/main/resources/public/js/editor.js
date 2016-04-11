@@ -285,7 +285,7 @@ window.RTE = (function () {
 				    end = (element.firstChild || element).textContent.length;
 				}
 
-				if (!element.textContent && element.nodeType === 1) {
+				if (element.nodeType === 1) {
                     range.selectNode(element);
                 } else {
                     range.setStart(element.firstChild || element, start);
@@ -1546,6 +1546,90 @@ window.RTE = (function () {
 				}
 			});
 
+			RTE.baseToolbarConf.option('attachment', function (instance) {
+			    return {
+			        template: '<i ng-click="attachmentOption.display.pickFile = true" tooltip="editor.option.attachment"></i>' +
+					'<div ng-if="attachmentOption.display.pickFile">' +
+                    '<lightbox show="attachmentOption.display.pickFile" on-close="cancel()">' +
+					'<media-library ng-change="updateContent()" multiple="true" ng-model="attachmentOption.display.files" file-format="\'any\'" visibility="attachmentOption.visibility"></media-library>' +
+					'</lightbox>' +
+                    '</div>',
+			        link: function (scope, element, attributes) {
+			            element.on('mousedown', 'a', function (e) {
+			                e.stopPropagation();
+			                $(e.target).parents('.download-attachments')[0].dispatchEvent(e);
+			            });
+
+			            scope.attachmentOption = {
+			                display: { pickFile: false },
+			                visibility: 'protected'
+			            }
+
+			            if (instance.element.attr('public')) {
+			                scope.visibility = 'public'
+			            }
+
+			            scope.cancel = function () {
+			                scope.attachmentOption.display.pickFile = false;
+			            }
+
+			            instance.bindContextualMenu(scope, '.download-attachments', [
+							{
+							    label: 'editor.edit.attachment',
+							    action: function (e) {
+							        if (!$(e.target).hasClass('download-attachments')) {
+							            e.target = $(e.target).parents('.download-attachments')[0];
+							        }
+							        
+							        instance.selection.selectNode(e.target);
+
+							        var files = [];
+							        $(e.target).find('a').each(function (index, item) {
+							            var pathSplit = $(item).attr('href').split('/');
+							            files.push(pathSplit[pathSplit.length - 1])
+							        });
+							        model.mediaLibrary.appDocuments.documents.deselectAll();
+							        model.mediaLibrary.appDocuments.documents.map(function (doc) {
+							            if (files.indexOf(doc._id) !== -1) {
+							                doc.selected = true;
+							            }
+							            return doc;
+							        });
+							        scope.attachmentOption.display.pickFile = true;
+							    }
+							},
+							{
+							    label: 'editor.remove.attachment',
+							    action: function (e) {
+							        if (!$(e.target).hasClass('download-attachments')) {
+							            e.target = $(e.target).parents('.download-attachments')[0];
+							        }
+							        $(e.target).remove();
+							        instance.trigger('contentupdated');
+							    }
+							}
+			            ]);
+
+			            scope.display = {};
+			            scope.updateContent = function () {
+			                var html = '<div class="download-attachments">' +
+                                '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
+			                    '<div class="attachments">';
+			                scope.attachmentOption.display.files.forEach(function (file) {
+			                    html += '<a href="/workspace/document/' + file._id + '"><i class="download"></i>' + file.name + '</a>';
+			                });
+
+			                html += '</div></div><div><br /><div><br /></div></div>';
+			                instance.selection.replaceHTML(html);
+			                instance.addState(instance.editZone.html());
+			                scope.attachmentOption.display.pickFile = false;
+			                scope.attachmentOption.display.files = [];
+			                instance.focus();
+			            };
+			        }
+			    }
+			});
+
 			RTE.baseToolbarConf.option('sound', function(instance){
 				return {
 				    template: '<i ng-click="display.pickFile = true" tooltip="editor.option.sound"></i>' +
@@ -2716,12 +2800,20 @@ window.RTE = (function () {
                                     workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
                                         if(name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1){
                                             el = $('<audio draggable native controls></audio>');
+                                            el.attr('src', '/workspace/document/' + doc._id)
                                         }
-                                        else{
+                                        else if (name.indexOf('.png') !== -1 || name.indexOf('.jpg') !== -1 || name.indexOf('.jpeg') !== -1) {
                                             el = $('<img draggable native />');
+                                            el.attr('src', '/workspace/document/' + doc._id)
+                                        }
+                                        else {
+                                            el = $('<div class="download-attachments">' +
+                                                '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
+			                                    '<div class="attachments">' +
+                                                    '<a href="/workspace/document/' + doc._id + '"><i class="download"></i>' + name + '</a>' +
+                                            '</div></div><div><br /><div><br /></div></div>');
                                         }
 
-                                        el.attr('src', '/workspace/document/' + doc._id)
                                         editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
                                     });
                                 }())
