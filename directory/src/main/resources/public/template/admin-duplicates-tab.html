@@ -24,10 +24,9 @@
             <tbody class="no-hover">
                 <tr ng-repeat-start="duplicate in structure.duplicates.all">
                     <td>
-                        <a  ng-if="mapDuplicateUser(duplicate.user1)"
-                            href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+duplicate.user1.id]]"
-                            target="_blank"
-                            tooltip="directory.show.user.page">
+                        <a  ng-if="duplicate.user1.structures[0]"
+                            href="[['/directory/admin-console#/structureUser/'+duplicate.user1.structures[0]+'/'+duplicate.user1.id]]"
+                            target="_blank">
                             <button class="directory-direct-link-button"></button>
                         </a>
                     </td>
@@ -37,16 +36,15 @@
                     <td>[[ duplicate.user1.email ]]</td>
                     <td>[[ duplicate.user1.profiles[0] ]]</td>
                     <td rowspan=2>
-                        <button ng-click="duplicate.merge(refreshDuplicates)"><i18n>merge</i18n></button>
-                        <button ng-click="duplicate.dissociate(refreshDuplicates)"><i18n>dissociate</i18n></button>
+                        <button ng-click="duplicate.merge(refreshDuplicates)" class="small" style="margin-right: 5px"><i18n>merge</i18n></button>
+                        <button ng-click="duplicate.dissociate(refreshDuplicates)" class="small"><i18n>dissociate</i18n></button>
                     </td>
                 </tr>
                 <tr class="separator" ng-repeat-end>
                     <td>
-                        <a  ng-if="mapDuplicateUser(duplicate.user2)"
-                            href="[['/directory/admin-console#/structureUser/'+structure.id+'/'+duplicate.user2.id]]"
-                            target="_blank"
-                            tooltip="directory.show.user.page">
+                        <a  ng-if="duplicate.user2.structures[0]"
+                            href="[['/directory/admin-console#/structureUser/'+duplicate.user2.structures[0]+'/'+duplicate.user2.id]]"
+                            target="_blank">
                             <button class="directory-direct-link-button"></button>
                         </a>
                     </td>
