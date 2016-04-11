@@ -13,7 +13,7 @@
     "xtnotifications.title": "Mes notifications externes",
     "xtnotifications.mail": "Adresse mail utilisée :",
     "xtnotifications.mail.change": "Modifier",
-    "xtnotifications.validate": "Valider",
+    "xtnotifications.validate": "Enregistrer",
     "rack": "Casier",
     "support": "Aide et support",
     "timeline.header": "Fil de nouveautés",
@@ -33,4 +33,8 @@
     "DAILY": "Mail journalier",
     "WEEKLY": "Mail hebdomadaire",
     "NEVER": "Jamais",
+    "xtnotifications.immediat": "Immédiat",
+    "xtnotifications.daily": "Quotidien",
+    "xtnotifications.weekly": "Hebdomadaire",
+    "xtnotifications.never": "Jamais"
 }
