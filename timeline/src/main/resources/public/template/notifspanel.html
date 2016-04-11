@@ -12,10 +12,10 @@
         <table class="fixed-head">
             <tr>
               <th></th>
-              <th>Immédiat</th>
-              <th>Quotidien</th>
-              <th>Hebdomadaire</th>
-              <th>Jamais</th>
+              <th><i18n>xtnotifications.immediat</i18n></th>
+              <th><i18n>xtnotifications.daily</i18n></th>
+              <th><i18n>xtnotifications.weekly</i18n></th>
+              <th><i18n>xtnotifications.never</i18n></th>
             </tr>
         </table>
 
@@ -24,19 +24,19 @@
               <thead ng-class="{ slided: appli.slided}">
                   <tr>
                     <td><i ng-click="appli.slided = appli.slided ? false : true "  class="arrow"></i>[[lang.translate(appli.type.toLowerCase())]]</td>
-                    <td data-label="Immédiat"><span><input type="radio" value="IMMEDIATE" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
-                    <td data-label="Quotidien"><span><input type="radio" value="DAILY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
-                    <td data-label="Hebdomadaire"><span><input type="radio" value="WEEKLY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
-                    <td data-label="Jamais"><span><input type="radio" value="NEVER" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
+                    <td data-label="xtnotifications.immediat"><span><input type="radio" value="IMMEDIATE" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
+                    <td data-label="xtnotifications.daily"><span><input type="radio" value="DAILY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
+                    <td data-label="xtnotifications.weekly"><span><input type="radio" value="WEEKLY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
+                    <td data-label="xtnotifications.never"><span><input type="radio" value="NEVER" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
                   </tr>
               </thead>
               <tbody slide="appli.slided">
                 <tr ng-repeat="appAction in appli.appActions.all">
                     <td translate content="[[appAction.key]]"></td>
-                    <td data-label="Immédiat"><input type="radio" value="IMMEDIATE" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
-                    <td data-label="Quotidien"><input type="radio" value="DAILY" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
-                    <td data-label="Hebdomadaire"><input type="radio" value="WEEKLY" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
-                    <td data-label="Jamais"><input type="radio" value="NEVER" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
+                    <td data-label="xtnotifications.immediat"><input type="radio" value="IMMEDIATE" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
+                    <td data-label="xtnotifications.daily"><input type="radio" value="DAILY" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
+                    <td data-label="xtnotifications.weekly"><input type="radio" value="WEEKLY" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
+                    <td data-label="xtnotifications.never"><input type="radio" value="NEVER" ng-model="appAction.defaultFrequency" ng-change="removeAppliFreq(appli)" name="[[appAction.key]]"/></td>
                 </tr>
               </tbody>
             </table>
@@ -45,7 +45,7 @@
     </div>
 
     <div class="right-magnet">
-        <a class="button" href="/userbook/mon-compte" ng-click="savePreferences()">
+        <a class="button" href ng-click="savePreferences()">
             <i18n>xtnotifications.validate</i18n>
         </a>
     </div>
