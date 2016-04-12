@@ -2534,6 +2534,30 @@ window.RTE = (function () {
                             });
                         });
 
+                        function b64toBlob(b64Data, contentType, sliceSize) {
+                            contentType = contentType || '';
+                            sliceSize = sliceSize || 512;
+
+                            var byteCharacters = atob(b64Data);
+                            var byteArrays = [];
+
+                            for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                                var slice = byteCharacters.slice(offset, offset + sliceSize);
+
+                                var byteNumbers = new Array(slice.length);
+                                for (var i = 0; i < slice.length; i++) {
+                                byteNumbers[i] = slice.charCodeAt(i);
+                                }
+
+                                var byteArray = new Uint8Array(byteNumbers);
+
+                                byteArrays.push(byteArray);
+                            }
+
+                            var blob = new Blob(byteArrays, {type: contentType});
+                            return blob;
+                        }
+
                         element.find('.option i').click(function(){
                             if(!editZone.is(':focus')){
                                 editZone.focus();
@@ -2575,6 +2599,19 @@ window.RTE = (function () {
                                     selection: editorInstance.selection
                                 });
                             }
+
+                            editZone.find('img').each(function(index, item){
+                               if($(item).attr('src').startsWith('data:')){
+                                   var split = $(item).attr('src').split('data:')[1].split(',');
+                                   var blob = b64toBlob(split[1], split[0].split(';')[0]);
+                                   $(item).attr('src', 'http://loading');
+                                   workspace.Document.prototype.upload(blob, '', function(file){
+                                       $(item).attr('src', '/workspace/document/' + file._id);
+                                       notify.info('editor.b64.uploaded');
+                                       editorInstance.trigger('contentupdated');
+                                   });
+                               }
+                            });
 
                             scope.$apply(function(){
                                 scope.$eval(attributes.ngChange);
