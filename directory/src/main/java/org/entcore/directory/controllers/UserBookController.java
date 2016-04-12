@@ -467,6 +467,9 @@ public class UserBookController extends BaseController {
 				config.getString("workspace-prefix"), defaultContent);
 	}
 
+	@SecuredAction("userbook.show.motto.mood")
+	public void userBookMottoMood(){}
+
 	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
 		JsonObject params = new JsonObject();
