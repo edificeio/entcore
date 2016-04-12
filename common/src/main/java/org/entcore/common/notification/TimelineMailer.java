@@ -169,7 +169,7 @@ public class TimelineMailer {
 			"WHERE u.activationCode IS NULL AND u.email IS NOT NULL AND length(u.email) > 0 " +
 			"AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\"" +
 			"WITH u SKIP {skip} LIMIT {limit} "+
-			"RETURN u.email as mail, u.id as id";
+			"RETURN DISTINCT u.email as mail, u.id as id";
 		JsonObject params = new JsonObject()
 			.putNumber("skip", page * USERS_LIMIT)
 			.putNumber("limit", USERS_LIMIT);
@@ -416,8 +416,8 @@ public class TimelineMailer {
 												notification.getString("event-type", "").toLowerCase();
 											JsonObject notificationPreference = userPrefs
 													.getObject("preferences", new JsonObject())
-														.getObject("config", new JsonObject()
-																.getObject(notificationName, new JsonObject()));
+														.getObject("config", new JsonObject())
+															.getObject(notificationName, new JsonObject());
 											if(TimelineNotificationsLoader.Frequencies.DAILY.name().equals(
 													notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
 												!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
@@ -583,8 +583,8 @@ public class TimelineMailer {
 												notification.getString("event-type", "").toLowerCase();
 											JsonObject notificationPreference = userPrefs
 													.getObject("preferences", new JsonObject())
-														.getObject("config", new JsonObject()
-																.getObject(notificationName, new JsonObject()));
+														.getObject("config", new JsonObject())
+																.getObject(notificationName, new JsonObject());
 											if(TimelineNotificationsLoader.Frequencies.WEEKLY.name().equals(
 													notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
 												!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
