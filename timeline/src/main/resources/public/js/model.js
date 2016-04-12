@@ -24,10 +24,21 @@ function Skin(data){
 	}
 }
 
+function Preferences(){}
+Preferences.prototype.get = function(cb){
+    return http().get('/userbook/preference/timeline').done(function(data){
+        this.prefs = JSON.parse(data.preference)
+        if(typeof cb === 'function')
+            cb()
+    }.bind(this))
+}
+
 function RegisteredNotification(){}
 
 model.build = function (){
 	this.makeModels([Notification, NotificationType, Widget, Skin, RegisteredNotification]);
+
+    this.preferences = new Preferences()
 
 	this.collection(Notification, {
 		page: 0,
@@ -70,7 +81,7 @@ model.build = function (){
 				notify.error(data);
 			});
 
-			http().putJson('/userbook/preference/timeline', params);
+			http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs, params));
 		}
 	});
 
@@ -80,8 +91,8 @@ model.build = function (){
 				this.load(data);
 
 				var that = this
-				http().get('/userbook/preference/timeline').done(function(data){
-					var pref = data.preference ? JSON.parse(data.preference) : null
+				model.preferences.get(function(data){
+					var pref = model.preferences.prefs
 					var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
 					that.forEach(function(t){
 						if(myFilters === null || myFilters.indexOf(t.data) >= 0){
