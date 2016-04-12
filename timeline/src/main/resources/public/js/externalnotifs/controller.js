@@ -6,7 +6,8 @@ function MainController($rootScope, $scope, template, lang, model){
 
 	model.applis.list();
     $scope.applis = model.applis;
-	$scope.preference = model.preference
+	$scope.preference = model.preference;
+	$scope.userinfos = model.userinfos;
 
 	$scope.lang = lang;
 

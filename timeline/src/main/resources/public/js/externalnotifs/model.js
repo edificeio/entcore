@@ -4,6 +4,14 @@ function Config(){
 }
 function AppAction(){
 }
+function UserInfos(){
+}
+
+UserInfos.prototype.getinfo = function(callback){
+    http().get('/userbook/api/person').done(function(data){
+        this.updateData(data.result['0'])
+    }.bind(this))
+}
 
 function Appli(data){
     this.collection(AppAction)
@@ -21,14 +29,15 @@ Preference.prototype.getinfo = function(callback){
 Preference.prototype.putinfo = function(){
     var json = this.preference
     http().putJson('/userbook/preference/timeline', json).done(function(){
-        notify.info('clef')
         window.location = "/userbook/mon-compte";
     })
 }
 
 model.build = function(){
-	this.makeModels([Preference, Config, Appli, AppAction]);
+	this.makeModels([Preference, Config, Appli, AppAction, UserInfos]);
     this.preference = new Preference();
+    this.userinfos = new UserInfos();
+    model.userinfos.getinfo()
 
     this.collection(Appli, {
         list: function(){
