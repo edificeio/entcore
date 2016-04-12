@@ -3,7 +3,8 @@ console.log('directory behaviours loaded');
 Behaviours.register('directory', {
 	rights:{
 		workflow: {
-			externalNotifications: "org.entcore.timeline.controllers.TimelineController|mixinConfig"
+			externalNotifications: "org.entcore.timeline.controllers.TimelineController|mixinConfig",
+            showMoodMotto: "org.entcore.directory.controllers.UserBookController|userBookMottoMood"
 		}
 	},
 	sniplets: {
