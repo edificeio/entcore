@@ -103,10 +103,8 @@ public class TimelineController extends BaseController {
 
 				JsonObject timelineI18n;
 				if (!lazyEventsI18n.containsKey(language)) {
-					String i18n = eventsI18n
-							.get(language.split(",")[0].split("-")[0]);
-					timelineI18n = new JsonObject(
-							"{" + i18n.substring(0, i18n.length() - 1) + "}");
+					String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+					timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
 					lazyEventsI18n.put(language, timelineI18n);
 				} else {
 					timelineI18n = lazyEventsI18n.get(language);

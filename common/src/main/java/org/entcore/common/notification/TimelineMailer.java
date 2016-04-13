@@ -288,8 +288,8 @@ public class TimelineMailer {
 									JsonObject userPref = ((JsonObject) userObj);
 									JsonObject notificationPreference = userPref
 										.getObject("preferences", new JsonObject())
-											.getObject("config", new JsonObject()
-													.getObject(notificationName, new JsonObject()));
+											.getObject("config", new JsonObject())
+												.getObject(notificationName, new JsonObject());
 									// If the frequency is IMMEDIATE
 									// and the restriction is not INTERNAL (timeline only)
 									// and if the user has provided an email
