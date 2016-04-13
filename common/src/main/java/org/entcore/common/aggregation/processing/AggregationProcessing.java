@@ -54,7 +54,7 @@ public abstract class AggregationProcessing {
 	/**
 	 * Process the indicators as you see fit.
 	 * @param callBack : Handler called when processing is over.
-	 * @param marker : Date marker, userful for implementation relying on time.
+	 * @param marker : Date marker, useful for an implementation relying on time.
 	 */
 	public abstract void process(Date marker, Handler<JsonObject> callBack);
 
