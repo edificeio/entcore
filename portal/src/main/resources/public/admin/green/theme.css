@@ -1270,10 +1270,6 @@ input[type=tel],
 input[type=email] {
   border: none;
 }
-input[type=color] {
-  background: transparent;
-  border: none;
-}
 .dominos .mood {
   position: absolute;
   top: 22px;
@@ -2962,6 +2958,12 @@ div.hidden-content {
 div.hidden-content > * {
   opacity: 0;
 }
+div.hidden-content input[type=file] {
+  position: absolute;
+  left: 0;
+  width: 114px;
+  height: 40px;
+}
 .flip-right,
 .flip-left {
   width: 80px;
@@ -3980,10 +3982,8 @@ a.cke_smile img {
   outline: 1px dotted black;
   outline-offset: -1px;
 }
-.media editor.focus {
-  margin-top: 46px;
-}
 .media [contenteditable] {
+  background: transparent;
   cursor: inherit !important;
 }
 .media [contenteditable] p,
@@ -4014,6 +4014,9 @@ a.cke_smile img {
   cursor: inherit !important;
   max-height: 100%;
 }
+.media lightbox img {
+  width: auto;
+}
 .media audio {
   position: absolute;
   top: 50%;
@@ -4033,6 +4036,8 @@ a.cke_smile img {
 .media .media-wrapper .media-container {
   min-height: 40px;
   position: relative;
+  float: left;
+  width: 100%;
 }
 .media .image-container {
   max-height: 100%;
@@ -5167,6 +5172,7 @@ ul.thought-out-actions > li p {
 }
 .menu-items {
   padding: 0;
+  padding-right: 30px;
   margin: 0;
   font-size: 12px;
 }
@@ -5978,6 +5984,7 @@ side-panel .toggle .content {
 [contenteditable] img,
 [bind-html] img {
   display: block;
+  position: relative;
 }
 [contenteditable] blockquote.quotation,
 [bind-html] blockquote.quotation {
@@ -5990,6 +5997,11 @@ side-panel .toggle .content {
   text-align: right;
   font-style: italic;
   color: #666;
+}
+[contenteditable] table td,
+[bind-html] table td {
+  padding: 5px;
+  border: 1px solid #eee;
 }
 body editor .quote.option [contenteditable] {
   height: 200px;
@@ -6434,20 +6446,30 @@ body editor {
   float: left;
   width: 100%;
 }
+body editor input[type=color] {
+  background: transparent;
+  border: none;
+  display: inline-block !important;
+  width: 45px !important;
+  cursor: pointer;
+}
 body editor .editor-toolbar-opener,
 body editor .close-focus {
   display: none;
 }
 body editor.focus.edit editor-toolbar.inline select-list,
-body editor.focus.both body editor.focus.html editor-toolbar.inline select-list {
+body editor.focus.both editor-toolbar.inline select-list,
+body editor.focus.html editor-toolbar.inline select-list {
   display: inline;
   opacity: 1;
   pointer-events: all;
 }
 body editor.focus.edit editor-toolbar.inline popover,
-body editor.focus.both body editor.focus.html editor-toolbar.inline popover,
+body editor.focus.both editor-toolbar.inline popover,
+body editor.focus.html editor-toolbar.inline popover,
 body editor.focus.edit editor-toolbar.inline > popover,
-body editor.focus.both body editor.focus.html editor-toolbar.inline > popover {
+body editor.focus.both editor-toolbar.inline > popover,
+body editor.focus.html editor-toolbar.inline > popover {
   display: inline-block;
   opacity: 1;
   pointer-events: all;
@@ -6496,7 +6518,7 @@ body editor > popover popover-content::before {
   left: auto;
   right: 0;
 }
-body editor > [contenteditable] {
+body editor [contenteditable] {
   overflow: hidden;
   float: left;
   box-sizing: border-box;
@@ -6507,7 +6529,7 @@ body editor > [contenteditable] {
   height: 300px;
   border: 1px solid #ddd !important;
 }
-body editor > [contenteditable] a img {
+body editor [contenteditable] a img {
   border: 1px dashed;
 }
 body editor[inline] code.language-html {
@@ -6532,7 +6554,7 @@ body editor > textarea {
   margin: 0;
   min-height: 300px;
   line-height: 1.5em;
-  font-family: Consolas;
+  font-family: monospace;
   tab-size: 4;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -6552,12 +6574,14 @@ body editor > code.language-html {
   border: 1px solid transparent;
   border-top-width: 2px;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 body editor > code.language-html .tag {
   padding-left: 0;
 }
-body editor.edit > [contenteditable] {
+body editor.edit [contenteditable] {
   width: 100%;
+  min-height: 250px;
 }
 body editor.edit > textarea,
 body editor.edit > code {
@@ -6567,7 +6591,7 @@ body editor.edit > code {
   height: 0 !important;
   min-height: 0 !important;
 }
-body editor.html > [contenteditable] {
+body editor.html [contenteditable] {
   width: 0;
   padding: 0;
   border: 0;
@@ -6581,7 +6605,7 @@ body editor.html > textarea {
 body editor.html > code {
   width: 100%;
 }
-body editor.both > [contenteditable] {
+body editor.both [contenteditable] {
   width: 50%;
 }
 body editor.both > textarea {
@@ -6628,6 +6652,7 @@ body editor contextual-menu.show {
 body editor.edit editor-toolbar,
 body editor.both editor-toolbar,
 body editor.html editor-toolbar {
+  color: black;
   display: block;
   float: left;
   width: 100%;
@@ -6687,9 +6712,12 @@ body editor.html editor-toolbar .option {
   vertical-align: middle;
   border-bottom: 3px solid transparent;
 }
-body editor.edit editor-toolbar .option i,
-body editor.both editor-toolbar .option i,
-body editor.html editor-toolbar .option i {
+body editor.edit editor-toolbar .option > i,
+body editor.both editor-toolbar .option > i,
+body editor.html editor-toolbar .option > i,
+body editor.edit editor-toolbar .option popover i,
+body editor.both editor-toolbar .option popover i,
+body editor.html editor-toolbar .option popover i {
   display: inline-block;
   -o-transition: all 250ms ease;
   -moz-transition: all 250ms ease;
@@ -7227,6 +7255,18 @@ select-list .selected-value {
   vertical-align: middle;
   padding-right: 15px;
 }
+select-list .selected-value::after {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #888;
+  content: " ";
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  margin-top: -1px;
+}
 @media screen and (max-width: 700px) {
   body editor popover {
     display: none;
@@ -7315,7 +7355,8 @@ select-list .selected-value {
   }
 }
 @media screen and (max-width: 800px) {
-  body .widgets {
+  body .widgets,
+  body .widgets-picker {
     display: none;
   }
   body .widgets-friend {
@@ -9388,7 +9429,8 @@ div.users-search > div form input[type=text] {
 }
 div.users-search > ul {
   list-style: none;
-  padding: 0 20 20 0;
+  padding: 0 20px 0 0;
+  margin-bottom: 0px;
   border-right: 2px ridge #319171;
   border-bottom: 2px ridge #319171;
   overflow-y: scroll;
