@@ -48,22 +48,6 @@ function Timeline($scope, date, model, lang){
 	$scope.loadPage = function(){
 		model.notifications.sync(true);
 	}
-
-    $scope.filterTypes = function(typeObj){
-        var type = typeObj.data
-        var matchingNotifs = $scope.registeredNotifications.filter(function(notif){ return notif.type === type })
-        if(matchingNotifs.length < 1)
-            return true
-        var access = model.me.apps.some(function(app){
-            return _.some(matchingNotifs, function(n){
-                return app.name.toLowerCase() === n.type.toLowerCase() || (n["app-name"] && app.name.toLowerCase() === n["app-name"].toLowerCase())
-            })
-        })
-        if(!access){
-            typeObj.selected = false
-        }
-        return access
-    }
 }
 
 function Personalization($rootScope, $scope, model, ui){
