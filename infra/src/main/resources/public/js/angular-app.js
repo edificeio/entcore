@@ -5088,13 +5088,23 @@ function Share($rootScope, $scope, ui, _, lang){
 		var addedIndex = $scope.found.indexOf(item);
 		$scope.found.splice(addedIndex, 1);
 
+        var defaultActions = []
 		$scope.actions.forEach(function(action){
 			var actionId = action.displayName.split('.')[1];
 			if(actionsConfiguration[actionId].default){
 				item.actions[action.displayName] = true;
-				$scope.saveRights(item, action);
+                defaultActions.push(action);
 			}
 		});
+
+        var index = -1;
+        var loopAction = function(){
+            if(++index < defaultActions.length){
+                $scope.saveRights(item, defaultActions[index], loopAction);
+            }
+        }
+        loopAction()
+
 	};
 
 	$scope.findUserOrGroup = function(){
@@ -5147,7 +5157,7 @@ function Share($rootScope, $scope, ui, _, lang){
 		$scope.maxEdit += displayMoreInc;
 	}
 
-	function applyRights(element, action){
+	function applyRights(element, action, cb){
 		var data;
 		if(element.login !== undefined){
 			data = { userId: element.id }
@@ -5184,6 +5194,13 @@ function Share($rootScope, $scope, ui, _, lang){
 			});
 		}
 
+        var times = $scope.resources.length
+        var countdownAction = function(){
+            if(--times <= 0 && typeof cb === 'function'){
+                cb()
+            }
+        }
+
 		$scope.resources.forEach(function(resource){
 			http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
 				if(setPath === 'remove'){
@@ -5192,19 +5209,19 @@ function Share($rootScope, $scope, ui, _, lang){
 				else{
 					$rootScope.$broadcast('share-updated', { added: { groupId: data.groupId, userId: data.userId, actions: rightsToActions(data.actions) } });
 				}
-
+                countdownAction()
 			});
 		});
 	}
 
-	$scope.saveRights = function(element, action){
+	$scope.saveRights = function(element, action, cb){
 		if($scope.varyingRights){
 			dropRights(function(){
-				applyRights(element, action)
+				applyRights(element, action, cb)
 			});
 		}
 		else{
-			applyRights(element, action);
+			applyRights(element, action, cb)
 		}
 	};
 }
