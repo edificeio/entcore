@@ -1,3 +1,6 @@
+<div style="{{#i18n}}timeline.mail.banner.style{{/i18n}}">
+    <img src="{{#i18n}}timeline.mail.logo.src{{/i18n}}" style="{{#i18n}}timeline.mail.logo.style{{/i18n}}" />
+</div>
 {{#i18n}}timeline.daily.mail.header{{/i18n}}
 {{#notificationDates}}
     <div style="{{#i18n}}timeline.daily.mail.notification.div.style{{/i18n}}">
@@ -5,4 +8,10 @@
         {{#nestedArray}}{{-index}}{{/nestedArray}}
     </div>
 {{/notificationDates}}
+<div style="{{#i18n}}timeline.daily.mail.action.div.style{{/i18n}}">
+    <a href="{{#i18n}}timeline.home.url{{/i18n}}" style="{{#i18n}}timeline.daily.mail.action.button.style{{/i18n}}">
+        {{#i18n}}timeline.daily.mail.action.text{{/i18n}}
+    </a>
+</div>
 {{#i18n}}timeline.daily.mail.footer{{/i18n}}
+{{#i18n}}timeline.mail.bottom{{/i18n}}
