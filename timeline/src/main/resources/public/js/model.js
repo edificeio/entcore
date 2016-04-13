@@ -91,15 +91,30 @@ model.build = function (){
 				this.load(data);
 
 				var that = this
-				model.preferences.get(function(data){
-					var pref = model.preferences.prefs
-					var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
-					that.forEach(function(t){
-						if(myFilters === null || myFilters.indexOf(t.data) >= 0){
-							t.selected = true
-						}
-					});
-					model.notifications.sync();
+                model.registeredNotifications.get(function(){
+                    that.all = that.filter(function(typeObj){
+                        var type = typeObj.data
+                        var matchingNotifs = model.registeredNotifications.filter(function(notif){ return notif.type === type })
+                        if(matchingNotifs.length < 1)
+                            return false
+                        var access = model.me.apps.some(function(app){
+                            return _.some(matchingNotifs, function(n){
+                                return app.name.toLowerCase() === n.type.toLowerCase() || (n["app-name"] && app.name.toLowerCase() === n["app-name"].toLowerCase())
+                            })
+                        })
+                        return access
+                    })
+
+				    model.preferences.get(function(){
+                        var pref = model.preferences.prefs
+                        var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
+                        that.forEach(function(t){
+                            if(myFilters === null || myFilters.indexOf(t.data) >= 0){
+                                t.selected = true
+                            }
+                        });
+                        model.notifications.sync();
+                    })
 				})
 			}.bind(this));
 		},
@@ -119,9 +134,11 @@ model.build = function (){
 	});
 
     this.collection(RegisteredNotification, {
-        sync: function(){
+        get: function(cb){
             http().get('/timeline/registeredNotifications').done(function(data){
                 this.load(data)
+                if(typeof cb === 'function')
+                    cb()
             }.bind(this));
         }
     });

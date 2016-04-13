@@ -6,7 +6,7 @@
 		<i18n>filters.title</i18n>
 	</div>
 	<filters>
-		<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all | filter: filterTypes)" ng-class="{ selected: type.selected }">
+		<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" ng-class="{ selected: type.selected }">
 			<label>
 				<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
 				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
