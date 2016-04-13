@@ -129,11 +129,13 @@ public class DuplicateUsers {
 			}
 			query +="WHERE s.id IN {structures} " +
 					"WITH COLLECT(pg.id) as groupIds " +
-					"MATCH (s1:Structure)<-[:DEPENDS]-(g1:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]->(u2:User)-[:IN]->(g2:ProfileGroup)-[:DEPENDS]->(s2:Structure) " +
-					"WHERE g1.id IN groupIds AND g2.id IN groupIds ";
+					"MATCH (g1:ProfileGroup)<-[:IN]-(u1:User)-[r:DUPLICATE]->(u2:User)-[:IN]->(g2:ProfileGroup) " +
+					"WHERE g1.id IN groupIds AND g2.id IN groupIds " +
+					"MATCH (s1:Structure)<-[:DEPENDS]-(g1) " +
+					"OPTIONAL MATCH (s2:Structure)<-[:DEPENDS]-(g2) ";
 			query +="RETURN r.score as score, " +
-					"{id: u1.id, firstName: u1.firstName, lastName: u1.lastName, birthDate: u1.birthDate, email: u1.email, profiles: u1.profiles, structures: collect(s1.id)} as user1, " +
-					"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email, profiles: u2.profiles, structures: collect(s2.id)} as user2 " +
+					"{id: u1.id, firstName: u1.firstName, lastName: u1.lastName, birthDate: u1.birthDate, email: u1.email, profiles: u1.profiles, structures: collect(distinct s1.id)} as user1, " +
+					"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email, profiles: u2.profiles, structures: collect(distinct s2.id)} as user2 " +
 					"ORDER BY score DESC";
 		} else {
 			query = "MATCH (u1:User)-[r:DUPLICATE]->(u2:User) ";
