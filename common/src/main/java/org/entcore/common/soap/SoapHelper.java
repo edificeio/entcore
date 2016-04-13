@@ -144,7 +144,7 @@ public class SoapHelper {
 
 		/**
 		 * Creates a new descriptor.
-		 * @param message RPC method name.
+		 * @param method RPC method name.
 		 */
 		public SoapDescriptor(String method){
 			bodyTag = new Triplet<>("", method, "");
@@ -155,7 +155,7 @@ public class SoapHelper {
 		 *
 		 * @param namespaceUri Namespace URI value.
 		 * @param namespacePrefix Namespace prefix value.
-		 * @return
+		 * @return Itself
 		 */
 		public SoapDescriptor setBodyNamespace(String namespaceUri, String namespacePrefix){
 			bodyTag._1 = namespaceUri;
