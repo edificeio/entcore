@@ -2423,7 +2423,8 @@ window.RTE = (function () {
                         element.addClass('edit');
                         var editZone = element.find('[contenteditable=true]');
                         var htmlZone = element.children('textarea');
-			            var highlightZone = element.children('code');
+                        var highlightZone = element.children('code');
+                        var toolbarElement = element.children('editor-toolbar');
 			            document.execCommand("styleWithCSS", false, true);
 
                         if(attributes.inline !== undefined){
@@ -2483,9 +2484,30 @@ window.RTE = (function () {
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         });
 
-                        /*element.on('dragenter', function(e){
-                            e.preventDefault();
-                        });*/
+                        function sticky() {
+                            toolbarElement.addClass('sticky');
+                            var topDistance = element.offset().top;
+                            if (topDistance < window.scrollY) {
+                                topDistance = window.scrollY;
+                            }
+                            else {
+                                toolbarElement.removeClass('sticky');
+                            }
+                            if (topDistance > editZone.offset().top + editZone.height() - toolbarElement.height()) {
+                                topDistance = editZone.offset().top + editZone.height() - toolbarElement.height();
+                            }
+                            toolbarElement.offset({
+                                top: topDistance + parseInt(toolbarElement.css('margin-top'))
+                            });
+                            element.children('popover').offset({
+                                top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10
+                            });
+                            highlightZone.offset({ top: htmlZone.offset().top });
+
+                            var placeEditorToolbar = requestAnimationFrame(sticky);
+                        }
+
+                        var placeEditorToolbar = requestAnimationFrame(sticky);
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
@@ -2854,8 +2876,11 @@ window.RTE = (function () {
                                         editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
                                     });
                                 }())
-
                             }
+                        });
+
+                        scope.$on('$destroy', function () {
+                            cancelAnimationFrame(placeEditorToolbar);
                         });
 			        }
 			    };
