@@ -45,7 +45,8 @@ object TimelineScenario {
             {"userId" : "${teacherId}", "unread" : 1},
             {"userId" : "${studentId}", "unread" : 1}
             ],
-            "type" : "MY_EXTERNAL_APP_EVENT"
+            "type" : "MY_EXTERNAL_APP_EVENT",
+            "params": {}
         }"""))
       .check(status.is(201)))
     .exec(http("MyExternalApp list events on Timeline")
