@@ -1551,7 +1551,8 @@ public class WorkspaceService extends BaseController {
 
 	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-			.putString("userUri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+			.putString("userUri", container.config().getString("host", "http://localhost:8090") +
+					"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
 
