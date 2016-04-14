@@ -237,7 +237,7 @@ public class IndicatorMongoImpl extends Indicator{
 	 *  <li>Count the number of traces.</li>
 	 *  <li>Write to the database this aggregated number.</li>
 	 *  <li>For each IndicatorGroup, repeat the process recursively.</li>
-	 * <ul>
+	 * </ul>
 	 * @param callBack : Handler called when processing is over.
 	 */
 	public void aggregate(final Handler<JsonObject> callBack){
