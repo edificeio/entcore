@@ -66,6 +66,9 @@
     "timeline.weekly.mail.notification.type.link.style": "font-size: 20px; text-decoration: none;",
     "timeline.weekly.mail.notification.event-types.ul.style": "padding: 10px",
     "timeline.weekly.mail.notification.event-type.li.style": "padding: 10px; margin: 10px; border-top: 1px solid black;",
+    "timeline.weekly.mail.call.link.style": "text-align: right; display: block; text-decoration: none;",
+    "timeline.weekly.mail.call.button.style": "width: 130px; height: 40px; line-height: 40px; font-size: 14px; background: blue; color: white; text-decoration:none; text-transform: uppercase; text-align: center;",
+    "timeline.weekly.mail.call.button.text":"Consulter",
     "timeline.weekly.mail.footer": "<div style='margin: 10px 0px 10px 10px;'>A bientôt sur votre ENT.</div>",
 
     "timeline.mail.bottom": "<div style='margin: 10px 0px 10px 10px;'>Pour changer vos préférences de notifications, rendez-vous dans la rubrique Mon Compte de votre ENT</div>"
