@@ -14,9 +14,9 @@
 		<admin-portal>
             <h1><i18n>admin.timeline.header</i18n></h1>
             <p><i18n>admin.timeline.intro</i18n></p>
-            <div ng-repeat="(type, notifs) in typesMap">
-                <h3 translate content="[[type.toLowerCase()]]"></h3>
-                <div ng-repeat="notif in notifs" class="row vertical-spacing-twice horizontal-spacing-twice">
+            <div ng-repeat="type in types | orderBy: orderTypes">
+                <h3 translate content="[[type.type.toLowerCase()]]"></h3>
+                <div ng-repeat="notif in type.notifs | orderBy: orderNotifs" class="row vertical-spacing-twice horizontal-spacing-twice">
                     <i class="slide-arrow horizontal-spacing" ng-class="{'slided': slided}"></i>
                     <strong class="vertical-spacing-twice" translate content="[[notif.key]]" ng-click="slided = !slided"></strong>
                     <div class="horizontal-spacing-twice" slide="slided">
