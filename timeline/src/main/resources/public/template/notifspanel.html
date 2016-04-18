@@ -23,7 +23,7 @@
             <table ng-repeat="appli in applis.all | orderBy: 'orderType'" >
               <thead ng-class="{ slided: appli.slided }">
                   <tr ng-init="appli.slided = $first">
-                    <td><i ng-click="appli.slided = appli.slided ? false : true "  class="arrow"></i>[[lang.translate(appli.type.toLowerCase())]]</td>
+                    <td ng-click="appli.slided = appli.slided ? false : true "><i class="arrow"></i>[[lang.translate(appli.type.toLowerCase())]]</td>
                     <td data-label="[[lang.translate('xtnotifications.immediat')]]"><span><input type="radio" value="IMMEDIATE" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
                     <td data-label="[[lang.translate('xtnotifications.daily')]]"><span><input type="radio" value="DAILY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
                     <td data-label="[[lang.translate('xtnotifications.weekly')]]"><span><input type="radio" value="WEEKLY" name="[[appli.type]]" ng-model="appli.freq" ng-change="appliFreq(appli)"/></span></td>
