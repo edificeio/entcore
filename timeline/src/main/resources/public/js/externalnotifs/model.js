@@ -13,6 +13,10 @@ UserInfos.prototype.getinfo = function(callback){
     }.bind(this))
 }
 
+UserInfos.prototype.putinfo = function(){
+    http().putJson('/directory/user/' + this.id, {email: this.email});
+}
+
 function Appli(data){
     this.collection(AppAction)
     this.appActions.load(data.appActions)

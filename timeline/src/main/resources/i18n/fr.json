@@ -1,4 +1,5 @@
 {
+    "form.invalid.email": "Courriel invalide",
     "loading": "Chargement ...",
     "blog": "Blog",
     "comments.add": "Commenter",
