@@ -16,6 +16,10 @@ UserInfos.prototype.getinfo = function(callback){
 function Appli(data){
     this.collection(AppAction)
     this.appActions.load(data.appActions)
+
+    this.appActions.each(function(appAction){
+        appAction.orderName = lang.translate(appAction.key.toLowerCase())
+    })
 }
 
 Preference.prototype.getinfo = function(callback){
@@ -58,7 +62,8 @@ model.build = function(){
                         appName: item[0]['app-name'],
                         type: item[0]['type'],
                         appAddress: item[0]['app-address'],
-                        eventType: item[0]['event-type']
+                        eventType: item[0]['event-type'],
+                        orderType: lang.translate(item[0]['type'].toLowerCase())
                     }
                 })
 
