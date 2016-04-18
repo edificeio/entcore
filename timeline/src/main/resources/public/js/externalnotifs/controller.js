@@ -21,8 +21,16 @@ function MainController($rootScope, $scope, template, lang, model){
 		})
 	}
 
-	$scope.removeAppliFreq = function(appli){
-		delete appli.freq
+	$scope.updateAppliFreq = function(appli){
+		var val = appli.appActions.all[0].defaultFrequency;
+		var result = appli.appActions.every(function(appAction){
+			return val === appAction.defaultFrequency
+		})
+		if(result){
+			appli.freq = val
+		} else {
+			delete appli.freq
+		}
 	}
 
 	$scope.savePreferences = function(){

@@ -78,6 +78,16 @@ model.build = function(){
                                 appAction.defaultFrequency = model.preference.preference.config[appAction.key].defaultFrequency
                             }
                         })
+
+                        if(appli.appActions.all.length){
+                            var val = appli.appActions.all[0].defaultFrequency;
+                            var result = appli.appActions.every(function(appAction){
+                                return val === appAction.defaultFrequency
+                            })
+                            if(result){
+                                appli.freq = val;
+                            }
+                        }
                     })
                 });
             }.bind(this))
