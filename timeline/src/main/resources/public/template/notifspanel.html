@@ -2,9 +2,16 @@
     <h2><i18n>xtnotifications.title</i18n></h2>
 
     <div class="row">
-        <span><i18n>xtnotifications.mail</i18n></span>
-        <span class="disable">[[userinfos.email]]</span>
-        <a class="contextual-link" href="/userbook/mon-compte"><i18n>xtnotifications.mail.change</i18n></a>
+        <div class="cell reduce-block-six"><i18n>xtnotifications.mail</i18n></div>
+
+        <form name="userForm" novalidate class="reduce-block-four">
+            <input type="email" name="mail" complete-change="userForm.$valid ? saveChanges(userinfos) : ''" ng-model="userinfos.email"/>
+            <span ng-if="userForm.mail.$invalid && userForm.mail.$dirty" class="input-errors" >
+                <span ng-repeat="(key, value) in userForm.mail.$error">
+                    <label ng-if="value">[[lang.translate('form.invalid.'+key)]]</label>
+                </span>
+            </span>
+        </form>
     </div>
 
     <div class="responsive-table">

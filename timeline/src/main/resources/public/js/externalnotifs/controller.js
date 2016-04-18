@@ -15,6 +15,10 @@ function MainController($rootScope, $scope, template, lang, model){
 		$scope.$apply();
 	});
 
+	$scope.saveChanges = function(userinfos){
+		userinfos.putinfo()
+	}
+
 	$scope.appliFreq = function(appli){
 		appli.appActions.each(function(appAction){
 			appAction.defaultFrequency = appli.freq;
