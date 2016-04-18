@@ -2496,12 +2496,23 @@ window.RTE = (function () {
                             if (topDistance > editZone.offset().top + editZone.height() - toolbarElement.height()) {
                                 topDistance = editZone.offset().top + editZone.height() - toolbarElement.height();
                             }
-                            toolbarElement.offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top'))
-                            });
-                            element.children('popover').offset({
-                                top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10
-                            });
+                            if (attributes.inline !== undefined) {
+                                toolbarElement.offset({
+                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) - parseInt(element.css('margin-top'))
+                                });
+                                element.children('popover').offset({
+                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10 - parseInt(element.css('margin-top'))
+                                });
+                            }
+                            else {
+                                toolbarElement.offset({
+                                    top: topDistance + parseInt(toolbarElement.css('margin-top'))
+                                });
+                                element.children('popover').offset({
+                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10
+                                });
+                            }
+                            
                             highlightZone.offset({ top: htmlZone.offset().top });
 
                             var placeEditorToolbar = requestAnimationFrame(sticky);
