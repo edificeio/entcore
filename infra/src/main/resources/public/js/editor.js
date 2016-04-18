@@ -2484,7 +2484,12 @@ window.RTE = (function () {
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
                         });
 
+                        var previousScroll = 0;
                         function sticky() {
+                            if (previousScroll === window.scrollY) {
+                                var placeEditorToolbar = requestAnimationFrame(sticky);
+                                return;
+                            }
                             toolbarElement.addClass('sticky');
                             var topDistance = element.offset().top;
                             if (topDistance < window.scrollY) {
@@ -2514,6 +2519,8 @@ window.RTE = (function () {
                             }
                             
                             highlightZone.offset({ top: htmlZone.offset().top });
+
+                            previousScroll = window.scrollY;
 
                             var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
