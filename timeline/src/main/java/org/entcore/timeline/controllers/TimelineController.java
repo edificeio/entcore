@@ -95,11 +95,9 @@ public class TimelineController extends BaseController {
 
 		ctx.put("i18n", new Mustache.Lambda() {
 			@Override
-			public void execute(Template.Fragment frag, Writer out)
-					throws IOException {
+			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String key = frag.execute();
-				String language = Utils.getOrElse(
-						request.headers().get("Accept-Language"), "fr", false);
+				String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
 
 				JsonObject timelineI18n;
 				if (!lazyEventsI18n.containsKey(language)) {
@@ -110,11 +108,22 @@ public class TimelineController extends BaseController {
 					timelineI18n = lazyEventsI18n.get(language);
 				}
 
+				final String translatedContents;
 				if (timelineI18n.getString(key, key).equals(key)) {
-					out.write(I18n.getInstance().translate(key, language));
+					translatedContents = I18n.getInstance().translate(key, language);
 				} else {
-					out.write(timelineI18n.getString(key, key));
+					translatedContents = timelineI18n.getString(key, key);
 				}
+				Mustache.compiler().compile(translatedContents).execute(ctx, out);
+			}
+		});
+
+		ctx.put("host", new Mustache.Lambda() {
+			@Override
+			public void execute(Template.Fragment frag, Writer out) throws IOException{
+				String contents = frag.execute();
+				String host = container.config().getString("host", "http://localhost:8090");
+				out.write(host + contents);
 			}
 		});
 
