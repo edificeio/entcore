@@ -2,6 +2,7 @@
     "ADMIN_LOCAL": "Administrateur local",
     "Guest": "Invité",
     "MANUAL": "Manuel",
+    "CLASS_PARAM" : "Paramétrage de la classe",
     "Relative": "Parent",
     "SUPER_ADMIN": "Administrateur central",
     "Student": "Élève",

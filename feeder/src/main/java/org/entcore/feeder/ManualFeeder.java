@@ -539,6 +539,7 @@ public class ManualFeeder extends BusModBase {
 						public void procRow(int rowIdx, String... values) {
 							int i = 0;
 							JsonObject props = new JsonObject();
+							props.putString("source", "CLASS_PARAM");
 							while (i < values.length && !"#break#".equals(Be1dFeeder.studentHeader[i])) {
 								if ("birthDate".equals(Be1dFeeder.studentHeader[i]) && values[i] != null) {
 									Matcher m;
@@ -639,6 +640,7 @@ public class ManualFeeder extends BusModBase {
 						public void procRow(int rowIdx, String... values) {
 							int i = 0;
 							JsonObject props = new JsonObject();
+							props.putString("source", "CLASS_PARAM");
 							while (i < Be1dFeeder.relativeHeader.length) {
 								if (!"#skip#".equals(Be1dFeeder.relativeHeader[i])) {
 									if (values[i] != null && !values[i].trim().isEmpty()) {
