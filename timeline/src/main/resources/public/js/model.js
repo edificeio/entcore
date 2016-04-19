@@ -81,7 +81,7 @@ model.build = function (){
 				notify.error(data);
 			});
 
-			http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs, params));
+			http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs || {}, params));
 		}
 	});
 
