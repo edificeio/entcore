@@ -74,6 +74,9 @@ model.build = function(){
                 this.load(data);
 
                 model.preference.getinfo(function(){
+                    if(!model.preference.preference)
+                        model.preference.preference = {}
+                        
                     if(!model.preference.preference.config)
                         return
             		model.applis.each(function(appli){
