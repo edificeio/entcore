@@ -414,6 +414,9 @@ public class TimelineMailer {
 											final String notificationName =
 												notification.getString("type","").toLowerCase() + "." +
 												notification.getString("event-type", "").toLowerCase();
+											if(notificationsDefaults.getObject(notificationName) == null)
+												continue;
+
 											JsonObject notificationPreference = userPrefs
 													.getObject("preferences", new JsonObject())
 														.getObject("config", new JsonObject())
@@ -581,6 +584,9 @@ public class TimelineMailer {
 											final String notificationName =
 												notification.getString("type","").toLowerCase() + "." +
 												notification.getString("event-type", "").toLowerCase();
+											if(notificationsDefaults.getObject(notificationName) == null)
+												continue;
+
 											JsonObject notificationPreference = userPrefs
 													.getObject("preferences", new JsonObject())
 														.getObject("config", new JsonObject())
