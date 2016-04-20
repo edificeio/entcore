@@ -168,8 +168,8 @@ public class TimelineMailer {
 			"MATCH (u:User), u-[:IN]->(g:Group)-[:AUTHORIZED]-(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) " +
 			"WHERE u.activationCode IS NULL AND u.email IS NOT NULL AND length(u.email) > 0 " +
 			"AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\"" +
-			"WITH u SKIP {skip} LIMIT {limit} "+
-			"RETURN DISTINCT u.email as mail, u.id as id";
+			"RETURN DISTINCT u.email as mail, u.id as id " +
+			"SKIP {skip} LIMIT {limit}";
 		JsonObject params = new JsonObject()
 			.putNumber("skip", page * USERS_LIMIT)
 			.putNumber("limit", USERS_LIMIT);
