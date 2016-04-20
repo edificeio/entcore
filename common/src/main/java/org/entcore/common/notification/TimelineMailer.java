@@ -392,12 +392,10 @@ public class TimelineMailer {
 						userIds.add(((JsonObject) userObj).getString("id", ""));
 					getUsersPreferences(userIds, new Handler<JsonArray>(){
 						public void handle(JsonArray preferences) {
-							int i = 0;
-							for(Object userObj : users){
-								final JsonObject user = (JsonObject) userObj;
-								final JsonObject userPrefs = (JsonObject) preferences.get(i);
+							for(Object userObj : preferences){
+								final JsonObject userPrefs = (JsonObject) userObj;
 
-								getUserNotifications(user.getString("id", ""), dayDate.getTime(), new Handler<JsonArray>(){
+								getUserNotifications(userPrefs.getString("userId", ""), dayDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
 										if(notifications.size() == 0){
 											usersEndHandler.handle(null);
@@ -459,7 +457,7 @@ public class TimelineMailer {
 														public void handle(JsonArray translations) {
 															//Send mail containing the "daily" notifications
 															emailSender.sendEmail(request,
-																user.getString("mail", ""),
+																userPrefs.getString("userMail", ""),
 																null,
 																null,
 																translations.get(0).toString(),
@@ -565,12 +563,10 @@ public class TimelineMailer {
 						userIds.add(((JsonObject) userObj).getString("id", ""));
 					getUsersPreferences(userIds, new Handler<JsonArray>(){
 						public void handle(JsonArray preferences) {
-							int i = 0;
-							for(Object userObj : users){
-								final JsonObject user = (JsonObject) userObj;
-								final JsonObject userPrefs = (JsonObject) preferences.get(i);
+							for(Object userObj : preferences){
+								final JsonObject userPrefs = (JsonObject) userObj;
 
-								getAggregatedUserNotifications(user.getString("id", ""), weekDate.getTime(), new Handler<JsonArray>(){
+								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
 										if(notifications.size() == 0){
 											usersEndHandler.handle(null);
@@ -648,7 +644,7 @@ public class TimelineMailer {
 														public void handle(JsonArray translations) {
 															//Send mail containing the "daily" notifications
 															emailSender.sendEmail(request,
-																user.getString("mail", ""),
+																userPrefs.getString("userMail", ""),
 																null,
 																null,
 																translations.get(0).toString(),
