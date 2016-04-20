@@ -2666,6 +2666,7 @@ window.RTE = (function () {
                                if($(item).attr('src').startsWith('data:')){
                                    var split = $(item).attr('src').split('data:')[1].split(',');
                                    var blob = b64toBlob(split[1], split[0].split(';')[0]);
+								   blob.name = 'image';
                                    $(item).attr('src', 'http://loading');
                                    workspace.Document.prototype.upload(blob, '', function(file){
                                        $(item).attr('src', '/workspace/document/' + file._id);
