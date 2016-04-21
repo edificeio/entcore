@@ -1625,6 +1625,7 @@ window.RTE = (function () {
 			                scope.attachmentOption.display.pickFile = false;
 			                scope.attachmentOption.display.files = [];
 			                instance.focus();
+			                model.mediaLibrary.appDocuments.documents.deselectAll();
 			            };
 			        }
 			    }
