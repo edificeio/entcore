@@ -2892,6 +2892,23 @@ window.RTE = (function () {
                                 return;
                             }
                             e.preventDefault();
+                            var range;
+                            var sel = window.getSelection();
+                            if (document.caretRangeFromPoint) {
+                                range = document.caretRangeFromPoint(e.originalEvent.clientX, e.originalEvent.clientY);
+                            }
+                            else if (document.caretPositionFromPoint) {
+                                var caretPosition = document.caretPositionFromPoint(e.originalEvent.clientX, e.originalEvent.clientY);
+                                range = document.createRange();
+                                range.setStart(caretPosition.offsetNode, caretPosition.offset);
+                            }
+                            if (range) {
+                                
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                                editorInstance.selection.range = range;
+                            }
+
                             for(var i = 0; i < files.length; i++){
                                 (function(){
                                     var name = files[i].name;
