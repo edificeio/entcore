@@ -473,7 +473,9 @@ window.RTE = (function () {
 
                         sel.removeAllRanges();
                         sel.addRange(range);
-                        that.instance.trigger('selectionchange');
+                        that.instance.trigger('selectionchange', {
+                            selection: that.instance.selection
+                        });
                     }
 				}
 
@@ -719,12 +721,13 @@ window.RTE = (function () {
 					template: '<i tooltip="editor.option.underline"></i>',
 					link: function(scope, element, attributes){
 						element.on('click', function(){
-							instance.execCommand('underline');
-							if(document.queryCommandState('underline')){
-								element.addClass('toggled');
+						    if (document.queryCommandState('underline')) {
+						        instance.selection.css({ 'text-decoration': 'none' });
+						        element.removeClass('toggled');
 							}
-							else{
-								element.removeClass('toggled');
+						    else {
+						        instance.selection.css({ 'text-decoration': 'underline' });
+						        element.addClass('toggled');
 							}
 						});
 
@@ -1139,8 +1142,8 @@ window.RTE = (function () {
 						});
 
 						scope.$watch('backColor', function () {
+						    var rgbColor = {};
 						    if (typeof scope.backColor === 'string') {
-						        var rgbColor = {};
 						        if(scope.backColor[0] === '#'){
 						            rgbColor = {
 						                r: parseInt(scope.backColor.substring(1, 3), 16),
@@ -1166,7 +1169,7 @@ window.RTE = (function () {
 						        }
 						    }
 						    
-						    if(scope.backColor !== eval(instance.selection.css('background-color'))) {
+						    if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0) {
 						        instance.selection.css({ 'background-color': scope.backColor });
 						    }
 						});
@@ -1174,7 +1177,7 @@ window.RTE = (function () {
 						instance.on('selectionchange', function(e){
 						    scope.backColor = eval(instance.selection.css('background-color'));
 						    if (scope.backColor === 'rgba(255, 255, 255, 0)') {
-						        scope.backColor = '#FFFFFF';
+						        scope.backColor = '';
 						    }
 						    element.children('input').val(scope.backColor);
 						    scope.$apply('backColor');
