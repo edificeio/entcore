@@ -218,7 +218,8 @@ var ui = (function(){
 		//CSS transitions expansions
         var animationTimer;
 		$('body').on('click', 'article.preview', function(e){
-			if($(this).hasClass('expanded')){
+		    if ($(this).hasClass('expanded')) {
+		        clearTimeout(animationTimer);
 				if(($(this).height() + parseInt($(this).css('padding-top')) + parseInt($(this).css('padding-bottom'))) === this.scrollHeight){
 					$(this).css({ transition: 'none', height: 'auto' });
 				}
