@@ -1633,7 +1633,7 @@ window.RTE = (function () {
                                 '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
 			                    '<div class="attachments">';
 			                scope.attachmentOption.display.files.forEach(function (file) {
-			                    html += '<a href="/workspace/document/' + file._id + '"><i class="download"></i>' + file.name + '</a>';
+			                    html += '<a href="/workspace/document/' + file._id + '"><div class="download"></div>' + file.name + '</a>';
 			                });
 
 			                html += '</div></div><div><br /><div><br /></div></div>';
@@ -2905,7 +2905,7 @@ window.RTE = (function () {
                                             el = $('<div class="download-attachments">' +
                                                 '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
 			                                    '<div class="attachments">' +
-                                                    '<a href="/workspace/document/' + doc._id + '"><i class="download"></i>' + name + '</a>' +
+                                                    '<a href="/workspace/document/' + doc._id + '"><div class="download"></div>' + name + '</a>' +
                                             '</div></div><div><br /><div><br /></div></div>');
                                         }
 
