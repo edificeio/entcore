@@ -1139,13 +1139,26 @@ window.RTE = (function () {
 						});
 
 						scope.$watch('backColor', function () {
-						    if (typeof scope.backColor === 'string' && scope.backColor[0] === '#') {
-						        var rgbColor = {
-						            r: parseInt(scope.backColor.substring(1, 3), 16),
-						            g: parseInt(scope.backColor.substring(3, 5), 16),
-						            b: parseInt(scope.backColor.substring(5, 7), 16)
+						    if (typeof scope.backColor === 'string') {
+						        var rgbColor = {};
+						        if(scope.backColor[0] === '#'){
+						            rgbColor = {
+						                r: parseInt(scope.backColor.substring(1, 3), 16),
+						                g: parseInt(scope.backColor.substring(3, 5), 16),
+						                b: parseInt(scope.backColor.substring(5, 7), 16)
+						            }
 						        }
-						        if (rgbColor.r > 130 && rgbColor.g > 130 && rgbColor.b > 130) {
+						        else if (scope.backColor.startsWith('rgb')) {
+						            var spl = scope.backColor.split('(')[1].split(',');
+						            rgbColor = {
+						                r: parseInt(spl[0]),
+						                g: parseInt(spl[1]),
+						                b: parseInt(spl[2]),
+						                a: parseInt(spl[3])
+						            }
+						        }
+						    
+						        if (rgbColor.r > 130 && rgbColor.g > 130 && rgbColor.b > 130 && rgbColor.a !== 0) {
 						            element.find('i').css({ 'color': '#000' });
 						        }
 						        else {
@@ -1160,7 +1173,11 @@ window.RTE = (function () {
 
 						instance.on('selectionchange', function(e){
 						    scope.backColor = eval(instance.selection.css('background-color'));
-							element.children('input').val(scope.backColor);
+						    if (scope.backColor === 'rgba(255, 255, 255, 0)') {
+						        scope.backColor = '#FFFFFF';
+						    }
+						    element.children('input').val(scope.backColor);
+						    scope.$apply('backColor');
 						});
 					}
 				};
