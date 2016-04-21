@@ -4398,11 +4398,14 @@ module.directive('stickToTop', function(){
 
 			$(window).scroll(function(){
 				if(initialPosition.top < $(window).scrollTop()){
+					element.addClass('scrolling')
 					element.offset({
 						top: $(window).scrollTop()
 					});
 				}
 				else{
+					element.removeClass('scrolling')
+
 					element.offset({
 						top: initialPosition.top
 					});
