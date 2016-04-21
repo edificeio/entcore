@@ -1338,18 +1338,24 @@ module.directive('bindHtml', function($compile){
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				var htmlContent = htmlVal[0].outerHTML;
-				if($(htmlContent).find('.math-tex').length > 0){
-                    if (!window.MathJax) {
-                        loader.openFile({
-                            async: true,
-                            ajax: false,
-                            url: '/infra/public/mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML',
-                            success: function(){
-                                MathJax.Hub.Config({ messageStyle: 'none', tex2jax: { preview: 'none' } });
-                                MathJax.Hub.Typeset();
-                            }
-                        });
-                    }
+                if (!window.MathJax) {
+                    loader.openFile({
+                        async: true,
+                        ajax: false,
+                        url: '/infra/public/mathjax/MathJax.js',
+                        success: function () {
+                            MathJax.Hub.Config({
+                                messageStyle: 'none',
+                                tex2jax: { preview: 'none' },
+                                jax: ["input/TeX", "output/CommonHTML"],
+                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
+                                TeX: {
+                                    extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
+                                }
+                            });
+                            MathJax.Hub.Typeset();
+                        }
+                    });
                 }
 				element.html($compile(htmlContent)(scope.$parent));
 				//weird browser bug with audio tags
