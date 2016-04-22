@@ -2615,7 +2615,8 @@ window.RTE = (function () {
                                 byteArrays.push(byteArray);
                             }
 
-                            var blob = new Blob(byteArrays, {type: contentType});
+                            var blob = new Blob(byteArrays, { type: contentType });
+                            blob.name = "image";
                             return blob;
                         }
 
