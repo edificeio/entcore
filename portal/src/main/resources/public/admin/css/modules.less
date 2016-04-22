@@ -1620,9 +1620,12 @@ table tr:hover{
 	background: #ccc;
 }
 
-table{
+table.duplicates{
 	width: 100%;
 	border-bottom: 2px solid @main;
+    table-layout: fixed;
+    word-break: break-all;
+    font-size: 12px;
 
 	td{
 		padding: 5px;

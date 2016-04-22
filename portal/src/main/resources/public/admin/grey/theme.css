@@ -9315,15 +9315,18 @@ nav.admin-bar:hover ul li {
 table tr:hover {
   background: #ccc;
 }
-table {
+table.duplicates {
   width: 100%;
   border-bottom: 2px solid #607D8B;
+  table-layout: fixed;
+  word-break: break-all;
+  font-size: 12px;
 }
-table td {
+table.duplicates td {
   padding: 5px;
 }
-table tr,
-table tr.underline {
+table.duplicates tr,
+table.duplicates tr.underline {
   background: none;
   border-top: 1px dashed #ddd;
   -o-transition: background 250ms ease;
@@ -9331,7 +9334,7 @@ table tr.underline {
   -webkit-transition: background 250ms ease;
   transition: background 250ms ease;
 }
-table thead tr {
+table.duplicates thead tr {
   font-family: Lato;
   font-weight: 700;
   font-size: 1.3em;
@@ -9343,29 +9346,29 @@ table thead tr {
   border-bottom-color: #607D8B;
   border-top-color: #607D8B;
 }
-table thead tr:hover {
+table.duplicates thead tr:hover {
   background: #444;
 }
-table thead tr th {
+table.duplicates thead tr th {
   padding: 5px;
   background: white;
   font-size: 16px;
 }
-table thead tr th a.selected {
+table.duplicates thead tr th a.selected {
   color: #607D8B;
 }
-table tbody {
+table.duplicates tbody {
   font-family: Lato;
   text-align: center;
 }
-table tbody tr {
+table.duplicates tbody tr {
   border-left: 1px solid #607D8B;
   border-right: 1px solid #607D8B;
 }
-table tbody tr.separator {
+table.duplicates tbody tr.separator {
   border-bottom: 1px solid #607D8B;
 }
-table tbody.no-hover tr:hover {
+table.duplicates tbody.no-hover tr:hover {
   background: inherit;
 }
 table.comm-table {

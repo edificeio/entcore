@@ -11,15 +11,15 @@
     <h1 style="font-size: 25px; text-align: center;">[[lang.translate("directory.admin.duplicates")]]</h1>
 
     <div class="row-item">
-        <table>
+        <table class="duplicates">
             <thead>
-                <th></th>
-                <th><i18n>directory.admin.firstname<i18n></th>
+                <th style="width: 10px;"></th>
+                <th ><i18n>directory.admin.firstname<i18n></th>
                 <th><i18n>directory.admin.lastname<i18n></th>
                 <th><i18n>directory.admin.birthDate<i18n></th>
-                <th><i18n>directory.admin.email<i18n></th>
+                <th style="width: 25%"><i18n>directory.admin.email<i18n></th>
                 <th><i18n>directory.admin.profile<i18n></th>
-                <th><i18n>directory.action</i18n></th>
+                <th style="width: 140px;"><i18n>directory.action</i18n></th>
             </thead>
             <tbody class="no-hover">
                 <tr ng-repeat-start="duplicate in structure.duplicates.all">
@@ -36,7 +36,7 @@
                     <td>[[ duplicate.user1.email ]]</td>
                     <td>[[ duplicate.user1.profiles[0] ]]</td>
                     <td rowspan=2>
-                        <button ng-click="duplicate.merge(refreshDuplicates)" class="small" style="margin-right: 5px"><i18n>merge</i18n></button>
+                        <button ng-click="duplicate.merge(refreshDuplicates)" class="small" style="margin-right: 5px; margin-bottom: 10px"><i18n>merge</i18n></button>
                         <button ng-click="duplicate.dissociate(refreshDuplicates)" class="small"><i18n>dissociate</i18n></button>
                     </td>
                 </tr>
