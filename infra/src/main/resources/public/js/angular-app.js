@@ -1348,7 +1348,7 @@ module.directive('bindHtml', function($compile){
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
                                 jax: ["input/TeX", "output/CommonHTML"],
-                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
+                                extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js"],
                                 TeX: {
                                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                                 }
