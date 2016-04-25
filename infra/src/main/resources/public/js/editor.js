@@ -2287,7 +2287,7 @@ window.RTE = (function () {
 									'<div class="nine cell column">' +
 										'<article>' +
 											'<h2>' +
-                                                lang.translate('editor.templates.illustation.titlefiller') +
+                                                lang.translate('editor.templates.illustration.titlefiller') +
                                             '</h2>' +
 											'<p>' +
                                             lang.translate('editor.templates.illustration.textfiller') +
