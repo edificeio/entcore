@@ -9319,7 +9319,7 @@ table.duplicates {
   width: 100%;
   border-bottom: 2px solid #1776B2;
   table-layout: fixed;
-  word-break: break-all;
+  word-break: break-word;
   font-size: 12px;
 }
 table.duplicates td {
