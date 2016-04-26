@@ -52,7 +52,7 @@ model.build = function(){
             http().get('/timeline/notifications-defaults').done(function(data){
 
                 data = _.reject(data, function(notif){
-                    return notif.restriction === "INTERNAL"
+                    return notif.restriction === "INTERNAL" || notif.restriction === "HIDDEN"
                 })
                 data = _.filter(data, function(notif){
                     return _.find(model.me.apps, function(app){
@@ -76,7 +76,7 @@ model.build = function(){
                 model.preference.getinfo(function(){
                     if(!model.preference.preference)
                         model.preference.preference = {}
-                        
+
                     if(!model.preference.preference.config)
                         return
             		model.applis.each(function(appli){
