@@ -11,6 +11,7 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineMailer;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
+import org.entcore.timeline.cron.WeeklyMailingCronTask;
 
 public class Timeline extends BaseServer {
 
@@ -30,7 +31,7 @@ public class Timeline extends BaseServer {
 
 		try {
 			new CronTrigger(vertx, dailyMailingCron).schedule(new DailyMailingCronTask(mailer, dailyDayDelta));
-			new CronTrigger(vertx, weeklyMailingCron).schedule(new DailyMailingCronTask(mailer, weeklyDayDelta));
+			new CronTrigger(vertx, weeklyMailingCron).schedule(new WeeklyMailingCronTask(mailer, weeklyDayDelta));
 		} catch (ParseException e) {
 			log.error("Failed to start mailing crons.");
 		}

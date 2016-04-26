@@ -10,7 +10,7 @@ import fr.wseduc.webutils.Either;
 
 public class WeeklyMailingCronTask implements Handler<Long> {
 
-	private static final Logger log = LoggerFactory.getLogger(DailyMailingCronTask.class);
+	private static final Logger log = LoggerFactory.getLogger(WeeklyMailingCronTask.class);
 	private final TimelineMailer mailer;
 	private final int dayDelta;
 
