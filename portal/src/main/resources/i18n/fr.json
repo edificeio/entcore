@@ -223,5 +223,6 @@
   "record.stop": "Arrêter l'enregistrement",
   "record.play": "Jouer le son",
   "record.remove": "Annuler l'enregistrement",
-  "record.save": "Enregistrer l'enregistrement dans l'espace documentaire"
+  "record.save": "Enregistrer l'enregistrement dans l'espace documentaire",
+  "sharebigfiles": "Poste-fichiers"
 }
