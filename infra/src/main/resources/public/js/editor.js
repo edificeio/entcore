@@ -2539,7 +2539,9 @@ window.RTE = (function () {
                                 });
                             }
                             
-                            highlightZone.offset({ top: htmlZone.offset().top });
+                            setTimeout(function () {
+                                highlightZone.offset({ top: htmlZone.offset().top });
+                            }, 100);
 
                             previousScroll = window.scrollY;
 
