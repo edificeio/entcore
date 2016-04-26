@@ -7,7 +7,7 @@ function TimelineAdminController($scope, model){
 
     $scope.constants = {
         "defaultFrequency": [{label: "NEVER"}, {label: "IMMEDIATE"}, {label: "DAILY"}, {label: "WEEKLY"}],
-        "restriction": [{label: "NONE"}, {label: "INTERNAL"}, {label: "EXTERNAL"}]
+        "restriction": [{label: "NONE"}, {label: "INTERNAL"}, {label: "EXTERNAL"}, {label: "HIDDEN"}]
     }
 
     $scope.saveConfig = function(notif){

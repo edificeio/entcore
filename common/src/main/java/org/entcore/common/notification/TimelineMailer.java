@@ -297,6 +297,8 @@ public class TimelineMailer {
 											notificationPreference.getString("defaultFrequency", properties.getString("defaultFrequency"))) &&
 										!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
 											notificationPreference.getString("restriction", properties.getString("restriction"))) &&
+										!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
+												notificationPreference.getString("restriction", properties.getString("restriction"))) &&
 										userPref.getString("userMail") != null){
 										to.add(userPref.getString("userMail"));
 									}
@@ -422,6 +424,8 @@ public class TimelineMailer {
 											if(TimelineNotificationsLoader.Frequencies.DAILY.name().equals(
 													notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
 												!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
+													notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
+												!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
 													notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getObject(notificationName)))){
 												templates.add(new JsonObject()
 													.putString("template", notificationsDefaults.getObject(notificationName, new JsonObject()).getString("template", ""))
@@ -590,7 +594,9 @@ public class TimelineMailer {
 											if(TimelineNotificationsLoader.Frequencies.WEEKLY.name().equals(
 													notificationPrefsMixin("defaultFrequency", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
 												!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-													notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getObject(notificationName)))){
+													notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getObject(notificationName))) &&
+												!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
+														notificationPrefsMixin("restriction", notificationPreference, notificationsDefaults.getObject(notificationName)))){
 												notification.putString("notificationName", notificationName);
 												weeklyNotifications.add(notification);
 											}
@@ -642,7 +648,7 @@ public class TimelineMailer {
 														.add("timeline.weekly.mail.subject.header");
 													translateTimeline(keys, "fr", new Handler<JsonArray>() {
 														public void handle(JsonArray translations) {
-															//Send mail containing the "daily" notifications
+															//Send mail containing the "weekly" notifications
 															emailSender.sendEmail(request,
 																userPrefs.getString("userMail", ""),
 																null,
