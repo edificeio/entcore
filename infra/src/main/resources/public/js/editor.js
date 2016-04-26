@@ -2548,7 +2548,9 @@ window.RTE = (function () {
                             var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
 
-                        var placeEditorToolbar = requestAnimationFrame(sticky);
+                        if ($(window).width() > ui.breakpoints.tablette) {
+                            var placeEditorToolbar = requestAnimationFrame(sticky);
+                        }
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
