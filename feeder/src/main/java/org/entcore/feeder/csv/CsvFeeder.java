@@ -21,25 +21,28 @@ package org.entcore.feeder.csv;
 
 import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
+import org.entcore.feeder.Feed;
 import org.entcore.feeder.ManualFeeder;
-import org.entcore.feeder.PartialFeed;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.utils.*;
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
@@ -48,53 +51,16 @@ import static org.entcore.feeder.be1d.Be1dFeeder.frenchDatePatter;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 
-public class CsvFeeder implements PartialFeed {
+public class CsvFeeder implements Feed {
 
 	private static final Logger log = LoggerFactory.getLogger(CsvFeeder.class);
 	public static final long DEFAULT_STUDENT_SEED = 0l;
-	private final Map<String, Object> namesMapping;
+	private final ColumnsMapper columnsMapper;
+	private final Vertx vertx;
 
-	public CsvFeeder(JsonObject additionnalsMappings) {
-		JsonObject mappings = new JsonObject()
-				.putString("id", "externalId")
-				.putString("externalid", "externalId")
-				.putString("nom", "lastName")
-				.putString("prenom", "firstName")
-				.putString("classe", "classes")
-				.putString("idenfant", "childExternalId")
-				.putString("datedenaissance", "birthDate")
-				.putString("childid", "childExternalId")
-				.putString("childexternalid", "childExternalId")
-				.putString("nomenfant", "childLastName")
-				.putString("prenomenfant", "childFirstName")
-				.putString("classeenfant", "childClasses")
-				.putString("presencedevanteleves", "teaches")
-				.putString("fonction", "functions")
-				.putString("niveau", "level")
-				.putString("regime", "accommodation")
-				.putString("filiere", "sector")
-				.putString("mef", "module")
-				.putString("libellemef", "moduleName")
-				.putString("boursier", "scholarshipHolder")
-				.putString("transport", "transport")
-				.putString("statut", "status")
-				.putString("codematiere", "fieldOfStudy")
-				.putString("matiere", "fieldOfStudyLabels")
-				.putString("persreleleve", "relative")
-				.putString("civilite", "title")
-				.putString("telephone", "homePhone")
-				.putString("telephonetravail", "workPhone")
-				.putString("adresse", "address")
-				.putString("cp", "zipCode")
-				.putString("ville", "city")
-				.putString("pays", "country")
-				.putString("discipline", "classCategories")
-				.putString("matiereenseignee", "subjectTaught")
-				.putString("email", "email")
-				.putString("professeurprincipal", "headTeacher");
-
-		mappings.mergeIn(additionnalsMappings);
-		namesMapping = mappings.toMap();
+	public CsvFeeder(Vertx vertx, JsonObject additionnalsMappings) {
+		this.vertx = vertx;
+		this.columnsMapper = new ColumnsMapper(additionnalsMappings);
 	}
 
 	@Override
@@ -103,13 +69,7 @@ public class CsvFeeder implements PartialFeed {
 	}
 
 	@Override
-	public String getSource() {
-		return "CSV";
-	}
-
-	@Override
-	public void launch(final String profile, final String structureId, final String content, final String charset,
-			final Importer importer, final Handler<Message<JsonObject>> handler) throws Exception {
+	public void launch(final Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
 		if (importer.isFirstImport()) {
 			importer.profileConstraints();
 			importer.functionConstraints();
@@ -123,7 +83,7 @@ public class CsvFeeder implements PartialFeed {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if (message != null && "ok".equals(message.body().getString("status"))) {
-						start(profile, structureId, content, charset, importer, handler);
+						parse(importer, path, handler);
 					} else {
 						if (handler != null) {
 							handler.handle(message);
@@ -132,34 +92,120 @@ public class CsvFeeder implements PartialFeed {
 				}
 			});
 		} else {
-			checkNotModifiableExternalId(content, charset, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> m) {
-					if ("ok".equals(m.body().getString("status"))) {
-						start(profile, structureId, content, charset, importer, handler);
-					} else {
-						handler.handle(m);
-					}
-				}
-			});
+			parse(importer, path, handler);
 		}
 	}
 
-	private void checkNotModifiableExternalId(String content, String charset, final Handler<Message<JsonObject>> handler) {
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(0)
-				.charset(charset)
-				.create();
+	private void parse(final Importer importer, final String p, final Handler<Message<JsonObject>> handler) {
+		vertx.fileSystem().readDir(p, new Handler<AsyncResult<String[]>>() {
+			@Override
+			public void handle(AsyncResult<String[]> event) {
+				if (event.succeeded() && event.result().length == 1) {
+					final String path = event.result()[0];
+					final Structure s;
+					try {
+						JsonObject structure = CSVUtil.getStructure(path);
+			//			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
+						s = importer.createOrUpdateStructure(structure);
+						if (s == null) {
+							log.error("Structure error with directory " + path + ".");
+							handler.handle(new ResultMessage().error("structure.error"));
+							return;
+						}
+					} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+						log.error("Structure error with directory " + path + ".");
+						handler.handle(new ResultMessage().error("structure.error"));
+						return;
+					}
+					vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
+						@Override
+						public void handle(final AsyncResult<String[]> event) {
+							if (event.succeeded()) {
+								checkNotModifiableExternalId(event.result(), new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> m) {
+										if ("ok".equals(m.body().getString("status"))) {
+											launchFiles(path, event.result(), s, importer, handler);
+										} else {
+											handler.handle(m);
+										}
+									}
+								});
+							} else {
+								handler.handle(new ResultMessage().error("error.list.files"));
+							}
+						}
+					});
+				} else {
+					handler.handle(new ResultMessage().error("error.list.files"));
+				}
+			}
+		});
+	}
+
+	private void launchFiles(final String path, final String[] files, final Structure structure,
+			final Importer importer, final Handler<Message<JsonObject>> handler) {
+		Arrays.sort(files, Collections.reverseOrder());
+		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
+		handlers[handlers.length -1] = new VoidHandler() {
+			@Override
+			protected void handle() {
+				importer.restorePreDeletedUsers();
+				importer.persist(handler);
+			}
+		};
+		for (int i = files.length - 1; i >= 0; i--) {
+			final int j = i;
+			handlers[i] = new VoidHandler() {
+				@Override
+				protected void handle() {
+					final String file = files[j];
+					try {
+						log.info("Parsing file : " + file);
+						final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
+						CSVUtil.getCharset(vertx, file, new Handler<String>(){
+
+							@Override
+							public void handle(String charset) {
+								start(profile, structure, file, charset, importer, handler);
+								importer.flush(new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> message) {
+										if ("ok".equals(message.body().getString("status"))) {
+											handlers[j + 1].handle(null);
+										} else {
+											importer.getReport().addErrorWithParams("file.error", file);
+											handler.handle(null);
+										}
+									}
+								});
+							}
+						});
+					} catch (Exception e) {
+						importer.getReport().addErrorWithParams("file.error", file);
+						handler.handle(null);
+						log.error("file.error", e);
+					}
+				}
+			};
+		}
+		handlers[0].handle(null);
+	}
+
+	@Override
+	public String getSource() {
+		return "CSV";
+	}
+
+	private void checkNotModifiableExternalId(String[] files, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
-		csvParser.readAndClose(new StringReader(content), new CSVReadProc() {
+		final CSVReadProc proc = new CSVReadProc() {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					getColumsNames(strings, columns, handler);
+					columnsMapper.getColumsNames(strings, columns, handler);
 					if (columns.isEmpty()) {
 						handler.handle(new ResultMessage().error("invalid.columns"));
 						return;
@@ -174,7 +220,29 @@ public class CsvFeeder implements PartialFeed {
 					externalIds.add(strings[externalIdIdx.get()]);
 				}
 			}
-		});
+		};
+		final AtomicInteger count = new AtomicInteger(files.length);
+		for (final String file: files) {
+			CSVUtil.getCharset(vertx, file, new Handler<String>() {
+				@Override
+				public void handle(String charset) {
+					CSV csvParser = CSV
+							.ignoreLeadingWhiteSpace()
+							.separator(';')
+							.skipLines(0)
+							.charset(charset)
+							.create();
+					csvParser.read(file, proc);
+					if (count.decrementAndGet() == 0) {
+						queryNotModifiableIds(handler, externalIds);
+					}
+				}
+			});
+
+		}
+	}
+
+	private void queryNotModifiableIds(final Handler<Message<JsonObject>> handler, JsonArray externalIds) {
 		if (externalIds.size() > 0) {
 			String query =
 					"MATCH (u:User) where u.externalId IN {ids} AND u.source IN ['AAF', 'AAF1D'] " +
@@ -203,7 +271,7 @@ public class CsvFeeder implements PartialFeed {
 		}
 	}
 
-	public void start(final String profile, final String structureExternalId, String content, String charset,
+	public void start(final String profile, final Structure structure, String file, String charset,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
@@ -213,11 +281,11 @@ public class CsvFeeder implements PartialFeed {
 		DefaultFunctions.createOrUpdateFunctions(importer);
 
 		final Validator validator = ManualFeeder.profiles.get(profile);
-		final Structure structure = importer.getStructure(structureExternalId);
-		if (structure == null) {
-			handler.handle(new ResultMessage().error("invalid.structure"));
-			return;
-		}
+//		final Structure structure = importer.getStructure(structureExternalId);
+//		if (structure == null) {
+//			handler.handle(new ResultMessage().error("invalid.structure"));
+//			return;
+//		}
 
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
@@ -226,14 +294,14 @@ public class CsvFeeder implements PartialFeed {
 				.charset(charset)
 				.create();
 		final List<String> columns = new ArrayList<>();
-		csvParser.readAndClose(new StringReader(content), new CSVReadProc() {
+		csvParser.read(file, new CSVReadProc() {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					getColumsNames(strings, columns, handler);
+					columnsMapper.getColumsNames(strings, columns, handler);
 				} else {
 					JsonObject user = new JsonObject();
-					user.putArray("structures", new JsonArray().add(structureExternalId));
+					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 					user.putArray("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
 					for (int j = 0; j < strings.length; j++) {
@@ -271,16 +339,22 @@ public class CsvFeeder implements PartialFeed {
 								break;
 							default:
 								Object o = user.getValue(c);
+								final String v2;
+								if ("childClasses".equals(c) && !v.startsWith(structure.getExternalId() + "$")) {
+									v2 = structure.getExternalId() + "$" + v;
+								} else {
+									v2 = v;
+								}
 								if (o != null) {
 									if (o instanceof JsonArray) {
-										((JsonArray) o).add(v);
+										((JsonArray) o).add(v2);
 									} else {
 										JsonArray array = new JsonArray();
-										array.add(o).add(v);
+										array.add(o).add(v2);
 										user.putArray(c, array);
 									}
 								} else {
-									user.putString(c, v);
+									user.putString(c, v2);
 								}
 						}
 						if ("classes".equals(c)) {
@@ -332,7 +406,7 @@ public class CsvFeeder implements PartialFeed {
 								if ("childExternalId".equals(attr)) {
 									Object o = user.getValue(attr);
 									if (o instanceof JsonArray) {
-										for (Object c: (JsonArray)o) {
+										for (Object c : (JsonArray) o) {
 											linkStudents.add(c);
 										}
 									} else {
@@ -347,15 +421,15 @@ public class CsvFeeder implements PartialFeed {
 											((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
 											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
 										for (int j = 0; j < ((JsonArray) childLastName).size(); j++) {
-											String mapping = structure.getExternalId()+
-													((JsonArray) childLastName).<String>get(i).trim()+
-													((JsonArray) childFirstName).<String>get(i).trim()+
-													((JsonArray) childClasses).<String>get(i).trim()+DEFAULT_STUDENT_SEED;
+											String mapping = structure.getExternalId() +
+													((JsonArray) childLastName).<String>get(i).trim() +
+													((JsonArray) childFirstName).<String>get(i).trim() +
+													((JsonArray) childClasses).<String>get(i).trim() + DEFAULT_STUDENT_SEED;
 											relativeStudentMapping(linkStudents, mapping);
 										}
 									} else if (childLastName instanceof String && childFirstName instanceof String &&
 											childClasses instanceof String) {
-										if(childLastName != null && childFirstName != null && childClasses != null) {
+										if (childLastName != null && childFirstName != null && childClasses != null) {
 											String mapping = structure.getExternalId() +
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
@@ -381,7 +455,7 @@ public class CsvFeeder implements PartialFeed {
 				if (mapping.trim().isEmpty()) return;
 				try {
 					linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-				} catch (NoSuchAlgorithmException |UnsupportedEncodingException e) {
+				} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 					log.error(e.getMessage(), e);
 				}
 			}
@@ -400,25 +474,7 @@ public class CsvFeeder implements PartialFeed {
 //				importer.persist(handler);
 //			}
 //		});
-		importer.persist(handler);
-	}
-
-	private void getColumsNames(String[] strings, List<String> columns, Handler<Message<JsonObject>> handler) {
-		for (int j = 0; j < strings.length; j++) {
-			String cm = columnsNameMapping(strings[j]);
-			if (namesMapping.containsValue(cm)) {
-				columns.add(j, cm);
-			} else {
-				handler.handle(new ResultMessage().error("invalid.column " + cm));
-				return;
-			}
-		}
-	}
-
-	private String columnsNameMapping(String columnName) {
-		final String key = Validator.removeAccents(columnName.trim().toLowerCase()).replaceAll("\\s+", "");
-		final Object attr = namesMapping.get(key);
-		return attr != null ? attr.toString() : key;
+	//	importer.persist(handler);
 	}
 
 }

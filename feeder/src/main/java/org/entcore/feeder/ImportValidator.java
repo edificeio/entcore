@@ -1,5 +1,5 @@
 /*
- * Copyright © WebServices pour l'Éducation, 2015
+ * Copyright © WebServices pour l'Éducation, 2016
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -17,38 +17,13 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.feeder.aaf1d;
+package org.entcore.feeder;
 
-import org.entcore.feeder.Feed;
-import org.entcore.feeder.dictionary.structures.Importer;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-public class Aaf1dFeeder implements Feed {
+public interface ImportValidator {
 
-	private final Vertx vertx;
-	private final String path;
-
-	public Aaf1dFeeder(Vertx vertx, String path) {
-		this.vertx = vertx;
-		this.path = path;
-	}
-
-	@Override
-	public void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception {
-		new StructureImportProcessing1d(path,vertx).start(handler);
-	}
-
-	@Override
-	public void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception {
-		launch(importer, handler);
-	}
-
-	@Override
-	public String getSource() {
-		return "AAF1D";
-	}
+	void validate(String path, Handler<JsonObject> handler);
 
 }

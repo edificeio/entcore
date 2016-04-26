@@ -1,0 +1,121 @@
+<!--
+  ~ Copyright © WebServices pour l'Éducation, 2016
+  ~
+  ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation (version 3 of the License).
+  ~
+  ~ For the sake of explanation, any module that communicate over native
+  ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+  ~ license and could be license under its own terms. This is merely considered
+  ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  -->
+
+<div class="row">
+	<h3 class="nine cell"><i18n>wizard.step1</i18n></h3>
+</div>
+
+<form ng-submit="validate(wizard)">
+	<fieldset>
+		<legend><i18n>wizard.structure.subtitle</i18n></legend>
+		<div class="row">
+			<label class="six cell"><span tooltip="wizard.tooltip.structure"><i18n>wizard.structure</i18n></span></label>
+			<select class="three cell margin-top-5 row-item"
+					ng-model="wizard.structure"
+					ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+		</div>
+	</fieldset>
+	<fieldset ng-if="authorizeCreateStructure(wizard)">
+		<legend><i18n>wizard.newStructure.subtitle</i18n></legend>
+		<div class="row">
+			<label class="six cell"><span tooltip="wizard.newStructureName"><i18n>wizard.newStructureName</i18n></span></label>
+			<input type="text" ng-model="wizard.newStructureName" class="three cell" />
+		</div>
+		<div class="row">
+			<label class="six cell"><span tooltip="wizard.newStructureUAI"><i18n>wizard.newStructureUAI</i18n></span></label>
+			<input type="text" ng-model="wizard.newStructureUAI" class="three cell" />
+		</div>
+	</fieldset>
+	<fieldset ng-if="enableListFeeders()">
+		<legend><i18n>wizard.type.subtitle</i18n></legend>
+		<div class="row">
+			<label class="six cell"><span tooltip="wizard.tooltip.type"><i18n>wizard.type</i18n></span></label>
+			<select class="three cell" style="margin-bottom: 5px;" ng-model="wizard.type" required >
+				<option value="BE1D">[[lang.translate("wizard.type.BE1D")]]</option>
+				<option value="CSV">[[lang.translate("wizard.type.CSV")]]</option>
+			</select>
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend><i18n>wizard.files.subtitle</i18n></legend>
+		<div class="row" ng-if="wizard.type === 'CSV'">
+			<span><i18n>wizard.files.details</i18n></span>
+		</div>
+		<div class="row">
+			<a ng-if="!details.filesFormat" ng-click="details.filesFormat = true" href=""><i18n>wizard.files.more.infos</i18n></a><a ng-if="details.filesFormat" ng-click="details.filesFormat = false" href=""><i18n>wizard.files.less.infos</i18n></a>
+		</div>
+		<div class="row" ng-if="details.filesFormat">
+			<i18n>wizard.files.details</i18n>
+		</div>
+		<div ng-if="wizard.type === 'CSV'">
+			<div class="row">
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.teacher" /><span tooltip="wizard.tooltip.file.teacher"><i18n>wizard.file.teacher</i18n></span></label>
+				<input name="Teacher" type="file" ng-if="wizard.check.teacher" files-input-change ng-model="wizard.files.Teacher"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.student" /><span tooltip="wizard.tooltip.file.student"><i18n>wizard.file.student</i18n></span></label>
+				<input name="Student" type="file" ng-if="wizard.check.student" files-input-change ng-model="wizard.files.Student"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.relative" /><span tooltip="wizard.tooltip.file.relative"><i18n>wizard.file.relative</i18n></span></label>
+				<input name="Relative" type="file" ng-if="wizard.check.relative" files-input-change ng-model="wizard.files.Relative"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.personnel" /><span tooltip="wizard.tooltip.file.personnel"><i18n>wizard.file.personnel</i18n></span></label>
+				<input name="Personnel" type="file" ng-if="wizard.check.personnel" files-input-change ng-model="wizard.files.Personnel"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.guest" /><span tooltip="wizard.tooltip.file.Guest"><i18n>wizard.file.guest</i18n></span></label>
+				<input name="Guest" type="file" ng-if="wizard.check.guest" files-input-change ng-model="wizard.files.Guest"/>
+			</div>
+		</div>
+		<div ng-if="wizard.type === 'BE1D'">
+			<div class="row">
+				<label class="six cell"><span tooltip="wizard.tooltip.file.teacher"><i18n>wizard.file.teacher</i18n></span></label>
+				<input name="CSVExtraction-enseignants.csv" type="file" files-input-change ng-model="wizard.files.enseignants"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><span tooltip="wizard.tooltip.file.student"><i18n>wizard.file.student</i18n></span></label>
+				<input name="CSVExtraction-eleves.csv" type="file" files-input-change ng-model="wizard.files.eleves"/>
+			</div>
+			<div class="row">
+				<label class="six cell"><span tooltip="wizard.tooltip.file.relative"><i18n>wizard.file.relative</i18n></span></label>
+				<input name="CSVExtraction-responsables.csv" type="file" files-input-change ng-model="wizard.files.responsables"/>
+			</div>
+		</div>
+	</fieldset>
+	<fieldset>
+		<legend><i18n>wizard.params.subtitle</i18n></legend>
+		<div class="row">
+			<label class="six cell"><input type="checkbox" ng-model="wizard.predelete" /><span tooltip="wizard.tooltip.predelete"><i18n>wizard.predelete</i18n></span></label><a ng-if="!details.preDelete" ng-click="details.preDelete = true" href=""><i18n>wizard.more.infos</i18n></a><a ng-if="details.preDelete" ng-click="details.preDelete = false" href=""><i18n>wizard.less.infos</i18n></a>
+		</div>
+		<div class="row" ng-if="details.preDelete">
+			<i18n>wizard.preDelete.details</i18n>
+		</div>
+		<div class="row">
+			<label class="six cell"><input type="checkbox" ng-model="wizard.transition" /><span tooltip="wizard.tooltip.transition"><i18n>wizard.transition</i18n></span></label><a ng-if="!details.transition" ng-click="details.transition = true" href=""><i18n>wizard.more.infos</i18n></a><a ng-if="details.transition" ng-click="details.transition = false" href=""><i18n>wizard.less.infos</i18n></a>
+		</div>
+		<div class="row" ng-if="details.transition">
+			<i18n>wizard.transition.details</i18n>
+		</div>
+	</fieldset>
+	<div class="row">
+		<button class="right-magnet" ng-disabled="disabledButtons.validate"><i18n>wizard.next.step</i18n></button>
+	</div>
+</form>

@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2016
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,22 +15,18 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
-package org.entcore.feeder;
+package org.entcore.directory.exceptions;
 
-import org.entcore.feeder.dictionary.structures.Importer;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+public class ImportException extends RuntimeException {
 
-public interface Feed {
+	public ImportException(String message) {
+		super(message);
+	}
 
-	void launch(Importer importer, Handler<Message<JsonObject>> handler) throws Exception;
-
-	void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception;
-
-	String getSource();
+	public ImportException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }

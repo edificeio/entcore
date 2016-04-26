@@ -19,10 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.entcore.feeder.utils.Joiner;
-import org.entcore.feeder.utils.Neo4j;
-import org.entcore.feeder.utils.TransactionHelper;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.utils.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -55,6 +52,7 @@ public class Importer {
 	private Neo4j neo4j;
 	private ConcurrentMap<String, Structure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
+	private Report report;
 	Set<String> importedGroups = new HashSet<>();
 
 	private Importer() {
@@ -75,9 +73,10 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, String source, final Handler<Message<JsonObject>> handler) {
+	public void init(final Neo4j neo4j, String source, String acceptLanguage, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
+		this.report = new Report(acceptLanguage);
 		this.transactionHelper = new TransactionHelper(neo4j, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
@@ -104,6 +103,7 @@ public class Importer {
 		profiles.clear();
 		userImportedExternalId.clear();
 		importedGroups.clear();
+		report = null;
 		transactionHelper = null;
 	}
 
@@ -143,6 +143,7 @@ public class Importer {
 		final String error = structureValidator.validate(struct);
 		Structure s = null;
 		if (error != null) {
+			report.addIgnored("Structure", error, struct);
 			log.warn(error);
 		} else {
 			String externalId = struct.getString("externalId");
@@ -181,6 +182,7 @@ public class Importer {
 		final String error = profileValidator.validate(profile);
 		Profile p = null;
 		if (error != null) {
+			report.addIgnored("Profile", error, profile);
 			log.warn(error);
 		} else {
 			String externalId = profile.getString("externalId");
@@ -203,6 +205,7 @@ public class Importer {
 	public void createOrUpdateFieldOfStudy(JsonObject object) {
 		final String error = studyValidator.validate(object);
 		if (error != null) {
+			report.addIgnored("FielsOfStudy", error, object);
 			log.warn(error);
 		} else {
 			String query;
@@ -226,6 +229,7 @@ public class Importer {
 	public void createOrUpdateModule(JsonObject object) {
 		final String error = moduleValidator.validate(object);
 		if (error != null) {
+			report.addIgnored("Module", error, object);
 			log.warn(error);
 		} else {
 			String query;
@@ -253,6 +257,7 @@ public class Importer {
 	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent) {
 		final String error = userValidator.validate(object);
 		if (error != null) {
+			report.addIgnored("Relative", error, object);
 			log.warn(error);
 		} else {
 			object.putString("source", currentSource);
@@ -296,6 +301,7 @@ public class Importer {
 	public void createOrUpdateGuest(JsonObject object, String[][] linkClasses) {
 		final String error = userValidator.validate(object);
 		if (error != null) {
+			report.addIgnored("Guest", error, object);
 			log.warn(error);
 		} else {
 			object.putString("source", currentSource);
@@ -456,6 +462,11 @@ public class Importer {
 			String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
 		if (error != null) {
+			if (object.getArray("profiles") != null && object.getArray("profiles").size() == 1) {
+				report.addIgnored(object.getArray("profiles").<String>get(0), error, object);
+			} else {
+				report.addIgnored("Personnel", error, object);
+			}
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
@@ -604,6 +615,7 @@ public class Importer {
 			boolean relationshipQueries) {
 		final String error = studentValidator.validate(object);
 		if (error != null) {
+			report.addIgnored("Student", error, object);
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
@@ -928,6 +940,10 @@ public class Importer {
 				"CREATE UNIQUE u-[:IN]->g " +
 				"DELETE r, r2, b";
 		transactionHelper.add(query, new JsonObject().putString("source", currentSource));
+	}
+
+	public Report getReport() {
+		return report;
 	}
 
 }

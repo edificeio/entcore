@@ -25,8 +25,6 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.collections.Joiner;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -42,9 +40,7 @@ import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
@@ -59,7 +55,6 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
 
-	public static final String UNMODIFIABLE_EXTERNAL_ID = "unmodifiable.externalId";
 	private Neo neo;
 	private JsonObject config;
 	private JsonObject admin;
@@ -67,7 +62,6 @@ public class DirectoryController extends BaseController {
 	private ClassService classService;
 	private UserService userService;
 	private GroupService groupService;
-	private static final List<String> charsets = Arrays.asList("UTF-8", "ISO-8859-1");
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -101,55 +95,8 @@ public class DirectoryController extends BaseController {
 				.putString("charset", request.params().get("charset"))
 				.putString("structureExternalId", request.params().get("structureExternalId"));
 
-		if ("CSV".equals(json.getString("feeder"))) {
-			String charset = json.getString("charset");
-			if (charset == null || charset.trim().isEmpty() || !charsets.contains(charset)) {
-				json.putString("charset", "ISO-8859-1");
-			}
-			request.expectMultiPart(true);
-			request.uploadHandler(new Handler<HttpServerFileUpload>() {
-				@Override
-				public void handle(final HttpServerFileUpload event) {
-					final Buffer buff = new Buffer();
-//					if (!ClassController.csvMimeTypes.contains(event.contentType())) {
-//						renderJson(request, new JsonObject().putString("message", "invalid.file"), 400);
-//						return;
-//					}
-					event.dataHandler(new Handler<Buffer>() {
-						@Override
-						public void handle(Buffer event) {
-							buff.appendBuffer(event);
-						}
-					});
-					event.endHandler(new Handler<Void>() {
-						@Override
-						public void handle(Void end) {
-							json.putString("content", buff.toString(json.getString("charset")));
-							log.debug(json.encode());
-							eb.send("entcore.feeder", json, new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> event) {
-									if ("ok".equals(event.body().getString("status"))) {
-										request.response().end();
-									} else {
-										String message = event.body().getString("message");
-										if (message != null && message.startsWith(UNMODIFIABLE_EXTERNAL_ID)) {
-											JsonArray ids = new JsonArray(message
-													.substring(UNMODIFIABLE_EXTERNAL_ID.length() + 1));
-											message = UNMODIFIABLE_EXTERNAL_ID + " " + Joiner.on(",").join(ids);
-										}
-										badRequest(request, message);
-									}
-								}
-							});
-						}
-					});
-				}
-			});
-		} else {
-			eb.send("entcore.feeder", json);
-			request.response().end();
-		}
+		eb.send("entcore.feeder", json);
+		request.response().end();
 	}
 
 	@Post("/transition")

@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.utils;
 
+import fr.wseduc.webutils.I18n;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -43,6 +44,7 @@ public class Validator {
 	//private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
 	private static ConcurrentMap<Object, Object> logins;
 	private static Map<Object, Object> invalidEmails;
+	private final I18n i18n = I18n.getInstance();
 	private static final String[] alphabet =
 			{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 	private static final Map<String, Pattern> patterns = new HashMap<>();
@@ -85,8 +87,12 @@ public class Validator {
 	}
 
 	public String validate(JsonObject object) {
+		return validate(object, "fr");
+	}
+
+	public String validate(JsonObject object, String acceptLanguage) {
 		if (object == null) {
-			return "Null object.";
+			return i18n.translate("null.object", acceptLanguage);
 		}
 		final StringBuilder calcChecksum = new StringBuilder();
 		final Set<String> attributes = new HashSet<>(object.getFieldNames());
@@ -101,16 +107,16 @@ public class Validator {
 				String err;
 				switch (type) {
 					case "string" :
-						err = validString(attr, value, validator);
+						err = validString(attr, value, validator, acceptLanguage);
 						break;
 					case "array-string" :
-						err = validStringArray(attr, value, validator);
+						err = validStringArray(attr, value, validator, acceptLanguage);
 						break;
 					case "boolean" :
-						err = validBoolean(attr, value);
+						err = validBoolean(attr, value, acceptLanguage);
 						break;
 					default:
-						err = "Missing type validator: " + type;
+						err = i18n.translate("missing.type.validator", acceptLanguage, type);
 				}
 				if (err != null) {
 					log.info(err);
@@ -300,46 +306,57 @@ public class Validator {
 	}
 
 	private String validBoolean(String attr, Object value) {
+		return validBoolean(attr, value, "fr");
+	}
+
+	private String validBoolean(String attr, Object value, String acceptLanguage) {
 		if (!(value instanceof Boolean)) {
-			return "Attribute " + attr + " is invalid.";
+			return i18n.translate("invalid.attribute", acceptLanguage, attr);
 		}
 		return null;
 	}
 
 	private String validStringArray(String attr, Object value, String validator) {
+		return validStringArray(attr, value, validator, "fr");
+	}
+
+	private String validStringArray(String attr, Object value, String validator, String acceptLanguage) {
 		if (validator == null) {
-			return "Null array validator";
+			return i18n.translate("null.array.validator", acceptLanguage);
 		}
 		if (!(value instanceof JsonArray)) {
-			return "Attribute " + attr + " is invalid. Expected type is JsonArray but type is "
-					+ value.getClass().getSimpleName();
+			return i18n.translate("invalid.array.type", acceptLanguage, attr, value.getClass().getSimpleName());
 		}
 		String err = null;
 		switch (validator) {
 			case "notEmpty" :
 				if (!(((JsonArray) value).size() > 0)) {
-					err = "Attribute " + attr + " is empty.";
+					err = i18n.translate("empty.attribute", acceptLanguage, attr);
 				}
 				break;
 			default:
-				err = "Missing array validator: " + validator;
+				err =  i18n.translate("missing.validator", acceptLanguage, validator);
 		}
 		return err;
 	}
 
 	private String validString(String attr, Object value, String validator) {
+		return validString(attr, value, validator, "fr");
+	}
+
+	private String validString(String attr, Object value, String validator, String acceptLanguage) {
 		Pattern p = patterns.get(validator);
 		if (p == null) {
-			return "Missing validator: " + validator;
+			return i18n.translate("missing.validator", acceptLanguage, validator);
 		}
 		if (value instanceof String && p.matcher((String) value).matches()) {
 			if ("email".equals(validator) && !"emailAcademy".equals(attr) &&
 					invalidEmails != null && invalidEmails.containsKey(value)) {
-				return "Attribute " + attr + " contains an invalid email: " + value;
+				return i18n.translate("invalid.bounce.email", acceptLanguage, attr, (String) value);
 			}
 			return null;
 		} else {
-			return "Attribute " + attr + " contains an invalid value: " + value;
+			return i18n.translate("invalid.value", acceptLanguage, attr, (value != null ? value.toString() : "null"));
 		}
 	}
 

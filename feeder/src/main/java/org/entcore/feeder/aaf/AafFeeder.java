@@ -82,6 +82,11 @@ public class AafFeeder implements Feed {
 	}
 
 	@Override
+	public void launch(Importer importer, String path, Handler<Message<JsonObject>> handler) throws Exception {
+		launch(importer, handler);
+	}
+
+	@Override
 	public String getSource() {
 		return "AAF";
 	}

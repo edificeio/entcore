@@ -475,27 +475,6 @@ Structure.prototype.detachParent = function(parent, hook){
     })
 }
 
-Structure.prototype.importCSV = function(file, profile, charset, hook){
-    var structure = this
-    var form = new FormData();
-    form.append('file', file);
-    return http().postFile('/directory/import?feeder=CSV&structureExternalId=' + structure.externalId + '&profile=' + profile +
-        '&charset=' + charset, form)
-    .done(function(){
-        notify.info((lang.translate("directory.notify.csv.imported")))
-        hookCheck(hook)
-    })
-    .e400(function(e){
-        var error = JSON.parse(e.responseText).error;
-        var errWithIdx = error ? error.split(/\s/) : [];
-        if (errWithIdx.length > 1) {
-            notify.error(lang.translate(errWithIdx[0]) + '<br>' + errWithIdx[1]);
-        } else {
-            notify.error(error);
-        }
-    });
-}
-
 Structure.prototype.toString = function(){
     return this.name;
 }

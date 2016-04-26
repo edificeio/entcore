@@ -106,31 +106,67 @@ public class User {
 				public void handle(Message<JsonObject> message) {
 					final JsonArray res = message.body().getArray("result");
 					if ("ok".equals(message.body().getString("status")) && res != null && res.size() > 0) {
-						try {
-							TransactionHelper tx = TransactionManager.getInstance().begin();
-							for (Object o : res) {
-								if (!(o instanceof JsonObject)) continue;
-								String userId = ((JsonObject) o).getString("id");
-								backupRelationship(userId, tx);
-								preDelete(userId, tx);
-							}
-							tx.commit(new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> m) {
-									if ("ok".equals(m.body().getString("status"))) {
-										log.info("PreDelete users : " + res.encode());
-									} else {
-										log.error(m.body().encode());
-									}
-								}
-							});
-						} catch (Exception e) {
-							log.error("PreDelete task error");
-							log.error(e.getMessage(), e);
-						}
+						preDeleteUsers(res, null);
 					}
 				}
 			});
+		}
+
+		public void findMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
+				Handler<Message<JsonObject>> handler) {
+			final String query =
+					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+					"WHERE u.source = {source} AND NOT(u.externalId IN {existingUsers}) " +
+					"RETURN u.id as id, u.external as externalId, u.lastName as lastName, " +
+							"u.firstName as firstName, HEAD(u.profiles) as profile";
+			final JsonObject params = new JsonObject()
+					.putString("structureExternalId", structureExternalId)
+					.putString("source", source)
+					.putArray("existingUsers", existingUsers);
+			TransactionManager.getInstance().getNeo4j().execute(query, params, handler);
+		}
+
+		public void preDeleteMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
+				final Handler<Message<JsonObject>> handler) {
+			findMissingUsersInStructure(structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray res = event.body().getArray("result");
+					if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
+						preDeleteUsers(res, handler);
+					} else {
+						handler.handle(event);
+					}
+				}
+			});
+		}
+
+		private void preDeleteUsers(final JsonArray users, final Handler<Message<JsonObject>> handler) {
+			try {
+				TransactionHelper tx = TransactionManager.getInstance().begin();
+				for (Object o : users) {
+					if (!(o instanceof JsonObject)) continue;
+					String userId = ((JsonObject) o).getString("id");
+					backupRelationship(userId, tx);
+					preDelete(userId, tx);
+				}
+				tx.commit(new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> m) {
+						if ("ok".equals(m.body().getString("status"))) {
+							log.info("PreDelete users : " + users.encode());
+						} else {
+							log.error(m.body().encode());
+						}
+						if (handler != null) {
+							handler.handle(m);
+						}
+					}
+				});
+			} catch (Exception e) {
+				log.error("PreDelete task error");
+				log.error(e.getMessage(), e);
+			}
 		}
 
 	}

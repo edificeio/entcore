@@ -111,6 +111,10 @@ public class Directory extends BaseServer {
 		tenantController.setTenantService(new DefaultTenantService(eb));
 		addController(tenantController);
 
+		ImportController importController = new ImportController();
+		importController.setImportService(new DefaultImportService(vertx, eb));
+		addController(importController);
+
 		vertx.eventBus().registerLocalHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));
 	}

@@ -673,22 +673,6 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		$scope.openExport()
 	}
 
-	// Import CSV
-	$scope.importCSVData = {
-		profile : "",
-		charset : ""
-	}
-
-	$scope.importCSV = function(structure){
-		return structure.importCSV($scope.importCSVData.csv[0], $scope.importCSVData.profile, $scope.importCSVData.charset, function(){
-			$scope.importCSVData = {
-				profile : "",
-				charset : ""
-			}
-			$scope.$apply()
-		})
-	};
-
     //Refresh the isolated users list.
     $scope.isolatedUsers = model.isolatedUsers
     $scope.refreshIsolated = function(){

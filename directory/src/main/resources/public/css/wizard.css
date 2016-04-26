@@ -1,0 +1,16 @@
+h3 {
+	text-decoration: underline;
+}
+
+h5 {
+	text-align: left !important;
+	font-weight: bold !important;
+}
+
+fieldset {
+	border: none;
+}
+
+legend {
+	font-weight: bold;
+}

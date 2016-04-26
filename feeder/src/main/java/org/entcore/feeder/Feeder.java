@@ -20,6 +20,7 @@
 package org.entcore.feeder;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.I18n;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -27,13 +28,13 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
+import org.entcore.feeder.be1d.Be1dValidator;
 import org.entcore.feeder.csv.CsvFeeder;
+import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
-import org.entcore.feeder.utils.Neo4j;
-import org.entcore.feeder.utils.TransactionManager;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.utils.*;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -44,6 +45,7 @@ import org.vertx.java.core.json.JsonObject;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -56,6 +58,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private Exporter exporter;
 	private EventStore eventStore;
 	private DuplicateUsers duplicateUsers;
+	private final ConcurrentLinkedQueue<Message<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
 	public enum FeederEvent { IMPORT, DELETE_USER, CREATE_USER }
 
 	@Override
@@ -101,9 +104,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		feeds.put("AAF", new AafFeeder(vertx, container.config().getString("import-files"),
 				container.config().getBoolean("aafNeo4jPlugin", false)));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, container.config().getString("import-files")));
-		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files"),
-				container.config().getString("uai-separator", "_")));
-		feeds.put("CSV", new CsvFeeder(container.config().getObject("csvMappings", new JsonObject())));
+		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files")));
+		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));
 		switch (container.config().getString("exporter", "")) {
 			case "ELIOT" :
 				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
@@ -111,7 +113,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						container.config().getBoolean("concat-export", false), vertx);
 				break;
 		}
-
+		I18n.getInstance().init(container, vertx);
 	}
 
 	@Override
@@ -175,11 +177,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-structure-detachment" : manual.structureDetachment(message);
 				break;
-			case "transition" : launchTransition(message);
+			case "transition" : launchTransition(message, null);
 				break;
 			case "import" : launchImport(message);
 				break;
 			case "export" : launchExport(message);
+				break;
+			case "validate" : launchImportValidation(message, null);
 				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(message);
@@ -196,6 +200,83 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			default:
 				sendError(message, "invalid.action");
 		}
+	}
+
+	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
+		logger.info(message.body().encodePrettily());
+		final String acceptLanguage = message.body().getString("language", "fr");
+		final String source = message.body().getString("feeder", defaultFeed);
+
+		// TODO make validator factory
+		final ImportValidator v;
+		switch (source) {
+			case "CSV":
+				v = new CsvValidator(vertx, acceptLanguage,
+						container.config().getObject("csvMappings", new JsonObject()));
+				break;
+			case "BE1D":
+				v = new Be1dValidator(vertx, container.config().getString("uai-separator", "_"),
+						acceptLanguage);
+				break;
+			case "AAF":
+			case "AAF1D":
+				final Report report = new Report(acceptLanguage);
+				if (handler != null) {
+					handler.handle(report);
+				} else {
+					sendOK(message, new JsonObject().putObject("result", report.getResult()));
+				}
+				return;
+			default:
+				sendError(message, "invalid.type");
+				return;
+		}
+
+		final String structureExternalId = message.body().getString("structureExternalId");
+		final boolean preDelete = message.body().getBoolean("preDelete", false);
+		String path = message.body().getString("path");
+		if (path == null && !"CSV".equals(source)) {
+			path = container.config().getString("import-files");
+		}
+		v.validate(path, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject result) {
+				final Report r = (Report) v;
+				if (preDelete && structureExternalId != null) {
+					final JsonArray externalIds = r.getUsersExternalId();
+					new User.PreDeleteTask(0).findMissingUsersInStructure(
+							structureExternalId, source, externalIds, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							final JsonArray res = event.body().getArray("result");
+							if ("ok".equals(event.body().getString("status")) && res != null) {
+								for (Object o : res) {
+									if (!(o instanceof JsonObject)) continue;
+									JsonObject j = (JsonObject) o;
+									String filename = j.getString("profile"); // TODO manage BE1D
+									r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
+											.putString("translatedProfile", r.translate(j.getString("profile"))));
+									r.getResult().putArray("usersExternalIds", externalIds);
+								}
+							} else {
+								r.addError("error.find.preDelete");
+							}
+							if (handler != null) {
+								handler.handle(r);
+							} else {
+								sendOK(message, new JsonObject().putObject("result", r.getResult()));
+							}
+						}
+					});
+				} else {
+					if (handler != null) {
+						handler.handle(r);
+					} else {
+						sendOK(message, new JsonObject().putObject("result", r.getResult()));
+					}
+				}
+			}
+		});
 	}
 
 	private void launchExport(final Message<JsonObject> message) {
@@ -222,8 +303,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 	}
 
-	private void launchTransition(final Message<JsonObject> message) {
-		if (GraphData.isReady()) { // TODO else manage queue
+	private void launchTransition(final Message<JsonObject> message, final Handler<Message<JsonObject>> handler) {
+		if (GraphData.isReady()) {
 			String structureExternalId = message.body().getString("structureExternalId");
 			Transition transition = new Transition();
 			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
@@ -234,41 +315,121 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						eb.publish(USER_REPOSITORY, new JsonObject()
 								.putString("action", "delete-groups")
 								.putArray("old-groups", m.body().getArray("result", new JsonArray())));
-						sendOK(message, m.body());
+						if (handler != null) {
+							handler.handle(m);
+						} else {
+							sendOK(message, m.body());
+						}
 					} else if (m != null) {
 						logger.error(m.body().getString("message"));
-						sendError(message, m.body().getString("message"));
+						if (handler != null) {
+							handler.handle(m);
+						} else {
+							sendError(message, m.body().getString("message"));
+						}
 					} else {
 						logger.error("Transition return null value.");
-						sendError(message, "Transition return null value.");
+						if (handler != null) {
+							handler.handle(new ResultMessage().error("transition.error"));
+						} else {
+							sendError(message, "Transition return null value.");
+						}
 					}
 					GraphData.clear();
+					checkEventQueue();
 				}
 			});
-
+		} else {
+			eventQueue.add(message);
 		}
 	}
 
 	private void launchImport(final Message<JsonObject> message) {
-		final Importer importer = Importer.getInstance();
-		final Feed feed = feeds.get(message.body().getString("feeder", defaultFeed));
-		final String profile = message.body().getString("profile");
-		final String content = message.body().getString("content");
-		final String structureExternalId = message.body().getString("structureExternalId");
-		final String charset = message.body().getString("charset", "UTF-8");
+		final String source = message.body().getString("feeder", defaultFeed);
+		final Feed feed = feeds.get(source);
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
 			return;
 		}
-		if (importer.isReady()) { // TODO else manage queue
+
+		final boolean preDelete = message.body().getBoolean("preDelete", false);
+		final String structureExternalId = message.body().getString("structureExternalId");
+
+		if (message.body().getBoolean("transition", false)) {
+			launchTransition(message, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						validateAndImport(message, feed, preDelete, structureExternalId, source);
+					} else {
+						sendError(message, "transition.error");
+					}
+				}
+			});
+		} else {
+			validateAndImport(message, feed, preDelete, structureExternalId, source);
+		}
+	}
+
+	private void validateAndImport(final Message<JsonObject> message, final Feed feed, final boolean preDelete,
+			final String structureExternalId, final String source) {
+		launchImportValidation(message, new Handler<Report>() {
+			@Override
+			public void handle(final Report report) {
+				if (report != null && !report.containsErrors()) {
+					doImport(message, feed, new Handler<Report>() {
+						@Override
+						public void handle(final Report importReport) {
+							JsonArray existingUsers = report.getResult().getArray("usersExternalIds");
+							if (preDelete && structureExternalId != null && existingUsers != null &&
+									existingUsers.size() > 0 &&
+									importReport != null && !importReport.containsErrors()) {
+								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
+										structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if (!"ok".equals(event.body().getString("status"))) {
+											importReport.addError("preDelete.error");
+										}
+										sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
+									}
+								});
+							} else if (importReport != null) {
+								sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
+							} else {
+								sendError(message, "import.error");
+							}
+						}
+					});
+				} else if (report != null) {
+					sendOK(message, new JsonObject().putObject("result", report.getResult()));
+				} else {
+					sendError(message, "validation.error");
+				}
+			}
+		});
+	}
+
+	private void doImport(final Message<JsonObject> message, final Feed feed, final Handler<Report> h) {
+
+		final String acceptLanguage = message.body().getString("language", "fr");
+
+
+		final String charset = message.body().getString("charset", "UTF-8");
+		final String importPath = message.body().getString("path");
+
+		final Importer importer = Importer.getInstance();
+		if (importer.isReady()) {
 			final long start = System.currentTimeMillis();
-			importer.init(neo4j, feed.getSource(), new Handler<Message<JsonObject>>() {
+			importer.init(neo4j, feed.getSource(), acceptLanguage, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if (!"ok".equals(res.body().getString("status"))) {
 						logger.error(res.body().getString("message"));
+						h.handle(new Report(acceptLanguage).addError("init.importer.error"));
 						return;
 					}
+					final Report report = importer.getReport();
 					try {
 						Handler<Message<JsonObject>> handler = new Handler<Message<JsonObject>>() {
 							@Override
@@ -289,35 +450,51 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 											});
 										}
 									});
-									sendOK(message);
 								} else {
 									Validator.initLogin(neo4j, vertx);
 									if (m != null) {
 										logger.error(m.body().getString("message"));
-										sendError(message, m.body().getString("message"));
-									} else {
+										report.addError(m.body().getString("message"));
+									} else if (report.getResult().getObject("errors").size() < 1) {
 										logger.error("Import return null value.");
-										sendError(message, "Import return null value.");
+										report.addError("import.error");
 									}
 								}
+								h.handle(report);
 								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 								importer.clear();
+								checkEventQueue();
 							}
 						};
-						if (profile != null && content != null && structureExternalId != null &&
-								!content.trim().isEmpty() && ManualFeeder.profiles.containsKey(profile) &&
-								!structureExternalId.trim().isEmpty() && feed instanceof PartialFeed) {
-							((PartialFeed) feed).launch(profile, structureExternalId, content, charset, importer, handler);
+						if (importPath != null && !importPath.trim().isEmpty()) {
+							feed.launch(importer, importPath, handler);
 						} else {
 							feed.launch(importer, handler);
 						}
 					} catch (Exception e) {
 						Validator.initLogin(neo4j, vertx);
 						importer.clear();
-						sendError(message, e.getMessage(), e);
+						h.handle(report.addError("import.error"));
+						logger.error(e.getMessage(), e);
+						checkEventQueue();
 					}
 				}
 			});
+		} else {
+			eventQueue.add(message);
+		}
+	}
+
+	private void checkEventQueue() {
+		Message<JsonObject> event = eventQueue.poll();
+		if (event != null) {
+			switch (event.body().getString("action", "")) {
+				case "import": launchImport(event);
+					break;
+				case "transition": launchTransition(event, null);
+					break;
+				default:
+			}
 		}
 	}
 

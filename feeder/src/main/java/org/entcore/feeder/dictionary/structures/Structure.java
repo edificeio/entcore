@@ -41,7 +41,7 @@ public class Structure {
 	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
 	protected final Set<String> functionalGroups = Collections.synchronizedSet(new HashSet<String>());
 
-	protected Structure(JsonObject struct) {
+	public Structure(JsonObject struct) {
 		this(struct.getString("externalId"), struct);
 	}
 

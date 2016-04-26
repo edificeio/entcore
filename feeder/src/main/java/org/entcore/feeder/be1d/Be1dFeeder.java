@@ -27,6 +27,7 @@ import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
+import org.entcore.feeder.utils.CSVUtil;
 import org.entcore.feeder.utils.Hash;
 import org.entcore.feeder.utils.ResultMessage;
 import org.vertx.java.core.Handler;
@@ -65,17 +66,20 @@ public class Be1dFeeder implements Feed {
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private final Vertx vertx;
 	private final String path;
-	private final String separator;
 	private final Importer importer = Importer.getInstance();
 
-	public Be1dFeeder(Vertx vertx, String path, String separator) {
+	public Be1dFeeder(Vertx vertx, String path) {
 		this.vertx = vertx;
 		this.path = path;
-		this.separator = separator;
 	}
 
 	@Override
 	public void launch(Importer importer, final Handler<Message<JsonObject>> handler) throws Exception {
+		launch(importer, path, handler);
+	}
+
+	@Override
+	public void launch(Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
 		if (importer.isFirstImport()) {
 			importer.profileConstraints();
 			importer.functionConstraints();
@@ -89,7 +93,7 @@ public class Be1dFeeder implements Feed {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					if (message != null && "ok".equals(message.body().getString("status"))) {
-						start(handler);
+						start(path,handler);
 					} else {
 						if (handler != null) {
 							handler.handle(message);
@@ -98,7 +102,7 @@ public class Be1dFeeder implements Feed {
 				}
 			});
 		} else {
-			start(handler);
+			start(path, handler);
 		}
 	}
 
@@ -107,7 +111,7 @@ public class Be1dFeeder implements Feed {
 		return "BE1D";
 	}
 
-	private void start(final Handler<Message<JsonObject>> handler) {
+	private void start(final String path, final Handler<Message<JsonObject>> handler) {
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
@@ -165,7 +169,7 @@ public class Be1dFeeder implements Feed {
 
 	private void importSchool(String p, final Handler<Message<JsonObject>> handler) {
 		try {
-			JsonObject structure = getStructure(p);
+			JsonObject structure = CSVUtil.getStructure(p);
 			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
 			Structure s = importer.createOrUpdateStructure(structure);
 			if (s == null) {
@@ -179,6 +183,7 @@ public class Be1dFeeder implements Feed {
 			importPersonnel(s, p, isUpdate, seed);
 			importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
 			importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
+			importer.restorePreDeletedUsers();
 			if (isUpdate) {
 				importer.markMissingUsers(s.getExternalId(), new Handler<Void>() {
 					@Override
@@ -197,7 +202,7 @@ public class Be1dFeeder implements Feed {
 
 	private void importPersonnel(final Structure structure, String p, final boolean isUpdate, final long seed)
 			throws FileNotFoundException {
-		String charset = "ISO-8859-1"; //detectCharset(csv);
+		String charset = CSVUtil.getCharsetSync(p + File.separator + fileNames[1]);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
@@ -246,7 +251,7 @@ public class Be1dFeeder implements Feed {
 
 	private void importRelative(final Structure structure, String p, final boolean isUpdate, final long seed)
 			throws FileNotFoundException {
-		String charset = "ISO-8859-1"; //detectCharset(csv);
+		String charset = CSVUtil.getCharsetSync(p + File.separator + fileNames[2]);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
@@ -299,7 +304,7 @@ public class Be1dFeeder implements Feed {
 
 	private void importStudent(final Structure structure, String p, final boolean isUpdate, final long seed)
 			throws FileNotFoundException {
-		String charset = "ISO-8859-1"; //detectCharset(csv);
+		String charset = CSVUtil.getCharsetSync(p + File.separator + fileNames[0]);
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
@@ -367,24 +372,6 @@ public class Be1dFeeder implements Feed {
 		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
-	}
-
-	private JsonObject getStructure(String p) throws UnsupportedEncodingException, NoSuchAlgorithmException {
-		String dirName = p.substring(p.lastIndexOf(File.separatorChar) + 1);
-		String [] n = dirName.split(separator);
-		JsonObject structure = new JsonObject();
-		int idx = n[0].indexOf("@");
-		if (idx >= 0) {
-			structure.putString("name", n[0].substring(0, idx));
-			structure.putString("externalId", n[0].substring(idx + 1));
-		} else {
-			structure.putString("name", n[0]);
-			structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
-		}
-		if (n.length == 2) {
-			structure.putString("UAI", n[1]);
-		}
-		return structure;
 	}
 
 }

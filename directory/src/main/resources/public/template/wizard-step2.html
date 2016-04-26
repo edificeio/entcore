@@ -1,0 +1,65 @@
+<!--
+  ~ Copyright © WebServices pour l'Éducation, 2016
+  ~
+  ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation (version 3 of the License).
+  ~
+  ~ For the sake of explanation, any module that communicate over native
+  ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+  ~ license and could be license under its own terms. This is merely considered
+  ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  -->
+
+<div class="row">
+	<h3 class="nine cell"><i18n>wizard.step2</i18n></h3>
+</div>
+
+<div ng-if="validatedUsers">
+
+	<div class="row">
+		<a href="" ng-click="exportCSV(wizard)"><i18n>wizard.export.validate</i18n></a>
+		<button type="button" class="right-magnet" ng-click="returnStep1()" ng-disabled="disabledButtons.back" style="margin-left: 10px"><i18n>wizard.return</i18n></button>
+		<button type="button" class="right-magnet" ng-if="wizard.valid" ng-click="launchImport(wizard)" ng-disabled="disabledButtons.import"><i18n>wizard.launch.import</i18n></button>
+	</div>
+
+	<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
+		<label class="two cell"><span tooltip="wizard.tooltip.type"><i18n>wizard.filter</i18n></span></label>
+		<select class="three cell margin-top-5 row-item"
+				ng-model="userFilter.classesStr"
+				ng-options="c for c in classes"></select>
+		<select class="two cell margin-top-5 row-item"
+		ng-model="userFilter.translatedProfile"
+		ng-options="p for p in profiles"></select>
+		<select class="two cell margin-top-5 row-item"
+				ng-model="userFilter.state"
+				ng-options="s for s in states"></select>
+	</div>
+
+	<table class="search-table">
+		<thead>
+			<tr>
+				<th ng-click="setUserOrder('lastName')"><i18n>directory.admin.name</i18n></th>
+				<th ng-click="setUserOrder('firstName')"><i18n>directory.firstName</i18n></th>
+				<th ng-click="setUserOrder('translatedProfile')"><i18n>directory.admin.profile</i18n></th>
+				<th ng-click="setUserOrder('classesStr')"><i18n>wizard.classes</i18n></th>
+				<th ng-click="setUserOrder('state')"><i18n>wizard.state</i18n></th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="user in validatedUsers | filter: userFilter | orderBy: userOrder">
+				<td>[[user.lastName]]</td>
+				<td>[[user.firstName]]</td>
+				<td>[[user.translatedProfile]]</td>
+				<td>[[user.classesStr]]
+				<td>[[user.state]]</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
