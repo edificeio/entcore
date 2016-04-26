@@ -1338,12 +1338,14 @@ module.directive('bindHtml', function($compile){
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
 				var htmlContent = htmlVal[0].outerHTML;
-                if (!window.MathJax) {
+				if (!window.MathJax && !window.MathJaxLoading) {
+				    window.MathJaxLoading = true;
                     loader.openFile({
                         async: true,
                         ajax: false,
                         url: '/infra/public/mathjax/MathJax.js',
                         success: function () {
+                            window.MathJaxLoading = false;
                             MathJax.Hub.Config({
                                 messageStyle: 'none',
                                 tex2jax: { preview: 'none' },
