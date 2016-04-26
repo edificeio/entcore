@@ -242,7 +242,7 @@ window.RTE = (function () {
 
 				var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
 						&& this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
-			    same = same || this.instance.element.find(range.startContainer).length === 0;
+			    same = same || this.editZone.find(range.startContainer).length === 0;
 				var selectedElements = getSelectedElements();
 
 				if(!same && selectedElements){
@@ -301,7 +301,7 @@ window.RTE = (function () {
 
 			this.wrap = function(element){
 				that.instance.addState(that.editZone.html());
-				if(!this.selectedElements.length){
+				if(this.range.startContainer === this.range.endContainer){
 					element.html('&nbsp;');
 					var elementAtCaret = this.range.startContainer;
 					if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable')) {
@@ -311,8 +311,8 @@ window.RTE = (function () {
 					}
 					if (elementAtCaret.nodeType === 3) {
 					    element.text(elementAtCaret.textContent);
-					    elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
-					    elementAtCaret.parentNode.remove();
+					    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
+					    elementAtCaret.remove();
 					}
 					else {
 					    if (elementAtCaret.innerHTML) {
@@ -332,7 +332,12 @@ window.RTE = (function () {
 							return;
 						}
 						if (item.nodeType !== 1 && item.parentNode.nodeName !== 'DIV') {
-						    item = item.parentNode;
+						    var div = document.createElement('div');
+						    $(div).html(item.textContent);
+						    item.parentNode.insertBefore(div, item);
+						    item.remove();
+						    item = div;
+                            
 						    if (item.nodeName === 'A') {
 						        item = item.parentNode;
 						    }
@@ -342,7 +347,7 @@ window.RTE = (function () {
 						that.selectNode(el[0]);
 					});
 				}
-
+				that.instance.addState(that.editZone.html());
 				this.instance.trigger('contentupdated');
 			};
 
@@ -1136,7 +1141,10 @@ window.RTE = (function () {
 						    element.find('input[type=color]').spectrum();
                             setSpectrum();
 						}
-						element.children('input').on('change', function(){
+						element.children('input').on('change', function () {
+						    if (!$(this).val()) {
+						        return;
+						    }
 							scope.backColor = $(this).val();
 							scope.$apply('backColor');
 						});
@@ -1169,7 +1177,7 @@ window.RTE = (function () {
 						        }
 						    }
 						    
-						    if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0) {
+						    if(scope.backColor !== eval(instance.selection.css('background-color')) && rgbColor.a !== 0 && scope.backColor) {
 						        instance.selection.css({ 'background-color': scope.backColor });
 						    }
 						});
@@ -2440,6 +2448,7 @@ window.RTE = (function () {
                         
                         document.execCommand("enableObjectResizing", false, false);
                         document.execCommand("enableInlineTableEditing", null, false);
+                        document.execCommand("insertBrOnReturn", false, true);
 
                         element.addClass('edit');
                         var editZone = element.find('[contenteditable=true]');
