@@ -21,19 +21,20 @@
                     <strong class="vertical-spacing-twice" translate content="[[notif.key]]" ng-click="slided = !slided"></strong>
                     <div class="horizontal-spacing-twice" slide="slided">
                         <div class="row vertical-spacing">
-                            <label class="four cell" translate content="timeline.defaultFrequency"></label>
-                            <select
-                            ng-model="notif.config.defaultFrequency"
-                            ng-options="item.label as lang.translate(item.label) for item in constants.defaultFrequency"
-                            ng-change="saveConfig(notif)"
-                            class="three cell"
-                            ></select>
-                        </div>
-                        <div class="row vertical-spacing">
                             <label class="four cell" translate content="timeline.restriction"></label>
                             <select
                             ng-model="notif.config.restriction"
                             ng-options="item.label as lang.translate(item.label) for item in constants.restriction"
+                            ng-change="saveConfig(notif)"
+                            class="three cell"
+                            ></select>
+                        </div>
+                        <div class="row vertical-spacing"
+                             ng-show="notif.config.restriction === 'EXTERNAL' || notif.config.restriction === 'NONE'">
+                            <label class="four cell" translate content="timeline.defaultFrequency"></label>
+                            <select
+                            ng-model="notif.config.defaultFrequency"
+                            ng-options="item.label as lang.translate(item.label) for item in constants.defaultFrequency"
                             ng-change="saveConfig(notif)"
                             class="three cell"
                             ></select>

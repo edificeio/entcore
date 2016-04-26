@@ -38,7 +38,8 @@ public class TimelineNotificationsLoader {
 	public static enum Restrictions {
 		INTERNAL,
 		EXTERNAL,
-		NONE;
+		NONE,
+		HIDDEN;
 
 		public static String defaultRestriction(){
 			return Restrictions.NONE.name();

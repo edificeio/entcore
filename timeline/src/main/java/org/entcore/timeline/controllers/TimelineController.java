@@ -542,43 +542,34 @@ public class TimelineController extends BaseController {
 		}
 	}
 
-	private void getExternalNotifications(
-			final Handler<Either<String, JsonObject>> handler) {
+	private void getExternalNotifications(final Handler<Either<String, JsonObject>> handler) {
 		configService.list(new Handler<Either<String, JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isLeft()) {
-					handler.handle(new Either.Left<String, JsonObject>(
-							event.left().getValue()));
+					handler.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
 					return;
 				}
 				final JsonObject restricted = new JsonObject();
 				for (String key : registeredNotifications.keySet()) {
-					JsonObject notif = new JsonObject(
-							registeredNotifications.get(key));
-					String restriction = notif.getString("restriction",
-							TimelineNotificationsLoader.Restrictions.NONE
-									.name());
+					JsonObject notif = new JsonObject(registeredNotifications.get(key));
+					String restriction = notif.getString("restriction",TimelineNotificationsLoader.Restrictions.NONE.name());
 					for (Object notifConfigObj : event.right().getValue()) {
 						JsonObject notifConfig = (JsonObject) notifConfigObj;
 						if (notifConfig.getString("key", "").equals(key)) {
-							restriction = notifConfig.getString("restriction",
-									restriction);
+							restriction = notifConfig.getString("restriction", restriction);
 							break;
 						}
 					}
-					if (restriction
-							.equals(TimelineNotificationsLoader.Restrictions.EXTERNAL
-									.name())) {
-						if (!restricted
-								.containsField(notif.getString("type"))) {
-							restricted.putArray("type", new JsonArray());
+					if (restriction.equals(TimelineNotificationsLoader.Restrictions.EXTERNAL.name()) ||
+							restriction.equals(TimelineNotificationsLoader.Restrictions.HIDDEN.name())) {
+						String notifType = notif.getString("type");
+						if (!restricted.containsField(notifType)) {
+							restricted.putArray(notifType, new JsonArray());
 						}
-						restricted.getArray("type")
-								.add(notif.getString("event-type"));
+						restricted.getArray(notifType).add(notif.getString("event-type"));
 					}
 				}
-				handler.handle(
-						new Either.Right<String, JsonObject>(restricted));
+				handler.handle(new Either.Right<String, JsonObject>(restricted));
 			}
 		});
 	}
