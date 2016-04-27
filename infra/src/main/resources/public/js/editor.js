@@ -315,12 +315,20 @@ window.RTE = (function () {
 					    elementAtCaret.remove();
 					}
 					else {
-					    if (elementAtCaret.innerHTML) {
-					        element.html(elementAtCaret.innerHTML);
-					    }
-
-					    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
-					    elementAtCaret.remove();
+						element.text('');
+						// range is annoyingly changed while executing code
+						var end = this.range.endOffset;
+						var start = this.range.startOffset;
+						for(var i = start; i < end; i++){
+							element[0].textContent += elementAtCaret.childNodes[i].textContent;
+							if(i === end - 1){
+								elementAtCaret.insertBefore(element[0], elementAtCaret.childNodes[i]);
+								elementAtCaret.childNodes[i + 1].remove();
+							}
+							else{
+								elementAtCaret.childNodes[i].remove();
+							}
+						}
 					}
 					this.moveCaret(element[0], element.text().length);
 				}
