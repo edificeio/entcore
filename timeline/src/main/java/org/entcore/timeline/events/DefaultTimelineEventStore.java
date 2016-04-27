@@ -66,13 +66,14 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				}
 			}
 			if(restrictionFilter != null && restrictionFilter.size() > 0){
+				JsonArray nor = new JsonArray();
 				for(String type : restrictionFilter.toMap().keySet()){
 					for(Object eventType : restrictionFilter.getArray(type, new JsonArray())){
-						query.putArray("$nor", new JsonArray()
-							.add(new JsonObject()
-								.putString("type", type)
-								.putString("event-type", eventType.toString())));
+						nor.add(new JsonObject()
+							.putString("type", type)
+							.putString("event-type", eventType.toString()));
 					}
+					query.putArray("$nor", nor);
 				}
 			}
 			JsonObject sort = new JsonObject().putNumber("date", -1);
