@@ -2,5 +2,7 @@
     "userbook.userbook_mood": "Changement d'humeur",
     "userbook.updated.mood": "a mis à jour son humeur",
     "userbook.userbook_motto": "Changement de devise",
-    "userbook.updated.motto": "a mis à jour sa devise"
+    "userbook.updated.motto": "a mis à jour sa devise",
+    "timeline.userbook.updated.mood": "a mis à jour son humeur",
+    "timeline.userbook.updated.motto": "a mis à jour sa devise"
 }
