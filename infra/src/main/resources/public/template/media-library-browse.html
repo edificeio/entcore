@@ -54,8 +54,8 @@
 	</nav>
 	<div class="cell eight height-five twelve-mobile height-ten-mobile">
 		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
-		<div class="absolute icons-view" style="overflow: auto">
-			<div class="element reduce-block-six" ng-repeat="folder in folders">
+		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
+			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
 				<div class="container" ng-click="openFolder(folder)">
 					<i class="folder-large"></i>
 				</div>
@@ -63,7 +63,7 @@
 					<a class="medium-text">[[folder.name]]</a>
 				</legend>
 			</div>
-			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true" ng-class="{ selected: document.selected }">
+			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length" ng-class="{ selected: document.selected }">
 				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
 					<div class="clip">
 						<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
