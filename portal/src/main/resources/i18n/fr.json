@@ -83,6 +83,7 @@
   "options": "Options",
   "pages": "Pages",
   "poll": "Sondage",
+  "poll.none": "Il n'y a aucun sondage disponible",
   "portal.header.navigation.classMembers": "La classe",
   "portal.header.navigation.myapps": "Mes applis",
   "portal.header.navigation.whatsnew": "Quoi de neuf ?",

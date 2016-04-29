@@ -14,17 +14,10 @@ function mergeBuffers(channelBuffer, recordingLength){
 }
 
 function interleave(leftChannel, rightChannel){
-	var length = leftChannel.length + rightChannel.length;
-	var result = new Float32Array(length);
-
-	var inputIndex = 0;
-
-	for (var index = 0; index < length; ){
-		result[index++] = leftChannel[inputIndex];
-		result[index++] = rightChannel[inputIndex];
-		inputIndex++;
-	}
-	return result;
+    var result = new Float32Array(leftChannel.length);
+    for (var i = 0; i < leftChannel.length; ++i)
+        result[i] = 0.5 * (leftChannel[i] + rightChannel[i]);
+    return result;
 }
 
 function writeUTFBytes(view, offset, string){
@@ -48,21 +41,21 @@ encoder.wav = function(leftChannel, rightChannel, recordingLength, callback){
 	// write the WAV container, check spec at: https://ccrma.stanford.edu/courses/422/projects/WaveFormat/
 	// RIFF chunk descriptor
 	writeUTFBytes(view, 0, 'RIFF');
-	view.setUint32(4, 44 + interleaved.length * 2, true);
+	view.setUint32(4, 44 + interleaved.length, true);
 	writeUTFBytes(view, 8, 'WAVE');
 	// FMT sub-chunk
 	writeUTFBytes(view, 12, 'fmt ');
 	view.setUint32(16, 16, true);
 	view.setUint16(20, 1, true);
-	// stereo (2 channels)
-	view.setUint16(22, 2, true);
+	// mono (1 channel)
+	view.setUint16(22, 1, true);
 	view.setUint32(24, 44100, true);
 	view.setUint32(28, 44100 * 4, true);
 	view.setUint16(32, 4, true);
 	view.setUint16(34, 16, true);
 	// data sub-chunk
 	writeUTFBytes(view, 36, 'data');
-	view.setUint32(40, interleaved.length * 2, true);
+	view.setUint32(40, interleaved.length, true);
 
 	// write the PCM samples
 	var index = 44;
@@ -72,30 +65,44 @@ encoder.wav = function(leftChannel, rightChannel, recordingLength, callback){
 		index += 2;
 	}
 
-	callback(new Blob ([ view ], { type : 'audio/wav' }));
+	if (typeof callback === 'function') {
+	    callback(new Blob([view], { type: 'audio/wav' }));
+	}
+
+	return view;
 };
 
 encoder.mp3 = function(leftChannel, rightChannel, recordingLength, callback){
 	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '/infra/public/js/libmp3lame.min.js');
+	xhr.open('GET', '/infra/public/js/lame.min.js');
 	xhr.onload = function(){
-		eval(xhr.responseText);
-		var mp3codec = Lame.init();
+	    eval(xhr.responseText);
 
-		Lame.set_mode(mp3codec, Lame.JOINT_STEREO);
-		Lame.set_num_channels(mp3codec, 2);
-		Lame.set_num_samples(mp3codec, -1);
-		Lame.set_in_samplerate(mp3codec, 44100);
-		Lame.set_out_samplerate(mp3codec, 44100);
-		Lame.set_bitrate(mp3codec, 128);
+	    var liblame = new lamejs();
+	    var dataView = encoder.wav(leftChannel, rightChannel, recordingLength);
+	    var wav = liblame.WavHeader.readHeader(dataView);
+	    console.log('wav:', wav);
 
-		Lame.init_params(mp3codec);
+	    var samples = new Int16Array(dataView.buffer, wav.dataOffset, wav.dataLen / 2);
+	    var buffer = [];
+	    var mp3enc = new liblame.Mp3Encoder(1, wav.sampleRate, 128);
+	    var remaining = samples.length;
+	    var maxSamples = 1152;
+	    for (var i = 0; remaining >= maxSamples; i += maxSamples) {
+	        var mono = samples.subarray(i, i + maxSamples);
+	        var mp3buf = mp3enc.encodeBuffer(mono);
+	        if (mp3buf.length > 0) {
+	            buffer.push(new Int8Array(mp3buf));
+	        }
+	        remaining -= maxSamples;
+	    }
+	    var d = mp3enc.flush();
+	    if (d.length > 0) {
+	        buffer.push(new Int8Array(d));
+	    }
 
-		var leftBuffer = mergeBuffers(leftChannel, recordingLength);
-		var rightBuffer = mergeBuffers(rightChannel, recordingLength);
-
-		var mp3data = Lame.encode_buffer_ieee_float(mp3codec, leftBuffer, rightBuffer);
-		callback(new Blob([new Uint8Array(mp3data.data)], {type: 'audio/mp3'}));
+	    console.log('done encoding, size=', buffer.length);
+	    callback(new Blob(buffer, { type: 'audio/mp3' }));
 	};
 	xhr.send(null);
 };
