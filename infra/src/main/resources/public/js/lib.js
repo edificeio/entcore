@@ -1514,7 +1514,10 @@ var recorder = (function(){
 				recorder = context.createScriptProcessor(bufferSize, 2, 2);
 				recorder.onaudioprocess = function(e){
 					if(this.status !== 'recording' && this.status !== 'paused' && this.status !== 'playing'){
-						mediaStream.stop();
+					    if (mediaStream && mediaStream.stop) {
+					        mediaStream.stop();
+					    }
+					    
 						loaded = false;
 					}
 					if(this.status !== 'recording'){
