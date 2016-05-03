@@ -383,7 +383,7 @@ public class User {
 	public static void relativeStudent(String relativeId, String studentId, TransactionHelper tx) {
 		String query =
 				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
-				"WITH r " +
+				"WITH DISTINCT r " +
 				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
 				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
 				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
