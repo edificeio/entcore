@@ -23,10 +23,13 @@
         <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[classSelected.name]]</h1></div>
         <hr class="separator cell">
         <div style="text-align:center">
-            <button ng-click="classSelected.update()">[[lang.translate("directory.save")]]</button>
+            <button ng-click="classSelected.update()" class="text-flow">[[lang.translate("directory.save")]]</button>
             <a href="[['/directory/admin-console#/class/'+structure.id+'/'+classSelected.id]]" class="right-magnet" target="_blank" tooltip="directory.directlink">
                 <button class="directory-direct-link-button"></button>
             </a>
+        </div>
+        <div class="row">
+            <a href="[['/directory/admin-console#/classUsers/'+structure.id+'/'+classSelected.id]]" target="_blank">[[lang.translate("directory.classUsers")]]</a>
         </div>
         <hr class="separator cell">
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[classSelected.id]]</div>
@@ -34,7 +37,6 @@
             <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
             <input type="text" ng-model="classSelected.name"/>
         </div>
-        <a href="[['/directory/admin-console#/classUsers/'+structure.id+'/'+classSelected.id]]" target="_blank">[[lang.translate("directory.classUsers")]]</a>
         <!-- Export -->
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.exportClass")]]</h3>
