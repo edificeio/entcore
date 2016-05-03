@@ -896,6 +896,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		}
 	}
 
+    $scope.excludeChildren = function(user){
+        return function(child){
+            return user.children.indexOf(child) < 0
+        }
+    }
+
 	//Groups
 	$scope.initGroup = function(){
 		var newGroup = new ManualGroup()

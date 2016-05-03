@@ -152,7 +152,7 @@
     <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 380px; height: 380px; margin: 0">
         <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterChildren"/>
         <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-            <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | orderBy: 'lastName'"
+            <li ng-repeat="child in structure.users.all | filter: { 'type': 'Student', 'displayName': filterChildren } | filter: excludeChildren(targetUser) | orderBy: 'lastName'"
                 ng-click="addChild(child, targetUser)"
                 style="padding-left: 0">
                 <span ng-class="userStyle(child)">[[child.lastName]] [[child.firstName]]</span>
