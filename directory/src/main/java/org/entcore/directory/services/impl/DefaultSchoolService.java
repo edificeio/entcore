@@ -72,7 +72,7 @@ public class DefaultSchoolService implements SchoolService {
 		String query =
 				"MATCH (u:User { id: {id}})-[:IN]->(g: Group)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
-				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
+				"WITH s, COLLECT(DISTINCT {id: ps.id, name: ps.name}) as parents " +
 				"RETURN DISTINCT s.id as id, s.UAI as UAI, s.name as name, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 		neo.execute(query, new JsonObject().putString("id", userId), validResultHandler(results));
