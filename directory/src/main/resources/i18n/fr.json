@@ -376,7 +376,7 @@
     "userBook.students": "Élèves",
     "userBook.teachers": "Enseignants",
     "userBook.title": "Mon compte",
-    "userbook.renewpassword.error": "Le formulaire contient des erreurs, veuillez vérifier que les deux mots de passe concordent et respectent les contraintes de sécurité.",
+    "userbook.renewpassword.error": "Le formulaire contient des erreurs, veuillez vérifier votre ancien mot de passe est correct et que les deux mots de passe concordent et respectent les contraintes de sécurité.",
     "welcome.class.admin": "« Paramétrage de la classe ».",
     "welcome.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "welcome.class.admin.info": "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes :",
