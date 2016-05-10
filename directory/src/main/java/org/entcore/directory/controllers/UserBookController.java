@@ -580,8 +580,13 @@ public class UserBookController extends BaseController {
 							JsonArray results = ((JsonObject) event.right().getValue().get(0)).getArray("preferences", new JsonArray());
 							for(Object resultObj : results){
 								JsonObject result = (JsonObject) resultObj;
-								JsonObject prefs = new JsonObject(result.getObject("preferences", new JsonObject())
-										.getObject("data", new JsonObject()).getString(application, "{}"));
+								JsonObject prefs = new JsonObject();
+								try {
+									prefs = new JsonObject(result.getObject("preferences", new JsonObject())
+											.getObject("data", new JsonObject()).getString(application, "{}"));
+								} catch(Exception e) {
+									log.error("UserId [" + result.getString("userId", "") + "] - Bad timeline preferences format");
+								}
 								result.putObject("preferences", prefs);
 							}
 							message.reply(new JsonObject().putString("status", "ok")
