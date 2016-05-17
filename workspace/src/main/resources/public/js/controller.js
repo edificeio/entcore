@@ -268,6 +268,14 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		}, 1);
 	};
 
+	$scope.deleteConfirm = function (url) {
+	    template.open('lightbox', 'confirm-delete');
+	    $scope.confirm = function () {
+	        $scope.template.close('lightbox');
+	        $scope.remove();
+	    };
+	};
+
 	$scope.toTrashConfirm = function(url){
 		template.open('lightbox', 'confirm');
 		$scope.confirm = function(){
@@ -431,7 +439,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		buttons: [],
 		contextualButtons: [
 			{ text: 'workspace.trash.restore', action: $scope.restore },
-			{ text: 'workspace.move.trash', action: $scope.remove }
+			{ text: 'workspace.move.trash', action: $scope.deleteConfirm }
 		]
 	}, {
 		name: 'shared',
