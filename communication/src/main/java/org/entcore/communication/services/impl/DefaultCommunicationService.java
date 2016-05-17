@@ -46,7 +46,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		String query =
 				"MATCH (g1:Group {id : {startGroupId}}), (g2:Group {id : {endGroupId}}) " +
 				"SET g1.communiqueWith = coalesce(g1.communiqueWith, []) + {endGroupId} " +
-				"CREATE UNIQUE g1-[:COMMUNIQUE]->g2 " +
+				"CREATE UNIQUE g1-[:COMMUNIQUE { source: 'MANUAL'}]->g2 " +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
 				.putString("startGroupId", startGroupId)
@@ -72,13 +72,13 @@ public class DefaultCommunicationService implements CommunicationService {
 		String createRelationship;
 		switch (direction) {
 			case INCOMING:
-				createRelationship = "g<-[:COMMUNIQUE]-u ";
+				createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
 				break;
 			case OUTGOING:
-				createRelationship = "g-[:COMMUNIQUE]->u ";
+				createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
 				break;
 			default:
-				createRelationship = "g<-[:COMMUNIQUE]-u, g-[:COMMUNIQUE]->u ";
+				createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}})<-[:IN]-(u:User) " +
