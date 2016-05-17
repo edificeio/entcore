@@ -1,16 +1,24 @@
-<div style="{{#i18n}}timeline.mail.banner.style{{/i18n}}">
-    <img src="{{#i18n}}timeline.mail.logo.src{{/i18n}}" style="{{#i18n}}timeline.mail.logo.style{{/i18n}}" />
-</div>
-{{#i18n}}timeline.immediate.mail.header{{/i18n}}
-<div style="{{#i18n}}timeline.immediate.mail.notification.div.style{{/i18n}}">
-{{#nested}}innerTemplate{{/nested}}
-</div>
-{{#resourceUri}}
-<div style="{{#i18n}}timeline.immediate.mail.action.div.style{{/i18n}}">
-    <a href="{{resourceUri}}" style="{{#i18n}}timeline.immediate.mail.action.button.style{{/i18n}}">
-        {{#i18n}}timeline.immediate.mail.action.text{{/i18n}}
-    </a>
-</div>
-{{/resourceUri}}
-{{#i18n}}timeline.immediate.mail.footer{{/i18n}}
-{{#i18n}}timeline.mail.bottom{{/i18n}}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+        <div style="{{#i18n}}timeline.mail.banner.style{{/i18n}}">
+            <img src="{{#i18n}}timeline.mail.logo.src{{/i18n}}" style="{{#i18n}}timeline.mail.logo.style{{/i18n}}" />
+        </div>
+        {{#i18n}}timeline.immediate.mail.header{{/i18n}}
+        <div style="{{#i18n}}timeline.immediate.mail.notification.div.style{{/i18n}}">
+        {{#nested}}innerTemplate{{/nested}}
+        </div>
+        {{#resourceUri}}
+        <div style="{{#i18n}}timeline.immediate.mail.action.div.style{{/i18n}}">
+            <a href="{{resourceUri}}" style="{{#i18n}}timeline.immediate.mail.action.button.style{{/i18n}}">
+                {{#i18n}}timeline.immediate.mail.action.text{{/i18n}}
+            </a>
+        </div>
+        {{/resourceUri}}
+        {{#i18n}}timeline.immediate.mail.footer{{/i18n}}
+        {{#i18n}}timeline.mail.bottom{{/i18n}}
+    </body>
+</html>
