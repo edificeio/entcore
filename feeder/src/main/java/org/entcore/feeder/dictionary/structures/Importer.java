@@ -267,13 +267,18 @@ public class Importer {
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
-								"id", "externalId", "login", "activationCode", "displayName");
+								"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
 				query = "CREATE (u:User {props}) ";
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
+			if (object.containsField("email")) {
+				final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
+						"AND u.email <> {email} SET u.email = {email}";
+				transactionHelper.add(queryUpdateEmail, object);
+			}
 			if (linkStudent != null && linkStudent.size() > 0) {
 				String query2 =
 						"START u=node:node_auto_index(externalId={externalId}), " +
@@ -306,13 +311,18 @@ public class Importer {
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
 						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
-						"id", "externalId", "login", "activationCode", "displayName");
+						"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
 				query = "CREATE (u:User {props}) ";
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
+			if (object.containsField("email")) {
+				final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
+						"AND u.email <> {email} SET u.email = {email}";
+				transactionHelper.add(queryUpdateEmail, object);
+			}
 			JsonArray structures = getMappingStructures(object.getArray("structures"));
 			if (externalId != null && structures != null && structures.size() > 0) {
 				JsonObject p = new JsonObject().putString("userExternalId", externalId);
@@ -460,13 +470,18 @@ public class Importer {
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode", "displayName"));
+							"id", "externalId", "login", "activationCode", "displayName", "email"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
+				if (object.containsField("email")) {
+					final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
+							"AND u.email <> {email} SET u.email = {email}";
+					transactionHelper.add(queryUpdateEmail, object);
+				}
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
@@ -603,13 +618,18 @@ public class Importer {
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
 					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
-							"id", "externalId", "login", "activationCode", "displayName"));
+							"id", "externalId", "login", "activationCode", "displayName", "email"));
 					params = object;
 				} else {
 					sb.append("CREATE (u:User {props}) ");
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
+				if (object.containsField("email")) {
+					final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
+							"AND u.email <> {email} SET u.email = {email}";
+					transactionHelper.add(queryUpdateEmail, object);
+				}
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
