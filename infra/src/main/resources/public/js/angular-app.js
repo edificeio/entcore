@@ -102,7 +102,9 @@ var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpol
 				currentAction = $route.current.action;
 				currentParams = $route.current.params;
 				routes[$route.current.action]($routeParams);
-				ui.scrollToId(window.location.hash.split('#')[1]);
+				setTimeout(function () {
+				    ui.scrollToId(window.location.hash.split('#')[1]);
+				}, 100);
 			}
 		});
 
@@ -2530,7 +2532,7 @@ module.directive('bottomScroll', function($compile){
 		link: function (scope, element, attributes) {
 		    var scrollElement = element;
 		    var getContentHeight = function () {
-		        return element[0].scrollHeight;
+		        return element[0].offsetHeight;
 		    };
 		    if (element.css('overflow') !== 'auto') {
 		        scrollElement = $(window);
