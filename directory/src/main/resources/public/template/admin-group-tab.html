@@ -66,8 +66,8 @@
             <h5 ng-if="!groupSelected.classes"><i18n>directory.admin.structureGroup</i18n></h5>
             <h5 ng-if="groupSelected.classes"><i18n>directory.admin.classGroup</i18n> ([[groupSelected.classes[0].name]])</h5>
         </div>
-        <hr class="separator">
-        <div class="button-horizontal-bar">
+        <hr class="separator" ng-if="groupSelected.type === 'ManualGroup'">
+        <div class="button-horizontal-bar" ng-if="groupSelected.type === 'ManualGroup'">
             <button ng-click="updateGroup(groupSelected)">[[lang.translate("directory.save")]]</button>
             <button ng-click="deleteGroup(groupSelected)">[[lang.translate("directory.delete")]]</button>
         </div>
@@ -75,7 +75,7 @@
         <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
-            <input class="six cell" type="text" ng-model="groupSelected.name"/>
+            <input class="six cell" type="text" ng-disabled="groupSelected.type !== 'ManualGroup'" ng-model="groupSelected.name"/>
         </div>
         <hr class="separator">
         <nav ng-if="groupSelected.type === 'ManualGroup'" class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">

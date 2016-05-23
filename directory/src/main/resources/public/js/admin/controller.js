@@ -963,13 +963,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		group.save($scope.structure, function(){ $scope.refreshGroups($scope.structure)})
 	}
 	$scope.updateGroup = function(group){
-		group.update(function(){ $scope.refreshGroups($scope.structure)})
+		if(group.type === 'ManualGroup'){
+			group.update(function(){ $scope.refreshGroups($scope.structure)})
+		}
 	}
 	$scope.deleteGroup = function(group){
-		group.delete(function(){ $scope.refreshGroups($scope.structure)})
+		if(group.type === 'ManualGroup'){
+			group.delete(function(){ $scope.refreshGroups($scope.structure)})
+		}
 	}
 	$scope.addUserToGroup = function(user, group){
-		if(_.some(group.data.users, function(x){ return user.id === x.id }))
+		if(group.type === 'ManualGroup' && _.some(group.data.users, function(x){ return user.id === x.id }))
 			return
 		group.addUser(user, function(){
 			group.getUsers($scope.refreshScope)
