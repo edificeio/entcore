@@ -61,7 +61,7 @@
     "timeline.mail.subfooter.link.text": "cliquez ici",
     "timeline.mail.subfooter.link": "{{#host}}/userbook/mon-compte{{/host}}",
     "timeline.content.mail.border": "border-bottom: 1px solid #999;",
-    "timeline.immediate.mail.subject.header": "ENT Nouvelle notification :",
+    "timeline.immediate.mail.subject.header": "ENT Nouvelle notification : ",
     "timeline.immediate.mail.subject.start": "Bonjour, vous avez reçu",
     "timeline.immediate.mail.subject.bold": "une nouvelle notification :",
     "timeline.immediate.mail.action.text": "Consulter dans l'ENT",
