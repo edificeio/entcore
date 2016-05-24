@@ -283,7 +283,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			onClick: function(){ $scope.scrollOpts.reset() },
 			onStructureClick: function(structure){
 				$scope.viewStructure(structure)
-				structure.manualGroups.sync($scope.refreshScope)
+				structure.groups.sync($scope.refreshScope)
 			},
 			requestName : "groups-request"
 		},
@@ -386,17 +386,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
     // Angular user styling (depends on its role / isolated)
     $scope.userStyle = function(user){
-		return {
-			'user-style': true,
-			'teacher': user.type === "Teacher",
-			'personnel': user.type === "Personnel",
-			'relative': user.type === "Relative",
-			'student': user.type === "Student",
-			'guest': user.type === "Guest",
-			'isolated': user.isolated,
-			'not-active': user.code
-		}
+			return {
+				'user-style': true,
+				'teacher': user.type === "Teacher",
+				'personnel': user.type === "Personnel",
+				'relative': user.type === "Relative",
+				'student': user.type === "Student",
+				'guest': user.type === "Guest",
+				'isolated': user.isolated,
+				'not-active': user.code
+			}
     }
+
+		$scope.groupStyle = function(group){
+			return{
+				'user-style' : true,
+				'student' : group.type === "ProfileGroup",
+				'personnel' : group.type === "FunctionalGroup",
+				'guest' : group.type === "ManualGroup"
+			}
+		}
 
     // Angular user list ordering
     $scope.typeOrdering = function(user){
@@ -414,11 +423,32 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     }
     $scope.userOrdering = ['lastName', $scope.typeOrdering]
 
+		$scope.groupTypeOrdering = function(group){
+			switch(group.type){
+				case "ProfileGroup" :
+					return 0
+				case "FunctionalGroup" :
+					return 1
+				case "ManualGroup" :
+					return 3
+			}
+			return 100
+		}
+
+		$scope.groupOrdering = ['name', $scope.groupTypeOrdering]
+
     $scope.switchOrdering = function(){
         var temp = $scope.userOrdering[0]
         $scope.userOrdering[0] = $scope.userOrdering[1]
         $scope.userOrdering[1] = temp
     }
+
+		$scope.switchGroupOrdering = function(){
+			var temp = $scope.groupOrdering[0]
+			$scope.groupOrdering[0] = $scope.groupOrdering[1]
+			$scope.groupOrdering[1] = temp
+		}
+
 
 	$scope.setShowWhat = function(what){
 		$scope.showWhat = what
@@ -439,8 +469,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showGuests: true,
 		showFeedModeManual: true,
 		showFeedModeAuto: true,
-		showLocalAdmin: false
+		showLocalAdmin: false,
+		showManualsGroups : true,
+		showProfilesGroups : true,
+		showFunctionalsGroups : true
 	}
+
 	$scope.toggleFilter = function(filterName){
 		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
 	}
@@ -464,6 +498,26 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			filterRelative && filterStudents && filterGuests &&
 			filterFeedAuto && filterFeedManual && filterLocalAdmin
 	}
+
+	$scope.structureGroupsFilteringFunction = function(group){
+		var filterByInput = $rootScope.filterStructureGroups ? $scope.fairInclusion(group.name, $rootScope.filterStructureGroups) : true;
+		var filterManualGroups = group.type === 'ManualGroup' ? $scope.userFilters.showManualsGroups : true;
+		var filterProfilesGroups = group.type === 'ProfileGroup' ? $scope.userFilters.showProfilesGroups : true;
+		var filterFunctionalesGroups = group.type === 'FunctionalGroup' ? $scope.userFilters.showFunctionalsGroups : true;
+		var filterClassGroup = group.classes === null ? true : $scope.filterClassGroup(group, $scope.structure);
+
+		return filterByInput && filterManualGroups && filterProfilesGroups
+		&& filterFunctionalesGroups && filterClassGroup;
+	}
+
+	$scope.filterClassGroup = function(group, structure){
+		var b = false;
+		_.each(group.classes, function(classe){
+			b = b || (structure.classes.findWhere({id : classe.id})).selected
+		});
+		return b;
+	}
+
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){
 			return (input && user.displayName) ? $scope.fairInclusion(user.displayName, input) : true
@@ -904,33 +958,41 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	//Groups
 	$scope.initGroup = function(){
-		var newGroup = new ManualGroup()
+		var newGroup = new Group()
 		return newGroup
 	}
 
 	$scope.refreshGroups = function(structure){
-		structure.manualGroups.sync($scope.refreshScope)
+		structure.groups.sync($scope.refreshScope)
 	}
 	$scope.saveGroup = function(group){
 		group.save($scope.structure, function(){ $scope.refreshGroups($scope.structure)})
 	}
 	$scope.updateGroup = function(group){
-		group.update(function(){ $scope.refreshGroups($scope.structure)})
+		if(group.type === 'ManualGroup'){
+			group.update(function(){ $scope.refreshGroups($scope.structure)})
+		}
 	}
 	$scope.deleteGroup = function(group){
-		group.delete(function(){ $scope.refreshGroups($scope.structure)})
+		if(group.type === 'ManualGroup'){
+			group.delete(function(){ $scope.refreshGroups($scope.structure)})
+		}
 	}
 	$scope.addUserToGroup = function(user, group){
-		if(_.some(group.data.users, function(x){ return user.id === x.id }))
-			return
-		group.addUser(user, function(){
-			group.getUsers($scope.refreshScope)
-		})
+		if(group.type === 'ManualGroup'){
+			if(_.some(group.data.users, function(x){ return user.id === x.id }))
+				return
+			group.addUser(user, function(){
+				group.getUsers($scope.refreshScope)
+			});
+		}
 	}
 	$scope.removeUserFromGroup = function(user, group){
-		group.removeUser(user, function(){
-			group.getUsers($scope.refreshScope)
-		})
+		if(group.type === 'ManualGroup'){
+			group.removeUser(user, function(){
+				group.getUsers($scope.refreshScope)
+			})
+		}
 	}
 
 	//Structures
