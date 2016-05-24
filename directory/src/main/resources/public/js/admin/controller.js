@@ -973,11 +973,13 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		}
 	}
 	$scope.addUserToGroup = function(user, group){
-		if(group.type === 'ManualGroup' && _.some(group.data.users, function(x){ return user.id === x.id }))
-			return
-		group.addUser(user, function(){
-			group.getUsers($scope.refreshScope)
-		})
+		if(group.type === 'ManualGroup'){
+			if(_.some(group.data.users, function(x){ return user.id === x.id }))
+				return
+			group.addUser(user, function(){
+				group.getUsers($scope.refreshScope)
+			});
+		}
 	}
 	$scope.removeUserFromGroup = function(user, group){
 		if(group.type === 'ManualGroup'){
