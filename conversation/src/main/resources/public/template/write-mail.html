@@ -47,9 +47,6 @@
 					</div>
 				</div>
 				<div class="three cell twelve-mobile">
-					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!newItem.to.length">
-						<i18n>submit</i18n>
-					</button>
 					<plus class="right-magnet">
 						<button class="cell" ng-click="saveDraft()">
 							<i18n>save</i18n>
@@ -58,6 +55,9 @@
 							<i18n>cancel</i18n>
 						</button>
 					</plus>
+					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!newItem.to.length">
+						<i18n>submit</i18n>
+					</button>
 				</div>
 			</div>
 
