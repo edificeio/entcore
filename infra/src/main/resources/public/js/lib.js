@@ -462,6 +462,26 @@ function Collection(obj){
 
 	Model.prototype.models = [];
 
+	Model.prototype.sync = function(){
+		http().get(http().parseUrl(this.api.get, this)).done(function(data){
+			this.updateData(data);
+		}.bind(this));
+	};
+	
+	Model.prototype.saveModifications = function(){
+		http().putJson(http().parseUrl(this.api.put, this), this);
+	}
+	
+	Model.prototype.remove = function(){
+		http().delete(http().parseUrl(this.api.delete, this));
+	}
+	
+	Model.prototype.create = function(){
+		http().postJson(http().parseUrl(this.api.post, this), this).done(function(data){
+			this.updateData(data);
+		}.bind(this));
+	}
+
 	Model.prototype.makeModel = function(fn, methods, namespace){
 		if(typeof fn !== 'function'){
 			throw new TypeError('Only functions can be models');
