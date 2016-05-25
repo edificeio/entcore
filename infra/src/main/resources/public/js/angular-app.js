@@ -1683,6 +1683,9 @@ module.directive('dropDown', function($compile, $timeout){
 				dropDown.offset(pos);
 				dropDown.width(width);
 				scope.setDropDownHeight();
+				setTimeout(function(){
+					scope.setDropDownHeight()
+				}, 100);
 			});
 
 			dropDown.detach().appendTo('body');
