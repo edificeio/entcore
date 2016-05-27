@@ -47,7 +47,6 @@ import java.util.*;
 
 public class DefaultConversationService implements ConversationService {
 
-	private static final int LIST_LIMIT = 25;
 	private final EventBus eb;
 	private final Neo neo;
 	private final String applicationName;

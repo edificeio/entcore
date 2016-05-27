@@ -170,20 +170,32 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		return false
 	}
 
+    $scope.getSystemFolder = function(mail){
+        if(mail.from !== model.me.userId && mail.state === "SENT")
+			return 'INBOX'
+		if(mail.from === model.me.userId && mail.state === "SENT")
+			return 'OUTBOX'
+		if(mail.from === model.me.userId && mail.state === "DRAFT")
+			return 'DRAFT'
+        return ''
+    }
+
 	$scope.matchSystemIcon = function(mail){
-		if(mail.systemFolders.indexOf("INBOX") >= 0)
+        var systemFolder = $scope.getSystemFolder(mail)
+		if(systemFolder === "INBOX")
 			return 'mail-in'
-		if(mail.systemFolders.indexOf("OUTBOX") >= 0)
+		if(systemFolder === "OUTBOX")
 			return 'mail-out'
-		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+		if(systemFolder === "DRAFT")
 			return 'mail-new'
 		return ''
 	}
 
 	$scope.variableMailAction = function(mail){
-		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+        var systemFolder = $scope.getSystemFolder(mail)
+        if(systemFolder === "DRAFT")
 			return $scope.editDraft(mail)
-		else if(mail.systemFolders.indexOf("INBOX") >= 0)
+		else if(systemFolder === "OUTBOX")
 			return $scope.readMail(mail)
 		else
 			return $scope.viewMail(mail)
@@ -712,7 +724,8 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.sortBy = {
         name: function(mail){
-            if(mail.systemFolders.indexOf('INBOX') >= 0){
+            var systemFolder = $scope.getSystemFolder(mail)
+            if(systemFolder === 'INBOX'){
                 if(mail.fromName)
                     return mail.fromName
                 else
@@ -729,11 +742,12 @@ function Conversation($scope, $timeout, date, notify, route, model){
             return mail.date
         },
         systemFolder: function(mail){
-            if(mail.systemFolders.indexOf("INBOX") >= 0)
+            var systemFolder = $scope.getSystemFolder(mail)
+            if(systemFolder === "INBOX")
     			return 1
-    		if(mail.systemFolders.indexOf("OUTBOX") >= 0)
+    		if(systemFolder === "OUTBOX")
     			return 2
-    		if(mail.systemFolders.indexOf("DRAFT") >= 0)
+    		if(systemFolder ===  "DRAFT")
     			return 3
     		return 0
         }

@@ -4,6 +4,7 @@
 	"mode": "dev",
 	"auto-redeploy": false,
     "host" : "http://localhost:8019",
+    "sql": true,
     "app-name" : "Messagerie",
     "app-address" : "http://localhost:8019/conversation/conversation",
     "app-icon" : "conversation-large",

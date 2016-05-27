@@ -5,6 +5,7 @@
   "auto-redeploy": false,
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
+  "widgets-path": "/Users/elbywan/WSE/leo",
   "app-registry": {
     "name": "org.entcore~app-registry~1.19-SNAPSHOT",
     "config": {
@@ -34,6 +35,16 @@
 	  "address": "json.schema.validator",
 	  "schemas": []
 	}
+  },{
+    "name": "fr.wseduc~mod-postgresql~0.2-SNAPSHOT",
+    "config": {
+      "address" : "sql.persistor",
+      "worker" : true,
+      "multi-threaded" : true,
+      "url" : "jdbc:postgresql://localhost:5432/ong",
+      "username" : "web-education",
+      "password" : "We_1234"
+    }
   }],
   "one-modules": [
     {
@@ -104,6 +115,9 @@
     {
       "name": "org.entcore~conversation~1.19-SNAPSHOT",
       "config": {
+        "sql": true,
+        "db-schema": "conversation",
+        "mode": "dev",
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
         "app-address": "http://localhost:8090/conversation/conversation"

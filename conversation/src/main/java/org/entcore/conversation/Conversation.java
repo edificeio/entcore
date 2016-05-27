@@ -19,13 +19,11 @@
 
 package org.entcore.conversation;
 
-import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
-import org.entcore.conversation.service.impl.ConversationServiceManager;
 
 public class Conversation extends BaseServer {
 
@@ -40,9 +38,6 @@ public class Conversation extends BaseServer {
 		addController(new ConversationController(storage));
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage));
-
-		new AppRegistryEventsHandler(vertx, new ConversationServiceManager(vertx,
-				config.getString("app-name", Conversation.class.getSimpleName())));
 
 	}
 

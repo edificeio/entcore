@@ -31,6 +31,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
@@ -38,8 +39,13 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
 import org.entcore.conversation.Conversation;
+import org.entcore.conversation.filters.MessageOwnerFilter;
+import org.entcore.conversation.filters.MessageUserFilter;
+import org.entcore.conversation.filters.VisiblesFilter;
+import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.service.ConversationService;
-import org.entcore.conversation.service.impl.DefaultConversationService;
+import org.entcore.conversation.service.impl.Neo4jConversationService;
+import org.entcore.conversation.service.impl.SqlConversationService;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
@@ -70,11 +76,11 @@ public class ConversationController extends BaseController {
 
 	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
 
-	private String conversationName;
 	private Storage storage;
 	private int threshold;
 
 	private ConversationService conversationService;
+	private Neo4jConversationService neoConversationService;
 	private TimelineHelper notification;
 	private EventStore eventStore;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
@@ -87,12 +93,15 @@ public class ConversationController extends BaseController {
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
+		/*
 		this.conversationService = new DefaultConversationService(vertx,
 				container.config().getString("app-name", Conversation.class.getSimpleName()));
+				*/
+		this.conversationService = new SqlConversationService(vertx, container.config().getString("db-schema", "conversation"));
+		this.neoConversationService = new Neo4jConversationService();
 		notification = new TimelineHelper(vertx, eb, container);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
 		this.threshold = container.config().getInteger("alertStorage", 80);
-		this.conversationName = container.config().getString("app-name", Conversation.class.getSimpleName()).toUpperCase();
 	}
 
 	@Get("conversation")
@@ -113,7 +122,15 @@ public class ConversationController extends BaseController {
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject message) {
-							conversationService.saveDraft(parentMessageId, message, user, defaultResponseHandler(request, 201));
+							if(!message.containsField("from")){
+								message.putString("from", user.getUserId());
+							}
+							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
+								public void handle(JsonObject message) {
+									conversationService.saveDraft(parentMessageId, message, user, defaultResponseHandler(request, 201));
+								}
+							});
+
 						}
 					});
 				} else {
@@ -124,13 +141,16 @@ public class ConversationController extends BaseController {
 	}
 
 	@Put("draft/:id")
-	@SecuredAction(value = "conversation.create.draft", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageOwnerFilter.class)
 	public void updateDraft(final HttpServerRequest request) {
 		final String messageId = request.params().get("id");
+
 		if (messageId == null || messageId.trim().isEmpty()) {
 			badRequest(request);
 			return;
 		}
+
 		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -138,8 +158,15 @@ public class ConversationController extends BaseController {
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject message) {
-							conversationService.updateDraft(messageId, message, user,
-									defaultResponseHandler(request));
+							if(!message.containsField("from")){
+								message.putString("from", user.getUserId());
+							}
+							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
+								public void handle(JsonObject message) {
+									conversationService.updateDraft(messageId, message, user,
+											defaultResponseHandler(request));
+								}
+							});
 						}
 					});
 				} else {
@@ -149,10 +176,71 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	private void saveAndSend(final String messageId, final JsonObject message, final UserInfos user,
+			final String parentMessageId, final Handler<Either<String, JsonObject>> result){
+
+		Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isLeft()){
+					result.handle(event);
+					return;
+				}
+
+				final String id = (messageId != null && !messageId.trim().isEmpty()) ?
+					messageId :
+					event.right().getValue().getString("id");
+
+				conversationService.get(id, user, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isLeft()){
+							result.handle(event);
+							return;
+						}
+
+						JsonObject msg = event.right().getValue();
+						JsonArray attachments = msg.getArray("attachments", new JsonArray());
+						final AtomicLong size = new AtomicLong(0l);
+
+						for(Object att : attachments){
+							size.addAndGet(((JsonObject) att).getLong("size", 0l));
+						}
+
+						neoConversationService.findInactives(message, size.get(), new Handler<JsonObject>() {
+							public void handle(JsonObject userDetails) {
+								message.mergeIn(userDetails);
+
+								conversationService.send(parentMessageId, id, message, user, new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> event) {
+										if(event.isRight()){
+											for(Object recipient : message.getArray("allUsers", new JsonArray())){
+												if(recipient.toString().equals(user.getUserId()))
+													continue;
+												updateUserQuota(recipient.toString(), size.get());
+											}
+										}
+										result.handle(event);
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+		};
+		if (messageId != null && !messageId.trim().isEmpty()) {
+			conversationService.updateDraft(messageId, message, user, handler);
+		} else {
+			conversationService.saveDraft(parentMessageId, message, user, handler);
+		}
+	}
+
 	@Post("send")
-	@SecuredAction("conversation.send")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(VisiblesFilter.class)
 	public void send(final HttpServerRequest request) {
 		final String messageId = request.params().get("id");
+
 		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -161,20 +249,30 @@ public class ConversationController extends BaseController {
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject message) {
-							conversationService.send(parentMessageId, messageId, message, user,
-									new Handler<Either<String, JsonObject>>() {
+							if(!message.containsField("from")){
+								message.putString("from", user.getUserId());
+							}
+							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
+								public void handle(final JsonObject message) {
+									saveAndSend(messageId, message, user, parentMessageId,
+											new Handler<Either<String, JsonObject>>() {
 										@Override
 										public void handle(Either<String, JsonObject> event) {
 											if (event.isRight()) {
+												JsonObject result = event.right().getValue();
 												timelineNotification(request, event.right().getValue(), user);
-												renderJson(request, event.right().getValue());
+												renderJson(request, result
+													.putArray("inactive", message.getArray("inactives", new JsonArray()))
+													.putArray("undelivered", message.getArray("undelivered", new JsonArray()))
+													.putNumber("sent", message.getArray("allUsers", new JsonArray()).size()));
 											} else {
-												JsonObject error = new JsonObject()
-														.putString("error", event.left().getValue());
+												JsonObject error = new JsonObject().putString("error", event.left().getValue());
 												renderJson(request, error, 400);
 											}
 										}
 									});
+								}
+							});
 						}
 					});
 				} else {
@@ -341,7 +439,8 @@ public class ConversationController extends BaseController {
 	}
 
 	@Get("message/:id")
-	@SecuredAction(value = "conversation.get", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void getMessage(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -375,7 +474,8 @@ public class ConversationController extends BaseController {
 	}
 
 	@Put("trash")
-	@SecuredAction(value = "conversation.trash", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void trash(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
 		if (ids == null || ids.isEmpty()) {
@@ -395,7 +495,8 @@ public class ConversationController extends BaseController {
 	}
 
 	@Put("restore")
-	@SecuredAction(value = "conversation.restore", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void restore(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
 		if (ids == null || ids.isEmpty()) {
@@ -415,7 +516,8 @@ public class ConversationController extends BaseController {
 	}
 
 	@Delete("delete")
-	@SecuredAction(value = "conversation.delete", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void delete(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
 		if (ids == null || ids.isEmpty()) {
@@ -435,98 +537,28 @@ public class ConversationController extends BaseController {
 							}
 
 							JsonArray results = event.right().getValue();
+							JsonArray unusedAttachments =
+								((JsonArray) results.get(0)).size() > 0 ?
+									new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("unusedattachments", "[]")) :
+									new JsonArray();
+							final long freeQuota = ((JsonObject) ((JsonArray) results.get(1)).get(0)).getLong("totalquota", 0L);
 
-							final int resultsModulo = 4;
-
-							final AtomicLong totalSize = new AtomicLong(0);
-							final AtomicInteger finalCountdown = new AtomicInteger(results.size() / resultsModulo);
-
-							if(finalCountdown.get() <= 0){
-								renderJson(request, new JsonObject(), 204);
-								return;
-							}
-							final Handler<Void> finalCountdownHandler = new Handler<Void>() {
-								@Override
+							updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 								public void handle(Void event) {
-									if(finalCountdown.decrementAndGet() == 0){
-										updateUserQuota(user.getUserId(), totalSize.get(), new Handler<Void>() {
-											public void handle(Void event) {
-												renderJson(request, new JsonObject(), 204);
-											}
-										});
-
-									}
+									ok(request);
 								}
-							};
+							});
 
-							for(int i = 0; i < results.size(); i+=resultsModulo){
-								//Result from the get all attachments request - attachment list
-								JsonArray result = (JsonArray) results.get(i+1);
-								//Result from the attachments deletion request - retrieves only deleted attachments
-								JsonArray result2 = (JsonArray) results.get(i+2);
-
-								JsonArray allAttachments = new JsonArray();
-								JsonArray deletedAttachments = new JsonArray();
-								for(Object item : result){
-									JsonArray itemAttachments = ((JsonObject) item).getArray("attachments", new JsonArray());
-									for(Object attachment: itemAttachments){
-										allAttachments.add(attachment);
-									}
-								}
-								for(Object item : result2){
-									JsonArray itemAttachments = ((JsonObject) item).getArray("attachments", new JsonArray());
-									for(Object attachment: itemAttachments){
-										deletedAttachments.add(attachment);
-									}
-								}
-
-								if(allAttachments.size() < 1){
-									finalCountdownHandler.handle(null);
-									continue;
-								}
-
-								final AtomicInteger countdown = new AtomicInteger(allAttachments.size());
-								final Handler<Void> countdownHandler = new Handler<Void>() {
-									@Override
-									public void handle(Void event) {
-										if(countdown.decrementAndGet() == 0){
-											finalCountdownHandler.handle(event);
+							for(Object attObj : unusedAttachments){
+								JsonObject unusedAttachment = (JsonObject) attObj;
+								final String attachmentId = unusedAttachment.getString("id");
+								storage.removeFile(attachmentId, new Handler<JsonObject>() {
+									public void handle(JsonObject event) {
+										if (!"ok".equals(event.getString("status"))) {
+											log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
 										}
 									}
-								};
-
-								for(Object attachmentObj: allAttachments){
-									final JsonObject attachment = (JsonObject) attachmentObj;
-									final String attachmentId = attachment.getString("id");
-									final Long attachmentSize = attachment.getLong("size");
-
-									boolean toDelete = false;
-									for(Object obj : deletedAttachments){
-										JsonObject att = (JsonObject) obj;
-										if(att.getString("id").equals(attachment.getString("id"))){
-											toDelete = true;
-											break;
-										}
-									}
-
-									if(!toDelete){
-										totalSize.addAndGet(-attachmentSize);
-										countdownHandler.handle(null);
-									} else {
-										storage.removeFile(attachmentId, new Handler<JsonObject>() {
-											@Override
-											public void handle(JsonObject event) {
-												if (!"ok".equals(event.getString("status"))) {
-													log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
-													countdownHandler.handle(null);
-												} else {
-													totalSize.addAndGet(-attachmentSize);
-													countdownHandler.handle(null);
-												}
-											}
-										});
-									}
-								}
+								});
 							}
 						}
 					});
@@ -599,14 +631,10 @@ public class ConversationController extends BaseController {
 
 	//Update a folder
 	@Put("folder/:folderId")
-	@SecuredAction(value = "conversation.folder.update", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
 	public void updateFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
-
-		if(folderId == null || folderId.trim().length() == 0){
-			badRequest(request);
-			return;
-		}
 
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
 			public void handle(final UserInfos user) {
@@ -623,7 +651,8 @@ public class ConversationController extends BaseController {
 
 	//Move messages into a folder
 	@Put("move/userfolder/:folderId")
-	@SecuredAction(value = "conversation.message.move", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
 	public void move(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 		final List<String> messageIds = request.params().getAll("id");
@@ -648,7 +677,8 @@ public class ConversationController extends BaseController {
 
 	//Move messages into a system folder
 	@Put("move/root")
-	@SecuredAction(value = "conversation.message.move", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void rootMove(final HttpServerRequest request) {
 		final List<String> messageIds = request.params().getAll("id");
 
@@ -672,7 +702,8 @@ public class ConversationController extends BaseController {
 
 	//Trash a folder
 	@Put("folder/trash/:folderId")
-	@SecuredAction(value = "conversation.folder.trash", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
 	public void trashFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 
@@ -691,7 +722,8 @@ public class ConversationController extends BaseController {
 
 	//Restore a trashed folder
 	@Put("folder/restore/:folderId")
-	@SecuredAction(value = "conversation.folder.restore", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
 	public void restoreFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 
@@ -710,7 +742,8 @@ public class ConversationController extends BaseController {
 
 	//Delete a trashed folder
 	@Delete("folder/:folderId")
-	@SecuredAction(value = "conversation.folder.delete", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
 	public void deleteFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 
@@ -728,59 +761,30 @@ public class ConversationController extends BaseController {
 						}
 
 						JsonArray results = event.right().getValue();
+						JsonArray unusedAttachments =
+							((JsonArray) results.get(0)).size() > 0 ?
+								new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("unusedattachments", "[]")) :
+								new JsonArray();
+						final long freeQuota = ((JsonObject) ((JsonArray) results.get(1)).get(0)).getLong("totalquota", 0L);
 
-						final JsonArray attachmentsQuota =
-								((JsonArray) results.get(0)).size() > 0 ?
-									((JsonObject) ((JsonArray) results.get(0)).get(0)).getArray("attachments", new JsonArray())
-									: new JsonArray();
-						final JsonArray attachmentsDeletion =
-								((JsonArray) results.get(2)).size() > 0 ?
-									((JsonObject) ((JsonArray) results.get(2)).get(0)).getArray("attachments", new JsonArray())
-									: new JsonArray();
-
-						final AtomicLong totalSize = new AtomicLong(0L);
-						final AtomicInteger deletionCountdown = new AtomicInteger(attachmentsDeletion.size());
-
-						final VoidHandler finalHandler = new VoidHandler() {
-							@Override
-							protected void handle() {
-								if(deletionCountdown.decrementAndGet() == 0){
-									renderJson(request, new JsonObject(), 200);
-								}
-							}
-						};
-
-						for(Object attachmentObj: attachmentsQuota){
-							final JsonObject attachment = (JsonObject) attachmentObj;
-							final Long attachmentSize = attachment.getLong("size");
-
-							totalSize.addAndGet(-attachmentSize);
-						}
-
-						updateUserQuota(user.getUserId(), totalSize.get(), new Handler<Void>() {
-							@Override
+						updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 							public void handle(Void event) {
-								if(deletionCountdown.get() == 0){
-									renderJson(request, new JsonObject(), 200);
-									return;
-								}
-
-								for(Object attachmentObj: attachmentsDeletion){
-									final JsonObject attachment = (JsonObject) attachmentObj;
-									final String attachmentId = attachment.getString("id");
-
-									storage.removeFile(attachmentId, new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject event) {
-											if (!"ok".equals(event.getString("status"))) {
-												log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
-											}
-											finalHandler.handle(null);
-										}
-									});
-								}
+								ok(request);
 							}
 						});
+
+						for(Object attObj : unusedAttachments){
+							JsonObject unusedAttachment = (JsonObject) attObj;
+							final String attachmentId = unusedAttachment.getString("id");
+							storage.removeFile(attachmentId, new Handler<JsonObject>() {
+								@Override
+								public void handle(JsonObject event) {
+									if (!"ok".equals(event.getString("status"))) {
+										log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
+									}
+								}
+							});
+						}
 					}
 				});
 			}
@@ -790,11 +794,11 @@ public class ConversationController extends BaseController {
 	}
 
 	//Post an new attachment to a drafted message
-	@Post("message/:messageId/attachment")
-	@SecuredAction(value = "conversation.message.post.attachment", type = ActionType.AUTHENTICATED)
+	@Post("message/:id/attachment")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void postAttachment(final HttpServerRequest request){
-		final String messageId = request.params().get("messageId");
-		request.pause();
+		final String messageId = request.params().get("id");
 
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
 			public void handle(final UserInfos user) {
@@ -802,8 +806,12 @@ public class ConversationController extends BaseController {
 					unauthorized(request);
 					return;
 				}
+				request.pause();
 				getUserQuota(user.getUserId(), new Handler<JsonObject>() {
 					public void handle(JsonObject j) {
+
+						request.resume();
+
 						if(j == null || "error".equals(j.getString("status"))){
 							badRequest(request, j == null ? "" : j.getString("message"));
 							return;
@@ -812,16 +820,22 @@ public class ConversationController extends BaseController {
 						long quota = j.getLong("quota", 0l);
 						long storage = j.getLong("storage", 0l);
 
-						request.resume();
 						ConversationController.this.storage.writeUploadFile(request, (quota - storage), new Handler<JsonObject>() {
-							public void handle(JsonObject uploaded) {
+							public void handle(final JsonObject uploaded) {
 								if (!"ok".equals(uploaded.getString("status"))) {
 									badRequest(request, uploaded.getString("message"));
 									return;
 								}
 
-								updateUserQuota(user.getUserId(), uploaded.getObject("metadata", new JsonObject()).getLong("size", 0L));
-								conversationService.addAttachment(messageId, user, uploaded, defaultResponseHandler(request));
+								updateUserQuota(user.getUserId(),
+									uploaded.getObject("metadata",
+									new JsonObject()).getLong("size", 0L),
+									new VoidHandler() {
+										@Override
+										protected void handle() {
+											conversationService.addAttachment(messageId, user, uploaded, defaultResponseHandler(request));
+										}
+									});
 							}
 						});
 					}
@@ -833,10 +847,11 @@ public class ConversationController extends BaseController {
 	}
 
 	//Download an attachment
-	@Get("message/:messageId/attachment/:attachmentId")
-	@SecuredAction(value = "conversation.message.get.attachment", type = ActionType.AUTHENTICATED)
+	@Get("message/:id/attachment/:attachmentId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void getAttachment(final HttpServerRequest request){
-		final String messageId = request.params().get("messageId");
+		final String messageId = request.params().get("id");
 		final String attachmentId = request.params().get("attachmentId");
 
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
@@ -879,10 +894,11 @@ public class ConversationController extends BaseController {
 	}
 
 	//Delete an attachment
-	@Delete("message/:messageId/attachment/:attachmentId")
-	@SecuredAction(value = "conversation.message.delete.attachment", type = ActionType.AUTHENTICATED)
+	@Delete("message/:id/attachment/:attachmentId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void deleteAttachment(final HttpServerRequest request){
-		final String messageId = request.params().get("messageId");
+		final String messageId = request.params().get("id");
 		final String attachmentId = request.params().get("attachmentId");
 
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
@@ -904,32 +920,28 @@ public class ConversationController extends BaseController {
 							return;
 						}
 
-						JsonObject neoResult = event.right().getValue();
+						final JsonObject result = event.right().getValue();
 
-						boolean deletionCheck = neoResult.getBoolean("deletionCheck", false);
-						final String fileId = neoResult.getString("fileId");
-						final long fileSize = neoResult.getLong("fileSize");
+						boolean deletionCheck = result.getBoolean("deletionCheck", false);
+						final String fileId = result.getString("fileId");
+						final long fileSize = result.getLong("fileSize");
 
-						if(!deletionCheck){
-							updateUserQuota(user.getUserId(), -fileSize);
-							renderJson(request, neoResult);
-
-							return;
-						}
-
-						storage.removeFile(fileId, new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject result) {
-								if (!"ok".equals(result.getString("status"))) {
-									log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+fileId+"})");
-									badRequest(request);
-									return;
-								}
-
-								updateUserQuota(user.getUserId(), -fileSize);
+						updateUserQuota(user.getUserId(), -fileSize, new VoidHandler() {
+							protected void handle() {
 								renderJson(request, result);
 							}
 						});
+
+						if(deletionCheck){
+							storage.removeFile(fileId, new Handler<JsonObject>() {
+								@Override
+								public void handle(final JsonObject result) {
+									if (!"ok".equals(result.getString("status"))) {
+										log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+fileId+"})");
+									}
+								}
+							});
+						}
 					}
 				});
 			}
@@ -938,10 +950,11 @@ public class ConversationController extends BaseController {
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
 	}
 
-	@Put("message/:messageId/forward/:forwardedId")
-	@SecuredAction(value = "conversation.message.forward.attachments", type = ActionType.AUTHENTICATED)
+	@Put("message/:id/forward/:forwardedId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
 	public void forwardAttachments(final HttpServerRequest request){
-		final String messageId = request.params().get("messageId");
+		final String messageId = request.params().get("id");
 		final String forwardedId = request.params().get("forwardedId");
 
 		//1 - get user infos

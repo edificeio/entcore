@@ -83,7 +83,7 @@ object ConversationScenario {
     .post("/conversation/send")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"body":"Nop :'(","to":["${profilGroupIds(0)}"]}"""))
-    .check(status.is(400), jsonPath("$.error").find.is("conversation.send.error")))
+    .check(status.is(401)))
   .exec(http("Student reply to all users or groups of previous message including teacher group")
     .post("/conversation/send?In-Reply-To=${conversationMessageId}")
     .header("Content-Type", "application/json")
@@ -173,7 +173,7 @@ object ConversationScenario {
     .check(status.is(200)))
   .exec(http("Delete the root folder")
     .delete("/conversation/folder/${folderId}")
-    .check(status.is(200), bodyString.find.is("{}")))
+    .check(status.is(200)))
   .exec(http("Ensure that all folders are deleted")
     .get("/conversation/folders/list?trash=")
     .check(status.is(200), bodyString.find.is("[]")))
@@ -245,7 +245,7 @@ object ConversationScenario {
     .put("/conversation/trash?id=${attachmentDraftId}")
     .header("Content-Length", "0")
     .check(status.is(200)))
-//Disabled because of an error thrown (by Netty) when checking for status 204 
+//Disabled because of an error thrown (by Netty) when checking for status 204
   //.exec(http("Delete message")
     //.delete("/conversation/delete?id=${attachmentDraftId}")
     //.check(status.is(204)))

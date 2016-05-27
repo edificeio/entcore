@@ -19,8 +19,9 @@
 
 package org.entcore.conversation.service.impl;
 
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
+import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
 import org.vertx.java.core.Handler;
@@ -30,10 +31,12 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import fr.wseduc.webutils.Either;
+
 public class ConversationRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(ConversationRepositoryEvents.class);
-	private final Neo4j neo4j = Neo4j.getInstance();
+	private final Sql sql = Sql.getInstance();
 	private final Storage storage;
 
 	public ConversationRepositoryEvents(Storage storage) {
@@ -48,33 +51,57 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void deleteGroups(JsonArray groups) {
-		String q0 =
-				"MATCH (m:ConversationMessage) " +
-				"WHERE m.from = {group} OR {group} IN m.to OR {group} IN m.cc " +
-				"SET m.displayNames = FILTER(gId IN m.displayNames WHERE NOT(gId =~ {groupRegex}))";
-		String q1 =
-				"MATCH (m:ConversationMessage {from : {group}}) " +
-				"SET m.fromName = {groupName}, m.from = null ";
-		String q2 =
-				"MATCH (m:ConversationMessage) WHERE {group} IN m.to " +
-				"SET m.toName = coalesce(m.toName, []) + {groupName}, " +
-				"m.to = FILTER(gId IN m.to WHERE gId <> {group}) ";
-		String q3 =
-				"MATCH (m:ConversationMessage) WHERE {group} IN m.cc " +
-				"SET m.ccName = coalesce(m.ccName, []) + {groupName}, " +
-				"m.cc = FILTER(gId IN m.cc WHERE gId <> {group})";
-		StatementsBuilder b = new StatementsBuilder();
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+
+		String setDisplayNames =
+			"WITH message AS(" +
+			"    SELECT m.* " +
+			"    FROM conversation.messages AS m " +
+			"    WHERE \"displayNames\"::text LIKE '%' || ? || '%' LIMIT 1" +
+			"), elts AS (" +
+			"    SELECT jsonb_array_elements_text(\"displayNames\") AS elt FROM message" +
+			"), fullGroupTxt AS (" +
+			"    SELECT elt FROM elts " +
+			"    WHERE elt LIKE ? || '%'" +
+			") " +
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"displayNames\" = \"displayNames\" - (SELECT elt FROM fullGroupTxt) " +
+			"WHERE \"displayNames\"::text LIKE '%' || ? || '%'";
+
+		String setTO =
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"to\" = \"to\" - ?, " +
+			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
+			"WHERE \"to\" @> ?";
+
+		String setCC =
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"cc\" = \"cc\" - ?, " +
+			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
+			"WHERE \"cc\" @> ?";
+
 		for (Object o : groups) {
 			if (!(o instanceof JsonObject)) continue;
-			JsonObject params = (JsonObject) o;
-			params.removeField("users");
-			b.add(q0, params.putString("groupRegex", params.getString("group") + ".*"));
-			b.add(q1, params);
-			b.add(q2, params);
-			b.add(q3, params);
+			JsonObject group = (JsonObject) o;
+
+			JsonArray params1 = new JsonArray();
+			JsonArray params2 = new JsonArray();
+
+			for(int i = 0; i < 3; i++)
+				params1.add(group.getString("group", ""));
+
+			params2.add(group.getString("group", ""));
+			params2.add(new JsonArray().add(group.getString("groupName", "")).toString());
+			params2.add(new JsonArray().add(group.getString("group", "")).toString());
+
+			builder.prepared(setDisplayNames, params1);
+			builder.prepared(setTO, params2);
+			builder.prepared(setCC, params2);
 		}
-		neo4j.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
+		sql.transaction(builder.build(), new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error updating delete groups in conversation : " + event.body().encode());
@@ -91,74 +118,88 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			userIds.addString(((JsonObject) o).getString("id"));
 		}
 
-		String deleteFoldersQuery =
-			"MATCH (c: Conversation)-[r:HAS_CONVERSATION_FOLDER]->(f: ConversationUserFolder)" +
-			"-[childrenPath: HAS_CHILD_FOLDER*]->(children: ConversationUserFolder) " +
-			"WHERE c.userId IN {userIds} " +
-			"OPTIONAL MATCH (children)-[childrenRels]-() " +
-			"FOREACH (rel in childrenPath | DELETE rel) " +
-			"DELETE childrenRels, children";
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		StatementsBuilder b = new StatementsBuilder()
-			.add(deleteFoldersQuery, new JsonObject().putArray("userIds", userIds));
+		String unusedAttachments =
+			"WITH unusedAtts AS (" +
+				"SELECT DISTINCT attachment_id AS id FROM conversation.usermessagesattachments uma " +
+				"GROUP BY attachment_id " +
+				"HAVING every(user_id IN "+ Sql.listPrepared(userIds.toArray()) +") " +
+			") SELECT " +
+			"CASE WHEN COUNT(id) = 0 THEN '[]' ELSE json_agg(distinct id) END AS attachmentIds "+
+			"FROM unusedAtts u";
+		builder.prepared(unusedAttachments, userIds);
 
-		String query =
-				"MATCH (c:Conversation)-[r:HAS_CONVERSATION_FOLDER]->(f:ConversationFolder) " +
-				"WHERE c.userId IN {userIds} " +
-				"OPTIONAL MATCH f-[r2]-()" +
-				"DELETE c, r, f, r2 ";
-		b.add(query, new JsonObject().putArray("userIds", userIds));
+		String deleteFolder =
+			"DELETE FROM conversation.folders f " +
+			"WHERE f.user_id IN " + Sql.listPrepared(userIds.toArray());
+		builder.prepared(deleteFolder, userIds);
 
-		String retrieveAttachments =
-				"MATCH (m:ConversationMessage)-[attachmentLink: HAS_ATTACHMENT]->(attachment: MessageAttachment) " +
-				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
-				"RETURN collect(distinct attachment.id) as attachmentIds";
-		b.add(retrieveAttachments);
+		String deleteUserMessages =
+			"DELETE FROM conversation.usermessages um " +
+			"WHERE um.user_id IN " + Sql.listPrepared(userIds.toArray());
+		builder.prepared(deleteUserMessages, userIds);
 
-		String deleteAttachments =
-				"MATCH (m:ConversationMessage)-[attachmentLink: HAS_ATTACHMENT]->(attachment: MessageAttachment) " +
-				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
-				"DELETE attachmentLink, attachment";
-		b.add(deleteAttachments);
+		String setDisplayNames =
+			"WITH message AS(" +
+			"    SELECT m.* " +
+			"    FROM conversation.messages AS m " +
+			"    WHERE \"displayNames\"::text LIKE '%' || ? || '%' LIMIT 1" +
+			"), elts AS (" +
+			"    SELECT jsonb_array_elements_text(\"displayNames\") AS elt FROM message" +
+			"), fullUserTxt AS (" +
+			"    SELECT elt FROM elts " +
+			"    WHERE elt LIKE ? || '%'" +
+			") " +
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"displayNames\" = \"displayNames\" - (SELECT elt FROM fullUserTxt) " +
+			"WHERE \"displayNames\"::text LIKE '%' || ? || '%'";
 
-		query = "MATCH (m:ConversationMessage) " +
-				"WHERE NOT(m<-[:HAS_CONVERSATION_MESSAGE|HAD_CONVERSATION_MESSAGE]-()) " +
-				"OPTIONAL MATCH m-[pr:PARENT_CONVERSATION_MESSAGE]-() " +
-				"DELETE m, pr ";
-		b.add(query);
+		String setTO =
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"to\" = \"to\" - ?, " +
+			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
+			"WHERE \"to\" @> ?";
 
-		String q0 =
-				"MATCH (m:ConversationMessage) " +
-				"WHERE m.from = {id} OR {id} IN m.to OR {id} IN m.cc " +
-				"SET m.displayNames = FILTER(gId IN m.displayNames WHERE NOT(gId =~ {idRegex}))";
-		String q1 =
-				"MATCH (m:ConversationMessage {from : {id}}) " +
-				"SET m.fromName = {displayName}, m.from = null ";
-		String q2 =
-				"MATCH (m:ConversationMessage) WHERE {id} IN m.to " +
-				"SET m.toName = coalesce(m.toName, []) + {displayName}, " +
-				"m.to = FILTER(gId IN m.to WHERE gId <> {id})";
-		String q3 =
-				"MATCH (m:ConversationMessage) WHERE {id} IN m.cc " +
-				"SET m.ccName = coalesce(m.ccName, []) + {displayName}, " +
-				"m.cc = FILTER(gId IN m.cc WHERE gId <> {id})";
+		String setCC =
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"cc\" = \"cc\" - ?, " +
+			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
+			"WHERE \"cc\" @> ?";
+
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
-			JsonObject params = (JsonObject) o;
-			b.add(q0, params.putString("idRegex", params.getString("id") + ".*"));
-			b.add(q1, params);
-			b.add(q2, params);
-			b.add(q3, params);
+			JsonObject user = (JsonObject) o;
+			JsonArray params1 = new JsonArray();
+			JsonArray params2 = new JsonArray();
+
+			for(int i = 0; i < 3; i++)
+				params1.add(user.getString("id", ""));
+
+			params2.add(user.getString("id", ""));
+			params2.add(new JsonArray().add(user.getString("displayName", "")).toString());
+			params2.add(new JsonArray().add(user.getString("id", "")).toString());
+
+			builder.prepared(setDisplayNames, params1);
+			builder.prepared(setTO, params2);
+			builder.prepared(setCC, params2);
 		}
-		neo4j.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error("Error deleting conversation data : " + event.body().encode());
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isLeft()){
+					log.error("Error deleting conversation data : " + event.left().getValue());
 					return;
 				}
 
-				JsonArray attachmentIds = ((JsonObject) ((JsonArray) event.body().getArray("results").get(2)).get(0)).getArray("attachmentIds", new JsonArray());
+				JsonArray results = event.right().getValue();
+				JsonArray attachmentIds =
+					((JsonArray) results.get(0)).size() > 0 ?
+						new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("attachmentIds", "[]")) :
+						new JsonArray();
+
 				for(Object attachmentObj: attachmentIds){
 					final String attachmentId = (String) attachmentObj;
 					storage.removeFile(attachmentId, new Handler<JsonObject>() {
@@ -171,7 +212,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 					});
 				}
 			}
-		});
+		}, "attachmentIds"));
 	}
 
 }
