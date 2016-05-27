@@ -75,7 +75,8 @@ public class SqlResult {
 		if ("ok".equals(res.body().getString("status"))) {
 			JsonArray a = res.body().getArray("results");
 			if (a != null && idx < a.size()) {
-				return jsonToEither(a.<JsonObject>get(idx));
+				return jsonToEither(a.<JsonObject>get(idx)
+					.putArray("jsonb_fields", res.body().getArray("jsonb_fields", new JsonArray())));
 			} else {
 				return new Either.Left<>("missing.result");
 			}
@@ -127,8 +128,15 @@ public class SqlResult {
 						j.putBoolean((String) f.get(i), (Boolean) item);
 					} else if (item instanceof Number) {
 						j.putNumber((String) f.get(i), (Number) item);
+					} else if (item instanceof JsonArray) {
+						j.putArray((String) f.get(i), (JsonArray) item);
 					} else if (item != null && ja.contains(f.get(i))) {
-						j.putObject((String) f.get(i), new JsonObject(item.toString()));
+						String stringRepresentation = item.toString().trim();
+						if(stringRepresentation.startsWith("[")){
+							j.putArray((String) f.get(i), new JsonArray(item.toString()));
+						} else {
+							j.putObject((String) f.get(i), new JsonObject(item.toString()));
+						}
 					} else if (item != null) {
 						j.putString((String) f.get(i), item.toString());
 					} else {
