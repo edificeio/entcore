@@ -1178,41 +1178,53 @@ module.directive('mediaSelect', function($compile){
 						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
 					'</lightbox>' +
 				'</div>',
-		link: function(scope, element, attributes){
-			scope.selectedFile = { file: {}, visibility: 'protected' };
-			scope.selectedFile.visibility = scope.$parent.$eval(attributes.visibility);
-			if(!scope.selectedFile.visibility){
-				scope.selectedFile.visibility = 'protected';
-			}
-			scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
+		compile: function(element, attributes){
 
-			if(!scope.tooltip){
-				element.find('input').removeAttr('tooltip');
+			if(!attributes.mytooltip && attributes.tooltip){
+				console.warn('tooltip attribute is deprecated on media-select tag, use mytooltip instead.');
+				element.attr("mytooltip", attributes.tooltip);
+				element.removeAttr('tooltip');
+				attributes.mytooltip = attributes.tooltip;
+				delete attributes.tooltip;
 			}
 
-			attributes.$observe('label', function(newVal){
-				element.find('[type=button]').attr('value', lang.translate(newVal));
-			});
+			return function(scope, element, attributes){
+			//link: function(scope, element, attributes){
+				scope.selectedFile = { file: {}, visibility: 'protected' };
+				scope.selectedFile.visibility = scope.$parent.$eval(attributes.visibility);
+				if(!scope.selectedFile.visibility){
+					scope.selectedFile.visibility = 'protected';
+				}
+				scope.selectedFile.visibility = scope.selectedFile.visibility.toLowerCase();
 
-			scope.$watch('fileFormat', function(newVal){
-				if(newVal === undefined){
-					scope.fileFormat = 'img'
+				if(!scope.mytooltip){
+					element.find('input').removeAttr('tooltip');
 				}
-			});
-			scope.updateDocument = function(){
-				scope.userSelecting = false;
-				var path = '/workspace/document/';
-				if(scope.selectedFile.visibility === 'public'){
-					path = '/workspace/pub/document/'
-				}
-				scope.ngModel = path + scope.selectedFile.file._id;
-				scope.$apply('ngModel');
-				scope.ngChange();
-			};
-			element.find('.pick-file').on('click', function(){
-				scope.userSelecting = true;
-				scope.$apply('userSelecting');
-			});
+
+				attributes.$observe('label', function(newVal){
+					element.find('[type=button]').attr('value', lang.translate(newVal));
+				});
+
+				scope.$watch('fileFormat', function(newVal){
+					if(newVal === undefined){
+						scope.fileFormat = 'img'
+					}
+				});
+				scope.updateDocument = function(){
+					scope.userSelecting = false;
+					var path = '/workspace/document/';
+					if(scope.selectedFile.visibility === 'public'){
+						path = '/workspace/pub/document/'
+					}
+					scope.ngModel = path + scope.selectedFile.file._id;
+					scope.$apply('ngModel');
+					scope.ngChange();
+				};
+				element.find('.pick-file').on('click', function(){
+					scope.userSelecting = true;
+					scope.$apply('userSelecting');
+				});
+			}
 		}
 	}
 });
