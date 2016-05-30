@@ -1171,9 +1171,9 @@ module.directive('mediaSelect', function($compile){
 			label: "@",
 			class: "@",
 			value: '@',
-			tooltip: "@"
+			mytooltip: "@"
 		},
-		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[tooltip]]" />' +
+		template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[mytooltip]]" />' +
 					'<lightbox show="userSelecting" on-close="userSelecting = false;">' +
 						'<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
 					'</lightbox>' +
