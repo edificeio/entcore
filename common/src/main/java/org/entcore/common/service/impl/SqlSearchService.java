@@ -92,7 +92,7 @@ public final class SqlSearchService implements SearchService {
         final String rightsWhere = "member_id IN " + Sql.listPrepared(groupsAndUserIds) +
         " OR owner = ?" + (checkVisibility ? " OR visibility IN (?,?)" : "");
 
-        final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray());
+        final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
         final String searchWhere = searchWherePrepared(searchFields, iLikeTemplate);
 
         final String query = "SELECT " + fields + " FROM " + resourceTable +
@@ -123,7 +123,7 @@ public final class SqlSearchService implements SearchService {
         StringBuilder sb = new StringBuilder();
         if (list != null && list.size() > 0) {
             for (String s : list) {
-                sb.append(s).append(" ").append(templateLike).append(" OR ");
+                sb.append("unaccent(").append(s).append(") ").append(templateLike).append(" OR ");
             }
             sb.delete(sb.length() - 3, sb.length());
         }

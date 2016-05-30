@@ -26,6 +26,7 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.service.SearchService;
 import org.entcore.common.service.VisibilityFilter;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -41,10 +42,25 @@ import static org.entcore.common.mongodb.MongoDbResult.validResultsHandler;
 public class MongoDbSearchService implements SearchService {
     protected final MongoDb mongo;
     protected final String collection;
+    private static final Map<String, String> CORRES_CHAR_ACCENT_CHAR = initMapAccentsReport();
 
     public MongoDbSearchService(String collection) {
         this.collection = collection;
         this.mongo = MongoDb.getInstance();
+    }
+
+    private static Map<String, String> initMapAccentsReport() {
+        final Map<String, String> map= new HashMap<String, String>();
+        map.put("s", "[sš]");
+        map.put("o", "[oðòóôõöø]");
+        map.put("z", "[zž]");
+        map.put("y", "[yýÿ]");
+        map.put("u", "[uùúûü]");
+        map.put("a", "[aàáâãäåæ]");
+        map.put("c", "[cç]");
+        map.put("i", "[iìíîïĩ]");
+        map.put("e", "[eèéêëẽ]");
+        return map;
     }
 
     @Override
@@ -62,7 +78,7 @@ public class MongoDbSearchService implements SearchService {
         for (String field : searchFields) {
             final List<DBObject> listDb = new ArrayList<DBObject>();
             for (String word : searchWords) {
-                listDb.add(QueryBuilder.start(field).regex(Pattern.compile(".*" + word + ".*", Pattern.CASE_INSENSITIVE)).get());
+                listDb.add(QueryBuilder.start(field).regex(Pattern.compile(".*" + accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get());
             }
             wordsMap.put(field, listDb);
         }
@@ -90,5 +106,19 @@ public class MongoDbSearchService implements SearchService {
 
         mongo.find(collection, MongoQueryBuilder.build(query), sort,
                 projection, skip, limit, Integer.MAX_VALUE, validResultsHandler(handler));
+    }
+
+    public static String accentTreating(String word) {
+        StringBuilder wordRegex = new StringBuilder();
+        for (int i = 0 ; i < word.length() ;i++) {
+            final String letter = String.valueOf(word.charAt(i));
+            final String letterWithoutAccent = StringUtils.stripAccentsToLowerCase(letter);
+            if (CORRES_CHAR_ACCENT_CHAR.containsKey(letterWithoutAccent)) {
+                wordRegex.append(CORRES_CHAR_ACCENT_CHAR.get(letterWithoutAccent));
+            } else {
+                wordRegex.append(letter);
+            }
+        }
+        return wordRegex.toString();
     }
 }

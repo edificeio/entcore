@@ -130,10 +130,15 @@ public class Sql {
 	}
 
 	public static String arrayPrepared(Object[] array) {
+		return arrayPrepared(array, false);
+	}
+
+	public static String arrayPrepared(Object[] array, Boolean useUnaccentFunction) {
 		StringBuilder sb = new StringBuilder("(ARRAY[");
+		final String token = (useUnaccentFunction != null && useUnaccentFunction) ? "unaccent(?)," : "?,";
 		if (array != null && array.length > 0) {
 			for (int i = 0; i< array.length; i++) {
-				sb.append("?,");
+				sb.append(token);
 			}
 			sb.deleteCharAt(sb.length() - 1);
 		}

@@ -19,6 +19,7 @@
 
 package org.entcore.common.utils;
 
+import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -182,6 +183,30 @@ public final class StringUtils {
      */
     public static String stripSpacesSentence(String str) {
         return (str != null) ? trimToBlank(str.replaceAll("\\s+", " ")) : "";
+    }
+
+    /**
+     * Remove all accents in the string provided.
+     *
+     * @param str the string
+     *
+     * @return a string without accents.
+     */
+    public static String stripAccentsToLowerCase(String str) {
+        return stripAccents(str).toLowerCase();
+    }
+
+    /**
+     * Remove all accents in the string provided.
+     *
+     * @param str the string
+     *
+     * @return a string without accents.
+     */
+    public static String stripAccents(String str) {
+        String strUnaccent = Normalizer.normalize(str, Normalizer.Form.NFD);
+        strUnaccent = strUnaccent.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
+        return strUnaccent;
     }
     
     /**
