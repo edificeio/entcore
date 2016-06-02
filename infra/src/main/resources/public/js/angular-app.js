@@ -1337,6 +1337,7 @@ module.directive('bindHtml', function($compile){
 				var htmlVal = $('<div>' + (newVal || '') + '</div>')
 				//Remove resizable attributes
 				htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+				htmlVal.find('[bind-html]').removeAttr('bind-html');
 				var htmlContent = htmlVal[0].outerHTML;
 				if (!window.MathJax && !window.MathJaxLoading) {
 				    window.MathJaxLoading = true;
