@@ -21,6 +21,7 @@ package org.entcore.workspace;
 
 import org.entcore.common.http.BaseServer;
 import org.entcore.workspace.controllers.QuotaController;
+import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.WorkspaceService;
@@ -28,6 +29,7 @@ import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
+import org.entcore.workspace.service.impl.WorkspaceSearchingEvents;
 
 public class Workspace extends BaseServer {
 
@@ -46,6 +48,8 @@ public class Workspace extends BaseServer {
 
 		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
 						config.getBoolean("share-old-groups-to-users", false)));
+
+		setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
 
 		service.setQuotaService(quotaService);
 		service.setStorage(storage);
