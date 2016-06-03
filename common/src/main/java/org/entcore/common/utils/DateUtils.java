@@ -126,6 +126,12 @@ public final class DateUtils {
         return null;
     }
 
+    public static Date parse(String date, String pattern) throws ParseException {
+        final String myPattern = StringUtils.isEmpty(pattern) ? DEFAULT_DATE_PATTERN : pattern;
+        final DateFormat dateFormat = new SimpleDateFormat(myPattern);
+        return dateFormat.parse(date);
+    }
+
     public static Date parseIsoDate(JsonObject date) {
         return MongoDb.parseIsoDate(date);
     }
@@ -151,8 +157,7 @@ public final class DateUtils {
     }
 
     public static Date parseTimestampWithoutTimezone(String date) throws ParseException {
-        final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-        return dateFormat.parse(date);
+        return parse(date, "yyyy-MM-dd'T'HH:mm:ss");
     }
 
     public static Long parseDateTimeToLong(String date) {
