@@ -1885,8 +1885,10 @@ window.RTE = (function () {
 									scope.$apply('linker');
 								};
 							}
-							Behaviours.applicationsBehaviours[prefix].loadResources(cb);
-							scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+							Behaviours.loadBehaviours(scope.linker.params.appPrefix, function (appBehaviour) {
+							    Behaviours.applicationsBehaviours[prefix].loadResources(cb);
+							    scope.linker.addResource = Behaviours.applicationsBehaviours[prefix].create;
+							});
 						};
 
 						scope.linker.searchApplication = function(cb){
