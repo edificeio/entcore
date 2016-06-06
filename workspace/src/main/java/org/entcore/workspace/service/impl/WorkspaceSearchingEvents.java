@@ -65,12 +65,10 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
             final List<String> returnFields = new ArrayList<String>();
             returnFields.add("name");
             returnFields.add("modified");
+            returnFields.add("folder");
             returnFields.add("owner");
             returnFields.add("ownerName");
             returnFields.add("comments");
-
-            final List<String> searchFieldsInComments = new ArrayList<String>();
-            searchFieldsInComments.add("comment");
 
             final int skip = (0 == page) ? -1 : page * limit;
             final List<String> groupAndUserids = groupIds.toList();
@@ -82,24 +80,32 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                 groups.add(QueryBuilder.start("groupId").is(gpId).get());
             }
 
-            //search on comments
-            final Map<String,List<DBObject>> fieldsMap = new HashMap<String, List<DBObject>>();
+            //search on main name and folder
+            final String name = "name";
+            final List<DBObject> listMainNameField = new ArrayList<DBObject>();
+            final String folder= "folder";
+            final List<DBObject> listMainFolderField = new ArrayList<DBObject>();
 
-            for (String field : searchFieldsInComments) {
-                final List<DBObject> elemsMatch = new ArrayList<DBObject>();
-                for (String word : searchWordsLst) {
-                    final DBObject dbObject = QueryBuilder.start(field).regex(Pattern.compile(".*" +
-                            MongoDbSearchService.accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get();
-                    elemsMatch.add(QueryBuilder.start("comments").elemMatch(dbObject).get());
-                }
-                fieldsMap.put(field, elemsMatch);
+            //search on comments
+            final String comment = "comment";
+            final List<DBObject> elemsMatchComment = new ArrayList<DBObject>();
+
+            for (String word : searchWordsLst) {
+                final DBObject dbObjectName = QueryBuilder.start(name).regex(Pattern.compile(".*" +
+                        MongoDbSearchService.accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get();
+                final DBObject dbObjectFolder = QueryBuilder.start(folder).regex(Pattern.compile(".*" +
+                        MongoDbSearchService.accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get();
+                final DBObject dbObjectComment = QueryBuilder.start(comment).regex(Pattern.compile(".*" +
+                        MongoDbSearchService.accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get();
+                elemsMatchComment.add(QueryBuilder.start("comments").elemMatch(dbObjectComment).get());
+                listMainNameField.add(dbObjectName);
+                listMainFolderField.add(dbObjectFolder);
             }
 
             final QueryBuilder worldsOrQuery = new QueryBuilder();
-
-            for (final List<DBObject> field : fieldsMap.values()) {
-                worldsOrQuery.or(new QueryBuilder().and(field.toArray(new DBObject[field.size()])).get());
-            }
+            worldsOrQuery.or(new QueryBuilder().and(elemsMatchComment.toArray(new DBObject[elemsMatchComment.size()])).get());
+            worldsOrQuery.or(new QueryBuilder().and(listMainNameField.toArray(new DBObject[listMainNameField.size()])).get());
+            worldsOrQuery.or(new QueryBuilder().and(listMainFolderField.toArray(new DBObject[listMainFolderField.size()])).get());
 
             final QueryBuilder rightsOrQuery = new QueryBuilder().or(
                     QueryBuilder.start("owner").is(userId).get(),
@@ -114,16 +120,60 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
             for (String field : returnFields) {
                 projection.putNumber(field, 1);
             }
-
+            //main searching
             mongo.find(collection, MongoQueryBuilder.build(query), sort,
                     projection, skip, limit, Integer.MAX_VALUE, new Handler<Message<JsonObject>>() {
                         @Override
                         public void handle(Message<JsonObject> event) {
                             final Either<String, JsonArray> ei = validResults(event);
                             if (ei.isRight()) {
-                                final JsonArray res = formatSearchResult(ei.right().getValue(), columnsHeader, searchWordsLst,
-                                        locale, userId);
-                                handler.handle(new Either.Right<String, JsonArray>(res));
+                                final JsonArray globalJa = ei.right().getValue();
+                                final QueryBuilder foldersOrQuery = new QueryBuilder();
+                                final Set<String> alreadySetFolder = new HashSet<String>();
+                                // fill the map key : folder name, value : folder id
+                                for (int i=0;i<globalJa.size();i++) {
+                                    final JsonObject j = globalJa.get(i);
+                                    // it's only if folder isn't already in searched scope
+                                    if (j != null && !StringUtils.isEmpty(j.getString(folder)) && !alreadySetFolder.contains(j.getString(folder))) {
+                                        final String folderName = j.getString(folder);
+                                        alreadySetFolder.add(folderName);
+                                        final QueryBuilder andQuery = new QueryBuilder();
+                                        // subdirectory management "_" allow to create a tree
+                                        andQuery.and(new QueryBuilder().start(folder).is(folderName).get());
+                                        final List<String> realNameFolderLst = StringUtils.split(folderName, "_");
+                                        final String realNameFolder = realNameFolderLst.get(realNameFolderLst.size() -1);
+                                        andQuery.and(new QueryBuilder().start("name").is(realNameFolder).get());
+                                        andQuery.and(new QueryBuilder().start("owner").is(j.getString("owner")).get());
+                                        foldersOrQuery.or(andQuery.get());
+                                    }
+                                }
+
+                                final JsonObject projection = new JsonObject();
+                                projection.putNumber("folder", 1);
+                                //search all folder of main result set
+                                mongo.find(collection, MongoQueryBuilder.build(foldersOrQuery), null,
+                                        projection, new Handler<Message<JsonObject>>() {
+                                            @Override
+                                            public void handle(Message<JsonObject> event) {
+                                                final Either<String, JsonArray> ei = validResults(event);
+                                                if (ei.isRight()) {
+                                                    final JsonArray folderJa = ei.right().getValue();
+                                                    final Map<String, String> mapNameFolderId = new HashMap<String, String>();
+                                                    // fill the map key : folder name, value : folder id
+                                                    for (int i=0;i < folderJa.size();i++) {
+                                                        final JsonObject j = folderJa.get(i);
+                                                        if (j != null) {
+                                                            mapNameFolderId.put(j.getString("folder"), j.getString("_id"));
+                                                        }
+                                                    }
+                                                    final JsonArray res = formatSearchResult(globalJa, columnsHeader, searchWordsLst,
+                                                            locale, userId, mapNameFolderId);
+                                                    handler.handle(new Either.Right<String, JsonArray>(res));
+                                                } else {
+                                                    handler.handle(new Either.Left<String, JsonArray>(ei.left().getValue()));
+                                                }
+                                            }
+                                        });
                             } else {
                                 handler.handle(new Either.Left<String, JsonArray>(ei.left().getValue()));
                             }
@@ -138,30 +188,50 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
     }
 
     private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, final List<String> words,
-                                         final String locale, final String userId) {
+                                         final String locale, final String userId, final Map<String, String> mapNameFolderId) {
         final List<String> aHeader = columnsHeader.toList();
         final JsonArray traity = new JsonArray();
 
         for (int i=0;i<results.size();i++) {
             final JsonObject j = results.get(i);
             final JsonObject jr = new JsonObject();
+
             if (j != null) {
-                Date modified = new Date();
-                try {
-                    modified = DateUtils.parse(j.getString("modified"), PATTERN);
-                } catch (ParseException e) {
-                    log.error("Can't parse date from modified", e);
+                final List<String> realNameFolderLst = StringUtils.split(j.getString("folder",""), "_");
+                final String realNameFolder = (realNameFolderLst.size() > 0) ? realNameFolderLst.get(realNameFolderLst.size() -1) : "";
+                //don't return folder
+                if (!realNameFolder.equals(j.getString("name",""))) {
+                    final String folder = j.getString("folder", "");
+                    //it's a result to return
+                    Date modified = new Date();
+                    try {
+                        modified = DateUtils.parse(j.getString("modified"), PATTERN);
+                    } catch (ParseException e) {
+                        log.error("Can't parse date from modified", e);
+                    }
+                    final Map<String, Object> map = formatDescription(j.getArray("comments", new JsonArray()),
+                            words, modified, locale);
+                    jr.putString(aHeader.get(0), j.getString("name"));
+                    jr.putString(aHeader.get(1), map.get("description").toString());
+                    jr.putObject(aHeader.get(2), new JsonObject().putValue("$date", ((Date) map.get("modified")).getTime()));
+                    jr.putString(aHeader.get(3), j.getString("ownerName", ""));
+                    jr.putString(aHeader.get(4), j.getString("owner", ""));
+                    String resourceURI = "/workspace/workspace";
+
+                    if (userId.equals(j.getString("owner", ""))) {
+                        if (!StringUtils.isEmpty(folder)) {
+                            resourceURI += "#/folder/" + mapNameFolderId.get(folder);
+                        }
+                    } else {
+                        if (!StringUtils.isEmpty(folder)) {
+                            resourceURI += "#/shared/folder/" + mapNameFolderId.get(folder);
+                        } else {
+                            resourceURI += "#/shared";
+                        }
+                    }
+                    jr.putString(aHeader.get(5), resourceURI);
+                    traity.add(jr);
                 }
-                final Map<String, Object> map = formatDescription(j.getArray("comments", new JsonArray()),
-                        words, modified, locale);
-                jr.putString(aHeader.get(0), j.getString("name"));
-                jr.putString(aHeader.get(1), map.get("description").toString());
-                jr.putObject(aHeader.get(2), new JsonObject().putValue("$date", ((Date) map.get("modified")).getTime()));
-                jr.putString(aHeader.get(3), j.getString("ownerName", ""));
-                jr.putString(aHeader.get(4), j.getString("owner", ""));
-                final String resourceURI = (userId.equals(j.getString("owner", "")) ? "/workspace/workspace" : "/workspace/workspace#/shared");
-                jr.putString(aHeader.get(5), resourceURI);
-                traity.add(jr);
             }
         }
         return traity;
