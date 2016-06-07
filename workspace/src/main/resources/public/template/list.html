@@ -102,7 +102,7 @@
 			<td class="date" zero-mobile></td>
 			<td class="size zero-mobile"></td>
 		</tr>
-		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc | limitTo:display.nbFiles" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
 			<td class="icon zero-mobile">
 				<div class="twelve cell">

@@ -77,7 +77,7 @@
 				<a><strong>[[me.username]]</strong></a>
 			</legend>
 		</div>
-		<div ng-repeat="document in openedFolder.content" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<a ng-click="viewFile(document)" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>

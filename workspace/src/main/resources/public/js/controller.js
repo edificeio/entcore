@@ -78,7 +78,9 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 	$scope.lang = lang;
 	$scope.model = model;
 	$scope.newFile = { name: lang.translate('nofile'), chosenFiles: [] };
-	$scope.display = {};
+	$scope.display = {
+	    nbFiles: 50
+	};
 	$scope.template = template;
 	template.open('documents', 'icons');
 
