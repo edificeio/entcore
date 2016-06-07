@@ -4273,13 +4273,36 @@ module.directive('fileViewer', function(){
 	}
 });
 
+module.directive('ngTouchstart', function(){
+	return {
+		restrict: 'A',
+		scope: true,
+		link: function(scope, element, attributes){
+			element.on('touchstart', function(){
+				scope.$eval(attributes['ngTouchstart']);
+			});
+
+			if(attributes['ngTouchend']){
+				$('body').on('touchend', function(){
+					scope.$eval(attributes['ngTouchend']);
+				});
+			}
+		}
+	}
+})
+
 module.directive('inputPassword', function(){
 	return {
 		restrict: 'E',
 		replace: false,
 		template:
 			'<input type="password"/>' +
-			'<button type="button" ng-mousedown="show(true)" ng-mouseup="show(false)" ng-mouseleave="show(false)"></button>',
+			'<button type="button" \
+				ng-mousedown="show(true)" \
+				ng-touchstart="show(true)" \
+				ng-touchend="show(false)" \
+				ng-mouseup="show(false)" \
+				ng-mouseleave="show(false)"></button>',
 		scope: true,
 		compile: function(element, attributes){
 			element.addClass('toggleable-password');
@@ -4288,7 +4311,6 @@ module.directive('inputPassword', function(){
 				passwordInput.attr(attributes.$attr[prop], attributes[prop]);
 				element.removeAttr(attributes.$attr[prop]);
 			}
-
 			return function(scope){
 				scope.show = function(bool){
 					passwordInput[0].type = bool ? "text" : "password"
