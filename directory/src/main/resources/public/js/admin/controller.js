@@ -942,6 +942,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		new Structure(structure).unlinkUser(user, hook)
 	}
 
+    $scope.filterDuplicate = function(duplicate){
+        return duplicate.score >= 4
+    }
+
 	/* Mass mailing */
 	$scope.profileList = [{label: 'Student'}, {label: 'Relative'}, {label: 'Personnel'}, {label: 'Teacher'}, {label: 'Guest'}]
 	_.forEach($scope.profileList, function(profile){

@@ -22,7 +22,7 @@
                 <th style="width: 140px;"><i18n>directory.action</i18n></th>
             </thead>
             <tbody class="no-hover">
-                <tr ng-repeat-start="duplicate in structure.duplicates.all">
+                <tr ng-repeat-start="duplicate in structure.duplicates.all | filter: filterDuplicate">
                     <td>
                         <a  ng-if="duplicate.user1.structures[0]"
                             href="[['/directory/admin-console#/structureUser/'+duplicate.user1.structures[0]+'/'+duplicate.user1.id]]"

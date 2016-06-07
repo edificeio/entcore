@@ -306,6 +306,7 @@ public class DuplicateUsers {
 					TransactionHelper tx;
 					try {
 						tx = TransactionManager.getTransaction();
+						tx.setAutoSend(false);
 					} catch (TransactionException e) {
 						log.error("Error when score duplicate users.", e);
 						return;
@@ -316,17 +317,22 @@ public class DuplicateUsers {
 						JsonObject searchUser = result.get(i);
 						calculateAndStoreScore(searchUser, findUsers, tx);
 					}
-					tx.commit(new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
-								log.info("Mark duplicates " + profile + " finished.");
-							} else {
-								log.error("Error marking duplicates : " + event.body().getString("message"));
+					if (!tx.isEmpty()) {
+						tx.commit(new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> event) {
+								if ("ok".equals(event.body().getString("status"))) {
+									log.info("Mark duplicates " + profile + " finished.");
+								} else {
+									log.error("Error marking duplicates : " + event.body().getString("message"));
+								}
+								handler.handle(null);
 							}
-							handler.handle(null);
-						}
-					});
+						});
+					} else {
+						log.info("No duplicate user with score > 3 found in profile " + profile);
+						handler.handle(null);
+					}
 				} else {
 					if ("ok".equals(event.body().getString("status"))) {
 						log.info("No duplicate user found in profile " + profile);
@@ -381,7 +387,9 @@ public class DuplicateUsers {
 			score += exactMatch(firstName, cleanAttribute(fu.getString("firstName")));
 			score += exactMatch(birthDate, cleanAttribute(fu.getString("birthDate")));
 			score += exactMatch(email, cleanAttribute(fu.getString("email")));
-			tx.add(query, params.copy().putString("dId", fu.getString("id")).putNumber("score", score));
+			if (score > 3) {
+				tx.add(query, params.copy().putString("dId", fu.getString("id")).putNumber("score", score));
+			}
 		}
 	}
 
