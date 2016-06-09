@@ -78,7 +78,7 @@ public class MongoDbSearchService implements SearchService {
         for (String field : searchFields) {
             final List<DBObject> listDb = new ArrayList<DBObject>();
             for (String word : searchWords) {
-                listDb.add(QueryBuilder.start(field).regex(Pattern.compile(".*" + accentTreating(word) + ".*", Pattern.CASE_INSENSITIVE)).get());
+                listDb.add(QueryBuilder.start(field).regex(Pattern.compile("(>|\\G)([^<]*?)(" + accentTreating(word) + ")", Pattern.CASE_INSENSITIVE)).get());
             }
             wordsMap.put(field, listDb);
         }

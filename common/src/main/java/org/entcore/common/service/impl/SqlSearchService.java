@@ -123,7 +123,7 @@ public final class SqlSearchService implements SearchService {
         StringBuilder sb = new StringBuilder();
         if (list != null && list.size() > 0) {
             for (String s : list) {
-                sb.append("unaccent(").append(s).append(") ").append(templateLike).append(" OR ");
+                sb.append("unaccent(regexp_replace(").append(s).append(",'<[^>]*>','','g'))").append(templateLike).append(" OR ");
             }
             sb.delete(sb.length() - 3, sb.length());
         }
