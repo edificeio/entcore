@@ -1242,13 +1242,15 @@ window.RTE = (function () {
 							);
 						}
 
-						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "'Comic Sans MS'" }];
+						scope.fonts = [{ fontFamily: 'Arial' }, { fontFamily: 'Verdana' }, { fontFamily: 'Tahoma' }, { fontFamily: "Comic Sans MS" }];
 						scope.font = '';
 
 						setTimeout(function() {
 							var importedFonts = loadImportedFonts();
 							scope.fonts = scope.fonts.concat(importedFonts);
-							scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
+							scope.font = _.find(scope.fonts, function (font) {
+							    return $('p').css('font-family').toLowerCase().indexOf(font.toLowerCase()) !== -1
+							});
 						}, 1000);
 
 						scope.setFontFamily = function (font) {
