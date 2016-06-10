@@ -402,24 +402,28 @@ window.RTE = (function () {
 			};
 
 			function applyCSS(css) {
-                if (!that.range) {
-                    return;
-                }
 			    that.instance.addState(that.editZone.html());
 
 				if(!that.selectedElements.length){
-					var el = $('<span>&nbsp;</span>');
+				    var el = $('<span>&nbsp;</span>');
+				    if (!that.range && !that.editZone.html()) {
+				        var elementAtCaret = $('<div></div>').appendTo(that.editZone);
+				    }
+				    else {
+				        var elementAtCaret = that.range.startContainer;
+				        if (elementAtCaret.nodeType !== 1) {
+				            elementAtCaret = elementAtCaret.parentNode;
+				        }
+				        if (elementAtCaret.nodeName === 'SPAN') {
+				            el.attr('style', $(elementAtCaret).attr('style'));
+				            elementAtCaret = elementAtCaret.parentNode;
+				        }
+				        if (that.editZone.find(elementAtCaret).length === 0) {
+				            elementAtCaret = that.editZone[0];
+				        }
+				    }
+					
 					el.css(css);
-					var elementAtCaret = that.range.startContainer;
-					if (elementAtCaret.nodeType !== 1) {
-					    elementAtCaret = elementAtCaret.parentNode;
-					}
-					if (elementAtCaret.nodeName === 'SPAN') {
-					    elementAtCaret = elementAtCaret.parentNode;
-					}
-					if (that.editZone.find(elementAtCaret).length === 0) {
-					    elementAtCaret = that.editZone[0];
-					}
 					$(elementAtCaret).append(el);
 					that.moveCaret(el[0], 1);
 				}
