@@ -311,8 +311,8 @@ window.RTE = (function () {
 					}
 					if (elementAtCaret.nodeType === 3) {
 					    element.text(elementAtCaret.textContent);
-					    elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
-					    elementAtCaret.remove();
+					    elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
+					    elementAtCaret.parentNode.remove();
 					}
 					else {
 						element.text('');
