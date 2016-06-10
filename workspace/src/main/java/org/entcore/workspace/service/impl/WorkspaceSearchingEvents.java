@@ -282,21 +282,20 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                 log.error("Can't parse date from posted", e);
             }
 
-            boolean match = false;
+            int match = unaccentWords.size();
             for (final String word : unaccentWords) {
                 if (StringUtils.stripAccentsToLowerCase(commentTmp).contains(word)) {
-                    match = true;
-                    break;
+                    match--;
                 }
             }
-            if (countMatchComment == 0 && match) {
+            if (countMatchComment == 0 && match == 0) {
                 modifiedRes = currentDate;
-            } else if (countMatchComment > 0 && match && currentDate != null && modifiedMarker != null &&
+            } else if (countMatchComment > 0 && match == 0 && currentDate != null && modifiedMarker != null &&
                     modifiedMarker.before(currentDate)) {
                 modifiedMarker = currentDate;
                 modifiedRes = currentDate;
             }
-            if (match) {
+            if (match == 0) {
                 comment = commentTmp;
                 if (currentDate != null) {
                     modifiedMarker = currentDate;
