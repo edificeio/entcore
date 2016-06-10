@@ -1249,7 +1249,7 @@ window.RTE = (function () {
 							var importedFonts = loadImportedFonts();
 							scope.fonts = scope.fonts.concat(importedFonts);
 							scope.font = _.find(scope.fonts, function (font) {
-							    return $('p').css('font-family').toLowerCase().indexOf(font.toLowerCase()) !== -1
+							    return $('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1
 							});
 						}, 1000);
 
@@ -2051,13 +2051,26 @@ window.RTE = (function () {
 					template: '<i tooltip="editor.option.unlink"></i>',
 					link: function(scope, element, attributes){
 						element.addClass('disabled');
-						element.on('click', function(){
-							document.execCommand('unlink');
+						element.on('click', function () {
+						    var currentNode = instance.selection.range.startContainer;
+						    if (currentNode.nodeType !== 1) {
+						        currentNode = currentNode.parentNode;
+						    }
+						    if (currentNode.nodeName !== 'A') {
+						        return;
+						    }
+						    var content = document.createTextNode($(currentNode).text());
+						    currentNode.parentNode.insertBefore(content, currentNode);
+						    $(currentNode).remove();
 							element.addClass('disabled');
 						});
 
-						instance.on('selectionchange', function(e){
-							if(e.selection.$().is('a')){
+						instance.on('selectionchange', function (e) {
+						    var currentNode = e.selection.range.startContainer;
+						    if(currentNode.nodeType !==1){
+						        currentNode = currentNode.parentNode;
+						    }
+						    if (currentNode.nodeName === 'A') {
 								element.removeClass('disabled');
 							}
 							else{
