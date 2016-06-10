@@ -4863,6 +4863,22 @@ module.directive('whereami', function () {
 	}
 });
 
+module.directive('checkTool', function () {
+	return {
+		restrict: 'E',
+		scope: {
+				ngModel: '=',
+		},
+		template: '<div class="check-tool"><i class="check-status"></i></div>',
+		link: function (scope, element, attributes) {
+			element.on('click', function(){
+				scope.ngModel = !scope.ngModel;
+				scope.$apply();
+			});
+		}
+	}
+});
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
