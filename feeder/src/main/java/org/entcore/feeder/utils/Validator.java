@@ -138,7 +138,7 @@ public class Validator {
 			return e.getMessage();
 		}
 		generate(object);
-		return required(object);
+		return required(object, acceptLanguage);
 	}
 
 	public String modifiableValidate(JsonObject object) {
@@ -205,10 +205,14 @@ public class Validator {
 	}
 
 	private String required(JsonObject object) {
+		return required(object, "fr");
+	}
+
+	private String required(JsonObject object, String acceptLanguage) {
 		Map<String, Object> m = object.toMap();
 		for (Object o : required) {
 			if (!m.containsKey(o.toString())) {
-				return "Missing attribute: " + o.toString();
+				return i18n.translate("missing.attribute", acceptLanguage, i18n.translate(o.toString(), acceptLanguage));
 			}
 		}
 		return null;
