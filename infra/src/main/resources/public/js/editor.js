@@ -2220,16 +2220,16 @@ window.RTE = (function () {
 					'</lightbox>',
 					link: function (scope, element, attributes) {
 					    var split = $('#theme').attr('href').split('/');
-					    var skinPath = split.slice(0, split.length - 2).join('/') + '/img';
+					    var skinPath = split.slice(0, split.length - 2).join('/') + '/../entcore-css-lib/editor-resources/img/';
 						scope.templates = [
 							{
 							    title: 'editor.templates.emptypage.title',
-                                image: skinPath + '/icons/editor/templates-preview-emptypage.svg',
+							    image: skinPath + 'templates-preview-emptypage.svg',
 								html: '<div class="twelve cell column"><article></article></div>'
 							},
 							{
 							    title: 'editor.templates.twocols.title',
-							    image: skinPath + '/icons/editor/templates-preview-twocols.svg',
+							    image: skinPath + 'templates-preview-twocols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="six cell column">' +
@@ -2256,7 +2256,7 @@ window.RTE = (function () {
 							},
 							{
 							    title: 'editor.templates.threecols.title',
-							    image: skinPath + '/icons/editor/templates-preview-threecols.svg',
+							    image: skinPath + 'templates-preview-threecols.svg',
 								html:
 								'<div class="row">' +
 								'<div class="four cell column">' +
@@ -2293,7 +2293,7 @@ window.RTE = (function () {
 							},
 							{
 							    title: 'editor.templates.illustration.title',
-							    image: skinPath + '/icons/editor/templates-preview-illustration.svg',
+							    image: skinPath + 'templates-preview-illustration.svg',
 								html:
 								'<div class="row">' +
 									'<div class="three cell column">' +
@@ -2316,7 +2316,7 @@ window.RTE = (function () {
 							},
 							{
 							    title: 'editor.templates.dominos.title',
-							    image: skinPath + '/icons/editor/templates-preview-dominos.svg',
+							    image: skinPath + 'templates-preview-dominos.svg',
 								html:
 								'<div class="dominos">' +
 									'<div class="item">' +
