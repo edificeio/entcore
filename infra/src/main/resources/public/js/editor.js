@@ -1249,7 +1249,7 @@ window.RTE = (function () {
 							var importedFonts = loadImportedFonts();
 							scope.fonts = scope.fonts.concat(importedFonts);
 							scope.font = _.findWhere(scope.fonts, { fontFamily: $('p').css('font-family') });
-						}, 0);
+						}, 1000);
 
 						scope.setFontFamily = function (font) {
 						    scope.font = font;
