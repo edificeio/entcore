@@ -277,7 +277,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		format.reply.content = content;
 	});
 
-	function setMailContent(mailType){
+	function setMailContent(mailType, copyReceivers){
 		if($scope.mail.subject.indexOf(format[mailType].prefix) === -1){
 			$scope.newItem.subject = format[mailType].prefix + $scope.mail.subject;
 		}
@@ -285,7 +285,10 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			$scope.newItem.subject = $scope.mail.subject;
 		}
 
-		$scope.newItem.cc = $scope.mail.cc;
+		if(copyReceivers){
+            $scope.newItem.cc = $scope.mail.cc;
+            $scope.newItem.to = $scope.mail.to;
+        }
 		$scope.newItem.body = format[mailType].content + '<blockquote>' + $scope.mail.body + '</blockquote>';
 	}
 
@@ -309,20 +312,19 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	$scope.reply = function(){
 		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
+        setMailContent('reply');
 		$scope.addUser($scope.mail.sender());
-		setMailContent('reply');
 	};
 
 	$scope.replyAll = function(){
 		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
-		setMailContent('reply');
-		$scope.mail.displayNames.forEach(function(user){
-			if(user[0] === model.me.userId || _.findWhere($scope.newItem.to, {id: user[0]})){
-				return;
-			}
-			$scope.addUser(new User({ id: user[0], displayName: user[1] }));
-		});
+		setMailContent('reply', true);
+        $scope.newItem.to = _.filter($scope.newItem.to, function(user){ return user.id !== model.me.userId })
+        $scope.newItem.cc = _.filter($scope.newItem.cc, function(user){
+            return user.id !== model.me.userId  && !_.findWhere($scope.newItem.to, {id: user.id })
+        })
+        $scope.addUser($scope.mail.sender());
 	};
 
 	$scope.editDraft = function(draft){
