@@ -25,11 +25,13 @@
 			<a class="container" draggable="false">
 				<i class="folder-large" ng-click="openFolder(folder)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
 			</a>
-			<input type="checkbox" ng-model="folder.selected" />
+
+			<check-tool ng-model="folder.selected"></check-tool>
+
+			<i ng-if="folder.shared.length > 0" class="shared inline"></i>
 
 			<legend>
 				<a>
-					<i ng-if="folder.shared.length > 0" class="shared inline"></i>
 					<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 					<span ng-click="openFolder(folder)">[[folder.name]]</span>
 				</a>
@@ -65,8 +67,8 @@
 				</lightbox>
 			</div>
 
-		</div>
-		<div ng-repeat="file in loadingFiles | filter:{loading:true}" class="element loading">
+		</div><!--
+		--><div ng-repeat="file in loadingFiles | filter:{loading:true}" class="element loading">
 			<a class="container cell">
 				<i class="loading-panel"></i>
 			</a>
@@ -76,8 +78,8 @@
 				</a>
 				<a><strong>[[me.username]]</strong></a>
 			</legend>
-		</div>
-		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		</div><!--
+		--><div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<a ng-click="viewFile(document)" class="[[document.metadata.contentType]] container cell">
 				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
 				</i>
@@ -87,11 +89,13 @@
 					</div>
 				</div>
 			</a>
-			<input type="checkbox" data-ng-model="document.selected" />
+
+			<check-tool ng-model="document.selected"></check-tool>
+
+			<i ng-if="document.shared.length > 0" class="shared inline"></i>
 
 			<legend>
 				<a ng-href="[[document.link]]">
-					<i ng-if="document.shared.length > 0" class="shared inline"></i>
 					<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 					[[document.name]]
 				</a>
@@ -110,7 +114,6 @@
 							<div class="lightbox-buttons fluid">
 								<button class="right-magnet" ng-disabled="!document.comment.length"><i18n>workspace.comment</i18n></button>
 								<button class="cancel right-magnet" type="button" ng-click="document.showComments = false;"><i18n>cancel</i18n></button>
-
 							</div>
 						</form>
 					</div>
