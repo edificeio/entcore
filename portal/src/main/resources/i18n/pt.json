@@ -4,6 +4,7 @@
     "admin.communication": "Regras  de comunicação",
     "admin.directory": "diretório",
     "admin.keyring" : "Trousseau",
+    "admin.wizard" : "Import des comptes",
     "admin.header": "Consola administrativa",
     "admin.history": "Historique",
     "admin.title": "Consola administrativa",

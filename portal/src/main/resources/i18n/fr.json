@@ -5,6 +5,7 @@
   "admin.directory": "Annuaire",
   "admin.timeline": "Configuration des notifications",
   "admin.keyring" : "Trousseau",
+  "admin.wizard" : "Import des comptes",
   "admin.header": "Console d'administration",
   "admin.history": "Historique",
   "admin.title": "Console d'administration",
