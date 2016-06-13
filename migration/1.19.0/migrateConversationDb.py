@@ -12,7 +12,7 @@ sql = psycopg2.connect(database="ong", host="localhost", user="web-education", p
 sql.autocommit = False
 cur = sql.cursor()
 
-limit = 500
+limit = 250
 
 # NEO4J QUERIES #
 #################
@@ -62,41 +62,36 @@ SKIP {skip} LIMIT {limit};
 # POSTRGESQL QUERIES #
 ######################
 
-insertFolders = """
-INSERT INTO conversation.folders
-    (id, parent_id, user_id, name, depth, trashed)
-VALUES
-    (%s, %s, %s, %s, %s, %s)
-"""
+insertFolderQuery = """
+    INSERT INTO conversation.folders
+        (id, parent_id, user_id, name, depth, trashed)
+    VALUES """
 insertAttachmentQuery = """
-INSERT INTO conversation.attachments
-    (id, name, charset, filename, "contentType", "contentTransferEncoding", size)
-VALUES
-    (%s, %s, %s, %s, %s, %s, %s)
-"""
-insertMessage = """
-INSERT INTO conversation.messages
-    ("id", "subject", "body", "from", "to", "cc", "displayNames", "state", "date")
-VALUES
-    (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-"""
-updateParentMessageQuery = """
-UPDATE conversation.messages
-SET parent_id = %s
-WHERE id = %s
-"""
-insertUserMessage = """
-INSERT INTO conversation.usermessages
-    (user_id, message_id, folder_id, trashed, unread, total_quota)
-VALUES
-    (%s, %s, %s, %s, %s, %s)
-"""
-insertUserMessagesAttachment = """
-INSERT INTO conversation.usermessagesattachments
-    (user_id, message_id, attachment_id)
-VALUES
-    (%s, %s, %s)
-"""
+    INSERT INTO conversation.attachments
+        (id, name, charset, filename, "contentType", "contentTransferEncoding", size)
+    VALUES """
+insertMessageQuery = """
+    INSERT INTO conversation.messages
+        ("id", "subject", "body", "from", "to", "cc", "displayNames", "state", "date")
+    VALUES """
+
+updateParentMessageQuery = {
+    'prepare': """
+        PREPARE updateParentMessage AS
+        UPDATE conversation.messages
+        SET parent_id = $1
+        WHERE id = $2
+    """,
+    'execute': "EXECUTE updateParentMessage (%s, %s)"
+}
+insertUserMessageQuery = """
+    INSERT INTO conversation.usermessages
+        (user_id, message_id, folder_id, trashed, unread, total_quota)
+    VALUES """
+insertUserMessagesAttachmentQuery = """
+    INSERT INTO conversation.usermessagesattachments
+        (user_id, message_id, attachment_id)
+    VALUES """
 
 # COMPARISON QUERIES #
 ######################
@@ -176,7 +171,7 @@ def printRow(row):
     print(row)
 
 
-def commit():
+def commit(buf):
     sql.commit()
 
 
@@ -187,29 +182,41 @@ def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambd
     stop = False
     page = 0
     while not stop:
+        buf = {}
+        print('(' + str(datetime.now()) + ') [loop] page ' + str(page) + ' / ' + str(page * limit) + ' -> ' + str((page + 1) * limit - 1))
         paramsCopy = params.copy()
         paramsCopy.update({'skip': page * limit, 'limit': limit})
         results = gdb.query(query, paramsCopy, returns=returnList)
+        #print('(' + str(datetime.now()) + ') [loop][neo] reply : ' + str(len(results)))
         if len(results) > 0:
             for row in results:
-                rowAction(row)
+                rowAction(row, buf)
+            loopAction(buf)
             page = page + 1
         else:
             stop = True
-        loopAction()
+        #print('(' + str(datetime.now()) + ') [loop] end')
     endAction()
 
 
 # QUERY ACTIONS #
 #################
 
-def insertFolder(row):
+
+def bufferFolder(row, buf):
     #(id, parent_id, user_id, name, depth, trashed)
     params = (row[0]['id'], row[1], row[2], row[0]['name'], row[3], row[4])
-    cur.execute(insertFolders, params)
+    if 'params' not in buf.keys():
+        buf['params'] = []
+    buf['params'].append(params)
 
 
-def insertMessageDeps(row):
+def insertFolder(buf):
+    cur.execute(insertFolderQuery + (','.join(cur.mogrify("%s", (x, )) for x in buf['params'])))
+    sql.commit()
+
+
+def bufferMessageDeps(row, buf):
     messageId = row[0]['id']
     userProps = row[1]
 
@@ -224,7 +231,9 @@ def insertMessageDeps(row):
         containsOrNone(row[0], 'displayNames', Json),
         row[0]['state'],
         row[0]['date'])
-    cur.execute(insertMessage, params)
+    if 'msgParams' not in buf.keys():
+        buf['msgParams'] = []
+    buf['msgParams'].append(params)
 
     for user in userProps:
         attachmentIds = containsOr(user, 'attachmentsIds', [])
@@ -233,24 +242,44 @@ def insertMessageDeps(row):
 
         #(user_id, message_id, folder_id, trashed, unread, total_quota)
         params = (user['userId'], messageId, user['folderId'], user['trashed'], user['unread'], user['totalSize'])
-        cur.execute(insertUserMessage, params)
+        if 'userMsgParams' not in buf.keys():
+            buf['userMsgParams'] = []
+        buf['userMsgParams'].append(params)
 
         for attId in attachmentIds:
             #(user_id, message_id, attachment_id)
-            cur.execute(insertUserMessagesAttachment, (user['userId'], messageId, attId))
+            if 'userMsgAttParams' not in buf.keys():
+                buf['userMsgAttParams'] = []
+            buf['userMsgAttParams'].append((user['userId'], messageId, attId))
 
 
-def updateParentMessage(row):
+def insertMessageDeps(buf):
+    cur.execute(insertMessageQuery + (','.join(cur.mogrify("%s", (x, )) for x in buf['msgParams'])))
+    if 'userMsgParams' in buf.keys():
+        cur.execute(insertUserMessageQuery + (','.join(cur.mogrify("%s", (x, )) for x in buf['userMsgParams'])))
+    if 'userMsgAttParams' in buf.keys():
+        cur.execute(insertUserMessagesAttachmentQuery + (','.join(cur.mogrify("%s", (x, )) for x in buf['userMsgAttParams'])))
+    sql.commit()
+
+
+def updateParentMessage(row, buf):
     #("parent_id", "id")
     params = (row[1], row[0])
-    cur.execute(updateParentMessageQuery, params)
+    cur.execute(updateParentMessageQuery['execute'], params)
 
 
-def insertAttachments(row):
+def bufferAttachments(row, buf):
     # ("id", "name" , "charset" , "filename" , "contentType" , "contentTransferEncoding" , "size", "id")
     attachment = row[0]
     params = (attachment['id'], attachment['name'], attachment['charset'], attachment['filename'], attachment['contentType'], attachment['contentTransferEncoding'], attachment['size'])
-    cur.execute(insertAttachmentQuery, params)
+    if 'params' not in buf.keys():
+        buf['params'] = []
+    buf['params'].append(params)
+
+
+def insertAttachments(buf):
+    cur.execute(insertAttachmentQuery + (','.join(cur.mogrify("%s", (x, )) for x in buf['params'])))
+    sql.commit()
 
 
 # CONSISTENCY #
@@ -282,32 +311,34 @@ def consistencyCheck(checkObj):
 ###########
 
 print('(' + str(datetime.now()) + ') ** Starting conversation DB migration process **')
+print('Loop limit : ' + str(limit))
 
 try:
     # Folders
     print('(' + str(datetime.now()) + ') [Start] Folders')
     results = gdb.query(foldersQuery, {}, returns=(lambda x: convert(x)['data'], convert, convert, convert, convert))
+    buf = {}
     if len(results) > 0:
         for row in results:
-            insertFolder(row)
-        sql.commit()
+            bufferFolder(row, buf)
+        insertFolder(buf)
     print('(' + str(datetime.now()) + ') [Done]  Folders')
 
     # Attachments
     print('(' + str(datetime.now()) + ') [Start] Message attachments')
-    pageLoop(attachmentsQuery, {}, insertAttachments, loopAction=commit, returnList=(lambda x: convert(x)['data']))
+    pageLoop(attachmentsQuery, {}, bufferAttachments, loopAction=insertAttachments, returnList=(lambda x: convert(x)['data']))
     print('(' + str(datetime.now()) + ') [Done]  Message attachments')
 
     # Messages & all linked tables
     print('(' + str(datetime.now()) + ') [Start] Messages & dependencies')
-    pageLoop(msgQuery, {}, insertMessageDeps, loopAction=commit, returnList=(lambda x: convert(x)['data'], convert))
+    pageLoop(msgQuery, {}, bufferMessageDeps, loopAction=insertMessageDeps, returnList=(lambda x: convert(x)['data'], convert))
     print('(' + str(datetime.now()) + ') [Done]  Messages & dependencies')
 
     # Adding parent messages
     print('(' + str(datetime.now()) + ') [Start] Parent messages')
+    cur.execute(updateParentMessageQuery['prepare'])
     pageLoop(msgParentQuery, {}, updateParentMessage, loopAction=commit, returnList=(convert, convert))
     print('(' + str(datetime.now()) + ') [Done]  Parent messages')
-
 
     # Consistency checks
     consistencyChecks(
