@@ -2528,18 +2528,27 @@ module.directive('authorize', function($compile){
 module.directive('bottomScroll', function($compile){
 	return {
 		restrict: 'A',
-		link: function($scope, $element, $attributes){
-			$(window).scroll(function(){
-				var scrollHeight = window.scrollY || document.getElementsByTagName('html')[0].scrollTop;
+		link: function (scope, element, attributes) {
+		    var scrollElement = element;
+		    var getContentHeight = function () {
+		        return element[0].scrollHeight;
+		    };
+		    if (element.css('overflow') !== 'auto') {
+		        scrollElement = $(window);
+		        var getContentHeight = function () {
+		            return $(document).height();
+		        };
+		    }
+		    scrollElement.scroll(function () {
+		        var scrollHeight = scrollElement[0].scrollY || scrollElement[0].scrollTop;
 				//adding ten pixels to account for system specific behaviours
 				scrollHeight += 10;
 
-				if($(document).height() - $(window).height() < scrollHeight){
-					$scope.$eval($attributes.bottomScroll);
-					if(!$scope.$$phase){
-						$scope.$apply();
+				if (getContentHeight() - scrollElement.height() < scrollHeight) {
+				    scope.$eval(attributes.bottomScroll);
+				    if (!scope.$$phase) {
+				        scope.$apply();
 					}
-
 				}
 			})
 		}
@@ -5538,7 +5547,8 @@ function MediaLibrary($scope){
 
 	$scope.display = {
 		show: 'browse',
-		search: ''
+		search: '',
+        limit: 12
 	};
 
 	$scope.show = function(tab){
