@@ -49,7 +49,9 @@ public class Workspace extends BaseServer {
 		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
 						config.getBoolean("share-old-groups-to-users", false)));
 
-		setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
+		if (config.getBoolean("searching-event", true)) {
+			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
+		}
 
 		service.setQuotaService(quotaService);
 		service.setStorage(storage);
