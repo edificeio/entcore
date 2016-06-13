@@ -2,6 +2,7 @@
 import sys
 import traceback
 import psycopg2
+from datetime import datetime
 from psycopg2.extras import Json
 from psycopg2 import errorcodes
 from neo4jrestclient.client import GraphDatabase
@@ -11,7 +12,7 @@ sql = psycopg2.connect(database="ong", host="localhost", user="web-education", p
 sql.autocommit = False
 cur = sql.cursor()
 
-limit = 25
+limit = 500
 
 # NEO4J QUERIES #
 #################
@@ -30,8 +31,12 @@ SKIP {skip} LIMIT {limit};
 """
 
 msgQuery = """
-MATCH (msg:ConversationMessage)<-[mLink:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)
-OPTIONAL MATCH (msg)-[iLink:INSIDE]->(uf:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0..5]-()<-[:HAS_CONVERSATION_FOLDER]-(c)
+MATCH (msg:ConversationMessage)
+WITH DISTINCT msg
+ORDER BY msg.id
+SKIP {skip} LIMIT {limit}
+MATCH (msg)<-[mLink:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)<-[:HAS_CONVERSATION_FOLDER]-(c:Conversation)
+OPTIONAL MATCH (msg)-[iLink:INSIDE]->(uf:ConversationUserFolder)<-[:HAS_CHILD_FOLDER*0..4]-()<-[:HAS_CONVERSATION_FOLDER]-(c)
 OPTIONAL MATCH (uma:MessageAttachment)<-[:HAS_ATTACHMENT]-(msg)<-[mLink]-(f)
 WHERE uma.id IN mLink.attachments
 WITH DISTINCT msg, c, uf, collect(f.name) as folderNames, count(mLink.unread) as unreadFlag,
@@ -45,14 +50,12 @@ WITH msg, collect(DISTINCT {
     unread: coalesce(unreadFlag = 0, true),
     trashed: coalesce(iLink.trashed OR "TRASH" IN folderNames, false)
 }) as userProps
-RETURN msg, userProps
-SKIP {skip} LIMIT {limit};
+RETURN msg, userProps;
 """
 
 msgParentQuery = """
 MATCH (msg:ConversationMessage)-[:PARENT_CONVERSATION_MESSAGE]->(pMsg:ConversationMessage)
-WITH msg, pMsg.id as parent_id
-RETURN msg.id, parent_id
+RETURN msg.id, pMsg.id as parent_id
 SKIP {skip} LIMIT {limit};
 """
 
@@ -65,17 +68,11 @@ INSERT INTO conversation.folders
 VALUES
     (%s, %s, %s, %s, %s, %s)
 """
-upsertAttachment = """
+insertAttachmentQuery = """
 INSERT INTO conversation.attachments
     (id, name, charset, filename, "contentType", "contentTransferEncoding", size)
 VALUES
-    (%s, ' ', ' ', ' ', ' ', ' ', 0)
-ON CONFLICT DO NOTHING
-"""
-updateAttachmentQuery = """
-UPDATE conversation.attachments
-SET "name" = %s, "charset" = %s, "filename" = %s, "contentType" = %s, "contentTransferEncoding" = %s, "size" = %s
-WHERE id = %s
+    (%s, %s, %s, %s, %s, %s, %s)
 """
 insertMessage = """
 INSERT INTO conversation.messages
@@ -113,8 +110,7 @@ msgCheck = {
 attCheck = {
     'text': "Attachments count",
     'neo': """
-    MATCH (a:MessageAttachment)<-[:HAS_ATTACHMENT]-(cm:ConversationMessage)-[mLink:HAS_CONVERSATION_MESSAGE]-()
-    WHERE a.id IN mLink.attachments
+    MATCH (a:MessageAttachment)
     RETURN count(distinct a)
     """,
     'sql': "SELECT count(*) FROM conversation.attachments"
@@ -187,7 +183,7 @@ def commit():
 # PAGINATION LOOP #
 ###################
 
-def pageLoop(query, params, rowAction, endAction=(lambda: ()), returnList=()):
+def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambda: ()), returnList=()):
     stop = False
     page = 0
     while not stop:
@@ -200,6 +196,7 @@ def pageLoop(query, params, rowAction, endAction=(lambda: ()), returnList=()):
             page = page + 1
         else:
             stop = True
+        loopAction()
     endAction()
 
 
@@ -220,8 +217,8 @@ def insertMessageDeps(row):
     params = (
         messageId,
         containsOr(row[0], 'subject', ''),
-        row[0]['body'],
-        row[0]['from'],
+        containsOr(row[0], 'body', ''),
+        containsOr(row[0], 'from', ''),
         containsOrNone(row[0], 'to', Json),
         containsOrNone(row[0], 'cc', Json),
         containsOrNone(row[0], 'displayNames', Json),
@@ -233,10 +230,6 @@ def insertMessageDeps(row):
         attachmentIds = containsOr(user, 'attachmentsIds', [])
         if attachmentIds is None:
             attachmentIds = []
-
-        for attId in attachmentIds:
-            #(id)
-            cur.execute(upsertAttachment, [attId])
 
         #(user_id, message_id, folder_id, trashed, unread, total_quota)
         params = (user['userId'], messageId, user['folderId'], user['trashed'], user['unread'], user['totalSize'])
@@ -253,11 +246,11 @@ def updateParentMessage(row):
     cur.execute(updateParentMessageQuery, params)
 
 
-def updateAttachment(row):
-    # ("name" , "charset" , "filename" , "contentType" , "contentTransferEncoding" , "size", "id")
+def insertAttachments(row):
+    # ("id", "name" , "charset" , "filename" , "contentType" , "contentTransferEncoding" , "size", "id")
     attachment = row[0]
-    params = (attachment['name'], attachment['charset'], attachment['filename'], attachment['contentType'], attachment['contentTransferEncoding'], attachment['size'], attachment['id'])
-    cur.execute(updateAttachmentQuery, params)
+    params = (attachment['id'], attachment['name'], attachment['charset'], attachment['filename'], attachment['contentType'], attachment['contentTransferEncoding'], attachment['size'])
+    cur.execute(insertAttachmentQuery, params)
 
 
 # CONSISTENCY #
@@ -288,22 +281,33 @@ def consistencyCheck(checkObj):
 # PROCESS #
 ###########
 
+print('(' + str(datetime.now()) + ') ** Starting conversation DB migration process **')
+
 try:
     # Folders
+    print('(' + str(datetime.now()) + ') [Start] Folders')
     results = gdb.query(foldersQuery, {}, returns=(lambda x: convert(x)['data'], convert, convert, convert, convert))
     if len(results) > 0:
         for row in results:
             insertFolder(row)
         sql.commit()
+    print('(' + str(datetime.now()) + ') [Done]  Folders')
+
+    # Attachments
+    print('(' + str(datetime.now()) + ') [Start] Message attachments')
+    pageLoop(attachmentsQuery, {}, insertAttachments, loopAction=commit, returnList=(lambda x: convert(x)['data']))
+    print('(' + str(datetime.now()) + ') [Done]  Message attachments')
 
     # Messages & all linked tables
-    pageLoop(msgQuery, {}, insertMessageDeps, commit, returnList=(lambda x: convert(x)['data'], convert))
+    print('(' + str(datetime.now()) + ') [Start] Messages & dependencies')
+    pageLoop(msgQuery, {}, insertMessageDeps, loopAction=commit, returnList=(lambda x: convert(x)['data'], convert))
+    print('(' + str(datetime.now()) + ') [Done]  Messages & dependencies')
 
     # Adding parent messages
-    pageLoop(msgParentQuery, {}, updateParentMessage, commit, returnList=(convert, convert))
+    print('(' + str(datetime.now()) + ') [Start] Parent messages')
+    pageLoop(msgParentQuery, {}, updateParentMessage, loopAction=commit, returnList=(convert, convert))
+    print('(' + str(datetime.now()) + ') [Done]  Parent messages')
 
-    # Attachments completion
-    pageLoop(attachmentsQuery, {}, updateAttachment, commit, returnList=(lambda x: convert(x)['data']))
 
     # Consistency checks
     consistencyChecks(
@@ -313,6 +317,8 @@ try:
         userFoldersCheck,
         usersMsgCheck,
         usersMsgAttCheck)
+
+    print('(' + str(datetime.now()) + ') ** Conversation DB migration done **')
 
 except psycopg2.Error as e:
     sys.stderr.write(e.pgerror)

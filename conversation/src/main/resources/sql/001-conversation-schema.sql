@@ -3,7 +3,7 @@ CREATE SCHEMA conversation;
 CREATE TABLE conversation.messages (
 	"id" VARCHAR(36) NOT NULL PRIMARY KEY,
 	"parent_id" VARCHAR(36),
-    "subject" VARCHAR(255),
+    "subject" VARCHAR(1024),
     "body" TEXT NOT NULL,
     "from" VARCHAR(36) NOT NULL,
     "fromName" VARCHAR(36),
@@ -22,7 +22,7 @@ CREATE TABLE conversation.attachments (
     "name" VARCHAR(255) NOT NULL,
     "charset" VARCHAR(10) NOT NULL,
     "filename" VARCHAR(255) NOT NULL,
-    "contentType" VARCHAR(50) NOT NULL,
+    "contentType" VARCHAR(255) NOT NULL,
     "contentTransferEncoding" VARCHAR(10) NOT NULL,
     "size" BIGINT NOT NULL
 );
