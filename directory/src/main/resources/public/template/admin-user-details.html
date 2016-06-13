@@ -52,12 +52,12 @@
     <div class="twelve cell padding-top-5">
         <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!targetUser.birthDate">
-            <div class="six cell"> [[lang.translate("directory.notFilled")]]</div>
-            <button class="small cell" style="padding: 0 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
+            <div class="four cell" style="margin-bottom: 10px;"> [[lang.translate("directory.notFilled")]]</div>
+            <button class="small cell" style="padding: 0px 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="targetUser.birthDate">
-            <date-picker class="six cell" ng-model="targetUser.birthDate"></date-picker>
-            <button class="small cell" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
+            <date-picker class="four cell" style="margin-bottom: 7px;" ng-model="targetUser.birthDate"></date-picker>
+            <button class="small cell" style="padding: 0px 5px; margin-left: 5%;" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
     <div class="twelve cell">
@@ -229,7 +229,7 @@
         <select class="four cell" ng-model="linkStructure" ng-init="linkStructure = structure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
     </div>
     <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
-        <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
+        <span class="four cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
         <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
         </select>
     </div>
