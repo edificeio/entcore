@@ -39,5 +39,6 @@
   "missing.attribute" : "Attribut {0} manquant.",
   "birthDate" : "date de naissance",
   "lastName" : "nom",
-  "firstName" : "prénom"
+  "firstName" : "prénom",
+  "error.find.externalIds" : "Erreur lors de la recherche des utilisateurs existants."
 }

@@ -242,7 +242,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;
-				if (preDelete && structureExternalId != null) {
+				if (preDelete && structureExternalId != null && !r.containsErrors()) {
 					final JsonArray externalIds = r.getUsersExternalId();
 					new User.PreDeleteTask(0).findMissingUsersInStructure(
 							structureExternalId, source, externalIds, new Handler<Message<JsonObject>>() {

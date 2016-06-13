@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
@@ -74,13 +75,15 @@ public class MappingFinder {
 				.charset(charset)
 				.create();
 		final AtomicInteger count = new AtomicInteger(Be1dValidator.fileNames.length);
+		final AtomicBoolean error = new AtomicBoolean(false);
 		for (final String filename : Be1dValidator.fileNames) {
-			generateFile(p, structureExternalId, csvParser, filename, new Handler<String>() {
+			generateFile(p, structureExternalId, csvParser, filename, error, new Handler<String>() {
 				@Override
 				public void handle(String event) {
 					if (event != null || count.decrementAndGet() == 0) {
 						if (event  != null) {
-							log.error("\n\n\n" + event + "\n\n\n");
+							log.error(event);
+							error.set(true);
 						}
 						handler.handle(event);
 					}
@@ -90,7 +93,7 @@ public class MappingFinder {
 	}
 
 	private void generateFile(final String p, final String structureExternalId,
-							  final CSV csvParser, final String filename, final Handler<String> handler) {
+							  final CSV csvParser, final String filename, final AtomicBoolean error, final Handler<String> handler) {
 		final List<String[]> lines = new ArrayList<>();
 		final AtomicInteger count = new AtomicInteger();
 		try {
@@ -99,6 +102,7 @@ public class MappingFinder {
 
 				@Override
 				public void procRow(int rowIdx, final String... values) {
+					if (error.get()) return;
 					final List<String> line = new LinkedList<>(Arrays.asList(values));
 					if (rowIdx == 0) {
 						line.add(0, "externalId");
@@ -171,11 +175,16 @@ public class MappingFinder {
 								JsonObject par = new JsonObject().putString("externalId", structureExternalId);
 								StatementsBuilder statementsBuilder = new StatementsBuilder();
 								for (int i = 12; i < values.length; i += 4) {
-									JsonObject pa = par.copy()
-											.putString("className", values[i+3].trim().toLowerCase())
-											.putString("firstName", values[i+2].trim().toLowerCase())
-											.putString("lastName", values[i+1].trim().toLowerCase());
-									statementsBuilder.add(q, pa);
+									try {
+										JsonObject pa = par.copy()
+												.putString("className", values[i + 3].trim().toLowerCase())
+												.putString("firstName", values[i + 2].trim().toLowerCase())
+												.putString("lastName", values[i + 1].trim().toLowerCase());
+										statementsBuilder.add(q, pa);
+									} catch (ArrayIndexOutOfBoundsException e) {
+										handler.handle("error.matching.studentId");
+										return;
+									}
 								}
 								neo4j.executeTransaction(statementsBuilder.build(), null, true,
 										new Handler<Message<JsonObject>>() {
