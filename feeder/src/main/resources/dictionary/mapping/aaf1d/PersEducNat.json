@@ -3,6 +3,7 @@
 	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
 	"ENTPersonNom" : { "attribute" : "lastName", "type" : "string" },
 	"ENTPersonPrenom" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonAutresPrenoms" : { "attribute" : "otherNames", "type" : "array-string" },
 	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
 	"ENTPersonCivilite" : { "attribute" : "title", "type" : "string" },
 	"categoriePersonne" : { "attribute" : "category", "type" : "string" },
