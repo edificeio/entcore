@@ -4868,11 +4868,24 @@ module.directive('checkTool', function () {
 		restrict: 'E',
 		scope: {
 				ngModel: '=',
+				ngClick: '&',
+				ngChange: '&',
 		},
 		template: '<div class="check-tool"><i class="check-status"></i></div>',
 		link: function (scope, element, attributes) {
 			element.on('click', function(){
 				scope.ngModel = !scope.ngModel;
+				if (scope.ngModel) {
+					element.addClass('selected')
+				}else {
+					element.removeClass('selected')
+				}
+				if (scope.ngClick) {
+					scope.ngClick();
+				}
+				if (scope.ngChange) {
+					scope.ngChange();
+				}
 				scope.$apply();
 			});
 		}
