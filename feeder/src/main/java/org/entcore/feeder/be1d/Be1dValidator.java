@@ -78,10 +78,10 @@ public class Be1dValidator extends Report implements ImportValidator {
 		super(acceptLanguage);
 		this.vertx = vertx;
 		this.separator = separator;
-		structureValidator = new Validator("dictionary/schema/Structure.json");
-		userValidator = new Validator("dictionary/schema/User.json");
-		personnelValidator = new Validator("dictionary/schema/Personnel.json");
-		studentValidator = new Validator("dictionary/schema/Student.json");
+		structureValidator = new Validator("dictionary/schema/Structure.json", true);
+		userValidator = new Validator("dictionary/schema/User.json", true);
+		personnelValidator = new Validator("dictionary/schema/Personnel.json", true);
+		studentValidator = new Validator("dictionary/schema/Student.json", true);
 		mappingFinder = new MappingFinder(vertx);
 	}
 

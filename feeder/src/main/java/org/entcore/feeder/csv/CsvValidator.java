@@ -51,6 +51,17 @@ public class CsvValidator extends Report implements ImportValidator {
 	private final MappingFinder mappingFinder;
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
+	public static final Map<String, Validator> profiles;
+
+	static {
+		Map<String, Validator> p = new HashMap<>();
+		p.put("Personnel", new Validator("dictionary/schema/Personnel.json", true));
+		p.put("Teacher", new Validator("dictionary/schema/Personnel.json", true));
+		p.put("Student", new Validator("dictionary/schema/Student.json", true));
+		p.put("Relative", new Validator("dictionary/schema/User.json", true));
+		p.put("Guest", new Validator("dictionary/schema/User.json", true));
+		profiles = Collections.unmodifiableMap(p);
+	}
 
 	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject additionnalsMappings) {
 		super(acceptLanguage);
@@ -240,7 +251,7 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
-		final Validator validator = ManualFeeder.profiles.get(profile);
+		final Validator validator = profiles.get(profile);
 		getStructure(path, new Handler<Structure>() {
 			@Override
 			public void handle(final Structure structure) {

@@ -41,10 +41,10 @@ import java.util.regex.Pattern;
 public class Validator {
 
 	private static final Logger log = LoggerFactory.getLogger(Validator.class);
-	//private static final Set<String> logins = Collections.synchronizedSet(new HashSet<String>());
 	private static ConcurrentMap<Object, Object> logins;
 	private static Map<Object, Object> invalidEmails;
 	private final I18n i18n = I18n.getInstance();
+	private final boolean notStoreLogins;
 	private static final String[] alphabet =
 			{"a","b","c","d","e","f","g","h","j","k","m","n","p","r","s","t","v","w","x","y","z","3","4","5","6","7","8","9"};
 	private static final Map<String, Pattern> patterns = new HashMap<>();
@@ -70,6 +70,10 @@ public class Validator {
 	private final JsonArray modifiable;
 
 	public Validator(JsonObject schema) {
+		this(schema, false);
+	}
+
+	protected Validator(JsonObject schema, boolean notStoreLogins) {
 		if (schema == null || schema.size() == 0) {
 			throw new IllegalArgumentException("Missing schema.");
 		}
@@ -80,10 +84,15 @@ public class Validator {
 		if (validate == null || generate == null || required == null || modifiable == null) {
 			throw new IllegalArgumentException("Invalid schema.");
 		}
+		this.notStoreLogins = notStoreLogins;
 	}
 
 	public Validator(String resource) {
-		this(JsonUtil.loadFromResource(resource));
+		this(resource, false);
+	}
+
+	public Validator(String resource, boolean notStoreLogins) {
+		this(JsonUtil.loadFromResource(resource), notStoreLogins);
 	}
 
 	public String validate(JsonObject object) {
@@ -292,8 +301,10 @@ public class Validator {
 						.replaceAll("'", "");
 				int i = 2;
 				String l = login + "";
-				while (logins.putIfAbsent(l, "") != null) {
-					l = login + i++;
+				if (!notStoreLogins) {
+					while (logins.putIfAbsent(l, "") != null) {
+						l = login + i++;
+					}
 				}
 				object.putString(attr, l);
 			}
