@@ -1,4 +1,5 @@
 #!/bin/env python
+
 import sys
 import traceback
 import psycopg2
@@ -12,7 +13,7 @@ sql = psycopg2.connect(database="ong", host="localhost", user="web-education", p
 sql.autocommit = False
 cur = sql.cursor()
 
-limit = 250
+limit = 500
 
 # NEO4J QUERIES #
 #################
@@ -40,8 +41,8 @@ OPTIONAL MATCH (msg)-[iLink:INSIDE]->(uf:ConversationUserFolder)<-[:HAS_CHILD_FO
 OPTIONAL MATCH (uma:MessageAttachment)<-[:HAS_ATTACHMENT]-(msg)<-[mLink]-(f)
 WHERE uma.id IN mLink.attachments
 WITH DISTINCT msg, c, uf, collect(f.name) as folderNames, count(mLink.unread) as unreadFlag,
-mLink.attachments as attachments,
-iLink, sum(uma.size) as totalSize
+collect(distinct uma.id) as attachments,
+iLink, sum(distinct uma.size) as totalSize
 WITH msg, collect(DISTINCT {
     userId: c.userId,
     folderId: uf.id,
@@ -55,6 +56,7 @@ RETURN msg, userProps;
 
 msgParentQuery = """
 MATCH (msg:ConversationMessage)-[:PARENT_CONVERSATION_MESSAGE]->(pMsg:ConversationMessage)
+WHERE (pMsg)<-[:HAS_CONVERSATION_MESSAGE]-()
 RETURN msg.id, pMsg.id as parent_id
 SKIP {skip} LIMIT {limit};
 """
@@ -178,12 +180,12 @@ def commit(buf):
 # PAGINATION LOOP #
 ###################
 
-def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambda: ()), returnList=()):
+def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambda: ()), returnList=(), page=0):
     stop = False
-    page = 0
     while not stop:
         buf = {}
         print('(' + str(datetime.now()) + ') [loop] page ' + str(page) + ' / ' + str(page * limit) + ' -> ' + str((page + 1) * limit - 1))
+        sys.stdout.flush()
         paramsCopy = params.copy()
         paramsCopy.update({'skip': page * limit, 'limit': limit})
         results = gdb.query(query, paramsCopy, returns=returnList)
@@ -223,7 +225,7 @@ def bufferMessageDeps(row, buf):
     #("id", "subject", "body", "from", "to", "cc", "displayNames", "state", "date")
     params = (
         messageId,
-        containsOr(row[0], 'subject', ''),
+        containsOr(row[0], 'subject', '')[:255].decode('utf-8', 'replace'),
         containsOr(row[0], 'body', ''),
         containsOr(row[0], 'from', ''),
         containsOrNone(row[0], 'to', Json),
