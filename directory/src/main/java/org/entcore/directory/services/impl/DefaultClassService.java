@@ -85,7 +85,7 @@ public class DefaultClassService implements ClassService {
 				filter +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"m.login as login, m.activationCode as activationCode, m.birthDate as birthDate, " +
-				"p.name as type, m.blocked as blocked " +
+				"p.name as type, m.blocked as blocked, m.source as source " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
 	}

@@ -219,7 +219,7 @@
 						ng-if="users.where({ blocked: true, selected: true }).length"
 						translate content="admin.unblock">
 				</button>
-				<button ng-click="display.confirmRemove = true"><i18n>remove</i18n></button>
+				<button ng-if="checkUsersSource(users.where({ selected:true }))" ng-click="display.confirmRemove = true"><i18n>remove</i18n></button>
 			</div>
 		</div>
 	</section>
