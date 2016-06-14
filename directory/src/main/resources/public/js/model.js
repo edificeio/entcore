@@ -378,7 +378,7 @@ function ClassAdmin(){
 			}.bind(this));
 		},
 		removeSelection: function(){
-			http().delete('/directory/user', { userId: _.map(this.selection(), function(user){ return user.id; })});
+			http().postJson('/directory/user/delete', { users : _.map(this.selection(), function(user){ return user.id; }) });
 			Collection.prototype.removeSelection.call(this);
 		}
 	});

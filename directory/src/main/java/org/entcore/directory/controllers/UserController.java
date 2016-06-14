@@ -215,6 +215,23 @@ public class UserController extends BaseController {
 		userService.delete(users, defaultResponseHandler(request));
 	}
 
+	@Post("/user/delete")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(TeacherOfUser.class)
+	public void deleteByPost(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			@SuppressWarnings("unchecked")
+			public void handle(JsonObject event) {
+				if (event != null) {
+					userService.delete(event.getArray("users", new JsonArray()).toList(), defaultResponseHandler(request));
+				} else {
+					badRequest(request, "invalid.json");
+				}
+			}
+		});
+	}
+
 	@Put("/restore/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void restore(final HttpServerRequest request) {
