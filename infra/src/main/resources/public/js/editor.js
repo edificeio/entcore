@@ -2736,8 +2736,8 @@ window.RTE = (function () {
                             });
                         });
 
-                        element.on('click', function(e){
-                            if(attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette){
+                        var placeToolbar = function () {
+                            if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                                 element.children('editor-toolbar').css({
                                     left: 0,
                                     top: -element.children('editor-toolbar').height() + 'px'
@@ -2746,6 +2746,11 @@ window.RTE = (function () {
                                     'margin-top': element.children('editor-toolbar').height() + 'px'
                                 });
                             }
+                        }
+
+                        element.parents().on('resizing', placeToolbar)
+                        element.on('click', function(e){
+                            placeToolbar();
 
                             if(e.target === element.find('.close-focus')[0]){
                                 return;
