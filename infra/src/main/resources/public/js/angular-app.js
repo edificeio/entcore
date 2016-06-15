@@ -2550,7 +2550,7 @@ module.directive('bottomScroll', function($compile){
 		link: function (scope, element, attributes) {
 		    var scrollElement = element;
 		    var getContentHeight = function () {
-		        return element[0].offsetHeight;
+		        return element[0].scrollHeight;
 		    };
 		    if (element.css('overflow') !== 'auto') {
 		        scrollElement = $(window);
