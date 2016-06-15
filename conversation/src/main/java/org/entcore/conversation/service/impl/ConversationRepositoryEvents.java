@@ -156,6 +156,13 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			"\"displayNames\" = \"displayNames\" - (SELECT elt FROM fullUserTxt) " +
 			"WHERE \"displayNames\"::text LIKE '%' || ? || '%'";
 
+		String setFrom =
+			"UPDATE conversation.messages " +
+			"SET " +
+			"\"from\" = '', " +
+			"\"fromName\" = ? " +
+			"WHERE \"from\" = ?";
+
 		String setTO =
 			"UPDATE conversation.messages " +
 			"SET " +
@@ -175,6 +182,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			JsonObject user = (JsonObject) o;
 			JsonArray params1 = new JsonArray();
 			JsonArray params2 = new JsonArray();
+			JsonArray params3 = new JsonArray();
 
 			for(int i = 0; i < 3; i++)
 				params1.add(user.getString("id", ""));
@@ -183,9 +191,13 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			params2.add(new JsonArray().add(user.getString("displayName", "")).toString());
 			params2.add(new JsonArray().add(user.getString("id", "")).toString());
 
+			params3.add(user.getString("id", ""));
+			params3.add(user.getString("displayName", ""));
+
 			builder.prepared(setDisplayNames, params1);
 			builder.prepared(setTO, params2);
 			builder.prepared(setCC, params2);
+			builder.prepared(setFrom, params3);
 		}
 		sql.transaction(builder.build(), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
