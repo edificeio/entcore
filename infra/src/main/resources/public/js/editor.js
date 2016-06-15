@@ -2478,7 +2478,8 @@ window.RTE = (function () {
                             }
                         });
                         
-                        element.find('.editor-toolbar-opener').on('touchstart', function(){
+                        element.find('.editor-toolbar-opener').on('touchstart', function(e){
+							e.preventDefault();
                             setTimeout(function(){
                                 var sel = window.getSelection();
                                 sel.removeAllRanges();
