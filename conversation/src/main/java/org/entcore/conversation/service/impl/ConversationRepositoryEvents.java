@@ -74,14 +74,14 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			"SET " +
 			"\"to\" = \"to\" - ?, " +
 			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
-			"WHERE \"to\" @> ?";
+			"WHERE \"to\" @> (?)::jsonb";
 
 		String setCC =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"cc\" = \"cc\" - ?, " +
 			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
-			"WHERE \"cc\" @> ?";
+			"WHERE \"cc\" @> (?)::jsonb";
 
 		for (Object o : groups) {
 			if (!(o instanceof JsonObject)) continue;
@@ -168,14 +168,14 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			"SET " +
 			"\"to\" = \"to\" - ?, " +
 			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
-			"WHERE \"to\" @> ?";
+			"WHERE \"to\" @> (?)::jsonb";
 
 		String setCC =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"cc\" = \"cc\" - ?, " +
 			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
-			"WHERE \"cc\" @> ?";
+			"WHERE \"cc\" @> (?)::jsonb";
 
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
