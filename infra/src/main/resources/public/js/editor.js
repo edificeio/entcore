@@ -2480,6 +2480,14 @@ window.RTE = (function () {
                         
                         element.find('.editor-toolbar-opener').on('touchstart', function(e){
 							e.preventDefault();
+							if(!$(this).hasClass('active')){
+                                $(this).addClass('active');
+                                element.find('editor-toolbar').addClass('opened');
+                            }
+                            else{
+                                $(this).removeClass('active')
+                                element.find('editor-toolbar').removeClass('opened');
+                            }
                             setTimeout(function(){
                                 var sel = window.getSelection();
                                 sel.removeAllRanges();
