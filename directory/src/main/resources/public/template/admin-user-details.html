@@ -226,11 +226,11 @@
     <h3 style="margin-top: 0;">[[lang.translate("directory.linkToStructure")]]</h3>
     <div class="twelve cell">
         <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.admin.school")]]</span>
-        <select class="four cell" ng-model="linkStructure" ng-init="linkStructure = structure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
+        <select class="five cell" ng-model="linkStructure" ng-init="linkStructure = structure" ng-change="refreshClasses(linkStructure)" ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
     </div>
     <div class="twelve cell" ng-if="linkStructure && linkStructure.classes && linkStructure.classes.length() > 0">
-        <span class="four cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
-        <select ng-model="$parent.linkClass" class="five cell" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
+        <span class="three cell" style="margin: 0; height: 28px; padding-top: 6px;">[[lang.translate("directory.classe")]]</span>
+        <select class="five cell" ng-model="$parent.linkClass" ng-options="class as class.name for class in linkStructure.classes.all | orderBy: 'name'">
         </select>
     </div>
     <div>
