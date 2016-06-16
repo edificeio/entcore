@@ -179,6 +179,17 @@
 						<i18n>workspace.document.comment.hide</i18n>
 					</a>
 				</span>
+
+				<span class="contextual-link zero-mobile"
+					  ng-if="selectedFolders().length === 1 && selectedFolders()[0].comments.length > 0 &&  currentTree.name !== 'trash'">
+					<a ng-if="!selectedFolders()[0].showComments" data-ng-click="toggleComments(selectedFolders()[0])">
+						<i18n>workspace.document.comment.show</i18n> ([[selectedFolders()[0].comments.length]])
+					</a>
+					<a ng-if="selectedFolders()[0].showComments" data-ng-click="toggleComments(selectedFolders()[0])">
+						<i18n>workspace.document.comment.hide</i18n>
+					</a>
+				</span>
+
 			</div>
 			</div>
 
