@@ -137,5 +137,6 @@
     "workspace.appDocuments": "Documentos adicionados nas apps",
     "workspace.myDocuments": "Meus documentos",
     "workspace.publicDocuments": "Documents publics",
-    "workspace.sharedDocuments": "Documentos compartilhados comigo"
+    "workspace.sharedDocuments": "Documentos compartilhados comigo",
+    "help.icon": ""
 }
