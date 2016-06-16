@@ -116,7 +116,7 @@ public class SqlConversationService implements ConversationService{
 	private void getSenderAttachments(String senderId, String messageId, Handler<Either<String, JsonObject>> handler){
 		String query =
 			"SELECT " +
-				"coalesce(array_agg(distinct att.id), '{}') as attachmentIds," +
+				"coalesce(json_agg(distinct att.id), '[]'::json) as attachmentIds," +
 				"coalesce(sum(att.size), 0)::integer as totalQuota " +
 			"FROM " + attachmentTable + " att " +
 			"JOIN " + userMessageAttachmentTable + " uma " +
@@ -125,7 +125,7 @@ public class SqlConversationService implements ConversationService{
 				"ON um.user_id = uma.user_id AND um.message_id = uma.message_id " +
 			"WHERE um.user_id = ? AND um.message_id = ?";
 
-		sql.prepared(query, new JsonArray().add(senderId).add(messageId), SqlResult.validUniqueResultHandler(handler));
+		sql.prepared(query, new JsonArray().add(senderId).add(messageId), SqlResult.validUniqueResultHandler(handler, "attachmentids"));
 	}
 
 	@Override
@@ -167,7 +167,7 @@ public class SqlConversationService implements ConversationService{
 						builder.insert(userMessageAttachmentTable, new JsonObject()
 							.putString("user_id", toObj.toString())
 							.putString("message_id", draftId)
-							.putString("attachment_id", ((JsonArray) attachmentId).get(1).toString())
+							.putString("attachment_id", attachmentId.toString())
 						);
 					}
 				}
