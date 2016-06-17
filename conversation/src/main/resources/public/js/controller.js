@@ -294,6 +294,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.transfer = function(){
 		$scope.openView('write-mail', 'main');
+        $scope.newItem.parentConversation = $scope.mail;
 		setMailContent('transfer');
 		model.folders.draft.saveDraft($scope.newItem, function(id){
 			http().put("message/"+ $scope.newItem.id +"/forward/" + $scope.mail.id).done(function(){
@@ -324,7 +325,8 @@ function Conversation($scope, $timeout, date, notify, route, model){
         $scope.newItem.cc = _.filter($scope.newItem.cc, function(user){
             return user.id !== model.me.userId  && !_.findWhere($scope.newItem.to, {id: user.id })
         })
-        $scope.addUser($scope.mail.sender());
+        if(!_.findWhere($scope.newItem.to, { id: $scope.mail.sender().id }))
+            $scope.addUser($scope.mail.sender());
 	};
 
 	$scope.editDraft = function(draft){

@@ -17,7 +17,7 @@ public class Neo4jConversationService {
 		this.neo = Neo4j.getInstance();
 	}
 
-	public void addDisplayNames(final JsonObject message, final Handler<JsonObject> handler) {
+	public void addDisplayNames(final JsonObject message, final JsonObject parentMessage, final Handler<JsonObject> handler) {
 		if(!displayNamesCondition(message)){
 			handler.handle(message);
 			return;
@@ -34,6 +34,12 @@ public class Neo4jConversationService {
 		ids.addAll(message.getArray("cc", new JsonArray()).toList());
 		if (message.containsField("from")) {
 			ids.add(message.getString("from"));
+		}
+		if(parentMessage != null){
+			ids.addAll(parentMessage.getArray("to", new JsonArray()).toList());
+			ids.addAll(parentMessage.getArray("cc", new JsonArray()).toList());
+			if(parentMessage.containsField("from"))
+				ids.add(parentMessage.getString("from"));
 		}
 		neo.execute(query, new JsonObject().putArray("ids", new JsonArray(ids.toArray())),
 				new Handler<Message<JsonObject>>() {

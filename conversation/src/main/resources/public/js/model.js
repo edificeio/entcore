@@ -95,6 +95,9 @@ function Mail(data){
 			});
 		}
 		else{
+            if(this.parentConversation){
+    			path += '?In-Reply-To=' + this.parentConversation.id;
+    		}
 			http().postJson(path, data).done(function(newData){
 				that.updateData(newData);
 				model.folders.draft.mails.refresh();

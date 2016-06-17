@@ -65,7 +65,6 @@ import org.vertx.java.platform.Container;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -121,15 +120,37 @@ public class ConversationController extends BaseController {
 					final String parentMessageId = request.params().get("In-Reply-To");
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject message) {
+						public void handle(final JsonObject message) {
+
 							if(!message.containsField("from")){
 								message.putString("from", user.getUserId());
 							}
-							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
-								public void handle(JsonObject message) {
-									conversationService.saveDraft(parentMessageId, message, user, defaultResponseHandler(request, 201));
+
+							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
+								@Override
+								public void handle(JsonObject parent) {
+									neoConversationService.addDisplayNames(message, parent, new Handler<JsonObject>() {
+										public void handle(JsonObject message) {
+											conversationService.saveDraft(parentMessageId, message, user, defaultResponseHandler(request, 201));
+										}
+									});
 								}
-							});
+							};
+
+							if(parentMessageId != null && !parentMessageId.trim().isEmpty()){
+								conversationService.get(parentMessageId, user, new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> event) {
+										if(event.isLeft()){
+											badRequest(request);
+											return;
+										}
+
+										parentHandler.handle(event.right().getValue());
+									}
+								});
+							} else {
+								parentHandler.handle(null);
+							}
 
 						}
 					});
@@ -161,7 +182,7 @@ public class ConversationController extends BaseController {
 							if(!message.containsField("from")){
 								message.putString("from", user.getUserId());
 							}
-							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
+							neoConversationService.addDisplayNames(message, null, new Handler<JsonObject>() {
 								public void handle(JsonObject message) {
 									conversationService.updateDraft(messageId, message, user,
 											defaultResponseHandler(request));
@@ -248,35 +269,55 @@ public class ConversationController extends BaseController {
 					final String parentMessageId = request.params().get("In-Reply-To");
 					bodyToJson(request, new Handler<JsonObject>() {
 						@Override
-						public void handle(JsonObject message) {
+						public void handle(final JsonObject message) {
 							if(!message.containsField("from")){
 								message.putString("from", user.getUserId());
 							}
-							neoConversationService.addDisplayNames(message, new Handler<JsonObject>() {
-								public void handle(final JsonObject message) {
-									saveAndSend(messageId, message, user, parentMessageId,
-											new Handler<Either<String, JsonObject>>() {
-										@Override
-										public void handle(Either<String, JsonObject> event) {
-											if (event.isRight()) {
-												JsonObject result = event.right().getValue();
-												JsonObject timelineParams = new JsonObject()
-													.putString("subject", result.getString("subject"))
-													.putString("id", result.getString("id"))
-													.putArray("sentIds", message.getArray("allUsers", new JsonArray()));
-												timelineNotification(request, timelineParams, user);
-												renderJson(request, result
-													.putArray("inactive", message.getArray("inactives", new JsonArray()))
-													.putArray("undelivered", message.getArray("undelivered", new JsonArray()))
-													.putNumber("sent", message.getArray("allUsers", new JsonArray()).size()));
-											} else {
-												JsonObject error = new JsonObject().putString("error", event.left().getValue());
-												renderJson(request, error, 400);
-											}
+
+							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
+								public void handle(JsonObject parentMsg) {
+									neoConversationService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
+										public void handle(final JsonObject message) {
+											saveAndSend(messageId, message, user, parentMessageId,
+													new Handler<Either<String, JsonObject>>() {
+												@Override
+												public void handle(Either<String, JsonObject> event) {
+													if (event.isRight()) {
+														JsonObject result = event.right().getValue();
+														JsonObject timelineParams = new JsonObject()
+															.putString("subject", result.getString("subject"))
+															.putString("id", result.getString("id"))
+															.putArray("sentIds", message.getArray("allUsers", new JsonArray()));
+														timelineNotification(request, timelineParams, user);
+														renderJson(request, result
+															.putArray("inactive", message.getArray("inactives", new JsonArray()))
+															.putArray("undelivered", message.getArray("undelivered", new JsonArray()))
+															.putNumber("sent", message.getArray("allUsers", new JsonArray()).size()));
+													} else {
+														JsonObject error = new JsonObject().putString("error", event.left().getValue());
+														renderJson(request, error, 400);
+													}
+												}
+											});
 										}
 									});
 								}
-							});
+							};
+
+							if(parentMessageId != null && !parentMessageId.trim().isEmpty()){
+								conversationService.get(parentMessageId, user, new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> event) {
+										if(event.isLeft()){
+											badRequest(request);
+											return;
+										}
+
+										parentHandler.handle(event.right().getValue());
+									}
+								});
+							} else {
+								parentHandler.handle(null);
+							}
 						}
 					});
 				} else {
