@@ -28,12 +28,12 @@
                 <td class="icon sysmail"><i class="[[matchSystemIcon(mail)]]" tooltip="[[matchSystemIcon(mail)]]"></i></td>
     			<td class="user" ng-if="getSystemFolder(mail) !== 'INBOX'">
     				<span ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
-						<a ng-if="!users.list.isGroup(receiver)" ng-click="viewMail(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
+						<a ng-if="!users.list.isGroup(receiver)" ng-click="variableMailAction(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
 					</span>
     				<span ng-if="receivers.length > 2">...</span>
     			</td>
 				<td class="user" ng-if="getSystemFolder(mail) === 'INBOX'">
-					<a ng-click="readMail(mail)">
+					<a ng-click="variableMailAction(mail)">
 						[[mail.sender().displayName]][[mail.fromName]]
 					</a>
 				</td>

@@ -196,9 +196,9 @@ function Conversation($scope, $timeout, date, notify, route, model){
         if(systemFolder === "DRAFT")
 			return $scope.editDraft(mail)
 		else if(systemFolder === "OUTBOX")
-			return $scope.readMail(mail)
-		else
 			return $scope.viewMail(mail)
+		else
+			return $scope.readMail(mail)
 	}
 
 	$scope.removeFromUserFolder = function(event, mail){
