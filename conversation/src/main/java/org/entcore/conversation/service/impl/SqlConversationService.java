@@ -151,7 +151,9 @@ public class SqlConversationService implements ConversationService{
 
 				SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-				String updateMessage = "UPDATE " + messageTable + " SET state = ? WHERE id = ?" ;
+				String updateMessage =
+					"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
+					"RETURNING id, subject";
 				builder.prepared(updateMessage, new JsonArray().add("SENT").add(draftId));
 
 				for(Object toObj : ids){
@@ -172,7 +174,7 @@ public class SqlConversationService implements ConversationService{
 					}
 				}
 
-				sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(result));
+				sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 			}
 		});
 	}

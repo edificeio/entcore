@@ -260,7 +260,11 @@ public class ConversationController extends BaseController {
 										public void handle(Either<String, JsonObject> event) {
 											if (event.isRight()) {
 												JsonObject result = event.right().getValue();
-												timelineNotification(request, event.right().getValue(), user);
+												JsonObject timelineParams = new JsonObject()
+													.putString("subject", result.getString("subject"))
+													.putString("id", result.getString("id"))
+													.putArray("sentIds", message.getArray("allUsers", new JsonArray()));
+												timelineNotification(request, timelineParams, user);
 												renderJson(request, result
 													.putArray("inactive", message.getArray("inactives", new JsonArray()))
 													.putArray("undelivered", message.getArray("undelivered", new JsonArray()))
