@@ -188,7 +188,7 @@ public class SqlConversationService implements ConversationService{
 			.add(user.getUserId());
 
 		if(restrain != null){
-			additionalWhere = "AND um.folder_id = ?";
+			additionalWhere = "AND um.folder_id = ? AND um.trashed = false";
 			values.add(folder);
 		} else {
 			additionalWhere = addFolderCondition(folder, values, user.getUserId());
@@ -879,6 +879,7 @@ public class SqlConversationService implements ConversationService{
 		switch(folder.toUpperCase()){
 			case "INBOX":
 				additionalWhere = "AND (m.from <> ? OR \"to\" @> ?::jsonb OR \"cc\" @> ?::jsonb) AND m.state = ? AND um.trashed = false";
+				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
 				values.add(new JsonArray().add(userId).toString());
 				values.add(new JsonArray().add(userId).toString());
@@ -886,11 +887,13 @@ public class SqlConversationService implements ConversationService{
 				break;
 			case "OUTBOX":
 				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
+				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
 				values.add("SENT");
 				break;
 			case "DRAFT":
 				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
+				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
 				values.add("DRAFT");
 				break;
@@ -898,7 +901,6 @@ public class SqlConversationService implements ConversationService{
 				additionalWhere = "AND um.trashed = true";
 				break;
 		}
-		additionalWhere += " AND um.folder_id IS NULL";
 		return additionalWhere;
 	}
 
