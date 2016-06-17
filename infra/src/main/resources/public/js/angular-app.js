@@ -4480,6 +4480,7 @@ module.directive('floatingNavigation', function(){
 		'<div class="next arrow" ng-class="{ visible: step < stepsLength && stepsLength > 0 }"></div>' +
 		'</nav>',
 		link: function(scope, element, attributes){
+
 			var initialPosition;
 			scope.step = 0;
 			setTimeout(function(){
@@ -4501,6 +4502,10 @@ module.directive('floatingNavigation', function(){
 					scrollTop: element.height() * scope.step
 				}, 250);
 			});
+			// if(attributes.title){
+			// 	var title = lang.translate(attributes.title);
+			// 	element.prepend('<h2>'+title+'</h2>')
+			// }
 		}
 	}
 });
