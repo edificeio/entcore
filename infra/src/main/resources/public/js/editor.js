@@ -2822,19 +2822,69 @@ window.RTE = (function () {
                             clearTimeout(editingTimer);
                             typingTimer = setTimeout(wrapFirstLine, 10);
                             
+                            var sel = window.getSelection();
+                            if (sel.rangeCount > 0) {
+                                var range = sel.getRangeAt(0);
+                                if (range.startContainer.nodeType !== 1 && range.startContainer.parentNode !== null) {
+                                    var currentTextNode = range.startContainer;
+                                    if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;')) {
+                                        var node = range.startContainer.parentNode;
+                                        node.innerHTML = node.innerHTML.substring(6);
+                                        setTimeout(function () {
+                                            
+                                            var range = document.createRange();
+                                            range.setStart(node.firstChild, node.firstChild.textContent.length);
+                                            sel.removeAllRanges();
+                                            sel.addRange(range);
+                                        }, 20);
+                                        
+                                    }
+                                }
+                            }
+                            
+
                             if (!e.ctrlKey) {
                                 editingTimer = setTimeout(editingDone, 500);
                             }
 
                             if (e.keyCode === 13) {
+                                e.preventDefault();
                                 editorInstance.addState(editZone.html());
+                                
+                                var parentContainer = range.startContainer;
+                                var newLine = $('<div>&nbsp;</div>');
+                                if (parentContainer === editZone[0]) {
+                                    parentContainer.appendChild(newLine[0]);
+                                }
+                                else {
+                                    if (parentContainer.nodeType !== 1) {
+                                        parentContainer = parentContainer.parentNode;
+                                        if (range.startOffset !== parentContainer.textContent.length) {
+                                            newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                            parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+                                        }
+                                        
+                                    }
+
+                                    if (parentContainer.nextSibling) {
+                                        parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
+                                    }
+                                    else {
+                                        parentContainer.parentElement.appendChild(newLine[0]);
+                                    }
+                                }
+
+                                var range = document.createRange();
+                                range.setStart(newLine[0].firstChild || newLine[0], 1);
+
+                                sel.removeAllRanges();
+                                sel.addRange(range);
                             }
 
                             if (e.keyCode === 8 || e.keyCode === 46) {
                                 editorInstance.addState(editZone.html());
                                 // for whatever reason, ff likes to create several ranges for table selection
                                 // which messes up their deletion
-                                var sel = window.getSelection();
                                 for (var i = 0; i < sel.rangeCount; i++) {
                                     var startContainer = sel.getRangeAt(i).startContainer;
                                     if (startContainer.nodeType === 1 && startContainer.nodeName === 'TD' || startContainer.nodeName === 'TR') {
