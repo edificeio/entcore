@@ -19,10 +19,15 @@
 
 package org.entcore.common.mongodb;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class MongoDbConf {
 
 	private String collection;
 	private String resourceIdLabel = "id";
+	private Set<String> searchTextFields = new HashSet<>();
 	private MongoDbConf() {}
 
 	private static class MongoDbConfHolder {
@@ -49,4 +54,15 @@ public class MongoDbConf {
 		this.resourceIdLabel = resourceIdLabel;
 	}
 
+	public Set<String> getSearchTextFields() {
+		return this.searchTextFields;
+	}
+
+	public void addSearchTextField(String field) {
+		this.searchTextFields.add(field);
+	}
+
+	public void addSearchTextFields(String... fields) {
+		this.searchTextFields.addAll(Arrays.asList(fields));
+	}
 }
