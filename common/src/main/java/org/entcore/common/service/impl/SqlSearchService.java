@@ -44,15 +44,17 @@ public final class SqlSearchService implements SearchService {
     private final String schema;
     private final String table;
     private final Boolean checkVisibility;
+    private final List<String> searchFields;
 
-    public SqlSearchService(String schema, String table, String shareTable) {
-        this(schema, table, shareTable, null, null, null);
+    public SqlSearchService(String schema, String table, String shareTable, List<String> searchFields) {
+        this(schema, table, shareTable, searchFields, null, null, null);
     }
 
-    public SqlSearchService(String schema, String table, String shareTable, String userTable, String displayNameField,
+    public SqlSearchService(String schema, String table, String shareTable, List<String> searchFields, String userTable, String displayNameField,
                             Boolean checkVisibility) {
         this.table = table;
         this.sql = Sql.getInstance();
+        this.searchFields = searchFields;
 
         if (schema != null && !schema.trim().isEmpty()) {
             this.resourceTable = schema + "." + table;
@@ -78,7 +80,7 @@ public final class SqlSearchService implements SearchService {
 
     @Override
     public void search(String userId, List<String> groupIds, List<String> returnFields, List<String> searchWords,
-                       List<String> searchFields, Integer page, Integer limit, Handler<Either<String, JsonArray>> handler) {
+                        Integer page, Integer limit, Handler<Either<String, JsonArray>> handler) {
         final int offset = page * limit;
 
         final String fields = displayNameField + ", " + resourceTable + "." + Joiner.on(", " + resourceTable + ".").join(returnFields);
@@ -93,7 +95,7 @@ public final class SqlSearchService implements SearchService {
         " OR owner = ?" + (checkVisibility ? " OR visibility IN (?,?)" : "");
 
         final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
-        final String searchWhere = searchWherePrepared(searchFields, iLikeTemplate);
+        final String searchWhere = searchWherePrepared(this.searchFields, iLikeTemplate);
 
         final String query = "SELECT " + fields + " FROM " + resourceTable +
                 " LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
@@ -109,7 +111,7 @@ public final class SqlSearchService implements SearchService {
         }
 
         final List<String> valuesWildcard = searchValuesWildcard(searchWords);
-        for (int i=0;i<searchFields.size();i++) {
+        for (int i=0;i<this.searchFields.size();i++) {
             for (final String value : valuesWildcard) {
                 values.addString(value);
             }

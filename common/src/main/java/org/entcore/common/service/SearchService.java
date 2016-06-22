@@ -30,5 +30,5 @@ import java.util.List;
  */
 public interface SearchService {
     void search(String userId, List<String> groupIds, List<String> returnFields, List<String> searchWords,
-                List<String> searchFields, Integer page, Integer limit, Handler<Either<String, JsonArray>> handler);
+                Integer page, Integer limit, Handler<Either<String, JsonArray>> handler);
 }

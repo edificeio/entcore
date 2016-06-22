@@ -25,13 +25,18 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +50,9 @@ public class MongoDbCrudService implements CrudService {
 	protected final String collection;
 	protected final JsonObject defaultRetrieveProjection;
 	protected final JsonObject defaultListProjection;
+	protected final MongoDbConf mongoDbConf;
+	private final String plainSuffixField = "Plain";
+	private static final Logger log = LoggerFactory.getLogger(MongoDbCrudService.class);
 
 	public MongoDbCrudService(String collection) {
 		this(collection, null, null);
@@ -56,6 +64,7 @@ public class MongoDbCrudService implements CrudService {
 		this.defaultRetrieveProjection = defaultRetrieveProjection;
 		this.defaultListProjection = defaultListProjection;
 		this.mongo = MongoDb.getInstance();
+		this.mongoDbConf = MongoDbConf.getInstance();
 	}
 
 	@Override
@@ -65,6 +74,7 @@ public class MongoDbCrudService implements CrudService {
 				.putString("userId", user.getUserId())
 				.putString("displayName", user.getUsername())
 		).putObject("created", now).putObject("modified", now);
+		addPlainField(data);
 		mongo.save(collection, data, validActionResultHandler(handler));
 	}
 
@@ -93,6 +103,7 @@ public class MongoDbCrudService implements CrudService {
 	@Override
 	public void update(String id, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		QueryBuilder query = QueryBuilder.start("_id").is(id);
+		addPlainField(data);
 		MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 		for (String attr: data.getFieldNames()) {
 			modifier.set(attr, data.getValue(attr));
@@ -176,6 +187,43 @@ public class MongoDbCrudService implements CrudService {
 				handler.handle(res != null && "ok".equals(res.getString("status")) && 1 == res.getInteger("count"));
 			}
 		});
+	}
+
+	private void addPlainField(JsonObject data) {
+		if (!this.mongoDbConf.getSearchTextFields().isEmpty()) {
+			for (final String field : this.mongoDbConf.getSearchTextFields()) {
+				final List<String> decomposition = StringUtils.split(field, "\\.");
+				final String collection = decomposition.get(0);
+				if (this.collection.equals(collection)) {
+					if (decomposition.size() == 2) {
+						//not an object or array
+						final String label = decomposition.get(1);
+						if (data.containsField(label)) {
+							data.putString(label + plainSuffixField, StringUtils.stripHtmlTag(data.getString(label)));
+						}
+					} else if (decomposition.size() == 3) {
+						final String label = decomposition.get(1);
+						final String deepLabel = decomposition.get(2);
+						final JsonElement element = data.getValue(label);
+						if (element.isArray()) {
+							//not processed yet
+							log.error("the plain duplication d'ont support Json Array");
+						} else if (element.isObject()) {
+							final JsonObject jo = element.asObject();
+							if (jo.containsField(deepLabel)) {
+								jo.putString(deepLabel + plainSuffixField,
+										StringUtils.stripHtmlTag(jo.getString(deepLabel)));
+							}
+						}
+					} else {
+						//object too complex : not treaty
+						log.error("the plain duplication only works for a string field or top-level field of an object : collection.field | collection.object.field");
+					}
+				} else {
+					break;
+				}
+			}
+		}
 	}
 
 }
