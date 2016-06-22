@@ -2825,18 +2825,28 @@ window.RTE = (function () {
                             var sel = window.getSelection();
                             if (sel.rangeCount > 0) {
                                 var range = sel.getRangeAt(0);
-                                if (range.startContainer.nodeType !== 1 && range.startContainer.parentNode !== null) {
+                                if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {
                                     var currentTextNode = range.startContainer;
+                                    var initialOffset = range.startOffset;
+                                    if (initialOffset === currentTextNode.textContent.length) {
+                                        initialOffset = -1;
+                                    }
                                     if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;')) {
                                         var node = range.startContainer.parentNode;
-                                        node.innerHTML = node.innerHTML.substring(6);
+                                        
                                         setTimeout(function () {
+                                            node.innerHTML = node.innerHTML.substring(6);
+                                            setTimeout(function () {
+                                                var range = document.createRange();
+                                                if (initialOffset === -1) {
+                                                    initialOffset = (node.firstChild || node).textContent.length;
+                                                }
+                                                range.setStart((node.firstChild || node), initialOffset);
+                                                sel.removeAllRanges();
+                                                sel.addRange(range);
+                                            }, 10)
                                             
-                                            var range = document.createRange();
-                                            range.setStart(node.firstChild, node.firstChild.textContent.length);
-                                            sel.removeAllRanges();
-                                            sel.addRange(range);
-                                        }, 20);
+                                        }, 10);
                                         
                                     }
                                 }
@@ -3036,7 +3046,7 @@ window.RTE = (function () {
                                             el = $('<audio draggable native controls></audio>');
                                             el.attr('src', '/workspace/document/' + doc._id)
                                         }
-                                        else if (name.indexOf('.png') !== -1 || name.indexOf('.jpg') !== -1 || name.indexOf('.jpeg') !== -1) {
+                                        else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
                                             el = $('<img draggable native />');
                                             el.attr('src', '/workspace/document/' + doc._id)
                                         }
