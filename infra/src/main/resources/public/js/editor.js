@@ -2825,7 +2825,7 @@ window.RTE = (function () {
                             var sel = window.getSelection();
                             if (sel.rangeCount > 0) {
                                 var range = sel.getRangeAt(0);
-                                if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {
+                                if (range.startContainer.nodeType !== 1 && e.which > 64 && e.which < 91 && range.startContainer.parentNode !== null) {     
                                     var currentTextNode = range.startContainer;
                                     var initialOffset = range.startOffset;
                                     if (initialOffset === currentTextNode.textContent.length) {
@@ -2839,7 +2839,7 @@ window.RTE = (function () {
                                             setTimeout(function () {
                                                 var range = document.createRange();
                                                 if (initialOffset === -1) {
-                                                    initialOffset = (node.firstChild || node).textContent.length;
+                                                    initialOffset = (node.firstChild || node).textContent.length
                                                 }
                                                 range.setStart((node.firstChild || node), initialOffset);
                                                 sel.removeAllRanges();
@@ -2867,13 +2867,10 @@ window.RTE = (function () {
                                     parentContainer.appendChild(newLine[0]);
                                 }
                                 else {
-                                    if (parentContainer.nodeType !== 1) {
+                                    if (parentContainer.nodeType !== 1 && range.startOffset !== parentContainer.textContent.length) {
                                         parentContainer = parentContainer.parentNode;
-                                        if (range.startOffset !== parentContainer.textContent.length) {
-                                            newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
-                                            parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
-                                        }
-                                        
+                                        newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                        parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
                                     }
 
                                     if (parentContainer.nextSibling) {
