@@ -20,6 +20,7 @@
 package org.entcore.workspace;
 
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
@@ -50,7 +51,9 @@ public class Workspace extends BaseServer {
 						config.getBoolean("share-old-groups-to-users", false)));
 
 		if (config.getBoolean("searching-event", true)) {
-			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
+			//Denormalizing : don't use the owner object
+			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION,
+					new MongoDbSearchService(DocumentDao.DOCUMENTS_COLLECTION, "owner")));
 		}
 
 		service.setQuotaService(quotaService);
