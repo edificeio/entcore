@@ -208,7 +208,18 @@ public final class StringUtils {
         strUnaccent = strUnaccent.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
         return strUnaccent;
     }
-    
+
+    /**
+     * Remove all html tag in the string provided.
+     *
+     * @param str the string
+     *
+     * @return a string without html tag.
+     */
+    public static String stripHtmlTag(String str) {
+        return trimToBlank(str).replaceAll("<[^>]*>", "");
+    }
+
     /**
      * Indicates if the string 1 starts with string2.
      * 
