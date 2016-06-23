@@ -102,8 +102,11 @@ function Conversation($scope, $timeout, date, notify, route, model){
 
 	$scope.clearSearch = function(){
 		$scope.users.found = [];
-		$scope.users.foundCC = [];
 		$scope.users.search = '';
+	};
+
+    $scope.clearCCSearch = function(){
+		$scope.users.foundCC = [];
 		$scope.users.searchCC = '';
 	};
 
