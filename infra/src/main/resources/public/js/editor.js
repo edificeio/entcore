@@ -1,6 +1,15 @@
 /// <reference path="./jquery-1.10.2.min.js" />
 /// <reference path="./ui.js" />
 
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (str) {
+        if (this.indexOf(str) !== -1 && this.split(str)[0] === '') {
+            return true;
+        }
+        return false;
+    };
+}
+
 window.RTE = (function () {
     function rgb(r, g, b) {
         return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
@@ -2877,7 +2886,7 @@ window.RTE = (function () {
                                         parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
                                     }
                                     else {
-                                        parentContainer.parentElement.appendChild(newLine[0]);
+                                        parentContainer.parentNode.appendChild(newLine[0]);
                                     }
                                 }
 
