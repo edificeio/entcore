@@ -456,12 +456,15 @@ window.RTE = (function () {
                     )
                 ) {
 				    var element = that.selectedElements[0];
-				    if (element.nodeType !== 1) {
+				    if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
 				        var el = document.createElement('span');
 				        el.textContent = element.textContent;
 				        element.parentNode.insertBefore(el, element.nextSibling);
 				        element.remove();
 				        element = el;
+				    }
+				    else {
+				        element = element.parentNode;
 				    }
 				    $(element).css(css);
 				    that.selectNode(element);
@@ -2876,8 +2879,10 @@ window.RTE = (function () {
                                     parentContainer.appendChild(newLine[0]);
                                 }
                                 else {
-                                    if (parentContainer.nodeType !== 1 && range.startOffset !== parentContainer.textContent.length) {
+                                    if (parentContainer.nodeType !== 1) {
                                         parentContainer = parentContainer.parentNode;
+                                    }
+                                    if (range.startOffset !== parentContainer.textContent.length) {
                                         newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
                                         parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
                                     }
