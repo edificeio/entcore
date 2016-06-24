@@ -26,7 +26,7 @@
 				<i class="folder-large" ng-click="openFolder(folder)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
 			</a>
 
-			<check-tool ng-model="folder.selected"></check-tool>
+			<!-- <check-tool ng-model="folder.selected"></check-tool> -->
 
 			<i ng-if="folder.shared.length > 0" class="shared inline"></i>
 
@@ -90,7 +90,7 @@
 				</div>
 			</a>
 
-			<check-tool ng-model="document.selected"></check-tool>
+			<!-- <check-tool ng-model="document.selected"></check-tool> -->
 
 			<i ng-if="document.shared.length > 0" class="shared inline"></i>
 
