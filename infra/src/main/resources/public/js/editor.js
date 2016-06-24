@@ -1784,7 +1784,7 @@ window.RTE = (function () {
 						scope.updateContent = function(){
                             if(editNode){
                                 $(editNode).attr('formula', scope.display.formula);
-                                angular.element(editNode).scope().updateFormula(scope.display.formula);
+                                angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
                             }
                             else{
                                 instance.selection.replaceHTML(instance.compile(
