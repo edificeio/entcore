@@ -460,7 +460,7 @@ window.RTE = (function () {
 				        var el = document.createElement('span');
 				        el.textContent = element.textContent;
 				        element.parentNode.insertBefore(el, element.nextSibling);
-				        element.remove();
+				        $(element).remove();
 				        element = el;
 				    }
 				    else {
