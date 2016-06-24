@@ -4487,25 +4487,21 @@ module.directive('floatingNavigation', function(){
 				initialPosition = element.offset();
 				element.height($(window).height() - parseInt(element.css('margin-bottom')));
 				scope.stepsLength = parseInt(element.find('.content')[0].scrollHeight / element.height());
-			}, 500);
+			}, 800);
 			element.find('.arrow.next').on('click', function(){
 				scope.step ++;
 				scope.$apply();
 				element.find('.content').animate({
 					scrollTop: element.height() * scope.step
-				}, 250);
+				}, 450);
 			});
 			element.find('.arrow.previous').on('click', function(){
 				scope.step --;
 				scope.$apply();
 				element.find('.content').animate({
 					scrollTop: element.height() * scope.step
-				}, 250);
+				}, 450);
 			});
-			// if(attributes.title){
-			// 	var title = lang.translate(attributes.title);
-			// 	element.prepend('<h2>'+title+'</h2>')
-			// }
 		}
 	}
 });
