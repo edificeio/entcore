@@ -2474,7 +2474,8 @@ window.RTE = (function () {
 			            '<code class="language-html"></code>',
 			        link: function(scope, element, attributes) {
 			            element.find('.close-focus').on('click', function(){
-                            element.removeClass('focus');
+			                element.removeClass('focus');
+			                element.parent().data('lock', false);
                             element.trigger('editor-blur');
                             $('body').css({ overflow: 'auto' });
                         });
@@ -2779,10 +2780,10 @@ window.RTE = (function () {
 
                             element.trigger('editor-focus');
                             element.addClass('focus');
+                            element.parent().data('lock', true);
                             if ($(window).width() < ui.breakpoints.tablette) {
                                 $('body').css({ overflow: 'hidden' });
                             }
-                            element.data('lock', true);
                         });
 
                         $('body').on('mousedown', function(e){
@@ -2796,7 +2797,7 @@ window.RTE = (function () {
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
                                 $('body').css({ overflow: 'auto' });
-                                element.data('lock', false);
+                                element.parent().data('lock', false);
 
                                 if(attributes.inline !== undefined){
                                     element.css({
