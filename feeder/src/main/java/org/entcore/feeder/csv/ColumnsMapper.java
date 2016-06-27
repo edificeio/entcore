@@ -105,7 +105,7 @@ public class ColumnsMapper {
 
 	String columnsNameMapping(String columnName) {
 		final String key = Validator.removeAccents(columnName.trim().toLowerCase())
-				.replaceAll("\\s+", "").replaceFirst(CSVUtil.UTF8_BOM, "");
+				.replaceAll("\\s+", "").replaceAll("\\*", "").replaceFirst(CSVUtil.UTF8_BOM, "");
 		final Object attr = namesMapping.get(key);
 		return attr != null ? attr.toString() : key;
 	}
