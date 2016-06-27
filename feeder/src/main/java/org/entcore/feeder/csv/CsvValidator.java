@@ -23,7 +23,6 @@ import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
-import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.utils.Joiner;
 import org.vertx.java.core.AsyncResult;
@@ -106,7 +105,7 @@ public class CsvValidator extends Report implements ImportValidator {
 
 												@Override
 												public void handle(String charset) {
-													if (ManualFeeder.profiles.containsKey(profile)) {
+													if (profiles.containsKey(profile)) {
 														log.info("Charset : " + charset);
 														checkFile(file, profile, charset, new Handler<JsonObject>() {
 															@Override
@@ -419,7 +418,7 @@ public class CsvValidator extends Report implements ImportValidator {
 								}
 								break;
 						}
-						String error = ManualFeeder.profiles.get(profile).validate(user, acceptLanguage);
+						String error = validator.validate(user, acceptLanguage);
 						if (error != null) {
 							log.warn(error);
 							addError(profile, error);
