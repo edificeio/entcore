@@ -24,8 +24,8 @@
 			<tr ng-repeat="folder in folders.trash.userFolders.all | orderBy: 'name'"
 			    ng-class="{ checked: folder.selected }">
 				<td class="icon"><input type="checkbox" ng-model="folder.selected" /></td>
-				<td class="user"><i class="folder"></i></td>
-				<td class="content" colspan="4">[[folder.name]]</td>
+				<td class="user" colspan="2"><i class="folder"></i></td>
+				<td class="content" colspan="3">[[folder.name]]</td>
 			</tr>
 			<tr ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse" ng-class="{ checked: mail.selected }">
 				<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
