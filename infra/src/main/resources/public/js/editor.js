@@ -2883,7 +2883,7 @@ window.RTE = (function () {
                                     if (parentContainer.nodeType !== 1) {
                                         parentContainer = parentContainer.parentNode;
                                     }
-                                    if (range.startOffset !== parentContainer.textContent.length) {
+                                    if (range.startOffset !== range.startContainer.textContent.length) {
                                         newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
                                         parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
                                     }
