@@ -182,6 +182,10 @@ public class Be1dValidator extends Report implements ImportValidator {
 				final JsonArray classes = new JsonArray();
 				final JsonArray classesNames = new JsonArray();
 				props.putArray("classes", classes);
+				if (values.length < i) {
+					addErrorByFile(fileNames[1], "missing.columns", Integer.toString(rowIdx + 2));
+					return;
+				}
 				String[][] cs = new String[values.length - i][2];
 				for (int j = i; j < values.length; j++) {
 					String c = values[j].trim();
@@ -358,21 +362,27 @@ public class Be1dValidator extends Report implements ImportValidator {
 			public void procRow(int rowIdx, String... values) {
 				int i = 0;
 				JsonObject props = new JsonObject();
-				while (i < values.length && !"#break#".equals(header[i])) {
-					if ("birthDate".equals(header[i]) && values[i] != null) {
-						Matcher m;
-						if (values[i] != null &&
-								(m = frenchDatePatter.matcher(values[i])).find()) {
-							props.putString(header[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
-						} else {
-							props.putString(header[i], values[i].trim());
+				try {
+					while (i < values.length && !"#break#".equals(header[i])) {
+						if ("birthDate".equals(header[i]) && values[i] != null) {
+							Matcher m;
+							if (values[i] != null &&
+									(m = frenchDatePatter.matcher(values[i])).find()) {
+								props.putString(header[i], m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+							} else {
+								props.putString(header[i], values[i].trim());
+							}
+						} else if (!"#skip#".equals(header[i])) {
+							if (values[i] != null && !values[i].trim().isEmpty()) {
+								props.putString(header[i], values[i].trim());
+							}
 						}
-					} else if (!"#skip#".equals(header[i])) {
-						if (values[i] != null && !values[i].trim().isEmpty()) {
-							props.putString(header[i], values[i].trim());
-						}
+						i++;
 					}
-					i++;
+				} catch (ArrayIndexOutOfBoundsException ae) {
+					log.error("unknown.error.line" + (rowIdx + 2) + " : " + Joiner.on("; ").join(values), ae);
+					addErrorByFile(fileNames[0], "unknown.error.line", Integer.toString(rowIdx + 2));
+					return;
 				}
 				props.putArray("structures", new JsonArray().add(structure));
 				final JsonArray classesNames = new JsonArray();

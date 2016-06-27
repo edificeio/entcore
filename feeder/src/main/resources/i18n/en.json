@@ -40,5 +40,6 @@
   "birthDate" : "date de naissance",
   "lastName" : "nom",
   "firstName" : "prénom",
-  "error.find.externalIds" : "Erreur lors de la recherche des utilisateurs existants."
+  "error.find.externalIds" : "Erreur lors de la recherche des utilisateurs existants.",
+  "missing.columns" : "Ligne {0} : colonne manquante."
 }
