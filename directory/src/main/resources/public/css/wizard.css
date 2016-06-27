@@ -14,3 +14,7 @@ fieldset {
 legend {
 	font-weight: bold;
 }
+
+th {
+	text-align: center;
+}
