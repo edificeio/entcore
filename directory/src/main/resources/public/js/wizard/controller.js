@@ -136,6 +136,12 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		return model.me.functions['SUPER_ADMIN'];
 	};
 
+	$scope.clearUserFilter = function(filter) {
+		if (!$scope.userFilter[filter]) {
+			delete $scope.userFilter[filter];
+		}
+	};
+
 	$scope.exportCSV = function(wizard) {
 		var csvHeader = "";
 		var bom = "\ufeff";

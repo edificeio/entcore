@@ -32,14 +32,23 @@
 	<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
 		<label class="two cell"><span tooltip="wizard.tooltip.type"><i18n>wizard.filter</i18n></span></label>
 		<select class="three cell margin-top-5 row-item"
+				ng-change="clearUserFilter('classesStr')"
 				ng-model="userFilter.classesStr"
-				ng-options="c for c in classes"></select>
+				ng-options="c for c in classes">
+			<option value="">[[lang.translate("wizard.class")]]</option>
+		</select>
 		<select class="two cell margin-top-5 row-item"
-		ng-model="userFilter.translatedProfile"
-		ng-options="p for p in profiles"></select>
+				ng-change="clearUserFilter('translatedProfile')"
+				ng-model="userFilter.translatedProfile"
+				ng-options="p for p in profiles">
+			<option value="">[[lang.translate("wizard.profile")]]</option>
+		</select>
 		<select class="two cell margin-top-5 row-item"
+				ng-change="clearUserFilter('state')"
 				ng-model="userFilter.state"
-				ng-options="s for s in states"></select>
+				ng-options="s for s in states">
+			<option value="">[[lang.translate("wizard.action")]]</option>
+		</select>
 	</div>
 
 	<table class="search-table">

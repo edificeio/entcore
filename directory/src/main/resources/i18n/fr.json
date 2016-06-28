@@ -499,5 +499,8 @@
     "wizard.tooltip.file.personnel" : "",
     "wizard.tooltip.file.Guest" : "",
     "wizard.tooltip.predelete" : "",
-    "wizard.tooltip.transition" : ""
+    "wizard.tooltip.transition" : "",
+    "wizard.class" : "Classe",
+    "wizard.profile" : "Profil",
+    "wizard.action" : "Action"
 }
