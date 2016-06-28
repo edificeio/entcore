@@ -167,10 +167,10 @@ public class MappingFinder {
 							line.add(0, eId);
 							if ("CSVExtraction-responsables.csv".equals(filename)) {
 								String q =
-										"MATCH (s:Structure {externalId : {externalId}})<-[:BELONGS]-(c:Class)" +
+										"MATCH (s:Structure {externalId : {externalId}})" +
 												"<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 												"WHERE lower(u.firstName) = {firstName} AND HEAD(u.profiles) = 'Student' AND " +
-												"lower(u.lastName) = {lastName} AND lower(c.name) = {className} " +
+												"lower(u.lastName) = {lastName} " +
 												"RETURN u.externalId as externalId";
 								JsonObject par = new JsonObject().putString("externalId", structureExternalId);
 								StatementsBuilder statementsBuilder = new StatementsBuilder();
