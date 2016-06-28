@@ -28,7 +28,8 @@ function Appli(data){
 
 Preference.prototype.getinfo = function(callback){
     http().get('/userbook/preference/timeline').done(function(data){
-        this.preference = JSON.parse(data.preference)
+        this.preference = JSON.parse(data.preference);
+        this.trigger('change');
         if(typeof callback === 'function')
             callback()
     }.bind(this))
