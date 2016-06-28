@@ -2844,7 +2844,7 @@ window.RTE = (function () {
                                     if (initialOffset === currentTextNode.textContent.length) {
                                         initialOffset = -1;
                                     }
-                                    if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;')) {
+                                    if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;') && range.startOffset === 1) {
                                         var node = range.startContainer.parentNode;
                                         
                                         setTimeout(function () {
@@ -2957,7 +2957,7 @@ window.RTE = (function () {
                                         nextTag = newLine.children('td')[0];
                                         $(currentTag).closest('table').append(newLine);
                                     }
-                                    editorInstance.selection.moveCaret(nextTag);
+                                    editorInstance.selection.moveCaret(nextTag, nextTag.firstChild.textContent.length);
                                 }
                                 else if (currentTag.tagName === 'LI') {
                                     document.execCommand('indent');
