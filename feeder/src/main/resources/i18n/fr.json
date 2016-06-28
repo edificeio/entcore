@@ -43,5 +43,6 @@
   "lastName" : "nom",
   "firstName" : "prénom",
   "error.find.externalIds" : "Erreur lors de la recherche des utilisateurs existants.",
-  "missing.columns" : "Ligne {0} : colonne manquante."
+  "missing.columns" : "Ligne {0} : colonne manquante.",
+  "unknown.student.line" : "Ligne {0} : Parent sans élève reconnu."
 }

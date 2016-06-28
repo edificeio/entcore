@@ -319,6 +319,11 @@ public class Be1dValidator extends Report implements ImportValidator {
 									values[i].trim() + " " + values[i + 1].trim() + " " + values[i + 2]);
 						}
 					}
+					if (classesNames.size() < 1) {
+						log.info(Joiner.on("; ").join(values));
+						addErrorByFile(fileNames[2], "unknown.student.line", Integer.toString(rowIdx + 2));
+						return;
+					}
 				} catch (ArrayIndexOutOfBoundsException ae) {
 					log.error("unknown.error.line" + (rowIdx + 2) + " : " + Joiner.on("; ").join(values), ae);
 					addErrorByFile(fileNames[2], "unknown.error.line", Integer.toString(rowIdx + 2));
