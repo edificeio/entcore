@@ -98,9 +98,21 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		$scope.userOrder = $scope.userOrder === order ? '-' + order : order;
 	};
 
-	$scope.returnStep1 = function() {
+	$scope.returnStep1 = function(wizard) {
+		if (wizard && wizard.files) {
+			for (var attr in wizard.files) {
+				if (wizard.files[attr].length === 1) {
+					if (wizard.type === 'BE1D') {
+						delete wizard[('CSVExtraction-' + attr + '.csv')];
+					} else {
+						delete wizard[attr];
+					}
+				}
+			}
+			delete wizard.files;
+			delete wizard.check;
+		}
 		template.open('wizard-container', 'wizard-step1');
-		//$scope.$apply();
 	};
 
 	$scope.launchImport = function(wizard) {

@@ -25,7 +25,7 @@
 
 	<div class="row">
 		<a href="" ng-click="exportCSV(wizard)"><i18n>wizard.export.validate</i18n></a>
-		<button type="button" class="right-magnet" ng-click="returnStep1()" ng-disabled="disabledButtons.back" style="margin-left: 10px"><i18n>wizard.return</i18n></button>
+		<button type="button" class="right-magnet" ng-click="returnStep1(wizard)" ng-disabled="disabledButtons.back" style="margin-left: 10px"><i18n>wizard.return</i18n></button>
 		<button type="button" class="right-magnet" ng-if="wizard.valid" ng-click="launchImport(wizard)" ng-disabled="disabledButtons.import"><i18n>wizard.launch.import</i18n></button>
 		<i class="spinner horizontal-spacing-twice right-magnet" ng-if="disabledButtons.import"></i>
 	</div>
