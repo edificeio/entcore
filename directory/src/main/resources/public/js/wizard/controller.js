@@ -71,9 +71,12 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 				for (var attr in data) {
 					for (var i = 0; i < data[attr].length; i++) {
 						$scope.validatedUsers.push(data[attr][i]);
-						if (!uniqueClasses[data[attr][i]['classesStr']]) {
-							uniqueClasses[data[attr][i]['classesStr']] = true;
-							$scope.classes.push(data[attr][i]['classesStr']);
+						var classesSplit = data[attr][i]['classesStr'].split(', ');
+						for (var j = 0; j < classesSplit.length; j++) {
+							if (!uniqueClasses[classesSplit[j]]) {
+								uniqueClasses[classesSplit[j]] = true;
+								$scope.classes.push(classesSplit[j]);
+							}
 						}
 						if (!uniqueStates[data[attr][i]['state']]) {
 							uniqueStates[data[attr][i]['state']] = true;
