@@ -25,7 +25,7 @@
 	<fieldset>
 		<legend><i18n>wizard.structure.subtitle</i18n></legend>
 		<div class="row">
-			<label class="six cell"><span tooltip="wizard.tooltip.structure"><i18n>wizard.structure</i18n></span></label>
+			<label class="six cell"><span><i18n>wizard.structure</i18n></span></label>
 			<select class="three cell margin-top-5 row-item"
 					ng-model="wizard.structure"
 					ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"></select>
@@ -45,7 +45,7 @@
 	<fieldset ng-if="enableListFeeders()">
 		<legend><i18n>wizard.type.subtitle</i18n></legend>
 		<div class="row">
-			<label class="six cell"><span tooltip="wizard.tooltip.type"><i18n>wizard.type</i18n></span></label>
+			<label class="six cell"><span><i18n>wizard.type</i18n></span></label>
 			<select class="three cell" style="margin-bottom: 5px;" ng-model="wizard.type" required >
 				<option value="BE1D">[[lang.translate("wizard.type.BE1D")]]</option>
 				<option value="CSV">[[lang.translate("wizard.type.CSV")]]</option>
@@ -71,37 +71,37 @@
 		</div>
 		<div ng-if="wizard.type === 'CSV'">
 			<div class="row">
-				<label class="six cell"><input type="checkbox" ng-model="wizard.check.teacher" /><span tooltip="wizard.tooltip.file.teacher"><i18n>wizard.file.teacher</i18n></span></label>
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.teacher" /><span><i18n>wizard.file.teacher</i18n></span></label>
 				<input name="Teacher" type="file" ng-if="wizard.check.teacher" files-input-change ng-model="wizard.files.Teacher"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><input type="checkbox" ng-model="wizard.check.student" /><span tooltip="wizard.tooltip.file.student"><i18n>wizard.file.student</i18n></span></label>
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.student" /><span><i18n>wizard.file.student</i18n></span></label>
 				<input name="Student" type="file" ng-if="wizard.check.student" files-input-change ng-model="wizard.files.Student"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><input type="checkbox" ng-model="wizard.check.relative" /><span tooltip="wizard.tooltip.file.relative"><i18n>wizard.file.relative</i18n></span></label>
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.relative" /><span><i18n>wizard.file.relative</i18n></span></label>
 				<input name="Relative" type="file" ng-if="wizard.check.relative" files-input-change ng-model="wizard.files.Relative"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><input type="checkbox" ng-model="wizard.check.personnel" /><span tooltip="wizard.tooltip.file.personnel"><i18n>wizard.file.personnel</i18n></span></label>
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.personnel" /><span><i18n>wizard.file.personnel</i18n></span></label>
 				<input name="Personnel" type="file" ng-if="wizard.check.personnel" files-input-change ng-model="wizard.files.Personnel"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><input type="checkbox" ng-model="wizard.check.guest" /><span tooltip="wizard.tooltip.file.Guest"><i18n>wizard.file.guest</i18n></span></label>
+				<label class="six cell"><input type="checkbox" ng-model="wizard.check.guest" /><span><i18n>wizard.file.guest</i18n></span></label>
 				<input name="Guest" type="file" ng-if="wizard.check.guest" files-input-change ng-model="wizard.files.Guest"/>
 			</div>
 		</div>
 		<div ng-if="wizard.type === 'BE1D'">
 			<div class="row">
-				<label class="six cell"><span tooltip="wizard.tooltip.file.teacher"><i18n>wizard.file.teacher</i18n></span></label>
+				<label class="six cell"><span><i18n>wizard.file.teacher</i18n></span></label>
 				<input name="CSVExtraction-enseignants.csv" type="file" files-input-change ng-model="wizard.files.enseignants"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><span tooltip="wizard.tooltip.file.student"><i18n>wizard.file.student</i18n></span></label>
+				<label class="six cell"><span><i18n>wizard.file.student</i18n></span></label>
 				<input name="CSVExtraction-eleves.csv" type="file" files-input-change ng-model="wizard.files.eleves"/>
 			</div>
 			<div class="row">
-				<label class="six cell"><span tooltip="wizard.tooltip.file.relative"><i18n>wizard.file.relative</i18n></span></label>
+				<label class="six cell"><span><i18n>wizard.file.relative</i18n></span></label>
 				<input name="CSVExtraction-responsables.csv" type="file" files-input-change ng-model="wizard.files.responsables"/>
 			</div>
 		</div>
