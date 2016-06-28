@@ -256,8 +256,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 									String filename = j.getString("profile"); // TODO manage BE1D
 									r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
 											.putString("translatedProfile", r.translate(j.getString("profile"))));
-									r.getResult().putArray("usersExternalIds", externalIds);
 								}
+								r.getResult().putArray("usersExternalIds", externalIds);
 							} else {
 								r.addError("error.find.preDelete");
 							}
@@ -380,10 +380,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					doImport(message, feed, new Handler<Report>() {
 						@Override
 						public void handle(final Report importReport) {
-							JsonArray existingUsers = report.getResult().getArray("usersExternalIds");
+							if (importReport == null) {
+								sendError(message, "import.error");
+								return;
+							}
+							JsonArray existingUsers = importReport.getResult().getArray("usersExternalIds");
 							if (preDelete && structureExternalId != null && existingUsers != null &&
-									existingUsers.size() > 0 &&
-									importReport != null && !importReport.containsErrors()) {
+									existingUsers.size() > 0 && !importReport.containsErrors()) {
 								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
 										structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
 									@Override
@@ -394,10 +397,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
 									}
 								});
-							} else if (importReport != null) {
-								sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
 							} else {
-								sendError(message, "import.error");
+								sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
 							}
 						}
 					});
@@ -460,6 +461,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										report.addError("import.error");
 									}
 								}
+								report.getResult().putArray("usersExternalIds",
+										new JsonArray(importer.getUserImportedExternalId().toArray()));
 								h.handle(report);
 								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 								importer.clear();

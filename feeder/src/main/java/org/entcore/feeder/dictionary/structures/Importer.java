@@ -946,4 +946,8 @@ public class Importer {
 		return report;
 	}
 
+	public Set<String> getUserImportedExternalId() {
+		return userImportedExternalId;
+	}
+
 }
