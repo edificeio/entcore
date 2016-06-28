@@ -60,8 +60,14 @@
 		<div class="row">
 			<a ng-if="!details.filesFormat" ng-click="details.filesFormat = true" href=""><i18n>wizard.files.more.infos</i18n></a><a ng-if="details.filesFormat" ng-click="details.filesFormat = false" href=""><i18n>wizard.files.less.infos</i18n></a>
 		</div>
-		<div class="row" ng-if="details.filesFormat">
-			<i18n>wizard.files.details</i18n>
+		<div class="row" ng-if="details.filesFormat && !wizard.type">
+			<i18n>wizard.files.details.option1</i18n>
+		</div>
+		<div class="row" ng-if="details.filesFormat && wizard.type === 'BE1D'">
+			<i18n>wizard.files.details.option2</i18n>
+		</div>
+		<div class="row" ng-if="details.filesFormat && wizard.type === 'CSV'">
+			<i18n>wizard.files.details.option3</i18n>
 		</div>
 		<div ng-if="wizard.type === 'CSV'">
 			<div class="row">
