@@ -71,11 +71,13 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 				for (var attr in data) {
 					for (var i = 0; i < data[attr].length; i++) {
 						$scope.validatedUsers.push(data[attr][i]);
-						var classesSplit = data[attr][i]['classesStr'].split(', ');
-						for (var j = 0; j < classesSplit.length; j++) {
-							if (!uniqueClasses[classesSplit[j]]) {
-								uniqueClasses[classesSplit[j]] = true;
-								$scope.classes.push(classesSplit[j]);
+						if (data[attr][i]['classesStr']) {
+							var classesSplit = data[attr][i]['classesStr'].split(', ');
+							for (var j = 0; j < classesSplit.length; j++) {
+								if (!uniqueClasses[classesSplit[j]]) {
+									uniqueClasses[classesSplit[j]] = true;
+									$scope.classes.push(classesSplit[j]);
+								}
 							}
 						}
 						if (!uniqueStates[data[attr][i]['state']]) {
