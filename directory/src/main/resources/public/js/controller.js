@@ -328,10 +328,16 @@ function ClassAdminController($scope, date, notify){
 
 	$scope.switchAll = function(){
 		if($scope.display.selectAll){
-			model.classAdmin.users.selectAll();
+			model.classAdmin.users.forEach(function(user){
+			   user.selected = user.type === $scope.display.show;
+		   });
 		}
-		else{
-			model.classAdmin.users.deselectAll();
+		else {
+			model.classAdmin.users.forEach(function(user){
+				if(user.type === $scope.display.show){
+					user.selected = false;
+				}
+		   });
 		}
 	};
 
