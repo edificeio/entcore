@@ -6,6 +6,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,6 +18,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -59,6 +61,7 @@ public class TimelineController extends BaseController {
 	private ConcurrentMap<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 	private Map<String, String> registeredNotifications;
+	private Set<String> antiFlood;
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
 	@SuppressWarnings("unused")
@@ -86,6 +89,9 @@ public class TimelineController extends BaseController {
 					.getMap("notificationsMap");
 		}
 		mailer = new TimelineMailer(vertx, eb, container);
+
+		antiFlood = new TTLSet<>(container.config().getLong("antiFloodDelay", 3000l),
+				vertx, container.config().getLong("antiFloodClear", 3600 * 1000l));
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -413,11 +419,17 @@ public class TimelineController extends BaseController {
 
 		switch (action) {
 		case "add":
-			store.add(json, new Handler<JsonObject>() {
-				public void handle(JsonObject result) {
-					handler.handle(result);
-				}
-			});
+			final String sender = json.getString("sender");
+			if (sender == null || antiFlood.add(sender)) {
+				store.add(json, new Handler<JsonObject>() {
+					public void handle(JsonObject result) {
+						handler.handle(result);
+					}
+				});
+			} else {
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "flood"));
+			}
 			break;
 		case "get":
 			UserInfos u = new UserInfos();
