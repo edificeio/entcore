@@ -270,7 +270,7 @@ ui.extendSelector = {
                 $(e.target).one('touchleave touchend', function() {
                     $(e.target).trigger('longclick', position);
                 });
-            }, 200);
+            }, 400);
             $(e.target).one('touchleave touchend', function() {
                 clearTimeout(timer);
             });
@@ -332,7 +332,7 @@ ui.extendElement = {
 	            element.one('touchleave touchend', function () {
 	                element.trigger('longclick');
 	            });
-	        }, 500);
+	        }, 400);
 	        element.one('touchleave touchend', function() {
 	            clearTimeout(timer);
 	        });

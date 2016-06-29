@@ -4892,6 +4892,83 @@ module.directive('checkTool', function () {
 	}
 });
 
+
+module.directive('explorer', function () {
+	return {
+		restrict: 'E',
+		transclude: true,
+		scope: {
+				ngModel: '=',
+				ngClick: '&',
+				ngChange: '&',
+				onOpen: '&',
+		},
+		template:'<div class="explorer" ng-transclude></div>',
+		link: function (scope, element, attributes) {
+
+			function select(){
+				scope.ngModel = !scope.ngModel;
+				if (scope.ngModel) {
+					element.addClass('selected')
+				}else {
+					element.removeClass('selected')
+				}
+				if (scope.ngClick) {
+					scope.ngClick();
+				}
+				if (scope.ngChange) {
+					scope.ngChange();
+				}
+				scope.$apply();
+			}
+
+			$('body').on('click', function(e){
+				if(e.target.nodeName!=="EXPLORER" && $(e.target).parents('explorer').length === 0){
+					scope.ngModel = false;
+					element.removeClass('selected');
+					scope.$apply();
+				}
+			})
+
+			function setGest(apply){
+				if(ui.breakpoints.checkMaxWidth("tablette")){
+
+					element.off('click dblclick longclick')
+					ui.extendElement.touchEvents(element);
+
+					element.on('contextmenu', function(e){
+						event.preventDefault()
+					})
+
+					element.on('longclick', function(e, position){
+						select();
+					})
+					element.on('click', function(){
+						scope.ngModel = false;
+						scope.onOpen();
+					});
+
+				}else{
+					element.off('click dblclick longclick contextmenu')
+
+					element.on('click', function(){
+						select();
+					});
+					element.on('dblclick', function(){
+						scope.onOpen();
+						scope.ngModel = false;
+					})
+
+				}
+			}
+			setGest();
+			$(window).on('resize', function(){ setGest(true) });
+
+		}
+	}
+});
+
+
 $(document).ready(function(){
 	setTimeout(function(){
 		bootstrap(function(){
