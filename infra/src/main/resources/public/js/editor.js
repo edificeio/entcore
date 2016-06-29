@@ -2590,7 +2590,12 @@ window.RTE = (function () {
                                 var placeEditorToolbar = requestAnimationFrame(sticky);
                                 return;
                             }
+							
                             toolbarElement.addClass('sticky');
+							if(toolbarElement.css({ 'position': 'absolute' })){
+								toolbarElement.css({ 'position': 'absolute' });
+								element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
+							}
                             var topDistance = element.offset().top;
                             if (topDistance < window.scrollY) {
                                 topDistance = window.scrollY;
