@@ -1278,6 +1278,9 @@ window.RTE = (function () {
 
 						setTimeout(function() {
 							var importedFonts = loadImportedFonts();
+							importedFonts = _.uniq(importedFonts, function(item, key, a) { 
+								return item.fontFamily;
+							});
 							scope.fonts = scope.fonts.concat(importedFonts);
 							scope.font = _.find(scope.fonts, function (font) {
 							    return $('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1
