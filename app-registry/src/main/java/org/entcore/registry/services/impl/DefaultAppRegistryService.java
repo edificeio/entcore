@@ -30,6 +30,8 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,6 +44,7 @@ import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 public class DefaultAppRegistryService implements AppRegistryService {
 
 	private final Neo4j neo = Neo4j.getInstance();
+	private static final Logger log = LoggerFactory.getLogger(DefaultAppRegistryService.class);
 
 	@Override
 	public void listApplications(String structureId, Handler<Either<String, JsonArray>> handler) {
@@ -467,7 +470,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 								addressURL = new URL(address);
 							}
 						} catch (MalformedURLException e) {
-							addressURL = null;
+							log.error("Malformed address : " + address, e);
+							continue;
 						}
 						String pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 						patterns.add(pattern);
