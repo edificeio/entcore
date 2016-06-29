@@ -2589,6 +2589,10 @@ window.RTE = (function () {
 
                         var previousScroll = 0;
                         function sticky() {
+							if(element.parents('.editor-media').length > 0){
+								return;
+							}
+								
                             if (previousScroll === window.scrollY) {
                                 var placeEditorToolbar = requestAnimationFrame(sticky);
                                 return;
