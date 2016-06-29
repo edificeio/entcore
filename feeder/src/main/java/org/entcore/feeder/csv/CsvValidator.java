@@ -100,6 +100,7 @@ public class CsvValidator extends Report implements ImportValidator {
 										protected void handle() {
 											final String file = importFiles[j];
 											log.info("Validating file : " + file);
+											findUsersEnabled = true;
 											final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
 											CSVUtil.getCharset(vertx, file, new Handler<String>(){
 
