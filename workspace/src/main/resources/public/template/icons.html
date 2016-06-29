@@ -22,50 +22,50 @@
 	<header>&nbsp;</header>
 	<div>
 		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }">
-			<a class="container" draggable="false">
-				<i class="folder-large" ng-click="openFolder(folder)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
-			</a>
-
-			<!-- <check-tool ng-model="folder.selected"></check-tool> -->
-
-			<i ng-if="folder.shared.length > 0" class="shared inline"></i>
-
-			<legend>
-				<a>
-					<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
-					<span ng-click="openFolder(folder)">[[folder.name]]</span>
+			<explorer ng-model="folder.selected" on-open="openFolder(folder)">
+				<a class="container" draggable="false">
+					<i class="folder-large" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
 				</a>
-				<a ng-href="/userbook/annuaire#[[folder.owner.userId]]"><strong>[[folder.ownerName]]</strong></a>
-			</legend>
 
-			<div ng-if="folder.showComments && selectedFolders()[0] === folder">
-				<lightbox show="folder.showComments && selectedFolders()[0] === folder" on-close="folder.showComments = false;">
-					<h2><i18n>comments</i18n></h2>
+				<i ng-if="folder.shared.length > 0" class="shared inline"></i>
 
-					<div class="row" ng-if="folder.myRights.commentDocument">
-						<form class="twelve fluid cell" ng-submit="sendFolderComment(folder)">
-							<div class="row">
-								<textarea ng-model="folder.comment"></textarea>
-							</div>
-							<div class="lightbox-buttons fluid">
-								<button class="right-magnet" ng-disabled="!folder.comment.length"><i18n>workspace.comment</i18n></button>
-								<button class="cancel right-magnet" type="button" ng-click="folder.showComments = false;"><i18n>cancel</i18n></button>
-							</div>
-						</form>
-					</div>
+				<legend>
+					<a>
+						<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
+						<span ng-click="openFolder(folder)">[[folder.name]]</span>
+					</a>
+					<a ng-href="/userbook/annuaire#[[folder.owner.userId]]"><strong>[[folder.ownerName]]</strong></a>
+				</legend>
 
-					<article class="twelve cell comment" ng-repeat="comment in folder.comments">
-						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-						<em>[[longDate(comment.posted)]]</em>
-						<a class="right-magnet"
-						   ng-click="removeComment(folder, comment)"
-						   ng-if="comment.id && ((comment.author === me.userId && folder.myRights.commentDocument) || folder.myRights.deleteComment)">
-							<i18n>workspace.delete</i18n>
-						</a>
-						<p>[[comment.comment]]</p>
-					</article>
-				</lightbox>
-			</div>
+				<div ng-if="folder.showComments && selectedFolders()[0] === folder">
+					<lightbox show="folder.showComments && selectedFolders()[0] === folder" on-close="folder.showComments = false;">
+						<h2><i18n>comments</i18n></h2>
+
+						<div class="row" ng-if="folder.myRights.commentDocument">
+							<form class="twelve fluid cell" ng-submit="sendFolderComment(folder)">
+								<div class="row">
+									<textarea ng-model="folder.comment"></textarea>
+								</div>
+								<div class="lightbox-buttons fluid">
+									<button class="right-magnet" ng-disabled="!folder.comment.length"><i18n>workspace.comment</i18n></button>
+									<button class="cancel right-magnet" type="button" ng-click="folder.showComments = false;"><i18n>cancel</i18n></button>
+								</div>
+							</form>
+						</div>
+
+						<article class="twelve cell comment" ng-repeat="comment in folder.comments">
+							<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+							<em>[[longDate(comment.posted)]]</em>
+							<a class="right-magnet"
+							   ng-click="removeComment(folder, comment)"
+							   ng-if="comment.id && ((comment.author === me.userId && folder.myRights.commentDocument) || folder.myRights.deleteComment)">
+								<i18n>workspace.delete</i18n>
+							</a>
+							<p>[[comment.comment]]</p>
+						</article>
+					</lightbox>
+				</div>
+			</explorer>
 
 		</div><!--
 		--><div ng-repeat="file in loadingFiles | filter:{loading:true}" class="element loading">
@@ -80,57 +80,56 @@
 			</legend>
 		</div><!--
 		--><div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-			<a ng-click="viewFile(document)" class="[[document.metadata.contentType]] container cell">
-				<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
-				</i>
-				<div ng-if="document.metadata.contentType === 'img'" class="twelve cell">
-					<div class="clip">
-						<img ng-src="[[document.icon]]?thumbnail=120x120&v=[[document.version]]" alt="thumbnail" />
+			<explorer ng-model="document.selected" on-open="viewFile(document)">
+				<a class="[[document.metadata.contentType]] container cell">
+					<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
+					</i>
+					<div ng-if="document.metadata.contentType === 'img'" class="twelve cell">
+						<div class="clip">
+							<img ng-src="[[document.icon]]?thumbnail=120x120&v=[[document.version]]" alt="thumbnail" />
+						</div>
 					</div>
-				</div>
-			</a>
-
-			<!-- <check-tool ng-model="document.selected"></check-tool> -->
-
-			<i ng-if="document.shared.length > 0" class="shared inline"></i>
-
-			<legend>
-				<a ng-href="[[document.link]]">
-					<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-					[[document.name]]
 				</a>
-				<a ng-href="/userbook/annuaire#[[document.owner.userId]]"><strong>[[document.ownerName]]</strong></a>
-			</legend>
 
-			<div ng-if="document.showComments && selectedDocuments()[0] === document">
-				<lightbox show="document.showComments && selectedDocuments()[0] === document" on-close="document.showComments = false;">
-					<h2><i18n>comments</i18n></h2>
+				<i ng-if="document.shared.length > 0" class="shared inline"></i>
 
-					<div class="row" ng-if="document.myRights.commentDocument">
-						<form class="twelve fluid cell" ng-submit="sendComment()">
-							<div class="row">
-								<textarea ng-model="document.comment"></textarea>
-							</div>
-							<div class="lightbox-buttons fluid">
-								<button class="right-magnet" ng-disabled="!document.comment.length"><i18n>workspace.comment</i18n></button>
-								<button class="cancel right-magnet" type="button" ng-click="document.showComments = false;"><i18n>cancel</i18n></button>
-							</div>
-						</form>
-					</div>
+				<legend>
+					<a ng-href="[[document.link]]">
+						<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+						[[document.name]]
+					</a>
+					<a ng-href="/userbook/annuaire#[[document.owner.userId]]"><strong>[[document.ownerName]]</strong></a>
+				</legend>
 
-					<article class="twelve cell comment" ng-repeat="comment in document.comments">
-						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-						<em>[[longDate(comment.posted)]]</em>
-						<a class="right-magnet"
-						   ng-click="removeComment(document, comment)"
-						   ng-if="comment.id && ((comment.author === me.userId && document.myRights.commentDocument) || document.myRights.deleteComment)">
-							<i18n>workspace.delete</i18n>
-						</a>
-						<p>[[comment.comment]]</p>
-					</article>
-				</lightbox>
-			</div>
+				<div ng-if="document.showComments && selectedDocuments()[0] === document">
+					<lightbox show="document.showComments && selectedDocuments()[0] === document" on-close="document.showComments = false;">
+						<h2><i18n>comments</i18n></h2>
 
+						<div class="row" ng-if="document.myRights.commentDocument">
+							<form class="twelve fluid cell" ng-submit="sendComment()">
+								<div class="row">
+									<textarea ng-model="document.comment"></textarea>
+								</div>
+								<div class="lightbox-buttons fluid">
+									<button class="right-magnet" ng-disabled="!document.comment.length"><i18n>workspace.comment</i18n></button>
+									<button class="cancel right-magnet" type="button" ng-click="document.showComments = false;"><i18n>cancel</i18n></button>
+								</div>
+							</form>
+						</div>
+
+						<article class="twelve cell comment" ng-repeat="comment in document.comments">
+							<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+							<em>[[longDate(comment.posted)]]</em>
+							<a class="right-magnet"
+							   ng-click="removeComment(document, comment)"
+							   ng-if="comment.id && ((comment.author === me.userId && document.myRights.commentDocument) || document.myRights.deleteComment)">
+								<i18n>workspace.delete</i18n>
+							</a>
+							<p>[[comment.comment]]</p>
+						</article>
+					</lightbox>
+				</div>
+			</explorer>
 		</div>
 	</div>
 </article>
