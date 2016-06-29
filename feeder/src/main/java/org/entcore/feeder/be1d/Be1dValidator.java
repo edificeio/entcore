@@ -365,6 +365,10 @@ public class Be1dValidator extends Report implements ImportValidator {
 
 			@Override
 			public void procRow(int rowIdx, String... values) {
+				if ((!isUpdate && values.length < 20) || (isUpdate && values.length < 21)) {
+					addErrorByFile(fileNames[0], "missing.columns", Integer.toString(rowIdx + 2));
+					return;
+				}
 				int i = 0;
 				JsonObject props = new JsonObject();
 				try {
