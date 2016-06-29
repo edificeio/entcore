@@ -432,7 +432,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"AND rr.name =~ '^[A-Za-z0-9]+-(relative|all)-default$' " +
 				"AND pr.name =~ '^[A-Za-z0-9]+-(personnel|all)-default$' " +
 				"CREATE UNIQUE csg-[:AUTHORIZED]->rs, ctg-[:AUTHORIZED]->rt, crg-[:AUTHORIZED]->rr, cpg-[:AUTHORIZED]->pr";
-		neo.execute(query, new JsonObject().putString("id", classId), validEmptyHandler(handler));
+		final JsonObject params = new JsonObject().putString("id", classId);
+		final String widgetQuery =
+				"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ProfileGroup)-[:DEPENDS]->(ssg:ProfileGroup), (w:Widget) " +
+				"MERGE w<-[r:AUTHORIZED]-ssg";
+		StatementsBuilder sb = new StatementsBuilder();
+		sb.add(query, params).add(widgetQuery, params);
+		neo.executeTransaction(sb.build(), null, true, validEmptyHandler(handler));
 	}
 
 	@Override
