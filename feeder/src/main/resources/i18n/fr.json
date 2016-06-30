@@ -42,7 +42,7 @@
   "birthDate" : "date de naissance",
   "lastName" : "nom",
   "firstName" : "prénom",
-  "error.find.externalIds" : "Erreur lors de la recherche des utilisateurs existants.",
+  "error.find.externalIds" : "Vos fichiers contiennent des erreurs. Pensez à vérifier les points suivants :<br /><ul><li>Le format est bien CSV avec séparateur points-virgules ;</li><li>Les colonnes correspondent bien avec les modèles proposés dans le lien "Plus d'informations..." ;</li><li>Les classes ont bien strictement le même libellé dans tous les fichiers ;</li><li>Les références vers des élèves dans le fichier des parents correspondant bien à des élèves existant.</li></ul>",
   "missing.columns" : "Ligne {0} : colonne manquante.",
   "unknown.student.line" : "Ligne {0} : Parent sans élève reconnu."
 }
