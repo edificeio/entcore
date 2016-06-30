@@ -279,11 +279,7 @@ public class Importer {
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
-			if (object.containsField("email")) {
-				final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
-						"AND u.email <> {email} SET u.email = {email}";
-				transactionHelper.add(queryUpdateEmail, object);
-			}
+			checkUpdateEmail(object);
 			if (linkStudent != null && linkStudent.size() > 0) {
 				String query2 =
 						"START u=node:node_auto_index(externalId={externalId}), " +
@@ -324,11 +320,7 @@ public class Importer {
 				params = new JsonObject().putObject("props", object);
 			}
 			transactionHelper.add(query, params);
-			if (object.containsField("email")) {
-				final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
-						"AND u.email <> {email} SET u.email = {email}";
-				transactionHelper.add(queryUpdateEmail, object);
-			}
+			checkUpdateEmail(object);
 			JsonArray structures = getMappingStructures(object.getArray("structures"));
 			if (externalId != null && structures != null && structures.size() > 0) {
 				JsonObject p = new JsonObject().putString("userExternalId", externalId);
@@ -385,6 +377,16 @@ public class Importer {
 						.putArray("classes", classes);
 				transactionHelper.add(q, p);
 			}
+		}
+	}
+
+	private void checkUpdateEmail(JsonObject object) {
+		if (object.containsField("email")) {
+			final String queryUpdateEmail =
+					"MATCH (u:User {externalId: {externalId}}) " +
+					"WHERE NOT(HAS(u.email)) OR (HAS(u.activationCode) AND u.email <> {email}) " +
+					"SET u.email = {email}";
+			transactionHelper.add(queryUpdateEmail, object);
 		}
 	}
 
@@ -488,11 +490,7 @@ public class Importer {
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
-				if (object.containsField("email")) {
-					final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
-							"AND u.email <> {email} SET u.email = {email}";
-					transactionHelper.add(queryUpdateEmail, object);
-				}
+				checkUpdateEmail(object);
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
@@ -637,11 +635,7 @@ public class Importer {
 					params = new JsonObject().putObject("props", object);
 				}
 				transactionHelper.add(sb.toString(), params);
-				if (object.containsField("email")) {
-					final String queryUpdateEmail = "MATCH (u:User {externalId: {externalId}}) WHERE HAS(u.activationCode) " +
-							"AND u.email <> {email} SET u.email = {email}";
-					transactionHelper.add(queryUpdateEmail, object);
-				}
+				checkUpdateEmail(object);
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
