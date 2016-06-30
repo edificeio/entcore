@@ -212,7 +212,7 @@ window.RTE = (function () {
 				
 				if(range.startContainer === range.endContainer){
 					if(range.startContainer.childNodes.length){
-						for(var i = range.startOffset; i < range.endOffset; i++){
+						for(var i = range.startOffset; i <= range.endOffset; i++){
 							selector.push(range.startContainer.childNodes[i]);
 						}
 					}
@@ -241,7 +241,7 @@ window.RTE = (function () {
 						}
 					});
 
-					if (range.endContainer !== that.editZone[0] && range.endOffset > 0) {
+					if (range.endContainer !== that.editZone[0] && range.endOffset > 0 && $(range.endContainer).find(range.startContainer).length === 0) {
 						selector.push(range.endContainer);
 					}
 				}
@@ -402,23 +402,28 @@ window.RTE = (function () {
 							$(item).wrapInner(node);
 						}
 						else{
-							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
+							if(that.range.startContainer === item && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
 							    node.html(item.textContent.substring(that.range.startOffset));
 							    item.parentNode.insertBefore(node[0], item.nextSibling);
 								item.textContent = item.textContent.substring(0, that.range.startOffset);
 							}
-							else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
+							else if (that.range.endContainer === item && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer) {
 							    node.text(item.textContent.substring(0, that.range.endOffset));
 								item.parentNode.insertBefore(node[0], item);
 								item.textContent = item.textContent.substring(that.range.endOffset);
 							}
-							else if(that.range.startContainer === that.range.endContainer && index === 0){
+							else if (that.range.startContainer === that.range.endContainer && that.range.startContainer === item) {
 							    node.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
 								var textBefore = document.createTextNode('');
 								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
 								item.parentNode.insertBefore(node[0], item);
 								item.parentNode.insertBefore(textBefore, node[0]);
 								item.textContent = item.textContent.substring(that.range.endOffset);
+							}
+							else {
+							    node.html(item.textContent);
+							    item.parentNode.insertBefore(node[0], item);
+							    item.textContent = "";
 							}
 							addedNodes.push(node[0]);
 						}
