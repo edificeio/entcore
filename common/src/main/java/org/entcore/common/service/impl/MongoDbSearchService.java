@@ -68,8 +68,8 @@ public class MongoDbSearchService implements SearchService {
         }
 
         final QueryBuilder worldsQuery = new QueryBuilder();
-        //Set locale to "none", allows to use simple tokenization with no list of stop words and no stemming (in fact, stemming works only with words)
-        worldsQuery.text(textSearchedComposition(searchWords), "none");
+        //Set locale to "", allows to use advanced tokenization with no stemming (in fact, stemming works only with words and for a given language)
+        worldsQuery.text(textSearchedComposition(searchWords), "");
 
         final QueryBuilder rightsOrQuery = new QueryBuilder().or(
                 QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name()).get(),
