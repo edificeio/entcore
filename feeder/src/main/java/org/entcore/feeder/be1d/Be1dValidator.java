@@ -272,7 +272,6 @@ public class Be1dValidator extends Report implements ImportValidator {
 					if (!lines.isEmpty() && lines.size() > rowIdx + 1) {
 						try {
 							String line = lines.get(rowIdx + 1);
-							log.info(line);
 							String[] vals = line.replaceAll("\"", "").split(";");
 							while (i < header.length) { // && i < values.length) {
 								if (!"#skip#".equals(header[i])) {
@@ -320,7 +319,6 @@ public class Be1dValidator extends Report implements ImportValidator {
 						}
 					}
 					if (classesNames.size() < 1) {
-						log.info(Joiner.on("; ").join(values));
 						addErrorByFile(fileNames[2], "unknown.student.line", Integer.toString(rowIdx + 2));
 						return;
 					}
