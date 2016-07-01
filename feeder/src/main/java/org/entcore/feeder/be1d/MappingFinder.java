@@ -24,6 +24,7 @@ import au.com.bytecode.opencsv.CSVReadProc;
 import au.com.bytecode.opencsv.CSVWriteProc;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.feeder.utils.CSVUtil;
 import org.entcore.feeder.utils.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
@@ -36,10 +37,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -49,6 +47,41 @@ public class MappingFinder {
 	private static final Logger log = LoggerFactory.getLogger(MappingFinder.class);
 	private final Neo4j neo4j = TransactionManager.getNeo4jHelper();
 	private final Vertx vertx;
+	private static final Comparator<String[]> studentLineComparator = new Comparator<String[]>() {
+
+		@Override
+		public int compare(String[] line1, String[] line2) {
+			return compareLine(line1, line2, 1, 3, 2);
+		}
+
+	};
+	private static final Comparator<String[]> lineComparator = new Comparator<String[]>() {
+
+		@Override
+		public int compare(String[] line1, String[] line2) {
+			return compareLine(line1, line2, 3, 4, 2);
+		}
+
+	};
+
+	private static int compareLine(String[] line1, String[] line2, int lastNameIdx, int firstNameIdx, int otherNameIdx) {
+		final String lastName1 = (line1[otherNameIdx] != null && !line1[otherNameIdx].isEmpty()) ? line1[otherNameIdx] : line1[lastNameIdx];
+		final String lastName2 = (line2[otherNameIdx] != null && !line2[otherNameIdx].isEmpty()) ? line2[otherNameIdx] : line2[lastNameIdx];
+		if ((lastName1 != null && lastName1.equalsIgnoreCase(lastName2)) || (lastName1 == null && lastName2 == null)) {
+			final String firstName1 = line1[firstNameIdx];
+			final String firstName2 = line2[firstNameIdx];
+			if (firstName1 != null) {
+				return firstName1.compareToIgnoreCase(firstName2);
+			} else if (firstName2 != null) {
+				return 1;
+			}
+			return 0;
+		}
+		if (lastName1 != null) {
+			return lastName1.compareToIgnoreCase(lastName2);
+		}
+		return 1;
+	}
 
 	public MappingFinder(Vertx vertx) {
 		this.vertx = vertx;
@@ -67,16 +100,16 @@ public class MappingFinder {
 	}
 
 	public void generateFilesWithExternalIds(final String p, final String structureExternalId, final Handler<String> handler) {
-		final String charset = "ISO-8859-1"; //detectCharset(csv);
-		final CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-						//.skipLines(1)
-				.charset(charset)
-				.create();
 		final AtomicInteger count = new AtomicInteger(Be1dValidator.fileNames.length);
 		final AtomicBoolean error = new AtomicBoolean(false);
 		for (final String filename : Be1dValidator.fileNames) {
+			final String charset =  CSVUtil.getCharsetSync(p + File.separator + filename);
+			final CSV csvParser = CSV
+					.ignoreLeadingWhiteSpace()
+					.separator(';')
+							//.skipLines(1)
+					.charset(charset)
+					.create();
 			generateFile(p, structureExternalId, csvParser, filename, error, new Handler<String>() {
 				@Override
 				public void handle(String event) {
@@ -201,12 +234,12 @@ public class MappingFinder {
 															if (exId != null) {
 																line.remove(i);
 																line.add(i, exId);
-																line.remove(i+1);
-																line.add(i+1, "");
-																line.remove(i+2);
-																line.add(i+2, "");
-																line.remove(i+3);
-																line.add(i+3, "");
+																line.remove(i + 1);
+																line.add(i + 1, "");
+																line.remove(i + 2);
+																line.add(i + 2, "");
+																line.remove(i + 3);
+																line.add(i + 3, "");
 															}
 														}
 														i += 4;
@@ -214,6 +247,9 @@ public class MappingFinder {
 													lines.add(line.toArray(new String[line.size()]));
 													if (count.decrementAndGet() == 0) {
 														vertx.fileSystem().deleteSync(p + File.separator + filename);
+														final String[] line0 = lines.remove(0);
+														Collections.sort(lines, lineComparator);
+														lines.add(0, line0);
 														csvParser.write(p + File.separator + filename, new CSVWriteProc() {
 															@Override
 															public void process(CSVWriter out) {
@@ -235,6 +271,13 @@ public class MappingFinder {
 								lines.add(line.toArray(new String[line.size()]));
 								if (count.decrementAndGet() == 0) {
 									vertx.fileSystem().deleteSync(p + File.separator + filename);
+									final String[] line0 = lines.remove(0);
+									if ("CSVExtraction-eleves.csv".equals(filename)) {
+										Collections.sort(lines, studentLineComparator);
+									} else  {
+										Collections.sort(lines, lineComparator);
+									}
+									lines.add(0, line0);
 									csvParser.write(p + File.separator + filename, new CSVWriteProc() {
 										@Override
 										public void process(CSVWriter out) {
