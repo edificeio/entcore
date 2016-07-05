@@ -25,6 +25,7 @@ import java.util.*;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.Md5;
+import fr.wseduc.webutils.security.Sha256;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.models.AccessToken;
@@ -106,19 +107,26 @@ public class OAuthDataHandler extends DataHandler {
 						String dbPassword;
 						if (r != null && (dbPassword = r.getString("password")) != null) {
 							boolean success = false;
-							switch (dbPassword.length()) {
-								case 32: // md5
-									try {
-										success = !dbPassword.trim().isEmpty() && dbPassword.equalsIgnoreCase(Md5.hash(password));
-									} catch (NoSuchAlgorithmException e) {
-										log.error(e.getMessage(), e);
-									}
+							String hash = null;
+							try {
+								switch (dbPassword.length()) {
+									case 32: // md5
+										hash = Md5.hash(password);
+										break;
+									case 64: // sha-256
+										hash = Sha256.hash(password);
+										break;
+									default: // BCrypt
+										success = BCrypt.checkpw(password, dbPassword);
+								}
+								if (!success && hash != null) {
+									success = !dbPassword.trim().isEmpty() && dbPassword.equalsIgnoreCase(hash);
 									if (success) {
 										upgradeOldPassword(username, password);
 									}
-									break;
-								default: // BCrypt
-									success = BCrypt.checkpw(password, dbPassword);
+								}
+							} catch (NoSuchAlgorithmException e) {
+								log.error(e.getMessage(), e);
 							}
 							if (success) {
 								handler.handle(r.getString("userId"));
