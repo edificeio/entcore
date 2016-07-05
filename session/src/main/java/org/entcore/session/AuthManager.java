@@ -128,7 +128,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String userId = message.body().getString("userId");
 		String currentSessionId = message.body().getString("currentSessionId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[doDropPermanentSessions] Invalid userId : " + message.body().encode());
 			return;
 		}
 
@@ -151,13 +151,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void doFindByUserId(final Message<JsonObject> message) {
 		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[doFindByUserId] Invalid userId : " + message.body().encode());
 			return;
 		}
 
 		LoginInfo info = getLoginInfo(userId);
 		if (info == null && !message.body().getBoolean("allowDisconnectedUser", false)) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[doFindByUserId] info is null - Invalid userId : " + message.body().encode());
 			return;
 		} else if (info == null) {
 			generateSessionInfos(userId, new Handler<JsonObject>() {
@@ -285,7 +285,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		final String sessionIndex = message.body().getString("SessionIndex");
 		final String nameID = message.body().getString("NameID");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[doCreate] Invalid userId : " + message.body().encode());
 			return;
 		}
 
@@ -474,13 +474,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private JsonObject getSessionByUserId(Message<JsonObject> message) {
 		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[getSessionByUserId] Invalid userId : " + message.body().encode());
 			return null;
 		}
 
 		LoginInfo info = getLoginInfo(userId);
 		if (info == null) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[getSessionByUserId] info is null - Invalid userId : " + message.body().encode());
 			return null;
 		}
 		JsonObject session =  null;
@@ -499,13 +499,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private void updateSessionByUserId(Message<JsonObject> message, JsonObject session) {
 		final String userId = message.body().getString("userId");
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[updateSessionByUserId] Invalid userId : " + message.body().encode());
 			return;
 		}
 
 		List<LoginInfo> infos = logins.get(userId);
 		if (infos == null || infos.isEmpty()) {
-			sendError(message, "Invalid userId.");
+			sendError(message, "[updateSessionByUserId] info is null - Invalid userId : " + message.body().encode());
 			return;
 		}
 		for (LoginInfo info : infos) {
