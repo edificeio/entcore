@@ -559,13 +559,13 @@ ui.extendElement = {
 				};
 				resize();
 
-				$(window).on('mouseup.resize touchleave.resize touchend.resize', function(){
+				$(window).on('mouseup.resize touchleave.resize touchend.resize', function(e){
 					interrupt = true;
 					setTimeout(function(){
 						element.data('resizing', false);
 						element.trigger('stopResize');
 						if (params && typeof params.mouseUp === 'function') {
-						    params.mouseUp();
+						    params.mouseUp(e);
 						}
 					}, 100);
 					$(window).unbind('mousemove.resize touchmove.resize mouseup.resize touchleave.resize touchend.resize');
@@ -737,7 +737,7 @@ ui.extendElement = {
 							element.trigger('stopDrag');
 							element.data('dragging', false);
 							if(params && typeof params.mouseUp === 'function' && moved){
-								params.mouseUp();
+								params.mouseUp(e);
 							}
 						}
 					}, 100);
