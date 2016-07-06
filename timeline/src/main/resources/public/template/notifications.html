@@ -1,25 +1,6 @@
-
-
-
-
-
-
 <app-title>
 	<h1 data-reload class="application-title"><i18n>timeline.title</i18n></h1>
 </app-title>
-
-
-<div class="announce" ng-if="me.userId === account.id"
-	workflow="timeline.externalNotifications">
-	<p>
-		<b>Nouveau : Bénéficiez d’alertes par email (notifications externes)</b><br>
-		Recevez désormais directement sur votre adresse électronique personnelle
-		des emails résumant les dernières informations et activités sur l’ENT.<br>
-		<a href="/userbook/mon-compte"><u>Cliquez ici pour paramétrer vos notifications externes.</u></a>
-	</p>
-</div>
-
-
 <div data-ng-controller="Timeline" class="twelve cell">
 	<div class="row" ng-if="filtered.notificationTypes.length > 0">
 		<i18n>filters.title</i18n>
