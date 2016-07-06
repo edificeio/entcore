@@ -479,8 +479,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		LoginInfo info = getLoginInfo(userId);
-		if (info == null) {
-			sendError(message, "[getSessionByUserId] info is null - Invalid userId : " + message.body().encode());
+		if (info == null) { // disconnected user : ignore action
+			sendOK(message);
 			return null;
 		}
 		JsonObject session =  null;
