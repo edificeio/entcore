@@ -21,6 +21,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.ProfileService;
 import org.vertx.java.core.Handler;
@@ -84,6 +85,24 @@ public class DefaultProfileService implements ProfileService {
 				"UNION " +
 				"MATCH (f:Functions) RETURN f.name as name, f.externalId as externalId ";
 		neo4j.execute(query, (JsonObject) null, validResultHandler(result));
+	}
+
+	@Override
+	public void listProfiles(Handler<Either<String, JsonArray>> result) {
+		final String query =
+				"MATCH (p:Profile) RETURN DISTINCT p.name as name, p.blocked as blocked";
+		neo4j.execute(query, (JsonObject) null, validResultHandler(result));
+	}
+
+	@Override
+	public void blockProfiles(JsonObject profiles, Handler<Either<String, JsonObject>> handler) {
+		final String query = "MATCH (p:Profile {name : {name}}) set p.blocked = {blocked}";
+		final StatementsBuilder sb =  new StatementsBuilder();
+		for (String profile : profiles.getFieldNames()) {
+			sb.add(query, new JsonObject().putString("name", profile)
+					.putBoolean("blocked", (profiles.getBoolean(profile, false) ? true : null)));
+		}
+		neo4j.executeTransaction(sb.build(), null, true, validEmptyHandler(handler));
 	}
 
 }

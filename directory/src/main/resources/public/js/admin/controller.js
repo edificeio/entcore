@@ -334,6 +334,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.scrollOpts.reset()
 			},
 			requestName : "cross-search-request"
+		},
+		{
+			name: "paramsTab",
+			text: lang.translate("directory.params.tab"),
+			templateName: 'admin-params-tab',
+			onClick: function(){
+				$scope.scrollOpts.reset();
+				$scope.refreshProfiles();
+			},
+			requestName : "profiles-request",
+			showCondition: function(){ return $scope.isCentralAdmin() }
 		}
 	]
 	_.forEach($scope.leafMenu, function(leaf){
@@ -686,6 +697,19 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         model.crossUsers.users.sync(filter)
         delete $scope.crossUser
     }
+
+	$scope.profiles = model.profiles.profiles;
+	$scope.blockProfiles = { Personnel : false, Student : false, Teacher : false, Guest : false, Relative : false };
+	$scope.refreshProfiles = function() {
+		$scope.profiles.sync(function () {
+			for (var i = 0; i < model.profiles.profiles.all.length; i++) {
+				$scope.blockProfiles[model.profiles.profiles.all[i].name] = model.profiles.profiles.all[i].blocked;
+			}
+		});
+	};
+	$scope.blockLogin = function(blockProfiles) {
+		model.profiles.save(blockProfiles);
+	};
 
 	$scope.refreshStructures = function(){
 		$scope.structures.sync($scope.refreshScope)

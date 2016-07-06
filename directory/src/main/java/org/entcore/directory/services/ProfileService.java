@@ -38,4 +38,8 @@ public interface ProfileService {
 
 	void listFunctions(Handler<Either<String,JsonArray>> result);
 
+	void listProfiles(Handler<Either<String,JsonArray>> eitherHandler);
+
+	void blockProfiles(JsonObject profiles, Handler<Either<String,JsonObject>> handler);
+
 }

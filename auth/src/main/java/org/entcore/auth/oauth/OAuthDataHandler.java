@@ -93,7 +93,9 @@ public class OAuthDataHandler extends DataHandler {
 					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
 					"AND (NOT(HAS(n.federated)) OR n.federated = false) " +
-					"RETURN n.id as userId, n.password as password";
+					"OPTIONAL MATCH (p:Profile) " +
+					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
 			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
@@ -105,7 +107,7 @@ public class OAuthDataHandler extends DataHandler {
 							result != null && result.size() == 1) {
 						JsonObject r = result.get(0);
 						String dbPassword;
-						if (r != null && (dbPassword = r.getString("password")) != null) {
+						if (r != null && (dbPassword = r.getString("password")) != null && !r.getBoolean("blockedProfile", false)) {
 							boolean success = false;
 							String hash = null;
 							try {

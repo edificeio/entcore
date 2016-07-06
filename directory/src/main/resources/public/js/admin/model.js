@@ -534,10 +534,41 @@ function CrossUsers(){
     })
 }
 
+function Profile(){}
+function Profiles() {
+    this.collection(Profile, {
+        sync: function(hook) {
+            var that = this
+            return http().get('profiles', {}, { requestName: 'profiles-request' }).done(function(profiles){
+                that.load(profiles);
+                hookCheck(hook);
+            })
+        }
+    });
+}
+
+Profiles.prototype.save = function(block, callback) {
+    http().putJson("/directory/profiles", block)
+    .done(function(data) {
+        notify.info('directory.params.success');
+        if(typeof callback === 'function') {
+            callback(data);
+        }
+    }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate, Level])
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate, Level, Profile, Profiles])
 
     this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()
     this.crossUsers = new CrossUsers()
+    this.profiles = new Profiles();
 }
