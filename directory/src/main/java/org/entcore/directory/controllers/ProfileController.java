@@ -22,9 +22,13 @@ package org.entcore.directory.controllers;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.directory.services.ProfileService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -38,6 +42,29 @@ import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyRe
 public class ProfileController extends BaseController {
 
 	private ProfileService profileService;
+
+	@Get("/profiles")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void listProfiles(final HttpServerRequest request) {
+		profileService.listProfiles(arrayResponseHandler(request));
+	}
+
+	@Put("/profiles")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void blockProfiles(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				if (body != null) {
+					profileService.blockProfiles(body, defaultResponseHandler(request));
+				} else {
+					badRequest(request, "invalid.body");
+				}
+			}
+		});
+	}
 
 	@Get("/functions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
