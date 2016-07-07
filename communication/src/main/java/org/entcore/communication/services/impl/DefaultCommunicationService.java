@@ -211,7 +211,10 @@ public class DefaultCommunicationService implements CommunicationService {
 		).add(
 				"MATCH (fg:FunctionGroup) " +
 				"WHERE fg.name ENDS WITH 'AdminLocal' " +
-				"SET fg.users = 'BOTH'"
+				"SET fg.users = 'BOTH' "
+		).add(
+				"MATCH (ag:FunctionalGroup) " +
+				"SET ag.users = 'BOTH' "
 		);
 		for (String attr : defaultRules.getFieldNames()) {
 			initDefaultRules(structureIds, attr, defaultRules.getObject(attr), s1, s2);
