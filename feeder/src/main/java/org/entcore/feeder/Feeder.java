@@ -83,9 +83,23 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String deleteCron = container.config().getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = container.config().getString("pre-delete-cron", "0 0 3 * * ? *");
 		final String importCron = container.config().getString("import-cron");
+		final JsonObject preDelete = container.config().getObject("pre-delete");
 		try {
 			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
-			new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
+			if (preDelete != null) {
+				if (preDelete.size() == ManualFeeder.profiles.size() &&
+						ManualFeeder.profiles.keySet().containsAll(preDelete.getFieldNames())) {
+					for (String profile: preDelete.getFieldNames()) {
+						final JsonObject profilePreDelete = preDelete.getObject(profile);
+						if (profilePreDelete == null || profilePreDelete.getString("cron") == null ||
+								profilePreDelete.getLong("delay") == null) continue;
+						new CronTrigger(vertx, profilePreDelete.getString("cron"))
+								.schedule(new User.PreDeleteTask(profilePreDelete.getLong("delay"), profile));
+					}
+				}
+			} else {
+				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
+			}
 			if (importCron != null && !importCron.trim().isEmpty()) {
 				new CronTrigger(vertx, importCron).schedule(new ImporterTask(eb,
 						container.config().getBoolean("auto-export", false)));

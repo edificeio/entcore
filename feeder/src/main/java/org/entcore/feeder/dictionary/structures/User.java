@@ -88,18 +88,30 @@ public class User {
 
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 		private final long delay;
+		private final String profile;
 
 		public PreDeleteTask(long delay) {
+			this(delay, null);
+		}
+
+		public PreDeleteTask(Long delay, String profile) {
 			this.delay = delay;
+			this.profile = profile;
 		}
 
 		@Override
 		public void handle(Long event) {
 			log.info("Execute task pre-delete user.");
 			JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+			String filter = "";
+			if (profile != null) {
+				params.putString("profile", profile);
+				filter = "AND head(u.profiles) = {profile} ";
+			}
 			String query =
 					"MATCH (u:User) " +
 					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) AND u.disappearanceDate < {date} " +
+					filter +
 					"RETURN u.id as id ";
 			TransactionManager.getInstance().getNeo4j().execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
