@@ -208,6 +208,10 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
 				"WHERE NOT(HAS(g.communiqueWith)) " +
 				"SET g.communiqueWith = [] "
+		).add(
+				"MATCH (fg:FunctionGroup) " +
+				"WHERE fg.name ENDS WITH 'AdminLocal' " +
+				"SET fg.users = 'BOTH'"
 		);
 		for (String attr : defaultRules.getFieldNames()) {
 			initDefaultRules(structureIds, attr, defaultRules.getObject(attr), s1, s2);
@@ -356,12 +360,12 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MERGE g-[:COMMUNIQUE]->pg ";
 		s.add(query, params);
 		String usersIncoming =
-				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)<-[:IN]-(u:User) " +
+				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN]-(u:User) " +
 				"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
 				"MERGE g<-[:COMMUNIQUE]-u ";
 		s.add(usersIncoming, params);
 		String usersOutgoing =
-				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)<-[:IN]-(u:User) " +
+				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN]-(u:User) " +
 				"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
 				"MERGE g-[:COMMUNIQUE]->u ";
 		s.add(usersOutgoing, params);
