@@ -81,8 +81,10 @@ public class DefaultCommunicationService implements CommunicationService {
 				createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
 		}
 		String query =
-				"MATCH (g:Group { id : {groupId}})<-[:IN]-(u:User) " +
+				"MATCH (g:Group { id : {groupId}}) " +
 				"SET g.users = {direction} " +
+				"WITH g " +
+				"MATCH g<-[:IN]-(u:User) " +
 				"CREATE UNIQUE " + createRelationship +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().putString("groupId", groupId).putString("direction", direction.name());
