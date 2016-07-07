@@ -20,9 +20,12 @@
 package org.entcore.auth;
 
 import org.entcore.auth.controllers.AuthController;
+import org.entcore.auth.controllers.ConfigurationController;
 import org.entcore.auth.controllers.SamlController;
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.auth.security.SamlValidator;
+import org.entcore.auth.services.ConfigurationService;
+import org.entcore.auth.services.impl.DefaultConfigurationService;
 import org.entcore.auth.services.impl.DefaultServiceProviderFactory;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
@@ -32,6 +35,7 @@ import org.entcore.common.http.BaseServer;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
+import org.entcore.common.http.filter.ResourceProviderFilter;
 import org.entcore.common.neo4j.Neo;
 import org.opensaml.xml.ConfigurationException;
 import org.vertx.java.core.AsyncResult;
@@ -45,10 +49,10 @@ public class Auth extends BaseServer {
 	@Override
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
-		SecurityHandler.clearFilters();
-		SecurityHandler.addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
-		setResourceProvider( new AuthResourcesProvider(new Neo(vertx, eb, container.logger())));
+		clearFilters();
+		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
 		super.start();
+		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, container.logger())));
 
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, container);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
@@ -57,6 +61,10 @@ public class Auth extends BaseServer {
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
 		addController(authController);
+
+		final ConfigurationController configurationController = new ConfigurationController();
+		configurationController.setConfigurationService(new DefaultConfigurationService());
+		addController(configurationController);
 
 		final String samlMetadataFolder = config.getString("saml-metadata-folder");
 		if (samlMetadataFolder != null && !samlMetadataFolder.trim().isEmpty()) {
