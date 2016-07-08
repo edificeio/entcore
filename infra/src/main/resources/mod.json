@@ -17,7 +17,7 @@
     }
   },
   "pre-required-modules": [{
-    "name": "fr.wseduc~mod-neo4j-persistor~1.5.2",
+    "name": "fr.wseduc~mod-neo4j-persistor~1.6-SNAPSHOT",
     "config": {
       "worker": true,
       "address": "wse.neo4j.persistor",
