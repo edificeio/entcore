@@ -26,6 +26,8 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
@@ -62,8 +64,9 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		String[][] classes = createClasses(object.getArray("classes"));
-		String[][] groups = createGroups(object.getArray("groups"));
+		List<String> c = object.getArray("classes") != null ? object.getArray("classes").toList() : new LinkedList<String>();
+		String[][] groups = createGroups(object.getArray("groups"), c);
+		String[][] classes = createClasses(new JsonArray(c));
 		JsonArray functions = object.getArray("functions");
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {

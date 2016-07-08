@@ -27,9 +27,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -52,6 +50,7 @@ public class Importer {
 	private Neo4j neo4j;
 	private ConcurrentMap<String, Structure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
+	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private Report report;
 	Set<String> importedGroups = new HashSet<>();
 
@@ -103,6 +102,7 @@ public class Importer {
 		profiles.clear();
 		userImportedExternalId.clear();
 		importedGroups.clear();
+		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
 	}
@@ -140,13 +140,32 @@ public class Importer {
 	}
 
 	public Structure createOrUpdateStructure(JsonObject struct) {
+		JsonArray groups = null;
+		if (struct != null) {
+			groups = struct.getArray("groups");
+		}
 		final String error = structureValidator.validate(struct);
 		Structure s = null;
 		if (error != null) {
 			report.addIgnored("Structure", error, struct);
 			log.warn(error);
 		} else {
-			String externalId = struct.getString("externalId");
+			final String externalId = struct.getString("externalId");
+			if (groups != null) {
+				for (Object gcMapping : groups) {
+					if (!(gcMapping instanceof String)) continue;
+					final String [] m = ((String) gcMapping).split("\\$");
+					final String groupCode = m[0];
+					if (groupCode == null || groupCode.isEmpty() || m.length < 3) continue;
+					final List<String> classes = new LinkedList<>();
+					for (int i = 2; i < m.length; i++) {
+						classes.add(externalId + "$" + m[i]);
+					}
+					if (!classes.isEmpty()) {
+						groupClasses.put(externalId + "$" + groupCode, classes);
+					}
+				}
+			}
 			s = structures.get(externalId);
 			if (s != null) {
 				s.update(struct);
@@ -555,6 +574,7 @@ public class Importer {
 				}
 				if (externalId != null && linkClasses != null) {
 					JsonArray classes = new JsonArray();
+
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							String query =
@@ -942,6 +962,10 @@ public class Importer {
 
 	public Set<String> getUserImportedExternalId() {
 		return userImportedExternalId;
+	}
+
+	public ConcurrentHashMap<String, List<String>> getGroupClasses() {
+		return groupClasses;
 	}
 
 }
