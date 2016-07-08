@@ -32,12 +32,12 @@
 				<legend>
 					<a>
 						<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
-						<span ng-click="openFolder(folder)">[[folder.name]]</span>
+						<span>[[folder.name]]</span>
 					</a>
-					<a ng-href="/userbook/annuaire#[[folder.owner.userId]]"><strong>[[folder.ownerName]]</strong></a>
+					<a class="author"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 
-				<div ng-if="folder.showComments && selectedFolders()[0] === folder">
+				<div ng-if="folder.showComments">
 					<lightbox show="folder.showComments && selectedFolders()[0] === folder" on-close="folder.showComments = false;">
 						<h2><i18n>comments</i18n></h2>
 
@@ -94,14 +94,14 @@
 				<i ng-if="document.shared.length > 0" class="shared inline"></i>
 
 				<legend>
-					<a ng-href="[[document.link]]">
+					<a>
 						<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 						[[document.name]]
 					</a>
-					<a ng-href="/userbook/annuaire#[[document.owner.userId]]"><strong>[[document.ownerName]]</strong></a>
+					<a class="author"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 
-				<div ng-if="document.showComments && selectedDocuments()[0] === document">
+				<div ng-if="document.showComments">
 					<lightbox show="document.showComments && selectedDocuments()[0] === document" on-close="document.showComments = false;">
 						<h2><i18n>comments</i18n></h2>
 
