@@ -27,6 +27,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	protected PersonnelImportProcessing(String path, Vertx vertx) {
@@ -45,8 +48,9 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		createClasses(object.getArray("classes"));
-		createGroups(object.getArray("groups"));
+		List<String> c = object.getArray("classes") != null ? object.getArray("classes").toList() : new LinkedList<String>();
+		createGroups(object.getArray("groups"), c);
+		createClasses(new JsonArray(c));
 		linkMef(object.getArray("modules"));
 		linkClassesFieldOfStudy(object.getArray("classesFieldOfStudy"));
 		linkGroupsFieldOfStudy(object.getArray("groupsFieldOfStudy"));
@@ -120,6 +124,10 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	}
 
 	protected String[][] createGroups(JsonArray groups) {
+		return createGroups(groups, null);
+	}
+
+	protected String[][] createGroups(JsonArray groups, List<String> classes) {
 		String [][] linkStructureGroups = null;
 		if (groups != null && groups.size() > 0) {
 			linkStructureGroups = new String[groups.size()][2];
@@ -134,6 +142,12 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 						s.createFunctionalGroupIfAbsent(groupExternalId, g[1]);
 						linkStructureGroups[i][0] = s.getExternalId();
 						linkStructureGroups[i++][1] = groupExternalId;
+						if (classes != null) {
+							final List<String> lc = importer.getGroupClasses().get(groupExternalId);
+							if (lc != null) {
+								classes.addAll(lc);
+							}
+						}
 					}
 				}
 			}
