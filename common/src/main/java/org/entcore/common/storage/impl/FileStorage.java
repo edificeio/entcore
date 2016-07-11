@@ -167,19 +167,25 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public void writeBuffer(final String id, Buffer buff, String contentType, String filename,
+	public void writeBuffer(final String id, final Buffer buff, String contentType, String filename,
 			final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		try {
-			fs.writeFile(getPath(id), buff, new Handler<AsyncResult<Void>>() {
+			final String path = getPath(id);
+			mkdirsIfNotExists(id, path, new AsyncResultHandler<Void>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
-					if (event.succeeded()) {
-						res.putString("status", "ok").putString("_id", id);
-					} else {
-						res.putString("status", "error").putString("message", event.cause().getMessage());
-					}
-					handler.handle(res);
+					fs.writeFile(path, buff, new Handler<AsyncResult<Void>>() {
+						@Override
+						public void handle(AsyncResult<Void> event) {
+							if (event.succeeded()) {
+								res.putString("status", "ok").putString("_id", id);
+							} else {
+								res.putString("status", "error").putString("message", event.cause().getMessage());
+							}
+							handler.handle(res);
+						}
+					});
 				}
 			});
 		} catch (FileNotFoundException e) {
