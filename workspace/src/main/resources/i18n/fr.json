@@ -151,7 +151,9 @@
     "workspace.trash.restore": "Restaurer",
     "workspace.unselect.all": "Aucun",
     "workspace.valid": "Appliquer",
-    "workspace.versions.list": "Versions",
+  "workspace.versions.list": "Versions",
+  "workspace.open": "Ouvrir",
+  "workspace.download":  "Télécharger",
     "workspace.search.description.one": "Un commentaire contenant, '{0}', répond à vos critères de recherche.",
     "workspace.search.description.several" : "{0} commentaires répondent à vos critères de recherche, dont le plus récent contient : '{1}'."
 }
