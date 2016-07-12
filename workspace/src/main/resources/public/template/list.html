@@ -53,7 +53,7 @@
 		</thead>
 		<tbody>
 		<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
-			<td class="icon"><input type="checkbox" data-ng-model="folder.selected" /></td>
+			<td class="icon"><input type="checkbox" data-ng-model="folder.selected" ng-change="setAll()" /></td>
 			<td class="icon zero-mobile">
 				<div class="twelve cell">
 					<i class="folder"></i>
@@ -103,7 +103,7 @@
 			<td class="size zero-mobile"></td>
 		</tr>
 		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc | limitTo:display.nbFiles" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-			<td class="icon"><input type="checkbox" data-ng-model="document.selected" /></td>
+			<td class="icon"><input type="checkbox" data-ng-model="document.selected"  ng-change="setAll()" /></td>
 			<td class="icon zero-mobile">
 				<div class="twelve cell">
 					<i class="[[document.metadata.contentType]]"></i>
