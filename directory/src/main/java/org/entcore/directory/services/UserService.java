@@ -85,4 +85,8 @@ public interface UserService {
 
 	void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results);
 
+	void generateMergeKey(String userId, Handler<Either<String,JsonObject>> handler);
+
+	void mergeByKey(String userId, JsonObject body, Handler<Either<String,JsonObject>> handler);
+
 }

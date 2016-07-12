@@ -21,6 +21,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
@@ -37,6 +38,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -460,6 +462,24 @@ public class DefaultUserService implements UserService {
 		query.deleteCharAt(query.length() - 1);
 		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
 		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
+	@Override
+	public void generateMergeKey(String userId, Handler<Either<String, JsonObject>> handler) {
+		if (Utils.defaultValidationParamsError(handler, userId)) return;
+		final String query = "MATCH (u:User {id: {id}}) SET u.mergeKey = {mergeKey} return u.mergeKey as mergeKey";
+		final JsonObject params = new JsonObject().putString("id", userId).putString("mergeKey", UUID.randomUUID().toString());
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void mergeByKey(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler) {
+		if (Utils.defaultValidationParamsNull(handler, userId, body)) return;
+		JsonObject action = new JsonObject()
+				.putString("action", "merge-by-keys")
+				.putString("originalUserId", userId)
+				.putArray("mergeKeys", body.getArray("mergeKeys"));
+		eb.send(Directory.FEEDER, action, validUniqueResultHandler(5, handler));
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.notification.TimelineHelper;
@@ -485,6 +486,41 @@ public class UserController extends BaseController {
 		} else {
 			userService.listByUAI(structures, fields, arrayResponseHandler(request));
 		}
+	}
+
+	@Get("/duplicate/user/mergeKey")
+	@SecuredAction("user.generate.merge.key")
+	public void generateMergeKey(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos event) {
+				if (event != null) {
+					userService.generateMergeKey(event.getUserId(), notEmptyResponseHandler(request));
+				} else {
+					unauthorized(request, "user.not.found");
+				}
+			}
+		});
+	}
+
+	@Post("/duplicate/user/mergeByKey")
+	@SecuredAction("user.merge.by.key")
+	public void mergeByKey(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject body) {
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(UserInfos event) {
+						if (event != null) {
+							userService.mergeByKey(event.getUserId(), body, notEmptyResponseHandler(request));
+						} else {
+							unauthorized(request, "user.not.found");
+						}
+					}
+				});
+			}
+		});
 	}
 
 	public void setUserService(UserService userService) {
