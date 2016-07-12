@@ -210,6 +210,10 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		template.open('documents', 'viewer');
 	};
 
+	$scope.downloadFile = function (document) {
+	    window.location.href = '/workspace/document/' + document._id;
+	};
+
 	$scope.openNewDocumentView = function(){
 		$scope.loadingFiles = [];
 		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
