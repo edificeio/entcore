@@ -1029,6 +1029,21 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		}
 	};
 
+	$scope.setAll = function () {
+	    var all = true;
+	    $scope.openedFolder.content.forEach(function (document) {
+	        all = all && document.selected;
+	    });
+
+	    if ($scope.openedFolder.folder.children) {
+	        $scope.openedFolder.folder.children.forEach(function (folder) {
+	            all = all && folder.selected;
+	        });
+	    }
+
+	    $scope.boxes.selectAll = all;
+	};
+
 	$scope.selectedFolder = { folder: {}, name: '' };
 	$scope.setFolder = function(key, value){
 		$scope.selectedFolder.name = key;
