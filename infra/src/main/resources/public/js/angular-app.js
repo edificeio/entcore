@@ -4485,7 +4485,7 @@ module.directive('floatingNavigation', function(){
 			scope.step = 0;
 			setTimeout(function(){
 				initialPosition = element.offset();
-				element.height($(window).height() - parseInt(element.css('margin-bottom')));
+				element.height($(window).height() - parseInt(element.css('margin-bottom'))-100);
 				scope.stepsLength = parseInt(element.find('.content')[0].scrollHeight / element.height());
 			}, 800);
 			element.find('.arrow.next').on('click', function(){
