@@ -276,6 +276,17 @@ ui.extendSelector = {
             });
         });
 
+		//doubletap
+		element.on('touchstart', function(){
+			element.one('touchstart.doubletouch', function(){
+				element.trigger('doubletap')
+			});
+			setTimeout(function(){
+				element.off('touchstart.doubletap')
+			}, 500);
+		});
+
+
         //swipes
         $('body').on('touchstart', selector, function (e) {
             var initialMouse = mouse = {
@@ -337,6 +348,16 @@ ui.extendElement = {
 	            clearTimeout(timer);
 	        });
 	    });
+
+		//doubletap
+		element.on('touchstart', function(){
+			element.one('touchstart.doubletouch', function(){
+				element.trigger('doubletap')
+			});
+			setTimeout(function(){
+				element.off('touchstart.doubletap')
+			}, 500);
+		});
 
 		//swipes
 		element.on('touchstart', function(e){
