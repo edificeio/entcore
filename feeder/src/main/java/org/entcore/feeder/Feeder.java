@@ -208,6 +208,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "merge-duplicate" :
 				duplicateUsers.mergeDuplicate(message);
 				break;
+			case "merge-by-keys" :
+				duplicateUsers.mergeBykeys(message);
+				break;
 			case "mark-duplicates" :
 				duplicateUsers.markDuplicates(message);
 				break;

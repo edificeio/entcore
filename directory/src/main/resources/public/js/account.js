@@ -227,6 +227,17 @@ function MyAccount($scope, lang, date, notify, route){
 		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
 	}
 
+	$scope.generateMergeKey = function() {
+		model.account.generateMergeKey();
+	};
+
+	$scope.mergeByKeys = function(account) {
+		model.account.mergeByKeys([account.mergeByKey], function() {
+			delete account.mergeByKey;
+			$scope.$apply();
+		});
+	};
+
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
 	})

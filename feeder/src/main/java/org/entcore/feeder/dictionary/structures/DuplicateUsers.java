@@ -242,6 +242,73 @@ public class DuplicateUsers {
 		});
 	}
 
+	public void mergeBykeys(final Message<JsonObject> message) {
+		final JsonObject error = new JsonObject().putString("status", "error");
+		final String originalUserId = message.body().getString("originalUserId");
+		if (originalUserId == null || originalUserId.isEmpty()) {
+			message.reply(error.putString("message", "invalid.original.user"));
+			return;
+		}
+		final JsonArray mergeKeys = message.body().getArray("mergeKeys");
+		if (mergeKeys == null || mergeKeys.size() < 1) {
+			message.reply(error.putString("message", "invalid.merge.keys"));
+			return;
+		}
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+			final JsonObject params = new JsonObject()
+					.putString("userId", originalUserId)
+					.putArray("mergeKeys", mergeKeys);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+					"MERGE u-[:IN]->gin " +
+					"DELETE rin ", params);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+					"MERGE  u-[:COMMUNIQUE]->gcom " +
+					"DELETE rcom ", params);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+					"MERGE u<-[:COMMUNIQUE]-gcomr " +
+					"DELETE rcomr ", params);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+					"MERGE u-[:RELATED]->ur " +
+					"DELETE rr ", params);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User)<-[rrr:RELATED]-(urr:User) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+					"MERGE u<-[:RELATED]-urr " +
+					"DELETE rrr ", params);
+			tx.add(
+					"MATCH (u:User {id: {userId}}), (mu:User) " +
+					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " + // AND LENGTH(mu.joinKey) < 2  " +
+					"SET mu.mergedWith = {userId}, mu.mergeKey = null, u.mergedLogins = coalesce(u.mergedLogins, []) + mu.login " +
+//					", u.joinKey =  FILTER(eId IN u.joinKey WHERE eId <> mu.externalId) + mu.externalId " +
+					"MERGE mu-[:MERGED]->u " +
+					"RETURN u.mergedLogins as mergedLogins ", params);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					message.reply(event.body());
+				}
+			});
+		} catch (TransactionException e) {
+			log.error("transaction.error", e);
+			message.reply(error.putString("message", "transaction.error"));
+		}
+	}
+
 	private int prioritySource(String source) {
 		Integer priority = sourcePriority.get(source);
 		return (priority != null) ? priority : 0;

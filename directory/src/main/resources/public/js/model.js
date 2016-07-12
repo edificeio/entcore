@@ -217,6 +217,23 @@ User.prototype.removeRelative = function(relative){
 	});
 };
 
+User.prototype.generateMergeKey = function() {
+	http().get("/directory/duplicate/user/mergeKey").done(function(data) {
+		this.mergeKey = data.mergeKey;
+        this.trigger('change');
+	}.bind(this));
+};
+
+User.prototype.mergeByKeys = function(keys, handler) {
+	http().postJson("/directory/duplicate/user/mergeByKey", { mergeKeys : keys }).done(function(data) {
+		this.mergedLogins = data.mergedLogins;
+        this.trigger('change');
+        if(typeof handler === 'function') {
+        	handler();
+        }
+	}.bind(this));
+};
+
 function usersMatch(search){
 	var searchTerm = lang.removeAccents(search).toLowerCase();
 	if(!searchTerm){

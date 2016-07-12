@@ -509,5 +509,9 @@
     "directory.params.tab": "Paramétrages",
     "directory.params.title" : "Bloquer la connexion",
     "directory.params.validate": "Valider",
-    "directory.params.success": "Opération réalisée avec succès"
+    "directory.params.success": "Opération réalisée avec succès",
+    "userBook.profile.mergeKey" : "Clé de fusion",
+    "userBook.profile.generate.mergeKey" : "Générer une clé de fusion",
+    "userBook.profile.mergedLogins" : "Utilisateurs fusionnés",
+    "userBook.profile.mergeByKey" : "Fusionner des utilisateurs"
 }
