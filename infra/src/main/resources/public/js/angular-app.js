@@ -3716,6 +3716,68 @@ module.directive('completeClick', function($parse){
 	}
 });
 
+
+
+module.directive('dragItem', function(){
+	return{
+		restrict: 'A',
+		// lier le scope au parent
+		// pas de propriété scope
+		link: function(scope, element, attributes){
+			var drag = scope.$eval(attributes.dragItem);
+			var matchedElement = undefined;
+			var firstTick = true;
+
+			ui.extendElement.draggable(element, {
+				mouseUp: function(e){
+					$("[drop-item]").off("mouseover mouseout");
+					//declencher l'evenement drop
+					$('body').removeClass('dragging');
+					if(matchedElement){
+						matchedElement.trigger("drop", [drag]);
+					}
+					scope.$apply();
+					firstTick = true;
+					element.attr('style', '');
+				},
+				tick: function(){
+					if(firstTick){
+						element.css({ 'pointer-events': 'none'});
+						$('body').addClass('dragging');
+						$("[drop-item]").on("mouseover", function(e){
+							matchedElement = $(e.target).parents('[drop-item]');
+							//target l'element lié à l'event, ici celui que l'on survole
+						})
+						$("[drop-item]").on("mouseout", function(e){
+							matchedElement = undefined;
+						})
+						scope.$apply();
+
+						firstTick = false;
+					}
+				}
+
+			})
+
+
+		}
+	}
+})
+
+module.directive('dropItem', function(){
+	return{
+		restrict: 'A',
+		link: function(scope,element, attributes){
+			element.on('drop', function(event, item){
+				scope.$eval(attributes.dropItem,{ $item: item });
+				scope.$apply();
+			})
+		}
+	}
+})
+
+
+
 module.directive('dragstart', function($parse){
     return {
         restrict: 'A',
