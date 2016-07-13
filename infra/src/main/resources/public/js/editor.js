@@ -1536,7 +1536,7 @@ window.RTE = (function () {
 				        }
 
 						if(instance.element.attr('public')){
-							scope.visibility = 'public'
+						    scope.imageOption.visibility = 'public'
 						}
 
                         // border-color is a hack to track margin width; auto width is computed as 0 in FF
@@ -1588,9 +1588,13 @@ window.RTE = (function () {
 						instance.editZone.addClass('drawing-zone');
 						scope.display = {};
 						scope.updateContent = function () {
+						    var path = '/workspace/document/';
+						    if (scope.imageOption.visibility === 'public') {
+						        path = '/workspace/pub/document/';
+						    }
 						    var html = '<div>';
 						    scope.imageOption.display.files.forEach(function (file) {
-						        html += '<img src="/workspace/document/' + file._id + '" draggable native />';
+						        html += '<img src="' + path + file._id + '" draggable native />';
 						    });
 
 						    html += '<div><br></div><div><br></div></div>';
@@ -1647,7 +1651,7 @@ window.RTE = (function () {
 			            }
 
 			            if (instance.element.attr('public')) {
-			                scope.visibility = 'public'
+			                scope.attachmentOption.visibility = 'public'
 			            }
 
 			            scope.cancel = function () {
@@ -1693,11 +1697,16 @@ window.RTE = (function () {
 
 			            scope.display = {};
 			            scope.updateContent = function () {
+			                var path = '/workspace/document/';
+			                if (scope.attachmentOption.visibility === 'public') {
+			                    path = '/workspace/pub/document/';
+			                }
+
 			                var html = '<div class="download-attachments">' +
                                 '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
-			                    '<div class="attachments">';
+                                '<div class="attachments">';
 			                scope.attachmentOption.display.files.forEach(function (file) {
-			                    html += '<a href="/workspace/document/' + file._id + '"><div class="download"></div>' + file.name + '</a>';
+			                    html += '<a href="' + path + file._id + '"><div class="download"></div>' + file.name + '</a>';
 			                });
 
 			                html += '</div></div><div><br /><div><br /></div></div>';
@@ -1714,23 +1723,35 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('sound', function(instance){
 				return {
-				    template: '<i ng-click="display.pickFile = true" tooltip="editor.option.sound"></i>' +
-                    '<div ng-if="display.pickFile">' +
-					'<lightbox show="display.pickFile" on-close="display.pickFile = false;">' +
-					'<media-library ng-change="updateContent()" ng-model="display.file" file-format="\'audio\'"></media-library>' +
+				    template: '<i ng-click="soundOption.display.pickFile = true" tooltip="editor.option.sound"></i>' +
+                    '<div ng-if="soundOption.display.pickFile">' +
+					'<lightbox show="soundOption.display.pickFile" on-close="soundOption.display.pickFile = false;">' +
+					'<media-library ng-change="updateContent()" ng-model="soundOption.display.file" file-format="\'audio\'" visibility="soundOption.visibility"></media-library>' +
 					'</lightbox>' +
                     '</div>',
 					link: function(scope, element, attributes){
 						instance.editZone.addClass('drawing-zone');
-						scope.display = {};
-						scope.updateContent = function(){
+						scope.soundOption = {
+						    display: { pickFile: false },
+						    visibility: 'protected'
+						}
+
+						if (instance.element.attr('public')) {
+						    scope.soundOption.visibility = 'public'
+						}
+						scope.updateContent = function () {
+						    var path = '/workspace/document/';
+						    if (scope.soundOption.visibility === 'public') {
+						        path = '/workspace/pub/document/';
+						    }
+
 							instance.selection.replaceHTML(
 								'<div><br /></div>' +
-								'<div class="audio-wrapper"><audio src="/workspace/document/' + scope.display.file._id + '" controls draggable native></audio></div>' +
+								'<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls draggable native></audio></div>' +
 								'<div><br /></div>'
 							);
-							scope.display.pickFile = false;
-							scope.display.file = undefined;
+							scope.soundOption.display.pickFile = false;
+							scope.soundOption.display.file = undefined;
 						};
 
 						instance.element.on('drop', function (e) {
@@ -3050,7 +3071,12 @@ window.RTE = (function () {
                             element.removeClass('droptarget');
                         });
 
-                        element.find('[contenteditable]').on('drop', function(e){
+                        element.find('[contenteditable]').on('drop', function (e) {
+                            var visibility = 'protected';
+                            if (element.attr('public') !== undefined) {
+                                visibility = 'public';
+                            }
+
                             element.removeClass('droptarget');
                             var el = {};
                             var files = e.originalEvent.dataTransfer.files;
@@ -3079,24 +3105,29 @@ window.RTE = (function () {
                                 (function(){
                                     var name = files[i].name;
                                     workspace.Document.prototype.upload(files[i], 'file-upload-' + name + '-' + i, function(doc){
-                                        if(name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1){
+                                        var path = '/workspace/document/';
+                                        if (visibility === 'public') {
+                                            path = '/workspace/pub/document/';
+                                        }
+
+                                        if (name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1) {
                                             el = $('<audio draggable native controls></audio>');
-                                            el.attr('src', '/workspace/document/' + doc._id)
+                                            el.attr('src', path + doc._id)
                                         }
                                         else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
                                             el = $('<img draggable native />');
-                                            el.attr('src', '/workspace/document/' + doc._id)
+                                            el.attr('src', path + doc._id)
                                         }
                                         else {
                                             el = $('<div class="download-attachments">' +
                                                 '<h2>' + lang.translate('editor.attachment.title') + '</h2>' +
 			                                    '<div class="attachments">' +
-                                                    '<a href="/workspace/document/' + doc._id + '"><div class="download"></div>' + name + '</a>' +
+                                                    '<a href="'+ path + doc._id + '"><div class="download"></div>' + name + '</a>' +
                                             '</div></div><div><br /><div><br /></div></div>');
                                         }
 
                                         editorInstance.selection.replaceHTML('<div>' + el[0].outerHTML + '<div><br></div><div><br></div></div>');
-                                    });
+                                    }, visibility);
                                 }())
                             }
                         });

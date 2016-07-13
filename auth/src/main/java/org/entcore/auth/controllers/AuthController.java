@@ -237,14 +237,9 @@ public class AuthController extends BaseController {
 		});
 	}
 
-	@Get("/context")
+	@Get("/admin-welcome-message")
 	public void context(final HttpServerRequest request) {
-		final JsonObject context = new JsonObject();
-		context.putString("callBack", container.config().getObject("authenticationServer").getString("loginCallback"));
-		context.putBoolean("cgu", container.config().getBoolean("cgu", true));
-		context.putString("passwordRegex", passwordPattern.toString());
-		context.putObject("mandatory", container.config().getObject("mandatory", new JsonObject()));
-		renderJson(request, context);
+		renderView(request);
 	}
 
 	private void viewLogin(final HttpServerRequest request, String error, String callBack) {

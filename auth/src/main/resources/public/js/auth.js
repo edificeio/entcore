@@ -18,6 +18,15 @@ function LoginController($scope, template){
 	$scope.template.open('main', 'login-form');
 	$scope.user = {};
 
+	$scope.welcome = {
+
+	};
+
+	http().get('/auth/configure/welcome').done(function (d) {
+	    $scope.welcome.content = d.welcomeMessage;
+	    $scope.$apply();
+	});
+
 	var browser = function(userAgent){
 		var version;
 		if(userAgent.indexOf('Chrome') !== -1){
