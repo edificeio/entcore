@@ -47,26 +47,32 @@
 					</a>
 				</p>
 			</div>
-			<h1 translate content="auth.header"></h1>
+			<h1><i18n>auth.header</i18n></h1>
 			<p class="warning" ng-if="error">[[error]]</p>
-			<form method="post" action="/auth/login">
-				<p>
-					<label translate content="auth.email"></label>
-					<input type="text" ng-model="user.email" name="email" id="email" autofocus tabindex=1 />
-				</p>
-				<p>
-					<label translate content="auth.password"></label>
-					<input-password type="password" ng-model="user.password" name="password" id="password" tabindex=2></input-password>
-				</p>
-				<p>
-					<input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
-				</p>
-				<input type="hidden" name="callBack" ng-value="callBack" />
-				<div class="row">
-					<a class="cell" href="/auth/forgot#/password"><small translate content="need.help"></small></a>
-					<button tabindex="3" class="right-magnet"><i18n>auth.login</i18n></button>
-				</div>
-			</form>
-		</div>
+            <div class="rigid-grid panels-container">
+                <div class="welcome-text">
+                    <div class="row">
+                        <div class="twelve cell" bind-html="welcome.content"></div>
+                    </div>
+                </div>
+                <form method="post" action="/auth/login">
+                    <p>
+                        <label><i18n>auth.email</i18n></label>
+                        <input type="text" ng-model="user.email" name="email" id="email" autofocus tabindex=1 />
+                    </p>
+                    <p>
+                        <label><i18n>auth.password</i18n></label>
+                        <input-password type="password" ng-model="user.password" name="password" id="password" tabindex=2></input-password>
+                    </p>
+                    <p>
+                        <input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
+                    </p>
+                    <input type="hidden" name="callBack" ng-value="callBack" />
+                    <div class="row">
+                        <a class="cell" href="/auth/forgot#/password"><small><i18n>need.help</i18n></small></a>
+                        <button tabindex="3" class="right-magnet"><i18n>auth.login</i18n></button>
+                    </div>
+                </form>
+            </div>
 	</section>
 </div>

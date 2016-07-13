@@ -1,0 +1,13 @@
+﻿<article class="content-box six cell">
+    <h1><i18n>auth.admin.welcome.title</i18n></h1>
+
+    <div class="row">
+        <editor ng-model="message.content" public="true"></editor>
+    </div>
+    <button class="right-magnet" ng-click="message.save()">
+        <i18n>save</i18n>
+    </button>
+</article>
+<article class="content-box five cell stripes-background right-magnet">
+    <iframe src="/auth/public/template/admin/preview.html" style="width: 100%; height: 800px"></iframe>
+</article>

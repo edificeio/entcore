@@ -1,4 +1,5 @@
-@import "../../../../../../../../css-lib/app";
+@import (css) "../../libs/entcore-css-lib/css-lib.css";
+@import "mixins";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 
 @nav-width: 300px;
@@ -236,7 +237,7 @@ i.loader{
 	background-repeat: no-repeat;
 	background-position: center;
 	display: inline-block;
-	.border-box;
+	box-sizing: border-box;
 	vertical-align: middle;
 }
 
@@ -408,8 +409,8 @@ a.link-previous:hover::before {
 }
 
 .stripes-background{
-    background-color: #EEE;
-    background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.5) 35px, rgba(255,255,255,.5) 70px);
+    background-color: #EEE !important;
+    background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.5) 35px, rgba(255,255,255,.5) 70px) !important;
 }
 
 .preview{
@@ -480,7 +481,7 @@ article.main{
 }
 
 article{
-	.reduce-block-eight;
+	padding: 8px;
 	.border-radius();
 	border: none;
 	background: transparent;
@@ -730,14 +731,15 @@ nav.recursive-list{
 	}
 }
 
-.side-tabs-content{
+.side-tabs-content, .content-box{
 	border-color: @main;
 	border-width: 1px;
 	border-radius: 10px;
-	box-shadow: 2px 2px 3px #333;
+	box-shadow: 1px 1px 10px rgba(0,0,0,0.3);
 	border-right: none;
 	border-bottom: none;
 	padding-right: 15px;
+    background: #fff;
 
 	&.unpadded{
 		padding-right: 0px;
@@ -783,7 +785,7 @@ nav.vertical{
 		width: 100%;
 		li{
 			padding-left: 20px;
-			.border-box;
+			box-sizing: border-box;
 			a{
 				color: #000;
 				.run-transition(background);
@@ -838,7 +840,7 @@ nav.vertical{
 		font-family: Lato;
 		font-weight: 300;
 		width: 100%;
-		.border-box;
+		box-sizing: border-box;
 		.run-transition(background);
 		border-radius: 3px;
 		border: 1px solid transparent;
@@ -1120,9 +1122,15 @@ div.leaf-menu{
 
 	&:hover{
 		background-color: @secondary;
+        a, a:hover{
+            color: #fff;
+        }
 	}
 	&.selected{
-		background-color: @secondary;
+		background-color: @main;
+        >a {
+            color: #fff;
+        }
 	}
 }
 div.leaf-menu-container.small{
@@ -1282,7 +1290,7 @@ div.search-container-view{
 hr.separator{
 	margin: 15px 0 15px 0;
 	padding: 0;
-	border: 1px solid black;
+	border: 1px solid #ccc;
 }
 
 .accordions{
@@ -1585,7 +1593,7 @@ nav.admin-bar {
 	border: none;
     position: absolute;
     width: 100%;
-    z-index: 10;
+    z-index: 10027;
     background-color: #EEE;
 
 	ul li{
