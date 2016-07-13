@@ -4984,7 +4984,7 @@ module.directive('explorer', function () {
 				scope.$apply();
 			}
 
-			$('body').on('click', function(e){
+			$('body').on('click touchstart', function(e){
 				if($(e.target).parents('explorer, .toggle, .lightbox').length ===0 && e.target.nodeName!=="EXPLORER"){
 					scope.ngModel = false;
 					element.removeClass('selected');
