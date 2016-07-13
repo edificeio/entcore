@@ -277,12 +277,12 @@ ui.extendSelector = {
         });
 
 		//doubletap
-		element.on('touchstart', function(){
-			element.one('touchstart.doubletouch', function(){
-				element.trigger('doubletap')
+		$('body').on('touchstart', selector, function(e){
+			$(e.target).one('touchstart.doubletouch', function(){
+				$(e.target).trigger('doubletap')
 			});
 			setTimeout(function(){
-				element.off('touchstart.doubletap')
+				$(e.target).off('touchstart.doubletap')
 			}, 500);
 		});
 
