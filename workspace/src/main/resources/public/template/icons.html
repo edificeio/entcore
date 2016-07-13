@@ -19,13 +19,13 @@
  -->
 
 <p class="row info zero-mobile tuto">
-	<b>Naviguez au sein de vos documents en vue icônes :</b><br>
+	<b>Naviguez au sein de vos documents en vue vignettes :</b><br>
 
 	<b>Cliquez</b> pour séléctionner et accéder au menu d'options, <br>
 	<b>Double-cliquez</b> pour ouvrir un dossier ou un fichier.
 </p>
 <p class="row info zero tuto">
-	<b>Naviguez au sein de vos documents en vue icônes sur mobile:</b><br>
+	<b>Naviguez au sein de vos documents en vue vignettes sur mobile :</b><br>
 
 	<b>Cliquez longtemps</b> pour séléctionner et accéder au menu d'options, et cliquez en dehors pour désélectionner<br>
 	<b>Cliquez</b> pour ouvrir un dossier ou un fichier.
@@ -35,6 +35,7 @@
 	<header>&nbsp;</header>
 	<div>
 		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }">
+
 			<explorer ng-model="folder.selected" on-open="openFolder(folder)">
 				<a class="container" draggable="false">
 					<i class="folder-large" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
