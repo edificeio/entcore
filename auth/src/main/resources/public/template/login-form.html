@@ -50,7 +50,7 @@
 			<h1><i18n>auth.header</i18n></h1>
 			<p class="warning" ng-if="error">[[error]]</p>
             <div class="rigid-grid panels-container">
-                <div class="welcome-text">
+                <div class="welcome-text" ng-if="!welcome.hideContent">
                     <div class="row">
                         <div class="twelve cell" bind-html="welcome.content"></div>
                     </div>
