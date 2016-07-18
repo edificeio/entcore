@@ -604,6 +604,7 @@ public class Importer {
 							.putArray("classes", classes);
 					transactionHelper.add(q, p);
 				}
+				final JsonArray groups = new JsonArray();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {
@@ -620,8 +621,20 @@ public class Importer {
 									.putString("structure", structGroup[0])
 									.putString("group", structGroup[1]);
 							transactionHelper.add(query, p);
+							groups.add(structGroup[1]);
 						}
 					}
+				}
+				if (externalId != null) {
+					final String qdfg =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(g:FunctionalGroup) " +
+							"WHERE NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"DELETE r";
+					final JsonObject pdfg = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
+							.putArray("groups", groups);
+					transactionHelper.add(qdfg, pdfg);
 				}
 			}
 		}
@@ -730,6 +743,7 @@ public class Importer {
 							.putArray("classes", classes);
 					transactionHelper.add(q, p);
 				}
+				final JsonArray groups = new JsonArray();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {
@@ -746,9 +760,22 @@ public class Importer {
 									.putString("structure", structGroup[0])
 									.putString("group", structGroup[1]);
 							transactionHelper.add(query, p);
+							groups.add(structGroup[1]);
 						}
 					}
 				}
+				if (externalId != null) {
+					final String qdfg =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]->(g:FunctionalGroup) " +
+							"WHERE NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"DELETE r";
+					final JsonObject pdfg = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
+							.putArray("groups", groups);
+					transactionHelper.add(qdfg, pdfg);
+				}
+
 				if (externalId != null && module != null) {
 					String query =
 							"START u=node:node_auto_index(externalId={userExternalId}), " +
