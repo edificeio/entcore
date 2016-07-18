@@ -2,12 +2,18 @@
 
 }
 
-Message.prototype.sync = function () {
+Message.prototype.sync = function (cb) {
     http().get('/auth/configure/welcome').done(function (d) {
         this.content = d.welcomeMessage;
+        if (cb) {
+            cb();
+        }
     }.bind(this))
     .e404(function () {
-        this.content = ""
+        this.content = "";
+        if (cb) {
+            cb();
+        }
     }.bind(this))
 }
 
