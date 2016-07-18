@@ -1,7 +1,7 @@
 ﻿<article class="content-box six cell">
     <h1><i18n>auth.admin.welcome.title</i18n></h1>
 
-    <div class="row">
+    <div class="row" ng-if="message.display">
         <editor ng-model="message.content" public="true"></editor>
     </div>
     <button class="right-magnet" ng-click="message.save()">

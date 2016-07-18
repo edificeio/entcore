@@ -15,7 +15,7 @@ gulp.task('sass', ['copy-csslib'], () => {
         .pipe(rename("css-lib.scss"))
         .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'))
         .pipe(sass())
-        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'))
+        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib/entcore-css-lib'))
 });
 
 gulp.task('admin-theme', ['sass'], () => {
