@@ -83,6 +83,7 @@ public class Auth extends BaseServer {
 							samlController.setUserAuthAccount(userAuthAccount);
 							samlController.setServiceProviderFactory(new DefaultServiceProviderFactory(
 									config.getObject("saml-services-providers")));
+							samlController.setSignKey((String) vertx.sharedData().getMap("server").get("signKey"));
 							addController(samlController);
 							ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 							if (server != null) {

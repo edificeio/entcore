@@ -23,6 +23,7 @@ import fr.wseduc.webutils.Either;
 import org.opensaml.saml2.core.Assertion;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
@@ -30,12 +31,12 @@ import java.util.List;
 public class SSOAten extends AbstractSSOProvider {
 
 	@Override
-	public void execute(Assertion assertion, Handler<Either<String, JsonObject>> handler) {
+	public void execute(Assertion assertion, Handler<Either<String, JsonElement>> handler) {
 		if (!validConditions(assertion, handler)) return;
 
 		List<String> vectors = getAttributes(assertion, "FrEduVecteur");
 		if (vectors == null || vectors.isEmpty()) {
-			handler.handle(new Either.Left<String, JsonObject>("invalid.vector"));
+			handler.handle(new Either.Left<String, JsonElement>("invalid.vector"));
 			return;
 		}
 
@@ -48,7 +49,7 @@ public class SSOAten extends AbstractSSOProvider {
 				String values[] = vector.split("\\|");
 				if (values.length < 5 || values[3].trim().isEmpty() || values[4].trim().isEmpty() ||
 						(!"1".equals(values[0]) && !"2".equals(values[0]))) {
-					handler.handle(new Either.Left<String, JsonObject>("invalid.vector"));
+					handler.handle(new Either.Left<String, JsonElement>("invalid.vector"));
 					return;
 				}
 				uais.add(values[4]);
@@ -59,13 +60,13 @@ public class SSOAten extends AbstractSSOProvider {
 			String query = "MATCH (student:User)-[:RELATED]->(u:User)-[:IN]->(:ProfileGroup)" +
 					"-[:DEPENDS]->(s:Structure) " +
 					"WHERE HEAD(u.profiles) = 'Relative' AND s.UAI IN {UAI} AND student.attachmentId IN {attachmentId} " +
-					"AND u.firstName IN {firstName} AND u.lastName IN {lastName} ";
+					"AND u.firstName IN {firstName} AND u.lastName IN {lastName} AND NOT(HAS(u.mergedWith)) ";
 			JsonObject params = new JsonObject()
 					.putArray("attachmentId", attachmentId)
 					.putArray("UAI", uais)
 					.putArray("firstName", firstName)
 					.putArray("lastName", lastName);
-			executeQuery(query, params, assertion, handler);
+			executeMultiVectorQuery(query, params, assertion, handler);
 		} else {
 			String values[] = vectors.get(0).split("\\|");
 			if (values.length > 4 && !values[3].trim().isEmpty() && !values[4].trim().isEmpty()) { // Eleve, PersRelEleve
@@ -88,12 +89,12 @@ public class SSOAten extends AbstractSSOProvider {
 								"WHERE HEAD(u.profiles) = 'Student' AND s.UAI = {UAI} ";
 						break;
 					default:
-						handler.handle(new Either.Left<String, JsonObject>("invalid.user.profile"));
+						handler.handle(new Either.Left<String, JsonElement>("invalid.user.profile"));
 						return;
 				}
 				executeQuery(query, params, assertion, handler);
 			} else {
-				handler.handle(new Either.Left<String, JsonObject>("invalid.vector"));
+				handler.handle(new Either.Left<String, JsonElement>("invalid.vector"));
 			}
 		}
 	}

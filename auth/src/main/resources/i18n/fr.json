@@ -85,5 +85,7 @@
     "auth.notify.no.match.mail": "Adresse courielle inconnue. Veuillez contacter votre administrateur ENT.",
     "auth.notify.non.unique.result.mail": "L'adresse courrielle correspond à plusieurs utilisateurs à la fois. Veuillez contacter votre administrateur ENT.",
     "auth.notify.invalid.receivers.all.login": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
-    "auth.notify.invalid.receivers.all.mail": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide."
+    "auth.notify.invalid.receivers.all.mail": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
+    "federated.users.title" : "Choisissez le compte pour vous connecter : ",
+    "connect.federated.user" : "Se connecter"
 }
