@@ -25,7 +25,11 @@ function LoginController($scope, template){
 	http().get('/auth/configure/welcome').done(function (d) {
 	    $scope.welcome.content = d.welcomeMessage;
 	    $scope.$apply();
-	});
+	})
+    .e404(function () {
+        $scope.welcome.hideContent = true;
+        $scope.$apply();
+    });
 
 	var browser = function(userAgent){
 		var version;
