@@ -50,5 +50,7 @@
     "label.accept.cgu": "Eu aceito os termos e condições.",
     "mail.reset.pw.subject": "Reinitialização da sua senha",
     "missing.password": "Esqueceu sua senha?",
-    "reset.error": "Erro durante a reinitialização"
+    "reset.error": "Erro durante a reinitialização",
+    "federated.users.title" : "Choisissez le compte pour vous connecter : ",
+    "connect.federated.user" : "Se connecter"
 }

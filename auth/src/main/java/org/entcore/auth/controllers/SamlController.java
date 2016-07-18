@@ -25,6 +25,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
@@ -41,12 +42,18 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class SamlController extends BaseController {
 
@@ -54,6 +61,7 @@ public class SamlController extends BaseController {
 	private SamlServiceProviderFactory spFactory;
 	private UserAuthAccount userAuthAccount;
 	private EventStore eventStore;
+	private String signKey;
 
 	public SamlController() throws ConfigurationException {
 		DefaultBootstrap.bootstrap();
@@ -65,24 +73,34 @@ public class SamlController extends BaseController {
 			@Override
 			public void handle(final Assertion assertion) {
 				SamlServiceProvider sp = spFactory.serviceProvider(assertion);
-				sp.execute(assertion, new Handler<Either<String, JsonObject>>() {
+				sp.execute(assertion, new Handler<Either<String, JsonElement>>() {
 					@Override
-					public void handle(Either<String, JsonObject> event) {
+					public void handle(Either<String, JsonElement> event) {
 						if (event.isLeft()) {
 							redirect(request, LOGIN_PAGE);
 						} else {
-							final JsonObject res = event.right().getValue();
-							final String userId = res.getString("id");
-							final String activationCode = res.getString("activationCode");
-							final String login = res.getString("login");
-							final String email = res.getString("email");
-							final String mobile = res.getString("mobile");
-							if (activationCode != null && login != null) {
-								activateUser(activationCode, login, email, mobile, assertion, request);
-							} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
-								log.info("Connexion de l'utilisateur fédéré " + login);
-								eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
-								createSession(userId, assertion, request);
+							final String nameId = (assertion != null && assertion.getSubject() != null &&
+									assertion.getSubject().getNameID() != null) ? assertion.getSubject().getNameID().getValue() : null;
+							final String sessionIndex = getSessionId(assertion);
+							if (log.isDebugEnabled()) {
+								log.debug("NameID : " + nameId);
+								log.debug("SessionIndex : " + sessionIndex);
+							}
+							if (nameId == null || sessionIndex == null || nameId.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
+								redirect(request, LOGIN_PAGE);
+								return;
+							}
+							if (event.right().getValue() != null && event.right().getValue().isObject()) {
+								final JsonObject res = event.right().getValue().asObject();
+								authenticate(res, sessionIndex, nameId, request);
+							} else if (event.right().getValue() != null && event.right().getValue().isArray() && isNotEmpty(signKey)) {
+								try {
+									JsonObject params = getUsersWithSignatures(event.right().getValue().asArray(), sessionIndex, nameId);
+									renderView(request, params, "selectFederatedUser.html", null);
+								} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+									log.error("Error signing federated users.", e);
+									redirect(request, LOGIN_PAGE);
+								}
 							} else {
 								redirect(request, LOGIN_PAGE);
 							}
@@ -141,18 +159,65 @@ public class SamlController extends BaseController {
 		});
 	}
 
-	private void createSession(String userId, Assertion assertion, final HttpServerRequest request) {
-		String nameId = (assertion != null && assertion.getSubject() != null &&
-				assertion.getSubject().getNameID() != null) ? assertion.getSubject().getNameID().getValue() : null;
-		String sessionIndex = getSessionId(assertion);
-		if (log.isDebugEnabled()) {
-			log.debug("NameID : " + nameId);
-			log.debug("SessionIndex : " + sessionIndex);
-		}
-		if (nameId == null || sessionIndex == null || nameId.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
+	@Post("/saml/selectUser")
+	public  void selectUser(final HttpServerRequest request) {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
+			@Override
+			protected void handle() {
+				final JsonObject j = new JsonObject();
+				for (String attr : request.formAttributes().names()) {
+					if (isNotEmpty(request.formAttributes().get(attr))) {
+						j.putString(attr, request.formAttributes().get(attr));
+					}
+				}
+				final String nameId = j.getString("nameId");
+				final String sessionIndex = j.getString("sessionIndex");
+				try {
+					if (j.getString("key", "").equals(HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey))) {
+						authenticate(j, sessionIndex, nameId, request);
+					} else {
+						log.error("Invalid signature for federated user.");
+						redirect(request, LOGIN_PAGE);
+					}
+				} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+					log.error("Error validating signature of federated user.", e);
+					redirect(request, LOGIN_PAGE);
+				}
+			}
+		});
+	}
+
+	private void authenticate(JsonObject res, String sessionIndex, String nameId, HttpServerRequest request) {
+		final String userId = res.getString("id");
+		final String activationCode = res.getString("activationCode");
+		final String login = res.getString("login");
+		final String email = res.getString("email");
+		final String mobile = res.getString("mobile");
+		if (activationCode != null && login != null) {
+			activateUser(activationCode, login, email, mobile, sessionIndex, nameId, request);
+		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
+			log.info("Connexion de l'utilisateur fédéré " + login);
+			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
+			createSession(userId, sessionIndex, nameId, request);
+		} else {
 			redirect(request, LOGIN_PAGE);
-			return;
 		}
+	}
+
+	private JsonObject getUsersWithSignatures(JsonArray array, String sessionIndex, String nameId)
+			throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
+		for (Object o : array) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			j.putString("key", HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey));
+			j.putString("nameId", nameId);
+			j.putString("sessionIndex", sessionIndex);
+		}
+		return new JsonObject().putArray("users", array);
+	}
+
+	private void createSession(String userId, String sessionIndex, String nameId, final HttpServerRequest request) {
 		UserUtils.createSession(eb, userId, sessionIndex, nameId,
 				new org.vertx.java.core.Handler<String>() {
 
@@ -183,7 +248,7 @@ public class SamlController extends BaseController {
 	}
 
 	private void activateUser(final String activationCode, final String login, String email, String mobile,
-			final Assertion assertion, final HttpServerRequest request) {
+			final String sessionIndex, final String nameId, final HttpServerRequest request) {
 		userAuthAccount.activateAccount(login, activationCode, UUID.randomUUID().toString(),
 				email, mobile, request, new Handler<Either<String, String>>() {
 			@Override
@@ -191,7 +256,7 @@ public class SamlController extends BaseController {
 				if (activated.isRight() && activated.right().getValue() != null) {
 					log.info("Activation du compte utilisateur " + login);
 					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login);
-						createSession(activated.right().getValue(), assertion, request);
+						createSession(activated.right().getValue(), sessionIndex, nameId, request);
 				} else {
 					log.info("Echec de l'activation : compte utilisateur " + login +
 							" introuvable ou déjà activé.");
@@ -288,5 +353,9 @@ public class SamlController extends BaseController {
 
 	public void setEventStore(EventStore eventStore) {
 		this.eventStore = eventStore;
+	}
+
+	public void setSignKey(String signKey) {
+		this.signKey = signKey;
 	}
 }

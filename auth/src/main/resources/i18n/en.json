@@ -50,5 +50,7 @@
     "label.accept.cgu": "I accept the terms of use.",
     "mail.reset.pw.subject": "Reset password",
     "missing.password": "Missing password",
-    "reset.error": "Reset error"
+    "reset.error": "Reset error",
+    "federated.users.title" : "Choisissez le compte pour vous connecter : ",
+    "connect.federated.user" : "Se connecter"
 }

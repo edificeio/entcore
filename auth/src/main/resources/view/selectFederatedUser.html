@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>{{name}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<script type="text/javascript">var notLoggedIn = true;</script>
+</head>
+
+<body>
+<default-styles>
+	<div class="row">
+		<div class="twelve cell">
+			<div class="seven cell">
+				<h1>
+					<i18n>federated.users.title</i18n>
+				</h1>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<hr>
+	<section id="credentials-content">
+		<article class="row">
+			<div class="rigid-grid row">
+				{{#users}}
+				<form method="POST" action="/auth/saml/selectUser">
+					<input type="hidden" name="id" value="{{id}}" />
+					<input type="hidden" name="login" value="{{login}}" />
+					<input type="hidden" name="activationCode" value="{{activationCode}}" />
+					<input type="hidden" name="email" value="{{email}}" />
+					<input type="hidden" name="mobile" value="{{mobile}}" />
+					<input type="hidden" name="nameId" value="{{nameId}}" />
+					<input type="hidden" name="sessionIndex" value="{{sessionIndex}}" />
+					<input type="hidden" name="key" value="{{key}}" />
+					<div class=" row">
+						<label class="three cell">{{structureName}} - {{login}}</label>
+						<button class="right-magnet" style="margin-bottom:5px;"><i18n>connect.federated.user</i18n></button>
+					</div>
+				</form>
+				{{/users}}
+			</div>
+			</article>
+			</article>
+		</article>
+	</section>
+	</default-styles>
+</body>
+
+</html>
