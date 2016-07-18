@@ -143,6 +143,7 @@ var http = (function(){
 			if(!params){
 				params = {};
 			}
+			params.contentType = "application/json";
 			params.data = angular.toJson(data);
 			params.type = type.toUpperCase();
 			return this.request(url, params, requestName);
