@@ -9,24 +9,24 @@
 }
 
 [contenteditable] mathjax, [bind-html] mathjax{
-        display: block;
-        float: left;
-        position: relative;
-    }
+    display: block;
+    float: left;
+    position: relative;
+}
 
-    [contenteditable] mathjax{
-        border: 1px solid #ccc;
-    }
-    [contenteditable] mathjax::after{
-        display: block;
-        content: " ";
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        user-select: none;
-    }
+[contenteditable] mathjax{
+    border: 1px solid #ccc;
+}
+[contenteditable] mathjax::after{
+    display: block;
+    content: " ";
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    user-select: none;
+}
 
 body editor{
 	@include run-transition(margin);

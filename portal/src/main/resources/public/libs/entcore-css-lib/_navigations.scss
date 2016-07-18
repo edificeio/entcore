@@ -263,10 +263,10 @@ nav.double-content-stamps{
 }
 
 nav.vertical.floating.hash-magnet{
-	padding-top: 40px;
 	margin-bottom: 40px;
-	padding-right: 0;
 	margin-right: 15px;
+	padding-top: 40px;
+	padding-right: 0;
 }
 nav.floating{
 
@@ -277,6 +277,7 @@ nav.floating{
 		height: 25px;
 		display: none;
 		&::after{
+			cursor: pointer;
 			content: "\25B2";
 			display: block;
 			margin-left: auto;
@@ -304,6 +305,7 @@ nav.floating{
 		z-index: 10;
 		display: none;
 		&::after{
+			cursor: pointer;
 			content: "\25B2";
 			display: block;
 			margin-left: auto;
@@ -323,11 +325,10 @@ nav.floating{
 	.content{
         height: auto;
         max-height: 100%;
-		width: 100%;
+		width: auto;
 		overflow: hidden;
 		box-sizing: border-box;
-		border: 5px solid $grayLight;
-		box-shadow: 0px 0px 1px 1px $grayLight;
+		border: 1px solid $grayLight;
 	}
 }
 .floating{
