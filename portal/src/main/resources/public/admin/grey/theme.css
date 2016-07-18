@@ -1,4 +1,4 @@
-@import "../../libs/entcore-css-lib/css-lib.css";
+@import "../../libs/entcore-css-lib/entcore-css-lib/css-lib.css";
 @import url(https://fonts.googleapis.com/css?family=Lato:300,300italic,400,700);
 .row {
   width: 100%;
@@ -508,8 +508,8 @@ h1.link-previous > a:hover::before {
   pointer-events: none;
 }
 .stripes-background {
-  background-color: #EEE;
-  background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.5) 35px, rgba(255, 255, 255, 0.5) 70px);
+  background-color: #EEE !important;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255, 255, 255, 0.5) 35px, rgba(255, 255, 255, 0.5) 70px) !important;
 }
 .preview {
   padding-top: 15px;
@@ -1624,7 +1624,7 @@ nav.admin-bar {
   border: none;
   position: absolute;
   width: 100%;
-  z-index: 10;
+  z-index: 10027;
   background-color: #EEE;
 }
 nav.admin-bar ul li {

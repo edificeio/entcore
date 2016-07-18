@@ -225,10 +225,6 @@ p{
 	}
 }
 
-.welcome-text{
-	display: none;
-}
-
 .browser{
   a{
 	display: inline-block;
@@ -975,6 +971,12 @@ a{
 	position: fixed;
 	max-width: 100%;
 	@include run-transition(height);
+
+	-webkit-transition-delay: 250ms;
+	-moz-transition-delay: 250ms;
+	-ms-transition-delay: 250ms;
+	transition-delay: 250ms;
+
 	z-index: 8000;
 	.toggle{
 		padding: 10px;
@@ -4338,6 +4340,7 @@ side-panel + app-title{
 	img{
 		display: block;
         position: relative;
+        max-width: 100%;
 	}
     blockquote.quotation{
         background: #f5f5f5;
@@ -4384,7 +4387,7 @@ label{
 	position: absolute;
 	right: -12px;
 	top: -11px;
-	padding: 5px;
+	padding: 5px 5px 10px 10px;
 	cursor: pointer;
 	z-index: 1;
 
