@@ -336,7 +336,7 @@ public class AuthController extends BaseController {
 											@Override
 											public void handle(Boolean passIsResetCode) {
 												if(passIsResetCode){
-													redirect(request, "/auth/reset/"+password);
+													redirect(request, "/auth/reset/"+password+"?login="+login);
 												} else {
 													trace.info("Erreur de connexion pour l'utilisateur " + login);
 													loginResult(request, "auth.error.authenticationFailed", c);
@@ -820,6 +820,7 @@ public class AuthController extends BaseController {
 				} else {
 					renderView(request, params
 					.putBoolean("notLoggedIn", user == null)
+					.putString("login", request.params().get("login"))
 					.putString("resetCode", request.params().get("resetCode")), "reset.html", null);
 				}
 			}
