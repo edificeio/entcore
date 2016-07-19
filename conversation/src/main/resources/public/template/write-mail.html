@@ -37,6 +37,7 @@
 						<drop-down
 								options="users.foundCC"
 								ng-change="addCCUser()"
+                                on-close="clearCCSearch()"
 								ng-model="newItem.currentCCReceiver"
 								for="cc-users">
 						</drop-down>
