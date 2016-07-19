@@ -33,7 +33,8 @@
 		<script type="text/javascript" src="/auth/public/js/auth.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	</head>
-	<body ng-controller="ResetController">
+	<body ng-controller="ResetController"
+        ng-init='user.login = "{{login}}"'>
 		<default-styles>
 			<div ng-include="template.containers.main" class="absolute"></div>
 		</default-styles>
