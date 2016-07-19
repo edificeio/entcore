@@ -2624,8 +2624,7 @@ window.RTE = (function () {
                                 return;
                             }
 							
-                            toolbarElement.addClass('sticky');
-							if(toolbarElement.css({ 'position': 'absolute' })){
+							if(toolbarElement.css('position') !== 'absolute'){
 								toolbarElement.css({ 'position': 'absolute' });
 								element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
 							}
@@ -2633,26 +2632,23 @@ window.RTE = (function () {
                             if (topDistance < window.scrollY) {
                                 topDistance = window.scrollY;
                             }
-                            else {
-                                toolbarElement.removeClass('sticky');
-                            }
                             if (topDistance > editZone.offset().top + editZone.height() - toolbarElement.height()) {
                                 topDistance = editZone.offset().top + editZone.height() - toolbarElement.height();
                             }
                             if (attributes.inline !== undefined) {
                                 toolbarElement.offset({
-                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) - parseInt(element.css('margin-top'))
+                                    top: topDistance + $('.height-marker').height() - parseInt(element.css('margin-top'))
                                 });
                                 element.children('popover').offset({
-                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10 - parseInt(element.css('margin-top'))
+                                    top: topDistance + $('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
                                 });
                             }
                             else {
                                 toolbarElement.offset({
-                                    top: topDistance + parseInt(toolbarElement.css('margin-top'))
+                                    top: topDistance + $('.height-marker').height()
                                 });
                                 element.children('popover').offset({
-                                    top: topDistance + parseInt(toolbarElement.css('margin-top')) + 10
+                                    top: topDistance + $('.height-marker').height() + 10
                                 });
                             }
                             
