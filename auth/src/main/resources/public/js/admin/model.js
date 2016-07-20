@@ -20,6 +20,7 @@ Message.prototype.sync = function (cb) {
 Message.prototype.save = function () {
     var savedData = {};
     savedData[currentLanguage] = this.content;
+    savedData.enabled = !this.hide;
     http().putJson('/auth/configure/welcome', savedData)
         .done(function () {
             notify.success('notify.saved')

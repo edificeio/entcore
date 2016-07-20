@@ -1,6 +1,10 @@
 ﻿<article class="content-box six cell">
     <h1><i18n>auth.admin.welcome.title</i18n></h1>
-
+    <div class="row">
+        <label>
+            <input type="checkbox" ng-model="message.hide" /><i18n>auth.admin.welcome.hide</i18n>
+        </label>
+    </div>
     <div class="row" ng-if="message.display">
         <editor ng-model="message.content" public="true"></editor>
     </div>

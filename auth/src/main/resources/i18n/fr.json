@@ -75,6 +75,7 @@
     "pattern": "Format invalide",
     "email": "Email invalide",
     "auth.admin.welcome.title": "Message d'accueil de l'ENT",
+    "auth.admin.welcome.hide": "Masquer le message d'accueil",
     "auth.welcome.disable":  "Désactiver le message d'accueil",
     "password.errors": "Erreur(s) lors de la saisie du mot de passe",
   "password.identical": "Les mots de passe doivent être identiques",
