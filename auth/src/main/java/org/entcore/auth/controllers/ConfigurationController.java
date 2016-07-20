@@ -68,8 +68,10 @@ public class ConfigurationController extends BaseController {
 					if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 						JsonObject res = event.right().getValue();
 						if (res.getObject(host) != null && res.getObject(host).getString(language) != null) {
-							renderJson(request, new JsonObject().putString("welcomeMessage",
-									res.getObject(host).getString(language)));
+							renderJson(request, new JsonObject()
+									.putString("welcomeMessage", res.getObject(host).getString(language))
+									.putBoolean("enabled", res.getObject(host).getBoolean("enabled", false))
+							);
 						} else {
 							renderJson(request, res);
 						}
