@@ -52,6 +52,7 @@ public class DefaultConfigurationService implements ConfigurationService {
 			keys = new JsonObject();
 			keys.putNumber("_id", 0);
 			keys.putNumber(domain.replaceAll("\\.", "_") + "." + language, 1);
+			keys.putNumber(domain.replaceAll("\\.", "_") + ".enabled", 1);
 		} else if (isNotEmpty(domain)) {
 			keys = new JsonObject();
 			keys.putNumber("_id", 0);
