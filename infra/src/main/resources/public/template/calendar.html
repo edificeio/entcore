@@ -17,7 +17,11 @@
 			<div class="hidden-schedule-items before" ng-if="day.scheduleItems.beforeCalendar() > 0">
 				+ [[day.scheduleItems.beforeCalendar()]]
 			</div>
-			<div class="timeslots">
+			
+			<div ng-if="display.readonly" class="timeslots">
+				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
+			</div>
+			<div ng-if="!display.readonly" class="timeslots">
 				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)"></div>
 			</div>
 
