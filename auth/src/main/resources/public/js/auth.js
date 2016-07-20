@@ -24,6 +24,9 @@ function LoginController($scope, template){
 
 	http().get('/auth/configure/welcome').done(function (d) {
 	    $scope.welcome.content = d.welcomeMessage;
+		if(!d.enabled){
+			$scope.welcome.hideContent = true;
+		}
 	    $scope.$apply();
 	})
     .e404(function () {
