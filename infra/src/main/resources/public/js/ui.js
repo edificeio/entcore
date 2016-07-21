@@ -318,7 +318,7 @@ var touchEvents = {
     doubletapElement: function(element, params){
         //doubletap
         element.on('touchstart', function() {
-            element.one('touchstart.doubletouch', function() {
+            element.one('touchstart.doubletap', function() {
                 element.trigger('doubletap')
             });
             setTimeout(function() {
@@ -329,7 +329,7 @@ var touchEvents = {
     doubletapSelector: function(selector, params){
         //doubletap
         $('body').on('touchstart', selector, function(e) {
-            $(e.target).one('touchstart.doubletouch', function() {
+            $(e.target).one('touchstart.doubletap', function() {
                 $(e.target).trigger('doubletap')
             });
             setTimeout(function() {

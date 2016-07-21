@@ -5091,7 +5091,7 @@ module.directive('checkTool', function() {
                 scope.$apply();
             });
 
-            $('body').on('click touchstart', function(e) {
+            $('body').on('click', function(e) {
                 if ($(e.target).parents('.check-tool, .toggle, .lightbox').length === 0 && e.target.nodeName !== "CHECK-TOOL") {
                     scope.ngModel = false;
                     element.removeClass('selected');
@@ -5132,14 +5132,13 @@ module.directive('explorer', function() {
                 scope.$apply();
             }
 
-            $('body').on('click touchstart', function(e) {
+            $('body').on('click', function(e) {
                 if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0 && e.target.nodeName !== "EXPLORER") {
                     scope.ngModel = false;
                     element.removeClass('selected');
                     scope.$apply();
                 }
             })
-
 
             function setGest(apply) {
 
@@ -5161,22 +5160,34 @@ module.directive('explorer', function() {
                     //     exclude: ['longclick']
                     // });
 
-                    element.on('contextmenu', function(e) {
+                    element.on('contextmenu', function(event) {
                         event.preventDefault()
                     })
-                    element.on('longclick', function(e, position) {
+
+                    element.on('click', function(e, position) {
                         select();
                         scope.$apply();
                     })
-                    element.on('click', function() {
+
+                    element.on('doubletap', function() {
                         scope.ngModel = false;
                         scope.onOpen();
                         scope.$apply();
                     });
 
-                } else {
+                    // element.on('longclick', function(e, position) {
+                    //     select();
+                    //     scope.$apply();
+                    // })
 
-                    element.off('click dblclick longclick contextmenu')
+                    // element.on('click', function() {
+                    //     scope.ngModel = false;
+                    //     scope.onOpen();
+                    //     scope.$apply();
+                    // });
+
+                } else {
+                    element.off('click dblclick longclick doubletap contextmenu')
 
                     element.on('click', function() {
                         select();
