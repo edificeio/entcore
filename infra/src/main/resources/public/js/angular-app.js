@@ -4915,9 +4915,14 @@ module.directive('sideNav', function() {
                     }
 
                     ui.extendElement.touchEvents(body, {
+                         exclude: ['longclick'],
                         allowDefault: true
                     });
-                    ui.extendElement.touchEvents(element);
+
+                    ui.extendElement.touchEvents(element, {
+                        exclude: ['longclick']
+                    });
+
                     body.on('swipe-right', function() {
                         element.addClass('slide');
                     });
@@ -5141,7 +5146,20 @@ module.directive('explorer', function() {
                 if (ui.breakpoints.checkMaxWidth("tablette")) {
 
                     element.off('click dblclick longclick')
+
+                    //all events default :
                     ui.extendElement.touchEvents(element);
+                    //new version example
+                    // ui.extendElement.touchEvents(element, {
+                    //     include: ['longclick', 'doubletap']
+                    // });
+                    // ui.extendElement.touchEvents(element, {
+                    //     exclude: ['longclick', 'doubletap']
+                    // });
+                    // ui.extendElement.touchEvents(element, {
+                    //     include: ['truc', 'doubletap'],
+                    //     exclude: ['longclick']
+                    // });
 
                     element.on('contextmenu', function(e) {
                         event.preventDefault()
