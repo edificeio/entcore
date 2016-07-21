@@ -271,7 +271,7 @@ var shockwave = function(event, element) {
             top: yPos - ($ripple.height() / 2),
             left: xPos - ($ripple.width() / 2)
         })
-        .appendTo(element.children('.explorer'));
+        .appendTo(element);
 
     window.setTimeout(function() {
         $div.remove();
