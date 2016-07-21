@@ -86,14 +86,16 @@
 				</div>
 			</div>
 		</a>
-		<input type="checkbox" ng-model="document.selected" ng-change="updateSelection()" />
-		<legend>
-			<a ng-click="openDocument(document)">
-				[[document.title]]
-			</a>
-			<a ng-href="/userbook/annuaire#[[document.owner.id]]"><strong>[[document.owner.name]]</strong></a>
-		</legend>
-	</div>
+        <resource-right name="update" resource="snipletResource" class="right-magnet cell">
+            <input type="checkbox" ng-model="document.selected" ng-change="updateSelection()" />
+        </resource-right>
+        <legend>
+            <a ng-click="openDocument(document)">
+                [[document.title]]
+            </a>
+            <a ng-href="/userbook/annuaire#[[document.owner.id]]"><strong>[[document.owner.name]]</strong></a>
+        </legend>
+</div>
 </article>
 
 <section class="toggle-buttons" ng-class="{ hide: cursor.selection.length === 0 }">
