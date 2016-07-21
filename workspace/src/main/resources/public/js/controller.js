@@ -607,8 +607,8 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 
 	$scope.isUploadedImage = function(){
 		return _.find($scope.newFile.chosenFiles, function(file){
-			return file.extension === 'png' || file.extension === 'jpg' ||
-				file.extension === 'jpeg' || file.extension === 'bmp';
+		    return file.extension.toLowerCase() === 'png' || file.extension.toLowerCase() === 'jpg' ||
+				file.extension.toLowerCase() === 'jpeg' || file.extension.toLowerCase() === 'bmp';
 		}) !== undefined;
 	};
 
