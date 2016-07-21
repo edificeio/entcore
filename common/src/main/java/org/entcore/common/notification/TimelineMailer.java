@@ -318,7 +318,7 @@ public class TimelineMailer {
 											notificationPreference.getString("restriction", properties.getString("restriction"))) &&
 										!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
 												notificationPreference.getString("restriction", properties.getString("restriction"))) &&
-										userPref.getString("userMail") != null){
+										userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
 										to.add(userPref.getString("userMail"));
 									}
 								}

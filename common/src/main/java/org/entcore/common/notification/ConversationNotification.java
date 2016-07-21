@@ -88,6 +88,9 @@ public class ConversationNotification {
 		String language = request.headers().get("Accept-Language");
 		if (language == null || language.trim().isEmpty()) {
 			language = "fr";
+		} else {
+			String[] langs = language.split(",");
+			language = langs[0];
 		}
 		String displayName = i18n.translate("no-reply", language);
 		final JsonObject m = new JsonObject()
@@ -109,15 +112,8 @@ public class ConversationNotification {
 				"MATCH (u:User { id : {noReplyId}}) " +
 				"WITH count(*) as exists " +
 				"WHERE exists = 0 " +
-				"CREATE (u:User:Visible {id : {noReplyId}, displayName : {noReplyName}}) " +
-				"WITH u " +
-				"CREATE UNIQUE u-[:HAS_CONVERSATION]->(c:Conversation { userId : {noReplyId}, active : {true} }), " +
-				"c-[:HAS_CONVERSATION_FOLDER]->(fi:ConversationFolder:ConversationSystemFolder { name : {inbox}}), " +
-				"c-[:HAS_CONVERSATION_FOLDER]->(fo:ConversationFolder:ConversationSystemFolder { name : {outbox}}), " +
-				"c-[:HAS_CONVERSATION_FOLDER]->(fd:ConversationFolder:ConversationSystemFolder { name : {draft}}), " +
-				"c-[:HAS_CONVERSATION_FOLDER]->(ft:ConversationFolder:ConversationSystemFolder { name : {trash}}) ";
-		JsonObject params = new JsonObject().putString("inbox", "INBOX").putString("outbox", "OUTBOX")
-				.putString("draft", "DRAFT").putString("trash", "TRASH").putBoolean("true", true)
+				"CREATE (u:User:Visible {id : {noReplyId}, displayName : {noReplyName}})";
+		JsonObject params = new JsonObject()
 				.putString("noReplyName", displayName)
 				.putString("noReplyId", "no-reply-" + language).putArray("dest", dest);
 		StatementsBuilder sb = new StatementsBuilder()
