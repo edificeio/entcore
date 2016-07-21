@@ -1097,22 +1097,35 @@ public class ConversationController extends BaseController {
 		final UserInfos user = new UserInfos();
 		user.setUserId(message.body().getString("userId"));
 		user.setUsername(message.body().getString("username"));
-		conversationService.send(null, null, m, user,
-				new Handler<Either<String, JsonObject>>() {
-					@Override
-					public void handle(Either<String, JsonObject> event) {
-						if (event.isRight()) {
-							timelineNotification(request, event.right().getValue(), user);
-							JsonObject s = new JsonObject().putString("status", "ok")
-									.putArray("result", new JsonArray().add(new JsonObject()));
-							message.reply(s);
-						} else {
-							JsonObject error = new JsonObject()
-									.putString("error", event.left().getValue());
-							message.reply(error);
+		if(!m.containsField("from")){
+			m.putString("from", user.getUserId());
+		}
+		neoConversationService.addDisplayNames(m, null, new Handler<JsonObject>() {
+			public void handle(final JsonObject m) {
+				saveAndSend(null, m, user, null,
+					new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isRight()) {
+								JsonObject result = event.right().getValue();
+								JsonObject timelineParams = new JsonObject()
+									.putString("subject", result.getString("subject"))
+									.putString("id", result.getString("id"))
+									.putArray("sentIds", m.getArray("allUsers", new JsonArray()));
+								timelineNotification(request, timelineParams, user);
+								JsonObject s = new JsonObject().putString("status", "ok")
+										.putArray("result", new JsonArray().add(new JsonObject()));
+								message.reply(s);
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", event.left().getValue());
+								message.reply(error);
+							}
 						}
-					}
-				});
+					});
+			}
+		});
+
 	}
 
 	private void getUserQuota(String userId, final Handler<JsonObject> handler){
