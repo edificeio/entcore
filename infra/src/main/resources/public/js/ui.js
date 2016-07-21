@@ -282,9 +282,9 @@ var touchEvents = {
     longclickElement: function(element, params){
         //longclick
         element.on('touchstart', function(e) {
-            var anim = setTimeout(function(){
-                shockwave(e, element);
-            }, 400);
+            // var anim = setTimeout(function(){
+            //     shockwave(e, element);
+            // }, 400);
 
             var timer = setTimeout(function() {
                 element.one('touchleave touchend', function() {
@@ -294,7 +294,7 @@ var touchEvents = {
 
             element.one('touchleave touchend', function() {
                 clearTimeout(timer);
-                $(".shockwave").remove();
+                //$(".shockwave").remove();
             });
         });
     },

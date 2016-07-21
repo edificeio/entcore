@@ -5144,7 +5144,7 @@ module.directive('explorer', function() {
 
                 if (ui.breakpoints.checkMaxWidth("tablette")) {
 
-                    element.off('click dblclick longclick')
+                    element.off('click dblclick')
 
                     //all events default :
                     ui.extendElement.touchEvents(element);
@@ -5187,7 +5187,7 @@ module.directive('explorer', function() {
                     // });
 
                 } else {
-                    element.off('click dblclick longclick doubletap contextmenu')
+                    element.off('click dblclick doubletap contextmenu')
 
                     element.on('click', function() {
                         select();
