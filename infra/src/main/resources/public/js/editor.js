@@ -2806,6 +2806,7 @@ window.RTE = (function () {
                                     left: 0,
                                     top: 0
                                 });
+                                element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                             }
                         }
 
@@ -2840,7 +2841,8 @@ window.RTE = (function () {
 
                                 if(attributes.inline !== undefined){
                                     element.css({
-                                        'margin-top': 0
+                                        'margin-top': 0,
+                                        'padding-top': 0
                                     });
                                     element.children('editor-toolbar').attr('style', '');
                                 }
