@@ -2804,10 +2804,7 @@ window.RTE = (function () {
                             if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                                 element.children('editor-toolbar').css({
                                     left: 0,
-                                    top: -element.children('editor-toolbar').height() + 'px'
-                                });
-                                element.css({
-                                    'margin-top': element.children('editor-toolbar').height() + 'px'
+                                    top: 0
                                 });
                             }
                         }
