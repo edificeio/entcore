@@ -5169,7 +5169,7 @@ module.directive('explorer', function() {
                         scope.$apply('ngModel');
                     })
 
-                    element.on('doubletap', function() {
+                    element.on('doubletap dblclick', function() {
                         scope.ngModel = false;
                         scope.onOpen();
                         scope.$apply('ngModel');
