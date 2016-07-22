@@ -5129,14 +5129,14 @@ module.directive('explorer', function() {
                 if (scope.ngChange) {
                     scope.ngChange();
                 }
-                scope.$apply();
+                scope.$apply('ngModel');
             }
 
             $('body').on('click', function(e) {
                 if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0 && e.target.nodeName !== "EXPLORER") {
                     scope.ngModel = false;
                     element.removeClass('selected');
-                    scope.$apply();
+                    scope.$apply('ngModel');
                 }
             })
 
@@ -5166,13 +5166,13 @@ module.directive('explorer', function() {
 
                     element.on('click', function(e, position) {
                         select();
-                        scope.$apply();
+                        scope.$apply('ngModel');
                     })
 
                     element.on('doubletap', function() {
                         scope.ngModel = false;
                         scope.onOpen();
-                        scope.$apply();
+                        scope.$apply('ngModel');
                     });
 
                     // element.on('longclick', function(e, position) {
@@ -5191,12 +5191,13 @@ module.directive('explorer', function() {
 
                     element.on('click', function() {
                         select();
-                        scope.$apply();
+                        scope.$apply('ngModel');
                     });
                     element.on('dblclick', function() {
                         scope.onOpen();
                         scope.ngModel = false;
-                        scope.$apply();
+                        scope.$apply('ngModel');
+                        
                     })
                 }
             }
