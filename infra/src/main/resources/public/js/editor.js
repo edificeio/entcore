@@ -2625,10 +2625,10 @@ window.RTE = (function () {
                             }
 							
 							if(toolbarElement.css('position') !== 'absolute'){
-								toolbarElement.css({ 'position': 'absolute' });
+								toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
 								element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
 							}
-                            var topDistance = element.offset().top;
+							var topDistance = element.offset().top - $('.height-marker').height();
                             if (topDistance < window.scrollY) {
                                 topDistance = window.scrollY;
                             }
@@ -2637,7 +2637,7 @@ window.RTE = (function () {
                             }
                             if (attributes.inline !== undefined) {
                                 toolbarElement.offset({
-                                    top: topDistance + $('.height-marker').height() - parseInt(element.css('margin-top'))
+                                    top: topDistance + $('.height-marker').height()
                                 });
                                 element.children('popover').offset({
                                     top: topDistance + $('.height-marker').height() + 10 - parseInt(element.css('margin-top'))
@@ -2803,8 +2803,7 @@ window.RTE = (function () {
                         var placeToolbar = function () {
                             if (attributes.inline !== undefined && $(window).width() > ui.breakpoints.tablette) {
                                 element.children('editor-toolbar').css({
-                                    left: 0,
-                                    top: 0
+                                    left: 0
                                 });
                                 element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                             }
