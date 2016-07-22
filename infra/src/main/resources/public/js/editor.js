@@ -380,7 +380,9 @@ window.RTE = (function () {
 					});
 				}
 				that.instance.addState(that.editZone.html());
-				this.instance.trigger('contentupdated');
+				setTimeout(function () {
+				    this.instance.trigger('contentupdated');
+				}.bind(this), 20);
 			};
 
 			this.isCursor = function () {
