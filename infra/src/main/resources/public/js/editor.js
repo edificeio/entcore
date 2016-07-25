@@ -2913,7 +2913,6 @@ window.RTE = (function () {
                             }
 
                             if (e.keyCode === 13) {
-                                e.preventDefault();
                                 editorInstance.addState(editZone.html());
                                 
                                 var parentContainer = range.startContainer;
@@ -2925,24 +2924,28 @@ window.RTE = (function () {
                                     if (parentContainer.nodeType !== 1) {
                                         parentContainer = parentContainer.parentNode;
                                     }
-                                    if (range.startOffset !== range.startContainer.textContent.length) {
-                                        newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
-                                        parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
-                                    }
+                                    if (parentContainer.nodeName !== 'LI') {
+                                        e.preventDefault();
 
-                                    if (parentContainer.nextSibling) {
-                                        parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
-                                    }
-                                    else {
-                                        parentContainer.parentNode.appendChild(newLine[0]);
+                                        if (range.startOffset !== range.startContainer.textContent.length) {
+                                            newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                            parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+                                        }
+
+                                        if (parentContainer.nextSibling) {
+                                            parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
+                                        }
+                                        else {
+                                            parentContainer.parentNode.appendChild(newLine[0]);
+                                        }
+
+                                        var range = document.createRange();
+                                        range.setStart(newLine[0].firstChild || newLine[0], 1);
+
+                                        sel.removeAllRanges();
+                                        sel.addRange(range);
                                     }
                                 }
-
-                                var range = document.createRange();
-                                range.setStart(newLine[0].firstChild || newLine[0], 1);
-
-                                sel.removeAllRanges();
-                                sel.addRange(range);
                             }
 
                             if (e.keyCode === 8 || e.keyCode === 46) {
