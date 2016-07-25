@@ -296,24 +296,28 @@ public class ClassController extends BaseController {
 							JsonObject j = new JsonObject()
 									.putString("action", "setDefaultCommunicationRules")
 									.putString("schoolId", s.right().getValue().getString("id"));
-							eb.send("wse.communication", j);
+							eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
+								public void handle(Message<JsonObject> event) {
+									if("error".equals(event.body().getString("status", ""))){
+										log.error("[initPostCreate] Set communication rules failed.");
+									} else if(welcomeMessage){
+										JsonObject params = new JsonObject();
+										conversationNotification.notify(request, "", userIds, null,
+											"welcome.subject", "email/welcome.html", params,
+											new Handler<Either<String, JsonObject>>() {
+												public void handle(Either<String, JsonObject> r) {
+													if (r.isLeft()) {
+														log.error(r.left().getValue());
+													}
+											  }
+											});
+									}
+								}
+							});
 						}
 					}
 				});
-				if (welcomeMessage) {
-					JsonObject params = new JsonObject();
-					conversationNotification.notify(request, "", userIds, null,
-						"welcome.subject", "email/welcome.html", params,
-						new Handler<Either<String, JsonObject>>() {
 
-							@Override
-							public void handle(Either<String, JsonObject> r) {
-								if (r.isLeft()) {
-									log.error(r.left().getValue());
-								}
-						  }
-						});
-				}
 		   }
 		});
 	}
