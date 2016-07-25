@@ -2,12 +2,17 @@
 var less = require('gulp-less');
 var sass = require('gulp-sass');
 var rename = require("gulp-rename");
+var merge = require('merge2');
 
 var localCSSLibPath = '../entcore-css-lib'
 
 gulp.task('copy-csslib', () => {
-    return gulp.src(localCSSLibPath + '/**/*')
-        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'))
+    var lib = gulp.src(localCSSLibPath + '/**/*')
+        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'));
+    var editorTemplates = gulp.src(localCSSLibPath + '/editor-resources/img/**/*')
+        .pipe(gulp.dest('./portal/src/main/resources/public/entcore-css-lib/editor-resources/img'));
+
+    return merge([lib, editorTemplates]);
 });
 
 gulp.task('sass', ['copy-csslib'], () => {

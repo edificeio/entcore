@@ -1179,6 +1179,16 @@ ul.icons-tabs{
 	position: absolute;
 }
 
+.explorer{
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+
+
+
+
 .select-file{
 	margin-top: 20px;
 	margin-bottom: 20px;
@@ -1896,6 +1906,7 @@ span.no-style{
 	font-size: 12px;
 	text-align: center;
 	@include border-radius(10px);
+    max-width: 100%;
 }
 
 .info{
@@ -1905,6 +1916,7 @@ span.no-style{
 	font-size: 12px;
 	text-align: center;
 	@include border-radius(10px);
+    max-width: 100%;
 }
 
 em.low-importance{
@@ -3172,7 +3184,7 @@ popover{
 	}
 }
 
-.panel{
+.panel form{
 	width: 415px;
 	margin-left:auto;
 	margin-right: auto;
@@ -4408,6 +4420,7 @@ label{
 			display: block;
 			font-size: 14px;
 			text-align: center;
+			text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
 		}
 	}
 }

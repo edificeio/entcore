@@ -1,3 +1,29 @@
+@keyframes shockwave-animation {
+  from {
+    transform: scale(1);
+    opacity: 0; }
+  to {
+    transform: scale(100);
+    opacity: 0.4; } }
+
+@-webkit-keyframes shockwave-animation {
+  from {
+    -webkit-transform: scale(1);
+    opacity: 0; }
+  to {
+    -webkit-transform: scale(100);
+    opacity: 0.4; } }
+
+.shockwave {
+  position: absolute;
+  border-radius: 50%;
+  z-index: 9;
+  width: 50px;
+  height: 50px;
+  background: turquoise;
+  animation: shockwave-animation 800ms;
+  -webkit-animation: shockwave-animation 800ms; }
+
 .row {
   width: 100%;
   position: relative;
@@ -2016,6 +2042,11 @@ ul.icons-tabs {
 .icons-view.absolute {
   position: absolute; }
 
+.explorer {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer; }
+
 .select-file {
   margin-top: 20px;
   margin-bottom: 20px; }
@@ -2632,7 +2663,8 @@ span.no-style {
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
-  border-radius: 10px; }
+  border-radius: 10px;
+  max-width: 100%; }
 
 .info {
   color: #2F8CC9;
@@ -2644,7 +2676,8 @@ span.no-style {
   -moz-border-radius: 10px;
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
-  border-radius: 10px; }
+  border-radius: 10px;
+  max-width: 100%; }
 
 em.low-importance {
   font-size: 12px !important;
@@ -3798,7 +3831,7 @@ popover {
     opacity: 0;
     pointer-events: none; }
 
-.panel {
+.panel form {
   width: 415px;
   margin-left: auto;
   margin-right: auto;
@@ -3808,18 +3841,18 @@ popover {
   -o-border-radius: 5px;
   border-radius: 5px;
   padding: 15px; }
-  .panel label {
+  .panel form label {
     width: 150px; }
-  .panel input[type=text], .panel input[type=password], .panel input[type=tel], .panel input[type=email] {
+  .panel form input[type=text], .panel form input[type=password], .panel form input[type=tel], .panel form input[type=email] {
     width: 200px;
     float: right;
     line-height: 20px; }
-  .panel a {
+  .panel form a {
     display: block;
     clear: both; }
-  .panel h1 img {
+  .panel form h1 img {
     display: none; }
-  .panel input[type=submit] {
+  .panel form input[type=submit] {
     float: right; }
 
 .schedule {
@@ -4903,7 +4936,8 @@ label {
       content: "+";
       display: block;
       font-size: 14px;
-      text-align: center; }
+      text-align: center;
+      text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.2); }
 
 .check-tool i:hover {
   transform: scale(1.1);
@@ -5616,10 +5650,10 @@ plus {
   user-select: none; }
 
 body editor {
-  -o-transition: margin 250ms ease;
-  -moz-transition: margin 250ms ease;
-  -webkit-transition: margin 250ms ease;
-  transition: margin 250ms ease;
+  -o-transition: padding 250ms ease;
+  -moz-transition: padding 250ms ease;
+  -webkit-transition: padding 250ms ease;
+  transition: padding 250ms ease;
   display: block;
   position: relative;
   float: left;
@@ -6861,10 +6895,10 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
     background: gainsboro; }
   .check-tool i:active {
     background: turquoise; }
-  explorer img {
-    -webkit-user-select: none;
+  explorer {
+    display: block;
     user-select: none;
-    pointer-events: none; } }
+    -webkit-user-select: none; } }
 
 @media screen and (max-width: 550px) {
   body .notification .content {
