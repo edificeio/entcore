@@ -7,7 +7,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 	$scope.disabledButtons = { "validate" : false, "import" : false, "back" : false };
 	$scope.wizard = new Wizard();
 	$scope.wizard.loadAvailableFeeders(function(conf) {
-		if (conf.feeders) {
+		if (conf.feeders && conf.feeders.length > 1) {
 			$scope.feeders = conf.feeders;
 		} else {
 			$scope.feeders = ['CSV'];
