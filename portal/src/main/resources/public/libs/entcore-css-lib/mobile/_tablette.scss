@@ -471,10 +471,12 @@
     .check-tool i:active{
         background: $accent;
     }
-    //prevent hold to copy box on ios
-    explorer img{
-        -webkit-user-select: none;
+
+    explorer{
+        display: block;
         user-select: none;
-        pointer-events: none;
+        -webkit-user-select: none;
+        //-webkit-touch-callout: none;
     }
+
 }

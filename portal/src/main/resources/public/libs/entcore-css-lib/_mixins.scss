@@ -209,6 +209,39 @@
 	filter: invert($amount);
 }
 
+@keyframes shockwave-animation{
+    from {
+      transform: scale(1);
+      opacity: 0;
+    }
+    to {
+      transform: scale(100);
+      opacity: 0.4;
+    }
+}
+@-webkit-keyframes shockwave-animation{
+    from {
+      -webkit-transform: scale(1);
+      opacity: 0;
+    }
+    to {
+      -webkit-transform: scale(100);
+      opacity: 0.4;
+    }
+}
+
+.shockwave{
+	position: absolute;
+	border-radius: 50%;
+	z-index: 9;
+	width: 50px;
+	height: 50px;
+	background: $accent;
+	animation: shockwave-animation 800ms;
+	-webkit-animation: shockwave-animation 800ms;
+}
+
+
 ////////    UI ELEMENTS
 
 

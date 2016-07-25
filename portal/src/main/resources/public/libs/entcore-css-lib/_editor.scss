@@ -29,7 +29,7 @@
 }
 
 body editor{
-	@include run-transition(margin);
+	@include run-transition(padding);
 	display: block;
 	position: relative;
 	float: left;
