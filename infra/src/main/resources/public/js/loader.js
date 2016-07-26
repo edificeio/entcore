@@ -69,7 +69,7 @@ var loader = (function(){
 			{ path: 'angular.min.js' },
 			{ path: 'angular-sanitize.min.js' },
 			{ path: 'angular-route.min.js' },
-			{ path: 'underscore-min-1.4.4.js' },
+			{ path: 'underscore-min-1.8.3.js' },
 			{ path: 'idiom.js' },
 			{ path: 'editor.js' },
 			{ path: 'lib.js' },
@@ -82,7 +82,7 @@ var loader = (function(){
 
 	var libraries = {
 		humane: 'humane.min.js',
-		underscore: 'underscore-min-1.4.4.js',
+		underscore: 'underscore-min-1.8.3.js',
 		ckeditor: '../ckeditor/ckeditor.js'
 	};
 	var basePath = document.getElementById('context').getAttribute('src').split('/');
