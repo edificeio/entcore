@@ -2927,9 +2927,15 @@ window.RTE = (function () {
                                     if (parentContainer.nodeName !== 'LI') {
                                         e.preventDefault();
 
-                                        if (range.startOffset !== range.startContainer.textContent.length) {
+                                        if (!rrange.startContainer.nodeType !== 1 && range.startOffset < range.startContainer.textContent.length) {
                                             newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
-                                            parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+                                            range.startContainer.textContent = range.startContainer.textContent.substring(0, range.startOffset);
+                                        }
+										if (range.startContainer.nodeType === 1 && range.startOffset < range.startContainer.children.length) {
+                                            for(var i = range.startOffset; i < range.startContainer.children.length; i++){
+												range.startContainer.children[i].remove();
+												newLine.append($(range.startContainer.children[i].outerHTML));
+											}
                                         }
 
                                         if (parentContainer.nextSibling) {
