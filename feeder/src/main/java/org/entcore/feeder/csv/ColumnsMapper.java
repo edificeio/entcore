@@ -81,8 +81,15 @@ public class ColumnsMapper {
 		for (int j = 0; j < strings.length; j++) {
 			String cm = columnsNameMapping(strings[j]);
 			if (namesMapping.containsValue(cm)) {
-				columns.add(j, cm);
+				try {
+					columns.add(j, cm);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					columns.clear();
+					handler.handle(new ResultMessage().error("invalid.column " + cm));
+					return;
+				}
 			} else {
+				columns.clear();
 				handler.handle(new ResultMessage().error("invalid.column " + cm));
 				return;
 			}

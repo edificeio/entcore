@@ -299,7 +299,7 @@ public class CsvFeeder implements Feed {
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
 					columnsMapper.getColumsNames(strings, columns, handler);
-				} else {
+				} else if (!columns.isEmpty()) {
 					JsonObject user = new JsonObject();
 					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 					user.putArray("profiles", new JsonArray().add(profile));
