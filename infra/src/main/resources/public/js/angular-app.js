@@ -3878,10 +3878,23 @@ module.directive('dragItem', function() {
     }
 })
 
-module.directive('dropItem', function() {
+module.directive('dropItem', function($parse) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+            var dropConditionFn = $parse(attributes.dropcondition);
+            element.on("mouseover", function(event) {
+                if (attributes.dropcondition === undefined || dropConditionFn(scope, {
+                        $originalEvent: event.originalEvent
+                    })) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    element.addClass("droptarget")
+                }
+            });
+            element.on("mouseout", function(event) {
+                element.removeClass("droptarget")
+            });
             element.on('drop', function(event, item) {
                 scope.$eval(attributes.dropItem, {
                     $item: item
