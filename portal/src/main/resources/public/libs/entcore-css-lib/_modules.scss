@@ -3191,10 +3191,6 @@ popover{
 	@include border-radius;
 	padding: 15px;
 
-	label{
-		width: 150px;
-	}
-
 	input[type=text], input[type=password], input[type=tel], input[type=email]{
 		width: 200px;
 		float: right;
@@ -3213,6 +3209,11 @@ popover{
 	}
 }
 
+.panel.login form{
+	label{
+		width: 150px;
+	}
+}
 
 .schedule{
 	.previous-timeslots{

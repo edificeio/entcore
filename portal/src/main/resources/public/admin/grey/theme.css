@@ -269,6 +269,12 @@ header.navbar h1:first-child {
 header.navbar a {
   float: right;
 }
+i.folder-large {
+  background: url('../img/icons/glyphicons-145-folder-open.svg') #eee;
+  height: 100px;
+  width: 100px;
+  display: block;
+}
 i.ok {
   height: 31px;
   width: 31px;
