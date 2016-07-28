@@ -1,11 +1,11 @@
 <div class="centered container row">
 	<section class="main">
-		<div class="panel">
+		<div class="panel activation">
 			<h1 translate content="auth.reset.header"></h1>
 			<p class="warning" translate content="[[error]]" ng-if="error"></p>
 			<form method="post" ng-submit="reset()" name="resetForm">
 				<p>
-					<label translate content="auth.email"></label>
+					<label><i18n>auth.email</i18n></label>
 					<input type="text" class="large-input" name="login" ng-model="user.login" name="login" tabindex="1" required/>
 					<p class="input-errors" ng-if="resetForm.login.$invalid && resetForm.login.$dirty">
 						<span ng-repeat="(key, value) in resetForm.login.$error">
@@ -14,7 +14,7 @@
 					</p>
 				</p>
 				<p>
-					<label translate content="auth.activation.password"></label>
+					<label><i18n>auth.activation.password</i18n></label>
 					<input-password required ng-pattern="/[[passwordRegex]]/" ng-model="user.password"
 						ng-change="refreshInput(resetForm, 'confirmPassword')" name="password" ng-trim="false" tabindex="2"></input-password>
 					<p class="input-errors" ng-if="resetForm.password.$invalid && resetForm.password.$dirty">
@@ -23,7 +23,7 @@
 							<label ng-if="value">[[lang.translate(key)]]</label>
 						</span>
 					</p>
-					<label translate content="auth.activation.confirm.password"></label>
+					<label><i18n>auth.activation.confirm.password</i18n></label>
 					<input-password required ng-pattern="identicalRegex(user.password)" ng-model="user.confirmPassword"
 						name="confirmPassword" ng-trim="false" tabindex="3"></input-password>
 					<p class="input-errors" ng-if="resetForm.confirmPassword.$viewValue && resetForm.confirmPassword.$invalid && resetForm.confirmPassword.$dirty">
