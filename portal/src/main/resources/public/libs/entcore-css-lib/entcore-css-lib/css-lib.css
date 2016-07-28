@@ -3841,8 +3841,6 @@ popover {
   -o-border-radius: 5px;
   border-radius: 5px;
   padding: 15px; }
-  .panel form label {
-    width: 150px; }
   .panel form input[type=text], .panel form input[type=password], .panel form input[type=tel], .panel form input[type=email] {
     width: 200px;
     float: right;
@@ -3854,6 +3852,9 @@ popover {
     display: none; }
   .panel form input[type=submit] {
     float: right; }
+
+.panel.login form label {
+  width: 150px; }
 
 .schedule {
   width: 100%;
