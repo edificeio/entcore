@@ -401,8 +401,22 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		}
 	};
 
+    $scope.allReceivers = function(mail){
+        var receivers = mail.to.slice(0);
+        mail.toName && mail.toName.forEach(function(deletedReceiver){
+            receivers.push({
+                deleted: true,
+                displayName: deletedReceiver
+            });
+        });
+        return receivers;
+    }
+
 	$scope.filterUsers = function(mail){
 		return function(user){
+            if(user.deleted){
+                return true
+            }
 			var mapped = mail.map(user)
 			return typeof mapped !== 'undefined' && typeof mapped.displayName !== 'undefined' && mapped.displayName.length > 0
 		}
