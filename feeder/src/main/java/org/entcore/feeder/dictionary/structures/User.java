@@ -423,7 +423,11 @@ public class User {
 				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
 				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
 				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
-				"CREATE UNIQUE s-[:RELATED]->r, r-[:IN]->rspg, r-[:IN]->rcpg " +
+				"MERGE s-[:RELATED]->r " +
+				"WITH s, r, st, rspg, rcpg " +
+				"MERGE r-[:IN]->rspg " +
+				"WITH s, r, st, rcpg " +
+				"MERGE r-[:IN]->rcpg " +
 				"SET s.relative = CASE WHEN r.externalId IN s.relative THEN " +
 				"s.relative ELSE coalesce(s.relative, []) + (r.externalId + '$1$1$1$1$0') END " +
 				"RETURN COLLECT(st.id) as structures ";
