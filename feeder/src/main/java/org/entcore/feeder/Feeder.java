@@ -134,7 +134,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	public void handle(Message<JsonObject> message) {
 		String action = message.body().getString("action", "");
 		if (action.startsWith("manual-") && !Importer.getInstance().isReady()) {
-			sendError(message, "concurrent.import");
+			eventQueue.add(message);
+			return;
 		}
 		switch (action) {
 			case "manual-create-structure" : manual.createStructure(message);
@@ -217,6 +218,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			default:
 				sendError(message, "invalid.action");
 		}
+		checkEventQueue();
 	}
 
 	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
@@ -445,6 +447,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					if (!"ok".equals(res.body().getString("status"))) {
 						logger.error(res.body().getString("message"));
 						h.handle(new Report(acceptLanguage).addError("init.importer.error"));
+						importer.clear();
+						checkEventQueue();
 						return;
 					}
 					final Report report = importer.getReport();
@@ -514,6 +518,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				case "transition": launchTransition(event, null);
 					break;
 				default:
+					handle(event);
 			}
 		}
 	}
