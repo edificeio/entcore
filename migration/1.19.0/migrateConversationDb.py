@@ -9,7 +9,7 @@ from psycopg2 import errorcodes
 from neo4jrestclient.client import GraphDatabase
 
 gdb = GraphDatabase("http://localhost:7474/db/data/")
-sql = psycopg2.connect(database="ong", host="localhost", user="web-education", password="We_1234")
+sql = psycopg2.connect(database="ong", host="10.0.81.20", user="web-education", password="We_1234")
 sql.autocommit = False
 cur = sql.cursor()
 
@@ -82,7 +82,7 @@ updateParentMessageQuery = {
         PREPARE updateParentMessage AS
         UPDATE conversation.messages
         SET parent_id = $1
-        WHERE id = $2
+        WHERE id = $2 AND parent_id IS NULL
     """,
     'execute': "EXECUTE updateParentMessage (%s, %s)"
 }
@@ -192,7 +192,10 @@ def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambd
         #print('(' + str(datetime.now()) + ') [loop][neo] reply : ' + str(len(results)))
         if len(results) > 0:
             for row in results:
-                rowAction(row, buf)
+                try:
+                    rowAction(row, buf)
+                except Exception as e:
+                    print("Error in row action : %s" % str(e))
             loopAction(buf)
             page = page + 1
         else:
@@ -207,7 +210,7 @@ def pageLoop(query, params, rowAction, loopAction=(lambda: ()), endAction=(lambd
 
 def bufferFolder(row, buf):
     #(id, parent_id, user_id, name, depth, trashed)
-    params = (row[0]['id'], row[1], row[2], row[0]['name'], row[3], row[4])
+    params = (row[0]['id'], row[1], row[2], row[0]['name'][:255].decode('utf-8', 'replace'), row[3], row[4])
     if 'params' not in buf.keys():
         buf['params'] = []
     buf['params'].append(params)
@@ -227,7 +230,7 @@ def bufferMessageDeps(row, buf):
         messageId,
         containsOr(row[0], 'subject', '')[:255].decode('utf-8', 'replace'),
         containsOr(row[0], 'body', ''),
-        containsOr(row[0], 'from', ''),
+        containsOr(row[0], 'from', '')[:36].decode('utf-8', 'replace'),
         containsOrNone(row[0], 'to', Json),
         containsOrNone(row[0], 'cc', Json),
         containsOrNone(row[0], 'displayNames', Json),
@@ -243,7 +246,7 @@ def bufferMessageDeps(row, buf):
             attachmentIds = []
 
         #(user_id, message_id, folder_id, trashed, unread, total_quota)
-        params = (user['userId'], messageId, user['folderId'], user['trashed'], user['unread'], user['totalSize'])
+        params = (user['userId'][:36].decode('utf-8', 'replace'), messageId, user['folderId'], user['trashed'], user['unread'], user['totalSize'])
         if 'userMsgParams' not in buf.keys():
             buf['userMsgParams'] = []
         buf['userMsgParams'].append(params)
@@ -252,7 +255,7 @@ def bufferMessageDeps(row, buf):
             #(user_id, message_id, attachment_id)
             if 'userMsgAttParams' not in buf.keys():
                 buf['userMsgAttParams'] = []
-            buf['userMsgAttParams'].append((user['userId'], messageId, attId))
+            buf['userMsgAttParams'].append((user['userId'][:36].decode('utf-8', 'replace'), messageId, attId))
 
 
 def insertMessageDeps(buf):
@@ -367,3 +370,4 @@ except Exception as e:
 
 cur.close()
 sql.close()
+
