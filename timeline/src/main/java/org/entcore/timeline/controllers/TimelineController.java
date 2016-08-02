@@ -136,7 +136,7 @@ public class TimelineController extends BaseController {
 
 				final String translatedContents;
 				if (timelineI18n.getString(key, key).equals(key)) {
-					translatedContents = I18n.getInstance().translate(key, language);
+					translatedContents = I18n.getInstance().translate(key, getHost(request), language);
 				} else {
 					translatedContents = timelineI18n.getString(key, key);
 				}

@@ -89,6 +89,8 @@ public class Starter extends BaseServer {
 				serverMap.put(field, sharedConf.getValue(field));
 			}
 
+			vertx.sharedData().getMap("skins").putAll(config.getObject("skins", new JsonObject()).toMap());
+
 			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
 				protected void handle() {

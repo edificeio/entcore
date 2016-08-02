@@ -61,7 +61,7 @@ public class ConversationNotification {
 			public void handle(String message) {
 				if (message != null) {
 					ConversationNotification.this.notify(request, from, to, cc,
-							i18n.translate(subject, request.headers().get("Accept-Language")),
+							i18n.translate(subject, Renders.getHost(request), request.headers().get("Accept-Language")),
 							message, result);
 				} else {
 					log.error("Unable to send conversation notification.");
@@ -92,7 +92,7 @@ public class ConversationNotification {
 			String[] langs = language.split(",");
 			language = langs[0];
 		}
-		String displayName = i18n.translate("no-reply", language);
+		String displayName = i18n.translate("no-reply", Renders.getHost(request), language);
 		final JsonObject m = new JsonObject()
 				.putObject("message", new JsonObject()
 					.putArray("to", to)

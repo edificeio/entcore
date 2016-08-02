@@ -226,7 +226,7 @@ public class AuthController extends BaseController {
 		}
 		if (error != null && !error.trim().isEmpty()) {
 			context.putObject("error", new JsonObject()
-					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
+					.putString("message", I18n.getInstance().translate(error, getHost(request), request.headers().get("Accept-Language"))));
 		}
 		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 			@Override
@@ -263,7 +263,7 @@ public class AuthController extends BaseController {
 		}
 		if (error != null && !error.trim().isEmpty()) {
 			context.putObject("error", new JsonObject()
-					.putString("message", I18n.getInstance().translate(error, request.headers().get("Accept-Language"))));
+					.putString("message", I18n.getInstance().translate(error, getHost(request), request.headers().get("Accept-Language"))));
 		}
 		UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 			@Override
@@ -555,7 +555,7 @@ public class AuthController extends BaseController {
 					trace.info("Echec de l'activation du compte utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
-					.putString("message", I18n.getInstance().translate("auth.activation.invalid.argument", request.headers().get("Accept-Language"))));
+					.putString("message", I18n.getInstance().translate("auth.activation.invalid.argument", getHost(request), request.headers().get("Accept-Language"))));
 					if (activationCode != null) {
 						error.putString("activationCode", activationCode);
 					}
@@ -588,7 +588,7 @@ public class AuthController extends BaseController {
 										" introuvable ou déjà activé.");
 								JsonObject error = new JsonObject()
 								.putObject("error", new JsonObject()
-								.putString("message", I18n.getInstance().translate("activation.error", request.headers().get("Accept-Language"))));
+								.putString("message", I18n.getInstance().translate("activation.error", getHost(request), request.headers().get("Accept-Language"))));
 								error.putString("activationCode", activationCode);
 								renderJson(request, error);
 							}
@@ -850,7 +850,7 @@ public class AuthController extends BaseController {
 							+ "du mot de passe de l'utilisateur " + login);
 					JsonObject error = new JsonObject()
 					.putObject("error", new JsonObject()
-					.putString("message", I18n.getInstance().translate("auth.reset.invalid.argument", request.headers().get("Accept-Language"))));
+					.putString("message", I18n.getInstance().translate("auth.reset.invalid.argument", getHost(request), request.headers().get("Accept-Language"))));
 					if (resetCode != null) {
 						error.putString("resetCode", resetCode);
 					}
@@ -894,7 +894,7 @@ public class AuthController extends BaseController {
 					final String resetCode) {
 				JsonObject error = new JsonObject()
 				.putObject("error", new JsonObject()
-				.putString("message", I18n.getInstance().translate("reset.error", request.headers().get("Accept-Language"))));
+				.putString("message", I18n.getInstance().translate("reset.error", getHost(request), request.headers().get("Accept-Language"))));
 				if (resetCode != null) {
 					error.putString("resetCode", resetCode);
 				}

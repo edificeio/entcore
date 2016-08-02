@@ -115,8 +115,8 @@ public class DefaultRegisteredService implements RegisteredService {
 		String baseKey = getId();
 		return new JsonObject()
 				.putString("id", baseKey)
-				.putString("name", i18n.translate(baseKey + ".name", acceptLanguage))
-				.putString("description", i18n.translate(baseKey + ".description", acceptLanguage));
+				.putString("name", i18n.translate(baseKey + ".name", I18n.DEFAULT_DOMAIN, acceptLanguage))
+				.putString("description", i18n.translate(baseKey + ".description", I18n.DEFAULT_DOMAIN, acceptLanguage));
 	}
 
 	@Override

@@ -43,11 +43,14 @@ import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class BaseServer extends Server {
@@ -125,8 +128,51 @@ public abstract class BaseServer extends Server {
 	}
 
 	private void loadI18nAssetsFiles() {
-		final String i18nDirectory = config.getString("assets-path", "../..") + File.separator + "assets" +
-				File.separator + "i18n" + File.separator + this.getClass().getSimpleName();
+		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
+		final String className = this.getClass().getSimpleName();
+		readI18n(I18n.DEFAULT_DOMAIN, assetsDirectory + File.separator + "i18n" + File.separator + className,
+				new VoidHandler() {
+			@Override
+			protected void handle() {
+				final String themesDirectory = assetsDirectory + File.separator + "themes";
+				final Map<String, String> skins = vertx.sharedData().getMap("skins");
+				final Map<String, String> reverseSkins = new HashMap<>();
+				for (Map.Entry<String, String> e: skins.entrySet()) {
+					reverseSkins.put(e.getValue(), e.getKey());
+				}
+				vertx.fileSystem().exists(themesDirectory, new Handler<AsyncResult<Boolean>>() {
+					@Override
+					public void handle(AsyncResult<Boolean> event) {
+						if (event.succeeded() && event.result()) {
+							vertx.fileSystem().readDir(themesDirectory, new Handler<AsyncResult<String[]>>() {
+								@Override
+								public void handle(AsyncResult<String[]> themes) {
+									if (themes.succeeded()) {
+										for (String theme : themes.result()) {
+											final String domain = reverseSkins.get(theme.substring(theme.lastIndexOf(File.separator) + 1));
+											if (domain == null) {
+												log.warn("Missing domain for theme : " + theme);
+												continue;
+											}
+											final String i18nDirectory = theme + File.separator + "i18n" + File.separator + className;
+											readI18n(domain, i18nDirectory, null);
+										}
+									} else {
+										log.error("Error listing themes directory.", themes.cause());
+									}
+								}
+							});
+						} else {
+							log.error("Missing themes directory.", event.cause());
+						}
+					}
+				});
+			}
+		});
+
+	}
+
+	private void readI18n(final String domain, final String i18nDirectory, final VoidHandler handler) {
 		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
@@ -145,7 +191,10 @@ public abstract class BaseServer extends Server {
 										public void handle(AsyncResult<Buffer> ar) {
 											if (ar.succeeded()) {
 												try {
-													i18n.add(locale, new JsonObject(ar.result().toString()));
+													i18n.add(domain, locale, new JsonObject(ar.result().toString()));
+													if (handler != null) {
+														handler.handle(null);
+													}
 												} catch (Exception e) {
 													log.error("Error loading i18n asset file : " + s, e);
 												}

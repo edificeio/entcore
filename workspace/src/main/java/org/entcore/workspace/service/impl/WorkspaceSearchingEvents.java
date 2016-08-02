@@ -262,10 +262,10 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
             map.put("description", "");
         } else if (countMatchComment == 1) {
             map.put("modified", modifiedRes);
-            map.put("description", i18n.translate("workspace.search.description.one", locale, comment));
+            map.put("description", i18n.translate("workspace.search.description.one", I18n.DEFAULT_DOMAIN, locale, comment));
         } else {
             map.put("modified", modifiedRes);
-            map.put("description", i18n.translate("workspace.search.description.several", locale,
+            map.put("description", i18n.translate("workspace.search.description.several", I18n.DEFAULT_DOMAIN, locale,
                     countMatchComment.toString(), comment));
         }
 

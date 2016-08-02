@@ -77,7 +77,7 @@ public class PortalController extends BaseController {
 		this.staticRessources = vertx.sharedData().getMap("staticRessources");
 		dev = "dev".equals(container.config().getString("mode"));
 		assetsPath = container.config().getString("assets-path", ".");
-		JsonObject skins = container.config().getObject("skins", new JsonObject());
+		JsonObject skins = new JsonObject(vertx.sharedData().<String, Object>getMap("skins"));
 		defaultSkin = container.config().getString("skin", "raw");
 		themes = new HashMap<>();
 		themesDetails = new HashMap<>();
@@ -118,7 +118,6 @@ public class PortalController extends BaseController {
 		}
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 		adminConsoleEventStore = EventStoreFactory.getFactory().getEventStore(ADMIN_CONSOLE_MODULE);
-		vertx.sharedData().getMap("skins").putAll(skins.toMap());
 		vertx.sharedData().getMap("server").put("assetPath", assetsPath);
 	}
 

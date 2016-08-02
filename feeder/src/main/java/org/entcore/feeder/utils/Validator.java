@@ -101,7 +101,7 @@ public class Validator {
 
 	public String validate(JsonObject object, String acceptLanguage) {
 		if (object == null) {
-			return i18n.translate("null.object", acceptLanguage);
+			return i18n.translate("null.object", I18n.DEFAULT_DOMAIN, acceptLanguage);
 		}
 		final StringBuilder calcChecksum = new StringBuilder();
 		final Set<String> attributes = new HashSet<>(object.getFieldNames());
@@ -221,7 +221,7 @@ public class Validator {
 		Map<String, Object> m = object.toMap();
 		for (Object o : required) {
 			if (!m.containsKey(o.toString())) {
-				return i18n.translate("missing.attribute", acceptLanguage, i18n.translate(o.toString(), acceptLanguage));
+				return i18n.translate("missing.attribute", acceptLanguage, i18n.translate(o.toString(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 			}
 		}
 		return null;
@@ -337,7 +337,7 @@ public class Validator {
 
 	private String validStringArray(String attr, Object value, String validator, String acceptLanguage) {
 		if (validator == null) {
-			return i18n.translate("null.array.validator", acceptLanguage);
+			return i18n.translate("null.array.validator", I18n.DEFAULT_DOMAIN, acceptLanguage);
 		}
 		if (!(value instanceof JsonArray)) {
 			return i18n.translate("invalid.array.type", acceptLanguage, attr, value.getClass().getSimpleName());

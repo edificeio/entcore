@@ -61,7 +61,7 @@ public class Report {
 			f = new JsonArray();
 			result.getObject("errors").putArray(file, f);
 		}
-		String error = i18n.translate(key, acceptLanguage, errors);
+		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
 		f.addString(error);
 		log.error(error);
 	}
@@ -85,7 +85,7 @@ public class Report {
 	}
 
 	public String translate(String key, String... params) {
-		return i18n.translate(key, acceptLanguage, params);
+		return i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, params);
 	}
 
 	public JsonObject getResult() {
