@@ -78,11 +78,18 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		EventStoreFactory factory = EventStoreFactory.getFactory();
 		factory.setVertx(vertx);
 		eventStore = factory.getEventStore(Feeder.class.getSimpleName());
+		defaultFeed = container.config().getString("feeder", "AAF");
+		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF"),
+				container.config().getBoolean("aafNeo4jPlugin", false)));
+		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
+		feeds.put("BE1D", new Be1dFeeder(vertx, getFilesDirectory("BE1D")));
+		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final String deleteCron = container.config().getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = container.config().getString("pre-delete-cron", "0 0 3 * * ? *");
 		final String importCron = container.config().getString("import-cron");
+		final JsonObject imports = container.config().getObject("imports");
 		final JsonObject preDelete = container.config().getObject("pre-delete");
 		try {
 			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
@@ -100,8 +107,20 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			} else {
 				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
 			}
-			if (importCron != null && !importCron.trim().isEmpty()) {
-				new CronTrigger(vertx, importCron).schedule(new ImporterTask(eb,
+			if (imports != null) {
+				if (feeds.keySet().containsAll(imports.getFieldNames())) {
+					for (String f : imports.getFieldNames()) {
+						final JsonObject i = imports.getObject(f);
+						if (i != null && i.getString("cron") != null) {
+							new CronTrigger(vertx, i.getString("cron")).schedule(
+									new ImporterTask(eb, f, i.getBoolean("auto-export", false)));
+						}
+					}
+				} else {
+					logger.error("Invalid imports configuration.");
+				}
+			} else if (importCron != null && !importCron.trim().isEmpty()) {
+				new CronTrigger(vertx, importCron).schedule(new ImporterTask(eb, defaultFeed,
 						container.config().getBoolean("auto-export", false)));
 			}
 		} catch (ParseException e) {
@@ -114,12 +133,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"));
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
-		defaultFeed = container.config().getString("feeder", "AAF");
-		feeds.put("AAF", new AafFeeder(vertx, container.config().getString("import-files"),
-				container.config().getBoolean("aafNeo4jPlugin", false)));
-		feeds.put("AAF1D", new Aaf1dFeeder(vertx, container.config().getString("import-files")));
-		feeds.put("BE1D", new Be1dFeeder(vertx, container.config().getString("import-files")));
-		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));
 		switch (container.config().getString("exporter", "")) {
 			case "ELIOT" :
 				exporter = new EliotExporter(container.config().getString("export-path", "/tmp"),
@@ -128,6 +141,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 		}
 		I18n.getInstance().init(container, vertx);
+	}
+
+	private String getFilesDirectory(String feeder) {
+		JsonObject imports = container.config().getObject("imports");
+		if (imports != null && imports.getObject(feeder) != null && imports.getObject(feeder).getString("files") != null) {
+			return imports.getObject(feeder).getString("files");
+		}
+		return config.getString("import-files");
 	}
 
 	@Override

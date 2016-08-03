@@ -29,15 +29,17 @@ public class ImporterTask implements Handler<Long> {
 
 	private final EventBus eb;
 	private final boolean export;
+	private final String feeder;
 
-	public ImporterTask(EventBus eb, boolean export) {
+	public ImporterTask(EventBus eb, String feeder, boolean export) {
 		this.eb = eb;
 		this.export = export;
+		this.feeder = feeder;
 	}
 
 	@Override
 	public void handle(Long event) {
-		eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().putString("action", "import"), new Handler<Message<JsonObject>>() {
+		eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().putString("action", "import").putString("feeder", feeder), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && export) {
