@@ -279,7 +279,8 @@ public class Structure {
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[r:BELONGS]-(c:Class)" +
 				"<-[r1:DEPENDS]-(cpg:Group)-[r2]-() " +
-				"DELETE r, r1, r2, c, cpg ";
+				"OPTIONAL MATCH c-[r3]-() " +
+				"DELETE r, r1, r2, r3, c, cpg ";
 		tx.add(query, params);
 		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
 				"OPTIONAL MATCH fg-[r1]-() " +
