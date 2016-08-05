@@ -439,7 +439,7 @@ public class TimelineController extends BaseController {
 		switch (action) {
 		case "add":
 			final String sender = json.getString("sender");
-			if (sender == null || antiFlood.add(sender)) {
+			if (sender == null || sender.startsWith("no-reply") || antiFlood.add(sender)) {
 				store.add(json, new Handler<JsonObject>() {
 					public void handle(JsonObject result) {
 						handler.handle(result);
