@@ -511,7 +511,7 @@ public class UserBookController extends BaseController {
 				}
 				if (welcomeMessage != null) {
 					conversationNotification.notify(request, "", new JsonArray().add(message.body().getString("userId")),
-							null, I18n.getInstance().translate("welcome.subject", getHost(request), request.headers().get("Accept-Language")),
+							null, I18n.getInstance().translate("welcome.subject", getHost(request), I18n.acceptLanguage(request)),
 							welcomeMessage, new Handler<Either<String, JsonObject>>() {
 
 								@Override

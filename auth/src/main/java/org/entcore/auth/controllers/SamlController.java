@@ -263,7 +263,7 @@ public class SamlController extends BaseController {
 					JsonObject error = new JsonObject()
 							.putObject("error", new JsonObject()
 							.putString("message", I18n.getInstance()
-									.translate("activation.error", getHost(request), request.headers().get("Accept-Language"))));
+									.translate("activation.error", getHost(request), I18n.acceptLanguage(request))));
 					error.putString("activationCode", activationCode);
 					renderJson(request, error);
 				}

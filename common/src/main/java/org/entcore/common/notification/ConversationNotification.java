@@ -61,7 +61,7 @@ public class ConversationNotification {
 			public void handle(String message) {
 				if (message != null) {
 					ConversationNotification.this.notify(request, from, to, cc,
-							i18n.translate(subject, Renders.getHost(request), request.headers().get("Accept-Language")),
+							i18n.translate(subject, Renders.getHost(request), I18n.acceptLanguage(request)),
 							message, result);
 				} else {
 					log.error("Unable to send conversation notification.");
@@ -85,7 +85,7 @@ public class ConversationNotification {
 		for (Object o : cc) {
 			dest.add(o);
 		}
-		String language = request.headers().get("Accept-Language");
+		String language = I18n.acceptLanguage(request);
 		if (language == null || language.trim().isEmpty()) {
 			language = "fr";
 		} else {
@@ -106,7 +106,7 @@ public class ConversationNotification {
 				.putObject("request", new JsonObject()
 					.putString("path", request.path())
 					.putObject("headers", new JsonObject()
-							.putString("Accept-Language",request.headers().get("Accept-Language")))
+							.putString("Accept-Language", I18n.acceptLanguage(request)))
 				);
 		String query =
 				"MATCH (u:User { id : {noReplyId}}) " +

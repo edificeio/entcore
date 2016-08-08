@@ -25,6 +25,7 @@ import java.util.Map;
 
 import fr.wseduc.webutils.Either;
 
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.common.email.EmailFactory;
 import org.vertx.java.core.Handler;
@@ -102,7 +103,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 							.putString("profile", res.body().getObject("result").getObject("0").getString("profile"))
 							.putObject("request", new JsonObject()
 									.putObject("headers", new JsonObject()
-											.putString("Accept-Language",request.headers().get("Accept-Language"))
+											.putString("Accept-Language", I18n.acceptLanguage(request))
 											.putString("Host", Renders.getHost(request))
 									)
 							);

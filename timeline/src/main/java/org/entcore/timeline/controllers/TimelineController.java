@@ -122,7 +122,7 @@ public class TimelineController extends BaseController {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String key = frag.execute();
-				String language = Utils.getOrElse(request.headers().get("Accept-Language"), "fr", false);
+				String language = Utils.getOrElse(I18n.acceptLanguage(request), "fr", false);
 
 				JsonObject timelineI18n;
 				if (!lazyEventsI18n.containsKey(language)) {
@@ -195,7 +195,7 @@ public class TimelineController extends BaseController {
 	@SecuredAction(value = "timeline.i18n", type = ActionType.AUTHENTICATED)
 	public void i18n(HttpServerRequest request) {
 		String language = Utils.getOrElse(
-				request.headers().get("Accept-Language"), "fr", false);
+				I18n.acceptLanguage(request), "fr", false);
 		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
 		if (i18n == null) {
 			i18n = eventsI18n.get("fr");

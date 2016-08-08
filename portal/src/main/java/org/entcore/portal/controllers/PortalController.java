@@ -21,6 +21,7 @@ package org.entcore.portal.controllers;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
@@ -308,7 +309,7 @@ public class PortalController extends BaseController {
 
 	@Get("/locale")
 	public void locale(HttpServerRequest request) {
-		String lang = request.headers().get("Accept-Language");
+		String lang = I18n.acceptLanguage(request);
 		if (lang == null) {
 			lang = "fr";
 		}

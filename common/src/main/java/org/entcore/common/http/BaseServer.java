@@ -22,7 +22,9 @@ package org.entcore.common.http;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
 import org.entcore.common.controller.ConfController;
@@ -39,12 +41,14 @@ import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
+import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Zip;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
@@ -96,6 +100,23 @@ public abstract class BaseServer extends Server {
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
+	}
+
+	@Override
+	protected void i18nMessages(HttpServerRequest request) {
+		String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+		if (sessionId != null && !sessionId.trim().isEmpty()) {
+			final HttpServerRequest r = new SecureHttpServerRequest(request);
+			UserUtils.getSession(vertx.eventBus(), r, new Handler<JsonObject>() {
+
+				@Override
+				public void handle(JsonObject session) {
+					BaseServer.super.i18nMessages(r);
+				}
+			});
+		} else {
+			super.i18nMessages(request);
+		}
 	}
 
 	protected void initModulesHelpers(String node) {

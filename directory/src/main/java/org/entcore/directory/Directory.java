@@ -54,7 +54,7 @@ public class Directory extends BaseServer {
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
-				Renders.renderJson(request, I18n.getInstance().load(request.headers().get("Accept-Language")));
+				Renders.renderJson(request, I18n.getInstance().load(I18n.acceptLanguage(request), Renders.getHost(request)));
 			}
 		});
 
