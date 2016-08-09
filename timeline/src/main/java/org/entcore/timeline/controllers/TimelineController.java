@@ -134,10 +134,8 @@ public class TimelineController extends BaseController {
 					timelineI18n = lazyEventsI18n.get(language);
 				}
 
-				final String translatedContents;
-				if (timelineI18n.getString(key, key).equals(key)) {
-					translatedContents = I18n.getInstance().translate(key, getHost(request), language);
-				} else {
+				String translatedContents = I18n.getInstance().translate(key, getHost(request), language);
+				if (translatedContents.equals(key)) {
 					translatedContents = timelineI18n.getString(key, key);
 				}
 				Mustache.compiler().compile(translatedContents).execute(ctx, out);
@@ -148,7 +146,7 @@ public class TimelineController extends BaseController {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException{
 				String contents = frag.execute();
-				String host = container.config().getString("host", "http://localhost:8090");
+				String host = getScheme(request) + "://" + getHost(request);
 				out.write(host + contents);
 			}
 		});
@@ -554,11 +552,12 @@ public class TimelineController extends BaseController {
 		case "translate-timeline":
 			final JsonArray i18nKeys = message.body().getArray("i18nKeys", new JsonArray());
 			final String language = message.body().getString("language", "fr");
+			final String domain = message.body().getString("domain", I18n.DEFAULT_DOMAIN);
 			String i18n = eventsI18n
 				.get(language.split(",")[0].split("-")[0]);
 			JsonObject timelineI18n = new JsonObject(
 					"{" + i18n.substring(0, i18n.length() - 1) + "}");
-			timelineI18n.mergeIn(I18n.getInstance().load(language));
+			timelineI18n.mergeIn(I18n.getInstance().load(language, domain));
 			JsonArray translations = new JsonArray();
 			for(Object keyObj : i18nKeys){
 				String key = (String) keyObj;

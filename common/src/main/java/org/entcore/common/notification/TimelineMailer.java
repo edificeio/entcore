@@ -23,8 +23,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.email.EmailFactory;
@@ -48,6 +50,7 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 
 public class TimelineMailer {
@@ -70,7 +73,7 @@ public class TimelineMailer {
 		this.vertx = vertx;
 		this.eb = eb;
 		this.USERS_LIMIT = usersLimit;
-		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		EmailFactory emailFactory = new EmailFactory(this.vertx, container, container.config());
 		emailSender = emailFactory.getSender();
 	}
 
@@ -78,13 +81,16 @@ public class TimelineMailer {
 	 * Translates a key using the usual i18n keys + the timeline folders keys (from all apps).
 	 *
 	 * @param keys : Keys to translate
+	 * @param domain : Domain of the i18n files
 	 * @param language : Language
 	 * @param handler : Handles a JsonArray containing translated Strings.
 	 */
-	private void translateTimeline(JsonArray keys, String language, final Handler<JsonArray> handler){
+	private void translateTimeline(JsonArray keys, String domain,
+			String language, final Handler<JsonArray> handler){
 		eb.send(TIMELINE_ADDRESS, new JsonObject()
 				.putString("action", "translate-timeline")
 				.putString("language", language)
+				.putString("domain", domain)
 				.putArray("i18nKeys", keys),
 				new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
@@ -99,12 +105,17 @@ public class TimelineMailer {
 	 * @param parameters : Template parameters
 	 * @param notificationName : Name of the notification (mostly useless)
 	 * @param template : Template contents
+	 * @param domain : Domain of the i18n files
 	 * @param handler : Handles the processed template
 	 */
-	private void processTimelineTemplate(JsonObject parameters, String notificationName, String template, final Handler<String> handler){
+	private void processTimelineTemplate(JsonObject parameters, String notificationName,
+			String template, String domain, String scheme, final Handler<String> handler){
 		eb.send(TIMELINE_ADDRESS, new JsonObject()
 				.putString("action", "process-timeline-template")
-				.putObject("request", new JsonObject())
+				.putObject("request", new JsonObject()
+					.putObject("headers", new JsonObject()
+							.putString("Host", domain)
+							.putString("X-Forwarded-Proto", scheme)))
 				.putObject("parameters", parameters)
 				.putString("resourceName", notificationName)
 				.putString("template", template), new Handler<Message<JsonObject>>() {
@@ -297,69 +308,88 @@ public class TimelineMailer {
 						if(userList == null){
 							log.error("[sendImmediateMails] Issue while retrieving users preferences.");
 						}
-						//Process template once
+						//Process template once by domain
+						final Map<String, String> processedTemplates = new HashMap<String, String>();
 						templateParameters.putString("innerTemplate", notification.getString("template", ""));
-						processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html", new Handler<String>(){
-							public void handle(final String processedTemplate) {
-								final List<Object> to = new ArrayList<Object>();
-								// For each user preference
-								for(Object userObj : userList){
-									JsonObject userPref = ((JsonObject) userObj);
-									JsonObject notificationPreference = userPref
-										.getObject("preferences", new JsonObject())
-											.getObject("config", new JsonObject())
-												.getObject(notificationName, new JsonObject());
-									// If the frequency is IMMEDIATE
-									// and the restriction is not INTERNAL (timeline only)
-									// and if the user has provided an email
-									if(TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(
-											notificationPreference.getString("defaultFrequency", properties.getString("defaultFrequency"))) &&
-										!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-											notificationPreference.getString("restriction", properties.getString("restriction"))) &&
-										!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
-												notificationPreference.getString("restriction", properties.getString("restriction"))) &&
-										userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
-										to.add(userPref.getString("userMail"));
+
+						final Map<String, List<Object>> toDomainMap = new HashMap<>();
+
+						final AtomicInteger userCount = new AtomicInteger(userList.size());
+						final VoidHandler templatesHandler = new VoidHandler(){
+							protected void handle() {
+								if(userCount.decrementAndGet() == 0){
+									if(toDomainMap.size() > 0){
+										//On completion : log
+										final Handler<Message<JsonObject>> completionHandler = new Handler<Message<JsonObject>>(){
+											public void handle(Message<JsonObject> event) {
+												if("error".equals(event.body().getString("status", "error"))){
+													log.error("[Timeline immediate emails] Error while sending mails : " + event.body());
+												} else {
+													log.debug("[Timeline immediate emails] Immediate mails sent.");
+												}
+											}
+										};
+
+										JsonArray keys = new JsonArray()
+											.add("timeline.immediate.mail.subject.header")
+											.add(notificationName.toLowerCase());
+
+										for(final String domain : toDomainMap.keySet()){
+											translateTimeline(keys, domain, "fr", new Handler<JsonArray>() {
+												public void handle(JsonArray translations) {
+													//Send mail containing the "immediate" notification
+													emailSender.sendEmail(request,
+														toDomainMap.get(domain),
+														null,
+														null,
+														translations.get(0).toString() + translations.get(1).toString(),
+														processedTemplates.get(domain),
+														null,
+														false,
+														completionHandler);
+												}
+											});
+										}
 									}
 								}
-
-								// If there are receivers (users with the 'immediate mail' setting)
-								if(to.size() > 0){
-									//On completion : log
-									final Handler<Message<JsonObject>> completionHandler = new Handler<Message<JsonObject>>(){
-										public void handle(Message<JsonObject> event) {
-											if("error".equals(event.body().getString("status", "error"))){
-												log.error("[Timeline immediate emails] Error while sending mails : " + event.body());
-											} else {
-												log.debug("[Timeline immediate emails] Immediate mails sent.");
-											}
-										}
-
-									};
-
-									//Translate mail title
-									//TODO : Server side default language
-									JsonArray keys = new JsonArray()
-										.add("timeline.immediate.mail.subject.header")
-										.add(notificationName.toLowerCase());
-									translateTimeline(keys, "fr", new Handler<JsonArray>() {
-										public void handle(JsonArray translations) {
-											//Send mail containing the "immediate" notification
-											emailSender.sendEmail(request,
-												to,
-												null,
-												null,
-												translations.get(0).toString() + translations.get(1).toString(),
-												processedTemplate,
-												null,
-												false,
-												completionHandler);
-										}
-									});
-								}
-
 							}
-						});
+						};
+
+						for(Object userObj : userList){
+							final JsonObject userPref = ((JsonObject) userObj);
+							final String userDomain = userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+							final String userScheme = userPref.getString("lastScheme", "http");
+							if(!processedTemplates.containsKey(userDomain)){
+								processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
+									userDomain, userScheme, new Handler<String>(){
+										public void handle(String processedTemplate) {
+											processedTemplates.put(userDomain, processedTemplate);
+											templatesHandler.handle(null);
+										}
+								});
+							} else {
+								templatesHandler.handle(null);
+							}
+							JsonObject notificationPreference = userPref
+									.getObject("preferences", new JsonObject())
+										.getObject("config", new JsonObject())
+											.getObject(notificationName, new JsonObject());
+								// If the frequency is IMMEDIATE
+								// and the restriction is not INTERNAL (timeline only)
+								// and if the user has provided an email
+								if(TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(
+										notificationPreference.getString("defaultFrequency", properties.getString("defaultFrequency"))) &&
+									!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
+										notificationPreference.getString("restriction", properties.getString("restriction"))) &&
+									!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
+											notificationPreference.getString("restriction", properties.getString("restriction"))) &&
+									userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
+									if(!toDomainMap.containsKey(userDomain)){
+										toDomainMap.put(userDomain, new ArrayList<Object>());
+									}
+									toDomainMap.get(userDomain).add(userPref.getString("userMail"));
+								}
+						}
 					}
 				});
 			}
@@ -415,6 +445,8 @@ public class TimelineMailer {
 						public void handle(JsonArray preferences) {
 							for(Object userObj : preferences){
 								final JsonObject userPrefs = (JsonObject) userObj;
+								final String userDomain = userPrefs.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+								final String userScheme = userPrefs.getString("lastScheme", "http");
 
 								getUserNotifications(userPrefs.getString("userId", ""), dayDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
@@ -456,7 +488,8 @@ public class TimelineMailer {
 											JsonObject templateParams = new JsonObject()
 												.putArray("nestedTemplatesArray", templates)
 												.putArray("notificationDates", dates);
-											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html", new Handler<String>() {
+											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html",
+													userDomain, userScheme, new Handler<String>() {
 												public void handle(final String processedTemplate) {
 													//On completion : log
 													final Handler<Message<JsonObject>> completionHandler = new Handler<Message<JsonObject>>(){
@@ -476,7 +509,7 @@ public class TimelineMailer {
 													//TODO : Server side default language
 													JsonArray keys = new JsonArray()
 														.add("timeline.daily.mail.subject.header");
-													translateTimeline(keys, "fr", new Handler<JsonArray>() {
+													translateTimeline(keys, userDomain, "fr", new Handler<JsonArray>() {
 														public void handle(JsonArray translations) {
 															//Send mail containing the "daily" notifications
 															emailSender.sendEmail(request,
@@ -588,6 +621,8 @@ public class TimelineMailer {
 						public void handle(JsonArray preferences) {
 							for(Object userObj : preferences){
 								final JsonObject userPrefs = (JsonObject) userObj;
+								final String userDomain = userPrefs.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+								final String userScheme = userPrefs.getString("lastScheme", "http");
 
 								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), new Handler<JsonArray>(){
 									public void handle(JsonArray notifications) {
@@ -645,7 +680,8 @@ public class TimelineMailer {
 
 										if(weeklyNotifications.size() > 0){
 											JsonObject templateParams = new JsonObject().putArray("notifications", weeklyNotificationsGroupedArray);
-											processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html", new Handler<String>() {
+											processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html",
+													userDomain, userScheme, new Handler<String>() {
 												public void handle(final String processedTemplate) {
 													//On completion : log
 													final Handler<Message<JsonObject>> completionHandler = new Handler<Message<JsonObject>>(){
@@ -665,7 +701,7 @@ public class TimelineMailer {
 													//TODO : Server side default language
 													JsonArray keys = new JsonArray()
 														.add("timeline.weekly.mail.subject.header");
-													translateTimeline(keys, "fr", new Handler<JsonArray>() {
+													translateTimeline(keys, userDomain, "fr", new Handler<JsonArray>() {
 														public void handle(JsonArray translations) {
 															//Send mail containing the "weekly" notifications
 															emailSender.sendEmail(request,

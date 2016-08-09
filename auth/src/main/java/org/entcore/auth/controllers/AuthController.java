@@ -40,6 +40,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.*;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.http.response.DefaultResponseHandler;
 import fr.wseduc.webutils.logging.Tracer;
 import fr.wseduc.webutils.logging.TracerFactory;
@@ -305,10 +306,18 @@ public class AuthController extends BaseController {
 				data.getUserId(login, password, new Handler<String>() {
 
 					@Override
-					public void handle(String userId) {
+					public void handle(final String userId) {
 						final String c = callBack.toString();
 						if (userId != null && !userId.trim().isEmpty()) {
 							trace.info("Connexion de l'utilisateur " + login);
+							userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
+									new org.vertx.java.core.Handler<Boolean>() {
+								public void handle(Boolean ok) {
+									if(!ok){
+										trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
+									}
+								}
+							});
 							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
 							createSession(userId, request, c);
 						} else {
@@ -573,12 +582,21 @@ public class AuthController extends BaseController {
 						@Override
 						public void handle(Either<String, String> activated) {
 							if (activated.isRight() && activated.right().getValue() != null) {
+								final String userId = activated.right().getValue();
 								trace.info("Activation du compte utilisateur " + login);
 								eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
 								if (container.config().getBoolean("activationAutoLogin", false)) {
 									trace.info("Connexion de l'utilisateur " + login);
+									userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
+											new org.vertx.java.core.Handler<Boolean>() {
+										public void handle(Boolean ok) {
+											if(!ok){
+												trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
+											}
+										}
+									});
 									eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
-									createSession(activated.right().getValue(), request,
+									createSession(userId, request,
 											getScheme(request) + "://" + getHost(request));
 								} else {
 									redirect(request, "/auth/login");

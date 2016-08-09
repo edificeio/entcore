@@ -80,7 +80,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
-				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +		
+				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
 				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 3) as duplicates " +
 				"WHERE LENGTH(duplicates) = 0 " +
@@ -143,7 +143,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
-				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " + 
+				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
@@ -438,6 +438,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			}
 		});
 	}
+
+	@Override
+	public void storeDomain(String id, String domain, String scheme, final Handler<Boolean> handler) {
+		String query = "MATCH (u:User {id: {id}}) SET u.lastDomain = {domain}, u.lastScheme = {scheme} return count(*) = 1 as exists";
+		JsonObject params = new JsonObject()
+			.putString("id", id)
+			.putString("domain", domain)
+			.putString("scheme", scheme);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				handler.handle("ok".equals(r.body().getString("status")) &&
+						r.body().getArray("result") != null && r.body().getArray("result").get(0) != null &&
+						((JsonObject) r.body().getArray("result").get(0)).getBoolean("exists", false));
+			}
+		});
+	};
 
 	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());

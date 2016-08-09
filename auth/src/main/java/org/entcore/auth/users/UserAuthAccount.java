@@ -60,4 +60,6 @@ public interface UserAuthAccount {
 	void sendForgottenIdSms(HttpServerRequest request, String login,
 			String phone, Handler<Either<String, JsonObject>> handler);
 
+	void storeDomain(String id, String domain, String scheme, Handler<Boolean> handler);
+
 }
