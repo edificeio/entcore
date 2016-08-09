@@ -382,16 +382,16 @@ public class WorkspaceService extends BaseController {
 
 	private void sendNotify(final HttpServerRequest request, final String resource, final UserInfos user, final List<String> recipients, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-		.putString("uri", container.config().getString("host", "http://localhost:8011") +
+		.putString("uri", getScheme(request) + "://" + getHost(request) +
 				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 		.putString("username", user.getUsername())
 		.putString("appPrefix", pathPrefix+"/workspace");
 
 		if(isFolder){
-			params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+			params.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 					pathPrefix + "/workspace#/shared/folder/" + resource);
 		} else {
-			params.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+			params.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 					pathPrefix + "/document/" + resource);
 		}
 
@@ -1551,7 +1551,7 @@ public class WorkspaceService extends BaseController {
 
 	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-			.putString("userUri", container.config().getString("host", "http://localhost:8090") +
+			.putString("userUri", getScheme(request) + "://" + getHost(request) +
 					"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
@@ -1576,10 +1576,10 @@ public class WorkspaceService extends BaseController {
 									JsonObject sharedNotifParams = params.copy();
 
 									if(folderId != null){
-										sharedNotifParams.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+										sharedNotifParams.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 												pathPrefix + "/workspace#/shared/folder/" + folderId);
 									} else {
-										sharedNotifParams.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+										sharedNotifParams.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 												pathPrefix + "/workspace#/shared");
 									}
 
@@ -1602,10 +1602,10 @@ public class WorkspaceService extends BaseController {
 								ownerList.add(document.getString("owner"));
 
 								if(folderId != null){
-									ownerNotif.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+									ownerNotif.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 											pathPrefix + "/workspace#/folder/" + folderId);
 								} else {
-									ownerNotif.putString("resourceUri", container.config().getString("host", "http://localhost:8011") +
+									ownerNotif.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 											pathPrefix + "/workspace");
 								}
 

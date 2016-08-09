@@ -282,10 +282,10 @@ public abstract class ControllerHelper extends BaseController {
 			JsonObject p, final String resourceNameAttribute) {
 		if (p == null) {
 			p = new JsonObject()
-				.putString("uri", container.config().getString("host", "http://localhost:8090") +
+				.putString("uri", getScheme(request) + "://" + getHost(request) +
 						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("username", user.getUsername())
-				.putString("resourceUri", container.config().getString("host", "http://localhost:8090") +
+				.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
 						pathPrefix + "/" + resource);
 		}
 		final JsonObject params = p;
