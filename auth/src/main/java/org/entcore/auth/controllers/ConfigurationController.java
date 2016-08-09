@@ -59,7 +59,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configure/welcome")
 	public void getWelcomeMessage(final HttpServerRequest request) {
 		final String host = getHost(request);
-		final String language = I18n.acceptLanguage(request).split(",")[0].split("\\-")[0];
+		final String language = request.params().get("allLanguages") != null ? null : I18n.acceptLanguage(request).split(",")[0].split("\\-")[0];
 		configurationService.getWelcomeMessage(host, language, new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
@@ -71,6 +71,11 @@ public class ConfigurationController extends BaseController {
 									.putString("welcomeMessage", res.getObject(host).getString(language))
 									.putBoolean("enabled", res.getObject(host).getBoolean("enabled", false))
 							);
+						} else if (res.getObject(host) != null) {
+							if (!res.getObject(host).containsField("enabled")) {
+								res.getObject(host).putBoolean("enabled", false);
+							}
+							renderJson(request, res.getObject(host));
 						} else {
 							renderJson(request, res);
 						}
