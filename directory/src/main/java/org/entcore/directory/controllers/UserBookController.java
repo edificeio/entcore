@@ -567,7 +567,9 @@ public class UserBookController extends BaseController {
 						"WHERE u.id IN {userIds} AND u.activationCode IS NULL " +
 						message.body().getString("additionalWhere", "") +
 						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf)  " +
-						"RETURN COLLECT(DISTINCT {userId: u.id, userMail: u.email, lastDomain: u.lastDomain, preferences: uac}) AS preferences";
+						"RETURN COLLECT(DISTINCT {userId: u.id, userMail: u.email, lastDomain: u.lastDomain, preferences: uac"+
+						message.body().getString("additionalCollectFields") +
+						"}) AS preferences";
 				neo.execute(query,
 					new JsonObject().putArray("userIds", userIds),
 					Neo4jResult.validResultHandler(new Handler<Either<String,JsonArray>>() {
@@ -585,7 +587,7 @@ public class UserBookController extends BaseController {
 									prefs = new JsonObject(result.getObject("preferences", new JsonObject())
 											.getObject("data", new JsonObject()).getString(application, "{}"));
 								} catch(Exception e) {
-									log.error("UserId [" + result.getString("userId", "") + "] - Bad timeline preferences format");
+									log.error("UserId [" + result.getString("userId", "") + "] - Bad application preferences format");
 								}
 								result.putObject("preferences", prefs);
 							}
