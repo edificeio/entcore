@@ -71,6 +71,7 @@
     "timeline.daily.mail.subject.bold": "nouveautés de la journée",
     "timeline.daily.mail.subject.end": "dans votre ENT",
     "timeline.daily.mail.action.text": "Voir les nouveautés",
+    "timeline.daily.mail.action.link": "{{#host}}/timeline/timeline{{/host}}",
     "timeline.weekly.mail.subject.header": "ENT - Quoi de neuf cette semaine ?",
     "timeline.weekly.mail.subject.start": "Bonjour, voici les",
     "timeline.weekly.mail.subject.bold": "nouveautés de la semaine",
