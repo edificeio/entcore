@@ -144,5 +144,10 @@
     "workspace.trash.restore": "Restore",
     "workspace.unselect.all": "None",
     "workspace.valid": "Valid",
-    "workspace.versions.list": "Versions du document"
+    "workspace.versions.list": "Versions du document",
+    "tuto.title": "Naviguez au sein de vos documents en vue vignettes :",
+    "tuto.action.select": "Cliquez",
+    "tuto.text.select": "pour séléctionner et accéder au menu d'options,",
+    "tuto.action.open": "Double-cliquez",
+    "tuto.text.open": "pour ouvrir un dossier ou un fichier."
 }
