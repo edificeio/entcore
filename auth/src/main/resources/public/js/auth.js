@@ -136,6 +136,22 @@ function ForgotController($scope, route, template){
 	$scope.template.open('main', 'forgot-form');
 	$scope.user = {};
 
+	$scope.welcome = {
+
+	};
+
+	http().get('/auth/configure/welcome').done(function (d) {
+	    $scope.welcome.content = d.welcomeMessage;
+	    if (!d.enabled) {
+	        $scope.welcome.hideContent = true;
+	    }
+	    $scope.$apply();
+	})
+    .e404(function () {
+        $scope.welcome.hideContent = true;
+        $scope.$apply();
+    });
+
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
 			$scope.login = window.location.href.split('login=')[1].split('&')[0];
@@ -220,6 +236,22 @@ function ActivationController($scope, template){
 	$scope.template.open('main', 'activation-form');
 	$scope.user = {};
 	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$");
+
+	$scope.welcome = {
+
+	};
+
+	http().get('/auth/configure/welcome').done(function (d) {
+	    $scope.welcome.content = d.welcomeMessage;
+	    if (!d.enabled) {
+	        $scope.welcome.hideContent = true;
+	    }
+	    $scope.$apply();
+	})
+    .e404(function () {
+        $scope.welcome.hideContent = true;
+        $scope.$apply();
+    });
 
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
@@ -309,6 +341,22 @@ function ResetController($scope, template){
 	$scope.lang = lang;
 	$scope.template.open('main', 'reset-form');
 	$scope.user = {};
+
+	$scope.welcome = {
+
+	};
+
+	http().get('/auth/configure/welcome').done(function (d) {
+	    $scope.welcome.content = d.welcomeMessage;
+	    if (!d.enabled) {
+	        $scope.welcome.hideContent = true;
+	    }
+	    $scope.$apply();
+	})
+    .e404(function () {
+        $scope.welcome.hideContent = true;
+        $scope.$apply();
+    });
 
 	if(window.location.href.indexOf('?') !== -1){
 		if(window.location.href.split('login=').length > 1){
