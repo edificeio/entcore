@@ -160,7 +160,7 @@ public class TimelineNotificationsLoader {
 						.putString("type", type.toUpperCase())
 						.putString("event-type", notificationName.toUpperCase())
 						.putString("app-name", Config.getConf().getString("app-name"))
-						.putString("app-address", Config.getConf().getString("host", "") + Config.getConf().getString("app-address", "/"))
+						.putString("app-address", Config.getConf().getString("app-address", "/"))
 						.putString("template", templateAsync.result().toString())
 						.putString("defaultFrequency", Frequencies.defaultFrequency())
 						.putString("restriction", Restrictions.defaultRestriction());
