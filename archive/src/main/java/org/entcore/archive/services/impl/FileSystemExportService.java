@@ -320,8 +320,7 @@ public class FileSystemExportService implements ExportService {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
 		final JsonObject params = new JsonObject()
-				.putString("resourceUri", Config.getConf().getString("host", "http://localhost:8004") +
-						"/archive/export/" + exportId)
+				.putString("resourceUri", "/archive/export/" + exportId)
 				.putString("resourceName", exportId + ".zip");
 
 		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject().putObject("headers", new JsonObject().putString("Accept-Language", locale))),
