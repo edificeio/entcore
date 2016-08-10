@@ -165,7 +165,6 @@ public class Structure {
 	}
 
 	public void createFunctionalGroupIfAbsent(String groupExternalId, String name) {
-		importer.importedGroups.add(groupExternalId);
 		if (functionalGroups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +

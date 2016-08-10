@@ -52,7 +52,6 @@ public class Importer {
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private Report report;
-	Set<String> importedGroups = new HashSet<>();
 
 	private Importer() {
 		structureValidator = new Validator("dictionary/schema/Structure.json");
@@ -101,7 +100,6 @@ public class Importer {
 		structures.clear();
 		profiles.clear();
 		userImportedExternalId.clear();
-		importedGroups.clear();
 		groupClasses.clear();
 		report = null;
 		transactionHelper = null;
@@ -864,11 +862,13 @@ public class Importer {
 
 	public void removeOldFunctionalGroup() {
 		String query =
+				"MATCH (g:FunctionalGroup)<-[:IN]-(:User) " +
+				"WITH COLLECT(distinct g.id) as usedFunctionalGroup " +
 				"MATCH (g:FunctionalGroup) " +
-				"WHERE NOT(g.externalId IN {importedGroups}) " +
+				"WHERE NOT(g.id IN usedFunctionalGroup) " +
 				"OPTIONAL MATCH g-[r]-() " +
 				"DELETE g, r ";
-		transactionHelper.add(query, new JsonObject().putArray("importedGroups", new JsonArray(importedGroups.toArray())));
+		transactionHelper.add(query, null);
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User) " +
