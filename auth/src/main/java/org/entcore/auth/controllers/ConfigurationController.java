@@ -44,7 +44,6 @@ public class ConfigurationController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
 	public void editWelcomeMessage(final HttpServerRequest request) {
-		log.info("edit");
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
@@ -60,7 +59,7 @@ public class ConfigurationController extends BaseController {
 	@Get("/configure/welcome")
 	public void getWelcomeMessage(final HttpServerRequest request) {
 		final String host = getHost(request);
-		final String language = I18n.acceptLanguage(request).split("\\-")[0];
+		final String language = I18n.acceptLanguage(request).split(",")[0].split("\\-")[0];
 		configurationService.getWelcomeMessage(host, language, new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
