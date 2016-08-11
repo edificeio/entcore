@@ -60,6 +60,30 @@ function Personalization($rootScope, $scope, model, ui){
 		ui.setStyle(skin.path);
 	};
 
+	http().get('/languages').done(function(data){
+		$scope.languages = data;
+    }.bind(this))
+
+	http().get('/userbook/preference/language').done(function(data){
+		try{
+			if(data.preference){
+				$scope.languagePreference = JSON.parse(data.preference)['default-domain']
+			}
+		} catch(e) {
+			$scope.languagePreference = currentLanguage;
+		}
+		if(!$scope.languagePreference)
+			$scope.languagePreference = currentLanguage;
+
+    }.bind(this))
+
+	$scope.saveLang = function(language, $event){
+		$event.stopPropagation();
+		http().putJson('/userbook/preference/language', { 'default-domain': language}).done(function(){
+			location.reload();
+		})
+	};
+
 	$scope.togglePanel = function($event){
 		$scope.showPanel = !$scope.showPanel;
 		$event.stopPropagation();
