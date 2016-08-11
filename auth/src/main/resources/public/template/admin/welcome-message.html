@@ -5,7 +5,7 @@
             <input type="checkbox" ng-model="message.hide" /><i18n>auth.admin.welcome.hide</i18n>
         </label>
     </div>
-    <div class="row">
+    <div class="row" ng-if="message.display">
         <editor ng-model="message.content" public="true"></editor>
     </div>
     <button class="right-magnet" ng-click="message.save()">
