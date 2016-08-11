@@ -2,8 +2,9 @@
     template.open('main', 'admin/welcome-message');
     $scope.message = model.message;
     $scope.message.sync(function () {
-        $scope.message.display = true;
-        $scope.$apply();
+        setTimeout(function () {
+            $scope.$apply();
+        }, 500);
     });
 
     $scope.saveChanges = function () {
