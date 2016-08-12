@@ -2,13 +2,16 @@
     <h1><i18n>auth.admin.welcome.title</i18n></h1>
     <div class="row">
         <label>
-            <input type="checkbox" ng-model="message.hide" /><i18n>auth.admin.welcome.hide</i18n>
+            <input type="checkbox" ng-model="messages.hide" /><i18n>auth.admin.welcome.hide</i18n>
         </label>
     </div>
-    <div class="row" ng-if="message.display">
-        <editor ng-model="message.content" public="true"></editor>
+    <div class="row">
+        <select ng-options="message as message.lang for message in messages.all" ng-model="edited.message"></select>
     </div>
-    <button class="right-magnet" ng-click="message.save()">
+    <div class="row" ng-if="messages.display">
+        <editor ng-model="edited.message.content" public="true"></editor>
+    </div>
+    <button class="right-magnet" ng-click="messages.save()">
         <i18n>save</i18n>
     </button>
 </article>

@@ -1,14 +1,18 @@
 ﻿function AdminDirectoryController($scope) {
     template.open('main', 'admin/welcome-message');
-    $scope.message = model.message;
-    $scope.message.sync(function () {
+
+    $scope.messages = model.messages;
+    $scope.edited = model.edited;
+
+    $scope.messages.on('sync', function () {
+        $scope.edited.message = $scope.messages.findWhere({ lang: currentLanguage }) || $scope.editedMessage;
         setTimeout(function () {
-            $scope.message.display = true;
+            model.messages.display = true;
             $scope.$apply();
         }, 500);
     });
 
     $scope.saveChanges = function () {
-        this.message.save();
+        model.messages.save();
     }
 }

@@ -26,7 +26,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <script>
         function MainController($scope) {
-            $scope.message = parent.model.message;
+            $scope.edited = parent.model.edited;
             var updateContent = function () {
                 $scope.$apply();
                 setTimeout(updateContent, 500);
@@ -57,7 +57,7 @@
                         <div class="rigid-grid panels-container">
                             <div class="welcome-text">
                                 <div class="row">
-                                    <div bind-html="message.content"></div>
+                                    <div bind-html="edited.message.content"></div>
                                 </div>
                             </div>
                         </div>
