@@ -19,6 +19,7 @@
 
 package org.entcore.common.notification;
 
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.user.UserInfos;
@@ -40,6 +41,7 @@ import org.vertx.java.platform.Container;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,15 +55,18 @@ public class TimelineHelper {
 	private final Vertx vertx;
 	private final TimelineMailer timelineMailer;
 	private final TimelineNotificationsLoader notificationsLoader;
+	private final Container container;
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
 
 	public TimelineHelper(Vertx vertx, EventBus eb, Container container) {
 		this.eb = eb;
 		this.render = new Renders(vertx, container);
 		this.vertx = vertx;
+		this.container = container;
 		this.notificationsLoader = TimelineNotificationsLoader.getInstance(vertx);
 		this.timelineMailer = new TimelineMailer(vertx, eb, container);
 		loadTimelineI18n();
+		loadAssetsTimelineDirectory();
 	}
 
 	public void notifyTimeline(HttpServerRequest request,  String notificationName,
@@ -168,44 +173,74 @@ public class TimelineHelper {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
 				if (ar.succeeded() && ar.result()) {
-					final Map<String, JsonObject> messages = new HashMap<>();
 					vertx.fileSystem().readDir(messagesDir, new Handler<AsyncResult<String[]>>() {
 						@Override
 						public void handle(AsyncResult<String[]> ar) {
 							if (ar.succeeded()) {
-								final AtomicInteger count = new AtomicInteger(ar.result().length);
-								for(final String path : ar.result()) {
-									vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
-										@Override
-										public void handle(AsyncResult<FileProps> ar) {
-											if (ar.succeeded() && ar.result().isRegularFile()) {
-												final String k = new File(path).getName().split("\\.")[0];
-												vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
-													@Override
-													public void handle(AsyncResult<Buffer> ar) {
-														if (ar.succeeded()) {
-															JsonObject jo = new JsonObject(
-																	ar.result().toString("UTF-8"));
-															messages.put(k, jo);
-														}
-														if (count.decrementAndGet() == 0) {
-															appendTimelineEventsI18n(messages);
-														}
-													}
-												});
-											} else {
-												if (count.decrementAndGet() == 0) {
-													appendTimelineEventsI18n(messages);
-												}
-											}
-										}
-									});
-								}
+								readI18nTimeline(ar);
 							}
 						}
 					});
 				} else {
 					log.warn("I18n directory " + messagesDir + " doesn't exist.");
+				}
+			}
+		});
+	}
+
+	private void readI18nTimeline(AsyncResult<String[]> ar) {
+		final Map<String, JsonObject> messages = new HashMap<>();
+		final AtomicInteger count = new AtomicInteger(ar.result().length);
+		for(final String path : ar.result()) {
+			vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
+				@Override
+				public void handle(AsyncResult<FileProps> ar) {
+					if (ar.succeeded() && ar.result().isRegularFile()) {
+						final String k = new File(path).getName().split("\\.")[0];
+						vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
+							@Override
+							public void handle(AsyncResult<Buffer> ar) {
+								if (ar.succeeded()) {
+									JsonObject jo = new JsonObject(
+											ar.result().toString("UTF-8"));
+									messages.put(k, jo);
+								}
+								if (count.decrementAndGet() == 0) {
+									appendTimelineEventsI18n(messages);
+								}
+							}
+						});
+					} else {
+						if (count.decrementAndGet() == 0) {
+							appendTimelineEventsI18n(messages);
+						}
+					}
+				}
+			});
+		}
+	}
+
+	private void loadAssetsTimelineDirectory() {
+		final String[] app = container.config().getString("main", "").split("\\.");
+		final String assetsDirectory = container.config().getString("assets-path", "../..") + File.separator + "assets";
+		final String i18nDirectory = assetsDirectory + File.separator + "i18n" + File.separator + app[app.length - 1] +
+				File.separator + "timeline";
+		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
+			@Override
+			public void handle(AsyncResult<Boolean> ar) {
+				if (ar.succeeded() && ar.result()) {
+					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<String[]>>() {
+						@Override
+						public void handle(AsyncResult<String[]> asyncResult) {
+							if (asyncResult.succeeded()) {
+								readI18nTimeline(asyncResult);
+							} else {
+								log.error("Error loading assets i18n timeline.", asyncResult.cause());
+							}
+						}
+					});
+				} else if (ar.failed()) {
+					log.error("Error loading assets i18n timeline.", ar.cause());
 				}
 			}
 		});
