@@ -42,8 +42,9 @@ model.build = function () {
                         }
                         this.trigger('sync');
                     }.bind(this))
-                        .e404(function () {
-                    });
+                    .e404(function () {
+                        this.trigger('sync');
+                    }.bind(this));
 
             }.bind(this));
             
