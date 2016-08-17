@@ -573,19 +573,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					"mandatory: ANY(a IN authorizations WHERE HAS(a.mandatory) AND a.mandatory = true)"+
 				"}) as widgets";
 		final String query4 = "MATCH (s:Structure) return s.id as id, s.externalId as externalId";
+		final String query5 = "MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) RETURN uac AS preferences";
 		JsonObject params = new JsonObject();
 		params.putString("id", userId);
 		JsonArray statements = new JsonArray()
 				.add(new JsonObject().putString("statement", query).putObject("parameters", params))
 				.add(new JsonObject().putString("statement", query2).putObject("parameters", params))
 				.add(new JsonObject().putString("statement", query3).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query4));
+				.add(new JsonObject().putString("statement", query4))
+				.add(new JsonObject().putString("statement", query5).putObject("parameters", params));
 		executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonArray results = message.body().getArray("results");
-				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 4 &&
+				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 5 &&
 						results.<JsonArray>get(0).size() > 0 && results.<JsonArray>get(1).size() > 0) {
 					JsonObject j = results.<JsonArray>get(0).get(0);
 					JsonObject j2 = results.<JsonArray>get(1).get(0);
@@ -667,7 +669,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					j.putObject("functions", functions);
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);
-					j.putObject("cache", new JsonObject());
+					final JsonObject cache = (results.<JsonArray>get(4) != null && results.<JsonArray>get(4).size() > 0 &&
+							results.<JsonArray>get(4).get(0) != null) ? results.<JsonArray>get(4).<JsonObject>get(0) : new JsonObject();
+					j.putObject("cache", cache);
 					j.putArray("widgets", j3.getArray("widgets", new JsonArray()));
 					handler.handle(j);
 				} else {
