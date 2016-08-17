@@ -229,5 +229,8 @@
   "record.save": "Enregistrer l'enregistrement dans l'espace documentaire",
   "sharebigfiles": "Poste-fichiers",
   "help.icon": "<help></help>",
-  "community": "Communautés"
+  "community": "Communautés",
+  "finish": "Terminer",
+  "next": "Suivant",
+  "previous": "Précédent"
 }

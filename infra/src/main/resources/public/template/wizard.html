@@ -8,16 +8,16 @@
 		</div>
 		<nav>
 			<button class="cancel" ng-click="cancel()">
-				Annuler
+				<i18n>cancel</i18n>
 			</button>
 			<button class="previous" ng-click="previousStep();" ng-if="currentStep > 0">
-				Précédent
+				<i18n>previous</i18n>
 			</button>
 			<button class="next" ng-click="nextStep();" ng-if="currentStep < nbSteps - 1" ng-disabled="!nextCondition()">
-				Suivant
+				<i18n>next</i18n>
 			</button>
 			<button class="finish" ng-if="currentStep === nbSteps - 1" ng-click="finish()" ng-disabled="!checkFinishCondition()">
-				Terminer
+				<i18n>finish</i18n>
 			</button>
 		</nav>
 	</article>
