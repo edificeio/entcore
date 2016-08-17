@@ -240,11 +240,12 @@ public class PortalController extends BaseController {
 	@Get("/theme")
 	@SecuredAction(value = "portal", type = ActionType.AUTHENTICATED)
 	public void getTheme(final HttpServerRequest request) {
+		final String theme_attr = THEME_ATTRIBUTE + getHost(request);
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					Object t = user.getAttribute(THEME_ATTRIBUTE);
+					Object t = user.getAttribute(theme_attr);
 					if (t != null) {
 						renderJson(request, new JsonObject(t.toString()));
 						return;
@@ -276,7 +277,7 @@ public class PortalController extends BaseController {
 								theme.putString("skin", getThemePrefix(request) + "/default/");
 							}
 							renderJson(request, theme);
-							UserUtils.addSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE, theme.encode(), null);
+							UserUtils.addSessionAttribute(eb, user.getUserId(), theme_attr, theme.encode(), null);
 						}
 					});
 				} else {
