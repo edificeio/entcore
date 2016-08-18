@@ -233,5 +233,7 @@
   "finish": "Terminer",
   "next": "Suivant",
   "previous": "Précédent",
-  "admin.xiti": "Paramétrage Xiti"
+  "admin.xiti": "Paramétrage Xiti",
+  "calendar": "Agenda",
+  "actualites": "Actualités"
 }
