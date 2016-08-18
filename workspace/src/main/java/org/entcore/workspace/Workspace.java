@@ -51,9 +51,7 @@ public class Workspace extends BaseServer {
 						config.getBoolean("share-old-groups-to-users", false)));
 
 		if (config.getBoolean("searching-event", true)) {
-			//Denormalizing : don't use the owner object
-			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION,
-					new MongoDbSearchService(DocumentDao.DOCUMENTS_COLLECTION, "owner")));
+			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
 		}
 
 		service.setQuotaService(quotaService);

@@ -26,7 +26,7 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.search.SearchingEvents;
-import org.entcore.common.service.SearchService;
+import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
@@ -39,9 +39,9 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
-import java.util.regex.Pattern;
 
 import static org.entcore.common.mongodb.MongoDbResult.validResults;
+import static org.entcore.common.mongodb.MongoDbResult.validResultsHandler;
 
 /**
  * Created by dbreyton on 03/06/2016.
@@ -49,103 +49,101 @@ import static org.entcore.common.mongodb.MongoDbResult.validResults;
 public class WorkspaceSearchingEvents implements SearchingEvents {
     private static final Logger log = LoggerFactory.getLogger(WorkspaceSearchingEvents.class);
     private final MongoDb mongo;
-    private final SearchService searchService;
     private final String collection;
     private static final I18n i18n = I18n.getInstance();
-    private static String PATTERN = "yyyy-MM-dd HH:mm.ss.sss";
+    private static final String PATTERN = "yyyy-MM-dd HH:mm.ss.sss";
 
-    public WorkspaceSearchingEvents(String collection, SearchService searchService) {
+    public WorkspaceSearchingEvents(String collection) {
         this.collection = collection;
-        this.searchService = searchService;
         this.mongo = MongoDb.getInstance();
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void searchResource(List<String> appFilters, final String userId, JsonArray groupIds, JsonArray searchWords,
                                Integer page, Integer limit, final JsonArray columnsHeader,
                                final String locale, final Handler<Either<String, JsonArray>> handler) {
         if (appFilters.contains(WorkspaceSearchingEvents.class.getSimpleName())) {
-            final List<String> returnFields = new ArrayList<String>();
-            returnFields.add("name");
-            returnFields.add("modified");
-            returnFields.add("folder");
-            returnFields.add("owner");
-            returnFields.add("ownerName");
-            returnFields.add("comments");
 
             final List<String> searchWordsLst = searchWords.toList();
 
-            //main searching
-            searchService.search(userId, groupIds.toList(), returnFields, searchWordsLst, page, limit, new Handler<Either<String, JsonArray>>() {
-                @Override
-                public void handle(Either<String, JsonArray> event) {
+            final List<String> groupIdsLst = groupIds.toList();
+            final List<DBObject> groups = new ArrayList<>();
+            groups.add(QueryBuilder.start("userId").is(userId).get());
+            for (String gpId: groupIdsLst) {
+                groups.add(QueryBuilder.start("groupId").is(gpId).get());
+            }
+
+            final QueryBuilder rightsQuery = new QueryBuilder().or(
+                    QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name()).get(),
+                    QueryBuilder.start("visibility").is(VisibilityFilter.PROTECTED.name()).get(),
+                    QueryBuilder.start("visibility").is(VisibilityFilter.PROTECTED.name()).get(),
+                    QueryBuilder.start("owner").is(userId).get(),
+                    QueryBuilder.start("shared").elemMatch(
+                            new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+                    ).get());
+
+            final QueryBuilder worldsQuery = new QueryBuilder();
+            worldsQuery.text(MongoDbSearchService.textSearchedComposition(searchWordsLst));
+
+            //searching only the file entry (not folder), if folder match and is returned, the paginate system is impacted
+            final QueryBuilder fileQuery = QueryBuilder.start("file").exists(true);
+
+            final QueryBuilder query = new QueryBuilder().and(fileQuery.get(), rightsQuery.get(), worldsQuery.get());
+
+            JsonObject sort = new JsonObject().putNumber("modified", -1);
+            final JsonObject projection = new JsonObject();
+            projection.putNumber("name", 1);
+            projection.putNumber("modified", 1);
+            projection.putNumber("folder", 1);
+            projection.putNumber("owner", 1);
+            projection.putNumber("ownerName", 1);
+            projection.putNumber("comments", 1);
+
+            final int skip = (0 == page) ? -1 : page * limit;
+
+            //main search on file
+            mongo.find(this.collection, MongoQueryBuilder.build(query), sort,
+                    projection, skip, limit, Integer.MAX_VALUE, validResultsHandler(new Handler<Either<String, JsonArray>>() {
+                        @Override
+                        public void handle(Either<String, JsonArray> event) {
+
                     if (event.isRight()) {
                         final JsonArray globalJa = event.right().getValue();
-                        final QueryBuilder foldersOrQuery = new QueryBuilder();
-                        //different owner can have the same directory name
-                        final HashMap<String, List<String>> alreadyMapFolder = new HashMap<String, List<String>>();
-                        final String folder = "folder";
+                        //different owner can have the same folder name
+                        //if the folder exists, we must find id of folder according to the directory name and the owner,
+                        //it's necessary to use the front route for the resource link
+                        final QueryBuilder foldersOwnersOrQuery = new QueryBuilder();
+                        Boolean isFolderProcessing = false;
 
                         for (int i = 0; i < globalJa.size(); i++) {
                             final JsonObject j = globalJa.get(i);
 
-                            // it's only if folder owner isn't already in searched scope
-                            if (j != null && !StringUtils.isEmpty(j.getString(folder)) && (alreadyMapFolder.get(j.getString("owner")) != null &&
-                                    !alreadyMapFolder.get(j.getString("owner")).contains(j.getString(folder)))) {
-                                final String folderName = j.getString(folder);
-                                final String owner = j.getString("owner");
-                                if (alreadyMapFolder.containsKey(owner)) {
-                                    alreadyMapFolder.get(owner).add(folderName);
-                                } else {
-                                    alreadyMapFolder.put(owner, Arrays.asList(folderName));
-                                }
-
-                                final QueryBuilder andQuery = new QueryBuilder();
-                                // subdirectory management "_" allow to create a tree
-                                andQuery.and(new QueryBuilder().start(folder).is(folderName).get());
-                                final List<String> realNameFolderLst = StringUtils.split(folderName, "_");
-                                final String realNameFolder = realNameFolderLst.get(realNameFolderLst.size() - 1);
-                                andQuery.and(new QueryBuilder().start("name").is(realNameFolder).get());
-                                andQuery.and(new QueryBuilder().start("owner").is(owner).get());
-                                foldersOrQuery.or(andQuery.get());
+                            // processing only files that have a folder
+                            if (j != null && !StringUtils.isEmpty(j.getString("folder"))) {
+                                isFolderProcessing = true;
+                                final QueryBuilder folderOwnerQuery = new QueryBuilder();
+                                folderOwnerQuery.and(QueryBuilder.start("folder").is(j.getString("folder")).get(),
+                                        QueryBuilder.start("owner").is(j.getString("owner")).get());
+                                foldersOwnersOrQuery.or(folderOwnerQuery.get());
                             }
                         }
 
-                        final JsonObject projection = new JsonObject();
-                        projection.putNumber("folder", 1);
-                        projection.putNumber("owner", 1);
-                        //search all folder of main result set
-                        mongo.find(collection, MongoQueryBuilder.build(foldersOrQuery), null,
-                                projection, new Handler<Message<JsonObject>>() {
-                                    @Override
-                                    public void handle(Message<JsonObject> event) {
-                                        final Either<String, JsonArray> ei = validResults(event);
-                                        if (ei.isRight()) {
-                                            final JsonArray folderJa = ei.right().getValue();
-                                            final Map<String, Map<String, String>> mapOwnerMapNameFolderId = new HashMap<String, Map<String, String>>();
-                                            // fill the map owner key with map folder name key, folder id value
-                                            for (int i = 0; i < folderJa.size(); i++) {
-                                                final JsonObject j = folderJa.get(i);
-                                                if (j != null) {
-                                                    final String owner = j.getString("owner", "");
-                                                    if (mapOwnerMapNameFolderId.containsKey(owner)) {
-                                                        mapOwnerMapNameFolderId.get(owner).put(j.getString("folder"), j.getString("_id"));
-                                                    } else {
-                                                        final Map<String, String> mapFolderId =
-                                                                new HashMap<String, String>();
-                                                        mapFolderId.put(j.getString("folder"), j.getString("_id"));
-                                                        mapOwnerMapNameFolderId.put(owner, mapFolderId);
-                                                    }
-                                                }
-                                            }
-                                            final JsonArray res = formatSearchResult(globalJa, columnsHeader, searchWordsLst,
-                                                    locale, userId, mapOwnerMapNameFolderId);
-                                            handler.handle(new Either.Right<String, JsonArray>(res));
-                                        } else {
-                                            handler.handle(new Either.Left<String, JsonArray>(ei.left().getValue()));
-                                        }
-                                    }
-                                });
+                        final Map<String, Map<String, String>> mapOwnerMapNameFolderId = new HashMap<>();
+                        //finding ids of folder found.
+                        if (isFolderProcessing) {
+                            //find only authorized folder entry and not file
+                            final QueryBuilder queryFindFolderIds =
+                                    new QueryBuilder().and(QueryBuilder.start("file").exists(false).get(), rightsQuery.get(),
+                                            foldersOwnersOrQuery.get()) ;
+                            //search all folder of main result set and format the search result
+                           findFoldersIdAndFormatResult(globalJa, queryFindFolderIds, columnsHeader, searchWordsLst, locale, userId, handler);
+                        } else {
+                            //all files without folder
+                            final JsonArray res = formatSearchResult(globalJa, columnsHeader, searchWordsLst,
+                                    locale, userId, mapOwnerMapNameFolderId);
+                            handler.handle(new Either.Right<String, JsonArray>(res));
+                        }
                     } else {
                         handler.handle(new Either.Left<String, JsonArray>(event.left().getValue()));
                     }
@@ -153,12 +151,52 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                         log.debug("[WorkspaceSearchingEvents][searchResource] The resources searched by user are finded");
                     }
                 }
-            });
+            }));
         } else {
             handler.handle(new Either.Right<String, JsonArray>(new JsonArray()));
         }
     }
 
+    private void findFoldersIdAndFormatResult(final JsonArray globalJa, QueryBuilder queryFindFolderIds, final JsonArray columnsHeader,
+                                              final List<String> searchWordsLst, final String locale, final String userId,
+                                              final Handler<Either<String, JsonArray>> handler) {
+        final JsonObject projection = new JsonObject();
+        projection.putNumber("folder", 1);
+        projection.putNumber("owner", 1);
+        mongo.find(collection, MongoQueryBuilder.build(queryFindFolderIds), null,
+                projection, new Handler<Message<JsonObject>>() {
+                    @Override
+                    public void handle(Message<JsonObject> event) {
+                        final Either<String, JsonArray> ei = validResults(event);
+                        if (ei.isRight()) {
+                            final JsonArray folderJa = ei.right().getValue();
+                            final Map<String, Map<String, String>> mapOwnerMapNameFolderId = new HashMap<>();
+                            // fill the map owner key with map folder name key, folder id value
+                            for (int i = 0; i < folderJa.size(); i++) {
+                                final JsonObject j = folderJa.get(i);
+                                if (j != null) {
+                                    final String owner = j.getString("owner", "");
+                                    if (mapOwnerMapNameFolderId.containsKey(owner)) {
+                                        mapOwnerMapNameFolderId.get(owner).put(j.getString("folder"), j.getString("_id"));
+                                    } else {
+                                        final Map<String, String> mapFolderId =
+                                                new HashMap<>();
+                                        mapFolderId.put(j.getString("folder"), j.getString("_id"));
+                                        mapOwnerMapNameFolderId.put(owner, mapFolderId);
+                                    }
+                                }
+                            }
+                            final JsonArray res = formatSearchResult(globalJa, columnsHeader, searchWordsLst,
+                                    locale, userId, mapOwnerMapNameFolderId);
+                            handler.handle(new Either.Right<String, JsonArray>(res));
+                        } else {
+                            handler.handle(new Either.Left<String, JsonArray>(ei.left().getValue()));
+                        }
+                    }
+                });
+    }
+
+    @SuppressWarnings("unchecked")
     private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, final List<String> words,
                                          final String locale, final String userId, final Map<String, Map<String, String>> mapOwnerMapNameFolderId) {
         final List<String> aHeader = columnsHeader.toList();
@@ -169,56 +207,55 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
             final JsonObject jr = new JsonObject();
 
             if (j != null) {
-                final List<String> realNameFolderLst = StringUtils.split(j.getString("folder",""), "_");
-                final String realNameFolder = (realNameFolderLst.size() > 0) ? realNameFolderLst.get(realNameFolderLst.size() -1) : "";
-                //don't return folder
-                if (!realNameFolder.equals(j.getString("name",""))) {
-                    final String folder = j.getString("folder", "");
-                    //it's a result to return
-                    Date modified = new Date();
-                    try {
-                        modified = DateUtils.parse(j.getString("modified"), PATTERN);
-                    } catch (ParseException e) {
-                        log.error("Can't parse date from modified", e);
-                    }
-                    final String owner = j.getString("owner", "");
-                    final Map<String, Object> map = formatDescription(j.getArray("comments", new JsonArray()),
-                            words, modified, locale);
-                    jr.putString(aHeader.get(0), j.getString("name"));
-                    jr.putString(aHeader.get(1), map.get("description").toString());
-                    jr.putObject(aHeader.get(2), new JsonObject().putValue("$date", ((Date) map.get("modified")).getTime()));
-                    jr.putString(aHeader.get(3), j.getString("ownerName", ""));
-                    jr.putString(aHeader.get(4), owner);
-                    String resourceURI = "/workspace/workspace";
+                final String folder = j.getString("folder", "");
 
-                    if (userId.equals(owner)) {
-                        if (!StringUtils.isEmpty(folder)) {
-                            resourceURI += "#/folder/" + mapOwnerMapNameFolderId.get(owner).get(folder);
-                        }
-                    } else {
-                        if (!StringUtils.isEmpty(folder)) {
-                            resourceURI += "#/shared/folder/" + mapOwnerMapNameFolderId.get(owner).get(folder);
-                        } else {
-                            resourceURI += "#/shared";
-                        }
-                    }
-                    jr.putString(aHeader.get(5), resourceURI);
-                    traity.add(jr);
+                Date modified = new Date();
+                try {
+                    modified = DateUtils.parse(j.getString("modified"), PATTERN);
+                } catch (ParseException e) {
+                    log.error("Can't parse date from modified", e);
                 }
+                final String owner = j.getString("owner", "");
+                final Map<String, Object> map = formatDescription(j.getArray("comments", new JsonArray()),
+                        words, modified, locale);
+                jr.putString(aHeader.get(0), j.getString("name"));
+                jr.putString(aHeader.get(1), map.get("description").toString());
+                jr.putObject(aHeader.get(2), new JsonObject().putValue("$date", ((Date) map.get("modified")).getTime()));
+                jr.putString(aHeader.get(3), j.getString("ownerName", ""));
+                jr.putString(aHeader.get(4), owner);
+                //default front route (no folder and the file belongs to the owner)
+                String resourceURI = "/workspace/workspace";
+
+                if (userId.equals(owner)) {
+                    if (!StringUtils.isEmpty(folder)) {
+                        resourceURI += "#/folder/" + mapOwnerMapNameFolderId.get(owner).get(folder);
+                    }
+                } else {
+                    //if there is a folder on entry file and this folder is shared
+                    if (!StringUtils.isEmpty(folder) && mapOwnerMapNameFolderId.containsKey(owner) &&
+                            mapOwnerMapNameFolderId.get(owner).containsKey(folder)) {
+                        resourceURI += "#/shared/folder/" + mapOwnerMapNameFolderId.get(owner).get(folder);
+                    } else {
+                        //only the file is shared
+                        resourceURI += "#/shared";
+                    }
+                }
+                jr.putString(aHeader.get(5), resourceURI);
+                traity.add(jr);
             }
         }
         return traity;
     }
 
     private Map<String, Object> formatDescription(JsonArray ja, final List<String> words, Date defaultDate, String locale) {
-        final Map<String, Object> map = new HashMap<String, Object>();
+        final Map<String, Object> map = new HashMap<>();
 
         Integer countMatchComment = 0;
         Date modifiedRes = null;
         Date modifiedMarker = null;
         String comment = "";
 
-        final List<String> unaccentWords = new ArrayList<String>();
+        final List<String> unaccentWords = new ArrayList<>();
         for (final String word : words) {
             unaccentWords.add(StringUtils.stripAccentsToLowerCase(word));
         }
