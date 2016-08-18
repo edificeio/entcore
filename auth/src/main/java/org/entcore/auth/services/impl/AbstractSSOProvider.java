@@ -40,8 +40,10 @@ import java.util.List;
 
 public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
-	private static final String RETURN_QUERY = "RETURN DISTINCT u.id as id, u.activationCode as activationCode, " +
-			"u.login as login, u.email as email, u.mobile as mobile, u.federated";
+	private static final String RETURN_QUERY = "OPTIONAL MATCH (p:Profile) " +
+			"WHERE HAS(u.profiles) AND p.name = head(u.profiles) " +
+			"RETURN DISTINCT u.id as id, u.activationCode as activationCode, " +
+			"u.login as login, u.email as email, u.mobile as mobile, u.federated, p.blocked as blockedProfile ";
 
 	protected boolean validConditions(Assertion assertion, Handler<Either<String, JsonElement>> handler) {
 		if (Utils.validationParamsNull(handler, "invalid.assertion", assertion)) return false;
@@ -101,7 +103,9 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 				new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(final Either<String, JsonObject> event) {
-				if (event.isRight() && event.right().getValue().getBoolean("federated") == null &&
+				if (event.isRight() && event.right().getValue().getBoolean("blockedProfile", false)) {
+					handler.handle(new Either.Left<String, JsonElement>("blocked.profile"));
+				} else if (event.isRight() && event.right().getValue().getBoolean("federated") == null &&
 						event.right().getValue().getString("id") != null) {
 					String query = "MATCH (u:User {id: {id}}) SET u.federated = true ";
 					JsonObject params = new JsonObject().putString("id", event.right().getValue().getString("id"));
@@ -137,6 +141,10 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 					for (Object o: users) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) o;
+						if (j.getBoolean("blockedProfile", false)) {
+							handler.handle(new Either.Left<String, JsonElement>("blocked.profile"));
+							return;
+						}
 						if (Utils.isNotEmpty(j.getString("id")) && !j.getBoolean("federated", false)) {
 							ids.addString(j.getString("id"));
 						}
