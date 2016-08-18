@@ -9024,6 +9024,7 @@ nav.search-container > ul,
 nav.search-container-left > ul {
   position: absolute;
   height: calc(100% - 50px);
+  top: 50px;
   overflow-y: scroll;
 }
 div.search-container-view {
