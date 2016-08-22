@@ -408,6 +408,13 @@ public class TimelineController extends BaseController {
 		mailer.sendWeeklyMails(0, defaultResponseHandler(request));
 	}
 
+	@Get("/allowLanguages")
+	@SecuredAction("timeline.allowLanguages")
+	public void allowLanguages(final HttpServerRequest request) {
+		// This route is used to create allowLanguages Workflow right, nothing to do
+		return;
+	}
+
 	@BusAddress("wse.timeline")
 	public void busApi(final Message<JsonObject> message) {
 		if (message == null) {
