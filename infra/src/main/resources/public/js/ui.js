@@ -733,7 +733,7 @@ ui.extendElement = {
                 });
             }
 
-            if (element.data('lock') === true || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus'))) {
+            if (element.data('lock') === true || (e.target.tagName === 'INPUT' && $(e.target).attr('type') === 'text') || (e.target.tagName === 'TEXTAREA' && $(e.target).is(':focus')) ) {
                 return;
             }
             var initialScroll = $(window).scrollTop();
