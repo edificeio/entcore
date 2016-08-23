@@ -80,7 +80,7 @@
                     <option value="">[[lang.translate("directory.allClasses")]]</option>
             </select>
             <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="scrollOpts.reset()"/>
-            <ul bottom-scroll-action="scrollOpts.increment()" style="height: 355px; padding-top: 10; border-bottom: none">
+            <ul bottom-scroll-action="scrollOpts.increment()" style="height: 355px; padding-top: 10; border-bottom: none; top: 100px; height: calc(100% - 120px);">
                 <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
                     ng-click="addUserToGroup(user, groupSelected)"
                     style="padding-left: 0">
