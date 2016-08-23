@@ -3858,8 +3858,14 @@ module.directive('dragItem', function() {
                             'pointer-events': 'none'
                         });
                         $('body').addClass('dragging');
-                        $("[drop-item]").on("mouseover", function(e) {
-                            matchedElement = $(e.target).parents('[drop-item]');
+                        $("[drop-item]").on("mouseover", function (e) {
+                            if ($(e.target).attr('drop-item') !== undefined) {
+                                matchedElement = $(e.target);
+                            }
+                            else {
+                                matchedElement = $(e.target).parents('[drop-item]');
+                            }
+                            
                             //target l'element lié à l'event, ici celui que l'on survole
                         })
                         $("[drop-item]").on("mouseout", function(e) {
