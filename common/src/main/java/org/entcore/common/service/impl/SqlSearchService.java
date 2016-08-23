@@ -94,14 +94,11 @@ public final class SqlSearchService implements SearchService {
         final String rightsWhere = "member_id IN " + Sql.listPrepared(groupsAndUserIds) +
         " OR owner = ?" + (checkVisibility ? " OR visibility IN (?,?)" : "");
 
-        final String iLikeTemplate = "ILIKE ALL " + Sql.arrayPrepared(searchWords.toArray(), true);
-        final String searchWhere = searchWherePrepared(this.searchFields, iLikeTemplate);
-
         final String query = "SELECT " + fields + " FROM " + resourceTable +
                 " LEFT JOIN " + shareTable + " ON " + resourceTable + ".id = resource_id" +
                 " LEFT JOIN " + userTable + " ON " + resourceTable + ".owner = "+ userTable + ".id" +
                 " LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
-                "WHERE (" + rightsWhere + ")  AND (" + searchWhere + ")" +
+                "WHERE (" + rightsWhere + ")  AND (" + searchWherePrepared() + ")" +
                 " GROUP BY " + resourceTable + ".id, " + displayNameField +
                 " ORDER BY modified DESC " +
                 " LIMIT ? OFFSET ?";
@@ -110,33 +107,33 @@ public final class SqlSearchService implements SearchService {
             values.add(VisibilityFilter.PROTECTED.name()).add(VisibilityFilter.PUBLIC.name());
         }
 
-        final List<String> valuesWildcard = searchValuesWildcard(searchWords);
+        final String textSearchedValue = textSearchedComposition(searchWords);
         for (int i=0;i<this.searchFields.size();i++) {
-            for (final String value : valuesWildcard) {
-                values.addString(value);
-            }
+            values.add(textSearchedValue);
         }
 
         values.add(limit).add(offset);
         sql.prepared(query, values, validResultHandler(handler));
     }
 
-    private String searchWherePrepared(List<String> list, final String templateLike) {
+    private String searchWherePrepared() {
         StringBuilder sb = new StringBuilder();
-        if (list != null && list.size() > 0) {
-            for (String s : list) {
-                sb.append("unaccent(regexp_replace(").append(s).append(",'<[^>]*>','','g'))").append(templateLike).append(" OR ");
+        if (this.searchFields != null && this.searchFields.size() > 0) {
+            for (String s : this.searchFields) {
+                sb.append(s).append(" @@ to_tsquery(unaccent(?)) AND ");
             }
-            sb.delete(sb.length() - 3, sb.length());
+            sb.delete(sb.length() - 4, sb.length());
         }
         return sb.toString();
     }
 
-    private List<String> searchValuesWildcard(List<String> list) {
-        final List<String> result = new ArrayList<String>();
-        for (String s : list) {
-            result.add("%" + s + "%");
+    public static String textSearchedComposition(List<String> wordsLst) {
+        final StringBuilder words = new StringBuilder();
+        for (String word : wordsLst) {
+           //conjunction
+           words.append(word).append(" & ");
         }
-        return result;
+        words.delete(words.length() - 2, words.length());
+        return words.toString();
     }
 }
