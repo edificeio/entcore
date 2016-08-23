@@ -423,7 +423,7 @@ public class UserBookController extends BaseController {
 								renderJson(request, res.body());
 							}
 						});
-						UserUtils.removeSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE, null);
+						UserUtils.removeSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 					} else {
 						badRequest(request);
 					}
