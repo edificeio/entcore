@@ -3865,7 +3865,7 @@ module.directive('dragItem', function() {
                             else {
                                 matchedElement = $(e.target).parents('[drop-item]');
                             }
-                            
+
                             //target l'element lié à l'event, ici celui que l'on survole
                         })
                         $("[drop-item]").on("mouseout", function(e) {
@@ -4698,6 +4698,7 @@ module.directive('floatingNavigation', function() {
                 initialPosition = element.offset();
                 element.height($(window).height() - parseInt(element.css('margin-bottom')) - 100);
                 scope.stepsLength = parseInt(element.find('.content')[0].scrollHeight / element.height());
+                scope.$apply();
             }, 800);
             element.find('.arrow.next').on('click', function() {
                 scope.step++;
