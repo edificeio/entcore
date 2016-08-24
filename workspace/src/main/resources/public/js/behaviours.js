@@ -135,6 +135,8 @@ Behaviours.register('workspace', {
 				formData.append('file', blobDocument, file.metadata.filename);
 				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
 					if(typeof callback === 'function'){
+                        data.metadata = file.metadata;
+                        data.name = file.metadata.filename;
 						callback(data);
 					}
 				});
