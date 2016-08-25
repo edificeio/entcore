@@ -1,4 +1,5 @@
 <article class="twelve cell solid" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
+    <div class="row warning" ng-if="newItem.loadingAttachments.length > 0"><i18n>wait.attachments.completion</i18n></div>
 	<form class="row">
 		<div class="twelve cell">
 			<div class="row">
@@ -56,7 +57,7 @@
 							<i18n>cancel</i18n>
 						</button>
 					</plus>
-					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!newItem.to.length">
+					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!newItem.to.length || (newItem.loadingAttachments && newItem.loadingAttachments.length > 0)">
 						<i18n>submit</i18n>
 					</button>
 				</div>
