@@ -30,7 +30,7 @@ routes.define(function($routeProvider){
 		})
 });
 
-function Conversation($scope, $timeout, date, notify, route, model){
+function Conversation($scope, $timeout, $compile, $sanitize, date, notify, route, model){
 	route({
 		readMail: function(params){
 			model.folders.openFolder('inbox');
@@ -280,7 +280,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 		format.reply.content = content;
 	});
 
-	function setMailContent(mailType, copyReceivers){
+	function setMailContent(mailType, copyReceivers, cb){
 		if($scope.mail.subject.indexOf(format[mailType].prefix) === -1){
 			$scope.newItem.subject = format[mailType].prefix + $scope.mail.subject;
 		}
@@ -292,44 +292,56 @@ function Conversation($scope, $timeout, date, notify, route, model){
             $scope.newItem.cc = $scope.mail.cc;
             $scope.newItem.to = $scope.mail.to;
         }
-		$scope.newItem.body = format[mailType].content + '<blockquote>' + $scope.mail.body + '</blockquote>';
+		var tempElement = $compile(format[mailType].content)($scope)
+        $timeout(function(){
+            $scope.newItem.body = $sanitize(
+                $(document.createElement('div')).append(tempElement)[0].outerHTML +
+                '<blockquote>' + $scope.mail.body + '</blockquote>'
+            );
+            tempElement.remove()
+            cb()
+        }, 0)
+        //$scope.newItem.body = format[mailType].content + '<blockquote>' + $scope.mail.body + '</blockquote>';
 	}
 
 	$scope.transfer = function(){
-		$scope.openView('write-mail', 'main');
         $scope.newItem.parentConversation = $scope.mail;
-		setMailContent('transfer');
-		model.folders.draft.saveDraft($scope.newItem, function(id){
-			http().put("message/"+ $scope.newItem.id +"/forward/" + $scope.mail.id).done(function(){
-				if(!$scope.newItem.attachments)
-					$scope.newItem.attachments = []
-				for(var i = 0; i < $scope.mail.attachments.length; i++){
-					$scope.newItem.attachments.push(JSON.parse(JSON.stringify($scope.mail.attachments[i])))
-				}
-				$scope.getQuota()
-			}).error(function(data){
-				notify.error(data.error)
-			})
-		});
+        $scope.openView('write-mail', 'main');
+		setMailContent('transfer', false, function(){
+            model.folders.draft.saveDraft($scope.newItem, function(id){
+                http().put("message/"+ $scope.newItem.id +"/forward/" + $scope.mail.id).done(function(){
+                    if(!$scope.newItem.attachments)
+                    $scope.newItem.attachments = []
+                    for(var i = 0; i < $scope.mail.attachments.length; i++){
+                        $scope.newItem.attachments.push(JSON.parse(JSON.stringify($scope.mail.attachments[i])))
+                    }
+                    $scope.getQuota()
+                }).error(function(data){
+                    notify.error(data.error)
+                })
+            });
+        });
 	};
 
 	$scope.reply = function(){
-		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
-        setMailContent('reply');
-		$scope.addUser($scope.mail.sender());
+        $scope.openView('write-mail', 'main');
+        setMailContent('reply', false, function(){
+            $scope.addUser($scope.mail.sender());
+        });
 	};
 
 	$scope.replyAll = function(){
-		$scope.openView('write-mail', 'main');
 		$scope.newItem.parentConversation = $scope.mail;
-		setMailContent('reply', true);
-        $scope.newItem.to = _.filter($scope.newItem.to, function(user){ return user.id !== model.me.userId })
-        $scope.newItem.cc = _.filter($scope.newItem.cc, function(user){
-            return user.id !== model.me.userId  && !_.findWhere($scope.newItem.to, {id: user.id })
-        })
-        if(!_.findWhere($scope.newItem.to, { id: $scope.mail.sender().id }))
+        $scope.openView('write-mail', 'main');
+		setMailContent('reply', true, function(){
+            $scope.newItem.to = _.filter($scope.newItem.to, function(user){ return user.id !== model.me.userId })
+            $scope.newItem.cc = _.filter($scope.newItem.cc, function(user){
+                return user.id !== model.me.userId  && !_.findWhere($scope.newItem.to, {id: user.id })
+            })
+            if(!_.findWhere($scope.newItem.to, { id: $scope.mail.sender().id }))
             $scope.addUser($scope.mail.sender());
+        });
 	};
 
 	$scope.editDraft = function(draft){
