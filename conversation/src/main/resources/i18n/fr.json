@@ -103,5 +103,6 @@
     "user.folders": "Dossiers",
     "widget.empty": "Vous n'avez aucun message",
     "widget.title": "messages",
-    "forward.failed.quota": "Le transfert des pièces jointes du message à échoué car vous n'avez pas assez d'espace libre sur votre quota."
+    "forward.failed.quota": "Le transfert des pièces jointes du message à échoué car vous n'avez pas assez d'espace libre sur votre quota.",
+    "wait.attachments.completion": "Une pièce jointe est en cours de chargement, le message pourra être envoyé après complétion."
 }
