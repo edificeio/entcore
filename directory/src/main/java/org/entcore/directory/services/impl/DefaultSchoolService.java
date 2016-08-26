@@ -332,4 +332,21 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
+	@Override
+	public void getMetrics(String structureId, Handler<Either<String, JsonObject>> results){
+		String query = "MATCH (s:Structure) " +
+				"WHERE s.id = {structureId} " +
+				"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s)," +
+				"(pg)-[:HAS_PROFILE]->(p:Profile) " +
+				"WITH p, collect(u) as allUsers " +
+				"WITH p, FILTER(u IN allUsers WHERE u.activationCode IS NULL) as active, " +
+				"FILTER(u IN allUsers WHERE NOT(u.activationCode IS NULL)) as inactive " +
+				"WITH p, length (active) as active, length(inactive) as inactive " +
+				"RETURN collect({profile: p.name, active: active, inactive: inactive}) as metrics";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		neo.execute(query.toString(), params, validUniqueResultHandler(results));
+	}
+
 }

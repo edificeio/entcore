@@ -2275,3 +2275,16 @@ div.notification .notification-reports {
   margin-top: 10px;
   border-top: 1px solid #607D8B;
 }
+div.flex-box-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+div.flex-box-container > div {
+  margin: 10px;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 5px 10px;
+}
+.horizontal-margin {
+  margin: 0px 10px;
+}

@@ -541,5 +541,6 @@
     "invalid.epj" : "Utilisateur sans identifiant",
     "timetable.import.loading" : "Import en cours...",
     "attachmentId" : "Identifiant SIECLE",
-    "default.import" : "Alimentation standard (AAF, CSV)"
+    "default.import" : "Alimentation standard (AAF, CSV)",
+    "directory.metrics": "Métriques"
 }

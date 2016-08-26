@@ -127,6 +127,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "linkUser" :
 					isAdminOfStructureOrClass4(request, user, handler);
 					break;
+				case "metrics":
+					isAdminOfStructure(request, user, handler);
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(GroupController.class.getName())) {

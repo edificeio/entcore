@@ -414,10 +414,12 @@ public class StructureController extends BaseController {
 
 			}
 		});
+	}
 
-
-
-
+	@Get("/structure/:structureId/metrics")
+	@SecuredAction(value="", type = ActionType.RESOURCE)
+	public void metrics(final HttpServerRequest request){
+		structureService.getMetrics(request.params().get("structureId"), defaultResponseHandler(request));
 	}
 
 	public void setStructureService(SchoolService structureService) {
