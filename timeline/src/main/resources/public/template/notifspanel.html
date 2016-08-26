@@ -47,7 +47,7 @@
               </thead>
               <tbody slide="appli.slided">
                 <tr ng-repeat="appAction in appli.appActions.all | orderBy: 'orderName'">
-                    <td translate content="[[appAction.key]]"></td>
+                    <td>[[lang.translate(appAction.key)]]</td>
                     <td data-label="[[lang.translate('xtnotifications.immediat')]]"><input type="radio" value="IMMEDIATE" ng-model="appAction.defaultFrequency" ng-change="updateAppliFreq(appli)" name="[[appAction.key]]"/></td>
                     <td data-label="[[lang.translate('xtnotifications.daily')]]"><input type="radio" value="DAILY" ng-model="appAction.defaultFrequency" ng-change="updateAppliFreq(appli)" name="[[appAction.key]]"/></td>
                     <td data-label="[[lang.translate('xtnotifications.weekly')]]"><input type="radio" value="WEEKLY" ng-model="appAction.defaultFrequency" ng-change="updateAppliFreq(appli)" name="[[appAction.key]]"/></td>
