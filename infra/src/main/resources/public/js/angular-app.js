@@ -5777,14 +5777,20 @@ function WidgetModel() {
                     return widget;
                 });
 
-                that.load(data, function(widget) {
-                    if (widget.i18n) {
-                        lang.addTranslations(widget.i18n);
-                        loader.loadFile(widget.js);
-                    } else {
-                        loader.loadFile(widget.js);
-                    }
-                });
+                for(var i = 0; i < data.length; i++){
+                    var widget = data[i];
+                    (function(widget){
+                        if (widget.i18n) {
+                            lang.addTranslations(widget.i18n, function(){
+                                that.push(widget)
+                                loader.loadFile(widget.js)
+                            })
+                        } else {
+                            that.push(widget)
+                            loader.loadFile(widget.js)
+                        }
+                    })(widget)
+                }
             }.bind(this))
         },
         findWidget: function(name) {
