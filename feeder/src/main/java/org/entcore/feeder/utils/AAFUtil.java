@@ -96,7 +96,9 @@ public class AAFUtil {
 		for (Object o : value) {
 			String [] s = ((String) o).split("\\$");
 			if ("1".equals(s[1]) || "2".equals(s[1])) {
-				ENTEleveParents.add(s[0]);
+				if (!ENTEleveParents.contains(s[0])) {
+					ENTEleveParents.add(s[0]);
+				}
 			} else if ("1".equals(s[2]) || "1".equals(s[4]) || "1".equals(s[5])) {
 				if ("1".equals(s[2])) {
 					if (ENTElevePersRelEleve1 == null || ENTElevePersRelEleve1.isEmpty()) {
@@ -137,7 +139,9 @@ public class AAFUtil {
 				}
 			}
 			if ("1".equals(s[3]) || "2".equals(s[3])) {
-				ENTEleveAutoriteParentale.add(s[0]);
+				if (!ENTEleveAutoriteParentale.contains(s[0])) {
+					ENTEleveAutoriteParentale.add(s[0]);
+				}
 			}
 		}
 		res.putArray("ENTEleveParents", ENTEleveParents);
