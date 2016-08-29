@@ -1,2 +1,2 @@
 #!/bin/bash
-vertx runMod org.entcore~infra~1.20.3 &
+vertx runMod org.entcore~infra~1.20.4 &
