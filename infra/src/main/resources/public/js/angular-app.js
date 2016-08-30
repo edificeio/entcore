@@ -3840,6 +3840,12 @@ module.directive('dragItem', function() {
             var matchedElement = undefined;
             var firstTick = true;
 
+            scope.$watch(function () {
+                return scope.$eval(attributes.dragItem);
+            }, function (newVal) {
+                drag = newVal;
+            });
+
             ui.extendElement.draggable(element, {
                 mouseUp: function(e) {
                     $("[drop-item]").off("mouseover mouseout");
@@ -3854,12 +3860,14 @@ module.directive('dragItem', function() {
                 },
                 tick: function() {
                     if (firstTick) {
+                        $('[drop-item]').removeClass('drag-over');
                         element.css({
                             'pointer-events': 'none'
                         });
                         $('body').addClass('dragging');
                         $("[drop-item]").on("mouseover", function (e) {
                             if ($(e.target).attr('drop-item') !== undefined) {
+                                $(e.target).addClass('drag-over');
                                 matchedElement = $(e.target);
                             }
                             else {
@@ -3868,7 +3876,8 @@ module.directive('dragItem', function() {
 
                             //target l'element lié à l'event, ici celui que l'on survole
                         })
-                        $("[drop-item]").on("mouseout", function(e) {
+                        $("[drop-item]").on("mouseout", function (e) {
+                            $(e.target).removeClass('drag-over');
                             matchedElement = undefined;
                         })
                         scope.$apply();
