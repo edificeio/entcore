@@ -1784,7 +1784,7 @@ module.directive('autocomplete', function($compile, $timeout) {
             options: '&',
             ngModel: '=',
             ngChange: '&',
-            search: '='
+            search: '=?'
         },
         template: '' +
             '<div class="row">' +
@@ -1817,6 +1817,7 @@ module.directive('autocomplete', function($compile, $timeout) {
 
             scope.$watch('search', function(newVal) {
                 if (!newVal) {
+                    scope.search = '';
                     scope.match = [];
                     dropDownContainer.height("");
                     dropDownContainer.addClass('hidden');
