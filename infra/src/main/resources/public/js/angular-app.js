@@ -311,6 +311,7 @@ module.directive('lightbox', function($compile) {
 
             scope.$watch('show', function(newVal) {
                 if (newVal) {
+                    $('body').addClass('lightbox-opened');
                     var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
@@ -352,6 +353,7 @@ module.directive('lightbox', function($compile) {
                         overflow: 'hidden'
                     });
                 } else {
+                    $('body').removeClass('lightbox-opened');
                     if (scope.backup) {
                         //Restoring stored elements properties
                         _.forEach(scope.backup.overflow, function(element) {
@@ -1781,7 +1783,8 @@ module.directive('autocomplete', function($compile, $timeout) {
         scope: {
             options: '&',
             ngModel: '=',
-            ngChange: '&'
+            ngChange: '&',
+            search: '='
         },
         template: '' +
             '<div class="row">' +
