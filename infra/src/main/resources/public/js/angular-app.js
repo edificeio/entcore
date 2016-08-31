@@ -372,6 +372,7 @@ module.directive('lightbox', function($compile) {
             });
 
             scope.$on("$destroy", function() {
+                $('body').removeClass('lightbox-opened');
                 $('body').css({
                     overflow: 'auto'
                 });
