@@ -7,7 +7,7 @@
   "path-prefix": "infra",
   "widgets-path": "/Users/elbywan/WSE/leo",
   "app-registry": {
-    "name": "org.entcore~app-registry~1.20.4",
+    "name": "org.entcore~app-registry~1.20.5",
     "config": {
 		"main":"org.entcore.registry.AppRegistry",
 		"auto-redeploy": false,
@@ -48,7 +48,7 @@
   }],
   "one-modules": [
     {
-      "name": "org.entcore~auth~1.20.4",
+      "name": "org.entcore~auth~1.20.5",
       "config": {
         "authenticationServer": {
           "loginURL": "http://localhost:8090/auth/login",
@@ -60,13 +60,13 @@
       }
     },
     {
-      "name": "org.entcore~directory~1.20.4",
+      "name": "org.entcore~directory~1.20.5",
       "config": {
         "host": "http://localhost:8090"
       }
     },
     {
-      "name": "org.entcore~workspace~1.20.4",
+      "name": "org.entcore~workspace~1.20.5",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -75,13 +75,13 @@
       }
     },
     {
-      "name": "org.entcore~session~1.20.4"
+      "name": "org.entcore~session~1.20.5"
     },
     {
-      "name": "org.entcore~communication~1.20.4"
+      "name": "org.entcore~communication~1.20.5"
     },
     {
-      "name": "org.entcore~portal~1.20.4",
+      "name": "org.entcore~portal~1.20.5",
       "config": {
         "urls": {
           "timeline": "http://localhost:8090/timeline",
@@ -113,7 +113,7 @@
       }
     },
     {
-      "name": "org.entcore~conversation~1.20.4",
+      "name": "org.entcore~conversation~1.20.5",
       "config": {
         "sql": true,
         "db-schema": "conversation",
@@ -124,22 +124,22 @@
       }
     },
 	{
-	  "name": "org.entcore~feeder~1.20.4",
+	  "name": "org.entcore~feeder~1.20.5",
 	  "config": {
 	  }
     },
     {
-	  "name": "org.entcore~archive~1.20.4",
+	  "name": "org.entcore~archive~1.20.5",
 	  "config": {
 	  }
     },
 	{
-	  "name": "org.entcore~cas~1.20.4",
+	  "name": "org.entcore~cas~1.20.5",
 	  "config": {
 	  }
 	},
     {
-      "name":"org.entcore~timeline~1.20.4",
+      "name":"org.entcore~timeline~1.20.5",
       "config": {
       }
     }
