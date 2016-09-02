@@ -810,7 +810,7 @@ ui.extendElement = {
                     element.offset(newOffset);
 
                     if (params && typeof params.tick === 'function') {
-                        params.tick(e);
+                        params.tick(e, mouse);
                     }
 
                     if (!interrupt) {
