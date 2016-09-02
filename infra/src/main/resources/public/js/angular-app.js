@@ -3863,28 +3863,26 @@ module.directive('dragItem', function() {
                     firstTick = true;
                     element.attr('style', '');
                 },
-                tick: function() {
+                tick: function(e, mouse) {
+                    matchedElement = undefined;
+                    $("[drop-item]").each(function(index, el){
+                        if($(el).offset().left < mouse.x && $(el).offset().left + $(el).width() > mouse.x &&
+                        $(el).offset().top - window.scrollY < mouse.y && $(el).offset().top + $(el).height() - window.scrollY > mouse.y)
+                        {
+                            $(el).addClass('drag-over');
+                            matchedElement = $(el);
+                        }
+                        else{
+                            $(el).removeClass('drag-over');
+                        }
+                    })
+                    
                     if (firstTick) {
                         $('[drop-item]').removeClass('drag-over');
                         element.css({
                             'pointer-events': 'none'
                         });
                         $('body').addClass('dragging');
-                        $("[drop-item]").on("mouseover", function (e) {
-                            if ($(e.target).attr('drop-item') !== undefined) {
-                                $(e.target).addClass('drag-over');
-                                matchedElement = $(e.target);
-                            }
-                            else {
-                                matchedElement = $(e.target).parents('[drop-item]');
-                            }
-
-                            //target l'element lié à l'event, ici celui que l'on survole
-                        })
-                        $("[drop-item]").on("mouseout", function (e) {
-                            $(e.target).removeClass('drag-over');
-                            matchedElement = undefined;
-                        })
                         scope.$apply();
 
                         firstTick = false;
