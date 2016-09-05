@@ -60,6 +60,7 @@
   "library.title": "Recherche de documents",
   "library.upload.import": "Importer",
   "library.upload.title": "Sélectionner les fichiers",
+  "linker.address.tooltip": "http://adresse-du-site.com",
   "linker.create": "Créer un lien",
   "linker.external": "Adresse d'un site internet",
   "linker.search": "Rechercher dans l'ENT",
