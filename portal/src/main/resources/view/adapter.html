@@ -27,7 +27,11 @@
 	</script>
 	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
 	<script type="text/javascript">
-		(function(){
+        (function () {
+            window.addEventListener('DOMContentLoaded', () => {
+                document.getElementsByTagName('body')[0].style.display = 'block'
+            });
+
 			function Message(action, content){
 				this.action = action;
 				this.content = content;
