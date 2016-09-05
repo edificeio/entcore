@@ -2845,6 +2845,7 @@ window.RTE = (function () {
                                 $('body').css({ overflow: 'auto' });
                                 element.parent().data('lock', false);
                                 element.parents('grid-cell').data('lock', false);
+                                element.find('code').attr('style', '');
 
                                 if(attributes.inline !== undefined){
                                     element.css({
@@ -3055,7 +3056,7 @@ window.RTE = (function () {
                             setTimeout(function () {
                                 highlightZone.text($(this).val());
                                 Prism.highlightAll();
-                            }.bind(this), 0);
+                            }.bind(this), 200);
                             if(e.keyCode === 9){
                                 e.preventDefault();
                                 var start = this.selectionStart;
