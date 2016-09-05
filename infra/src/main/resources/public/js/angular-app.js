@@ -3867,7 +3867,7 @@ module.directive('dragItem', function() {
                     matchedElement = undefined;
                     $("[drop-item]").each(function(index, el){
                         if($(el).offset().left < mouse.x && $(el).offset().left + $(el).width() > mouse.x &&
-                        $(el).offset().top - window.scrollY < mouse.y && $(el).offset().top + $(el).height() - window.scrollY > mouse.y)
+                        $(el).offset().top - (window.scrollY || window.pageYOffset) < mouse.y && $(el).offset().top + $(el).height() - (window.scrollY || window.pageYOffset) > mouse.y)
                         {
                             $(el).addClass('drag-over');
                             matchedElement = $(el);
