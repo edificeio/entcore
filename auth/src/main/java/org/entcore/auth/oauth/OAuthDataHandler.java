@@ -32,7 +32,10 @@ import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 
+import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.neo4j.Neo4j;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -46,15 +49,17 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 public class OAuthDataHandler extends DataHandler {
 	private final Neo4j neo;
 	private final MongoDb mongo;
+	private final OpenIdConnectService openIdConnectService;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
 	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
 
-	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo) {
+	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
+		this.openIdConnectService = openIdConnectService;
 	}
 
 	@Override
@@ -266,29 +271,52 @@ public class OAuthDataHandler extends DataHandler {
 								.putString("token", UUID.randomUUID().toString())
 								.putObject("createdOn", MongoDb.now())
 								.putNumber("expiresIn", 3600);
-						mongo.save(ACCESS_TOKEN_COLLECTION, token,
-								new org.vertx.java.core.Handler<Message<JsonObject>>() {
-
-							@Override
-							public void handle(Message<JsonObject> res) {
-								if ("ok".equals(res.body().getString("status"))) {
-									AccessToken t = new AccessToken();
-									t.setAuthId(authInfo.getId());
-									t.setToken(token.getString("token"));
-									t.setCreatedOn(new Date(token.getObject("createdOn").getLong("$date")));
-									t.setExpiresIn(3600);
-									handler.handle(t);
-								} else {
-									handler.handle(null);
+						if (openIdConnectService != null && authInfo.getScope() != null && authInfo.getScope().contains("openid")) {
+						//"2.0".equals(RequestUtils.getAcceptVersion(getRequest().getHeader("Accept")))) {
+							openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(), new AsyncResultHandler<String>() {
+								@Override
+								public void handle(AsyncResult<String> ar) {
+									if (ar.succeeded()) {
+										token.putString("id_token", ar.result());
+										persistToken(token);
+									} else {
+										log.error("Error generating id_token.", ar.cause());
+										handler.handle(null);
+									}
 								}
-							}
-						});
+							});
+						} else {
+							persistToken(token);
+						}
 					} else { // revoke existing token and code with same authId
 						mongo.delete(ACCESS_TOKEN_COLLECTION, query);
 						mongo.delete(AUTH_INFO_COLLECTION,
 								new JsonObject().putString("_id", authInfo.getId()));
 						handler.handle(null);
 					}
+				}
+
+				private void persistToken(final JsonObject token) {
+					mongo.save(ACCESS_TOKEN_COLLECTION, token,
+							new org.vertx.java.core.Handler<Message<JsonObject>>() {
+
+						@Override
+						public void handle(Message<JsonObject> res) {
+							if ("ok".equals(res.body().getString("status"))) {
+								AccessToken t = new AccessToken();
+								t.setAuthId(authInfo.getId());
+								t.setToken(token.getString("token"));
+								t.setCreatedOn(new Date(token.getObject("createdOn").getLong("$date")));
+								t.setExpiresIn(3600);
+								if (token.containsField("id_token")) {
+									t.setIdToken(token.getString("id_token"));
+								}
+								handler.handle(t);
+							} else {
+								handler.handle(null);
+							}
+						}
+					});
 				}
 			});
 		} else {

@@ -48,6 +48,8 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 import org.entcore.auth.adapter.ResponseAdapterFactory;
 import org.entcore.auth.adapter.UserInfoAdapter;
+import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
@@ -116,7 +118,10 @@ public class AuthController extends BaseController {
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, container, rm, securedActions);
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance());
+		JsonObject oic = container.config().getObject("openid-connect");
+		OpenIdConnectService openIdConnectService = (oic != null) ? new DefaultOpendIdConnectService(
+				oic.getString("iss"), vertx, oic.getString("keys")) : null;
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -154,7 +159,7 @@ public class AuthController extends BaseController {
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
-			if (USERINFO_SCOPE.equals(scope)) {
+			if (scope != null && (scope.contains(USERINFO_SCOPE) || scope.contains("openid"))) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				data.validateClientById(clientId, new Handler<Boolean>() {
 
