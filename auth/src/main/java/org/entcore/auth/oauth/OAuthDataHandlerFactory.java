@@ -23,22 +23,24 @@ import fr.wseduc.mongodb.MongoDb;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.Request;
-import org.entcore.common.neo4j.Neo;
+import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.neo4j.Neo4j;
 
 public class OAuthDataHandlerFactory implements DataHandlerFactory {
 
 	private final Neo4j neo;
 	private final MongoDb mongo;
+	private final OpenIdConnectService openIdConnectService;
 
-	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo) {
+	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService) {
 		this.neo = neo;
 		this.mongo = mongo;
+		this.openIdConnectService = openIdConnectService;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
-		return new OAuthDataHandler(request, neo, mongo);
+		return new OAuthDataHandler(request, neo, mongo, openIdConnectService);
 	}
 
 }
