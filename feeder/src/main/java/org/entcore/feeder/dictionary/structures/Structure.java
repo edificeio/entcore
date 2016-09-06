@@ -331,7 +331,8 @@ public class Structure {
 				"WITH DISTINCT s as n, f, u " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
 				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
-				"CREATE UNIQUE n<-[:DEPENDS]-fg, fg<-[:IN]-u ";
+				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
+				"MERGE fg<-[:IN]-u";
 		JsonObject params =  new JsonObject()
 				.putString("structureId", structureId)
 				.putString("parentStructureId", parentStructureId);
