@@ -1699,6 +1699,7 @@ module.directive('dropDown', function($compile, $timeout) {
         link: function(scope, element, attributes) {
             scope.limit = 6;
             var dropDown = element.find('[data-drop-down]');
+            
             scope.setDropDownHeight = function() {
                 var liHeight = 0;
                 var max = Math.min(scope.limit, scope.options.length);
@@ -1799,6 +1800,7 @@ module.directive('autocomplete', function($compile, $timeout) {
             '</div>' +
             '</div>',
         link: function(scope, element, attributes) {
+            var token;
             if (attributes.autocomplete === 'off') {
                 return;
             }
@@ -1814,7 +1816,28 @@ module.directive('autocomplete', function($compile, $timeout) {
                     return index < max;
                 })
                 dropDownContainer.height(liHeight)
-            }
+            };
+
+            var placeDropDown = function(){
+                var pos = linkedInput.offset();
+                var width = linkedInput.width() +
+                    parseInt(linkedInput.css('padding-right')) +
+                    parseInt(linkedInput.css('padding-left')) +
+                    parseInt(linkedInput.css('border-width') || 1) * 2;
+                var height = linkedInput.height() +
+                    parseInt(linkedInput.css('padding-top')) +
+                    parseInt(linkedInput.css('padding-bottom')) +
+                    parseInt(linkedInput.css('border-height') || 1) * 2;
+
+                pos.top = pos.top + height;
+                dropDownContainer.offset(pos);
+                dropDownContainer.width(width);
+                $timeout(function() {
+                    scope.setDropDownHeight();
+                }, 1);
+
+                token = requestAnimationFrame(placeDropDown);
+            };
 
             scope.$watch('search', function(newVal) {
                 if (!newVal) {
@@ -1838,32 +1861,19 @@ module.directive('autocomplete', function($compile, $timeout) {
                     return;
                 }
                 dropDownContainer.removeClass('hidden');
-
-                var pos = linkedInput.offset();
-                var width = linkedInput.width() +
-                    parseInt(linkedInput.css('padding-right')) +
-                    parseInt(linkedInput.css('padding-left')) +
-                    parseInt(linkedInput.css('border-width') || 1) * 2;
-                var height = linkedInput.height() +
-                    parseInt(linkedInput.css('padding-top')) +
-                    parseInt(linkedInput.css('padding-bottom')) +
-                    parseInt(linkedInput.css('border-height') || 1) * 2;
-
-                pos.top = pos.top + height;
-                dropDownContainer.offset(pos);
-                dropDownContainer.width(width);
-                $timeout(function() {
-                    scope.setDropDownHeight();
-                }, 1);
+                cancelAnimationFrame(token);
+                placeDropDown();
             });
 
             element.parent().on('remove', function() {
                 dropDownContainer.remove();
+                cancelAnimationFrame(token);
             });
             element.find('input').on('blur', function() {
                 setTimeout(function() {
                     scope.search = '';
                 }, 200);
+                cancelAnimationFrame(token);
             });
             dropDownContainer.detach().appendTo('body');
 
@@ -1874,6 +1884,7 @@ module.directive('autocomplete', function($compile, $timeout) {
                 scope.$eval(scope.ngChange);
                 scope.$apply('ngModel');
                 dropDownContainer.addClass('hidden');
+                cancelAnimationFrame(token);
             });
             dropDownContainer.attr('data-opened-drop-down', true);
         }
