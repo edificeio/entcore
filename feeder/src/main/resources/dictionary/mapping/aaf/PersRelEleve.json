@@ -12,7 +12,7 @@
 	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
 	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
 	"ENTPersonAdresseDiffusion" : { "attribute" : "addressDiffusion", "type" : "boolean" },
-	"mobile" : { "attribute" : "deprecated", "type" : "array-string" },
+	"mobile" : { "attribute" : "mobilePhone", "type" : "array-string" },
 	"mail" : { "attribute" : "email", "type" : "string" },
 	"ENTPersonMobileSMS" : { "attribute" : "mobile", "type" : "string" },
 	"categoriePersonne" : { "attribute" : "category", "type" : "string" }

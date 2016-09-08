@@ -72,6 +72,10 @@
 			"type" : "string",
 			"validator" : "phone"
 		},
+		"mobilePhone" : {
+		  "type" : "array-string",
+		  "validator" : "notEmpty"
+		},
 		"mobile" : {
 			"type" : "string",
 			"validator" : "mobile"
