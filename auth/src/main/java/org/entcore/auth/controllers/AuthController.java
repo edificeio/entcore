@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
@@ -79,6 +80,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.impl.VertxInternal;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.core.spi.cluster.ClusterManager;
@@ -107,7 +109,7 @@ public class AuthController extends BaseController {
 	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
-
+	private JsonArray authorizedHostsLogin;
 	public enum AuthEvent { ACTIVATION, LOGIN, SMS }
 	private Pattern passwordPattern;
 	private String smsProvider;
@@ -282,7 +284,12 @@ public class AuthController extends BaseController {
 
 	@Get("/login")
 	public void login(HttpServerRequest request) {
-		viewLogin(request, null, request.params().get("callBack"));
+		final String host = getHost(request);
+		if (authorizedHostsLogin != null && isNotEmpty(host) && !authorizedHostsLogin.contains(host)) {
+			redirect(request, pathPrefix + "/openid/login");
+		} else {
+			viewLogin(request, null, request.params().get("callBack"));
+		}
 	}
 
 	@Post("/login")
@@ -970,6 +977,10 @@ public class AuthController extends BaseController {
 
 	public void setEventStore(EventStore eventStore) {
 		this.eventStore = eventStore;
+	}
+
+	public void setAuthorizedHostsLogin(JsonArray authorizedHostsLogin) {
+		this.authorizedHostsLogin = authorizedHostsLogin;
 	}
 
 }

@@ -40,7 +40,7 @@ import java.util.List;
 
 public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
-	private static final String RETURN_QUERY = "OPTIONAL MATCH (p:Profile) " +
+	static final String RETURN_QUERY = "OPTIONAL MATCH (p:Profile) " +
 			"WHERE HAS(u.profiles) AND p.name = head(u.profiles) " +
 			"RETURN DISTINCT u.id as id, u.activationCode as activationCode, " +
 			"u.login as login, u.email as email, u.mobile as mobile, u.federated, p.blocked as blockedProfile ";
@@ -98,35 +98,45 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
 	protected void executeQuery(String query, final JsonObject params, final Assertion assertion,
 			final Handler<Either<String, JsonElement>> handler) {
+		executeFederateQuery(query, params, assertion, Neo4j.getInstance(), handler);
+	}
+
+	static void executeFederateQuery(String query, JsonObject params, final Assertion assertion,
+									 Neo4j neo4j, final Handler<Either<String, JsonElement>> handler) {
+		executeFederateQuery(query, params, assertion, true, neo4j, handler);
+	}
+
+	static void executeFederateQuery(String query, JsonObject params, final Assertion assertion, final boolean setFederated,
+			Neo4j neo4j, final Handler<Either<String, JsonElement>> handler) {
 		query += RETURN_QUERY;
-		Neo4j.getInstance().execute(query, params, Neo4jResult.validUniqueResultHandler(
+		neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(
 				new Handler<Either<String, JsonObject>>() {
-			@Override
-			public void handle(final Either<String, JsonObject> event) {
-				if (event.isRight() && event.right().getValue().getBoolean("blockedProfile", false)) {
-					handler.handle(new Either.Left<String, JsonElement>("blocked.profile"));
-				} else if (event.isRight() && event.right().getValue().getBoolean("federated") == null &&
-						event.right().getValue().getString("id") != null) {
-					String query = "MATCH (u:User {id: {id}}) SET u.federated = true ";
-					JsonObject params = new JsonObject().putString("id", event.right().getValue().getString("id"));
-					if (assertion != null && assertion.getIssuer() != null &&
-							assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
-						query += ", u.federatedIDP = {idp} ";
-						params.putString("idp", assertion.getIssuer().getValue());
-					}
-					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event2) {
+					@Override
+					public void handle(final Either<String, JsonObject> event) {
+						if (event.isRight() && event.right().getValue().getBoolean("blockedProfile", false)) {
+							handler.handle(new Either.Left<String, JsonElement>("blocked.profile"));
+						} else if (setFederated &&  event.isRight() && event.right().getValue().getBoolean("federated") == null &&
+								event.right().getValue().getString("id") != null) {
+							String query = "MATCH (u:User {id: {id}}) SET u.federated = true ";
+							JsonObject params = new JsonObject().putString("id", event.right().getValue().getString("id"));
+							if (assertion != null && assertion.getIssuer() != null &&
+									assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
+								query += ", u.federatedIDP = {idp} ";
+								params.putString("idp", assertion.getIssuer().getValue());
+							}
+							Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event2) {
+									handler.handle(new Either.Right<String, JsonElement>(event.right().getValue()));
+								}
+							});
+						} else if (event.isRight()) {
 							handler.handle(new Either.Right<String, JsonElement>(event.right().getValue()));
+						} else {
+							handler.handle(new Either.Left<String, JsonElement>(event.left().getValue()));
 						}
-					});
-				} else if (event.isRight()) {
-					handler.handle(new Either.Right<String, JsonElement>(event.right().getValue()));
-				} else {
-					handler.handle(new Either.Left<String, JsonElement>(event.left().getValue()));
-				}
-			}
-		}));
+					}
+				}));
 	}
 
 	protected void executeMultiVectorQuery(String query, JsonObject params, final Assertion assertion,

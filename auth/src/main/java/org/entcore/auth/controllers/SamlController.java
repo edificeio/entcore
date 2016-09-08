@@ -55,12 +55,9 @@ import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
-public class SamlController extends BaseController {
+public class SamlController extends AbstractFederateController {
 
-	public static final String LOGIN_PAGE = "/auth/login";
 	private SamlServiceProviderFactory spFactory;
-	private UserAuthAccount userAuthAccount;
-	private EventStore eventStore;
 	private String signKey;
 
 	public SamlController() throws ConfigurationException {
@@ -188,23 +185,6 @@ public class SamlController extends BaseController {
 		});
 	}
 
-	private void authenticate(JsonObject res, String sessionIndex, String nameId, HttpServerRequest request) {
-		final String userId = res.getString("id");
-		final String activationCode = res.getString("activationCode");
-		final String login = res.getString("login");
-		final String email = res.getString("email");
-		final String mobile = res.getString("mobile");
-		if (activationCode != null && login != null) {
-			activateUser(activationCode, login, email, mobile, sessionIndex, nameId, request);
-		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
-			log.info("Connexion de l'utilisateur fédéré " + login);
-			eventStore.createAndStoreEvent(AuthController.AuthEvent.LOGIN.name(), login);
-			createSession(userId, sessionIndex, nameId, request);
-		} else {
-			redirect(request, LOGIN_PAGE);
-		}
-	}
-
 	private JsonObject getUsersWithSignatures(JsonArray array, String sessionIndex, String nameId)
 			throws NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException {
 		for (Object o : array) {
@@ -217,25 +197,6 @@ public class SamlController extends BaseController {
 		return new JsonObject().putArray("users", array);
 	}
 
-	private void createSession(String userId, String sessionIndex, String nameId, final HttpServerRequest request) {
-		UserUtils.createSession(eb, userId, sessionIndex, nameId,
-				new org.vertx.java.core.Handler<String>() {
-
-					@Override
-					public void handle(String sessionId) {
-						if (sessionId != null && !sessionId.trim().isEmpty()) {
-							boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
-							long timeout = rememberMe ? 3600l * 24 * 365 : container.config()
-									.getLong("cookie_timeout", Long.MIN_VALUE);
-							CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
-							redirect(request, "/");
-						} else {
-							redirect(request, LOGIN_PAGE);
-						}
-					}
-				});
-	}
-
 	private String getSessionId(Assertion assertion) {
 		if (assertion != null && assertion.getAuthnStatements() != null) {
 			for (AuthnStatement ans: assertion.getAuthnStatements()) {
@@ -245,30 +206,6 @@ public class SamlController extends BaseController {
 			}
 		}
 		return null;
-	}
-
-	private void activateUser(final String activationCode, final String login, String email, String mobile,
-			final String sessionIndex, final String nameId, final HttpServerRequest request) {
-		userAuthAccount.activateAccount(login, activationCode, UUID.randomUUID().toString(),
-				email, mobile, request, new Handler<Either<String, String>>() {
-			@Override
-			public void handle(Either<String, String> activated) {
-				if (activated.isRight() && activated.right().getValue() != null) {
-					log.info("Activation du compte utilisateur " + login);
-					eventStore.createAndStoreEvent(AuthController.AuthEvent.ACTIVATION.name(), login);
-						createSession(activated.right().getValue(), sessionIndex, nameId, request);
-				} else {
-					log.info("Echec de l'activation : compte utilisateur " + login +
-							" introuvable ou déjà activé.");
-					JsonObject error = new JsonObject()
-							.putObject("error", new JsonObject()
-							.putString("message", I18n.getInstance()
-									.translate("activation.error", getHost(request), I18n.acceptLanguage(request))));
-					error.putString("activationCode", activationCode);
-					renderJson(request, error);
-				}
-			}
-		});
 	}
 
 	private void validateResponseAndGetAssertion(final HttpServerRequest request, final Handler<Assertion> handler) {
@@ -345,14 +282,6 @@ public class SamlController extends BaseController {
 
 	public void setServiceProviderFactory(SamlServiceProviderFactory spFactory) {
 		this.spFactory = spFactory;
-	}
-
-	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
-		this.userAuthAccount = userAuthAccount;
-	}
-
-	public void setEventStore(EventStore eventStore) {
-		this.eventStore = eventStore;
 	}
 
 	public void setSignKey(String signKey) {
