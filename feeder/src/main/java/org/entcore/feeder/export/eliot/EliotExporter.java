@@ -52,14 +52,16 @@ public class EliotExporter implements Exporter {
 	private static final DateFormat date = new SimpleDateFormat("yyyyMMdd");
 	private final String node;
 	private final boolean concatFiles;
+	private final boolean deleteExport;
 
-	public EliotExporter(String exportPath, String exportDestination, boolean concatFiles, Vertx vertx) {
+	public EliotExporter(String exportPath, String exportDestination, boolean concatFiles, boolean deleteExport, Vertx vertx) {
 		this.exportBasePath = exportPath;
 		this.exportDestination = exportDestination;
 		this.vertx = vertx;
 		String n = (String) vertx.sharedData().getMap("server").get("node");
 		this.node = (n != null) ? n : "";
 		this.concatFiles = concatFiles;
+		this.deleteExport = deleteExport;
 	}
 
 	@Override
@@ -164,7 +166,7 @@ public class EliotExporter implements Exporter {
 		eb.send(node + WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				if ("ok".equals(message.body().getString("status"))) {
+				if ("ok".equals(message.body().getString("status")) && deleteExport) {
 					vertx.fileSystem().delete(file, null);
 				} else {
 					log.error("Error sending export : ");
