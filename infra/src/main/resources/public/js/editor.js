@@ -17,23 +17,6 @@ window.RTE = (function () {
     var rgba = rgb;
     var transparent = 'rgba(255, 255, 255, 0)';
 
-	loader.openFile({
-        url: '/infra/public/js/prism/prism.js',
-        callback: function () {
-
-        },
-        error: function () {
-
-        }
-    });
-
-    $('body').append(
-        $('<link />')
-            .attr('rel', 'stylesheet')
-            .attr('type', 'text/css')
-            .attr('href', '/infra/public/js/prism/prism.css')
-   );
-
 	return {
 		Instance: function(data){
 			var that = this;
@@ -2511,7 +2494,27 @@ window.RTE = (function () {
 			            '<div><div contenteditable="true"></div></div>' +
 			            '<textarea></textarea>' +
 			            '<code class="language-html"></code>',
-			        link: function(scope, element, attributes) {
+			        link: function (scope, element, attributes) {
+			            if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
+			                element.find('code').hide();
+			            }
+			            $('body').append(
+                            $('<link />')
+                                .attr('rel', 'stylesheet')
+                                .attr('type', 'text/css')
+                                .attr('href', '/infra/public/js/prism/prism.css')
+                       );
+
+			            loader.openFile({
+			                url: '/infra/public/js/prism/prism.js',
+			                callback: function () {
+
+			                },
+			                error: function () {
+
+			                }
+			            });
+
 			            element.find('.close-focus').on('click', function(){
 			                element.removeClass('focus');
 			                element.parent().data('lock', false);
