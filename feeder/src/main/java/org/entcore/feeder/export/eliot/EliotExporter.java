@@ -166,8 +166,10 @@ public class EliotExporter implements Exporter {
 		eb.send(node + WEBDAV_ADDRESS, j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				if ("ok".equals(message.body().getString("status")) && deleteExport) {
-					vertx.fileSystem().delete(file, null);
+				if ("ok".equals(message.body().getString("status"))) {
+					if (deleteExport) {
+						vertx.fileSystem().delete(file, null);
+					}
 				} else {
 					log.error("Error sending export : ");
 					log.error(message.body().encode());
