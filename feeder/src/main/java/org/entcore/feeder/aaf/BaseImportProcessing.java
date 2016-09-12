@@ -119,6 +119,9 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 						});
 					} catch (Exception e) {
 						error(e, handler);
+					} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
+						log.error("OOM reading import files", err);
+						error(new Exception("OOM"), handler);
 					}
 				}
 			};
