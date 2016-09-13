@@ -2502,9 +2502,9 @@ window.RTE = (function () {
 			            '<i class="tools" popover-opener opening-event="click"></i>' +
 			            '<popover-content>' +
 			            '<ul>' +
-			            '<li>Editeur de texte</li>' +
-			            '<li>Code HTML</li>' +
-			            '<li>Mode mixte</li>' +
+			            '<li><i18n>editor.mode.wysiwyg</i18n></li>' +
+			            '<li><i18n>editor.mode.html</i18n></li>' +
+			            '<li><i18n>editor.mode.mixed</i18n></li>' +
 			            '</ul>' +
 			            '</popover-content>' +
 			            '</popover>' +
