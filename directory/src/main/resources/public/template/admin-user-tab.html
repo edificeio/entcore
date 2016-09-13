@@ -144,7 +144,7 @@
     <!-- User creation container -->
     <div ng-if="showWhat === 'showCreatedUser'" ng-init="createdUser = initUser()" class="search-container-view">
         <div class="row">
-            <h1 style="margin-bottom: 0; text-align:center;">[[(createdUser.firstName || createdUser.lastName) ? createdUser.firstName+" "+createdUser.lastName : "Nom"]]</h1>
+            <h1 style="margin-bottom: 0; text-align:center;">[[(createdUser.firstName || createdUser.lastName) ? createdUser.firstName+" "+createdUser.lastName : ""]]</h1>
         </div>
         <hr class="separator cell">
         <div style="text-align:center">
