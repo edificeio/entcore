@@ -67,7 +67,7 @@ public class HttpActionFilter implements Filter {
 	@Override
 	public void canAccess(final HttpServerRequest request, final Handler<Boolean> handler) {
 		request.pause();
-		httpClient.get("/auth/oauth2/userinfo?version=v2.0", new Handler<HttpClientResponse>() {
+		httpClient.get("/auth/oauth2/userinfo", new Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse response) {
 				response.bodyHandler(new Handler<Buffer>() {
@@ -88,6 +88,7 @@ public class HttpActionFilter implements Filter {
 			}
 		})
 				.putHeader("Cookie", request.headers().get("Cookie"))
+				.putHeader("Accept", "application/json; version=2.1")
 				.end();
 	}
 

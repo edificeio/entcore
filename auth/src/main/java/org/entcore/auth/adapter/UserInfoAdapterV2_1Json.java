@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2016
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,37 +15,17 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
 package org.entcore.auth.adapter;
 
-import fr.wseduc.webutils.Utils;
-import fr.wseduc.webutils.request.RequestUtils;
-import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
-import static fr.wseduc.webutils.Utils.isEmpty;
+public class UserInfoAdapterV2_1Json implements UserInfoAdapter {
 
-public class ResponseAdapterFactory {
-
-	public static UserInfoAdapter getUserInfoAdapter(HttpServerRequest request) {
-		String version = RequestUtils.acceptVersion(request);
-		if (isEmpty(version)) {
-			version = Utils.getOrElse(request.params().get("version"), "");
-		}
-		switch (version) {
-			case "1.0":
-			case "v1.0":
-				return new UserInfoAdapterV1_0Json();
-			case "2.0":
-			case "v2.0":
-				return new UserInfoAdapterV2_0Json();
-			case "2.1":
-			case "v2.1":
-				return new UserInfoAdapterV2_1Json();
-			default:
-				return new UserInfoAdapterV1_0Json();
-		}
+	@Override
+	public JsonObject getInfo(JsonObject info, String clientId) {
+		return info.copy();
 	}
 
 }
