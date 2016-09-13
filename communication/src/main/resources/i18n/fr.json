@@ -15,6 +15,8 @@
     "communication.innerGroupRule": "Règle de communication personnalisée utilisateurs vers groupe :",
     "communication.innerRelationships": "Règles internes",
     "communication.legend": "Légende",
+    "communication.legend.both" : "Les deux groupes peuvent communiquer entre eux.",
+    "communication.legend.oneWay" : "Le groupe peut communiquer avec le groupe cible, mais la réciproque n'est pas valable.",
     "communication.modify": "Modifier",
     "communication.notify.groupLinkAdded": "Lien avec le groupe ajouté",
     "communication.notify.groupLinkRemoved": "Lien avec le groupe supprimé",
