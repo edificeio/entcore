@@ -1310,7 +1310,7 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('fontSize', function(instance) {
 				return {
-					template: '<select-list placeholder="Taille" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
+					template: '<select-list placeholder="size" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
 					'<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
                         'style="font-size: [[fontSize.size]]px; line-height: [[fontSize.size]]px">' +
                             '[[fontSize.size]]' +
@@ -1321,7 +1321,7 @@ window.RTE = (function () {
 					        fontSizes: [{ size: 8 }, { size: 10 }, { size: 12 }, { size: 14 },
                                 { size: 16 }, { size: 18 }, { size: 20 }, { size: 24 }, { size: 28 },
                                 { size: 34 }, { size: 42 }, { size: 64 }, { size: 72 }],
-                            fontSize: {}
+					        fontSize: {}
 					    };
 
 					    scope.setSize = function (fontSize) {
@@ -1351,7 +1351,7 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('format', function(instance) {
 				return {
-					template: '<select-list model="format" placeholder="Paragraphe" display-as="label" display="format" tooltip="editor.option.format">' +
+					template: '<select-list model="format" placeholder="editor.format.paragraph" display-as="label" display="format" tooltip="editor.option.format">' +
 					'<opt ng-repeat="format in formats" value="format" ng-click="wrap(format)"><div bind-html="format.option"></div></opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
@@ -1359,32 +1359,32 @@ window.RTE = (function () {
 							{
 								apply: { tag: 'p' },
 								option: '<p>[[format.label]]</p>',
-								label: 'Paragraphe'
+								label: 'editor.format.paragraph'
 							},
 							{
 								apply: { tag: 'h1' },
 								option: '<h1>[[format.label]]</h1>',
-								label: 'Titre 1'
+								label: 'editor.format.title1'
 							},
 							{
 								apply: { tag: 'h2' },
 								option: '<h2>[[format.label]]</h2>',
-								label: 'Titre 2'
+								label: 'editor.format.title2'
 							},
 							{
 								apply: { tag: 'h3' },
 								option: '<h3>[[format.label]]</h3>',
-								label: 'Titre 3'
+								label: 'editor.format.title3'
 							},
 							{
 								apply: { tag: 'p', classes: ['info'] },
 								option: '<p class="info">[[format.label]]</p>',
-								label: 'Information'
+								label: 'editor.format.info'
 							},
 							{
 								apply: { tag: 'p', classes: ['warning'] },
 								option: '<p class="warning">[[format.label]]</p>',
-								label: 'Avertissement'
+								label: 'editor.format.warning'
 							}
 						];
 
@@ -3165,12 +3165,12 @@ window.RTE = (function () {
 					link: function(scope, element, attributes){
 						scope.showValue = function(){
 							if(!scope.display){
-								return scope.placeholder;
+								return lang.translate(scope.placeholder);
 							}
 							if(!scope.displayAs){
-								return scope.display;
+								return lang.translate(scope.display);
 							}
-							return scope.display[scope.displayAs];
+							return lang.translate(scope.display[scope.displayAs]);
 						};
 
 						element.children('.selected-value').on('click', function(){
