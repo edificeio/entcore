@@ -186,7 +186,7 @@ public class MappingFinder {
 									"AND head(u.profiles) = {profile} " +
 									//"WHERE u.firstNameSearchField = {firstName} AND u.lastNameSearchField = {lastName} " +
 									filter +
-									"RETURN u.externalId as externalId";
+									"RETURN DISTINCT u.externalId as externalId";
 					count.incrementAndGet();
 					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 						@Override
@@ -204,7 +204,7 @@ public class MappingFinder {
 												"<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 												"WHERE lower(u.firstName) = {firstName} AND HEAD(u.profiles) = 'Student' AND " +
 												"lower(u.lastName) = {lastName} " +
-												"RETURN u.externalId as externalId";
+												"RETURN DISTINCT u.externalId as externalId";
 								JsonObject par = new JsonObject().putString("externalId", structureExternalId);
 								StatementsBuilder statementsBuilder = new StatementsBuilder();
 								for (int i = 12; i < values.length; i += 4) {
