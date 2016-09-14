@@ -1358,32 +1358,32 @@ window.RTE = (function () {
 						scope.formats = [
 							{
 								apply: { tag: 'p' },
-								option: '<p>[[format.label]]</p>',
+								option: '<p translate content="[[format.label]]"></p>',
 								label: 'editor.format.paragraph'
 							},
 							{
 								apply: { tag: 'h1' },
-								option: '<h1>[[format.label]]</h1>',
+								option: '<h1 translate content="[[format.label]]"></h1>',
 								label: 'editor.format.title1'
 							},
 							{
 								apply: { tag: 'h2' },
-								option: '<h2>[[format.label]]</h2>',
+								option: '<h2 translate content="[[format.label]]"></h2>',
 								label: 'editor.format.title2'
 							},
 							{
 								apply: { tag: 'h3' },
-								option: '<h3>[[format.label]]</h3>',
+								option: '<h3 translate content="[[format.label]]"></h3>',
 								label: 'editor.format.title3'
 							},
 							{
 								apply: { tag: 'p', classes: ['info'] },
-								option: '<p class="info">[[format.label]]</p>',
+								option: '<p class="info" translate content="[[format.label]]"></p>',
 								label: 'editor.format.info'
 							},
 							{
 								apply: { tag: 'p', classes: ['warning'] },
-								option: '<p class="warning">[[format.label]]</p>',
+								option: '<p class="warning" translate content="[[format.label]]"></p>',
 								label: 'editor.format.warning'
 							}
 						];
