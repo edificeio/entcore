@@ -77,7 +77,7 @@ public class MappingFinder {
 				"MATCH (s:Structure {externalId : {id}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE lower(u.firstName) = {firstName} AND lower(u.lastName) = {lastName} AND head(u.profiles) = {profile} " +
 				filter +
-				"RETURN u.externalId as externalId";
+				"RETURN DISTINCT u.externalId as externalId";
 		final List<String[]> lines = new ArrayList<>();
 		final TransactionHelper tx;
 		try {
