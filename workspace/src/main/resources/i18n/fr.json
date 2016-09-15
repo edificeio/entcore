@@ -68,6 +68,7 @@
     "nofile": "Aucun fichier",
     "owner": "Propriétaire",
     "quota.title": "Espace utilisé",
+    "quota.isStructureQuota": " (pour l'établissement) ",
     "rack": "Mon casier",
     "rack.sent.message": "Votre document a bien été envoyé",
     "root": "Racine",

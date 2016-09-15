@@ -93,6 +93,16 @@ Quota.prototype.sync = function(){
 	http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
 		//to mo
 		this.unit = 'mb';
+		this.isStructureQuota = false; // is used to indicate in the workspace if the insuffisciency of storage left is due to the quota of the structure
+
+		// if the remaining storage of the user is larger than the remaining storage of the structure, then we make our calculations
+		// on the structure.
+		if( data.quota - data.storage > data.quotastructure - data.storagestructure ) {
+			data.quota = data.quotastructure;
+			data.storage = data.storagestructure;
+			this.isStructureQuota = true;
+		}
+
 		data.quota = data.quota / (1024 * 1024);
 		data.storage = data.storage / (1024 * 1024);
 

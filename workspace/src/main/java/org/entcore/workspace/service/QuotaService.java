@@ -47,4 +47,18 @@ public interface QuotaService {
 
 	void init(String userId);
 
+	void updateQuotaForProfile(JsonObject profile, Handler<Either<String, JsonObject>> result);
+
+	void updateQuotaUserBooks(JsonObject profile, Handler<Either<String, JsonObject>> result);
+
+	void updateQuotaForStructure(JsonObject structure, Handler<Either<String, JsonObject>> result);
+
+	void updateQuotaForUser(JsonObject user, Handler<Either<String, JsonObject>> result);
+
+	void listUsersQuotaActivity( String structureId, int quotaFilterNbusers, String quotaFilterSortBy, String quotaFilterOrderBy, String quotaFilterProfile,
+								 Float quotaFilterPercentageLimit, Handler<Either<String, JsonArray>> results);
+
+	void updateStructureStorageInitialize( Handler<Either<String, JsonObject>> result );
+
+	void updateStructureStorage( Handler<Either<String, JsonObject>> result );
 }
