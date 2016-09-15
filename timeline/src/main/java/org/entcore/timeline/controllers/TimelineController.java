@@ -146,8 +146,12 @@ public class TimelineController extends BaseController {
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException{
 				String contents = frag.execute();
-				String host = getScheme(request) + "://" + getHost(request);
-				out.write(host + contents);
+				if(contents.matches("^(http://|https://).*")){
+					out.write(contents);
+				} else {
+					String host = getScheme(request) + "://" + getHost(request);
+					out.write(host + contents);
+				}
 			}
 		});
 
