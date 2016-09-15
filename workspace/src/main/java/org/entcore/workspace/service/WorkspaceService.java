@@ -135,8 +135,13 @@ public class WorkspaceService extends BaseController {
 						public void handle(Either<String, JsonObject> r) {
 							if (r.isRight()) {
 								JsonObject j = r.right().getValue();
+								boolean notFirstField = false;
 								for (String attr : j.getFieldNames()) {
-									UserUtils.addSessionAttribute(eb, user.getUserId(), attr, j.getLong(attr), null);
+									if( notFirstField ) {
+										UserUtils.addSessionAttribute(eb, user.getUserId(), attr, j.getLong(attr), null);
+									} else {
+										notFirstField = true;
+									}
 								}
 							}
 							renderView(request);

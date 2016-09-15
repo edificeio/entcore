@@ -100,6 +100,7 @@
     "undelivered": " n'ont pu recevoir le message.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
     "updating": "Mise à jour...",
     "used.space": "Espace utilisé",
+    "quota.isStructureQuota": " (pour l'établissement) ",
     "user.folders": "Dossiers",
     "widget.empty": "Vous n'avez aucun message",
     "widget.title": "messages",
