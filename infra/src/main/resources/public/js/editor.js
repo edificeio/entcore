@@ -1247,7 +1247,7 @@ window.RTE = (function () {
 			RTE.baseToolbarConf.option('font', function(instance){
 				return {
 					template:
-					'<select-list display="font" display-as="fontFamily" placeholder="Police" tooltip="editor.option.font">' +
+					'<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
 					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
                     'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
 					'</select-list>',
