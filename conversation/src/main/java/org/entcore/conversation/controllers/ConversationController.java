@@ -339,12 +339,10 @@ public class ConversationController extends BaseController {
 			return;
 		}
 		final JsonObject params = new JsonObject()
-				.putString("uri", getScheme(request) + "://" + getHost(request) +
-						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("username", user.getUsername())
 				.putString("subject", subject)
-				.putString("messageUri", getScheme(request) + "://" + getHost(request) +
-						pathPrefix + "/conversation#/read-mail/" + id);
+				.putString("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		params.putString("resourceUri", params.getString("messageUri"));
 		List<String> recipients = new ArrayList<>();
 		for (Object o : r) {

@@ -282,11 +282,9 @@ public abstract class ControllerHelper extends BaseController {
 			JsonObject p, final String resourceNameAttribute) {
 		if (p == null) {
 			p = new JsonObject()
-				.putString("uri", getScheme(request) + "://" + getHost(request) +
-						"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.putString("username", user.getUsername())
-				.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-						pathPrefix + "/" + resource);
+				.putString("resourceUri", pathPrefix + "/" + resource);
 		}
 		final JsonObject params = p;
 		crudService.retrieve(resource, new Handler<Either<String, JsonObject>>() {

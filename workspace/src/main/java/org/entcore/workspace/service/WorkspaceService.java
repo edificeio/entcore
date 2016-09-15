@@ -382,17 +382,14 @@ public class WorkspaceService extends BaseController {
 
 	private void sendNotify(final HttpServerRequest request, final String resource, final UserInfos user, final List<String> recipients, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-		.putString("uri", getScheme(request) + "://" + getHost(request) +
-				"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+		.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 		.putString("username", user.getUsername())
 		.putString("appPrefix", pathPrefix+"/workspace");
 
 		if(isFolder){
-			params.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-					pathPrefix + "/workspace#/shared/folder/" + resource);
+			params.putString("resourceUri", pathPrefix + "/workspace#/shared/folder/" + resource);
 		} else {
-			params.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-					pathPrefix + "/document/" + resource);
+			params.putString("resourceUri", pathPrefix + "/document/" + resource);
 		}
 
 		final String notificationName = WORKSPACE_NAME.toLowerCase() + "." + (isFolder ? "share-folder" : "share");
@@ -1551,8 +1548,7 @@ public class WorkspaceService extends BaseController {
 
 	private void notifyComment(final HttpServerRequest request, final String id, final UserInfos user, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-			.putString("userUri", getScheme(request) + "://" + getHost(request) +
-					"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+			.putString("userUri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 			.putString("userName", user.getUsername())
 			.putString("appPrefix", pathPrefix+"/workspace");
 
@@ -1576,11 +1572,9 @@ public class WorkspaceService extends BaseController {
 									JsonObject sharedNotifParams = params.copy();
 
 									if(folderId != null){
-										sharedNotifParams.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-												pathPrefix + "/workspace#/shared/folder/" + folderId);
+										sharedNotifParams.putString("resourceUri", pathPrefix + "/workspace#/shared/folder/" + folderId);
 									} else {
-										sharedNotifParams.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-												pathPrefix + "/workspace#/shared");
+										sharedNotifParams.putString("resourceUri", pathPrefix + "/workspace#/shared");
 									}
 
 									// don't send comment with share uri at owner
@@ -1602,11 +1596,9 @@ public class WorkspaceService extends BaseController {
 								ownerList.add(document.getString("owner"));
 
 								if(folderId != null){
-									ownerNotif.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-											pathPrefix + "/workspace#/folder/" + folderId);
+									ownerNotif.putString("resourceUri", pathPrefix + "/workspace#/folder/" + folderId);
 								} else {
-									ownerNotif.putString("resourceUri", getScheme(request) + "://" + getHost(request) +
-											pathPrefix + "/workspace");
+									ownerNotif.putString("resourceUri", pathPrefix + "/workspace");
 								}
 
 								notification.notifyTimeline(request, notifyName, user, ownerList, id, ownerNotif);
