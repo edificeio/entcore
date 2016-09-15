@@ -255,12 +255,6 @@ public class DefaultQuotaService implements QuotaService {
 			params.putNumber("quotaFilterPercentageLimit", nb);
 		}
 
-		if( "sortpercentage".equals(quotaFilterSortBy) ){
-			params.putString("quotaFilterSortBy", "percentage");
-		} else {
-			params.putString("quotaFilterSortBy", "storage" );
-		}
-
 		String query =
 				"match (pro:Profile)<-[HAS_PROFILE]-(pg:ProfileGroup)<-[IN]-(u:User)-[USERBOOK]->(ub:UserBook), (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) " +
 						"where has (ub.storage) and  ub.quota > 0 and s.id = {structureId} ";
@@ -279,10 +273,18 @@ public class DefaultQuotaService implements QuotaService {
 				"pro.name as profile, u.displayName as name, u.id as id, pg.maxquota as maxquota ";
 
 		// order by
-		if( "sortdcecreasing".equals(quotaFilterOrderBy) ) {
-			query += " order by {quotaFilterSortBy} desc ";
+		if( "sortpercentage".equals(quotaFilterSortBy) ){
+			query += " order by percentage ";
 		} else {
-			query += " order by {quotaFilterSortBy} asc ";
+			query += " order by storage ";
+		}
+
+
+
+		if( "sortdcecreasing".equals(quotaFilterOrderBy) ) {
+			query += " desc ";
+		} else {
+			query += " asc ";
 		}
 
 		// number of results
