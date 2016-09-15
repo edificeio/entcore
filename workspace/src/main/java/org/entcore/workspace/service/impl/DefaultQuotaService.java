@@ -86,8 +86,12 @@ public class DefaultQuotaService implements QuotaService {
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
 		String query =
-				"MATCH (u:UserBook { userid : {userId}}) " +
-				"RETURN u.quota as quota, u.storage as storage ";
+				" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+						" with min(s.quota-s.storage ) as minimum, collect(DISTINCT(ub)) as ub2  " +
+						" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+						" where (s.quota-s.storage) = minimum RETURN DISTINCT(u.displayName), ub.quota as quota, ub.storage as storage, " +
+						" s.quota as quotastructure, s.storage as storagestructure";
+
 		JsonObject params = new JsonObject().putString("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
@@ -178,4 +182,126 @@ public class DefaultQuotaService implements QuotaService {
 		});
 	}
 
+	@Override
+	public void updateQuotaForProfile(JsonObject profile, Handler<Either<String, JsonObject>> result) {
+		JsonObject params = new JsonObject();
+		params.putString("id", profile.getString("id"));
+		params.putNumber("quota",
+				Float.parseFloat(profile.getField("quota").toString()) * Float.parseFloat(profile.getField("unit").toString())
+		);
+		params.putNumber("maxquota",
+				Float.parseFloat(profile.getField("maxquota").toString()) * Float.parseFloat(profile.getField("unit").toString())
+		);
+
+		String query = "match (pg:ProfileGroup) where pg.id = {id} SET pg.quota = {quota}, pg.maxquota = {maxquota} return pg";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+
+	// updates all the userbooks from the given structure and profile, but doesn't update if actual storage > quota.
+	// if the user is in 2 structures, we have to check the greater given quota
+	public void updateQuotaUserBooks(JsonObject profile, Handler<Either<String, JsonObject>> result) {
+		JsonObject params = new JsonObject();
+		params.putString("id", profile.getString("id"));
+		params.putNumber("quota",
+				Float.parseFloat(profile.getField("quota").toString()) * Float.parseFloat(profile.getField("unit").toString())
+		);
+
+		String query = "match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) where pg.id = {id} " +
+				" WITH ub MATCH (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) with max(pg.quota) as maxiquota, " +
+				" ub MATCH (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) where ub.storage < maxiquota set ub.quota = maxiquota " +
+				" return ub, u, collect(DISTINCT(pg)), max(pg.quota) ";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void updateQuotaForStructure(JsonObject structure, Handler<Either<String, JsonObject>> result) {
+		JsonObject params = new JsonObject();
+		params.putString("id", structure.getString("id"));
+		params.putNumber("quota",
+				Float.parseFloat(structure.getField("quota").toString()) * Float.parseFloat(structure.getField("unit").toString())
+		);
+
+		String query = "match (s:Structure) where s.id = {id} set s.quota = {quota} return s";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void updateQuotaForUser(JsonObject user, Handler<Either<String, JsonObject>> result) {
+		JsonObject params = new JsonObject();
+		params.putString("id", user.getString("id"));
+		params.putNumber("quota",
+				Float.parseFloat(user.getField("quota").toString()) * Float.parseFloat(user.getField("unit").toString())
+		);
+
+		String query = "match (u:User)-[USERBOOK]->(ub:UserBook) where u.id = {id} set ub.quota = {quota} return u";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void listUsersQuotaActivity( String structureId, int quotaFilterNbusers, String quotaFilterSortBy, String quotaFilterOrderBy, String quotaFilterProfile,
+										Float quotaFilterPercentageLimit, Handler<Either<String, JsonArray>> results) {
+
+		JsonObject params = new JsonObject();
+		params.putString("structureId", structureId);
+		params.putNumber("quotaFilterNbusers", quotaFilterNbusers);
+		if( !"".equals(quotaFilterProfile) ) {
+			params.putString("quotaFilterProfile",quotaFilterProfile);
+		}
+
+		if( quotaFilterPercentageLimit > 0 ){
+			Float nb = quotaFilterPercentageLimit/100;
+			params.putNumber("quotaFilterPercentageLimit", nb);
+		}
+
+		if( "sortpercentage".equals(quotaFilterSortBy) ){
+			params.putString("quotaFilterSortBy", "percentage");
+		} else {
+			params.putString("quotaFilterSortBy", "storage" );
+		}
+
+		String query =
+				"match (pro:Profile)<-[HAS_PROFILE]-(pg:ProfileGroup)<-[IN]-(u:User)-[USERBOOK]->(ub:UserBook), (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) " +
+						"where has (ub.storage) and  ub.quota > 0 and s.id = {structureId} ";
+
+		// Profile filter
+		if( !"".equals(quotaFilterProfile) ) {
+			query += " and pro.name = {quotaFilterProfile} ";
+		}
+
+		// percentage limit filter
+		if( quotaFilterPercentageLimit > 0 ) {
+			query += " and(ub.storage / ub.quota) > {quotaFilterPercentageLimit} ";
+		}
+		// values returned
+		query += "return collect(distinct(u.id)) as uid, ub.storage as storage, ub.quota as quota, (ub.storage / ub.quota) as percentage, " +
+				"pro.name as profile, u.displayName as name, u.id as id, pg.maxquota as maxquota ";
+
+		// order by
+		if( "sortdcecreasing".equals(quotaFilterOrderBy) ) {
+			query += " order by {quotaFilterSortBy} desc ";
+		} else {
+			query += " order by {quotaFilterSortBy} asc ";
+		}
+
+		// number of results
+		query += " limit {quotaFilterNbusers}";
+
+		neo4j.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void updateStructureStorageInitialize( Handler<Either<String, JsonObject>> result ) {
+		JsonObject params = new JsonObject();
+		String query = "match (s:Structure) set s.storage = 0 return s.name;";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
+
+	@Override
+	public void updateStructureStorage( Handler<Either<String, JsonObject>> result ) {
+		JsonObject params = new JsonObject();
+		String query = "match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) with ub, collect(distinct ID(u)) as u2, s, (sum(ub.storage)/count(ub.storage)) as total match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) with ub, collect(distinct ID(u)) as u2, total ,s SET s.storage = s.storage + total return s.name";
+		neo4j.execute(query, params, validUniqueResultHandler(result));
+	}
 }

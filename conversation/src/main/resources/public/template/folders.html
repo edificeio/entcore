@@ -83,7 +83,7 @@
 
 		<nav class="vertical">
 			<hr class="row" />
-			<h2><i18n>used.space</i18n></h2>
+			<h2><i18n>used.space</i18n></h2><span ng-if="quota.isStructureQuota"><i18n>quota.isStructureQuota</i18n></span></h2>
 			<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
 		</nav>
 

@@ -723,6 +723,14 @@ function Conversation($scope, $timeout, date, notify, route, model){
 	};
 	$scope.getQuota = function(){
 		http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
+			
+			// if the remaining storage of the user is larger than the remaining storage of the structure, then we make our calculations
+			// on the structure.
+			if( data.quota - data.storage > data.quotastructure - data.storagestructure ) {
+				data.quota = data.quotastructure;
+				data.storage = data.storagestructure;
+			}
+
 			//to mo
 			data.quota = data.quota / (1024 * 1024);
 			data.storage = data.storage / (1024 * 1024);
