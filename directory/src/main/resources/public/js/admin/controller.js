@@ -154,7 +154,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")
     $scope.loadingWrapper = httpWrapper.wrap
 
-	$scope.DEFAULT_QUOTA_UNIT = 1048576
+	$scope.DEFAULT_QUOTA_UNIT = 1073741824
+    $scope.saveQuotaDisabled = true;
+	$scope.saveQuotaStructureDisabled = true;
+	$scope.saveQuotaActivityDisabled = true;
+
 	$scope.maxQuotas = {}
 	//Get max quotas
 	http().get("/workspace/quota/default").done(function(result){
@@ -259,6 +263,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.initExportData()
 			},
 			onStructureClick: function(structure){
+				structure.quotaFilterProfile = "";
+				structure.quotaFilterNbusers = 10;
+				structure.quotaFilterPercentageLimit = 0;
+				structure.quotaFilterSortBy = "sortpercentage";
+				structure.quotaFilterOrderBy = "sortdcecreasing";
 				$scope.structure = structure
 			}
 		},
@@ -390,6 +399,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.formatQuota = function(quota){
         var representation = $scope.getAppropriateDataUnit(quota)
         return (Math.round(representation.nb * 100) / 100)+" "+representation.order
+    }
+    $scope.formatQuotaNumberOnly = function(quota, quotaUnit){
+        return (Math.round(quota / quotaUnit) / 100);
     }
     $scope.getStorageRatio = function(storage, quota){
         return Math.min(100, Math.round((storage * 100) / quota * 100) / 100)
@@ -856,25 +868,145 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         })
     }
 
-	//Batch quota update for all users in a single structure.
-	$scope.saveStructureQuota = function(structure, size, profile){
-		$http.get('user/admin/list', {
-            params: {
-                structureId: structure.id,
-				profile: profile
-            }
-        }).success(function(users){
-			var userarray = _.map(users, function(user){
-                return user.id
-            })
-            $http.put('/workspace/quota', {
-                users: userarray,
-                quota: size
-            }).success(function(){
-                notify.info(lang.translate("directory.notify.quotaUpdate"))
-            })
-        })
+	//Save the quota for profiles
+	$scope.saveStructureQuota = function() {
+		$scope.structure.saveStructureQProfile($scope.structure);
 	}
+
+	//Save the quota for structure
+	$scope.saveStructureQuotaStructure = function() {
+		$scope.structure.saveStructureQStructure($scope.structure);
+	}
+
+	//Save the quota for structure in activity table
+	$scope.saveStructureQuotaActivity = function() {
+		$scope.structure.saveStructureQActivity($scope.structure);
+	}
+
+	// gettng the lines of quota activity table
+	$scope.getUsersQuotaActivity = function() {
+		$scope.structure.getUsersQuotaActivity(
+										$scope.structure.id,
+										$scope.structure.quotaFilterNbusers,
+										$scope.structure.quotaFilterSortBy,
+										$scope.structure.quotaFilterOrderBy,
+										$scope.structure.quotaFilterProfile,
+										$scope.structure.quotaFilterPercentageLimit,
+										function(data) {
+				$scope.structure.quotaActivity = data;
+				
+				$scope.$apply($scope.structure.quotaActivity);
+			});
+	}
+
+    // when unit is modified in the input from the table
+    $scope.updateQuotaUnit = function(buttonId, index, quota, maxquota, quotaUnit){
+
+		if( buttonId == 1 ) {
+			// update the quota in the profile list
+			if ($scope.structure.pgroup[index].quotaOri == null) {
+				$scope.structure.pgroup[index].quotaOri = $scope.structure.pgroup[index].quota * $scope.structure.pgroup[index].unit;
+				$scope.structure.pgroup[index].quota = quota * $scope.structure.pgroup[index].unit;
+			} else {
+				$scope.structure.pgroup[index].quota = $scope.structure.pgroup[index].quotaOri;
+			}
+
+			// update the maxquota
+			if ($scope.structure.pgroup[index].maxquotaOri == null || $scope.structure.pgroup[index].maxquotaOri == 0) {
+				$scope.structure.pgroup[index].maxquotaOri = $scope.structure.pgroup[index].maxquota * $scope.structure.pgroup[index].unit;
+				$scope.structure.pgroup[index].maxquota = maxquota * $scope.structure.pgroup[index].unit;
+			} else {
+				$scope.structure.pgroup[index].maxquota = $scope.structure.pgroup[index].maxquotaOri;
+			}
+
+			$scope.structure.pgroup[index].unit = quotaUnit;
+			$scope.structure.pgroup[index].quota = Math.round(100 * $scope.structure.pgroup[index].quota / $scope.structure.pgroup[index].unit) / 100;
+			$scope.structure.pgroup[index].maxquota = Math.round(100 * $scope.structure.pgroup[index].maxquota / $scope.structure.pgroup[index].unit) / 100;
+
+		} else if( buttonId == 2 ) {
+
+			// management of whole structure quota (1 field)
+			if ($scope.structure.quotaOri == null ) {
+				$scope.structure.quotaOri = $scope.structure.quota * $scope.structure.unit;
+				$scope.structure.quota = quota * $scope.structure.unit;
+			} else {
+				$scope.structure.quota = $scope.structure.quotaOri;
+			}
+			$scope.structure.unit = quotaUnit;
+			$scope.structure.quota = Math.round(100 * $scope.structure.quota / $scope.structure.unit) / 100;
+
+		} else if( buttonId == 3 ) {
+
+				// update the quota in the activity list
+			if ($scope.structure.quotaActivity[index].quotaOri == null) {
+				$scope.structure.quotaActivity[index].quotaOri = $scope.structure.quotaActivity[index].quota * $scope.structure.quotaActivity[index].unit;
+				$scope.structure.quotaActivity[index].quota = quota * $scope.structure.quotaActivity[index].unit;
+			} else {
+				$scope.structure.quotaActivity[index].quota = $scope.structure.quotaActivity[index].quotaOri;
+			}
+
+			// update the storage
+			if ($scope.structure.quotaActivity[index].storageOri == null) {
+				$scope.structure.quotaActivity[index].storageOri = $scope.structure.quotaActivity[index].storage * $scope.structure.quotaActivity[index].unit;
+				$scope.structure.quotaActivity[index].storage = storage * $scope.structure.quotaActivity[index].unit;
+			} else {
+				$scope.structure.quotaActivity[index].storage = $scope.structure.quotaActivity[index].storageOri;
+			}
+			// update the maxquota
+			if ($scope.structure.quotaActivity[index].maxquotaOri == null || $scope.structure.quotaActivity[index].maxquotaOri == 0) {
+				$scope.structure.quotaActivity[index].maxquotaOri = $scope.structure.quotaActivity[index].maxquota * $scope.structure.quotaActivity[index].unit;
+				$scope.structure.quotaActivity[index].maxquota = maxquota * $scope.structure.quotaActivity[index].unit;
+			} else {
+				$scope.structure.quotaActivity[index].maxquota = $scope.structure.quotaActivity[index].maxquotaOri;
+			}
+
+			$scope.structure.quotaActivity[index].unit = quotaUnit;
+			$scope.structure.quotaActivity[index].quota = Math.round(100 * $scope.structure.quotaActivity[index].quota / $scope.structure.quotaActivity[index].unit) / 100;
+			$scope.structure.quotaActivity[index].storage = Math.round(100 * $scope.structure.quotaActivity[index].storage / $scope.structure.quotaActivity[index].unit) / 100;
+			$scope.structure.quotaActivity[index].maxquota = Math.round(100 * $scope.structure.quotaActivity[index].maxquota / $scope.structure.quotaActivity[index].unit) / 100;
+		}
+    }
+
+	// when modifying allocated space field for profiles
+	$scope.setQuotaModified = function(index){
+		// verify that the new value is under the maxquota value
+		if( $scope.structure.pgroup[index].quota > $scope.structure.pgroup[index].maxquota && $scope.structure.pgroup[index].maxquota != 0) {
+			// put back the old value (quotaOri)
+			notify.error('directory.notify.maxquota.exceeded');
+			$scope.structure.pgroup[index].quota = Math.round(100 * $scope.structure.pgroup[index].quotaOri / $scope.structure.pgroup[index].unit) /100;
+		}else {
+			// we save the value in 2 places : 1 is the displayed in the field (rounded), the other is the not rounded
+			$scope.structure.pgroup[index].quotaOri = $scope.structure.pgroup[index].quota * $scope.structure.pgroup[index].unit;
+			$scope.saveQuotaDisabled = false;
+		}
+	}
+
+	// when modifying allocated space field in structure
+	$scope.setQuotaStructureModified = function(){
+		$scope.structure.quotaOri = $scope.structure.quota * $scope.structure.unit;
+		$scope.saveQuotaStructureDisabled = false;
+	}
+
+	// when modifying allocated space field in activity
+	$scope.setQuotaActivityModified = function(index){
+		// verify that the new value is under the maxquota value
+		if( $scope.structure.quotaActivity[index].quota > $scope.structure.quotaActivity[index].maxquota && $scope.structure.quotaActivity[index].maxquota != 0) {
+			// put back the old value (quotaOri)
+			notify.error('directory.notify.maxquota.exceeded');
+			$scope.structure.quotaActivity[index].quota = Math.round(100 * $scope.structure.quotaActivity[index].quotaOri / $scope.structure.quotaActivity[index].unit) /100;
+		}else {
+			// we save the value in 2 places : 1 is the displayed in the field (rounded), the other is the not rounded
+			$scope.structure.quotaActivity[index].quotaOri = $scope.structure.quotaActivity[index].quota * $scope.structure.quotaActivity[index].unit;
+			$scope.saveQuotaActivityDisabled = false;
+		}
+	}
+	
+	// when modifying maximum authorized space field
+    $scope.setMaxQuotaModified = function(index){
+        // we save the value in 2 places : 1 is the displayed in the field (rounded), the other is the not rounded
+        $scope.structure.pgroup[index].maxQuotaOri = $scope.structure.pgroup[index].maxquota * $scope.structure.pgroup[index].unit;
+        $scope.saveQuotaDisabled = false;
+    }
 
 	$scope.addChild = function(child, user){
 		if(user.children.indexOf(child) < 0){
@@ -1232,4 +1364,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.isMainStructure = function(user, structure){
         return _.findWhere(user.administrativeStructures, {id: structure.id})
     }
+
+    $scope.isADMC = function() {
+        return model.me.functions['SUPER_ADMIN'];
+    };
 }

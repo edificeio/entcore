@@ -392,6 +392,107 @@ Structure.prototype.unlinkUser = function(user, hook){
     })
 }
 
+//Save the quota for profiles
+Structure.prototype.saveStructureQProfile = function(structure) {
+    http().putJson("/workspace/structure/admin/quota/saveProfile", structure.pgroup)
+        .done(function() {
+            notify.info('directory.params.success');
+        }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+    notify.info(lang.translate("directory.notify.quotaUpdate"));
+}
+
+//Save the quota for structure
+Structure.prototype.saveStructureQStructure = function(structure) {
+    http().putJson("/workspace/structure/admin/quota/saveStructure", structure)
+        .done(function() {
+            notify.info('directory.params.success');
+        }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+    notify.info(lang.translate("directory.notify.quotaUpdate"));
+}
+
+//Save the quota for activity
+Structure.prototype.saveStructureQActivity = function(structure) {
+    http().putJson("/workspace/structure/admin/quota/saveActivity", structure.quotaActivity)
+        .done(function() {
+            notify.info('directory.params.success');
+        }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+    notify.info(lang.translate("directory.notify.quotaUpdate"));
+}
+
+Profiles.prototype.save = function(block, callback) {
+    http().putJson("/directory/profiles", block)
+        .done(function(data) {
+            notify.info('directory.params.success');
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
+
+Structure.prototype.getUsersQuotaActivity = function(structureid, quotaFilterNbusers, quotaFilterSortBy, quotaFilterOrderBy, quotaFilterProfile, quotaFilterPercentageLimit, callback) {
+    var structure = this;
+    http().get('/workspace/structure/admin/quota/getUsersQuotaActivity',
+                    {structureid : structureid,
+                    quotaFilterNbusers : quotaFilterNbusers,
+                    quotaFilterSortBy : quotaFilterSortBy,
+                    quotaFilterOrderBy : quotaFilterOrderBy,
+                    quotaFilterProfile : quotaFilterProfile,
+                    quotaFilterPercentageLimit: quotaFilterPercentageLimit
+                    })
+        .done(function(data) {
+                _.forEach(data, function(u){
+                   var DEFAULT_QUOTA_UNIT = 1073741824;
+                    u.quotaOri = u.quota;
+                    u.quota = Math.round(u.quota * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                    u.maxquota = Math.round(u.maxquota * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                    u.storageOri = u.storage;
+                    u.storage = Math.round(u.storage * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                    u.unit = DEFAULT_QUOTA_UNIT;
+                    structure.quotaActivity.push(u);
+                });
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
+            var error = JSON.parse(e.responseText);
+            if(typeof callback === 'function') {
+                callback(error);
+            } else {
+                notify.error(error.error);
+            }
+        });
+}
+
+
 Structure.prototype.loadStructure = function(periodicHook, endHook){
     var structure = this
 
@@ -492,6 +593,19 @@ function Structures(){
                 that.load(data)
 
                 _.forEach(that.all, function(struct){
+                    var DEFAULT_QUOTA_UNIT = 1073741824;
+                    // update quota with unit
+                    _.forEach(struct.pgroup, function(pgroup){
+                        pgroup.quotaOri = pgroup.quota;
+                        pgroup.maxquotaOri = pgroup.maxquota;
+                        pgroup.quota = Math.round(pgroup.quota * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                        pgroup.maxquota = Math.round(pgroup.maxquota * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                        pgroup.unit = DEFAULT_QUOTA_UNIT;
+                    })
+                    struct.quotaActivity = [];
+                    struct.quotaOri = struct.quota;
+                    struct.quota = Math.round(struct.quota * 100 / DEFAULT_QUOTA_UNIT) / 100;
+                    struct.unit = DEFAULT_QUOTA_UNIT;
                     struct.parents = _.filter(struct.parents, function(parent){
                         var parentMatch = _.findWhere(that.all, {id: parent.id})
                         if(parentMatch){

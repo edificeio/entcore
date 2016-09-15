@@ -68,7 +68,8 @@
 					<a ng-click="emptyTrash()" ng-if="currentFolderTree.name === 'trash'" class="classic-link"><i18n>workspace.empty.trash</i18n></a>
 					<div class="row">
 						<hr class="row" />
-						<h2><i18n>quota.title</i18n></h2>
+						<h2><i18n>quota.title</i18n><span ng-if="quota.isStructureQuota"><i18n>quota.isStructureQuota</i18n></span></h2>
+
 						<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
 						<hr class="row" />
 					</div>

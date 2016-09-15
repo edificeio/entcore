@@ -19,6 +19,8 @@
 
 package org.entcore.workspace;
 
+import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.Either;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.workspace.controllers.QuotaController;
@@ -31,10 +33,15 @@ import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.workspace.service.impl.WorkspaceSearchingEvents;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.json.JsonObject;
+
+import java.text.ParseException;
 
 public class Workspace extends BaseServer {
 
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
+	private QuotaService quotaService;
 
 	@Override
 	public void start() {
@@ -47,7 +54,38 @@ public class Workspace extends BaseServer {
 		final boolean neo4jPlugin = container.config().getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
-		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
+		// cron for structure quota update
+		// by default, at 2:00AM every day
+		final String updateStructureQuota = container.config().getString("update-structure-quota", " 0 0 2 ? * * *");
+		try{
+			new CronTrigger(vertx, updateStructureQuota).schedule(new Handler<Long>() {
+				@Override
+				public void handle(Long event) {
+					quotaService.updateStructureStorageInitialize(new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> r) {
+							if (r.isRight()) {
+								quotaService.updateStructureStorage(new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> r) {
+										if (r.isLeft()) {
+											JsonObject error = new JsonObject()
+													.putString("error", r.left().getValue());
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			});
+		} catch (ParseException e) {
+			vertx.stop();
+			return;
+		}
+
+
+	setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
 						config.getBoolean("share-old-groups-to-users", false)));
 
 		if (config.getBoolean("searching-event", true)) {
