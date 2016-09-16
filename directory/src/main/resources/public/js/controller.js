@@ -167,9 +167,7 @@ function DirectoryController($scope, route, date, template){
 
 	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;
-		template.open('list', tpl);
 		template.close('details');
-		template.close('classNav');
 	};
 
 	$scope.selectUser = function(user){
@@ -180,9 +178,6 @@ function DirectoryController($scope, route, date, template){
 		if($scope.currentUser !== undefined){
 			ui.scrollToTop();
 		}
-		else{
-			window.scrollTo(0, 200);
-		}
 
 		user.open();
 		user.one('sync', function(){
@@ -190,9 +185,7 @@ function DirectoryController($scope, route, date, template){
 			$scope.$apply('currentUser');
 		});
 
-		template.open('classNav', 'class-vertical-content');
 		template.open('details', 'user-infos');
-		template.close('list');
 	};
 
 	$scope.selectClassroom = function(classroom){

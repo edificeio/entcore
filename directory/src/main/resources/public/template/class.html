@@ -19,40 +19,40 @@
  -->
 
 <div class="row">
-	<div class="twelve cell reduce-block-six">
-		<div class="right-magnet six cell">
-			<div class="row">
-				<div class="right-magnet">
-					<i class="show-details"
-					   ng-click="selectUser(users.first())"
-					   ng-class="{ selected: currentUser }" class="right-magnet"
-					   ng-if="users.first()"></i>
-					<i class="show-icons"
-					   ng-click="deselectUser('dominos')"
-					   ng-class="{ selected: template.contains('list', 'dominos') }" class="right-magnet"></i>
-				</div>
-			</div>
+	<app-title>
+		<h1 class="cell">
+			<a data-reload>
+				<i class="userbook"></i>
+				<span translate content="userBook.class.title"></span><span>[[myClass && myClass.length > 0 ? + " - " + myClass[0].name : ""]]</span>
+			</a>
+		</h1>
+	</app-title>
 
+	<div class="right-magnet three cell">
+		<div class="row" ng-if="users.all.length > 0">
+			<i class="show-details right-magnet"
+			   ng-click="selectUser(users.first())"
+			   ng-class="{ selected: currentUser }"
+			   ng-if="users.first()"></i>
+			<i class="show-icons right-magnet"
+			   ng-click="deselectUser('dominos')"
+			   ng-class="{ selected: !template.contains('details', 'user-infos') }"></i>
 		</div>
-		<h1 data-reload><i class="userbook"></i><i18n>userBook.class.title</i18n></h1>
-        <div class="row">
-            <div class="six cell reduce-block-six"><h5 class="subtitle">[[myClass && myClass.length > 0 ? myClass[0].name : ""]]</h5></div>
-
-            <div class="right-magnet cell reduce-block-four">
-                <input type="search"
-                       ng-model="search.text" ng-change="updateSearch()"
-                       translate attr="placeholder"
-                       placeholder="userBook.search"
-                       class="twelve cell right-magnet" />
-                <a
-                        class="small-text right-magnet"
-                        href="/userbook/annuaire#/search"
-                        translate content="search.in.directory"></a>
-            </div>
-        </div>
-
 	</div>
 </div>
+
+<div class="row reduce-block-eight vertical-spacing-twice">
+	<input type="search"
+		   ng-model="search.text" ng-change="updateSearch()"
+		   translate attr="placeholder"
+		   placeholder="userBook.search"
+		   class="six cell twelve-mobile" />
+	<a class="small-text right-magnet reduce-block-four"
+		href="/userbook/annuaire#/search"
+		translate content="search.in.directory"></a>
+</div>
+
+
 <div class="row vertical-spacing-twice">
 	<div class="twelve cell" ng-include="template.containers.main"></div>
 </div>

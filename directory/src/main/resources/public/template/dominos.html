@@ -18,21 +18,26 @@
  ~
  -->
 
-<div class="dominos">
+<div class="dominos centered-text">
 	<div class="row reduce-block-six" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length" translate content="noresult"></div>
 	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
+
 	<div class="item" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
-		<section class="domino" ng-class="colorFromType(user.type)">
-			<div class="top" ng-click="selectUser(user)">
-				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed twelve cell" />
+
+		<section class="domino" ng-class="colorFromType(user.type)" ng-click="selectUser(user)" ng-class="{ selected: user === currentUser }">
+
+			<div class="top">
+				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
+				<div class="mood">
+					<i class="liquid [[user.mood]]"></i>
+				</div>
 			</div>
+
+			<span class="medium-text" translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
+
 			<div class="bottom">
 				<div class="content">
-					<a ng-click="selectUser(user)">[[user.displayName]]</a>
-					<br /><span class="medium-text" translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
-					<div class="mood three">
-						<i class="liquid [[user.mood]]"></i>
-					</div>
+					<span>[[user.displayName]]</span>
 					<div class="bottom-locked">
 						<a ng-href="/conversation/conversation#/write-mail/[[user.id]]"><i class="send-mail"></i></a>
 					</div>
@@ -40,14 +45,16 @@
 			</div>
 		</section>
 	</div>
+
     <div class="item" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
-        <section class="domino grey">
-            <div class="top" ng-click="selectClassroom(classroom)">
+        <section class="domino grey" ng-click="selectClassroom(classroom)">
+            <div class="top">
                 <img skin-src="/img/illustrations/classroom.png" class="fixed twelve cell" />
             </div>
+			<br>
             <div class="bottom">
                 <div class="content">
-                    <a ng-click="selectClassroom(classroom)">[[classroom.name]]</a>
+                    <span>[[classroom.name]]</span>
                 </div>
             </div>
         </section>

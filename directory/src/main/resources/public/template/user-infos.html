@@ -85,11 +85,9 @@
 <div class="row"></div>
 
 <div class="row reduce-block-six" ng-if="displayFamily(currentUser)">
-	<h1
-		translate content="userBook.profile.family"
-		class="horizontal-spacing"
-	></h1>
+
 	<article class="row">
+        <h1 translate content="userBook.profile.family"></h1>
 		<div class="row" ng-repeat="relative in currentUser.relatives">
 			<a ng-click="selectUser(relative)" class="reduce-block-four twelve cell">[[relative.displayName]]</a>
 		</div>
@@ -99,11 +97,9 @@
 <div class="row"></div>
 
 <div class="row reduce-block-six" ng-if="currentUser.schools.length">
-	<h1
-		translate key="userBook.profile.schools"
-		class="horizontal-spacing"
-	></h1>
+
 	<article>
+        <h1 translate key="userBook.profile.schools"></h1>
 		<div ng-repeat="school in currentUser.schools | orderBy:'name'">
 			<h3>[[school.name]]</h3>
 			<strong ng-if="school.classes && school.classes.length"><i18n>userBook.profile.classes</i18n></strong>
@@ -115,11 +111,8 @@
 </div>
 
 <div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
-	<h1
-		translate key="userBook.interests"
-		class="horizontal-spacing"
-	></h1>
 	<article>
+        <h1 translate key="userBook.interests"></h1>
 		<div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
 			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
 			<em class="ten cell reduce-block-six user-content">[[hobby.values]]</em>
@@ -128,12 +121,13 @@
 	</article>
 </div>
 
-<h1
-		class="horizontal-spacing"
-		ng-if="currentUser.health"
-		>
-	<i18n>userBook.profile.health</i18n>
-		</h1>
 <div class="row reduce-block-six" ng-if="currentUser.health">
-	<article class="user-content">[[currentUser.health]]</article>
+	<article>
+        <h1 ng-if="currentUser.health">
+        	<i18n>userBook.profile.health</i18n>
+        </h1>
+        <div class="row medium-text">
+            [[currentUser.health]]
+        </div>
+    </article>
 </div>
