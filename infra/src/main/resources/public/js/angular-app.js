@@ -295,6 +295,7 @@ module.directive('lightbox', function($compile) {
         link: function(scope, element, attributes) {
             var content = element.find('.content');
             element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e) {
+                $('body').removeClass('lightbox-opened');
                 element.children('.lightbox').first().fadeOut();
                 $('body').css({
                     overflow: 'auto'
