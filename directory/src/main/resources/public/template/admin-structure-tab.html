@@ -93,31 +93,215 @@
         <!-- Set quota -->
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
+
         <div class="twelve cell">
-            <select class="three cell" ng-model="quotaProfile" ng-init="quotaProfile = 'Teacher'" style="margin-right: 10px;">
-                <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
-                <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
-                <option value="Relative">[[lang.translate("directory.Relative")]]</option>
-                <option value="Student">[[lang.translate("directory.Student")]]</option>
-                <option value="Guest">[[lang.translate("directory.Guest")]]</option>
-            </select>
-            <select class="three cell" ng-model="quotaUnit" ng-init="quotaUnit = DEFAULT_QUOTA_UNIT" style="margin-right: 10px">
-                <option value="1">[[lang.translate("directory.byte")]]</option>
-                <option value="1024">[[lang.translate("directory.kilobyte")]]</option>
-                <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
-                <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
-                <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
-            </select>
-            <input class="three cell" type="number" name="size" ng-model="quotaSize" ng-init="quotaSize = 0"
-                   style="height: 25; border-radius: 5px; background: #fff; border: none; padding-left: 5px; font-family: Lato"/>
+            <table>
+                <tr style="background-color: grey">
+                    <th><i18n>directory.quota.profile</i18n></th>
+                    <th><i18n>directory.quota.unit</i18n></th>
+                    <th><i18n>directory.quota.allocated.space</i18n></th>
+                    <th><i18n>directory.quota.maximum</i18n></th>
+                </tr>
+
+                <tr ng-repeat="pgroup in structure.pgroup">
+                    <td>[[lang.translate(pgroup.profile)]]</td><!--[[lang.translate("directory.Teacher")]]-->
+                    <td>
+                        <select ng-model="quotaUnit"
+                                ng-init="quotaUnit = DEFAULT_QUOTA_UNIT"
+                                style="margin-right: 10px"
+                                ng-change="updateQuotaUnit(1, $index, pgroup.quota, pgroup.maxquota, quotaUnit)"
+                        >
+                            <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                            <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                            <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input class="four cell"
+                               type="number"
+                               step="0.01" min="0"
+                               ng-model="pgroup.quota"
+                               style="text-align:right"
+                               ng-change="setQuotaModified($index)"
+                        />
+                    </td>
+                    <td>
+                        <div ng-if="isADMC()"><input class="four cell"
+                                                     type="number"
+                                                     step="0.01" min="0"
+                                                     ng-model="pgroup.maxquota"
+                                                     style="text-align:right"
+                                                     ng-change="setMaxQuotaModified($index)"
+                        /></div>
+                        <div ng-if="!isADMC()">[[pgroup.maxquota / quotaUnit]]</div>
+                    </td>
+                </tr>
+            </table>
             <button class="small two right-magnet"
                     style="margin: 0; font-size: 12"
-                    ng-click="saveStructureQuota(structure, quotaSize*quotaUnit, quotaProfile)"
-                    ng-disabled="!quotaProfile || (quotaSize <= 0) || (quotaSize*quotaUnit) >= getMaxProfileQuota(quotaProfile)">
-                    [[lang.translate("directory.save")]]
+                    ng-attr-id="saveQuotaButton"
+                    ng-click="saveStructureQuota()"
+                    ng-disabled="saveQuotaDisabled">
+                [[lang.translate("directory.save")]]
             </button>
         </div>
-        <em class="twelve cell"><i18n>directory.maxQuota</i18n> : [[ formatQuota(getMaxProfileQuota(quotaProfile)) ]]</em>
+
+        <hr class="separator cell">
+
+        <!------------------------------------------------------------------------------------------------------------->
+
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota.structure.title")]]</h3>
+
+        <em class="twelve cell">
+            <div class="three cell padding"><i18n>directory.quota.allocated.space.structure</i18n> :</div>
+
+            <div class="two cell padding" ng-if="isADMC()">
+                <select ng-model="structure.quotaUnit"
+                                        ng-init="structure.quotaUnit = DEFAULT_QUOTA_UNIT"
+                                        style="margin-right: 10px"
+                                        ng-change="updateQuotaUnit(2, null, structure.quota, null, structure.quotaUnit)"
+                >
+                    <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                    <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                    <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                </select>
+            </div>
+            <div class="three cell padding" ng-if="isADMC()">
+                <input class="four cell"
+                     type="number"
+                     step="0.01" min="0"
+                     ng-model="structure.quota"
+                     style="text-align:right"
+                     ng-change="setQuotaStructureModified()"
+            /></div>
+            <span ng-if="!isADMC()">[[ formatQuota(structure.quota) ]]</span>
+        </em>
+        <em class="twelve cell">
+            <i18n>directory.storage</i18n> : [[ formatQuota(structure.storage) ]]
+        </em>
+        <button class="small two right-magnet"
+                style="margin: 0; font-size: 12"
+                ng-attr-id="saveQuotaStructureButton"
+                ng-click="saveStructureQuotaStructure()"
+                ng-disabled="saveQuotaStructureDisabled">
+            [[lang.translate("directory.save")]]
+        </button>
+
+        <hr class="separator cell">
+
+        <!------------------------------------------------------------------------------------------------------------->
+
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota.activity.title")]]</h3>
+
+        <div class="twelve cell padding">
+
+            <div class="four cell padding">
+                <i18n>directory.quota.display</i18n>
+                <input type="number"
+                       step="1" min="1" max="1000"
+                       ng-model="structure.quotaFilterNbusers"
+                       ng-init="structure.quotaFilterNbusers = 10"
+                       style="text-align:right"
+                />
+                [[lang.translate("directory.quota.users")]]
+            </div>
+            <div class="four cell padding">
+                <i18n>directory.quota.percentage.limit</i18n>
+                <input type="number"
+                       step="1" min="0" max="100"
+                       ng-model="structure.quotaFilterPercentageLimit"
+                       ng-init="structure.quotaFilterPercentageLimit = 0"
+                       style="text-align:right"
+                />
+                %
+            </div>
+        </div>
+        <div class="twelve cell padding"><br></div>
+        <div class="twelve cell padding">
+            <div class="three cell padding">
+                <i18n>directory.quota.sort.by</i18n>
+                <select ng-model="structure.quotaFilterSortBy">
+                    <option value="sortpercentage">[[lang.translate("directory.quota.sort.percentage")]]</option>
+                    <option value="sortvalue">[[lang.translate("directory.quota.sort.value")]]</option>
+                </select>
+            </div>
+            <div class="three cell padding">
+                <i18n>directory.quota.sort.order</i18n>
+                <select ng-model="structure.quotaFilterOrderBy">
+                    <option value="sortdcecreasing">[[lang.translate("directory.quota.sort.decreasing")]]</option>
+                    <option value="sortincreasing">[[lang.translate("directory.quota.sort.increasing")]]</option>
+                </select>
+            </div>
+            <div class="six cell padding">
+                <i18n>directory.quota.profile</i18n>
+                <select ng-model="structure.quotaFilterProfile">
+                    <option value="">[[lang.translate("directory.allProfiles")]]</option>
+                    <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                    <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+                    <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+                    <option value="Student">[[lang.translate("directory.Student")]]</option>
+                    <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+                </select>
+                <button class="small two right-magnet"
+                        style="margin: 0; font-size: 12"
+                        ng-click="getUsersQuotaActivity()">
+                    [[lang.translate("directory.quota.display")]]
+                </button>
+            </div>
+        </div>
+
+        <div class="twelve cell padding"><br>
+        </div>
+        <table>
+            <tr style="background-color: grey">
+                <th><i18n>directory.quota.rank</i18n></th>
+                <th><i18n>directory.quota.name</i18n></th>
+                <th><i18n>directory.quota.profile</i18n></th>
+                <th><i18n>directory.quota.unit</i18n></th>
+                <th><i18n>directory.quota.allocated.space</i18n></th>
+                <th><i18n>directory.quota.used</i18n></th>
+                <th><i18n>directory.quota.percentage.used</i18n></th>
+                <th><i18n>directory.quota.maximum</i18n></th>
+            </tr>
+            <tr ng-repeat="activity in structure.quotaActivity">
+                <td>[[$index + 1]]</td>
+                <td>[[activity.name]]</td>
+                <td>[[lang.translate(activity.profile)]]</td>
+                <td>
+                    <select ng-model="quotaActivityUnit"
+                            ng-init="quotaActivityUnit = DEFAULT_QUOTA_UNIT"
+                            style="margin-right: 10px"
+                            ng-change="updateQuotaUnit(3, $index, activity.quota, activity.maxquota, quotaActivityUnit)"
+                    >
+                        <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                        <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                        <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                    </select>
+                </td>
+                <td>
+                    <input class="eight cell"
+                           type="number"
+                           step="0.01" min="0"
+                           ng-model="activity.quota"
+                           style="text-align:right"
+                           ng-change="setQuotaActivityModified($index)"
+                    />
+                </td>
+                <td>[[activity.storage]]</td>
+                <td><progress-bar max="100" filled="activity.percentage*100" unit=""></progress-bar>
+                    </td>
+                <td>[[activity.maxquota]]</td>
+            </tr>
+        </table>
+        <button class="small two right-magnet"
+                style="margin: 0; font-size: 12"
+                ng-attr-id="saveQuotaActivityButton"
+                ng-click="saveStructureQuotaActivity()"
+                ng-disabled="saveQuotaActivityDisabled">
+            [[lang.translate("directory.save")]]
+        </button>
+    </div>
+
 
     </div>
 

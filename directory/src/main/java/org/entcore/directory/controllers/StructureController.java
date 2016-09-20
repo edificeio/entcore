@@ -30,6 +30,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Ent;
@@ -43,6 +45,8 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.vertx.java.platform.Container;
 
 import javax.xml.bind.JAXBContext;
@@ -67,6 +71,7 @@ public class StructureController extends BaseController {
 	private String assetsPath = "../..";
 	private Map<String, String> skins = new HashMap<>();
 	private String node;
+    private static final Logger log = LoggerFactory.getLogger(StructureController.class);
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -130,6 +135,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -142,7 +148,22 @@ public class StructureController extends BaseController {
 			}
 		});
 	}
-
+/*
+    @Get("/structure/admin/quota")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    public void structureProfileQuota(final HttpServerRequest request) {
+        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+            @Override
+            public void handle(UserInfos user) {
+                if (user != null) {
+                    structureService.listAdmin(user, arrayResponseHandler(request));
+                } else {
+                    unauthorized(request);
+                }
+            }
+        });
+    }
+*/
 	@Put("/structure/:structureId/parent/:parentStructureId")
 	@SecuredAction("structure.define.parent")
 	public void defineParent(final HttpServerRequest request) {
