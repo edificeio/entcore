@@ -30,6 +30,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Ent;
@@ -133,6 +135,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
@@ -145,7 +148,7 @@ public class StructureController extends BaseController {
 			}
 		});
 	}
-
+/*
     @Get("/structure/admin/quota")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void structureProfileQuota(final HttpServerRequest request) {
@@ -160,7 +163,7 @@ public class StructureController extends BaseController {
             }
         });
     }
-
+*/
 	@Put("/structure/:structureId/parent/:parentStructureId")
 	@SecuredAction("structure.define.parent")
 	public void defineParent(final HttpServerRequest request) {
