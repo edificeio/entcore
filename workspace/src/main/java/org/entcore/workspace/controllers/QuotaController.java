@@ -36,7 +36,10 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJsonArray;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 public class QuotaController extends BaseController {
@@ -146,60 +149,45 @@ public class QuotaController extends BaseController {
 	@Put("/structure/admin/quota/saveProfile")
 	public void saveStructureQuotaProfile(final HttpServerRequest request)
 	{
-		request.bodyHandler(new Handler<Buffer>() {
+		bodyToJsonArray(request, new Handler<JsonArray>() {
 			@Override
-			public void handle(Buffer event) {
-				try {
-					// getting the jsonArray
-					String obj = XSSUtils.stripXSS(event.toString("UTF-8"));
-					JsonArray jsonStructure = new JsonArray(obj);
-					for (int i = 0; i < jsonStructure.size(); i++) {
-						final JsonObject jsonProfile = jsonStructure.get(i);
-						quotaService.updateQuotaForProfile(jsonProfile, new Handler<Either<String,JsonObject>>() {
-							public void handle(Either<String, JsonObject> result) {
-								if (result.isLeft()) {
-									log.error("Error saving profile quota.");
-								} else {
-									// updating quotas for userBooks.
-									quotaService.updateQuotaUserBooks(jsonProfile, new Handler<Either<String,JsonObject>>() {
-										public void handle(Either<String, JsonObject> result) {
-											if (result.isLeft()) {
+			public void handle(final JsonArray jsonStructure) {
+				for (int i = 0; i < jsonStructure.size(); i++) {
+					final JsonObject jsonProfile = jsonStructure.get(i);
+					quotaService.updateQuotaForProfile(jsonProfile, new Handler<Either<String,JsonObject>>() {
+						public void handle(Either<String, JsonObject> result) {
+							if (result.isLeft()) {
+								log.error("Error saving profile quota.");
+							} else {
+								// updating quotas for userBooks.
+								quotaService.updateQuotaUserBooks(jsonProfile, new Handler<Either<String,JsonObject>>() {
+									public void handle(Either<String, JsonObject> result) {
+										if (result.isLeft()) {
 
-											}
 										}
-									});
-								}
+									}
+								});
 							}
-						});
-					}
-				} catch (Exception e) {
-					log.error("Failed to save Profile Quota");
+						}
+					});
 				}
 			}
 		});
 	}
 
-
 	@Put("/structure/admin/quota/saveStructure")
 	public void saveStructureQuotaStructure(final HttpServerRequest request)
 	{
-		request.bodyHandler(new Handler<Buffer>() {
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(Buffer event) {
-				try {
-					// getting the jsonArray
-					String obj = XSSUtils.stripXSS(event.toString("UTF-8"));
-					JsonObject jsonStructure = new JsonObject(obj);
-					quotaService.updateQuotaForStructure(jsonStructure, new Handler<Either<String,JsonObject>>() {
-						public void handle(Either<String, JsonObject> result) {
-							if (result.isLeft()) {
-								log.error("Error saving structure quota.");
-							}
+			public void handle(final JsonObject jsonStructure) {
+				quotaService.updateQuotaForStructure(jsonStructure, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> result) {
+						if (result.isLeft()) {
+							log.error("Error saving structure quota.");
 						}
-					});
-				} catch (Exception e) {
-					log.error("Failed to save Structure Quota");
-				}
+					}
+				});
 			}
 		});
 	}
@@ -207,25 +195,18 @@ public class QuotaController extends BaseController {
 	@Put("/structure/admin/quota/saveActivity")
 	public void saveStructureQuotaActivity(final HttpServerRequest request)
 	{
-		request.bodyHandler(new Handler<Buffer>() {
+		bodyToJsonArray(request, new Handler<JsonArray>() {
 			@Override
-			public void handle(Buffer event) {
-				try {
-					// getting the jsonArray
-					String obj = XSSUtils.stripXSS(event.toString("UTF-8"));
-					JsonArray jsonStructure = new JsonArray(obj);
-					for (int i = 0; i < jsonStructure.size(); i++) {
-						JsonObject jsonUser = jsonStructure.get(i);
-						quotaService.updateQuotaForUser(jsonUser, new Handler<Either<String,JsonObject>>() {
-							public void handle(Either<String, JsonObject> result) {
-								if (result.isLeft()) {
-									log.error("Error saving profile quota.");
-								}
+			public void handle(final JsonArray jsonStructure) {
+				for (int i = 0; i < jsonStructure.size(); i++) {
+					JsonObject jsonUser = jsonStructure.get(i);
+					quotaService.updateQuotaForUser(jsonUser, new Handler<Either<String,JsonObject>>() {
+						public void handle(Either<String, JsonObject> result) {
+							if (result.isLeft()) {
+								log.error("Error saving profile quota.");
 							}
-						});
-					}
-				} catch (Exception e) {
-					log.error("Failed to save Structure Quota");
+						}
+					});
 				}
 			}
 		});

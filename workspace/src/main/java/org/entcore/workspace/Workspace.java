@@ -80,7 +80,7 @@ public class Workspace extends BaseServer {
 				}
 			});
 		} catch (ParseException e) {
-			vertx.stop();
+			log.error("Failed to start structure quota crons.");
 			return;
 		}
 
