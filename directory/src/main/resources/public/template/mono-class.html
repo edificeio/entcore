@@ -1,6 +1,6 @@
-<div ng-class="{ 'twelve': !currentUser, 'four': currentUser }" class="cell">
+<div ng-class="{ 'twelve': !currentUser, 'four zero-mobile': currentUser }" class="cell">
 	<div data-ng-include="template.containers.list"></div>
 </div>
 <div ng-if="currentUser !== undefined">
-	<div data-ng-include="template.containers.details" class="eight cell"></div>
+	<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
 </div>

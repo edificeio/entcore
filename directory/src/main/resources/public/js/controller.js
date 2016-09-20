@@ -142,15 +142,23 @@ function DirectoryController($scope, route, date, template){
 	});
 
 	$scope.showSchool = function(school){
+
 		$scope.currentSchool = school;
 		school.sync();
+
 		school.one('sync', function(){
 			$scope.users = school.users;
 			$scope.classrooms = school.classrooms;
 			$scope.deselectUser('dominos');
 			$scope.$apply('users');
 			$scope.$apply('classrooms');
+			
+			setTimeout(function(){
+				$('body').trigger('whereami.update');
+			}, 100);
 		});
+
+
 	};
 
 	$scope.searchDirectory = function(){
