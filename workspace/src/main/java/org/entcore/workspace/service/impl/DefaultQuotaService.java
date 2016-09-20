@@ -86,9 +86,11 @@ public class DefaultQuotaService implements QuotaService {
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
 		String query =
-				" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+				" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
+						" OPTIONAL MATCH (pg)-[DEPENDS]->(s:Structure) " +
 						" with min(s.quota-s.storage ) as minimum, collect(DISTINCT(ub)) as ub2  " +
-						" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+						" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
+						" OPTIONAL MATCH (pg)-[DEPENDS]->(s:Structure) " +
 						" where (s.quota-s.storage) = minimum RETURN DISTINCT(u.displayName), ub.quota as quota, ub.storage as storage, " +
 						" s.quota as quotastructure, s.storage as storagestructure";
 
@@ -303,7 +305,10 @@ public class DefaultQuotaService implements QuotaService {
 	@Override
 	public void updateStructureStorage( Handler<Either<String, JsonObject>> result ) {
 		JsonObject params = new JsonObject();
-		String query = "match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) with ub, collect(distinct ID(u)) as u2, s, (sum(ub.storage)/count(ub.storage)) as total match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) with ub, collect(distinct ID(u)) as u2, total ,s SET s.storage = s.storage + total return s.name";
+		String query = " match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+				" with collect(distinct u) as u2, s, ub " +
+				" set s.storage = s.storage + ub.storage " +
+				" return collect(distinct(s.name)), s.storage";
 		neo4j.execute(query, params, validUniqueResultHandler(result));
 	}
 }
