@@ -515,5 +515,12 @@
     "userBook.profile.mergeKey" : "Clé de fusion",
     "userBook.profile.generate.mergeKey" : "Générer une clé de fusion",
     "userBook.profile.mergedLogins" : "Utilisateurs fusionnés",
-    "userBook.profile.mergeByKey" : "Fusionner des utilisateurs"
+    "userBook.profile.mergeByKey" : "Fusionner des utilisateurs",
+    "auth.reset.header": "Réinitialisation du mot de passe",
+    "auth.old.password": "Ancien mot de passe",
+    "auth.activation.password": "Nouveau mot de passe",
+    "password.recommandations": "Il est recommandé de mélanger chiffres, lettres, majuscules, minuscules et caractères spéciaux.",
+    "auth.reset": "Enregistrer",
+    "cancel": "Annuler",
+    "auth.activation.confirm.password": "Confirmation du nouveau mot de passe"
 }
