@@ -21,13 +21,25 @@
   <h3 class="nine cell"><i18n>wizard.errors</i18n></h3>
 </div>
 
+
 <div ng-repeat="item in errors">
-  <div class="row">
-    <h5>[[item.title]]</h5>
-  </div>
-  <div class="row" ng-repeat="el in item.elements">
-    [[el]]
-  </div>
+	<div class="row">
+		<h5>[[item.title]]</h5>
+	</div>
+	<div class="row">
+		<ul>
+			<li ng-repeat="el in item.elements">
+				<span ng-if="!el.error">[[el]]</span>
+				<div ng-if="el.error">
+					<span>[[el.title]]</span>
+					<span>[[el.lastName]]</span>
+					<span>[[el.firstName]]</span>
+					<span ng-if="el.birthDate">([[el.birthDate]])</span>
+					<span> - [[el.error]]</span>
+				</div>
+			</li>
+		</ul>
+	</div>
 </div>
 
 <div class="row">
