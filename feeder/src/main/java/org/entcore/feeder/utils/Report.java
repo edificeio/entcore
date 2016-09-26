@@ -25,6 +25,8 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.util.Arrays;
+
 public class Report {
 
 	public static final Logger log = LoggerFactory.getLogger(Report.class);
@@ -52,6 +54,19 @@ public class Report {
 
 	public void addErrorWithParams(String key, String... errors) {
 		addErrorByFile("global", key, errors);
+	}
+
+	public void addFailedUser(String filename, String key, JsonObject props, String... errors) {
+		final String file = "error." + filename;
+		JsonArray f = result.getObject("errors").getArray(file);
+		if (f == null) {
+			f = new JsonArray();
+			result.getObject("errors").putArray(file, f);
+		}
+		String error = i18n.translate(key, acceptLanguage, errors);
+		props.putString("error", error);
+		f.addObject(props);
+		log.error(error + " :\n" + Arrays.asList(props));
 	}
 
 	public void addErrorByFile(String filename, String key, String... errors) {

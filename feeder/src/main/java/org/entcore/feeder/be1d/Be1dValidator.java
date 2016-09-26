@@ -175,7 +175,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 					}
 				} catch (ArrayIndexOutOfBoundsException ae) {
 					log.error("unknown.error.line" + (rowIdx + 2) + " : " + Joiner.on("; ").join(values), ae);
-					addErrorByFile(fileNames[1], "unknown.error.line", Integer.toString(rowIdx + 2));
+					addFailedUser(fileNames[1], "unknown.error.line", props, Integer.toString(rowIdx + 2));
 					return;
 				}
 				props.putArray("structures", new JsonArray().add(structure));
@@ -183,7 +183,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 				final JsonArray classesNames = new JsonArray();
 				props.putArray("classes", classes);
 				if (values.length < i) {
-					addErrorByFile(fileNames[1], "missing.columns", Integer.toString(rowIdx + 2));
+					addFailedUser(fileNames[1], "missing.columns", props, Integer.toString(rowIdx + 2));
 					return;
 				}
 				String[][] cs = new String[values.length - i][2];
@@ -198,7 +198,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 						continue;
 					}
 					if (!Be1dValidator.this.classes.contains(eId)) {
-						addErrorByFile(fileNames[1], "invalid.class.line", Integer.toString(rowIdx + 2), c);
+						addFailedUser(fileNames[1], "invalid.class.line", props, Integer.toString(rowIdx + 2), c);
 					}
 					classes.add(eId);
 					classesNames.addString(c);
@@ -216,7 +216,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 
 				String error = personnelValidator.validate(props, acceptLanguage);
 				if (error != null) {
-					addErrorByFile(fileNames[1], "error.line", Integer.toString(rowIdx + 2), error);
+					addFailedUser(fileNames[1], "error.line", props, Integer.toString(rowIdx + 2), error);
 				} else {
 					addUser(fileNames[1], props.putString("state", translate(state.name()))
 							.putString("translatedProfile", translate("Teacher"))
@@ -266,7 +266,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 									Charset.forName("ISO-8859-1")));
 						} catch (IOException e1) {
 							log.error(e1.getMessage(), e1);
-							addErrorByFile(fileNames[2], "unknown.error.line", Integer.toString(rowIdx + 2));
+							addFailedUser(fileNames[2], "unknown.error.line", props,Integer.toString(rowIdx + 2));
 						}
 					}
 					if (!lines.isEmpty() && lines.size() > rowIdx + 1) {
@@ -283,11 +283,11 @@ public class Be1dValidator extends Report implements ImportValidator {
 							}
 						} catch (RuntimeException e2) {
 							log.error(e2.getMessage(), e2);
-							addErrorByFile(fileNames[2], "unknown.error.line", Integer.toString(rowIdx + 2));
+							addFailedUser(fileNames[2], "unknown.error.line", props, Integer.toString(rowIdx + 2));
 							return;
 						}
 					} else {
-						addErrorByFile(fileNames[2], "unknown.error.line", Integer.toString(rowIdx + 2));
+						addFailedUser(fileNames[2], "unknown.error.line", props, Integer.toString(rowIdx + 2));
 					}
 				}
 				JsonArray linkStudents = new JsonArray();
@@ -314,17 +314,17 @@ public class Be1dValidator extends Report implements ImportValidator {
 //							values[i+1].trim()+values[i+2].trim()+values[i+3].trim();
 						if (mapping.trim().isEmpty()) continue;
 						if (values[i] != null && !values[i].trim().isEmpty() && !students.contains(mapping)) {
-							addErrorByFile(fileNames[2], "invalid.student.line", Integer.toString(rowIdx + 2),
+							addFailedUser(fileNames[2], "invalid.student.line", props, Integer.toString(rowIdx + 2),
 									values[i].trim() + " " + values[i + 1].trim() + " " + values[i + 2]);
 						}
 					}
 					if (classesNames.size() < 1) {
-						addErrorByFile(fileNames[2], "unknown.student.line", Integer.toString(rowIdx + 2));
+						addFailedUser(fileNames[2], "unknown.student.line", props, Integer.toString(rowIdx + 2));
 						return;
 					}
 				} catch (ArrayIndexOutOfBoundsException ae) {
 					log.error("unknown.error.line" + (rowIdx + 2) + " : " + Joiner.on("; ").join(values), ae);
-					addErrorByFile(fileNames[2], "unknown.error.line", Integer.toString(rowIdx + 2));
+					addFailedUser(fileNames[2], "unknown.error.line", props, Integer.toString(rowIdx + 2));
 					return;
 				}
 				String externalId = props.getString("externalId");
@@ -337,7 +337,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 				}
 				String error = userValidator.validate(props, acceptLanguage);
 				if (error != null) {
-					addErrorByFile(fileNames[2], "error.line", Integer.toString(rowIdx + 2), error);
+					addFailedUser(fileNames[2], "error.line", props, Integer.toString(rowIdx + 2), error);
 				} else {
 					addUser(fileNames[2], props.putString("state", translate(state.name()))
 							.putString("translatedProfile", translate("Relative"))
@@ -388,7 +388,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 					}
 				} catch (ArrayIndexOutOfBoundsException ae) {
 					log.error("unknown.error.line" + (rowIdx + 2) + " : " + Joiner.on("; ").join(values), ae);
-					addErrorByFile(fileNames[0], "unknown.error.line", Integer.toString(rowIdx + 2));
+					addFailedUser(fileNames[0], "unknown.error.line", props, Integer.toString(rowIdx + 2));
 					return;
 				}
 				props.putArray("structures", new JsonArray().add(structure));
@@ -419,7 +419,7 @@ public class Be1dValidator extends Report implements ImportValidator {
 				students.add(props.getString("externalId"));
 				final String error = studentValidator.validate(props, acceptLanguage);
 				if (error != null) {
-					addErrorByFile(fileNames[0], "error.line", Integer.toString(rowIdx + 2), error);
+					addFailedUser(fileNames[0], "error.line", props, Integer.toString(rowIdx + 2), error);
 				} else {
 					final String classesStr = Joiner.on(", ").join(classesNames);
 					classesNamesMapping.put(props.getString("externalId"), classesStr);
