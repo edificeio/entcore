@@ -814,6 +814,8 @@ public class Importer {
 								"MATCH r0-[:MERGED*0..1]->(r:User) " +
 								"WHERE NOT(HAS(r.mergedWith)) " +
 								"MERGE u-[:RELATED]->r " +
+								"WITH r0, r, u " +
+								"WHERE r0.id <> r.id " +
 								"SET u.relative = coalesce(FILTER(eId IN u.relative WHERE eId <> (r.externalId + '$1$1$1$1$0')), []) + (r.externalId + '$1$1$1$1$0') ";
 						JsonObject p = new JsonObject()
 								.putString("userExternalId", externalId)
