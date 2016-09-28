@@ -89,6 +89,8 @@ public class AAFUtil {
 		JsonObject res = new JsonObject();
 		JsonArray ENTEleveParents = new JsonArray();
 		JsonArray ENTEleveAutoriteParentale = new JsonArray();
+        	String ENTEleveAutoriteParentale1 = "";
+        	String ENTEleveAutoriteParentale2 = "";
 		String ENTElevePersRelEleve1 = "";
 		String ENTEleveQualitePersRelEleve1 = "";
 		String ENTElevePersRelEleve2 = "";
@@ -138,12 +140,20 @@ public class AAFUtil {
 					}
 				}
 			}
-			if ("1".equals(s[3]) || "2".equals(s[3])) {
-				if (!ENTEleveAutoriteParentale.contains(s[0])) {
-					ENTEleveAutoriteParentale.add(s[0]);
-				}
+			if ("1".equals(s[3])) {
+				ENTEleveAutoriteParentale1=s[0];
 			}
+            		if ("2".equals(s[3])) {
+                		ENTEleveAutoriteParentale2=s[0];
+            		}
 		}
+
+        	if (!ENTEleveAutoriteParentale1.isEmpty() && !ENTEleveAutoriteParentale.contains(ENTEleveAutoriteParentale1)) {
+            		ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale1);
+        	}
+        	if (!ENTEleveAutoriteParentale2.isEmpty() && !ENTEleveAutoriteParentale.contains(ENTEleveAutoriteParentale2)) {
+            		ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale2);
+        	}
 		res.putArray("ENTEleveParents", ENTEleveParents);
 		res.putArray("ENTEleveAutoriteParentale", ENTEleveAutoriteParentale);
 		res.putString("ENTElevePersRelEleve1", ENTElevePersRelEleve1);
