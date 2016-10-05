@@ -19,7 +19,6 @@
 
 package org.entcore.auth;
 
-import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.security.JWT;
 import org.entcore.auth.controllers.AuthController;
 import org.entcore.auth.controllers.ConfigurationController;
@@ -27,21 +26,14 @@ import org.entcore.auth.controllers.OpenIdConnectController;
 import org.entcore.auth.controllers.SamlController;
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.auth.security.SamlValidator;
-import org.entcore.auth.services.ConfigurationService;
-import org.entcore.auth.services.OpenIdConnectService;
-import org.entcore.auth.services.OpenIdConnectServiceProvider;
-import org.entcore.auth.services.impl.DefaultConfigurationService;
-import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
-import org.entcore.auth.services.impl.DefaultServiceProviderFactory;
+import org.entcore.auth.services.impl.*;
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
-import org.entcore.common.http.filter.ResourceProviderFilter;
 import org.entcore.common.neo4j.Neo;
 import org.opensaml.xml.ConfigurationException;
 import org.vertx.java.core.AsyncResult;
@@ -51,8 +43,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Auth extends BaseServer {
 
@@ -114,41 +105,31 @@ public class Auth extends BaseServer {
 			});
 		}
 		final JsonObject openidFederate = config.getObject("openid-federate");
+		final JsonObject openidConnect = config.getObject("openid-connect");
+		final OpenIdConnectController openIdConnectController;
+		if (openidFederate != null || openidConnect != null) {
+			openIdConnectController = new OpenIdConnectController();
+		} else {
+			openIdConnectController = null;
+		}
+		if (openidConnect != null) {
+			final String certsPath = openidConnect.getString("certs");
+			if (isNotEmpty(certsPath)) {
+				JWT.listCertificates(vertx, certsPath, new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject certs) {
+						openIdConnectController.setCertificates(certs);
+					}
+				});
+			}
+		}
 		if (openidFederate != null) {
-			final OpenIdConnectController openIdConnectController = new OpenIdConnectController();
 			openIdConnectController.setEventStore(eventStore);
 			openIdConnectController.setUserAuthAccount(userAuthAccount);
-			JWT.listCertificates(vertx, openidFederate.getString("certs"), new Handler<JsonObject>() {
-				@Override
-				public void handle(JsonObject certs) {
-					openIdConnectController.setCertificates(certs);
-				}
-			});
-			JsonArray clients = openidFederate.getArray("clients");
-			if (clients != null) {
-				for (Object o: clients) {
-					if (!(o instanceof JsonObject)) continue;
-					JsonObject c = (JsonObject) o;
-					try {
-						openIdConnectController.addClient(c.getString("domain"), new OpenIdConnectClient(
-								new URI(c.getString("uri")),
-								c.getString("clientId"),
-								c.getString("secret"),
-								c.getString("authorizeUrn"),
-								c.getString("tokenUrn"),
-								c.getString("redirectUri"),
-								vertx,
-								16,
-								c.getString("certsUri")
-						));
-					} catch (URISyntaxException e) {
-						log.error("Invalid openid server uri", e);
-					}
-				}
-			}
-			DefaultOpendIdConnectService provider = new DefaultOpendIdConnectService(openidFederate.getString("iss"));
-			provider.setSetFederated(openidFederate.getBoolean("set-federated", true));
-			openIdConnectController.setOpenIdConnectServiceProvider(provider);
+			openIdConnectController.setSignKey((String) vertx.sharedData().getMap("server").get("signKey"));
+			openIdConnectController.setOpenIdConnectServiceProviderFactory(
+					new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getObject("domains")));
+			openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
 			addController(openIdConnectController);
 
 			final JsonArray authorizedHostsLogin = openidFederate.getArray("authorizedHostsLogin");

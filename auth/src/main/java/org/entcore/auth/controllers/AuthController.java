@@ -403,7 +403,11 @@ public class AuthController extends BaseController {
 				@Override
 				public void handle(UserInfos event) {
 					if (event != null && Boolean.TRUE.equals(event.getFederated())) {
-						redirect(request, "/auth/saml/slo?callback=" + c);
+						if (container.config().containsField("openid-federate")) {
+							redirect(request, "/auth/openid/slo?callback=" + c);
+						} else {
+							redirect(request, "/auth/saml/slo?callback=" + c);
+						}
 					} else {
 						String c1 = c;
 						if (c1 != null && c1.endsWith("service=")) { // OMT hack

@@ -22,15 +22,11 @@ package org.entcore.auth.controllers;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
-import org.entcore.auth.users.UserAuthAccount;
-import org.entcore.common.events.EventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.opensaml.DefaultBootstrap;
@@ -51,14 +47,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class SamlController extends AbstractFederateController {
 
 	private SamlServiceProviderFactory spFactory;
-	private String signKey;
 
 	public SamlController() throws ConfigurationException {
 		DefaultBootstrap.bootstrap();
@@ -110,48 +104,32 @@ public class SamlController extends AbstractFederateController {
 
 	@Get("/saml/slo")
 	public void slo(final HttpServerRequest request) {
-		final String c = request.params().get("callback");
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+		sloUser(request);
+	}
+
+	@Override
+	protected void afterDropSession(JsonObject event, final HttpServerRequest request, UserInfos user, final String c) {
+		request.headers().remove("Cookie");
+		event.putString("action", "generate-slo-request");
+		event.putString("IDP", (String) user.getOtherProperties().get("federatedIDP"));
+		if (log.isDebugEnabled()) {
+			log.debug("Session metadata : " + event.encodePrettily());
+		}
+		vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(final UserInfos user) {
-				if (user != null && user.getFederated()) {
-					final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-					UserUtils.deleteSessionWithMetadata(eb, sessionId, new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject event) {
-							if (event != null) {
-								CookieHelper.set("oneSessionId", "", 0l, request);
-								request.headers().remove("Cookie");
-								event.putString("action", "generate-slo-request");
-								event.putString("IDP", (String) user.getOtherProperties().get("federatedIDP"));
-								if (log.isDebugEnabled()) {
-									log.debug("Session metadata : " + event.encodePrettily());
-								}
-								vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> event) {
-										if (log.isDebugEnabled()) {
-											log.debug("slo request : " + event.body().encodePrettily());
-										}
-										String slo = event.body().getString("slo");
-										if (c != null && !c.isEmpty()) {
-											try {
-												slo = c + URLEncoder.encode(slo, "UTF-8");
-											} catch (UnsupportedEncodingException e) {
-												log.error(e.getMessage(), e);
-											}
-										}
-										AuthController.logoutCallback(request, slo, container, eb);
-									}
-								});
-							} else {
-								AuthController.logoutCallback(request, c, container, eb);
-							}
-						}
-					});
-				} else {
-					AuthController.logoutCallback(request, c, container, eb);
+			public void handle(Message<JsonObject> event) {
+				if (log.isDebugEnabled()) {
+					log.debug("slo request : " + event.body().encodePrettily());
 				}
+				String slo = event.body().getString("slo");
+				if (c != null && !c.isEmpty()) {
+					try {
+						slo = c + URLEncoder.encode(slo, "UTF-8");
+					} catch (UnsupportedEncodingException e) {
+						log.error(e.getMessage(), e);
+					}
+				}
+				AuthController.logoutCallback(request, slo, container, eb);
 			}
 		});
 	}
@@ -284,7 +262,4 @@ public class SamlController extends AbstractFederateController {
 		this.spFactory = spFactory;
 	}
 
-	public void setSignKey(String signKey) {
-		this.signKey = signKey;
-	}
 }
