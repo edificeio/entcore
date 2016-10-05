@@ -98,6 +98,11 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 		}
 	}
 
+	@Override
+	public void mappingUser(String login, String password, JsonObject payload, Handler<Either<String, JsonElement>> handler) {
+		handler.handle(new Either.Left<String, JsonElement>("unsupported"));
+	}
+
 	public void setSetFederated(boolean setFederated) {
 		this.setFederated = setFederated;
 	}

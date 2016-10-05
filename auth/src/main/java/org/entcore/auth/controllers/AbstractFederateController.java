@@ -25,6 +25,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -37,6 +38,7 @@ public abstract class AbstractFederateController extends BaseController {
 	public static final String LOGIN_PAGE = "/auth/login";
 	private UserAuthAccount userAuthAccount;
 	private EventStore eventStore;
+	protected String signKey;
 
 	protected void authenticate(JsonObject res, String sessionIndex, String nameId, HttpServerRequest request) {
 		final String userId = res.getString("id");
@@ -96,6 +98,32 @@ public abstract class AbstractFederateController extends BaseController {
 		});
 	}
 
+	protected void sloUser(final HttpServerRequest request) {
+		final String c = request.params().get("callback");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null && user.getFederated()) {
+					final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+					UserUtils.deleteSessionWithMetadata(eb, sessionId, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							if (event != null) {
+								CookieHelper.set("oneSessionId", "", 0l, request);
+								afterDropSession(event, request, user, c);
+							} else {
+								AuthController.logoutCallback(request, c, container, eb);
+							}
+						}
+					});
+				} else {
+					AuthController.logoutCallback(request, c, container, eb);
+				}
+			}
+		});
+	}
+
+	protected abstract void afterDropSession(JsonObject event, HttpServerRequest request, UserInfos user, String c);
 
 	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {
 		this.userAuthAccount = userAuthAccount;
@@ -103,6 +131,10 @@ public abstract class AbstractFederateController extends BaseController {
 
 	public void setEventStore(EventStore eventStore) {
 		this.eventStore = eventStore;
+	}
+
+	public void setSignKey(String signKey) {
+		this.signKey = signKey;
 	}
 
 }

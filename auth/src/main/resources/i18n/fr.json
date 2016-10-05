@@ -88,5 +88,6 @@
     "auth.notify.invalid.receivers.all.login": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
     "auth.notify.invalid.receivers.all.mail": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
     "federated.users.title" : "Choisissez le compte pour vous connecter : ",
+    "mapping.federated.users.title" : "Saisissez vos informations de connexion : ",
     "connect.federated.user" : "Se connecter"
 }

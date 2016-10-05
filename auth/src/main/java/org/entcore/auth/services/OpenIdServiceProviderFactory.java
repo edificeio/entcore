@@ -19,18 +19,14 @@
 
 package org.entcore.auth.services;
 
-import fr.wseduc.webutils.Either;
+
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonElement;
-import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.http.HttpServerRequest;
 
-public interface OpenIdConnectServiceProvider {
+public interface OpenIdServiceProviderFactory {
 
-	public static final String UNRECOGNIZED_USER_IDENTITY = "unrecognized.user.identity";
+	OpenIdConnectServiceProvider serviceProvider(HttpServerRequest request);
 
-	void executeFederate(JsonObject payload, Handler<Either<String, JsonElement>> handler);
-
-	void mappingUser(String login, String password, JsonObject payload, Handler<Either<String, JsonElement>> handler);
+	OpenIdConnectClient openIdClient(HttpServerRequest request);
 
 }
