@@ -1511,6 +1511,12 @@ div.legend-square.red {
 div.legend-square.teal {
   background-color: teal;
 }
+div.legend-square.green {
+  background-color: green;
+}
+div.legend-square.yellow {
+  background-color: yellow;
+}
 div.legend-square.orange {
   background-color: orange;
 }
@@ -1519,6 +1525,12 @@ div.legend-square.purple {
 }
 div.legend-square.blue {
   background-color: dodgerblue;
+}
+div.legend-square.cyan {
+  background-color: cyan;
+}
+div.legend-square.grey {
+  background-color: grey;
 }
 div.legend-square.black {
   background-color: black;
@@ -1816,6 +1828,9 @@ div.right-content {
 .datepicker {
   padding: 0;
 }
+.datepicker table {
+  width: auto !important;
+}
 .datepicker table thead tr:first-child th:hover {
   background: #eeeeee;
   color: #444;
@@ -1920,6 +1935,7 @@ multi-combo .multi-combo-root-button:not([disabled]) {
 multi-combo .multi-combo-root-button::after {
   content: '▼';
   font-size: 10px;
+  margin-left: 10px;
   float: right;
   transition: transform 0.25s ease-in-out;
   transition: -webkit-transform 0.25s ease-in-out;
@@ -2199,4 +2215,44 @@ top-notification div.notify-top-actions > span {
 }
 top-notification div.notify-top-actions > span:hover {
   border-color: #FF483E;
+}
+table.flashmsg {
+  border-bottom: 1px solid #FF483E;
+}
+table.flashmsg thead tr {
+  border: none;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-bottom-color: #FF483E;
+  border-top-color: #FF483E;
+  text-align: center;
+}
+table.flashmsg tbody tr {
+  border: none;
+  border-bottom: 1px dashed #aaa;
+}
+article.flashmsg-edit > div {
+  margin-bottom: 10px;
+}
+article.flashmsg-edit > div > label {
+  display: inline-block;
+  min-width: 150px;
+}
+article.flashmsg-edit > div > input[type="text"] {
+  height: 20px;
+}
+article.flashmsg-edit > div > input[type="text"].remaining-space {
+  width: calc(100% - 200px);
+}
+article.flashmsg-edit > div > input[type="color"] {
+  width: 35px;
+  height: 30px;
+  padding: 0px;
+  border: none;
+}
+article.flashmsg-edit .outlined {
+  box-shadow: 0px 0px 5px 3px #444;
+}
+article.flashmsg-edit editor editor-toolbar {
+  min-height: 70px;
 }

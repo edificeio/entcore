@@ -355,7 +355,7 @@ i.slide-arrow {
         content: "▸";
         font-size: 16px;
         line-height: 13px;
-        color: #FF483E;
+        color: @accent;
         display: inline-block;
         transition: transform 0.25s ease-in-out;
     }
@@ -1459,6 +1459,12 @@ div.legend-square{
 	&.teal{
 		background-color: teal;
 	}
+    &.green{
+        background-color: mediumseagreen;
+    }
+    &.yellow{
+        background-color: yellow;
+    }
 	&.orange{
 		background-color: orange;
 	}
@@ -1468,6 +1474,12 @@ div.legend-square{
 	&.blue{
 		background-color: dodgerblue;
 	}
+    &.cyan{
+        background-color: cyan;
+    }
+    &.grey{
+        background-color: grey;
+    }
 	&.black{
 		background-color: black;
 	}
@@ -1825,6 +1837,7 @@ div.right-content{
 .datepicker{
 	padding: 0;
 	table{
+        width: auto !important;
 		thead{
 			tr:first-child {
 				th:hover {
@@ -1945,6 +1958,7 @@ multi-combo{
 		&::after{
 			content: '▼';
   			font-size: 10px;
+            margin-left: 10px;
  			float: right;
 			transition: transform 0.25s ease-in-out;
 			transition: -webkit-transform 0.25s ease-in-out
@@ -2277,5 +2291,55 @@ top-notification{
         &:hover{
             border-color: @accent;
         }
+    }
+}
+
+table.flashmsg {
+    border-bottom: 1px solid @accent;
+
+    thead tr {
+        border :none;
+        border-top: 1px solid;
+        border-bottom: 1px solid;
+        border-bottom-color: @accent;
+        border-top-color: @accent;
+        text-align: center;
+    }
+    tbody tr {
+        border: none;
+        border-bottom: 1px dashed #aaa;
+    }
+}
+article.flashmsg-edit {
+    & > div {
+        margin-bottom: 10px;
+
+        & > label {
+            display: inline-block;
+            min-width: 150px;
+        }
+
+        & > input[type="text"] {
+             height: 20px;
+
+             &.remaining-space {
+                 width: calc(~"100% - 200px");
+             }
+        }
+
+        & > input[type="color"] {
+            width: 35px;
+            height: 30px;
+            padding: 0px;
+            border: none;
+        }
+    }
+
+    .outlined {
+        box-shadow: 0px 0px 5px 3px #444;
+    }
+
+    editor editor-toolbar {
+        min-height: 70px;
     }
 }

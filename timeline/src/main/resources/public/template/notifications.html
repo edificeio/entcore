@@ -1,6 +1,14 @@
 <app-title>
 	<h1 data-reload class="application-title"><i18n>timeline.title</i18n></h1>
 </app-title>
+<div data-ng-controller="FlashMessages" class="twelve cell">
+    <div class="flashmsg" ng-repeat="message in messages.all"
+        ng-class="message.color"
+        ng-style="{ 'background-color': message.customColor }">
+        <i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
+        <div bind-html="message.content"></div>
+    </div>
+</div>
 <div data-ng-controller="Timeline" class="twelve cell">
 	<div class="row" ng-if="filtered.notificationTypes.length > 0">
 		<i18n>filters.title</i18n>

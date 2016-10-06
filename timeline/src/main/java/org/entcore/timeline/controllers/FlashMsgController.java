@@ -1,0 +1,147 @@
+package org.entcore.timeline.controllers;
+
+import java.util.Map;
+
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.timeline.services.FlashMsgService;
+import org.entcore.timeline.services.impl.FlashMsgServiceMongoImpl;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.Container;
+
+import fr.wseduc.rs.*;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.RequestUtils;
+
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
+
+public class FlashMsgController extends BaseController {
+
+	private final String FLASH_MSG_COLLECTION = "flash_messages";
+	private FlashMsgService service = new FlashMsgServiceMongoImpl(FLASH_MSG_COLLECTION);
+
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, container, rm, securedActions);
+	}
+
+	/* User part */
+
+	@Get("/flashmsg/listuser")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void listUser(final HttpServerRequest request) {
+		final String language = Utils
+				.getOrElse(I18n.acceptLanguage(request), "fr", false)
+				.split(",")[0].split("-")[0];
+
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(UserInfos user) {
+				if(user == null){
+					badRequest(request);
+					return;
+				}
+				service.listForUser(user, language, getHost(request), arrayResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/flashmsg/:id/markasread")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void markAsRead(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					badRequest(request);
+					return;
+				}
+
+				service.markAsRead(user, request.params().get("id"), defaultResponseHandler(request));
+			}
+		});
+	}
+
+	/* Admin part */
+
+	@Get("/flashmsg/admin")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void viewAdmin(final HttpServerRequest request){
+		renderView(request, new JsonObject(), "admin-flashmsg.html", null);
+	}
+
+	@Get("/flashmsg/preview")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void preview(final HttpServerRequest request){
+		renderView(request, new JsonObject(), "admin-preview.html", null);
+	}
+
+	@Post("/flashmsg")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void create(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.create", new Handler<JsonObject>() {
+			public void handle(JsonObject body) {
+				if(body == null){
+					badRequest(request);
+					return;
+				}
+
+				body.putString("domain", getHost(request));
+
+				service.create(body, defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Delete("/flashmsg/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void delete(final HttpServerRequest request) {
+		service.delete(request.params().get("id"), defaultResponseHandler(request));
+	}
+	@Delete("/flashmsg")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void deleteMultiple(final HttpServerRequest request) {
+		service.deleteMultiple(request.params().getAll("id"), defaultResponseHandler(request));
+	}
+
+	@Put("/flashmsg/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void update(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", new Handler<JsonObject>() {
+			public void handle(JsonObject body) {
+				service.update(request.params().get("id"), body, defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Get("/flashmsg/listadmin")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void listAdmin(final HttpServerRequest request) {
+		service.list(getHost(request), arrayResponseHandler(request));
+	}
+
+	/*
+	@Put("/flashmsg/:id/duplicate")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void duplicate(final HttpServerRequest request) {
+		service.duplicate(request.params().get("id"), defaultResponseHandler(request));
+	}
+	*/
+
+}
