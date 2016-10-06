@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "title": {
+            "type": "string"
+        },
+        "content": {
+            "type": "string"
+        },
+        "startDate": {
+            "type": "string"
+        },
+        "endDate": {
+            "type": "string"
+        },
+        "profiles": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "lang": {
+            "type": "string"
+        },
+        "color": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "null" }
+            ]
+
+        },
+        "customColor": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "null" }
+            ]
+        }
+    },
+    "required": [
+        "title",
+        "content",
+        "startDate",
+        "endDate",
+        "profiles",
+        "lang"
+    ],
+    "anyOf": [
+        { "required": ["color"] },
+        { "required": ["customColor"] }
+    ]
+}

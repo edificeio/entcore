@@ -1,0 +1,64 @@
+<div style="display: flex">
+    <article class="content-box flashmsg-edit" style="flex: 1 1; margin: 10px; height: 0%;">
+        <h2 class="vertical-spacing-twice"><i18n>timeline.admin.flashmsg.edit.title</i18n></h2>
+        <hr>
+        <div>
+            <label><i18n>timeline.admin.title</i18n>*</label>
+            <input type="text" ng-model="edited.message.title" class="remaining-space">
+        </div>
+        <div>
+            <label><i18n>timeline.admin.startDate</i18n>*</label>
+            <date-picker ng-model="edited.message.startDate"></date-picker>
+        </div>
+        <div>
+            <label><i18n>timeline.admin.endDate</i18n>*</label>
+            <date-picker ng-model="edited.message.endDate"></date-picker>
+        </div>
+        <div>
+            <label><i18n>timeline.admin.profiles</i18n>*</label>
+            <multi-combo title="[[lang.translate('timeline.admin.chose.profiles')]]"
+                combo-model="profiles.list" search-on="name" order-by="name"
+                filtered-model="profiles.selected" labels="comboLabels"
+                selection-event="profiles.modify"
+                deselection-event="profiles.modify"
+                style="display: inline-block; vertical-align: middle;"
+                class="six"></multi-combo>
+            <div class="select-blocks" style="text-align: center">
+                <div ng-repeat="item in profiles.selected"
+                    ng-click="profiles.deselect(item)">
+                    [[ item.toString() ]]
+                </div>
+            </div>
+        </div>
+        <div>
+            <label><i18n>timeline.language</i18n></label>
+            <select ng-options="language for language in languages" ng-model="edited.message.lang"></select>
+        </div>
+        <div>
+            <label><i18n>timeline.admin.flashmsg.banner.color</i18n>*</label>
+            <div class="legend-square [[color]]" ng-class="{ outlined: color === edited.message.color }"
+                style="margin-right: 10px" ng-click="setColor(color)" ng-repeat="color in banner.colors"></div>
+            <input type="color" ng-model="edited.message.customColor" ng-class="{ outlined: edited.message.customColor }"
+                ng-change="edited.message.color = null" class="inline-middle">
+        </div>
+        <div class="row">
+            <editor ng-model="edited.message.content" public="true"></editor>
+        </div>
+        <div>
+            <div class="warning vertical-spacing-twice" ng-if="validateError && !validateMessage(edited.message)">
+                [[lang.translate(validateError)]]
+            </div>
+            <button class="right-magnet row-item" ng-disabled="!validateMessage(edited.message)"
+                ng-click="saveMessage(edited.message)">
+                <i18n>save</i18n>
+            </button>
+            <button class="right-magnet row-item" ng-click="cancelEdit()">
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </article>
+
+    <article class="content-box stripes-background" style="flex: 1 1; margin: 10px; height: 0%;">
+        <iframe src="/timeline/flashmsg/preview" style="width: 100%; height: 800px"></iframe>
+    </article>
+</div>

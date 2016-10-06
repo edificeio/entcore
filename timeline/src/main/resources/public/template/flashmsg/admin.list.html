@@ -1,0 +1,64 @@
+<div class="vertical-spacing-twice">
+    <h1><i18n>timeline.admin.flashmsg.title</i18n></h1>
+    <!-- <em><i18n>timeline.admin.flashmsg.list</i18n></em> -->
+</div>
+
+<div class="row">
+    <button class="vertical-spacing-twice small row-item" ng-click="createMessage()">
+        <i18n>timeline.admin.create.message</i18n>
+    </button>
+    <span ng-if="messages.selection().length > 0">
+        <button class="vertical-spacing-twice small row-item" ng-click="deleteMessages(messages.selection())">
+            <i18n>timeline.admin.delete.message</i18n>
+        </button>
+    </span>
+    <span ng-if="messages.selection().length === 1">
+        <button class="vertical-spacing-twice small row-item" ng-click="duplicateMessage(messages.selection()[0])">
+            <i18n>timeline.admin.duplicate.message</i18n>
+        </button>
+    </span>
+</div>
+
+<h3><i18n>timeline.admin.filter.by</i18n></h3>
+<div class="row vertical-spacing-twice">
+    <div class="cell horizontal-spacing-twice">
+        <input type="checkbox" ng-model="filters.none" ng-change="initFilters()"/>
+        <label><i18n>timeline.admin.all</i18n></label>
+    </div>
+    <div class="cell horizontal-spacing-twice">
+        <input type="checkbox" ng-model="filters.current" ng-change="changeFilters()"/>
+        <label><i18n>timeline.admin.current</i18n></label>
+    </div>
+    <div class="cell horizontal-spacing-twice">
+        <input type="checkbox" ng-model="filters.pending" ng-change="changeFilters()"/>
+        <label><i18n>timeline.admin.pending</i18n></label>
+    </div>
+    <div class="cell horizontal-spacing-twice">
+        <input type="checkbox" ng-model="filters.obsolete" ng-change="changeFilters()"/>
+        <label><i18n>timeline.admin.obsolete</i18n></label>
+    </div>
+</div>
+<table class="flashmsg">
+    <thead>
+        <tr>
+            <th style="width: 50px;"><input type="checkbox" ng-model="selection.all" ng-click="selection.toggleAll()"></th>
+            <th ng-click="orderBy('title')"><a><i18n>timeline.admin.title</i18n></a></th>
+            <th><i18n>timeline.admin.message</i18n></th>
+            <th ng-click="orderBy('startDate')"><a><i18n>timeline.admin.startDate</i18n></a></th>
+            <th ng-click="orderBy('endDate')"><a><i18n>timeline.admin.endDate</i18n></a></th>
+            <th ng-click="orderBy('readCount')"><a><i18n>timeline.admin.readCount</i18n></a></th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="message in selection.filteredMessages = (messages.all | filter: filterList | orderBy: orderList)">
+            <td><input type="checkbox" ng-model="message.selected"></td>
+            <td ng-click="editMessage(message)">[[ message.title ]]</td>
+            <td class="cell-ellipsis" ng-click="editMessage(message)">
+                [[ formatContent(message.content) ]]
+            </td>
+            <td ng-click="editMessage(message)">[[ formatDate(message.startDate) ]]</td>
+            <td ng-click="editMessage(message)">[[ formatDate(message.endDate) ]]</td>
+            <td ng-click="editMessage(message)">[[ message.readCount ]]</td>
+        </tr>
+    </tbody>
+</table>

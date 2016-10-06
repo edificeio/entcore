@@ -35,8 +35,13 @@ Preferences.prototype.get = function(cb){
 
 function RegisteredNotification(){}
 
+function FlashMessage(){}
+FlashMessage.prototype.markAsRead = function(){
+    return http().put("/timeline/flashmsg/" + this._id + "/markasread")
+}
+
 model.build = function (){
-	this.makeModels([Notification, NotificationType, Widget, Skin, RegisteredNotification]);
+	this.makeModels([Notification, NotificationType, Widget, Skin, RegisteredNotification, FlashMessage]);
 
     this.preferences = new Preferences()
 
@@ -142,4 +147,8 @@ model.build = function (){
             }.bind(this));
         }
     });
+
+    this.collection(FlashMessage, {
+        sync: "/timeline/flashmsg/listuser"
+    })
 };

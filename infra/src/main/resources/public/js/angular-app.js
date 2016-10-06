@@ -1700,7 +1700,7 @@ module.directive('dropDown', function($compile, $timeout) {
         link: function(scope, element, attributes) {
             scope.limit = 6;
             var dropDown = element.find('[data-drop-down]');
-            
+
             scope.setDropDownHeight = function() {
                 var liHeight = 0;
                 var max = Math.min(scope.limit, scope.options.length);
@@ -3888,7 +3888,7 @@ module.directive('dragItem', function() {
                             $(el).removeClass('drag-over');
                         }
                     })
-                    
+
                     if (firstTick) {
                         $('[drop-item]').removeClass('drag-over');
                         element.css({
@@ -4805,14 +4805,18 @@ module.directive('multiCombo', function() {
             }
 
             $scope.selectAll = function() {
-                $scope.filteredModel = []
+                $scope.filteredModel.length = 0
                 for (var i = 0; i < $scope.filteredComboModel.length; i++) {
                     $scope.filteredModel.push($scope.filteredComboModel[i])
                 }
+                if ($scope.selectionEvent() instanceof Function)
+                    $scope.selectionEvent()()
             }
 
             $scope.deselectAll = function() {
-                $scope.filteredModel = []
+                $scope.filteredModel.length = 0
+                if ($scope.deselectionEvent() instanceof Function)
+                    $scope.deselectionEvent()()
             }
 
             $scope.fairInclusion = function(anyString, challenger) {
@@ -4856,7 +4860,7 @@ module.directive('multiCombo', function() {
             /* Max n° of elements selected limit */
             scope.maxSelected = parseInt(scope.maxSelected)
             if (!isNaN(scope.maxSelected) && scope.maxSelected < 1) {
-                throw '[<multi-combo> directive] Error: max-selected must be an integer grather than 0.'
+                throw '[<multi-combo> directive] Error: max-selected must be an integer greater than 0.'
                 return
             }
 

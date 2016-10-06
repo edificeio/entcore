@@ -111,3 +111,14 @@ function Personalization($rootScope, $scope, model, ui){
 function Notifications($scope, model, lang){
 
 }
+
+function FlashMessages($scope, model, lang) {
+    $scope.messages = model.flashMessages
+
+    $scope.markMessage = function(message){
+        message.markAsRead().done(function(){
+            $scope.messages.sync()
+            $scope.messages.one('sync', $scope.$apply)
+        })
+    }
+}
