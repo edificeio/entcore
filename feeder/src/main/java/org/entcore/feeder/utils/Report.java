@@ -63,7 +63,7 @@ public class Report {
 			f = new JsonArray();
 			result.getObject("errors").putArray(file, f);
 		}
-		String error = i18n.translate(key, acceptLanguage, errors);
+		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
 		props.putString("error", error);
 		f.addObject(props);
 		log.error(error + " :\n" + Arrays.asList(props));
