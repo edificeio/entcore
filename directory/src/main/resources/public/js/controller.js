@@ -412,7 +412,7 @@ function ClassAdminController($scope, date, notify){
 
 	$scope.checkUsersSource = function(selectedUsers) {
 		return _.filter(selectedUsers, function(user) {
-			return user.source != 'MANUAL' && user.source != 'CLASS_PARAM'
+			return user.source != 'MANUAL' && user.source != 'CLASS_PARAM' && user.source != 'BE1D' && user.source != 'CSV'
 		}).length < 1;
 	}
 
