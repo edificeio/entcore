@@ -307,19 +307,14 @@ public class DefaultQuotaService implements QuotaService {
 	}
 
 	@Override
-	public void updateStructureStorageInitialize( Handler<Either<String, JsonObject>> result ) {
-		JsonObject params = new JsonObject();
-		String query = "match (s:Structure) set s.storage = 0 return s.name;";
-		neo4j.execute(query, params, validUniqueResultHandler(result));
-	}
-
-	@Override
 	public void updateStructureStorage( Handler<Either<String, JsonObject>> result ) {
 		JsonObject params = new JsonObject();
-		String query = " match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
-				" with collect(distinct u) as u2, s, ub " +
-				" set s.storage = s.storage + ub.storage " +
-				" return collect(distinct(s.name)), s.storage";
+
+		String query  = " MATCH (s:Structure) SET s.storage = 0 WITH s " +
+		" match (ub:UserBook)<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup)-[DEPENDS]->(s:Structure) " +
+		" with collect(distinct u) as u2, s, ub " +
+		" set s.storage = s.storage + ub.storage " +
+		" return collect(distinct(s.name)), s.storage ";
 		neo4j.execute(query, params, validUniqueResultHandler(result));
 	}
 }

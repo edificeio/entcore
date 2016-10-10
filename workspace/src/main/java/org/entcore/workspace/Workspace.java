@@ -61,19 +61,12 @@ public class Workspace extends BaseServer {
 			new CronTrigger(vertx, updateStructureQuota).schedule(new Handler<Long>() {
 				@Override
 				public void handle(Long event) {
-					quotaService.updateStructureStorageInitialize(new Handler<Either<String, JsonObject>>() {
+					quotaService.updateStructureStorage(new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> r) {
-							if (r.isRight()) {
-								quotaService.updateStructureStorage(new Handler<Either<String, JsonObject>>() {
-									@Override
-									public void handle(Either<String, JsonObject> r) {
-										if (r.isLeft()) {
-											JsonObject error = new JsonObject()
-													.putString("error", r.left().getValue());
-										}
-									}
-								});
+							if (r.isLeft()) {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
 							}
 						}
 					});
