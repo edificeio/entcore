@@ -58,7 +58,5 @@ public interface QuotaService {
 	void listUsersQuotaActivity( String structureId, int quotaFilterNbusers, String quotaFilterSortBy, String quotaFilterOrderBy, String quotaFilterProfile,
 								 Float quotaFilterPercentageLimit, Handler<Either<String, JsonArray>> results);
 
-	void updateStructureStorageInitialize( Handler<Either<String, JsonObject>> result );
-
 	void updateStructureStorage( Handler<Either<String, JsonObject>> result );
 }
