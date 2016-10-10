@@ -398,19 +398,24 @@ Structure.prototype.saveStructureQProfile = function(structure) {
         .done(function() {
             notify.info('directory.params.success');
         }).e400(function(e){
-        var error = JSON.parse(e.responseText);
-        if(typeof callback === 'function') {
-            callback(error);
-        } else {
-            notify.error(error.error);
-        }
+            var error = JSON.parse(e.responseText);
+            if(typeof callback === 'function') {
+                callback(error);
+            } else {
+                notify.error(error.error);
+            }
     });
     notify.info(lang.translate("directory.notify.quotaUpdate"));
 }
 
 //Save the quota for structure
 Structure.prototype.saveStructureQStructure = function(structure) {
-    http().putJson("/workspace/structure/admin/quota/saveStructure", structure)
+    http().putJson("/workspace/structure/admin/quota/saveStructure",
+            {
+                id : structure.id,
+                quota : structure.quota,
+                unit : structure.unit
+            })
         .done(function() {
             notify.info('directory.params.success');
         }).e400(function(e){
