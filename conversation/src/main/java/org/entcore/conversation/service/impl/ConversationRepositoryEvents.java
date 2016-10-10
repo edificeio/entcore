@@ -53,53 +53,39 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 	public void deleteGroups(JsonArray groups) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		String setDisplayNames =
-			"WITH message AS(" +
-			"    SELECT m.* " +
-			"    FROM conversation.messages AS m " +
-			"    WHERE \"displayNames\"::text LIKE '%' || ? || '%' LIMIT 1" +
-			"), elts AS (" +
-			"    SELECT jsonb_array_elements_text(\"displayNames\") AS elt FROM message" +
-			"), fullGroupTxt AS (" +
-			"    SELECT elt FROM elts " +
-			"    WHERE elt LIKE ? || '%'" +
-			") " +
-			"UPDATE conversation.messages " +
-			"SET " +
-			"\"displayNames\" = \"displayNames\" - (SELECT elt FROM fullGroupTxt) " +
-			"WHERE \"displayNames\"::text LIKE '%' || ? || '%'";
-
 		String setTO =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"to\" = \"to\" - ?, " +
-			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
+			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb, " +
+			"\"displayNames\" = \"displayNames\" - (? || '$ $' || ? || '$ ') - (? || '$ $' || ? || '$' || ?) " +
 			"WHERE \"to\" @> (?)::jsonb";
 
 		String setCC =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"cc\" = \"cc\" - ?, " +
-			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
+			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb, " +
+			"\"displayNames\" = \"displayNames\" - (? || '$ $' || ? || '$ ') - (? || '$ $' || ? || '$' || ?) " +
 			"WHERE \"cc\" @> (?)::jsonb";
 
 		for (Object o : groups) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject group = (JsonObject) o;
 
-			JsonArray params1 = new JsonArray();
-			JsonArray params2 = new JsonArray();
+			JsonArray params = new JsonArray();
 
-			for(int i = 0; i < 3; i++)
-				params1.add(group.getString("group", ""));
+			params.add(group.getString("group", ""));
+			params.add(new JsonArray().add(group.getString("groupName", "")).toString());
+			params.add(group.getString("group", ""));
+			params.add(group.getString("groupName", ""));
+			params.add(group.getString("group", ""));
+			params.add(group.getString("groupName", ""));
+			params.add(group.getString("groupName", ""));
+			params.add(new JsonArray().add(group.getString("group", "")).toString());
 
-			params2.add(group.getString("group", ""));
-			params2.add(new JsonArray().add(group.getString("groupName", "")).toString());
-			params2.add(new JsonArray().add(group.getString("group", "")).toString());
-
-			builder.prepared(setDisplayNames, params1);
-			builder.prepared(setTO, params2);
-			builder.prepared(setCC, params2);
+			builder.prepared(setTO, params);
+			builder.prepared(setCC, params);
 		}
 		sql.transaction(builder.build(), new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
@@ -140,64 +126,50 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			"WHERE um.user_id IN " + Sql.listPrepared(userIds.toArray());
 		builder.prepared(deleteUserMessages, userIds);
 
-		String setDisplayNames =
-			"WITH message AS(" +
-			"    SELECT m.* " +
-			"    FROM conversation.messages AS m " +
-			"    WHERE \"displayNames\"::text LIKE '%' || ? || '%' LIMIT 1" +
-			"), elts AS (" +
-			"    SELECT jsonb_array_elements_text(\"displayNames\") AS elt FROM message" +
-			"), fullUserTxt AS (" +
-			"    SELECT elt FROM elts " +
-			"    WHERE elt LIKE ? || '%'" +
-			") " +
-			"UPDATE conversation.messages " +
-			"SET " +
-			"\"displayNames\" = \"displayNames\" - (SELECT elt FROM fullUserTxt) " +
-			"WHERE \"displayNames\"::text LIKE '%' || ? || '%'";
-
 		String setFrom =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"from\" = '', " +
-			"\"fromName\" = ? " +
+			"\"fromName\" = ?, " +
+			"\"displayNames\" = \"displayNames\" - (? || '$' || ? || '$ $ ') " +
 			"WHERE \"from\" = ?";
 
 		String setTO =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"to\" = \"to\" - ?, " +
-			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb " +
+			"\"toName\" = COALESCE(\"toName\", '[]')::jsonb || (?)::jsonb, " +
+			"\"displayNames\" = \"displayNames\" - (? || '$' || ? || '$ $ ') " +
 			"WHERE \"to\" @> (?)::jsonb";
 
 		String setCC =
 			"UPDATE conversation.messages " +
 			"SET " +
 			"\"cc\" = \"cc\" - ?, " +
-			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb " +
+			"\"ccName\" = COALESCE(\"ccName\", '[]')::jsonb || (?)::jsonb, " +
+			"\"displayNames\" = \"displayNames\" - (? || '$' || ? || '$ $ ') " +
 			"WHERE \"cc\" @> (?)::jsonb";
 
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject user = (JsonObject) o;
-			JsonArray params1 = new JsonArray();
-			JsonArray params2 = new JsonArray();
-			JsonArray params3 = new JsonArray();
+			JsonArray paramsToCc = new JsonArray();
+			JsonArray paramsFrom = new JsonArray();
 
-			for(int i = 0; i < 3; i++)
-				params1.add(user.getString("id", ""));
+			paramsToCc.add(user.getString("id", ""));
+			paramsToCc.add(new JsonArray().add(user.getString("displayName", "")).toString());
+			paramsToCc.add(user.getString("id", ""));
+			paramsToCc.add(user.getString("displayName", ""));
+			paramsToCc.add(new JsonArray().add(user.getString("id", "")).toString());
 
-			params2.add(user.getString("id", ""));
-			params2.add(new JsonArray().add(user.getString("displayName", "")).toString());
-			params2.add(new JsonArray().add(user.getString("id", "")).toString());
+			paramsFrom.add(user.getString("displayName", ""));
+			paramsFrom.add(user.getString("id", ""));
+			paramsFrom.add(user.getString("displayName", ""));
+			paramsFrom.add(user.getString("id", ""));
 
-			params3.add(user.getString("id", ""));
-			params3.add(user.getString("displayName", ""));
-
-			builder.prepared(setDisplayNames, params1);
-			builder.prepared(setTO, params2);
-			builder.prepared(setCC, params2);
-			builder.prepared(setFrom, params3);
+			builder.prepared(setTO, paramsToCc);
+			builder.prepared(setCC, paramsToCc);
+			builder.prepared(setFrom, paramsFrom);
 		}
 		sql.transaction(builder.build(), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
