@@ -447,7 +447,7 @@ public class ManualFeeder extends BusModBase {
 		}
 		String query =
 				"MATCH (u:User)" +
-				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM'] OR HAS(u.disappearanceDate)) " +
+				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
 				"return count(*) as count ";
 		neo4j.execute(query, new JsonObject().putArray("users", users), new Handler<Message<JsonObject>>() {
 			@Override
