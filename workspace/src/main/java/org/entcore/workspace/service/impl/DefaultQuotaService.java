@@ -87,10 +87,10 @@ public class DefaultQuotaService implements QuotaService {
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
-						" OPTIONAL MATCH (pg)-[DEPENDS]->(s:Structure) " +
-						" with min(s.quota-s.storage ) as minimum, collect(DISTINCT(ub)) as ub2  " +
+						" MATCH (pg)-[DEPENDS]->(s:Structure) " +
+						" with min(s.quota-s.storage ) as minimum  " +
 						" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
-						" OPTIONAL MATCH (pg)-[DEPENDS]->(s:Structure) " +
+						" MATCH (pg)-[DEPENDS]->(c)-[:BELONGS*0..1]->(s:Structure) " +
 						" where (s.quota-s.storage) = minimum RETURN DISTINCT(u.displayName), ub.quota as quota, ub.storage as storage, " +
 						" s.quota as quotastructure, s.storage as storagestructure";
 
@@ -230,15 +230,26 @@ public class DefaultQuotaService implements QuotaService {
 	}
 
 	@Override
-	public void updateQuotaForUser(JsonObject user, Handler<Either<String, JsonObject>> result) {
-		JsonObject params = new JsonObject();
-		params.putString("id", user.getString("id"));
-		params.putNumber("quota",
-				Float.parseFloat(user.getField("quota").toString()) * Float.parseFloat(user.getField("unit").toString())
-		);
+	public void updateQuotaForUser(JsonObject user, final Handler<Either<String, JsonObject>> result) {
+		String userid = user.getString("id");
+		final Number newQuota = Float.parseFloat(user.getField("quota").toString()) * Float.parseFloat(user.getField("unit").toString());
+		final JsonObject params = new JsonObject();
+		params.putString("id", userid);
+		params.putNumber("quota", newQuota);
 
-		String query = "match (u:User)-[USERBOOK]->(ub:UserBook) where u.id = {id} set ub.quota = {quota} return u";
-		neo4j.execute(query, params, validUniqueResultHandler(result));
+		// verification that the new quota for the user is ok with the quota from the structure
+		quotaAndUsage(userid, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if( event.isRight()) {
+					JsonObject obj = event.right().getValue();
+					if( newQuota.doubleValue() <= obj.getNumber("quota").doubleValue() ) {
+						String query = "match (u:User)-[USERBOOK]->(ub:UserBook) where u.id = {id} set ub.quota = {quota} return u";
+						neo4j.execute(query, params, validUniqueResultHandler(result));
+					}
+				}
+			}
+		});
 	}
 
 	@Override

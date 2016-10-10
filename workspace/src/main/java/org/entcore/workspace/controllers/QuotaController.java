@@ -162,8 +162,10 @@ public class QuotaController extends BaseController {
 								// updating quotas for userBooks.
 								quotaService.updateQuotaUserBooks(jsonProfile, new Handler<Either<String,JsonObject>>() {
 									public void handle(Either<String, JsonObject> result) {
-										if (result.isLeft()) {
-
+										if (result.isRight()) {
+											ok(request);
+										} else {
+											badRequest(request, result.left().getValue());
 										}
 									}
 								});
@@ -183,8 +185,11 @@ public class QuotaController extends BaseController {
 			public void handle(final JsonObject jsonStructure) {
 				quotaService.updateQuotaForStructure(jsonStructure, new Handler<Either<String,JsonObject>>() {
 					public void handle(Either<String, JsonObject> result) {
-						if (result.isLeft()) {
+						if (result.isRight()) {
+							ok(request);
+						} else {
 							log.error("Error saving structure quota.");
+							badRequest(request, result.left().getValue());
 						}
 					}
 				});
@@ -202,8 +207,11 @@ public class QuotaController extends BaseController {
 					JsonObject jsonUser = jsonStructure.get(i);
 					quotaService.updateQuotaForUser(jsonUser, new Handler<Either<String,JsonObject>>() {
 						public void handle(Either<String, JsonObject> result) {
-							if (result.isLeft()) {
+							if (result.isRight()) {
+								ok(request);
+							} else {
 								log.error("Error saving profile quota.");
+								badRequest(request, result.left().getValue());
 							}
 						}
 					});
