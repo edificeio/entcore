@@ -2886,6 +2886,11 @@ window.RTE = (function () {
                         var typingTimer;
                         var editingTimer;
 
+                        editZone.on('paste', function () {
+                            editorInstance.addState(editZone.html());
+                            editorInstance.trigger('contentupdated');
+                        });
+
                         editZone.on('keydown', function (e) {
                             clearTimeout(typingTimer);
                             clearTimeout(editingTimer);
