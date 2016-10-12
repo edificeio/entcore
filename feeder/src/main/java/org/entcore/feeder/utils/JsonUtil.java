@@ -19,9 +19,12 @@
 
 package org.entcore.feeder.utils;
 
+import fr.wseduc.webutils.security.Sha256;
 import org.vertx.java.core.json.JsonObject;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
+import java.util.TreeSet;
 
 public final class JsonUtil {
 
@@ -64,5 +67,17 @@ public final class JsonUtil {
 	}
 
 	public static class None{}
+
+	public static String checksum(JsonObject object) throws NoSuchAlgorithmException {
+		if (object == null) {
+			return null;
+		}
+		final TreeSet<String> sorted = new TreeSet<>(object.getFieldNames());
+		final JsonObject j = new JsonObject();
+		for (String attr : sorted) {
+			j.putValue(attr, object.getValue(attr));
+		}
+		return Sha256.hash(j.encode());
+	}
 
 }

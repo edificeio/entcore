@@ -251,5 +251,6 @@
   "calendar": "Agenda",
   "actualites": "Actualités",
   "rack": "Casier",
-  "timeline": "Fil de nouveautés"
+  "timeline": "Fil de nouveautés",
+  "admin.edtudt" : "EDT - UDT"
 }

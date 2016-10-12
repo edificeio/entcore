@@ -265,4 +265,13 @@ public final class StringUtils {
 
         return false;
     }
+
+    public static String padRight(String s, int n, char c) {
+        return String.format("%1$-" + n + "s", s).replace(' ', c);
+    }
+
+    public static String padLeft(String s, int n, char c) {
+        return String.format("%1$" + n + "s", s).replace(' ', c);
+    }
+
 }

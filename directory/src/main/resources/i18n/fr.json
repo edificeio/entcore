@@ -524,5 +524,14 @@
     "auth.activation.confirm.password": "Confirmation du nouveau mot de passe",
     "panel.my.profile": "Mon profil",
     "panel.user.history": "Mon historique",
-    "panel.notifications.set": "Mes notifications externes"
+    "panel.notifications.set": "Mes notifications externes",
+    "timetable.title" : "Alimentation EDT - UDT",
+    "timetable.type" : "Type de flux",
+    "timetable.update.type" : "Valider",
+    "timetable.confirm.change.type" : "Attention, le changement du type de flux supprimera tous les groupes d'enseignements et les matières de l'établissement.",
+    "timetable.classes.mapping" : "Correspondance des classes non reconnues",
+    "timetable.update.cm" : "Valider",
+    "timetable.import" : "Importer",
+    "timetable.file" : "Fichier d'alimentation",
+    "pronote.id" : "Identifiant pronote"
 }

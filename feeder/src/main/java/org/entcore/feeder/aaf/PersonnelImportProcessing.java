@@ -52,8 +52,6 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createGroups(object.getArray("groups"), c);
 		createClasses(new JsonArray(c));
 		linkMef(object.getArray("modules"));
-		linkClassesFieldOfStudy(object.getArray("classesFieldOfStudy"));
-		linkGroupsFieldOfStudy(object.getArray("groupsFieldOfStudy"));
 		String profile = detectProfile(object);
 		object.putArray("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
@@ -78,36 +76,6 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		return PERSONNEL_PROFILE_EXTERNAL_ID;
 	}
 
-	protected void linkGroupsFieldOfStudy(JsonArray groupsFieldOfStudy) {
-		if (groupsFieldOfStudy != null) {
-			for (Object o : groupsFieldOfStudy) {
-				if (!(o instanceof String)) continue;
-				String [] c = ((String) o).split("\\$");
-				if (c.length == 3) {
-					Structure s = importer.getStructure(c[0]);
-					if (s != null) {
-						s.linkGroupFieldOfStudy(c[0] + "$" + c[1], c[2]);
-					}
-				}
-			}
-		}
-	}
-
-	protected void linkClassesFieldOfStudy(JsonArray classesFieldOfStudy) {
-		if (classesFieldOfStudy != null) {
-			for (Object o : classesFieldOfStudy) {
-				if (!(o instanceof String)) continue;
-				String [] c = ((String) o).split("\\$");
-				if (c.length == 3) {
-					Structure s = importer.getStructure(c[0]);
-					if (s != null) {
-						s.linkClassFieldOfStudy(c[0] + "$" + c[1], c[2]);
-					}
-				}
-			}
-		}
-	}
-
 	protected void linkMef(JsonArray modules) {
 		if (modules != null) {
 			for (Object o : modules) {
@@ -130,18 +98,19 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	protected String[][] createGroups(JsonArray groups, List<String> classes) {
 		String [][] linkStructureGroups = null;
 		if (groups != null && groups.size() > 0) {
-			linkStructureGroups = new String[groups.size()][2];
+			linkStructureGroups = new String[groups.size()][3];
 			int i = 0;
 			for (Object o : groups) {
 				if (!(o instanceof String)) continue;
 				String [] g = ((String) o).split("\\$");
-				if (g.length == 2) {
+				if (g.length == 2 || g.length == 3) {
 					Structure s = importer.getStructure(g[0]);
 					if (s != null) {
 						String groupExternalId = s.getExternalId() + "$" + g[1];
 						s.createFunctionalGroupIfAbsent(groupExternalId, g[1]);
 						linkStructureGroups[i][0] = s.getExternalId();
-						linkStructureGroups[i++][1] = groupExternalId;
+						linkStructureGroups[i][1] = groupExternalId;
+						linkStructureGroups[i++][2] = (g.length == 3) ? g[2] : "";
 						if (classes != null) {
 							final List<String> lc = importer.getGroupClasses().get(groupExternalId);
 							if (lc != null) {
@@ -158,18 +127,19 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	protected String[][] createClasses(JsonArray classes) {
 		String [][] linkStructureClasses = null;
 		if (classes != null && classes.size() > 0) {
-			linkStructureClasses = new String[classes.size()][2];
+			linkStructureClasses = new String[classes.size()][3];
 			int i = 0;
 			for (Object o : classes) {
 				if (!(o instanceof String)) continue;
 				String [] c = ((String) o).split("\\$");
-				if (c.length == 2) {
+				if (c.length == 2 || c.length == 3) {
 					Structure s = importer.getStructure(c[0]);
 					if (s != null) {
 						String classExternalId = s.getExternalId() + "$" + c[1];
 						s.createClassIfAbsent(classExternalId, c[1]);
 						linkStructureClasses[i][0] = s.getExternalId();
-						linkStructureClasses[i++][1] = classExternalId;
+						linkStructureClasses[i][1] = classExternalId;
+						linkStructureClasses[i++][2] = (c.length == 3) ? c[2] : "";
 					}
 				}
 			}

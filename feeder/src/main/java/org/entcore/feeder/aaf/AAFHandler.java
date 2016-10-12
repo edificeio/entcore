@@ -26,8 +26,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static org.entcore.feeder.utils.AAFUtil.convertDate;
 
 public final class AAFHandler extends DefaultHandler {
 
@@ -37,7 +36,6 @@ public final class AAFHandler extends DefaultHandler {
 	private JsonObject currentStructure;
 	private final JsonObject mapping;
 	private final ImportProcessing processing;
-	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 
 	public AAFHandler(ImportProcessing processing) {
 		this.processing = processing;
@@ -114,14 +112,6 @@ public final class AAFHandler extends DefaultHandler {
 				currentStructure.putValue(attribute, v);
 			}
 		}
-	}
-
-	private String convertDate(String s) {
-		Matcher m = frenchDatePatter.matcher(s);
-		if (m.find()) {
-			return m.group(3) + "-" + m.group(2) + "-" + m.group(1);
-		}
-		return s;
 	}
 
 	private void addExternalId(String s) throws SAXException {

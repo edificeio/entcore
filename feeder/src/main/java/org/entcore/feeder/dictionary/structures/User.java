@@ -344,8 +344,12 @@ public class User {
 
 	public static void addGroup(String userId, String groupId, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}}), (f:ManualGroup {id : {groupId}}) " +
-				"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->f";
+				"MATCH (u:User { id : {userId}}), (f:Group {id : {groupId}}) " +
+				"WHERE 'ManualGroup' IN labels(f) OR 'FunctionalGroup' IN labels(f) " +
+				"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->f " +
+				"WITH f, u " +
+				"WHERE 'FunctionalGroup' IN labels(f) " +
+				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> f.externalId) + f.externalId ";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("groupId", groupId);
@@ -354,8 +358,10 @@ public class User {
 
 	public static void removeGroup(String userId, String groupId, TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(f:ManualGroup {id : {groupId}}) " +
-				"DELETE r";
+				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(f:Group {id : {groupId}}) " +
+				"WHERE 'ManualGroup' IN labels(f) OR 'FunctionalGroup' IN labels(f) " +
+				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> f.externalId) " +
+				"DELETE r ";
 		JsonObject params = new JsonObject()
 				.putString("userId", userId)
 				.putString("groupId", groupId);

@@ -19,9 +19,7 @@
 
 package org.entcore.directory;
 
-import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.email.EmailFactory;
@@ -114,6 +112,10 @@ public class Directory extends BaseServer {
 		ImportController importController = new ImportController();
 		importController.setImportService(new DefaultImportService(vertx, eb));
 		addController(importController);
+
+		TimetableController timetableController = new TimetableController();
+		timetableController.setTimetableService(new DefaultTimetableService(eb));
+		addController(timetableController);
 
 		vertx.eventBus().registerLocalHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));

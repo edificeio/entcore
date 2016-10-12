@@ -37,6 +37,11 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	}
 
 	@Override
+	protected void preCommit() {
+		importer.getPersEducNat().createAndLinkSubjects();
+	}
+
+	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
 		if (importer.isFirstImport()) {
 			importer.userConstraints();

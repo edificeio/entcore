@@ -127,6 +127,12 @@ public class DirectoryController extends BaseController {
 		});
 	}
 
+//	@Post("/automerge")
+//	public void launchAutoMerge(HttpServerRequest request) {
+//		eb.send("entcore.feeder", new JsonObject().putString("action", "automerge-duplicates"));
+//		request.response().end();
+//	}
+
 	@Post("/export")
 	@SecuredAction("directory.export")
 	public void launchExport(HttpServerRequest request) {

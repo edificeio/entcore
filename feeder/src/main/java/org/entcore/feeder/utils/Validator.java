@@ -229,6 +229,7 @@ public class Validator {
 
 	private void generate(JsonObject object) {
 		for (String attr : generate.getFieldNames()) {
+			if (object.containsField(attr)) continue;
 			JsonObject j = generate.getObject(attr);
 			switch (j.getString("generator", "")) {
 				case "uuid4" :

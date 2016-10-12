@@ -20,11 +20,9 @@
 package org.entcore.feeder;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
-import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
@@ -32,12 +30,18 @@ import org.entcore.feeder.be1d.Be1dValidator;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
+import org.entcore.feeder.timetable.AbstractTimetableImporter;
+import org.entcore.feeder.timetable.ImportsLauncher;
+import org.entcore.feeder.timetable.edt.EDTImporter;
+import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
+import org.entcore.feeder.timetable.udt.UDTImporter;
 import org.entcore.feeder.utils.*;
 import org.vertx.java.busmods.BusModBase;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -46,6 +50,8 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -56,10 +62,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private ManualFeeder manual;
 	private Neo4j neo4j;
 	private Exporter exporter;
-	private EventStore eventStore;
 	private DuplicateUsers duplicateUsers;
+	private PostImport postImport;
 	private final ConcurrentLinkedQueue<Message<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
 	public enum FeederEvent { IMPORT, DELETE_USER, CREATE_USER }
+	private EDTUtils edtUtils;
 
 	@Override
 	public void start() {
@@ -74,10 +81,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			node = "";
 		}
 		neo4j = new Neo4j(vertx.eventBus(), node + neo4jAddress);
+		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
-		EventStoreFactory factory = EventStoreFactory.getFactory();
-		factory.setVertx(vertx);
-		eventStore = factory.getEventStore(Feeder.class.getSimpleName());
+		EventStoreFactory.getFactory().setVertx(vertx);
 		defaultFeed = container.config().getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF"),
 				container.config().getBoolean("aafNeo4jPlugin", false)));
@@ -96,7 +102,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.getFieldNames())) {
-					for (String profile: preDelete.getFieldNames()) {
+					for (String profile : preDelete.getFieldNames()) {
 						final JsonObject profilePreDelete = preDelete.getObject(profile);
 						if (profilePreDelete == null || profilePreDelete.getString("cron") == null ||
 								profilePreDelete.getLong("delay") == null) continue;
@@ -130,7 +136,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		Validator.initLogin(neo4j, vertx);
 		manual = new ManualFeeder(neo4j);
-		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"));
+		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"),
+				container.config().getBoolean("timetable", true));
+		postImport = new PostImport(vertx, duplicateUsers, container.config());
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
 		switch (container.config().getString("exporter", "")) {
@@ -140,6 +148,37 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						container.config().getBoolean("concat-export", false),
 						container.config().getBoolean("delete-export", true), vertx);
 				break;
+		}
+		final JsonObject edt = container.config().getObject("edt");
+		if (edt != null) {
+			final String pronotePrivateKey = edt.getString("pronote-private-key");
+			if (isNotEmpty(pronotePrivateKey)) {
+				edtUtils = new EDTUtils(vertx, pronotePrivateKey,
+						container.config().getString("pronote-partner-name", "NEO-Open"));
+				final String edtPath = edt.getString("path");
+				final String edtCron = edt.getString("cron");
+				if (isNotEmpty(edtPath) && isNotEmpty(edtCron)) {
+					try {
+						new CronTrigger(vertx, edtCron).schedule(
+								new ImportsLauncher(vertx, edtPath, postImport, edtUtils));
+					} catch (ParseException e) {
+						logger.error("Error in cron edt", e);
+					}
+				}
+			}
+		}
+		final JsonObject udt = container.config().getObject("udt");
+		if (udt != null) {
+			final String udtPath = udt.getString("path");
+			final String udtCron = udt.getString("cron");
+			if (isNotEmpty(udtPath) && isNotEmpty(udtCron)) {
+				try {
+					new CronTrigger(vertx, udtCron).schedule(
+							new ImportsLauncher(vertx, udtPath, postImport, edtUtils));
+				} catch (ParseException e) {
+					logger.error("Error in cron udt", e);
+				}
+			}
 		}
 		I18n.getInstance().init(container, vertx);
 	}
@@ -236,6 +275,23 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "mark-duplicates" :
 				duplicateUsers.markDuplicates(message);
+				break;
+			case "automerge-duplicates" :
+				duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+					@Override
+					public void handle(AsyncResult<JsonArray> event) {
+						logger.info("auto merged : " + event.succeeded());
+					}
+				});
+				break;
+			case "manual-init-timetable-structure" :
+				AbstractTimetableImporter.initStructure(eb, message);
+				break;
+			case "manual-edt":
+				EDTImporter.launchImport(edtUtils, container.config().getString("mode", "prod"), message, postImport);
+				break;
+			case "manual-udt":
+				UDTImporter.launchImport(vertx, message, postImport);
 				break;
 			default:
 				sendError(message, "invalid.action");
@@ -346,16 +402,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private void launchTransition(final Message<JsonObject> message, final Handler<Message<JsonObject>> handler) {
 		if (GraphData.isReady()) {
-			String structureExternalId = message.body().getString("structureExternalId");
+			final String structureExternalId = message.body().getString("structureExternalId");
 			Transition transition = new Transition();
 			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					if (m != null && "ok".equals(m.body().getString("status"))) {
-						logger.info("Delete groups : " + m.body().encode());
-						eb.publish(USER_REPOSITORY, new JsonObject()
-								.putString("action", "delete-groups")
-								.putArray("old-groups", m.body().getArray("result", new JsonArray())));
+						Transition.publishDeleteGroups(eb, logger, m.body().getArray("result", new JsonArray()));
+						AbstractTimetableImporter.transition(structureExternalId);
 						if (handler != null) {
 							handler.handle(m);
 						} else {
@@ -480,20 +534,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
-									storeImportedEvent();
-									duplicateUsers.markDuplicates(new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject event) {
-											applyComRules(new VoidHandler() {
-												@Override
-												protected void handle() {
-													if (config.getBoolean("notify-apps-after-import", true)) {
-														ApplicationUtils.afterImport(eb);
-													}
-												}
-											});
-										}
-									});
+									postImport.execute();
 								} else {
 									Validator.initLogin(neo4j, vertx);
 									if (m != null) {
@@ -542,60 +583,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				default:
 					handle(event);
 			}
-		}
-	}
-
-	private void storeImportedEvent() {
-		String countQuery =
-				"MATCH (:User) WITH count(*) as nbUsers " +
-				"MATCH (:Structure) WITH count(*) as nbStructures, nbUsers " +
-				"MATCH (:Class) RETURN nbUsers, nbStructures, count(*) as nbClasses ";
-		neo4j.execute(countQuery, null, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
-				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					eventStore.createAndStoreEvent(FeederEvent.IMPORT.name(),
-							(UserInfos) null, res.<JsonObject>get(0));
-				} else {
-					logger.error(event.body().getString("message"));
-				}
-			}
-		});
-	}
-
-	private void applyComRules(final VoidHandler handler) {
-		if (config.getBoolean("apply-communication-rules", false)) {
-			String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
-			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getArray("result", new JsonArray());
-					if ("ok".equals(message.body().getString("status")) && ids != null &&
-							ids.size() == 1) {
-						JsonObject j = new JsonObject()
-								.putString("action", "initAndApplyDefaultCommunicationRules")
-								.putArray("schoolIds", ((JsonObject) ids.get(0))
-										.getArray("ids", new JsonArray()));
-						eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event) {
-								if (!"ok".equals(event.body().getString("status"))) {
-									logger.error("Init rules error : " + event.body().getString("message"));
-								} else {
-									logger.info("Communication rules applied.");
-								}
-								handler.handle(null);
-							}
-						});
-					} else {
-						logger.error(message.body().getString("message"));
-						handler.handle(null);
-					}
-			 }
-			});
-		} else {
-			handler.handle(null);
 		}
 	}
 

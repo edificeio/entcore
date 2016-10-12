@@ -1,0 +1,12 @@
+{
+  	"code" : { "attribute" : "Ident", "type" : "string" },
+	"date_naissance" : { "attribute" : "birthDate", "type" : "string" },
+	"nom" : { "attribute" : "lastName", "type" : "string" },
+	"prenom" : { "attribute" : "firstName", "type" : "string" },
+	"epj" : { "attribute" : "externalId", "type" : "string" },
+	"civilite" : { "attribute" : "title", "type" : "string" },
+	"mail" : { "attribute" : "email", "type" : "string" },
+	"id" : { "attribute" : "deprecated", "type" : "string" },
+	"comment" : { "attribute" : "deprecated", "type" : "string" },
+	"code_matppl" : { "attribute" : "deprecated", "type" : "string" }
+}

@@ -101,7 +101,7 @@ public class DefaultSchoolService implements SchoolService {
 				"MATCH (s:Structure) " + condition +
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
-				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, " +
+				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, validResultHandler(results));

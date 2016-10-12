@@ -27,6 +27,7 @@
 <div class="twelve cell warning" ng-if="targetUser.blocked"><strong translate content="admin.blocked.account"/></div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[targetUser.id]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.externalId")]] :</strong> [[targetUser.externalId]]</div>
+<div class="twelve cell" ng-if="targetUser.IDPN"><strong class="four cell">[[lang.translate("pronote.id")]] :</strong> [[targetUser.IDPN]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+targetUser.type)]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[targetUser.login]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
