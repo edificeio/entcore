@@ -10,18 +10,21 @@
     </div>
 </div>
 <div data-ng-controller="Timeline" class="twelve cell">
-	<div class="row" ng-if="filtered.notificationTypes.length > 0">
-		<i18n>filters.title</i18n>
-	</div>
-	<filters>
-		<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" ng-class="{ selected: type.selected }">
-			<label>
-				<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
-				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-				<span translate content="[[type.data.toLowerCase()]]"></span>
-			</label>
-		</li>
-	</filters>
+
+	<microbox title="timeline.admin.filter.by" close="ok" class="micro-left">
+		<div class="row" ng-if="filtered.notificationTypes.length > 0">
+			<i18n>filters.title</i18n>
+		</div>
+		<filters>
+			<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" ng-class="{ selected: type.selected }">
+				<label>
+					<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
+					<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+					<span translate content="[[type.data.toLowerCase()]]"></span>
+				</label>
+			</li>
+		</filters>
+	</microbox>
 
 	<div data-ng-repeat="notification in notifications.all" class="row notification" bottom-scroll="loadPage()">
 		<article ng-class="{ 'unread': isUnRead(notification) }">
