@@ -2900,7 +2900,7 @@ window.RTE = (function () {
                                     if (initialOffset === currentTextNode.textContent.length) {
                                         initialOffset = -1;
                                     }
-                                    if (range.startContainer.parentNode.innerHTML.startsWith('&nbsp;') && range.startOffset === 1) {
+                                    if (range.startContainer.parentNode.innerHTML === '&nbsp;' && range.startOffset === 1) {
                                         var node = range.startContainer.parentNode;
                                         
                                         setTimeout(function () {
@@ -2935,32 +2935,58 @@ window.RTE = (function () {
                                     parentContainer.appendChild(newLine[0]);
                                 }
                                 else {
-                                    if (parentContainer.nodeType !== 1) {
-                                        parentContainer = parentContainer.parentNode;
-                                    }
                                     if (parentContainer.nodeName !== 'LI') {
                                         e.preventDefault();
-
-                                        if (!range.startContainer.nodeType !== 1 && range.startOffset < range.startContainer.textContent.length) {
-                                            newLine.html('&nbsp;' + parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length));
+                                        var rangeStart = 1;
+                                        if (
+                                            range.startContainer.nodeType !== 1 &&
+                                            range.startOffset < range.startContainer.textContent.length
+                                            ) {
+                                            var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
+                                            if(!content){
+                                                content = '&nbsp;';
+                                            }
+                                            else {
+                                                rangeStart = 0;
+                                            }
+                                            newLine.html(content);
                                             range.startContainer.textContent = range.startContainer.textContent.substring(0, range.startOffset);
+
+                                            var sibling = range.startContainer.nextSibling;
+                                            do {
+                                                newLine.append(sibling);
+                                                sibling = range.startContainer.nextSibling;
+                                            } while (sibling !== null);
+
+                                            if (!parentContainer.wholeText) {
+                                                // FF forces encode on textContent, this is a hack to get the actual entities codes,
+                                                // since innerHTML doesn't exist on text nodes
+                                                parentContainer.textContent = $('<div>&nbsp;</div>')[0].textContent;
+                                            }
                                         }
-										if (range.startContainer.nodeType === 1 && range.startOffset < range.startContainer.children.length) {
+                                        if (
+                                            range.startContainer.nodeType === 1 &&
+                                            range.startOffset < range.startContainer.children.length
+                                            ) {
                                             for(var i = range.startOffset; i < range.startContainer.children.length; i++){
 												range.startContainer.children[i].remove();
 												newLine.append($(range.startContainer.children[i].outerHTML));
 											}
                                         }
 
-                                        if (parentContainer.nextSibling) {
-                                            parentContainer.parentNode.insertBefore(newLine[0], parentContainer.nextSibling);
+										var container = parentContainer;
+										if (container.nodeType !== 1) {
+										    container = container.parentNode;
+										}
+										if (container.nextSibling) {
+										    container.parentNode.insertBefore(newLine[0], container.nextSibling);
                                         }
                                         else {
-                                            parentContainer.parentNode.appendChild(newLine[0]);
+										    container.parentNode.appendChild(newLine[0]);
                                         }
 
                                         var range = document.createRange();
-                                        range.setStart(newLine[0].firstChild || newLine[0], 1);
+                                        range.setStart(newLine[0].firstChild || newLine[0], rangeStart);
 
                                         sel.removeAllRanges();
                                         sel.addRange(range);
