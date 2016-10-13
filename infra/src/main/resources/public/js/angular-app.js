@@ -1596,12 +1596,14 @@ module.directive('topNotification', function() {
             '<div class="notify-top-actions">' +
             '<span ng-click="cancel()">[[doConfirm ? labels().cancel : labels().ok]]</span>' +
             '<span ng-click="ok()" ng-show="doConfirm">[[labels().confirm]]</span> ' +
+            '<span ng-repeat="add in additional" ng-click="add.action()">[[ add.label ]]</span> ' +
             '</div>' +
             '</div>',
         scope: {
             trigger: '=',
             confirm: '=',
             content: '=',
+            additional: '=',
             labels: '&'
         },
         link: function(scope, element, attributes) {
@@ -1623,6 +1625,8 @@ module.directive('topNotification', function() {
                     }
                 }
             }
+            if(!scope.additional || ! (scope.additional instanceof Array))
+                scope.additional = []
             scope.$watch('trigger', function(newVal) {
                 if (newVal)
                     element.slideDown()

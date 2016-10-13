@@ -27,7 +27,14 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import fr.wseduc.webutils.Either;
+
 public interface TimelineEventStore {
+
+	public enum AdminAction {
+		DELETE,
+		KEEP
+	}
 
 	List<String> FIELDS = Arrays.asList("resource", "sender", "message", "params", "type",
 			"recipients", "comments", "add-comment", "sub-resource", "event-type", "date");
@@ -38,10 +45,19 @@ public interface TimelineEventStore {
 
 	void delete(String resource, Handler<JsonObject> result);
 
-	void get(UserInfos recipient, List<String> types, int offset, int limit, JsonObject restrictionFilter, Handler<JsonObject> result);
+	void get(UserInfos recipient, List<String> types, int offset, int limit,
+			JsonObject restrictionFilter, boolean mine, Handler<JsonObject> result);
 
 	void deleteSubResource(String resource, Handler<JsonObject> result);
 
 	void listTypes(Handler<JsonArray> result);
 
+	// User actions
+	void delete(String id, String sender, Handler<Either<String, JsonObject>> result);
+	void discard(String id, String recipient,  Handler<Either<String, JsonObject>> result);
+	void report(String id, UserInfos user, Handler<Either<String, JsonObject>> result);
+
+	// Admin actions
+	void listReported(String structure, boolean pending, int offset, int limit, Handler<Either<String, JsonArray>> result);
+	void performAdminAction(String id, String structureId, UserInfos user, AdminAction action, Handler<Either<String, JsonObject>> result);
 }

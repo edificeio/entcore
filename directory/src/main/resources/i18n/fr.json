@@ -305,7 +305,6 @@
     "oops": "Oups !",
     "or": "ou",
     "panel.notifications.desc": "Soyez informé sur un mail externe <br>des nouveautés et actions requises <br>de votre part ....",
-    "panel.notifications.set": "Gérer mes notifications externes",
     "panel.notifications.activate": "Renseignez votre email pour bénéficier des notifications externes",
     "prive": "Cette information n'est visible que de vous",
     "public": "Cette information est visible par tous",
@@ -522,5 +521,8 @@
     "password.recommandations": "Il est recommandé de mélanger chiffres, lettres, majuscules, minuscules et caractères spéciaux.",
     "auth.reset": "Enregistrer",
     "cancel": "Annuler",
-    "auth.activation.confirm.password": "Confirmation du nouveau mot de passe"
+    "auth.activation.confirm.password": "Confirmation du nouveau mot de passe",
+    "panel.my.profile": "Mon profil",
+    "panel.user.history": "Mon historique",
+    "panel.notifications.set": "Mes notifications externes"
 }

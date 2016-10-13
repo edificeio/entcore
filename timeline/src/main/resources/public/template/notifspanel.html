@@ -6,7 +6,19 @@
         </h1>
     </app-title>
 
-    <h2><i18n>xtnotifications.title</i18n></h2>
+    <!-- <h2><i18n>xtnotifications.title</i18n></h2> -->
+
+    <div class="row twelve tabs vertical-spacing-twice">
+        <header class="horizontal-spacing-twice">
+            <a href="/userbook/mon-compte"><i18n>panel.my.profile</i18n></a>
+        </header>
+        <header class="horizontal-spacing-twice selected" workflow="timeline.externalNotifications">
+            <a href="/timeline/preferencesView"><i18n>panel.notifications.set</i18n></a>
+        </header>
+        <header class="horizontal-spacing-twice" workflow="timeline.historyView">
+            <a href="/timeline/historyView"><i18n>panel.user.history</i18n></a>
+        </header>
+    </div>
 
     <div class="row">
         <div class="cell reduce-block-six"><i18n>xtnotifications.mail</i18n></div>

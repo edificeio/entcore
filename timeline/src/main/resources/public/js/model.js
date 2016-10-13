@@ -1,9 +1,18 @@
-function Notification(){
-	this.isUnread = function(){
+function Notification() {
+	this.isUnread = function() {
 		return _.find(this.recipients, function(recipient){
 			return recipient.userId === model.me.userId;
 		}) !== undefined;
 	}
+}
+Notification.prototype.delete = function() {
+	return http().delete('/timeline/' + this._id)
+}
+Notification.prototype.discard = function() {
+	return http().put('/timeline/' + this._id)
+}
+Notification.prototype.report = function() {
+	return http().put('/timeline/' + this._id + '/report')
 }
 
 function NotificationType(){
@@ -53,6 +62,7 @@ model.build = function (){
 		page: 0,
 		lastPage: false,
 		loading: false,
+		mine: model.notifications && model.notifications.mine,
 		sync: function(paginate){
 			var that = this;
 
@@ -72,6 +82,8 @@ model.build = function (){
 				return type.data;
 			})};
 			params.page = that.page;
+			if(this.mine)
+				params.mine = 1
 
 			if(paginate)
 				that.loading = true;

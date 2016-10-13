@@ -2255,3 +2255,23 @@ article.flashmsg-edit .outlined {
 article.flashmsg-edit editor editor-toolbar {
   min-height: 70px;
 }
+div.notification {
+  position: relative;
+}
+div.notification article {
+  height: auto;
+  padding: 15px;
+  box-shadow: 1px 2px 5px #aaa;
+}
+div.notification .avatar img {
+  border: 1px solid #444;
+}
+div.notification .content {
+  width: 75%;
+  float: left;
+}
+div.notification .notification-reports {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #FF5C00;
+}

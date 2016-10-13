@@ -26,7 +26,7 @@
 		</filters>
 	</microbox>
 
-	<div data-ng-repeat="notification in notifications.all" class="row notification" bottom-scroll="loadPage()">
+	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification" bottom-scroll="loadPage()">
 		<article ng-class="{ 'unread': isUnRead(notification) }">
 			<div class="row">
 				<div class="avatar">
@@ -41,6 +41,19 @@
 				<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
 			</div>
 		</article>
+		<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions()">
+			<div class="opener" ng-click="notification.opened = !notification.opened">
+				<span class="symbol">◀</span>
+			</div>
+			<div class="actions">
+				<div ng-repeat="(name, action) in actions" ng-show="!action.condition || action.condition(notification)" class="action [[ name ]]">
+					<i></i>
+					<a ng-click="action.action(notification)" ng-disabled="notification[action.doneProperty]">
+						[[ notification[action.doneProperty] ? lang.translate(action.doneLabel) : lang.translate(action.label) ]]
+					</a>
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="row notification" ng-show="notifications.loading">
 		<h1 class="reduce-block-eight nomargin"><i18n>loading</i18n></h1>

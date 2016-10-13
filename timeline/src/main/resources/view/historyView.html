@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{{#i18n}}panel.user.history{{/i18n}}</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1" />
+		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+		<script src="{{#static}}js/model.js{{/static}}" type="text/javascript"></script>
+		<script src="{{#static}}js/history/controller.js{{/static}}" type="text/javascript"></script>
+		<script type="text/ng-template" id="empty"></script>
+	</head>
+	<body>
+		<portal>
+
+            <app-title>
+                <h1>
+                    <a href="/userbook/mon-compte"><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
+                </h1>
+            </app-title>
+
+            <div class="row twelve tabs vertical-spacing-twice">
+                <header class="horizontal-spacing-twice">
+                    <a href="/userbook/mon-compte"><i18n>panel.my.profile</i18n></a>
+                </header>
+                <header class="horizontal-spacing-twice" workflow="timeline.externalNotifications">
+                    <a href="/timeline/preferencesView"><i18n>panel.notifications.set</i18n></a>
+                </header>
+                <header class="horizontal-spacing-twice selected" workflow="timeline.historyView">
+                    <a href="/timeline/historyView"><i18n>panel.user.history</i18n></a>
+                </header>
+            </div>
+
+            <div data-ng-controller="HistoryController" class="twelve cell">
+            	<div class="row" ng-if="filtered.notificationTypes.length > 0">
+            		<i18n>filters.title</i18n>
+            	</div>
+            	<filters>
+            		<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" ng-class="{ selected: type.selected }">
+            			<label>
+            				<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
+            				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+            				<span translate content="[[type.data.toLowerCase()]]"></span>
+            			</label>
+            		</li>
+            	</filters>
+
+            	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification" bottom-scroll="loadPage()">
+            		<article ng-class="{ 'unread': isUnRead(notification) }">
+            			<div class="row">
+            				<div class="avatar">
+            					<i class="system-avatar" ng-if="!notification.sender"></i>
+            					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+            				</div>
+            				<div class="content horizontal-spacing">
+            					<p class="inline" bind-html="notification.message"></p>
+            				</div>
+            			</div>
+            			<div class="notification-date">
+            				<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
+            			</div>
+            		</article>
+					<div workflow="timeline.deleteOwnNotification">
+	            		<div class="notification-actions" ng-class="{'opened': notification.opened}">
+	            			<div class="opener" ng-click="notification.opened = !notification.opened">
+	            				<span class="symbol">◀</span>
+	            			</div>
+	            			<div class="actions">
+	            				<div ng-repeat="(name, action) in actions" class="action [[ name ]]" ng-click="action.action(notification)">
+	            					<i></i>
+	            					<a> [[ translate(action.label) ]]</a>
+	            				</div>
+	            			</div>
+	            		</div>
+					</div>
+            	</div>
+            	<div class="row notification" ng-show="notifications.loading">
+            		<h1 class="reduce-block-eight nomargin"><i18n>loading</i18n></h1>
+            	</div>
+            </div>
+		</portal>
+	</body>
+</html>

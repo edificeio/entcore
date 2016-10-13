@@ -22,7 +22,9 @@ package org.entcore.timeline.controllers;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
@@ -58,6 +61,8 @@ import com.samskivert.mustache.Template;
 import com.samskivert.mustache.Template.Fragment;
 
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -68,6 +73,7 @@ import org.entcore.common.user.UserInfos;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
+import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
 
@@ -83,7 +89,6 @@ public class TimelineController extends BaseController {
 	private Set<String> antiFlood;
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
-	@SuppressWarnings("unused")
 	private TimelineHelper timelineHelper;
 
 	private final String TIMELINE_CONFIG_COLLECTION = "timeline.config";
@@ -193,6 +198,12 @@ public class TimelineController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/historyView")
+	@SecuredAction(value = "timeline.historyView")
+	public void historyView(HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@Get("/i18nNotifications")
 	@SecuredAction(value = "timeline.i18n", type = ActionType.AUTHENTICATED)
 	public void i18n(HttpServerRequest request) {
@@ -228,6 +239,8 @@ public class TimelineController extends BaseController {
 	@Get("/lastNotifications")
 	@SecuredAction(value = "timeline.events", type = ActionType.AUTHENTICATED)
 	public void lastEvents(final HttpServerRequest request) {
+		final boolean mine = request.params().contains("mine");
+
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 
 			@Override
@@ -247,7 +260,7 @@ public class TimelineController extends BaseController {
 								offset = 25 * Integer.parseInt(page);
 							} catch (NumberFormatException e) {}
 
-							store.get(user, types, offset, 25, notifs.right().getValue(), new Handler<JsonObject>() {
+							store.get(user, types, offset, 25, notifs.right().getValue(), mine, new Handler<JsonObject>() {
 								public void handle(final JsonObject res) {
 									if (res != null && "ok".equals(res.getString("status"))) {
 										JsonArray results = res.getArray("results", new JsonArray());
@@ -350,6 +363,13 @@ public class TimelineController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/admin-history")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void adminHistory(final HttpServerRequest request) {
+		renderView(request);
+	}
+
 	@Get("/config")
 	@SecuredAction(type = ActionType.AUTHENTICATED, value = "")
 	public void getConfig(final HttpServerRequest request) {
@@ -419,6 +439,203 @@ public class TimelineController extends BaseController {
 		return;
 	}
 
+	@Delete("/:id")
+	@SecuredAction("timeline.delete.own.notification")
+	public void deleteNotification(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				store.delete(id, user.getUserId(), defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/:id")
+	@SecuredAction("timeline.discard.notification")
+	public void discardNotification(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				store.discard(id, user.getUserId(), defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/:id/report")
+	@SecuredAction("timeline.report.notification")
+	public void reportNotification(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				store.report(id, user, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> event) {
+						defaultResponseHandler(request).handle(event);
+
+						if(event.isLeft() || event.right().getValue().getInteger("number", 0) == 0) {
+							return;
+						}
+
+						final List<String> structureIds = user.getStructures();
+						final JsonObject params = new JsonObject()
+							.putString("username", user.getUsername())
+							.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType());
+
+						final AtomicInteger countdown = new AtomicInteger(structureIds.size());
+						final Set<String> recipientsSet = new HashSet<>();
+						final VoidHandler finalHandler = new VoidHandler() {
+							protected void handle() {
+								if(countdown.decrementAndGet() == 0){
+									ArrayList<String> recipients = new ArrayList<>();
+									recipients.addAll(recipientsSet);
+									timelineHelper.notifyTimeline(
+											request,
+											"timeline.notify-report",
+											null,
+											recipients,
+											params);
+								}
+							}
+						};
+
+						for(final String structureId : structureIds){
+							JsonObject message = new JsonObject()
+								.putString("action", "list-adml")
+								.putString("structureId", structureId);
+
+							eb.send("directory", message, new Handler<Message<JsonArray>>() {
+								public void handle(Message<JsonArray> result) {
+									JsonArray users = result.body();
+									for(Object userObj: users){
+										JsonObject user = (JsonObject) userObj;
+										recipientsSet.add(user.getString("id"));
+									}
+
+									finalHandler.handle(null);
+								}
+							});
+						}
+					}
+				});
+			}
+		});
+	}
+
+	final int PAGELIMIT = 25;
+
+	@Get("/reported")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdmlOfStructures.class)
+	public void listReportedNotifications(final HttpServerRequest request) {
+		final String structure = request.params().get("structure");
+		final boolean pending = Boolean.parseBoolean(request.params().get("pending"));
+		int page = 0;
+		if(request.params().contains("page")){
+			try {
+				page = Integer.parseInt(request.params().get("page"));
+			} catch(NumberFormatException e) {
+				//silent
+			}
+		}
+		store.listReported(structure, pending, PAGELIMIT*page, PAGELIMIT, new Handler<Either<String,JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isLeft()){
+					renderError(request);
+					return;
+				}
+
+				final JsonArray results = event.right().getValue();
+				final JsonArray compiledResults = new JsonArray();
+
+				final AtomicInteger countdown = new AtomicInteger(results.size());
+				final VoidHandler endHandler = new VoidHandler() {
+					protected void handle() {
+						if (countdown.decrementAndGet() <= 0) {
+							renderJson(request, compiledResults);
+						}
+					}
+				};
+				if (results.size() == 0)
+					endHandler.handle(null);
+
+				for (Object notifObj : results) {
+					final JsonObject notif = (JsonObject) notifObj;
+					if (!notif.getString("message", "").isEmpty()) {
+						compiledResults.add(notif);
+						endHandler.handle(null);
+						continue;
+					}
+
+					String key = notif.getString("type", "").toLowerCase()
+							+ "."
+							+ notif.getString("event-type", "").toLowerCase();
+
+					String stringifiedRegisteredNotif = registeredNotifications.get(key);
+					if (stringifiedRegisteredNotif == null) {
+						log.error("Failed to retrieve registered from the shared map notification with key : " + key);
+						endHandler.handle(null);
+						continue;
+					}
+					JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
+
+					StringReader reader = new StringReader(registeredNotif.getString("template", ""));
+					processTemplate(request,notif.getObject("params",new JsonObject()),key, reader, new Handler<Writer>() {
+						public void handle(Writer writer) {
+							notif.putString("message", writer.toString());
+							compiledResults.add(notif);
+							endHandler.handle(null);
+						}
+					});
+				}
+			}
+		});
+	}
+
+	@Put("/:id/action/keep")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdmlOfStructures.class)
+	public void adminKeepAction(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		final String structureId = request.params().get("structure");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				store.performAdminAction(id, structureId, user, AdminAction.KEEP, defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/:id/action/delete")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdmlOfStructures.class)
+	public void adminDeleteAction(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		final String structureId = request.params().get("structure");
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+				store.performAdminAction(id, structureId, user, AdminAction.DELETE, defaultResponseHandler(request));
+			}
+		});
+	}
+
 	@BusAddress("wse.timeline")
 	public void busApi(final Message<JsonObject> message) {
 		if (message == null) {
@@ -464,7 +681,7 @@ public class TimelineController extends BaseController {
 			u.setUserId(json.getString("recipient"));
 			u.setExternalId(json.getString("externalId"));
 			store.get(u, null, json.getInteger("offset", 0),
-					json.getInteger("limit", 25), null, handler);
+					json.getInteger("limit", 25), null, false, handler);
 			break;
 		case "delete":
 			store.delete(json.getString("resource"), handler);

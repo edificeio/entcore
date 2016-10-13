@@ -4,6 +4,7 @@ Behaviours.register('directory', {
 	rights:{
 		workflow: {
 			externalNotifications: "org.entcore.timeline.controllers.TimelineController|mixinConfig",
+			historyView: "org.entcore.timeline.controllers.TimelineController|historyView",
             showMoodMotto: "org.entcore.directory.controllers.UserBookController|userBookMottoMood",
             generateMergeKey: "org.entcore.directory.controllers.UserController|generateMergeKey",
             mergeByKey: "org.entcore.directory.controllers.UserController|mergeByKey"
