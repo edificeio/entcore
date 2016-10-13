@@ -6,6 +6,34 @@ function AdminFlashMsgController($scope) {
     $scope.edited = model.edited
     model.syncLanguages()
 
+    if(!$.spectrum){
+        http().get('/infra/public/spectrum/spectrum.js').done(function(data){
+            eval(data);
+            var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
+            $('head').prepend(stylesheet);
+        })
+    }
+    $scope.setSpectrum = function(){
+        var inputColors = $('input[type=color]')
+        inputColors.each(function(index, input){
+            if(input.type === "text"){
+                $(input).spectrum({
+                    color: $scope.edited.message.customColor,
+                    move: function(color) {
+                        $scope.edited.message.customColor = color.toHexString()
+                        $scope.edited.message.color = null
+                        $scope.$apply()
+                    },
+                    change: function(color) {
+                        $scope.edited.message.customColor = color.toHexString()
+                        $scope.edited.message.color = null
+                        $scope.$apply()
+                    }
+                })
+            }
+        })
+    }
+
     $scope.formatDate = function(date) {
         return moment(date).format('L')
     }
