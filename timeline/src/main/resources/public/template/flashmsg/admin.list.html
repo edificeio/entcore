@@ -54,7 +54,7 @@
             <td><input type="checkbox" ng-model="message.selected"></td>
             <td ng-click="editMessage(message)">[[ message.title ]]</td>
             <td class="cell-ellipsis" ng-click="editMessage(message)">
-                [[ formatContent(message.content) ]]
+                [[ formatContent(lang, message.contents) ]]
             </td>
             <td ng-click="editMessage(message)">[[ formatDate(message.startDate) ]]</td>
             <td ng-click="editMessage(message)">[[ formatDate(message.endDate) ]]</td>

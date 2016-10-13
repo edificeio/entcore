@@ -92,7 +92,8 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 		String profile = user.getType();
 		String now = mongoFormat.format(new Date());
 
-		QueryBuilder query = QueryBuilder.start("lang").is(lang);
+		QueryBuilder query = QueryBuilder.start("contents."+lang).exists(true);
+		query.put("contents."+lang).notEquals("");
 		query.put("profiles").is(profile);
 		query.put("markedAsRead").notEquals(user.getUserId());
 		query.put("startDate").lessThanEquals(now);
@@ -101,7 +102,9 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 
 		JsonObject sort = new JsonObject().putNumber("modified", -1);
 		JsonObject keys = new JsonObject()
-				.putNumber("content", 1).putNumber("color", 1).putNumber("customColor", 1);
+			.putNumber("contents", 1)
+			.putNumber("color", 1)
+			.putNumber("customColor", 1);
 
 		//Eventually add a limit.
 

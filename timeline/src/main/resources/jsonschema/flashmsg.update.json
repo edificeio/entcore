@@ -6,8 +6,8 @@
         "title": {
             "type": "string"
         },
-        "content": {
-            "type": "string"
+        "contents": {
+            "type": "object"
         },
         "startDate": {
             "type": "string"
@@ -20,9 +20,6 @@
             "items": {
                 "type": "string"
             }
-        },
-        "lang": {
-            "type": "string"
         },
         "color": {
             "oneOf": [
@@ -40,11 +37,10 @@
     },
     "required": [
         "title",
-        "content",
+        "contents",
         "startDate",
         "endDate",
-        "profiles",
-        "lang"
+        "profiles"
     ],
     "anyOf": [
         { "required": ["color"] },
