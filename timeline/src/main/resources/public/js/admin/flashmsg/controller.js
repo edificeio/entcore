@@ -37,6 +37,9 @@ function AdminFlashMsgController($scope) {
     $scope.formatDate = function(date) {
         return moment(date).format('L')
     }
+    $scope.formatEndDate = function(message){
+        message.endDate = moment(message.endDate).endOf('day').toDate()
+    }
     $scope.formatContent = function(lang, contents) {
         return $(contents[currentLanguage]).text()
     }
