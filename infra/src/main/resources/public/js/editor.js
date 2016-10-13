@@ -419,102 +419,223 @@ window.RTE = (function () {
 				that.instance.trigger('contentupdated');
 			};
 
+			function applyCSSCursor(css){
+				var el = $('<span>&nbsp;</span>');
+				if (!that.range && !that.editZone.html()) {
+					var elementAtCaret = $('<div></div>').appendTo(that.editZone);
+				}
+				else {
+					var elementAtCaret = that.range.startContainer;
+					if (elementAtCaret.nodeType !== 1) {
+						elementAtCaret = elementAtCaret.parentNode;
+					}
+					if (elementAtCaret.nodeName === 'SPAN') {
+						el.attr('style', $(elementAtCaret).attr('style'));
+						elementAtCaret = elementAtCaret.parentNode;
+					}
+					if (that.editZone.find(elementAtCaret).length === 0) {
+						elementAtCaret = that.editZone[0];
+					}
+				}
+				
+				el.css(css);
+				$(elementAtCaret).append(el);
+				that.moveCaret(el[0], 1);
+			}
+
+			function applyCSSNode(css){
+				var element = that.range.startContainer;
+				if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
+					var el = document.createElement('span');
+					el.textContent = element.textContent;
+					element.parentNode.insertBefore(el, element.nextSibling);
+					$(element).remove();
+					element = el;
+				}
+				else {
+					element = element.parentNode;
+				}
+				$(element).css(css);
+				that.selectNode(element);
+			}
+
+			function applyCSSUntil(nodeLimit, endOffset, css){
+				var addedNodes = [];
+				var sibling = nodeLimit.parentNode.firstChild;
+				do{
+					if(sibling.nodeType === 1){
+						$(sibling).css(css);
+					}
+					else{
+						var el = $('<span></span>')
+							.css(css);
+						if(sibling === nodeLimit){
+							el.text(sibling.textContent.substring(0, that.range.endOffset));
+							sibling.parentNode.insertBefore(el[0], sibling);
+							sibling.textContent = sibling.textContent.substring(that.range.endOffset);
+						}
+						else{
+							el.text(sibling.textContent.substring(0, sibling.textContent.length));
+							sibling.parentNode.insertBefore(el[0], sibling);
+							sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+						}
+						addedNodes.push(el[0]);
+					}
+					sibling = sibling.nextSibling;
+				}while(sibling !== nodeLimit && sibling);
+
+				return addedNodes;
+			}
+
+			function applyCSSFrom(nodeStart, startOffset, css){
+				var addedNodes = [];
+				var sibling = nodeStart;
+				do{
+					if(sibling.nodeType === 1){
+						$(sibling).css(css);
+					}
+					else{
+						var el = $('<span></span>')
+							.css(css);
+						if(sibling === nodeStart){
+							el.html(sibling.textContent.substring(startOffset));
+							sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
+							sibling.textContent = sibling.textContent.substring(0, startOffset);
+						}
+						else{
+							el.text(sibling.textContent.substring(0, sibling.textContent.length));
+							sibling.parentNode.insertBefore(el[0], sibling);
+							sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+						}
+						addedNodes.push(el[0]);
+					}
+					sibling = sibling.nextSibling;
+				}while(sibling);
+
+				return addedNodes;
+			}
+
+			function applyCSSText(css){
+				var el = $(document.createElement('span'));
+				$(el).css(css);
+
+				el.html(that.range.startContainer.textContent.substring(that.range.startOffset, that.range.endOffset));
+				var textBefore = document.createTextNode('');
+				textBefore.textContent = that.range.startContainer.textContent.substring(0, that.range.startOffset);
+				that.range.startContainer.parentNode.insertBefore(el[0], that.range.startContainer);
+				that.range.startContainer.parentNode.insertBefore(textBefore, el[0]);
+				that.range.startContainer.textContent = that.range.startContainer.textContent.substring(that.range.endOffset);
+
+				return [el[0]];
+			}
+
 			function applyCSS(css) {
 			    that.instance.addState(that.editZone.html());
 
-				if(!that.selectedElements.length){
-				    var el = $('<span>&nbsp;</span>');
-				    if (!that.range && !that.editZone.html()) {
-				        var elementAtCaret = $('<div></div>').appendTo(that.editZone);
-				    }
-				    else {
-				        var elementAtCaret = that.range.startContainer;
-				        if (elementAtCaret.nodeType !== 1) {
-				            elementAtCaret = elementAtCaret.parentNode;
-				        }
-				        if (elementAtCaret.nodeName === 'SPAN') {
-				            el.attr('style', $(elementAtCaret).attr('style'));
-				            elementAtCaret = elementAtCaret.parentNode;
-				        }
-				        if (that.editZone.find(elementAtCaret).length === 0) {
-				            elementAtCaret = that.editZone[0];
-				        }
-				    }
-					
-					el.css(css);
-					$(elementAtCaret).append(el);
-					that.moveCaret(el[0], 1);
+				if(that.isCursor()){
+					applyCSSCursor(css);
 				}
-				else if (that.selectedElements.length === 1 &&
-                    (
-                        (
-                            that.range.startOffset === 0 &&
-                            that.range.endOffset === that.selectedElements[0].textContent.length
-                        ) || that.range.endContainer !== that.selectedElements[0]
-                    )
+				else if (that.range.startContainer === that.range.endContainer &&
+					(
+						that.range.startContainer.nodeType === 3 &&
+						that.range.startOffset === 0 &&
+						that.range.endOffset === that.range.startContainer.textContent.length
+					)
                 ) {
-				    var element = that.selectedElements[0];
-				    if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
-				        var el = document.createElement('span');
-				        el.textContent = element.textContent;
-				        element.parentNode.insertBefore(el, element.nextSibling);
-				        $(element).remove();
-				        element = el;
-				    }
-				    else {
-				        element = element.parentNode;
-				    }
-				    $(element).css(css);
-				    that.selectNode(element);
+				    applyCSSNode(css)
+				}
+				else if(that.range.startContainer === that.range.endContainer && 
+					(
+						that.range.startContainer.nodeType === 1 &&
+						that.range.startOffset === 0 &&
+						that.range.endOffset === that.range.startContainer.childNodes.length
+					)
+				){
+					if(that.range.startContainer !== that.editZone[0]){
+						$(that.range.startContainer).css(css);
+					}
+					else{
+						$(that.range.startContainer).find('*').css(css);
+					}
 				}
 				else{
 					var addedNodes = [];
-					that.selectedElements.forEach(function(item, index){
-						if(item.nodeType === 1){
-                            addedNodes.push(item);
-							$(item).css(css);
-						}
-						else{
-						    var el = $(document.createElement('span'));
-							el.css(css);
 
-							if(index === 0 && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
-								el.html(item.textContent.substring(that.range.startOffset));
-								item.parentNode.insertBefore(el[0], item.nextSibling);
-								item.textContent = item.textContent.substring(0, that.range.startOffset);
+					if(that.range.commonAncestorContainer.nodeType === 3){
+						addedNodes = addedNodes.concat(applyCSSText(css));
+					}
+					else{
+						var foundFirst = false;
+						for(var i = 0; i < that.range.commonAncestorContainer.childNodes.length; i++){
+							var sibling = that.range.commonAncestorContainer.childNodes[i];
+							if(
+								sibling === that.range.startContainer || 
+								sibling.contains(that.range.startContainer) || 
+								that.range.startContainer.contains(sibling)
+							){
+								foundFirst = true;
 							}
-							else if(index === that.selectedElements.length - 1 && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer){
-								el.text(item.textContent.substring(0, that.range.endOffset));
-								item.parentNode.insertBefore(el[0], item);
-								item.textContent = item.textContent.substring(that.range.endOffset);
+							if(!foundFirst){
+								continue;
 							}
-							else if(that.range.startContainer === that.range.endContainer && index === 0){
-								el.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
-								var textBefore = document.createTextNode('');
-								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-								item.parentNode.insertBefore(el[0], item);
-								item.parentNode.insertBefore(textBefore, el[0]);
-								item.textContent = item.textContent.substring(that.range.endOffset);
+
+							if(sibling.contains(that.range.startContainer)){
+								addedNodes = addedNodes.concat(
+									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+								);
+								continue;
 							}
-							addedNodes.push(el[0]);
+
+							if(that.range.startContainer.contains(sibling) || sibling === that.range.startContainer){
+								addedNodes = addedNodes.concat(
+									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+								);
+								continue;
+							}
+
+							if(sibling.contains(that.range.endContainer)){
+								addedNodes = addedNodes.concat(
+									applyCSSUntil(that.range.endContainer, that.range.endOffset, css)
+								);
+								break;
+							}
+
+							if(that.range.endContainer.contains(sibling) || sibling === that.range.endContainer){
+								addedNodes = addedNodes.concat(
+									applyCSSUntil(that.range.startContainer, that.range.startOffset, css)
+								);
+								break;
+							}
+
+							if(sibling.nodeType === 1){
+								addedNodes.push(sibling);
+								$(sibling).css(css);
+								$(sibling).find('*').css(css);
+								continue;
+							}
+							else{
+								var el = $(document.createElement('span'));
+								el.css(css);
+								addedNodes.push(el[0]);
+							}
+
+							if(sibling === that.range.endContainer){
+								break;
+							}
 						}
+					}
+
+                    var sel = window.getSelection();
+					var range = document.createRange();
+
+					range.setStartBefore(addedNodes[0]);
+					range.setEndAfter(addedNodes[addedNodes.length - 1]);
+
+					sel.removeAllRanges();
+					sel.addRange(range);
+					that.instance.trigger('selectionchange', {
+						selection: that.instance.selection
 					});
-                    if(addedNodes.length === 1){
-                        that.selectNode(addedNodes[0]);
-                    }
-                    else{
-                        var sel = window.getSelection();
-                        var range = document.createRange();
-
-                        range.setStartBefore(addedNodes[0]);
-                        range.setEndAfter(addedNodes[addedNodes.length - 1]);
-
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                        that.instance.trigger('selectionchange', {
-                            selection: that.instance.selection
-                        });
-                    }
 				}
 
                 that.instance.addState(that.editZone.html());
@@ -556,6 +677,9 @@ window.RTE = (function () {
 				    var different = false;
 				    var val = undefined;
 				    this.selectedElements.forEach(function (item) {
+						if(!item){
+							return;
+						}
 				        var itemVal;
 				        if (item.nodeType === 1) {
 				            itemVal = $(item).css(params);
@@ -594,6 +718,9 @@ window.RTE = (function () {
 			this.$ = function(){
 				var jSelector = $();
 				this.selectedElements.forEach(function(item){
+					if(!item){
+						return;
+					}
 					if(item.nodeType === 1){
 						jSelector = jSelector.add(item);
 					}
