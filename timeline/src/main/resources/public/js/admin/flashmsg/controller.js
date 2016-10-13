@@ -9,8 +9,8 @@ function AdminFlashMsgController($scope) {
     $scope.formatDate = function(date) {
         return moment(date).format('L')
     }
-    $scope.formatContent = function(content) {
-        return $(content).text()
+    $scope.formatContent = function(lang, contents) {
+        return $(contents[currentLanguage]).text()
     }
 
     $scope.changeFilters = function($timeout) {
@@ -132,9 +132,11 @@ function AdminFlashMsgController($scope) {
             {
                 check : function() {
                     return message.title &&
-                        message.content &&
-                        message.title.trim() &&
-                        message.content.trim()
+                        message.contents &&
+                        _.any(message.contents, function(item){
+                            return item.trim()
+                        }) &&
+                        message.title.trim()
                 },
                 message: "missing.or.empty.required.field"
             },
@@ -188,7 +190,7 @@ function AdminFlashMsgController($scope) {
 
     $scope.duplicateMessage = function(message) {
         var duplicate = new FlashMsg()
-        duplicate.content = message.content
+        duplicate.contents = message.contents
         duplicate.title = message.title + lang.translate('timeline.flashmsg.duplicate.append.title')
         duplicate.color = message.color
         duplicate.customColor = message.customColor

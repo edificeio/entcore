@@ -51,7 +51,7 @@
             ng-class="edited.message.color"
             ng-style="{ 'background-color': edited.message.customColor }">
             <i class="close-2x right-magnet"></i>
-            <div bind-html="edited.message.content"></div>
+            <div bind-html="edited.message.contents[edited.message.lang]"></div>
         </div>
     </portal>
 </body>

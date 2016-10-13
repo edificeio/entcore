@@ -42,7 +42,7 @@
                 ng-change="edited.message.color = null" class="inline-middle">
         </div>
         <div class="row">
-            <editor ng-model="edited.message.content" public="true"></editor>
+            <editor ng-model="edited.message.contents[edited.message.lang]" public="true"></editor>
         </div>
         <div>
             <div class="warning vertical-spacing-twice" ng-if="validateError && !validateMessage(edited.message)">

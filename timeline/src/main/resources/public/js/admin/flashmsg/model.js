@@ -1,4 +1,10 @@
 function FlashMsg(){
+    var that = this
+    this.contents = this.contents || {}
+    model.languages.forEach(function(language){
+        if(!that.contents[language])
+            that.contents[language] = ""
+    })
     this.startDate = this.startDate ? new Date(this.startDate) : new Date()
     this.endDate = this.endDate ? new Date(this.endDate) : new Date()
     this.lang = this.lang || currentLanguage
@@ -22,10 +28,9 @@ FlashMsg.prototype.toJSON = function(){
         startDate:      this.startDate,
         endDate:        this.endDate,
         profiles:       this.profiles,
-        lang:           this.lang || currentLanguage,
         color:          this.color,
         customColor:    this.customColor,
-        content:        this.content
+        contents:       this.contents
     }
 }
 

@@ -6,7 +6,7 @@
         ng-class="message.color"
         ng-style="{ 'background-color': message.customColor }">
         <i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
-        <div bind-html="message.content"></div>
+        <div bind-html="message.contents[currentLanguage]"></div>
     </div>
 </div>
 <div data-ng-controller="Timeline" class="twelve cell">

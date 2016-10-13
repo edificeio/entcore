@@ -113,6 +113,7 @@ function Notifications($scope, model, lang){
 }
 
 function FlashMessages($scope, model, lang) {
+	$scope.currentLanguage = currentLanguage
     $scope.messages = model.flashMessages
 
     $scope.markMessage = function(message){
