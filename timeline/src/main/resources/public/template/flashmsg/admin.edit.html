@@ -12,7 +12,7 @@
         </div>
         <div>
             <label><i18n>timeline.admin.endDate</i18n>*</label>
-            <date-picker ng-model="edited.message.endDate"></date-picker>
+            <date-picker ng-model="edited.message.endDate" ng-change="formatEndDate(edited.message)"></date-picker>
         </div>
         <div>
             <label><i18n>timeline.admin.profiles</i18n>*</label>

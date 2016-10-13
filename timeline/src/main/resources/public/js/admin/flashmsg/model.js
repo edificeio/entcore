@@ -6,7 +6,7 @@ function FlashMsg(){
             that.contents[language] = ""
     })
     this.startDate = this.startDate ? new Date(this.startDate) : new Date()
-    this.endDate = this.endDate ? new Date(this.endDate) : new Date()
+    this.endDate = this.endDate ? new Date(this.endDate) : moment(new Date()).endOf('day').toDate()
     this.lang = this.lang || currentLanguage
 }
 FlashMsg.prototype.api = {
