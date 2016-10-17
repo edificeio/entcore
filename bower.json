@@ -1,0 +1,22 @@
+{
+  "name": "entcore",
+  "homepage": "https://github.com/entcore/entcore",
+  "authors": [
+    "WSE <tech@web-education.net>"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "AGPL 3.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "entcore": "git://github.com/entcore/infra-front#dev",
+    "toolkit": "git://github.com/entcore/toolkit#dev"
+  }
+}

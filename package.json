@@ -1,0 +1,48 @@
+{
+  "name": "ent-core",
+  "version": "1.0.0",
+  "description": "Notes d'utilisation\r ====================",
+  "main": "gulpfile.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/entcore/entcore.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/entcore/entcore/issues"
+  },
+  "homepage": "https://github.com/entcore/entcore#readme",
+  "dependencies": {
+    "@types/core-js": "0.9.36",
+    "angular": "1.3.20",
+    "angular-route": "1.3.20",
+    "angular-sanitize": "1.3.20",
+    "core-js": "^2.4.1",
+    "entcore-toolkit": "^1.0.1",
+    "gulp": "^3.9.1",
+    "gulp-bower": "0.0.13",
+    "gulp-clean": "^0.3.2",
+    "gulp-less": "^3.3.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-rev": "^7.1.2",
+    "gulp-rev-replace": "^0.4.3",
+    "gulp-typescript": "^3.1.6",
+    "gulp-uglify": "^2.1.2",
+    "gulp-watch": "^4.3.11",
+    "humane-js": "^3.2.2",
+    "jquery": "^3.2.1",
+    "merge2": "^1.0.3",
+    "moment": "^2.18.1",
+    "source-map-loader": "^0.1.5",
+    "typescript": "2.3.2",
+    "underscore": "^1.8.3",
+    "webpack-stream": "^3.2.0"
+  }
+}
