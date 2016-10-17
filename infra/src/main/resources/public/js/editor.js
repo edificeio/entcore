@@ -2799,11 +2799,18 @@ window.RTE = (function () {
                                }
                             });
 
-                            scope.$apply(function(){
+                            if (!scope.$$phase) {
+                                scope.$apply(function () {
+                                    scope.$eval(attributes.ngChange);
+                                    var content = editZone.html();
+                                    ngModel.assign(scope, content);
+                                });
+                            }
+                            else {
                                 scope.$eval(attributes.ngChange);
                                 var content = editZone.html();
                                 ngModel.assign(scope, content);
-                            });
+                            }
                         });
 
                         var placeToolbar = function () {
