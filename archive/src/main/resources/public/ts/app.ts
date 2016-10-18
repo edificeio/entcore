@@ -1,4 +1,6 @@
-function ArchiveController($scope){
+import { ng, http } from 'entcore'
+
+const archiveController = ng.controller('ArchiveController', ['$scope', ($scope) => {
 	$scope.filePath = 'about:blank'
 	$scope.initiateExport = function(){
 		http().post('/archive/export', {}, { requestName: 'archive' }).done(function(data){
@@ -11,4 +13,6 @@ function ArchiveController($scope){
 			$scope.$apply();
 		})
 	};
-}
+}]);
+
+ng.controllers.push(archiveController);
