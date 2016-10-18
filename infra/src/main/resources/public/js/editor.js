@@ -940,7 +940,9 @@ window.RTE = (function () {
 							    }
 							});
 
-							MathJax.Hub.Rerender();
+							if(MathJax && MathJax.Hub){
+								MathJax.Hub.Rerender();
+							}
 
 							instance.trigger('justify-changed');
 						});
@@ -1003,7 +1005,9 @@ window.RTE = (function () {
 							    }
 							});
 
-							MathJax.Hub.Rerender();
+							if(MathJax && MathJax.Hub){
+								MathJax.Hub.Rerender();
+							}
 
 							instance.trigger('justify-changed');
 						});
@@ -1071,7 +1075,9 @@ window.RTE = (function () {
 							    }
 							});
 
-							MathJax.Hub.Rerender();
+							if(MathJax && MathJax.Hub){
+								MathJax.Hub.Rerender();
+							}
 
 							instance.trigger('justify-changed');
 						});
@@ -1129,7 +1135,9 @@ window.RTE = (function () {
 							    }
 							});
 
-							MathJax.Hub.Rerender();
+							if(MathJax && MathJax.Hub){
+								MathJax.Hub.Rerender();
+							}
 
 							instance.trigger('justify-changed');
 						});
