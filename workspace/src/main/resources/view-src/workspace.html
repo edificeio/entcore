@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
  ~	Copyright © WebServices pour l'Éducation, 2014
  ~
@@ -24,8 +24,8 @@
 		<title>{{#i18n}}workspace.title{{/i18n}}</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-		<script type="text/javascript" src="/workspace/public/dist/entcore/ng-app-07b15a9d15.js" id="context"></script>
-		<script type="text/javascript" src="/workspace/public/dist/application-0b07de0c69.js"></script>
+		<script type="text/javascript" src="/workspace/public/dist/entcore/ng-app.js" id="context"></script>
+		<script type="text/javascript" src="/workspace/public/dist/application.js"></script>
 
 		<script type="text/ng-template" id="folder-content">
 			<a ng-class="{ selected: openedFolder.folder === folder, opened: containsCurrentFolder(folder) && folder.name !== 'trash' }" ng-click="openFolder(folder)" ng-if="folder.name !== undefined"

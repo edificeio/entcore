@@ -15,6 +15,9 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+import { Behaviours, http, workspace } from 'entcore';
+import { _ } from 'entcore/libs/underscore/underscore';
+
 console.log('workspace behaviours loaded');
 
 Behaviours.register('workspace', {
@@ -131,8 +134,8 @@ Behaviours.register('workspace', {
 		xhr.open('GET', '/workspace/document/' + file._id, true);
 		xhr.responseType = 'blob';
 		xhr.onload = function(e) {
-			if (this.status == 200) {
-				var blobDocument = this.response;
+			if (xhr.status == 200) {
+				var blobDocument = xhr.response;
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
 				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
@@ -234,10 +237,10 @@ Behaviours.register('workspace', {
 					}
 					else{
 						if(this.visibility === 'public'){
-							window.location = '/workspace/pub/document/' + document._id;
+							window.location.href = '/workspace/pub/document/' + document._id;
 						}
 						else{
-							window.location = '/workspace/document/' + document._id;
+							window.location.href = '/workspace/document/' + document._id;
 						}
 					}
 				},

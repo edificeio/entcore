@@ -10,7 +10,7 @@ var clean = require('gulp-clean');
 var sourcemaps = require('gulp-sourcemaps');
 var typescript = require('typescript');
 
-var apps = ['auth', 'timeline', 'conversation', 'archive'];
+var apps = ['auth', 'timeline', 'conversation', 'archive', 'workspace'];
 
 var paths = {
     infra: '../infra-front'

@@ -15,6 +15,12 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+import { routes, ng, template, idiom as lang, http, notify } from 'entcore';
+import { workspace } from './model';
+import { _ } from 'entcore/libs/underscore/underscore';
+import { $ } from 'entcore/libs/jquery/jquery';
+import { moment } from 'entcore/libs/moment/moment';
+
 routes.define(function($routeProvider) {
 	$routeProvider
 		.when('/folder/:folderId', {
@@ -31,7 +37,7 @@ routes.define(function($routeProvider) {
 		})
 });
 
-function Workspace($scope, date, notify, _, route, $rootScope, $timeout, template, model, lang){
+export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', 'model', 'route', ($scope, $rootScope, $timeout, model, route) => {
 
 	route({
 		viewFolder: function(params){
@@ -163,7 +169,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 				(($scope.currentFolderTree.name !== 'trash' && doc.folder !== 'Trash') || ($scope.currentFolderTree.name === 'trash' && doc.folder === 'Trash'));
 		});
 		documents = documents.map(function(item){
-			item = new Document(item);
+			item = new workspace.Document(item);
 			item.behaviours('workspace');
 			return item;
 		});
@@ -619,7 +625,8 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 			var index = $scope.loadingFiles.length;
 			var loadingFile = {
 				file: file.file,
-				loading: true
+				loading: true,
+				request: undefined
 			};
 
 			if(chosenNames[i]){
@@ -682,7 +689,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 			return moment().format('D MMMM YYYY');
 		}
 
-		return date.format(dateString.split(' ')[0], 'D MMMM YYYY')
+		return moment(dateString.split(' ')[0]).format('D MMMM YYYY');
 	}
 
 	$scope.shortDate = function(dateItem){
@@ -691,10 +698,10 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		}
 
 		if(typeof dateItem === "number")
-			return date.format(dateItem, 'L')
+			return moment(dateItem).format('L');
 
 		if(typeof dateItem === "string")
-			return date.format(dateItem.split(' ')[0], 'L')
+			return moment(dateItem.split(' ')[0]).format('L');
 
 		return moment().format('L');
 	}
@@ -781,10 +788,10 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 	$scope.currentFolderTree = $scope.folder.children[0];
 	$scope.openFolder($scope.folder.children[0]);
 
-	var getFolders = function(tree, params, hook){
+	var getFolders = function(tree, params, hook?){
 		http().get('/workspace/folders/list', params).done(function(folders){
 			_.sortBy(folders, function(folder){ return folder.folder.split("_").length }).forEach(function(folder){
-				folder = new Folder(folder);
+				folder = new workspace.Folder(folder);
 				folder.behaviours('workspace');
 				folder.created = folder.created.split('.')[0] + ':' + folder.created.split('.')[1].substring(0, 2)
 				if(folder.folder.indexOf('Trash') !== -1){
@@ -905,7 +912,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		$scope.selectedFolder.folder = value;
 	};
 
-	function updateFolders(hook){
+	function updateFolders(hook?){
 		getFolders($scope.folder.children[0], { filter: 'owner' }, hook);
 	}
 
@@ -917,7 +924,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		template.close('lightbox');
 		var folderString = folderToString($scope.folder.children[0], targetFolders[0]);
 
-		var data = {};
+		var data = {} as any;
 		if(folderString !== ''){
 			data.path = folderString;
 		}
@@ -954,7 +961,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 		template.close('lightbox');
 		var folderString = folderToString($scope.folder.children[0], target);
 
-		var data = {};
+		var data = {} as any;
 		if(folderString !== ''){
 			data.path = folderString;
 		}
@@ -1003,7 +1010,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 				});
 			}
 			$scope.selectedFolders().forEach(function(folder){
-				var param = { name: folder.name };
+				var param = { name: folder.name } as any;
 				if(folderString !== ''){
 					param.path = folderString;
 				}
@@ -1104,7 +1111,7 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 			var splitList = file.name.split('.');
 			var extension = splitList[splitList.length - 1];
 
-			var newFile = { file: file, name: file.name.split('.' + extension)[0] };
+			var newFile = { file: file, name: file.name.split('.' + extension)[0] } as any;
 			if($scope.newFile.name !== ''){
 				$scope.newFile.name = $scope.newFile.name + ', ';
 			}
@@ -1358,4 +1365,4 @@ function Workspace($scope, date, notify, _, route, $rootScope, $timeout, templat
 			model.quota.sync();
 		})
 	}
-}
+}]);

@@ -39,3 +39,6 @@ auth/src/main/resources/public/temp
 conversation/src/main/resources/view/*
 conversation/src/main/resources/public/js
 conversation/src/main/resources/public/temp
+workspace/src/main/resources/view/*
+workspace/src/main/resources/public/js
+workspace/src/main/resources/public/temp
