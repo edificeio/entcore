@@ -1,0 +1,43 @@
+<div class="calendar-current-week">
+    <i18n>calendar.weekfrom</i18n> [[calendar.firstDay.format('DD/MM/YYYY')]] <i18n>calendar.weekto</i18n> [[moment(calendar.firstDay).add(6, 'days').format('DD/MM/YYYY')]]
+</div>
+<div class="week-switcher">
+	<date-picker-icon ng-model="calendar.dayForWeek" ng-change="updateCalendarWeek()" class="cell"></date-picker-icon>
+</div>
+<div class="schedule" drawing-zone>
+	<legend class="timeslots">
+		<div ng-repeat="timeslot in calendar.timeSlots.all" class="timeslot">
+			[[timeslot.beginning]]h00 - [[timeslot.end]]h00
+		</div>
+	</legend>
+	<div class="days">
+		<button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
+		<div ng-repeat="day in calendar.days.all" class="day">
+			<legend translate content="[[day.name]]"></legend>
+			<div class="hidden-schedule-items before" ng-if="day.scheduleItems.beforeCalendar() > 0">
+				+ [[day.scheduleItems.beforeCalendar()]]
+			</div>
+			<div class="timeslots">
+				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot" ng-click="createItem(day, timeslot)"></div>
+			</div>
+
+			<div class="schedule-items">
+				<div ng-repeat="item in day.scheduleItems.all">
+					<schedule-item item="scheduleItem" day="day"></schedule-item>
+				</div>
+			</div>
+			<div class="hidden-schedule-items after" ng-if="day.scheduleItems.afterCalendar() > 0">
+				+ [[day.scheduleItems.afterCalendar()]]
+			</div>
+		</div>
+		<button class="next-timeslots" ng-click="nextTimeslots()"  ng-disabled="calendar.timeSlots.last().end === 24"></button>
+	</div>
+	<div class="row"></div>
+
+	<lightbox show="display.editItem" on-close="display.editItem = false;">
+		<container template="schedule-edit-template"></container>
+	</lightbox>
+	<lightbox show="display.createItem" on-close="closeCreateWindow()">
+		<container template="schedule-create-template"></container>
+	</lightbox>
+</div>

@@ -1,0 +1,67 @@
+<lightbox show="linker.display.chooseLink" on-close="linker.display.chooseLink = false;">
+	<h2>Créer un lien</h2>
+	<div class="tabs linker">
+		<header ng-click="linker.externalLink = false" ng-class="{ selected: !linker.externalLink }"><i18n>linker.search</i18n></header>
+		<header ng-click="linker.externalLink = true" ng-class="{ selected: linker.externalLink }"><i18n>linker.external</i18n></header>
+
+		<section ng-if="linker.externalLink">
+			<div class="row">
+				<label class="four cell zero-mobile"><i18n>linker.address</i18n></label>
+				<input class="four cell twelve-mobile" type="text" placeholder="http://adresse-du-site.com" ng-model="linker.params.link" />
+			</div>
+			<div class="row">
+				<label class="four cell zero-mobile"><i18n>linker.tooltip</i18n></label>
+				<input class="four cell twelve-mobile" type="text" i18n-placeholder="linker.tooltip" ng-model="linker.params.tooltip" />
+			</div>
+			<div class="row">
+				<div class="four cell zero-mobile">&nbsp;</div>
+				<input type="checkbox" ng-model="linker.params.blank" /><i18n>linker.blank</i18n>
+			</div>
+		</section>
+		<section ng-if="!linker.externalLink" class="row">
+			<div class="row">
+				<div class="twelve cell vertical-spacing">
+					<div class="row">
+            <select ng-model="linker.search.application" ng-options="app.displayName for app in linker.apps" class="five cell" ng-change="linker.loadApplicationResources()"></select>
+            <input type="text" i18n-placeholder="search" ng-model="linker.search.text" class="six cell right-magnet" ng-change="linker.searchApplication()" />
+					</div>
+				</div>
+			</div>
+			<article class="found-resources" ng-class="{ info: linker.search.text === '' }">
+				<div ng-if="linker.search.text === ''" class="reduce-block-six">
+					<div class="row">
+						<i18n>linker.warning</i18n>
+					</div>
+				</div>
+				<div ng-if="linker.resources.length === 0 && linker.search.text !== ''">
+					<div ng-include="'/' + linker.params.appPrefix + '/public/template/behaviours/linker-notfound.html'"></div>
+				</div>
+				<ul class="illustrated-list" ng-if="linker.search.text">
+					<li ng-repeat="resource in linker.resources" ng-click="linker.applyResource(resource)" ng-class="{ selected: resource.path === linker.params.link }">
+						<img skin-src="[[resource.icon]]" class="illustration" />
+						<a class="eight cell-ellipsis name">[[resource.title]]</a>
+						<em class="two cell-ellipsis owner">[[resource.ownerName]]</em>
+					</li>
+				</ul>
+			</article>
+			<div class="twelve cell vertical-spacing">
+				<div class="row">
+					<label class="three cell zero-mobile"><i18n>linker.tooltip</i18n></label>
+					<input class="nine cell twelve-mobile" type="text" ng-model="linker.params.tooltip" i18n-placeholder="linker.tooltip" />
+				</div>
+				<div class="row">
+					<div class="three cell zero-mobile">&nbsp;</div>
+					<input type="checkbox" ng-model="linker.params.blank" /><i18n>linker.blank</i18n>
+				</div>
+			</div>
+
+		</section>
+	</div>
+
+	<div class="row">
+		<div class="twelve cell reduce-block-four">
+			<input type="button" i18n-value="linker.create" ng-click="linker.saveLink()" ng-disabled="!linker.params.link" class="right-magnet" />
+			<input type="button" class="cancel right-magnet" i18n-value="cancel" ng-click="linker.cancel()" />
+		</div>
+	</div>
+</lightbox>

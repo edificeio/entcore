@@ -1,0 +1,90 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<script type="text/ng-template" id="list-folders">
+	<li ng-repeat="folder in folder.folders.all">
+		<a ng-click="openFolder(folder)" ng-class="{ selected: folder === openedFolder }">[[folder.name]]</a>
+		<ul ng-include="'list-folders'">
+		</ul>
+	</li>
+</script>
+
+<div class="row reduce-block-four search">
+	<h2 translate content="library.browse.title"></h2>
+	<input type="search" ng-model="display.search" i18n-placeholder="search" ng-change="updateSearch()" class="six cell" />
+	<hr />
+</div>
+<div class="row browse">
+	<nav class="four cell vertical twelve-mobile">
+		<ul>
+			<li workflow="workspace.create">
+				<a ng-click="listFrom('myDocuments')" ng-class="{ selected: display.listFrom === 'myDocuments' }"><i18n>workspace.myDocuments</i18n></a>
+				<div>
+					<ul ng-include="'list-folders'">
+					</ul>
+				</div>
+			</li>
+			<li>
+				<a ng-click="listFrom('sharedDocuments')" ng-class="{ selected: display.listFrom === 'sharedDocuments' }"><i18n>workspace.sharedDocuments</i18n></a>
+			</li>
+			<li workflow="workspace.create">
+				<a ng-click="listFrom('appDocuments')" ng-class="{ selected: display.listFrom === 'appDocuments' }"><i18n>workspace.appDocuments</i18n></a>
+			</li>
+			<li workflow="workspace.create" ng-if="visibility === 'public'">
+				<a ng-click="listFrom('publicDocuments')" ng-class="{ selected: display.listFrom === 'publicDocuments' }"><i18n>workspace.publicDocuments</i18n></a>
+			</li>
+		</ul>
+	</nav>
+	<div class="cell eight height-five twelve-mobile height-ten-mobile">
+		<div class="absolute reduce-block-eight" ng-if="!documents.length && !folders.length" style="text-align: center"><i18n>library.browse.notfound</i18n></div>
+		<div class="absolute icons-view" style="overflow: auto" bottom-scroll="display.limit = display.limit + 6">
+			<div class="element reduce-block-six" ng-repeat="folder in folders | limitTo:display.limit">
+				<div class="container" ng-click="openFolder(folder)">
+					<i class="folder-large"></i>
+				</div>
+				<legend>
+					<a class="medium-text">[[folder.name]]</a>
+				</legend>
+			</div>
+			<div class="element reduce-block-six" ng-repeat="document in documents | orderBy:'created':true | limitTo:display.limit - folders.length" ng-class="{ selected: document.selected }">
+				<div class="img container" ng-click="selectDocument(document)" ng-if="document.role() === 'img'">
+					<div class="clip">
+						<img ng-src="/workspace/document/[[document._id]]?thumbnail=120x120" />
+						<div class="absolute" ng-if="display.loading && display.loading.indexOf(document) !== -1">
+							<img skin-src="/img/illustrations/loading.gif" />
+						</div>
+					</div>
+				</div>
+				<div class="container" ng-click="selectDocument(document)" ng-if="document.role() !== 'img'">
+					<i class="[[document.role()]]-large"></i>
+				</div>
+				<input type="checkbox" ng-if="multiple" ng-model="document.selected" />
+				<legend>
+					<a class="medium-text">[[document.name]]</a>
+					<a><strong class="small-text">[[document.ownerName]]</strong></a>
+				</legend>
+			</div>
+		</div>
+	</div>
+	<div class="row" ng-if="multiple">
+		<input type="button" class="right-magnet vertical-spacing-twice" ng-click="selectDocuments()" ng-disabled="display.loading" i18n-value="library.browse.add" />
+	</div>
+</div>
+<div class="row"></div>

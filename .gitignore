@@ -36,3 +36,6 @@ node_modules
 auth/src/main/resources/view/*
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
+conversation/src/main/resources/view/*
+conversation/src/main/resources/public/js
+conversation/src/main/resources/public/temp

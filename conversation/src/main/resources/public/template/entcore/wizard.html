@@ -1,0 +1,27 @@
+<section class="wizard">
+	<nav class="steps">
+
+	</nav>
+	<article class="current-step">
+		<div class="step-content">
+
+		</div>
+		<nav>
+			<button class="cancel" ng-click="cancel()">
+				<i18n>cancel</i18n>
+			</button>
+			<button class="previous" ng-click="previousStep();" ng-if="currentStep > 0">
+				<i18n>previous</i18n>
+			</button>
+			<button class="next" ng-click="nextStep();" ng-if="currentStep < nbSteps - 1 && !internalNext" ng-disabled="!nextCondition()">
+				<i18n>next</i18n>
+			</button>
+			<button class="finish" ng-if="currentStep === nbSteps - 1" ng-click="finish()" ng-disabled="!checkFinishCondition() || !nextCondition()">
+				<i18n>wizard.finish</i18n>
+			</button>
+		</nav>
+	</article>
+	<div class="steps" ng-transclude>
+
+	</div>
+</section>

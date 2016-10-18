@@ -2,17 +2,17 @@
 <script type="text/ng-template" id="folder-content">
 	<a ng-click="openUserFolder(folder, obj)"
 	   ng-init="obj = { template: '' }"
-	   ng-class="{ selected: folders.current.id === folder.id, opened: folders.current.id === folder.id || isParentOf(folder, folders.current) }"
+	   ng-class="{ selected: conversation.currentFolder.id === folder.id, opened: conversation.currentFolder.id === folder.id || isParentOf(folder, conversation.currentFolder) }"
 	   dragdrop="dropTo(folder, $originalEvent)"
 	   dropcondition="dropCondition(folder)"
 	   class="folder-list-item">
 		<i class="arrow" ng-if="folder.userFolders.length()"></i>
 		[[folder.name]]
 		<i class="close" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
-		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder)"></i>
+		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
 	</a>
-	<ul ng-class="{ selected: folders.current.id === folder.id, closed: !selected }"
-		ng-if="folders.current.id === folder.id || isParentOf(folder, folders.current)">
+	<ul ng-class="{ selected: conversation.currentFolder.id === folder.id, closed: !selected }"
+		ng-if="conversation.currentFolder.id === folder.id || isParentOf(folder, conversation.currentFolder)">
 		<li data-ng-repeat="folder in folder.userFolders.all | orderBy : 'name'"
 			data-ng-include="obj.template">
 		</li>
@@ -24,91 +24,72 @@
 	</ul>
 </script>
 
-<section class="four cell" bottom-scroll="nextPage()">
-	<app-title>
-		<h1><a data-reload><i class="conversation"></i><span translate key="conversation.title"></span></a></h1>
-	</app-title>
+<div class="row rigid-grid">
+    <section class="four cell" bottom-scroll="nextPage()">
+        <app-title>
+            <h1><a data-reload><i class="conversation"></i><i18n>conversation.title</i18n></a></h1>
+        </app-title>
 
-	<nav class="vertical mobile-navigation" side-nav>
-		<h2><i18n>messages</i18n></h2>
-		<ul>
-			<li>
-				<a
-						ng-if="!folders.inbox.nbUnread"
-						ng-click="openFolder('inbox')"
-						ng-class="{ selected: folders.current.folderName === 'inbox' }">
-					[[lang.translate('inbox')]]
-				</a>
-				<a
-						ng-if="folders.inbox.nbUnread"
-						ng-click="openFolder('inbox')"
-						ng-class="{ selected: folders.current.folderName === 'inbox' }">
-					<strong>[[lang.translate('inbox')]] ([[folders.inbox.nbUnread]])</strong>
-				</a>
-			</li>
-			<li>
-				<a ng-click="openFolder('outbox')" ng-class="{ selected: folders.current.folderName === 'outbox' }">
-					[[lang.translate('outbox')]]
-				</a>
-			</li>
-			<li>
-				<a ng-click="openFolder('draft')" ng-class="{ selected: folders.current.folderName === 'draft' }">
-					[[lang.translate('draft')]]
-				</a>
-			</li>
-			<li>
-				<a class="folder-list-item"
-				   ng-click="openFolder('trash')" ng-class="{ selected: folders.current.folderName === 'trash' }"
-				   dragdrop="dropTo(folders.trash, $originalEvent)"
-			       dropcondition="dropCondition(folders.trash)">
-					[[lang.translate('trash')]]
-				</a>
-			</li>
-		</ul>
+        <nav class="vertical mobile-navigation" side-nav>
+            <h2><i18n>messages</i18n></h2>
+            <ul>
+                <li>
+                    <a ng-if="!folders.inbox.nbUnread"
+                       ng-click="openFolder('inbox')"
+                       ng-class="{ selected: conversation.currentFolder.folderName === 'inbox' }">
+                        [[lang.translate('inbox')]]
+                    </a>
+                    <a ng-if="folders.inbox.nbUnread"
+                       ng-click="openFolder('inbox')"
+                       ng-class="{ selected: conversation.currentFolder.folderName === 'inbox' }">
+                        <strong>[[lang.translate('inbox')]] ([[folders.inbox.nbUnread]])</strong>
+                    </a>
+                </li>
+                <li>
+                    <a ng-click="openFolder('outbox')" ng-class="{ selected: conversation.currentFolder.folderName === 'outbox' }">
+                        [[lang.translate('outbox')]]
+                    </a>
+                </li>
+                <li workflow="conversation.draft">
+                    <a ng-click="openFolder('draft')" ng-class="{ selected: conversation.currentFolder.folderName === 'draft' }">
+                        [[lang.translate('draft')]]
+                    </a>
+                </li>
+                <li>
+                    <a class="folder-list-item"
+                       ng-click="openFolder('trash')" ng-class="{ selected: conversation.currentFolder.folderName === 'trash' }"
+                       dragdrop="dropTo(folders.trash, $originalEvent)"
+                       dropcondition="dropCondition(folders.trash)">
+                        [[lang.translate('trash')]]
+                    </a>
+                </li>
+            </ul>
 
-		<lightbox show="lightbox.show" on-close="lightbox.show = false">
-			<div ng-include="$parent.template.containers.lightbox"></div>
-		</lightbox>
+            <lightbox show="lightbox.show" on-close="lightbox.show = false">
+                <container template="lightbox"></container>
+            </lightbox>
 
-		<nav class="vertical row" ng-if="maxDepth">
-			<h2><i18n>user.folders</i18n></h2>
-		</nav>
+            <nav class="vertical row" ng-if="conversation.maxFolderDepth">
+                <h2><i18n>user.folders</i18n></h2>
+            </nav>
 
-		<nav class="vertical" ng-if="maxDepth">
-			<div ng-include="rootFolderTemplate.template"></div>
-			<a class="classic-link" ng-click="openNewFolderView()" ng-show="maxDepth && maxDepth > 0 && currentFolderDepth() < maxDepth">
-				<i18n>create.folder</i18n>
-			</a>
-		</nav>
+            <nav class="vertical" ng-if="conversation.maxFolderDepth">
+                <div ng-include="rootFolderTemplate.template"></div>
+                <a class="classic-link" ng-click="openNewFolderView()" ng-show="conversation.maxFolderDepth && conversation.maxFolderDepth > 0 && currentFolderDepth() < conversation.maxFolderDepth">
+                    <i18n>create.folder</i18n>
+                </a>
+            </nav>
 
-		<nav class="vertical">
-			<hr class="row" />
-			<h2><i18n>used.space</i18n></h2>
-			<progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
-		</nav>
+            <nav class="vertical">
+                <hr class="row" />
+                <h2><i18n>used.space</i18n></h2>
+                <progress-bar max="quota.max" filled="quota.used" unit="[[quota.unit]]"></progress-bar>
+            </nav>
 
-	</nav>
+        </nav>
 
-</section>
-<section class="margin-four reduce-block-eight main-col" ng-include="viewsContainers.main">
-	
-</section>
-
-<section class="toggle-buttons" ng-class="{ hide: folders.current.mails.selection().length === 0 && (!folders.current.userFolders || folders.current.userFolders.selection().length === 0) }">
-	<div class="toggle">
-		<div class="row">
-			<button ng-click="removeSelection()" ng-if="folders.current.mails.selection().length || folders.current.userFolders.selection().length">
-				<i18n>remove</i18n>
-			</button>
-			<button ng-click="restore()" ng-if="(folders.current.mails.selection().length || folders.current.userFolders.selection().length) && folders.current.folderName === 'trash'">
-				<i18n>restore</i18n>
-			</button>
-			<button ng-click="moveSelection()" ng-if="folders.current.mails.selection().length && folders.current.folderName !== 'trash'">
-				<i18n>move.inside.folder</i18n>
-			</button>
-			<button ng-click="removeFromUserFolder()" ng-if="folders.current.mails.selection().length && folders.current.id">
-				<i18n>remove.from.folder</i18n>
-			</button>
-		</div>
-	</div>
-</section>
+    </section>
+    <section class="margin-four reduce-block-eight main-col">
+        <container template="main"></container>
+    </section>
+</div>

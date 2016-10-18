@@ -18,16 +18,9 @@
  ~
  -->
 
-
-<h2><i18n>folder.rename</i18n></h2>
-
-<div class="row">
-	<label class="two cell" translate content="folder.title"></label>
-	<input class="ten cell" type="text" ng-model="targetFolder.name" autofocus />
-	<hr />
-</div>
-
-<div class="row">
-    <button ng-click="updateFolder()" class="right-magnet" ng-disabled="!targetFolder.name"><i18n>modify</i18n></button>
-    <button type="button" class="cancel right-magnet" ng-click="lightbox.show = false"><i18n>cancel</i18n></button>
+<div ng-controller="Widgets" sortable-list class="twelve cell">
+	<div class="row widget-container" ng-repeat="widget in widgets.all | orderBy:'index' | filter:allowedWidget" sortable-element
+         ng-model="widget.index" ng-change="widgets.savePreferences()">
+		<div class="twelve cell" ng-include="widget.path"></div>
+	</div>
 </div>

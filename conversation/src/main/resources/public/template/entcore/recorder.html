@@ -1,0 +1,22 @@
+<div ng-if="recorder.isCompatible()">
+	<div class="view">
+		<div class="metadata">
+			<div class="elapsed-time">
+				[[time()]]
+			</div>
+			<input type="text" i18n-placeholder="title" ng-model="recorder.title" />
+		</div>
+		<div class="status" ng-if="recorder.status === 'encoding' || recorder.status === 'uploading'">
+			<span class="recorder-status" translate content="recorder.[[recorder.status]]"></span>
+		</div>
+	</div>
+	<div class="controls">
+		<i class="record" ng-click="switchRecord()" ng-class="{ pause: recorder.status === 'recording' }" tooltip="[[recorder.status === 'recording' ? 'record.stop' : 'record.start']]"></i>
+		<i class="play" ng-click="switchPlay()" ng-if="recorder.elapsedTime > 0" ng-class="{ pause: recorder.status === 'playing' }" tooltip="record.play"></i>
+		<i class="remove" ng-click="recorder.flush()" ng-if="recorder.elapsedTime > 0" tooltip="record.remove"></i>
+		<i class="save" ng-click="saveRecord()" ng-if="recorder.elapsedTime > 0" tooltip="record.save"></i>
+	</div>
+</div>
+<div ng-if="!recorder.isCompatible()">
+	<p><i18n>recorder.not.supported</i18n></p>
+</div>

@@ -1,9 +1,0 @@
-<div class="last-mails-widget">
-	<h1 translate content="widget.title"></h1>
-	<ul class="row">
-		<li ng-repeat="mail in widget.mails | limitTo:3">
-			<a ng-href="/conversation/conversation#/read-mail/[[mail.id]]">[[mail.subject]]</a>
-		</li>
-		<li ng-if="widget.mails.length === 0" translate content="widget.empty"></li>
-	</ul>
-</div>

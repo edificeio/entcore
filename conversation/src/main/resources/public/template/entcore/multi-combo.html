@@ -1,0 +1,20 @@
+<button class="multi-combo-root-button" ng-click="toggleVisibility()" ng-class="{'opened': show}" ng-disabled="disable()">[[title]]</button>
+<div class="multi-combo-root-panel hidden" ng-class="{'hidden': !show}">
+	<div class="multi-combo-panel-opts">
+		<h4>[[labels().options]]</h4>
+		<button class="multi-combo-select-all" ng-click="selectAll()" ng-if="!maxSelected" title="[[labels().selectAll]]"></button>
+		<button class="multi-combo-deselect-all" ng-click="deselectAll()" title="[[labels().deselectAll]]"></button>
+	</div>
+	<div class="multi-combo-search-bar">
+		<input ng-model="search.input" placeholder="[[labels().searchPlaceholder]]"/>
+		<i class="multi-icon-search-cancel" ng-click="search.reset()" ng-show="search.input"></i>
+	</div>
+	<ul>
+		<li ng-repeat="item in filteredComboModel = (comboModel | filter: filteringFun | orderBy: orderBy)"
+			ng-click="toggleItem(item)"
+			ng-class="{'selected': isSelected(item)}"
+			ng-disabled="maxSelected && filteredModel.length >= maxSelected">
+			[[display(item)]]
+		</li>
+	</ul>
+</div>

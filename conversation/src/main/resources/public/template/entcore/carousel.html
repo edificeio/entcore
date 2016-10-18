@@ -1,0 +1,22 @@
+<div class="carousel">
+    <div class="images">
+        <div class="image" ng-repeat="item in images" ng-class="{
+                current: $index === current.index,
+                next: $index > current.index,
+                previous: $index < current.index
+            }" ng-click="openSelectImage(item, $index)" ng-style="{ 'z-index': getPilePosition($index)}">
+            <div class="image-container">
+                <img ng-if="$index === current.index || $index === current.index - 1 || $index === current.index + 1" 
+                     ng-src="[[item.icon]]" />
+            </div>
+
+        </div>
+    </div>
+    <nav>
+        <ul>
+            <li ng-repeat="item in images"
+                ng-click="openSelectImage(item, $index)"
+                ng-class="{ current: $index === current.index }"></li>
+        </ul>
+    </nav>
+</div>
