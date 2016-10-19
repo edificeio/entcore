@@ -69,6 +69,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.removeField("classes");
 			filteredInfos.removeField("apps");
 			filteredInfos.removeField("authorizedActions");
+			filteredInfos.removeField("children");
 			JsonArray authorizedActions = new JsonArray();
 			for (Object o: info.getArray("authorizedActions")) {
 				JsonObject j = (JsonObject) o;

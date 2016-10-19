@@ -547,7 +547,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
 				"n.birthDate as birthDate, " +
-				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct child.id) as childrenIds, " +
+				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
 				"COLLECT(distinct s.id) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.name) as structureNames, COLLECT(distinct s.UAI) as uai, " +
 				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions";
@@ -666,9 +666,30 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							);
 						}
 					}
+					final JsonObject children = new JsonObject();
+					final List<String> childrenIds = new ArrayList<String>();
+					for (Object o : j.getArray("childrenInfo", new JsonArray())) {
+						if (!(o instanceof JsonArray)) continue;
+						final JsonArray a = (JsonArray) o;
+						final String childId = a.get(0);
+						if (childId != null) {
+							childrenIds.add(childId);
+							JsonObject jo = children.getObject(childId);
+							if (jo == null) {
+								jo = new JsonObject()
+										.putString("lastName", (String) a.get(1))
+										.putString("firstName", (String) a.get(2));
+								children.putObject(childId, jo);
+							}
+						}
+					}
+					j.removeField("childrenInfo");
+
 					j.putObject("functions", functions);
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);
+					j.putArray("childrenIds", new JsonArray(childrenIds));
+					j.putObject("children", children);
 					final JsonObject cache = (results.<JsonArray>get(4) != null && results.<JsonArray>get(4).size() > 0 &&
 							results.<JsonArray>get(4).get(0) != null) ? results.<JsonArray>get(4).<JsonObject>get(0) : new JsonObject();
 					j.putObject("cache", cache);
