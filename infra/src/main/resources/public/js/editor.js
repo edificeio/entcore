@@ -3075,6 +3075,13 @@ window.RTE = (function () {
                                     parentContainer.appendChild(newLine[0]);
                                 }
                                 else {
+                                    if (parentContainer.nodeType === 1) {
+                                        newLine.attr('style', $(parentContainer).attr('style'));
+                                    }
+                                    else {
+                                        newLine.attr('style', $(parentContainer.parentNode).attr('style'));
+                                    }
+
                                     if (parentContainer.nodeName !== 'LI') {
                                         e.preventDefault();
                                         var rangeStart = 1;
