@@ -825,27 +825,29 @@ window.RTE = (function () {
 				return {
 					template: '<i tooltip="editor.option.bold"></i>',
 					link: function(scope, element, attributes){
-						element.on('click', function(){
-							if(!instance.editZone.is(':focus')){
-								instance.focus();
-							}
-							instance.execCommand('bold');
-							if(document.queryCommandState('bold')){
-								element.addClass('toggled');
-							}
-							else{
-								element.removeClass('toggled');
-							}
-						});
+					    element.on('click', function () {
+					        if (!instance.editZone.is(':focus')) {
+					            instance.focus();
+					        }
 
-						instance.on('selectionchange', function(e){
-							if(document.queryCommandState('bold')){
-								element.addClass('toggled');
-							}
-							else{
-								element.removeClass('toggled');
-							}
-						});
+					        if (document.queryCommandState('bold')) {
+					            element.removeClass('toggled');
+					            instance.selection.css({ 'font-weight': '' });
+					        }
+					        else {
+					            element.addClass('toggled');
+					            instance.selection.css({ 'font-weight': 'bold' });
+					        }
+					    });
+
+					    instance.on('selectionchange', function (e) {
+					        if (document.queryCommandState('bold')) {
+					            element.addClass('toggled');
+					        }
+					        else {
+					            element.removeClass('toggled');
+					        }
+					    });
 					}
 				};
 			});
