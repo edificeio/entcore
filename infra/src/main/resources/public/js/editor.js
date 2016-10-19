@@ -3082,7 +3082,10 @@ window.RTE = (function () {
                                         newLine.attr('style', $(parentContainer.parentNode).attr('style'));
                                     }
 
-                                    if (parentContainer.nodeName !== 'LI') {
+                                    if (
+                                            !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') &&
+                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI')
+                                        ) {
                                         e.preventDefault();
                                         var rangeStart = 1;
                                         if (
