@@ -299,68 +299,78 @@ window.RTE = (function () {
 			};
 
 			this.wrap = function(element){
-				that.instance.addState(that.editZone.html());
-				if(this.range.startContainer === this.range.endContainer){
+			    that.instance.addState(that.editZone.html());
+			    var commonAncestor = that.range.commonAncestorContainer;
+			    var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
+			    var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+				if(
+                    this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
+                ){
 					element.html('&nbsp;');
-					var elementAtCaret = this.range.startContainer;
+					var elementAtCaret = commonAncestor;
+					if (elementAtCaret.parentNode.nodeName === 'TD') {
+					    var wrapper = $('<div></div>');
+					    $(elementAtCaret.parentNode).append(wrapper);
+					    wrapper.append(elementAtCaret);
+					}
+
+					while (textNodes.indexOf(elementAtCaret.nodeName) !== -1 || elementAtCaret.nodeType === 3) {
+					    elementAtCaret = elementAtCaret.parentNode;
+					}
+
 					if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD') {
 					    var newEl = document.createElement('div');
 					    elementAtCaret.appendChild(newEl);
 					    elementAtCaret = newEl;
 					}
-					if (elementAtCaret.nodeType === 3) {
-					    element.text(elementAtCaret.textContent);
-						if(elementAtCaret.parentNode.nodeName === 'TD'){
-							var wrapper = $('<div></div>');
-							$(elementAtCaret.parentNode).append(wrapper);
-							wrapper.append(element);
-							elementAtCaret.remove();
-						}
-						else{
-							elementAtCaret.parentNode.parentNode.insertBefore(element[0], elementAtCaret.parentNode);
-					    	elementAtCaret.parentNode.remove();
-						}
-					}
-					else {
-						element.text('');
-						// range is annoyingly changed while executing code
-						var end = this.range.endOffset;
-						var start = this.range.startOffset;
-						for(var i = start; i < end; i++){
-							element[0].textContent += elementAtCaret.childNodes[i].textContent;
-							if(i === end - 1){
-								elementAtCaret.insertBefore(element[0], elementAtCaret.childNodes[i]);
-								elementAtCaret.childNodes[i + 1].remove();
-							}
-							else{
-								elementAtCaret.childNodes[i].remove();
-							}
-						}
-					}
+
+					element.html($(elementAtCaret).html());
+					elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
+					elementAtCaret.parentNode.removeChild(elementAtCaret);
+
 					this.moveCaret(element[0], element.text().length);
 				}
-				else{
-					this.selectedElements.forEach(function(item){
-						var el = $(element[0].outerHTML);
-						
-						if(!item.parentNode){
-							return;
-						}
-						if (item.nodeType !== 1 && item.parentNode.nodeName !== 'DIV') {
-						    var div = document.createElement('div');
-						    $(div).html(item.textContent);
-						    item.parentNode.insertBefore(div, item);
-						    item.remove();
-						    item = div;
-                            
-						    if (item.nodeName === 'A') {
-						        item = item.parentNode;
-						    }
-						}
-						el.html(item.innerHTML || item.textContent);
-						item.parentNode.replaceChild(el[0], item);
-						that.selectNode(el[0]);
-					});
+				else {
+				    if (formatNodes.indexOf(commonAncestor.nodeName) !== -1) {
+				        element.html($(commonAncestor).html());
+				        commonAncestor.parentNode.insertBefore(element, commonAncestor);
+				        commonAncestor.remove();
+				    }
+				    else {
+				        var foundFirst = false;
+				        var foundLast = false;
+				        for (var i = 0; i < commonAncestor.childNodes.length; i++) {
+				            var item = commonAncestor.childNodes[i];
+				            if (item === this.range.startContainer ||
+                                this.range.startContainer.contains(item) ||
+                                item.contains(this.range.startContainer)) {
+				                foundFirst = true;
+				            }
+				            if (item === this.range.endContainer ||
+                                this.range.endContainer.contains(item) ||
+                                item.contains(this.range.endContainer)) {
+				                foundLast = true;
+				                if (this.range.endOffset === 0) {
+				                    break;
+				                }
+				            }
+				            if (!foundFirst) {
+				                continue;
+				            }
+				            var el = $(element[0].outerHTML);
+				            while (textNodes.indexOf(item.nodeName) !== -1 || item.nodeType === 3) {
+				                item = item.parentNode;
+				            }
+				            el.html(item.innerHTML || item.textContent);
+				            item.parentNode.replaceChild(el[0], item);
+				            setTimeout(function(){
+				                that.selectNode(el[0])
+				            }, 1);
+				            if (foundLast) {
+				                break;
+				            }
+				        }
+				    }
 				}
 				that.instance.addState(that.editZone.html());
 				setTimeout(function () {
@@ -3079,14 +3089,18 @@ window.RTE = (function () {
                                 else {
                                     if (parentContainer.nodeType === 1) {
                                         newLine.attr('style', $(parentContainer).attr('style'));
+                                        newLine.attr('class', $(parentContainer).attr('class'));
                                     }
                                     else {
                                         newLine.attr('style', $(parentContainer.parentNode).attr('style'));
+                                        newLine.attr('class', $(parentContainer.parentNode).attr('class'));
                                     }
 
                                     if (
                                             !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') &&
-                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI')
+                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') &&
+                                            !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') &&
+                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
                                         ) {
                                         e.preventDefault();
                                         var rangeStart = 1;
