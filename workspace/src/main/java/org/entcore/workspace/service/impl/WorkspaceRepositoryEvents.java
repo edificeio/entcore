@@ -228,12 +228,10 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	@Override
 	public void deleteUsers(JsonArray users) {
 		String [] userIds = new String[users.size()];
-		JsonArray oldShared = new JsonArray();
 		for (int i = 0; i < users.size(); i++) {
 			JsonObject j = users.get(i);
 			String id = j.getString("id");
 			userIds[i] = id;
-			oldShared.add(new JsonObject().putString("userId", id));
 		}
 		final JsonObject queryDocuments = MongoQueryBuilder.build(QueryBuilder.start("owner").in(userIds));
 		deleteFiles(queryDocuments, DocumentDao.DOCUMENTS_COLLECTION);
@@ -244,9 +242,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
 		JsonObject update = new JsonObject()
 				.putObject("$pull", new JsonObject()
-						.putObject("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))))
-				.putObject("$addToSet", new JsonObject()
-						.putObject("old_shared", new JsonObject().putArray("$each", oldShared)));
+						.putObject("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))));
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -265,22 +261,22 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				String status = res.body().getString("status");
 				JsonArray results = res.body().getArray("results");
 				if ("ok".equals(status) && results != null && results.size() > 0) {
+					JsonArray fileIds = new JsonArray();
 					for (Object o : results) {
-						if (!(o instanceof JsonObject)) continue;
-						final String file = ((JsonObject) o).getString("file");
-						storage.removeFile(file,
-								new Handler<JsonObject>() {
-
-									@Override
-									public void handle(JsonObject event) {
-										if (event == null) {
-											log.error("Error deleting file " + file);
-										} else if (!"ok".equals(event.getString("status"))) {
-											log.error("Error deleting file " + file + " : " + event.encode());
-										}
-									}
-								});
+						if (o instanceof JsonObject) {
+							fileIds.addString(((JsonObject) o).getString("file"));
+						}
 					}
+					storage.removeFiles(fileIds, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							if (event == null) {
+								log.error("Error deleting files ");
+							} else if (!"ok".equals(event.getString("status"))) {
+								log.error("Error deleting files : " + event.encode());
+							}
+						}
+					});
 					mongo.delete(collection, query, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
