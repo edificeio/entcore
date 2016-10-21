@@ -725,6 +725,21 @@ window.RTE = (function () {
 				this.instance.trigger('contentupdated');
 			};
 
+			this.replaceHTMLInline = function (htmlContent) {
+			    that.instance.addState(that.editZone.html());
+			    var wrapper = $('<span></span>');
+			    wrapper.html(htmlContent);
+			    if (this.range) {
+			        this.range.deleteContents();
+			        this.range.insertNode(wrapper[0]);
+			    }
+			    else {
+			        this.editZone.append(wrapper);
+			    }
+
+			    this.instance.trigger('contentupdated');
+			};
+
 			this.$ = function(){
 				var jSelector = $();
 				this.selectedElements.forEach(function(item){
@@ -937,18 +952,8 @@ window.RTE = (function () {
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).css('text-align') === 'left') {
+							    if ($(item).css('text-align') === 'left' && !$(item).hasClass('smiley')) {
 							        $(item).css({ 'float': 'left', 'z-index': 0 });
-							    }
-							});
-
-							instance.editZone.find('mathjax').each(function (index, item) {
-							    var sel = window.getSelection();
-							    var range = sel.getRangeAt(0);
-							    if (range.intersectsNode && range.intersectsNode(item)) {
-							        if (element.hasClass('toggled')) {
-							            $(item).css({ float: 'left' });
-							        }
 							    }
 							});
 
@@ -999,21 +1004,8 @@ window.RTE = (function () {
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).css('text-align') === 'right') {
+							    if ($(item).css('text-align') === 'right' && !$(item).hasClass('smiley')) {
 							        $(item).css({ 'float': 'right', 'z-index': '0' });
-							    }
-							});
-
-							instance.editZone.find('mathjax').each(function (index, item) {
-							    var sel = window.getSelection();
-							    var range = sel.getRangeAt(0);
-							    if (range.intersectsNode && range.intersectsNode(item)) {
-							        if (element.hasClass('toggled')) {
-							            $(item).css({ float: 'right' });
-							        }
-							        else {
-							            $(item).css({ float: 'left' });
-							        }
 							    }
 							});
 
@@ -1064,27 +1056,14 @@ window.RTE = (function () {
 							}
 
 							instance.editZone.find('img').each(function (index, item) {
-							    if ($(item).css('text-align') === 'center') {
+							    if ($(item).css('text-align') === 'center' && !$(item).hasClass('smiley')) {
                                     // z-index is a hack to track margin width; auto width is computed as 0 in FF
 							        $(item).css({ 'float': 'none', 'margin': 'auto', 'z-index': '1' });
 							    }
-                                else{
+							    else if(!$(item).hasClass('smiley')){
                                     // z-index is a hack to track margin width; auto width is computed as 0 in FF
 							        $(item).css({ 'float': 'left', 'z-index': '0' });
                                 }
-							});
-
-							instance.editZone.find('mathjax').each(function (index, item) {
-							    var sel = window.getSelection();
-							    var range = sel.getRangeAt(0);
-							    if (range.intersectsNode && range.intersectsNode(item)) {
-							        if (element.hasClass('toggled')) {
-							            $(item).css({ 'float': 'none', 'margin': 'auto' });
-							        }
-							        else {
-							            $(item).css({ float: 'left' });
-							        }
-							    }
 							});
 
 							if(MathJax && MathJax.Hub){
@@ -1136,16 +1115,6 @@ window.RTE = (function () {
 								instance.execCommand('justifyLeft');
 								element.removeClass('toggled');
 							}
-
-							instance.editZone.find('mathjax').each(function (index, item) {
-							    var sel = window.getSelection();
-							    var range = sel.getRangeAt(0);
-							    if (range.intersectsNode && range.intersectsNode(item)) {
-							        if (element.hasClass('toggled')) {
-							            $(item).css({ float: 'left' });
-							        }
-							    }
-							});
 
 							if(MathJax && MathJax.Hub){
 								MathJax.Hub.Rerender();
@@ -1956,12 +1925,8 @@ window.RTE = (function () {
                                 angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
                             }
                             else{
-                                instance.selection.replaceHTML(instance.compile(
-                                    '<div class="row"><br/></div>' +
-                                    '<div class="row">' +
-                                        '<mathjax formula="'+ scope.display.formula + '"></mathjax>' +
-                                    '</div>' +
-                                    '<div><br /></div>'
+                                instance.selection.replaceHTMLInline(instance.compile(
+                                    '<span>&nbsp;<mathjax contenteditable="false" formula="'+ scope.display.formula + '"></mathjax>&nbsp;</span>'
                                 )(scope));
                             }
 							
@@ -2289,8 +2254,10 @@ window.RTE = (function () {
 						scope.addSmiley = function (smiley) {
 						    //do not replace with i, as i is used by other websites for italic and
                             //is often copy-pasted in the editor
-							var content = instance.compile('<img skin-src="/img/smileys/' + smiley + '.png" draggable native style="height: 60px; width: 60px;" />')(scope.$parent);
-							instance.selection.replaceHTML(content);
+						    var content = instance.compile(
+                                '<img skin-src="/img/smileys/' + smiley + '.png" draggable native class="smiley" />'
+                            )(scope.$parent);
+							instance.selection.replaceHTMLInline(content);
 							scope.display.pickSmiley = false;
 						}
 
