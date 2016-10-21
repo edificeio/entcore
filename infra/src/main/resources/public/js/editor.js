@@ -248,7 +248,7 @@ window.RTE = (function () {
 					this.selectedElements = selectedElements || this.selectedElements;
 				}
 				if (!same && this.editZone.is(':focus')) {
-					this.range = range;
+				    this.range = range;
 				}
 				return !same;
 			};
@@ -2700,7 +2700,7 @@ window.RTE = (function () {
                         }
 
                         scope.$watch(
-                            function(){
+                            function () {
                                 return ngModel(scope);
                             },
                             function (newValue) {
@@ -2712,7 +2712,11 @@ window.RTE = (function () {
                                     $(item).append(mathItem);
                                 });
 
-                                if(newValue !== editZone.html() && !editZone.is(':focus')){
+                                if (
+                                    newValue !== editZone.html() &&
+                                    !editZone.is(':focus') &&
+                                    $('editor-toolbar').find(':focus').length === 0
+                                ) {
                                     editZone.html($compile(ngModel(scope))(scope));
                                 }
                                 if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
