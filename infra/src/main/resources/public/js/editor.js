@@ -342,13 +342,13 @@ window.RTE = (function () {
 				        for (var i = 0; i < commonAncestor.childNodes.length; i++) {
 				            var item = commonAncestor.childNodes[i];
 				            if (item === this.range.startContainer ||
-                                this.range.startContainer.contains(item) ||
-                                item.contains(this.range.startContainer)) {
+                                (this.range.startContainer.nodeType === 1 && $(this.range.startContainer).find(item).length) ||
+                                (item.nodeType === 1 && $(item).find(this.range.startContainer).length)) {
 				                foundFirst = true;
 				            }
 				            if (item === this.range.endContainer ||
-                                this.range.endContainer.contains(item) ||
-                                item.contains(this.range.endContainer)) {
+                                (this.range.endContainer.nodeType === 1 && $(this.range.endContainer).find(item).length) ||
+                                (item.nodeType === 1 && $(item).find(this.range.endContainer).length)) {
 				                foundLast = true;
 				                if (this.range.endOffset === 0) {
 				                    break;
@@ -580,8 +580,8 @@ window.RTE = (function () {
 							var sibling = that.range.commonAncestorContainer.childNodes[i];
 							if(
 								sibling === that.range.startContainer || 
-								sibling.contains(that.range.startContainer) || 
-								that.range.startContainer.contains(sibling)
+								(sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length) || 
+								(that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length)
 							){
 								foundFirst = true;
 							}
@@ -589,28 +589,30 @@ window.RTE = (function () {
 								continue;
 							}
 
-							if(sibling.contains(that.range.startContainer)){
+							if(sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length){
 								addedNodes = addedNodes.concat(
 									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
 								);
 								continue;
 							}
 
-							if(that.range.startContainer.contains(sibling) || sibling === that.range.startContainer){
+							if ((that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length) ||
+                                sibling === that.range.startContainer) {
 								addedNodes = addedNodes.concat(
 									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
 								);
 								continue;
 							}
 
-							if(sibling.contains(that.range.endContainer)){
+							if ((sibling.nodeType === 1 && $(sibling).find(that.range.endContainer).length)) {
 								addedNodes = addedNodes.concat(
 									applyCSSUntil(that.range.endContainer, that.range.endOffset, css)
 								);
 								break;
 							}
 
-							if(that.range.endContainer.contains(sibling) || sibling === that.range.endContainer){
+							if ((that.range.endContainer.nodeType === 1 && $(that.range.endContainer).find(sibling).length) ||
+                                sibling === that.range.endContainer) {
 								addedNodes = addedNodes.concat(
 									applyCSSUntil(that.range.startContainer, that.range.startOffset, css)
 								);
@@ -1599,13 +1601,15 @@ window.RTE = (function () {
 			                if (!instance.editZone.is(':focus')) {
 			                    instance.focus();
 			                }
-			                instance.execCommand('removeFormat');
-			                if (document.queryCommandEnabled('removeFormat')) {
-			                    element.removeClass('disabled');
-			                }
-			                else {
-			                    element.addClass('disabled');
-			                }
+			                $(instance.selection.range.commonAncestorContainer).find('*').css({
+			                    'font-style': '',
+			                    'background-color': '',
+			                    'font-weight': '',
+			                    'text-decoration': '',
+			                    'color': '',
+			                    'font-size': '',
+                                'line-height': ''
+			                });
 			            });
 
 			            instance.on('selectionchange', function (e) {
