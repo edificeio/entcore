@@ -394,8 +394,29 @@ public class GridfsStorage implements Storage {
 	}
 
 	@Override
-	public void removeFiles(JsonArray ids, Handler<JsonObject> handler) {
-		FileUtils.gridfsRemoveFiles(ids, eb, gridfsAddress, handler);
+	public void removeFiles(final JsonArray ids, final Handler<JsonObject> handler) {
+		final JsonObject filesQuery = new JsonObject().putObject("_id", new JsonObject().putArray("$in", ids));
+		mongoDb.delete(getBucket() + ".files", filesQuery, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					final JsonObject chunksQuery = new JsonObject().putObject("files_id", new JsonObject().putArray("$in", ids));
+					mongoDb.delete(getBucket() + ".chunks", chunksQuery, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> eventChunks) {
+							if (handler != null) {
+								handler.handle(eventChunks.body());
+							}
+						}
+					});
+				} else {
+					// TODO find and delete orphaned chunks
+					if (handler != null) {
+						handler.handle(event.body());
+					}
+				}
+			}
+		});
 	}
 
 	@Override
