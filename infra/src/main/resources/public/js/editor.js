@@ -469,60 +469,74 @@ window.RTE = (function () {
 				that.selectNode(element);
 			}
 
-			function applyCSSUntil(nodeLimit, endOffset, css){
-				var addedNodes = [];
-				var sibling = nodeLimit.parentNode.firstChild;
-				do{
-					if(sibling.nodeType === 1){
-						$(sibling).css(css);
-					}
-					else{
-						var el = $('<span></span>')
+			function applyCSSBetween(nodeStart, nodeEnd, css, keepRangeStart) {
+			    var addedNodes = [];
+			    var sibling = nodeStart;
+			    var i = that.range.startOffset;
+			    do {
+			        if (sibling.nodeType === 1) {
+			            $(sibling).css(css);
+			        }
+			        else {
+			            var el = $('<span></span>')
 							.css(css);
-						if(sibling === nodeLimit){
-							el.text(sibling.textContent.substring(0, that.range.endOffset));
-							sibling.parentNode.insertBefore(el[0], sibling);
-							sibling.textContent = sibling.textContent.substring(that.range.endOffset);
-						}
-						else{
-							el.text(sibling.textContent.substring(0, sibling.textContent.length));
-							sibling.parentNode.insertBefore(el[0], sibling);
-							sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
-						}
-						addedNodes.push(el[0]);
-					}
-					sibling = sibling.nextSibling;
-				}while(sibling !== nodeLimit && sibling);
+			            if (sibling === nodeStart && sibling === nodeEnd) {
+			                el.html(sibling.textContent.substring(that.range.startOffset, that.range.endOffset));
+			                sibling.parentNode.insertBefore(el[0], sibling);
+			                var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
+			                sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
+			                sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
+			                var sel = document.getSelection();
+			                var r = new Range();
+			                if (keepRangeStart) {
+			                    r.setStart(that.range.startContainer, that.range.startOffset);
+			                }
+			                else {
+			                    r.setStart(el[0], 0);
+			                }
+			                
+			                r.setEnd(el[0], 1);
+			                sel.removeAllRanges();
+			                sel.addRange(r);
+			                that.range = r;
+			            }
+			            else if (sibling === nodeEnd) {
+			                el.text(sibling.textContent.substring(0, that.range.endOffset));
+			                sibling.parentNode.insertBefore(el[0], sibling);
+			                sibling.textContent = sibling.textContent.substring(that.range.endOffset);
+			                var sel = document.getSelection();
+			                var r = new Range();
+			                r.setStart(that.range.startContainer, that.range.startOffset);
+			                r.setEnd(el[0], 1);
+			                sel.removeAllRanges();
+			                sel.addRange(r);
+			                that.range = r;
+			            }
+			            else if (sibling === nodeStart) {
+			                el.text(sibling.textContent.substring(that.range.startOffset, sibling.textContent.length));
+			                sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
+			                sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
+			                if (!keepRangeStart) {
+			                    var sel = document.getSelection();
+			                    var r = new Range();
+			                    r.setStart(el[0], 0);
+			                    r.setEnd(that.range.endContainer, that.range.endOffset);
+			                    sel.removeAllRanges();
+			                    sel.addRange(r);
+			                    that.range = r;
+			                }
+			            }
+			            else {
+			                el.text(sibling.textContent.substring(0, sibling.textContent.length));
+			                sibling.parentNode.insertBefore(el[0], sibling);
+			                sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+			            }
+			        }
+			        sibling = sibling.nextSibling;
+			        i++;
+			    } while (sibling && sibling !== nodeEnd && i < that.range.endOffset);
 
-				return addedNodes;
-			}
-
-			function applyCSSFrom(nodeStart, startOffset, css){
-				var addedNodes = [];
-				var sibling = nodeStart;
-				do{
-					if(sibling.nodeType === 1){
-						$(sibling).css(css);
-					}
-					else{
-						var el = $('<span></span>')
-							.css(css);
-						if(sibling === nodeStart){
-							el.html(sibling.textContent.substring(startOffset));
-							sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
-							sibling.textContent = sibling.textContent.substring(0, startOffset);
-						}
-						else{
-							el.text(sibling.textContent.substring(0, sibling.textContent.length));
-							sibling.parentNode.insertBefore(el[0], sibling);
-							sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
-						}
-						addedNodes.push(el[0]);
-					}
-					sibling = sibling.nextSibling;
-				}while(sibling);
-
-				return addedNodes;
+			    return addedNodes;
 			}
 
 			function applyCSSText(css){
@@ -536,7 +550,12 @@ window.RTE = (function () {
 				that.range.startContainer.parentNode.insertBefore(textBefore, el[0]);
 				that.range.startContainer.textContent = that.range.startContainer.textContent.substring(that.range.endOffset);
 
-				return [el[0]];
+				var sel = document.getSelection();
+				var r = new Range();
+				r.setStart(el[0], 0);
+				r.setEnd(el[0], 1);
+				sel.removeAllRanges();
+				sel.addRange(r);
 			}
 
 			function applyCSS(css) {
@@ -581,7 +600,7 @@ window.RTE = (function () {
 							if(
 								sibling === that.range.startContainer || 
 								(sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length) || 
-								(that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length)
+								(that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length && that.range.startOffset === i)
 							){
 								foundFirst = true;
 							}
@@ -589,34 +608,60 @@ window.RTE = (function () {
 								continue;
 							}
 
-							if(sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length){
-								addedNodes = addedNodes.concat(
-									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+							if (
+                                sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length
+                            ) {
+							    addedNodes = addedNodes.concat(
+									applyCSSBetween(that.range.startContainer, that.range.endContainer, css)
 								);
-								continue;
+							    continue;
 							}
 
-							if ((that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length) ||
-                                sibling === that.range.startContainer) {
-								addedNodes = addedNodes.concat(
-									applyCSSFrom(that.range.startContainer, that.range.startOffset, css)
+							if (
+                                (
+                                    that.range.startContainer.nodeType === 1
+                                    && $(that.range.startContainer).find(sibling).length
+                                    && that.range.startOffset === i
+                                )
+                                || sibling === that.range.startContainer
+                            ) {
+							    addedNodes = addedNodes.concat(
+									applyCSSBetween(sibling, that.range.endContainer, css)
 								);
-								continue;
+							    continue;
 							}
 
-							if ((sibling.nodeType === 1 && $(sibling).find(that.range.endContainer).length)) {
-								addedNodes = addedNodes.concat(
-									applyCSSUntil(that.range.endContainer, that.range.endOffset, css)
+							if (
+                                sibling.nodeType === 1 
+                                && $(sibling).find(that.range.endContainer).length
+                            ) {
+							    var firstChild = sibling.firstChild;
+							    if ($(sibling).find(that.range.startContainer).length) {
+							        firstChild = that.range.startContainer;
+							    }
+                                addedNodes = addedNodes.concat(
+									applyCSSBetween(firstChild, that.range.endContainer, css, true)
 								);
-								break;
+                                break;
 							}
 
-							if ((that.range.endContainer.nodeType === 1 && $(that.range.endContainer).find(sibling).length) ||
-                                sibling === that.range.endContainer) {
-								addedNodes = addedNodes.concat(
-									applyCSSUntil(that.range.startContainer, that.range.startOffset, css)
+							if (
+                                (
+                                    that.range.endContainer.nodeType === 1
+                                    && $(that.range.endContainer).find(sibling).length
+                                    && that.range.endOffset === i
+                                ) ||
+                                    sibling === that.range.endContainer
+                                )
+							{
+							    var firstChild = that.range.endContainer.firstChild;
+							    if (!firstChild) {
+							        firstChild = that.range.endContainer;
+							    }
+							    addedNodes = addedNodes.concat(
+									applyCSSBetween(firstChild,  that.range.endContainer, css, true)
 								);
-								break;
+							    break;
 							}
 
 							if(sibling.nodeType === 1){
@@ -629,6 +674,9 @@ window.RTE = (function () {
 								var el = $(document.createElement('span'));
 								el.css(css);
 								addedNodes.push(el[0]);
+								el.text(sibling.textContent);
+								sibling.parentNode.insertBefore(el[0], sibling);
+								sibling.remove();
 							}
 
 							if(sibling === that.range.endContainer){
@@ -637,14 +685,6 @@ window.RTE = (function () {
 						}
 					}
 
-                    var sel = window.getSelection();
-					var range = document.createRange();
-
-					range.setStartBefore(addedNodes[0]);
-					range.setEndAfter(addedNodes[addedNodes.length - 1]);
-
-					sel.removeAllRanges();
-					sel.addRange(range);
 					that.instance.trigger('selectionchange', {
 						selection: that.instance.selection
 					});
