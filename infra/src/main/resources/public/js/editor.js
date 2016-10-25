@@ -466,6 +466,7 @@ window.RTE = (function () {
 					element = element.parentNode;
 				}
 				$(element).css(css);
+				$(element).find('*').css(css);
 				that.selectNode(element);
 			}
 
@@ -1641,15 +1642,18 @@ window.RTE = (function () {
 			                if (!instance.editZone.is(':focus')) {
 			                    instance.focus();
 			                }
-			                $(instance.selection.range.commonAncestorContainer).find('*').css({
+
+			                var format = {
 			                    'font-style': '',
 			                    'background-color': '',
 			                    'font-weight': '',
 			                    'text-decoration': '',
 			                    'color': '',
 			                    'font-size': '',
-                                'line-height': ''
-			                });
+			                    'line-height': ''
+			                };
+
+			                instance.selection.css(format);
 			            });
 
 			            instance.on('selectionchange', function (e) {
