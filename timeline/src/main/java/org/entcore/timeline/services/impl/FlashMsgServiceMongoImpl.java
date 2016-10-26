@@ -44,40 +44,6 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
 	}
 
-	/*
-	@Override
-	public void duplicate(String id, final Handler<Either<String, JsonObject>> handler) {
-		final String now = mongoFormat.format(new Date());
-
-		super.retrieve(id, new Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft()){
-					handler.handle(event);
-					return;
-				}
-				JsonObject original = event.right().getValue();
-				final JsonObject duplicate = original.copy();
-				duplicate.removeField("_id");
-				duplicate.removeField("markedAsRead");
-				duplicate.removeField("profiles");
-				duplicate.putString("startDate", now).putString("endDate", now).putNumber("readCount", 0);
-
-				FlashMsgServiceMongoImpl.this.create(duplicate, new Handler<Either<String,JsonObject>>() {
-					public void handle(Either<String, JsonObject> event) {
-						if(event.isLeft()){
-							handler.handle(event);
-							return;
-						}
-
-						duplicate.putString("_id", event.right().getValue().getString("_id"));
-						handler.handle(new Either.Right<String, JsonObject>(duplicate));
-					}
-				});
-			}
-		});
-	}
-	*/
-
 	@Override
 	public void list(String domain, Handler<Either<String, JsonArray>> handler) {
 		JsonObject match = new JsonObject().putString("domain", domain);
@@ -119,7 +85,7 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 
 		queryParam.putString("_id", id).putObject("markedAsRead", new JsonObject().putString("$ne", userId));
 		updateParam
-			.putObject("$addToSet", new JsonObject()
+			.putObject("$push", new JsonObject()
 				.putString("markedAsRead", userId))
 			.putObject("$inc", new JsonObject()
 				.putNumber("readCount", 1));
