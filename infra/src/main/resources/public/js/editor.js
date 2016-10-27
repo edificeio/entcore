@@ -315,13 +315,22 @@ window.RTE = (function () {
 					}
 
 					while (textNodes.indexOf(elementAtCaret.nodeName) !== -1 || elementAtCaret.nodeType === 3) {
-					    elementAtCaret = elementAtCaret.parentNode;
-					}
-
-					if (elementAtCaret.nodeType === 1 && elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD') {
-					    var newEl = document.createElement('div');
-					    elementAtCaret.appendChild(newEl);
-					    elementAtCaret = newEl;
+						if (elementAtCaret.parentNode.nodeType === 1 && elementAtCaret.parentNode.getAttribute('contenteditable') || elementAtCaret.parentNode.nodeName === 'TD') {
+							var newEl = document.createElement('div');
+							if(elementAtCaret.nodeType === 1){
+								$(newEl).html($(elementAtCaret).html());
+							}
+							else{
+								$(newEl).text(elementAtCaret.textContent);
+							}
+							
+							elementAtCaret.parentNode.insertBefore(newEl, elementAtCaret);
+							elementAtCaret.remove();
+							elementAtCaret = newEl;
+						}
+						else{
+							elementAtCaret = elementAtCaret.parentNode;
+						}
 					}
 
 					element.html($(elementAtCaret).html());
