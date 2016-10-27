@@ -940,7 +940,7 @@ window.RTE = (function () {
 
 							if(document.queryCommandState('italic')){
 							    element.removeClass('toggled');
-							    instance.selection.css({ 'font-style': '' });
+							    instance.selection.css({ 'font-style': 'normal' });
 							}
 							else{
 							    element.addClass('toggled');
@@ -3024,7 +3024,7 @@ window.RTE = (function () {
                                 element.find('.editor-toolbar-opener').removeClass('active');
                             }
 
-                            if(element.find(e.target).length === 0){
+                            if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
