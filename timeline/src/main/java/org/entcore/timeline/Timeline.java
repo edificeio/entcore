@@ -32,6 +32,7 @@ import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
+import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
 
 public class Timeline extends BaseServer {
 
@@ -43,6 +44,7 @@ public class Timeline extends BaseServer {
 		super.start();
 		addController(new TimelineController());
 		addController(new FlashMsgController());
+		setRepositoryEvents(new FlashMsgRepositoryEventsSql());
 
 		TimelineMailer mailer = new TimelineMailer(vertx, Server.getEventBus(vertx), container, container.config().getInteger("users-loop-limit", 25));
 		final String dailyMailingCron = container.config().getString("daily-mailing-cron", "0 0 2 * * ?");

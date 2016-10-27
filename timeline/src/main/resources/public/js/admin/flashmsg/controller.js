@@ -207,7 +207,7 @@ function AdminFlashMsgController($scope) {
 
     $scope.saveMessage = function(message) {
         message.save()
-        if(!message._id) {
+        if(!message.id) {
             message.one('change',$scope.refreshMessages)
         }
         template.open('main', 'flashmsg/admin.list')

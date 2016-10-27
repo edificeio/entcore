@@ -11,11 +11,11 @@ function FlashMsg(){
 }
 FlashMsg.prototype.api = {
     post:   "/timeline/flashmsg",
-    put:    "/timeline/flashmsg/:_id",
-    delete: "/timeline/flashmsg/:_id"
+    put:    "/timeline/flashmsg/:id",
+    delete: "/timeline/flashmsg/:id"
 }
 FlashMsg.prototype.duplicate = function(cb){
-    http().put("/timeline/flashmsg/" + this._id + "/duplicate").done(function(data){
+    http().put("/timeline/flashmsg/" + this.id + "/duplicate").done(function(data){
         var duplicate = new FlashMsg()
         duplicate.updateData(data)
         if(cb)
@@ -74,9 +74,9 @@ model.build = function () {
             var queryString = ""
             flashMsgs.forEach(function(msg){
                 if(!queryString)
-                    queryString += "?id=" + msg._id
+                    queryString += "?id=" + msg.id
                 else
-                    queryString += "&id=" + msg._id
+                    queryString += "&id=" + msg.id
             })
             return http().delete("/timeline/flashmsg" + queryString)
         }
