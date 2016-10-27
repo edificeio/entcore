@@ -909,7 +909,7 @@ window.RTE = (function () {
 
 					        if (document.queryCommandState('bold')) {
 					            element.removeClass('toggled');
-					            instance.selection.css({ 'font-weight': '' });
+					            instance.selection.css({ 'font-weight': 'normal' });
 					        }
 					        else {
 					            element.addClass('toggled');
