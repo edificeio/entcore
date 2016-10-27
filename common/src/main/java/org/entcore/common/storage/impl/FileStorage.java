@@ -339,7 +339,7 @@ public class FileStorage implements Storage {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.succeeded()) {
-						copyFile(sourcePath, path, handler);
+						copyFile(sourcePath, path, newId, handler);
 					} else {
 						handler.handle(new JsonObject().putString("status", "error")
 								.putString("message", event.cause().getMessage()));
@@ -354,12 +354,16 @@ public class FileStorage implements Storage {
 	}
 
 	private void copyFile(String id, final String to, final Handler<JsonObject> handler) {
+		copyFile(id, to, null, handler);
+	}
+
+	private void copyFile(String id, final String to, final String newId, final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		fs.copy(id, to, new AsyncResultHandler<Void>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
-					res.putString("status", "ok").putString("_id", to);
+					res.putString("status", "ok").putString("_id", (isNotEmpty(newId) ? newId : to));
 				} else {
 					res.putString("status", "error").putString("message", event.cause().getMessage());
 					log.error(event.cause().getMessage(), event.cause());
