@@ -37,7 +37,7 @@ function RegisteredNotification(){}
 
 function FlashMessage(){}
 FlashMessage.prototype.markAsRead = function(){
-    return http().put("/timeline/flashmsg/" + this._id + "/markasread")
+    return http().put("/timeline/flashmsg/" + this.id + "/markasread")
 }
 
 model.build = function (){

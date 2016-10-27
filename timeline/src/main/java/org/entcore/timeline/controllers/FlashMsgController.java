@@ -7,7 +7,7 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.services.FlashMsgService;
-import org.entcore.timeline.services.impl.FlashMsgServiceMongoImpl;
+import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -27,8 +27,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class FlashMsgController extends BaseController {
 
-	private final String FLASH_MSG_COLLECTION = "flash_messages";
-	private FlashMsgService service = new FlashMsgServiceMongoImpl(FLASH_MSG_COLLECTION);
+	private FlashMsgService service = new FlashMsgServiceSqlImpl("flashmsg", "messages");
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -134,14 +133,5 @@ public class FlashMsgController extends BaseController {
 	public void listAdmin(final HttpServerRequest request) {
 		service.list(getHost(request), arrayResponseHandler(request));
 	}
-
-	/*
-	@Put("/flashmsg/:id/duplicate")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
-	public void duplicate(final HttpServerRequest request) {
-		service.duplicate(request.params().get("id"), defaultResponseHandler(request));
-	}
-	*/
 
 }
