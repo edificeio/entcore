@@ -1329,6 +1329,10 @@ window.RTE = (function () {
 				return {
 					template: '<i></i><input tooltip="editor.option.backgroundcolor" type="color" />',
 					link: function(scope, element, attributes){
+						element.on('click', 'i', function () {
+					        element.find('input').click();
+					    });
+						
 						if(!$.spectrum){
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
