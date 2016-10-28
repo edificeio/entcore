@@ -2471,9 +2471,6 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
-            if(ui.breakpoints.tablette >= $(window).width()){
-                return;
-            }
             var tip;
             element.on('mouseover', function() {
                 if (!attributes.tooltip || attributes.tooltip === 'undefined') {
@@ -5134,24 +5131,6 @@ module.directive('whereami', function() {
     }
 });
 
-
-var checkToolDelay = (function(){
-    var applyAllowed = true;
-
-	return function checkApplication(scope){
-    	if(applyAllowed){
-			applyAllowed = false;
-
-			setTimeout(function(){
-				scope.$apply();
-				applyAllowed = true;
-			}, 500);
-		}
-
-	}
-}());
-
-
 module.directive('checkTool', function() {
     return {
         restrict: 'E',
@@ -5162,11 +5141,9 @@ module.directive('checkTool', function() {
         },
         template: '<div class="check-tool"><i class="check-status"></i></div>',
         link: function(scope, element, attributes) {
-
             element.on('click', function() {
                 scope.ngModel = !scope.ngModel;
-                //scope.$apply('ngModel');
-                checkToolDelay(scope)
+                scope.$apply('ngModel');
 
                 if (scope.ngModel) {
                     element.addClass('selected')
@@ -5179,17 +5156,17 @@ module.directive('checkTool', function() {
                 if (scope.ngChange) {
                     scope.ngChange();
                 }
-                checkToolDelay(scope)
+                scope.$apply();
             });
 
             $('body').on('click', function(e) {
                 if ($(e.target).parents('.check-tool, .toggle, .lightbox').length === 0 && e.target.nodeName !== "CHECK-TOOL" && $('body').find(e.target).length !== 0) {
                     scope.ngModel = false;
                     element.removeClass('selected');
-                    checkToolDelay(scope)
+                    scope.$apply();
                     if(scope.ngChange){
                         scope.ngChange();
-                        checkToolDelay(scope)
+                        scope.$apply();
                     }
                 }
             })
