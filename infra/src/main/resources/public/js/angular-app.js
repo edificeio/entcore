@@ -5136,11 +5136,12 @@ var checkToolDelay = (function(){
 			setTimeout(function(){
 				scope.$apply();
 				applyAllowed = true;
-			}, 200);
+			}, 500);
 		}
 
 	}
 }());
+
 
 module.directive('checkTool', function() {
     return {
