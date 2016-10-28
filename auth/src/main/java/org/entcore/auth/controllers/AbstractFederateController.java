@@ -46,6 +46,16 @@ public abstract class AbstractFederateController extends BaseController {
 		final String login = res.getString("login");
 		final String email = res.getString("email");
 		final String mobile = res.getString("mobile");
+		if (userId != null) {
+			userAuthAccount.storeDomain(userId, getHost(request), getScheme(request), new Handler<Boolean>() {
+				@Override
+				public void handle(Boolean event) {
+					if (Boolean.FALSE.equals(event)) {
+						log.error("[Federate] Error while storing last known domain for user " + userId);
+					}
+				}
+			});
+		}
 		if (activationCode != null && login != null) {
 			activateUser(activationCode, login, email, mobile, sessionIndex, nameId, request);
 		} else if (activationCode == null && userId != null && !userId.trim().isEmpty()) {
