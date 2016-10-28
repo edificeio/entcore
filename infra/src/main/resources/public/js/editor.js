@@ -1308,19 +1308,26 @@ window.RTE = (function () {
 					    element.on('click', 'i', function () {
 					        element.find('input').click();
 					    });
-						if(!$.spectrum){
+					    if (navigator.userAgent.indexOf('Edge') !== -1) {
+					        element.find('input').attr('type', 'text');
+					    }
+					    if (!$.spectrum) {
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
 								eval(data);
-                                setSpectrum();
+								setSpectrum();
+								if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+								    $('body').find('.option.color input, .option.background-color input').spectrum({preferredFormat: "hex"});
+								    setSpectrum();
+								}
 							});
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
-						else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
-						    element.find("input[type=color]").spectrum();
-                            setSpectrum();
-						}
+					    if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+					        element.find('input').spectrum({ preferredFormat: "hex" });
+					        setSpectrum();
+					    }
 						scope.foreColor = "#000000";
 						element.children('input').on('change', function(){
 							scope.foreColor = $(this).val();
@@ -1348,18 +1355,23 @@ window.RTE = (function () {
 						element.on('click', 'i', function () {
 					        element.find('input').click();
 					    });
-						
+						if (navigator.userAgent.indexOf('Edge') !== -1) {
+						    element.find('input').attr('type', 'text');
+						}
 						if(!$.spectrum){
 							$.spectrum = {};
 							http().get('/infra/public/spectrum/spectrum.js').done(function(data){
 								eval(data);
-                                setSpectrum();
+								if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
+								    $('body').find('.option.color input, .option.background-color input').spectrum({ preferredFormat: "hex" });
+								    setSpectrum();
+								}
 							});
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
 						else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
-						    element.find('input[type=color]').spectrum();
+						    element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
                             setSpectrum();
 						}
 						element.children('input').on('change', function () {
