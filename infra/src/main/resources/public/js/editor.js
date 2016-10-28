@@ -306,7 +306,7 @@ window.RTE = (function () {
 				if(
                     this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
                 ){
-					element.html('&nbsp;');
+				    element.html('&#8203;');
 					var elementAtCaret = commonAncestor;
 					if (elementAtCaret.parentNode.nodeName === 'TD') {
 					    var wrapper = $('<div></div>');
@@ -439,26 +439,30 @@ window.RTE = (function () {
 			};
 
 			function applyCSSCursor(css){
-				var el = $('<span>&nbsp;</span>');
+			    var el = $('<span>&#8203;</span>');
 				if (!that.range && !that.editZone.html()) {
 					var elementAtCaret = $('<div></div>').appendTo(that.editZone);
 				}
 				else {
 					var elementAtCaret = that.range.startContainer;
-					if (elementAtCaret.nodeType !== 1) {
-						elementAtCaret = elementAtCaret.parentNode;
-					}
-					if (elementAtCaret.nodeName === 'SPAN') {
+					if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
 						el.attr('style', $(elementAtCaret).attr('style'));
-						elementAtCaret = elementAtCaret.parentNode;
-					}
-					if (that.editZone.find(elementAtCaret).length === 0) {
-						elementAtCaret = that.editZone[0];
 					}
 				}
 				
 				el.css(css);
-				$(elementAtCaret).append(el);
+				var nodeBefore = $('<span>' + elementAtCaret.textContent.substring(0, that.range.startOffset) + '</span>');
+				var nodeAfter = $('<span>' + elementAtCaret.textContent.substring(that.range.startOffset) + '</span>');
+				if (nodeAfter.text().length) {
+				    elementAtCaret.parentNode.insertBefore(nodeAfter[0], elementAtCaret);
+				    elementAtCaret.parentNode.insertBefore(el[0], nodeAfter[0]);
+				    elementAtCaret.parentNode.insertBefore(nodeBefore[0], el[0]);
+				    elementAtCaret.remove();
+				}
+				else {
+				    elementAtCaret.parentNode.insertBefore(el[0], elementAtCaret.nextSibling);
+				}
+				
 				that.moveCaret(el[0], 1);
 			}
 
@@ -1216,7 +1220,8 @@ window.RTE = (function () {
 				return {
 					template: '<i tooltip="editor.option.ulist"></i>',
 					link: function(scope, element, attributes){
-						element.on('mousedown', function(){
+					    element.on('mousedown', function () {
+
 							if(!instance.editZone.is(':focus')){
 								instance.editZone.focus();
 							}
@@ -2426,7 +2431,7 @@ window.RTE = (function () {
 								$(table).append(row);
 								for(var j = 0; j <= $(this).index(); j++){
 									var cell = $('<td></td>');
-									cell.html('&nbsp;')
+									cell.html('<br />')
 									row.append(cell);
 								}
 							}
@@ -2439,7 +2444,7 @@ window.RTE = (function () {
 								label: 'editor.add.row',
 								action: function(e){
 									var newRow = $($(e.target).parent()[0].outerHTML);
-									newRow.find('td').html('&nbsp;');
+									newRow.find('td').html('<br />');
 									$(e.target).parent().after(newRow);
 								}
 
@@ -2449,7 +2454,7 @@ window.RTE = (function () {
 								action: function(e){
 									var colIndex = $(e.target).index();
 									$(e.target).parents('table').find('tr').each(function(index, row){
-										$(row).children('td').eq(colIndex).after('<td>&nbsp;</td>')
+										$(row).children('td').eq(colIndex).after('<td><br /></td>')
 									});
 								}
 							},
@@ -3112,11 +3117,11 @@ window.RTE = (function () {
                                     if (initialOffset === currentTextNode.textContent.length) {
                                         initialOffset = -1;
                                     }
-                                    if (range.startContainer.parentNode.innerHTML === '&nbsp;' && range.startOffset === 1) {
+                                    if (range.startContainer.parentNode.innerHTML === '&#8203;' && range.startOffset === 1) {
                                         var node = range.startContainer.parentNode;
                                         
                                         setTimeout(function () {
-                                            node.innerHTML = node.innerHTML.substring(6);
+                                            node.innerHTML = node.innerHTML.substring(7);
                                             setTimeout(function () {
                                                 var range = document.createRange();
                                                 if (initialOffset === -1) {
@@ -3125,9 +3130,8 @@ window.RTE = (function () {
                                                 range.setStart((node.firstChild || node), initialOffset);
                                                 sel.removeAllRanges();
                                                 sel.addRange(range);
-                                            }, 10)
-                                            
-                                        }, 10);
+                                            }, 1);
+                                        }, 1);
                                         
                                     }
                                 }
@@ -3142,7 +3146,7 @@ window.RTE = (function () {
                                 editorInstance.addState(editZone.html());
                                 
                                 var parentContainer = range.startContainer;
-                                var newLine = $('<div>&nbsp;</div>');
+                                var newLine = $('<div>&#8203;</div>');
                                 if (parentContainer === editZone[0]) {
                                     parentContainer.appendChild(newLine[0]);
                                 }
@@ -3170,7 +3174,7 @@ window.RTE = (function () {
                                             ) {
                                             var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
                                             if(!content){
-                                                content = '&nbsp;';
+                                                content = '&#8203;';
                                             }
                                             else {
                                                 rangeStart = 0;
@@ -3187,7 +3191,7 @@ window.RTE = (function () {
                                             if (!parentContainer.wholeText) {
                                                 // FF forces encode on textContent, this is a hack to get the actual entities codes,
                                                 // since innerHTML doesn't exist on text nodes
-                                                parentContainer.textContent = $('<div>&nbsp;</div>')[0].textContent;
+                                                parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
                                             }
                                         }
                                         if (
@@ -3269,7 +3273,7 @@ window.RTE = (function () {
                                     if(!nextTag){
                                         var newLine = $('<tr></tr>');
                                         for(var i = 0; i < $(currentTag).parent('tr').children('td').length; i++){
-                                            newLine.append($('<td>&nbsp;</td>'));
+                                            newLine.append($('<td><br /></td>'));
                                         }
                                         nextTag = newLine.children('td')[0];
                                         $(currentTag).closest('table').append(newLine);
@@ -3280,7 +3284,7 @@ window.RTE = (function () {
                                     document.execCommand('indent');
                                 }
                                 else {
-                                    editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&nbsp;</span>')[0]);
+                                    editorInstance.selection.range.insertNode($('<span style="padding-left: 25px;">&#8203;</span>')[0]);
                                 }
                             }
                         });
