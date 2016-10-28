@@ -11,6 +11,9 @@ if (!String.prototype.startsWith) {
 }
 
 window.RTE = (function () {
+    var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
+    var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+
     function rgb(r, g, b) {
         return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     }
@@ -301,8 +304,7 @@ window.RTE = (function () {
 			this.wrap = function(element){
 			    that.instance.addState(that.editZone.html());
 			    var commonAncestor = that.range.commonAncestorContainer;
-			    var textNodes = ['SPAN', 'A', 'STRONG', 'EM', 'B', 'I'];
-			    var formatNodes = ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'];
+			    
 				if(
                     this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
                 ){
@@ -1375,7 +1377,7 @@ window.RTE = (function () {
 							var stylesheet = $('<link rel="stylesheet" type="text/css" href="/infra/public/spectrum/spectrum.css" />');
 							$('head').prepend(stylesheet);
 						}
-						else if ($.spectrum && $.spectrum.palettes && element.find('input[type=color]')[0].type === 'text') {
+						else if ($.spectrum && $.spectrum.palettes && element.find('input')[0].type === 'text') {
 						    element.find('input[type=color]').spectrum({ preferredFormat: "hex" });
                             setSpectrum();
 						}
@@ -3172,6 +3174,7 @@ window.RTE = (function () {
                                             range.startContainer.nodeType !== 1 &&
                                             range.startOffset < range.startContainer.textContent.length
                                             ) {
+
                                             var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
                                             if(!content){
                                                 content = '&#8203;';
