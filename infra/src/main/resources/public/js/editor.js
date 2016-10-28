@@ -492,59 +492,74 @@ window.RTE = (function () {
 							.css(css);
 			            if (sibling === nodeStart && sibling === nodeEnd) {
 			                el.html(sibling.textContent.substring(that.range.startOffset, that.range.endOffset));
-			                sibling.parentNode.insertBefore(el[0], sibling);
-			                var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
-			                sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
-			                sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
-			                var sel = document.getSelection();
-			                var r = new Range();
-			                if (keepRangeStart) {
-			                    r.setStart(that.range.startContainer, that.range.startOffset);
-			                }
-			                else {
-			                    r.setStart(el[0], 0);
-			                }
-			                
-			                r.setEnd(el[0], 1);
-			                sel.removeAllRanges();
-			                sel.addRange(r);
-			                that.range = r;
-			            }
-			            else if (sibling === nodeEnd) {
-			                el.text(sibling.textContent.substring(0, that.range.endOffset));
-			                sibling.parentNode.insertBefore(el[0], sibling);
-			                sibling.textContent = sibling.textContent.substring(that.range.endOffset);
-			                var sel = document.getSelection();
-			                var r = new Range();
-			                r.setStart(that.range.startContainer, that.range.startOffset);
-			                r.setEnd(el[0], 1);
-			                sel.removeAllRanges();
-			                sel.addRange(r);
-			                that.range = r;
-			            }
-			            else if (sibling === nodeStart) {
-			                el.text(sibling.textContent.substring(that.range.startOffset, sibling.textContent.length));
-			                sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
-			                sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
-			                if (!keepRangeStart) {
+			                if (el.html().length > 0) {
+			                    sibling.parentNode.insertBefore(el[0], sibling);
+			                    var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
+			                    sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
+			                    sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
 			                    var sel = document.getSelection();
-			                    var r = new Range();
-			                    r.setStart(el[0], 0);
-			                    r.setEnd(that.range.endContainer, that.range.endOffset);
+			                    var r = document.createRange();
+			                    if (keepRangeStart) {
+			                        r.setStart(that.range.startContainer, that.range.startOffset);
+			                    }
+			                    else {
+			                        r.setStart(el[0], 0);
+			                    }
+
+			                    r.setEnd(el[0], 1);
 			                    sel.removeAllRanges();
 			                    sel.addRange(r);
 			                    that.range = r;
 			                }
 			            }
+			            else if (
+                            sibling === nodeEnd
+                            || (sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                        ) {
+			                el.text(sibling.textContent.substring(0, that.range.endOffset));
+			                if (el.text()) {
+			                    sibling.parentNode.insertBefore(el[0], sibling);
+			                    sibling.textContent = sibling.textContent.substring(that.range.endOffset);
+			                    var sel = document.getSelection();
+			                    var r = document.createRange();
+			                    r.setStart(that.range.startContainer, that.range.startOffset);
+			                    r.setEnd(el[0], 1);
+			                    sel.removeAllRanges();
+			                    sel.addRange(r);
+			                    that.range = r;
+			                }
+			            }
+			            else if (sibling === nodeStart) {
+			                el.text(sibling.textContent.substring(that.range.startOffset, sibling.textContent.length));
+			                if(el.text()){
+			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
+			                    sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
+			                    if (!keepRangeStart) {
+			                        var sel = document.getSelection();
+			                        var r = document.createRange();
+			                        r.setStart(el[0], 0);
+			                        r.setEnd(that.range.endContainer, that.range.endOffset);
+			                        sel.removeAllRanges();
+			                        sel.addRange(r);
+			                        that.range = r;
+			                    }
+			                }
+			            }
 			            else {
 			                el.text(sibling.textContent.substring(0, sibling.textContent.length));
-			                sibling.parentNode.insertBefore(el[0], sibling);
-			                sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+			                if (el.text()) {
+			                    sibling.parentNode.insertBefore(el[0], sibling);
+			                    sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+			                }
+			                
 			            }
 			        }
 			        sibling = sibling.nextSibling;
 			        i++;
-			    } while (sibling && sibling !== nodeEnd && i < that.range.endOffset);
+			    } while (
+                    sibling && sibling !== nodeEnd &&
+                    !(sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                );
 
 			    return addedNodes;
 			}
@@ -561,7 +576,7 @@ window.RTE = (function () {
 				that.range.startContainer.textContent = that.range.startContainer.textContent.substring(that.range.endOffset);
 
 				var sel = document.getSelection();
-				var r = new Range();
+				var r = document.createRange();
 				r.setStart(el[0], 0);
 				r.setEnd(el[0], 1);
 				sel.removeAllRanges();
@@ -591,7 +606,8 @@ window.RTE = (function () {
 					)
 				){
 					if(that.range.startContainer !== that.editZone[0]){
-						$(that.range.startContainer).css(css);
+					    $(that.range.startContainer).css(css);
+					    $(that.range.startContainer).find('span').css(css);
 					}
 					else{
 						$(that.range.startContainer).find('*').css(css);
