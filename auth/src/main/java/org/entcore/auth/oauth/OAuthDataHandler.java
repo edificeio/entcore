@@ -50,16 +50,19 @@ public class OAuthDataHandler extends DataHandler {
 	private final Neo4j neo;
 	private final MongoDb mongo;
 	private final OpenIdConnectService openIdConnectService;
+	private final boolean checkFederatedLogin;
 	private static final String AUTH_INFO_COLLECTION = "authorizations";
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
 	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
 
-	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService) {
+	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService,
+			boolean checkFederatedLogin) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
+		this.checkFederatedLogin = checkFederatedLogin;
 	}
 
 	@Override
@@ -96,8 +99,11 @@ public class OAuthDataHandler extends DataHandler {
 			String query =
 					"MATCH (n:User) " +
 					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
-					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
-					"AND (NOT(HAS(n.federated)) OR n.federated = false) " +
+					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
+			if (checkFederatedLogin) {
+				query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
+			}
+			query +=
 					"OPTIONAL MATCH (p:Profile) " +
 					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
