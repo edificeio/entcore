@@ -309,9 +309,17 @@ window.RTE = (function () {
                     this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
                 ){
 				    element.html('&#8203;');
-					var elementAtCaret = commonAncestor;
+				    var elementAtCaret = commonAncestor;
+				    if (
+                        elementAtCaret.nodeType === 1
+                        && (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')
+                    ) {
+				        var wrapper = $('<div>&#8203;</div>');
+				        $(elementAtCaret).append(wrapper);
+				        elementAtCaret = wrapper[0];
+				    }
 					if (elementAtCaret.parentNode.nodeName === 'TD') {
-					    var wrapper = $('<div></div>');
+					    var wrapper = $('<div>&#8203;</div>');
 					    $(elementAtCaret.parentNode).append(wrapper);
 					    wrapper.append(elementAtCaret);
 					}
@@ -1692,13 +1700,14 @@ window.RTE = (function () {
 			                }
 
 			                var format = {
-			                    'font-style': '',
-			                    'background-color': '',
-			                    'font-weight': '',
-			                    'text-decoration': '',
-			                    'color': '',
-			                    'font-size': '',
-			                    'line-height': ''
+			                    'font-style': 'normal',
+			                    'background-color': 'transparent',
+			                    'font-weight': 'normal',
+			                    'text-decoration': 'none',
+			                    'color': 'inherit',
+			                    'font-size': 'initial',
+			                    'line-height': 'initial',
+                                'font-family': 'inherit'
 			                };
 
 			                instance.selection.css(format);
@@ -3148,82 +3157,87 @@ window.RTE = (function () {
                                 editorInstance.addState(editZone.html());
                                 
                                 var parentContainer = range.startContainer;
-                                var newLine = $('<div>&#8203;</div>');
-                                if (parentContainer === editZone[0]) {
-                                    parentContainer.appendChild(newLine[0]);
+                                var blockContainer = parentContainer;
+                                while (blockContainer.nodeType !== 1 || textNodes.indexOf(blockContainer.nodeName) !== -1) {
+                                    blockContainer = blockContainer.parentNode;
                                 }
-                                else {
-                                    if (parentContainer.nodeType === 1) {
-                                        newLine.attr('style', $(parentContainer).attr('style'));
-                                        newLine.attr('class', $(parentContainer).attr('class'));
+                                if (parentContainer === editZone[0]) {
+                                    var wrapper = $('<div></div>');
+                                    $(editZone[0]).append(wrapper);
+                                    wrapper.html('&#8203;');
+                                    blockContainer = wrapper[0];
+                                    parentContainer = wrapper[0];
+                                }
+                                if (blockContainer === editZone[0]) {
+                                    var wrapper = $('<div></div>');
+                                    $(blockContainer).append(wrapper);
+                                    wrapper.append(parentContainer);
+                                    blockContainer = wrapper[0];
+                                }
+                                var newNodeName = 'div';
+                                if ((parentContainer.nodeType === 1 && range.startOffset < parentContainer.childNodes.length)
+                                    || (parentContainer.nodeType === 3 && range.startOffset < parentContainer.textContent.length)) {
+                                    newNodeName = blockContainer.nodeName.toLowerCase();
+                                }
+                                var newLine = $('<' + newNodeName + '>&#8203;</' + newNodeName + '>');
+
+                                blockContainer.parentNode.insertBefore(newLine[0], blockContainer.nextSibling);
+
+                                newLine.attr('style', $(blockContainer).attr('style'));
+                                newLine.attr('class', $(blockContainer).attr('class'));
+
+                                if (
+                                        !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') &&
+                                        !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') &&
+                                        !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') &&
+                                        !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
+                                    ) {
+                                    e.preventDefault();
+                                    var rangeStart = 1;
+                                    var content = document.createElement('span');
+                                    var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
+                                    if(!content){
+                                        content = '&#8203;';
                                     }
                                     else {
-                                        newLine.attr('style', $(parentContainer.parentNode).attr('style'));
-                                        newLine.attr('class', $(parentContainer.parentNode).attr('class'));
+                                        rangeStart = 0;
+                                    }
+                                    newLine.html(content);
+                                    parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+
+                                    var nodeCursor = parentContainer;
+                                    while (nodeCursor !== blockContainer) {
+                                        var cursorClone;
+                                        if (nodeCursor.nodeType === 1) {
+                                            cursorClone = document.createElement(nodeCursor.nodeName.toLowerCase());
+                                            $(cursorClone).attr('style', $(nodeCursor).attr('style'));
+                                            $(cursorClone).attr('class', $(nodeCursor).attr('class'));
+                                            $(cursorClone).append(newLine[0].firstChild);
+                                            newLine.prepend(cursorClone);
+                                        }
+                                            
+                                        var sibling = nodeCursor.nextSibling;
+                                        while (sibling !== null) {
+                                            //order matters here. appending sibling before getting nextsibling breaks the loop
+                                            var currentSibling = sibling;
+                                            sibling = sibling.nextSibling;
+                                            newLine.append(currentSibling);
+                                        }
+
+                                        nodeCursor = nodeCursor.parentNode;
                                     }
 
-                                    if (
-                                            !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'LI') &&
-                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'LI') &&
-                                            !(parentContainer.nodeType === 1 && parentContainer.nodeName === 'TD') &&
-                                            !(parentContainer.parentNode.nodeType === 1 && parentContainer.parentNode.nodeName === 'TD')
-                                        ) {
-                                        e.preventDefault();
-                                        var rangeStart = 1;
-                                        if (
-                                            range.startContainer.nodeType !== 1 &&
-                                            range.startOffset < range.startContainer.textContent.length
-                                            ) {
-
-                                            var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-                                            if(!content){
-                                                content = '&#8203;';
-                                            }
-                                            else {
-                                                rangeStart = 0;
-                                            }
-                                            newLine.html(content);
-                                            range.startContainer.textContent = range.startContainer.textContent.substring(0, range.startOffset);
-
-                                            var sibling = range.startContainer.nextSibling;
-                                            do {
-                                                newLine.append(sibling);
-                                                sibling = range.startContainer.nextSibling;
-                                            } while (sibling !== null);
-
-                                            if (!parentContainer.wholeText) {
-                                                // FF forces encode on textContent, this is a hack to get the actual entities codes,
-                                                // since innerHTML doesn't exist on text nodes
-                                                parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
-                                            }
-                                        }
-                                        if (
-                                            range.startContainer.nodeType === 1 &&
-                                            range.startOffset < range.startContainer.children.length
-                                            ) {
-                                            for(var i = range.startOffset; i < range.startContainer.children.length; i++){
-												range.startContainer.children[i].remove();
-												newLine.append($(range.startContainer.children[i].outerHTML));
-											}
-                                        }
-
-										var container = parentContainer;
-										if (container.nodeType !== 1) {
-										    container = container.parentNode;
-										}
-										if (container.nextSibling) {
-										    container.parentNode.insertBefore(newLine[0], container.nextSibling);
-                                        }
-                                        else {
-										    container.parentNode.appendChild(newLine[0]);
-                                        }
-
-                                        var range = document.createRange();
-                                        range.setStart(newLine[0].firstChild || newLine[0], rangeStart);
-
-                                        sel.removeAllRanges();
-                                        sel.addRange(range);
+                                    if (!parentContainer.wholeText) {
+                                        // FF forces encode on textContent, this is a hack to get the actual entities codes,
+                                        // since innerHTML doesn't exist on text nodes
+                                        parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
                                     }
+
+                                    var range = document.createRange();
+                                    range.setStart(newLine[0].firstChild || newLine[0], rangeStart);
+
+                                    sel.removeAllRanges();
+                                    sel.addRange(range);
                                 }
                             }
 
