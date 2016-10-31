@@ -123,7 +123,8 @@ public class AuthController extends BaseController {
 		JsonObject oic = container.config().getObject("openid-connect");
 		OpenIdConnectService openIdConnectService = (oic != null) ? new DefaultOpendIdConnectService(
 				oic.getString("iss"), vertx, oic.getString("keys")) : null;
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService);
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,
+				container.config().getBoolean("check-federated-login", false));
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();

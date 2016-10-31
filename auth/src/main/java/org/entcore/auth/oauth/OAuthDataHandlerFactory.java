@@ -31,16 +31,18 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final Neo4j neo;
 	private final MongoDb mongo;
 	private final OpenIdConnectService openIdConnectService;
+	private final boolean checkFederatedLogin;
 
-	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService) {
+	public OAuthDataHandlerFactory(Neo4j neo, MongoDb mongo, OpenIdConnectService openIdConnectService, boolean cfl) {
 		this.neo = neo;
 		this.mongo = mongo;
 		this.openIdConnectService = openIdConnectService;
+		this.checkFederatedLogin = cfl;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
-		return new OAuthDataHandler(request, neo, mongo, openIdConnectService);
+		return new OAuthDataHandler(request, neo, mongo, openIdConnectService, checkFederatedLogin);
 	}
 
 }
