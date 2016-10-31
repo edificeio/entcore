@@ -571,8 +571,9 @@ window.RTE = (function () {
 			        sibling = sibling.nextSibling;
 			        i++;
 			    } while (
-                    sibling && sibling !== nodeEnd &&
-                    !(sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                    sibling && sibling !== nodeEnd
+                    && !(sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                    && !$(sibling).find(that.range.endContainer).length
                 );
 
 			    return addedNodes;
@@ -1711,6 +1712,7 @@ window.RTE = (function () {
 			                };
 
 			                instance.selection.css(format);
+			                instance.execCommand('removeFormat');
 			            });
 
 			            instance.on('selectionchange', function (e) {
