@@ -42,7 +42,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	private static final String QUERY_PIVOT_FC =
 			"MATCH (u:User) WHERE (lower(u.lastName) = lower({family_name}) OR lower(u.lastName) = lower({preferred_username})) " +
 			"AND lower({given_name}) CONTAINS lower(u.firstName) AND u.birthDate = {birthdate} AND NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = true " +
+			"SET u.subFC = {sub}, u.federated = {setFederated} " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private static final String QUERY_MAPPING_FC =
 			"MATCH (n:User {login:{login}}) " +
@@ -51,8 +51,9 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	private static final String QUERY_SET_MAPPING_FC =
 			"MATCH (u:User {login:{login}}) " +
 			"WHERE NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = true " +
+			"SET u.subFC = {sub}, u.federated = {setFederated} " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
+	private boolean setFederated = true;
 
 	public FranceConnectServiceProvider(String iss) {
 		this.iss = iss;
@@ -83,6 +84,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 		if (!payload.containsField("preferred_username")) {
 			payload.putString("preferred_username", "");
 		}
+		payload.putBoolean("setFederated", setFederated);
 		neo4j.execute(QUERY_PIVOT_FC, payload, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(final Either<String, JsonObject> event) {
@@ -123,6 +125,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 						}
 					}
 					if (success) {
+						params.putBoolean("setFederated", setFederated);
 						neo4j.execute(QUERY_SET_MAPPING_FC, params.putString("sub", payload.getString("sub")),
 								validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 							@Override
@@ -144,4 +147,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 		}));
 	}
 
+	public void setSetFederated(boolean setFederated) {
+		this.setFederated = setFederated;
+	}
 }

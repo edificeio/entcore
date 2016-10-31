@@ -33,4 +33,6 @@ public interface OpenIdConnectServiceProvider {
 
 	void mappingUser(String login, String password, JsonObject payload, Handler<Either<String, JsonElement>> handler);
 
+	void setSetFederated(boolean setFederated);
+
 }
