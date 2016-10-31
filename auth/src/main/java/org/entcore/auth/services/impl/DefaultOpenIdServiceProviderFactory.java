@@ -48,8 +48,8 @@ public class DefaultOpenIdServiceProviderFactory implements OpenIdServiceProvide
 				provider = new FranceConnectServiceProvider(c.getString("iss"));
 			} else {
 				provider = new DefaultOpendIdConnectService(c.getString("iss"));
-				((DefaultOpendIdConnectService) provider).setSetFederated(c.getBoolean("set-federated", true));
 			}
+			provider.setSetFederated(c.getBoolean("set-federated", true));
 			services.put(domain, provider);
 			try {
 				OpenIdConnectClient oic = new OpenIdConnectClient(
