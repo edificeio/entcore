@@ -27,7 +27,11 @@ function Skin(data){
 function Preferences(){}
 Preferences.prototype.get = function(cb){
     return http().get('/userbook/preference/timeline').done(function(data){
-        this.prefs = JSON.parse(data.preference)
+        try {
+			this.prefs = JSON.parse(data.preference)
+		} catch(e) {
+			this.prefs = {}
+		}
         if(typeof cb === 'function')
             cb()
     }.bind(this))
