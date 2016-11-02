@@ -2272,6 +2272,10 @@ window.RTE = (function () {
 								if(scope.linker.params.tooltip){
 									linkNode.attr('tooltip', scope.linker.params.tooltip);
 								}
+								else if(linkNode.attr('tooltip')){
+									linkNode.removeAttr('tooltip');
+									linkNode.off('mouseover');
+								}
 							}
 
 							if (selectedNode && selectedNode.nodeName === 'A') {
@@ -2289,7 +2293,7 @@ window.RTE = (function () {
 
 							if (instance.selection.isCursor()) {
 							    linkNode.text(scope.linker.params.link);
-							    instance.selection.replaceHTML(linkNode[0].outerHTML);
+							    instance.selection.replaceHTML(instance.compile(linkNode[0].outerHTML)(scope));
 							}
 							else {
 							    instance.selection.wrapText(linkNode);
