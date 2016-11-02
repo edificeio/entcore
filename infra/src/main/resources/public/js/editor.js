@@ -1713,6 +1713,7 @@ window.RTE = (function () {
 
 			                instance.selection.css(format);
 			                instance.execCommand('removeFormat');
+							instance.trigger('selectionchange', { selection: instance.selection });
 			            });
 
 			            instance.on('selectionchange', function (e) {
