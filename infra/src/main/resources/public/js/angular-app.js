@@ -830,6 +830,7 @@ module.directive('calendar', function($compile) {
         link: function(scope, element, attributes) {
             var allowCreate;
             scope.display = {};
+            scope.display.readonly = false;
             attributes.$observe('createTemplate', function() {
                 if (attributes.createTemplate) {
                     template.open('schedule-create-template', attributes.createTemplate);
@@ -837,6 +838,11 @@ module.directive('calendar', function($compile) {
                 }
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
+                }
+            });
+            attributes.$observe('readonly', function(){
+                if(attributes.readonly){
+                    scope.display.readonly = true;
                 }
             });
 
