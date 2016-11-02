@@ -2351,8 +2351,8 @@ window.RTE = (function () {
 					'<i tooltip="editor.option.smileys"></i>' +
 					'<lightbox show="display.pickSmiley" on-close="display.pickSmiley = false;">' +
 					'<h2>Insérer un smiley</h2>' +
-					'<div class="row">' +
-					'<img ng-repeat="smiley in smileys" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
+					'<div class="row smileys">' +
+					'<img ng-repeat="smiley in smileys" class="smiley" ng-click="addSmiley(smiley)" skin-src="/img/smileys/[[smiley]].png" />' +
 					'</div>' +
 					'</lightbox>',
 					link: function(scope, element, attributes){
