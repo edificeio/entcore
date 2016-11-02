@@ -2462,6 +2462,9 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+            if(ui.breakpoints.tablette >= $(window).width()){
+                return;
+            }
             var tip;
             element.on('mouseover', function() {
                 if (!attributes.tooltip || attributes.tooltip === 'undefined') {
@@ -5147,17 +5150,17 @@ module.directive('checkTool', function() {
                 if (scope.ngChange) {
                     scope.ngChange();
                 }
-                scope.$apply();
+                checkToolDelay(scope)
             });
 
             $('body').on('click', function(e) {
                 if ($(e.target).parents('.check-tool, .toggle, .lightbox').length === 0 && e.target.nodeName !== "CHECK-TOOL" && $('body').find(e.target).length !== 0) {
                     scope.ngModel = false;
                     element.removeClass('selected');
-                    scope.$apply();
+                    checkToolDelay(scope)
                     if(scope.ngChange){
                         scope.ngChange();
-                        scope.$apply();
+                        checkToolDelay(scope)
                     }
                 }
             })
