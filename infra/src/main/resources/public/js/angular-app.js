@@ -2453,6 +2453,9 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+            if(ui.breakpoints.tablette >= $(window).width()){
+                return;
+            }
             var tip;
             element.on('mouseover', function() {
                 if (!attributes.tooltip || attributes.tooltip === 'undefined') {
