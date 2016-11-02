@@ -305,24 +305,25 @@ window.RTE = (function () {
 			    that.instance.addState(that.editZone.html());
 			    var commonAncestor = that.range.commonAncestorContainer;
 			    
+				var elementAtCaret = commonAncestor;
+				if (
+					elementAtCaret.nodeType === 1
+					&& (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')
+				) {
+					var wrapper = $('<div>&#8203;</div>');
+					$(elementAtCaret).append(wrapper);
+					elementAtCaret = wrapper[0];
+				}
+				if (elementAtCaret.parentNode.nodeName === 'TD') {
+					var wrapper = $('<div>&#8203;</div>');
+					$(elementAtCaret.parentNode).append(wrapper);
+					wrapper.append(elementAtCaret);
+				}
+
 				if(
                     this.isCursor() || commonAncestor.nodeType === 3 || textNodes.indexOf(commonAncestor.nodeName) !== -1
                 ){
 				    element.html('&#8203;');
-				    var elementAtCaret = commonAncestor;
-				    if (
-                        elementAtCaret.nodeType === 1
-                        && (elementAtCaret.getAttribute('contenteditable') || elementAtCaret.nodeName === 'TD')
-                    ) {
-				        var wrapper = $('<div>&#8203;</div>');
-				        $(elementAtCaret).append(wrapper);
-				        elementAtCaret = wrapper[0];
-				    }
-					if (elementAtCaret.parentNode.nodeName === 'TD') {
-					    var wrapper = $('<div>&#8203;</div>');
-					    $(elementAtCaret.parentNode).append(wrapper);
-					    wrapper.append(elementAtCaret);
-					}
 
 					while (textNodes.indexOf(elementAtCaret.nodeName) !== -1 || elementAtCaret.nodeType === 3) {
 						if (elementAtCaret.parentNode.nodeType === 1 && elementAtCaret.parentNode.getAttribute('contenteditable') || elementAtCaret.parentNode.nodeName === 'TD') {
@@ -347,19 +348,38 @@ window.RTE = (function () {
 					elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
 					elementAtCaret.parentNode.removeChild(elementAtCaret);
 
-					this.moveCaret(element[0], element.text().length);
+					var sel = window.getSelection();
+					var r = document.createRange();
+					r.setStart(element[0], 0);
+					var endOffset = element[0].textContent.length;
+					if(element[0].childNodes.length){
+						endOffset = element[0].childNodes.length;
+					}
+					r.setEnd(element[0], endOffset);
+					sel.removeAllRanges();
+					sel.addRange(r);
 				}
 				else {
-				    if (formatNodes.indexOf(commonAncestor.nodeName) !== -1) {
-				        element.html($(commonAncestor).html());
-				        commonAncestor.parentNode.insertBefore(element, commonAncestor);
-				        commonAncestor.remove();
+				    if (formatNodes.indexOf(elementAtCaret.nodeName) !== -1) {
+				        element.html($(elementAtCaret).html());
+				        elementAtCaret.parentNode.insertBefore(element[0], elementAtCaret);
+				        elementAtCaret.remove();
+						var sel = window.getSelection();
+						var r = document.createRange();
+						r.setStart(element[0], 0);
+						var endOffset = element[0].textContent.length;
+						if(element[0].childNodes.length){
+							endOffset = element[0].childNodes.length;
+						}
+						r.setEnd(element[0], endOffset);
+						sel.removeAllRanges();
+						sel.addRange(r);
 				    }
 				    else {
 				        var foundFirst = false;
 				        var foundLast = false;
-				        for (var i = 0; i < commonAncestor.childNodes.length; i++) {
-				            var item = commonAncestor.childNodes[i];
+				        for (var i = 0; i < elementAtCaret.childNodes.length; i++) {
+				            var item = elementAtCaret.childNodes[i];
 				            if (item === this.range.startContainer ||
                                 (this.range.startContainer.nodeType === 1 && $(this.range.startContainer).find(item).length) ||
                                 (item.nodeType === 1 && $(item).find(this.range.startContainer).length)) {
@@ -380,11 +400,23 @@ window.RTE = (function () {
 				            while (textNodes.indexOf(item.nodeName) !== -1 || item.nodeType === 3) {
 				                item = item.parentNode;
 				            }
+							if(!item.parentNode){
+								continue;
+							}
+
 				            el.html(item.innerHTML || item.textContent);
-				            item.parentNode.replaceChild(el[0], item);
-				            setTimeout(function(){
-				                that.selectNode(el[0])
-				            }, 1);
+				            item.parentNode.insertBefore(el[0], item);
+							item.remove();
+				            var sel = window.getSelection();
+							var r = document.createRange();
+							r.setStart(el[0], 0);
+							var endOffset = el[0].textContent.length;
+							if(el[0].childNodes.length){
+								endOffset = el[0].childNodes.length;
+							}
+							r.setEnd(el[0], endOffset);
+							sel.removeAllRanges();
+							sel.addRange(r);
 				            if (foundLast) {
 				                break;
 				            }
@@ -393,8 +425,9 @@ window.RTE = (function () {
 				}
 				that.instance.addState(that.editZone.html());
 				setTimeout(function () {
-				    this.instance.trigger('contentupdated');
-				}.bind(this), 20);
+				    this.instance.trigger('selectionchange', { selection: this.instance.selection });
+					this.instance.trigger('contentupdated');
+				}.bind(this), 100);
 			};
 
 			this.isCursor = function () {
@@ -1018,6 +1051,21 @@ window.RTE = (function () {
 				};
 			});
 
+			function beforeJustify(instance){
+				instance.editZone.find('mathjax').html('');
+				instance.editZone.find('mathjax').removeAttr('contenteditable');
+			}
+
+			function afterJustify(instance){
+				instance.editZone.find('mathjax').each(function(index, item){
+					var scope = angular.element(item).scope();
+					scope.updateFormula(scope.formula)
+				})
+				instance.editZone.find('mathjax').attr('contenteditable', 'false');
+
+				instance.trigger('justify-changed');
+			}
+
 			RTE.baseToolbarConf.option('justifyLeft', function(instance){
 				return {
 					template: '<i tooltip="editor.option.justify.left"></i>',
@@ -1027,6 +1075,7 @@ window.RTE = (function () {
 							if(!instance.editZone.is(':focus')){
 								instance.focus();
 							}
+							beforeJustify(instance)
 							instance.execCommand('justifyLeft');
 							if(document.queryCommandState('justifyLeft')){
 								element.addClass('toggled');							}
@@ -1040,11 +1089,7 @@ window.RTE = (function () {
 							    }
 							});
 
-							if(MathJax && MathJax.Hub){
-								MathJax.Hub.Rerender();
-							}
-
-							instance.trigger('justify-changed');
+							afterJustify(instance)
 						});
 
 						instance.on('selectionchange', function(e){
@@ -1077,6 +1122,7 @@ window.RTE = (function () {
 								instance.focus();
 							}
 
+							beforeJustify(instance);
 							if(!document.queryCommandState('justifyRight')){
 								instance.execCommand('justifyRight');
 								element.addClass('toggled');
@@ -1092,11 +1138,7 @@ window.RTE = (function () {
 							    }
 							});
 
-							if(MathJax && MathJax.Hub){
-								MathJax.Hub.Rerender();
-							}
-
-							instance.trigger('justify-changed');
+							afterJustify(instance);
 						});
 
 					    instance.on('selectionchange', function (e) {
@@ -1129,6 +1171,7 @@ window.RTE = (function () {
 								instance.focus();
 							}
 
+							beforeJustify(instance);
 							if(!document.queryCommandState('justifyCenter')){
 								instance.execCommand('justifyCenter');
 								element.addClass('toggled');
@@ -1149,11 +1192,7 @@ window.RTE = (function () {
                                 }
 							});
 
-							if(MathJax && MathJax.Hub){
-								MathJax.Hub.Rerender();
-							}
-
-							instance.trigger('justify-changed');
+							afterJustify(instance);
 						});
 
 						instance.on('selectionchange', function(e){
@@ -1190,6 +1229,7 @@ window.RTE = (function () {
 								instance.focus();
 							}
 
+							beforeJustify(instance);
 							if(!document.queryCommandState('justifyFull')){
 								element.addClass('toggled');
 								instance.execCommand('justifyFull');
@@ -1199,11 +1239,7 @@ window.RTE = (function () {
 								element.removeClass('toggled');
 							}
 
-							if(MathJax && MathJax.Hub){
-								MathJax.Hub.Rerender();
-							}
-
-							instance.trigger('justify-changed');
+							afterJustify(instance);
 						});
 
 						instance.on('selectionchange', function(e){
