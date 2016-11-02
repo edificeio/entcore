@@ -351,11 +351,7 @@ window.RTE = (function () {
 					var sel = window.getSelection();
 					var r = document.createRange();
 					r.setStart(element[0], 0);
-					var endOffset = element[0].textContent.length;
-					if(element[0].childNodes.length){
-						endOffset = element[0].childNodes.length;
-					}
-					r.setEnd(element[0], endOffset);
+					r.setEnd(element[0], 0);
 					sel.removeAllRanges();
 					sel.addRange(r);
 				}
@@ -3494,6 +3490,10 @@ window.RTE = (function () {
 							}
 							return lang.translate(scope.display[scope.displayAs]);
 						};
+
+						element.children('.options').on('mouseover', function (e){
+							e.stopPropagation()
+						});
 
 						element.children('.selected-value').on('click', function(){
 						    if (element.children('.options').hasClass('hidden')) {
