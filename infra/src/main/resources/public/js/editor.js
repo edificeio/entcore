@@ -2849,11 +2849,6 @@ window.RTE = (function () {
 							if(element.parents('.editor-media').length > 0){
 								return;
 							}
-								
-							if (previousScroll === (window.scrollY || window.pageYOffset)) {
-                                var placeEditorToolbar = requestAnimationFrame(sticky);
-                                return;
-                            }
 							
 							if(toolbarElement.css('position') !== 'absolute'){
 								toolbarElement.css({ 'position': 'absolute', 'top': '0px' });
