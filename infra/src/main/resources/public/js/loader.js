@@ -29,16 +29,16 @@ var currentLanguage = '';
 
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
-	preferencesRequest.open('GET', '/userbook/preference/language');
+	preferencesRequest.open('GET', '/userbook/preference/language', false);
 	preferencesRequest.async = false;
 
 	preferencesRequest.onload = function(){
         var fallBack = function(){
             // Fallback : navigator language
             var request = new XMLHttpRequest();
-            request.open('GET', '/locale');
+            request.open('GET', '/locale', false);
             request.async = false;
-            request.onload = function(){
+            request.onload = function() {
                 if(request.status === 200){
                     currentLanguage = JSON.parse(request.responseText).locale;
                 }
@@ -47,7 +47,7 @@ var currentLanguage = '';
         }
 
         if(preferencesRequest.status === 200){
-            try{
+            try {
     			currentLanguage = JSON.parse(JSON.parse(preferencesRequest.responseText).preference)['default-domain'];
     		} catch(e) {
     			fallBack();
