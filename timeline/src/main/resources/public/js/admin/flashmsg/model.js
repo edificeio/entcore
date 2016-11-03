@@ -50,7 +50,8 @@ model.build = function () {
             "justifyFull",
             "font",
             "fontSize",
-            "linker" ]
+            "linker",
+            "unlink" ]
 
         return keep.indexOf(option.name) > -1
     })
