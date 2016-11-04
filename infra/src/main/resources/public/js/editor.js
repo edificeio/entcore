@@ -3208,10 +3208,19 @@ window.RTE = (function () {
                                     parentContainer = wrapper[0];
                                 }
                                 if (blockContainer === editZone[0]) {
+                                    var startOffset = range.startOffset;
                                     var wrapper = $('<div></div>');
                                     $(blockContainer).append(wrapper);
-                                    wrapper.append(parentContainer);
+                                    for (var i = 0; i < editZone[0].childNodes.length; i++) {
+                                        $(wrapper).append(editZone[0].childNodes[i]);
+                                    }
                                     blockContainer = wrapper[0];
+                                    var sel = document.getSelection();
+                                    var r = document.createRange();
+                                    r.setStart(parentContainer, startOffset);
+                                    sel.removeAllRanges();
+                                    sel.addRange(r);
+                                    range = r;
                                 }
                                 var newNodeName = 'div';
                                 if ((parentContainer.nodeType === 1 && range.startOffset < parentContainer.childNodes.length)
