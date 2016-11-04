@@ -522,10 +522,13 @@ window.RTE = (function () {
 				that.selectNode(element);
 			}
 
-			function applyCSSBetween(nodeStart, nodeEnd, css, keepRangeStart) {
+			function applyCSSBetween(nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
+			    if (startOffset === undefined) {
+			        startOffset = that.range.startOffset;
+			    }
 			    var addedNodes = [];
 			    var sibling = nodeStart;
-			    var i = that.range.startOffset;
+			    var i = startOffset;
 			    do {
 			        if (sibling.nodeType === 1) {
 			            $(sibling).css(css);
@@ -534,16 +537,16 @@ window.RTE = (function () {
 			            var el = $('<span></span>')
 							.css(css);
 			            if (sibling === nodeStart && sibling === nodeEnd) {
-			                el.html(sibling.textContent.substring(that.range.startOffset, that.range.endOffset));
+			                el.html(sibling.textContent.substring(startOffset, that.range.endOffset));
 			                if (el.html().length > 0) {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
 			                    var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
 			                    sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
-			                    sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
+			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 			                    var sel = document.getSelection();
 			                    var r = document.createRange();
 			                    if (keepRangeStart) {
-			                        r.setStart(that.range.startContainer, that.range.startOffset);
+			                        r.setStart(that.range.startContainer, startOffset);
 			                    }
 			                    else {
 			                        r.setStart(el[0], 0);
@@ -565,7 +568,7 @@ window.RTE = (function () {
 			                    sibling.textContent = sibling.textContent.substring(that.range.endOffset);
 			                    var sel = document.getSelection();
 			                    var r = document.createRange();
-			                    r.setStart(that.range.startContainer, that.range.startOffset);
+			                    r.setStart(that.range.startContainer, startOffset);
 			                    r.setEnd(el[0], 1);
 			                    sel.removeAllRanges();
 			                    sel.addRange(r);
@@ -573,10 +576,10 @@ window.RTE = (function () {
 			                }
 			            }
 			            else if (sibling === nodeStart) {
-			                el.text(sibling.textContent.substring(that.range.startOffset, sibling.textContent.length));
+			                el.text(sibling.textContent.substring(startOffset, sibling.textContent.length));
 			                if(el.text()){
 			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
-			                    sibling.textContent = sibling.textContent.substring(0, that.range.startOffset);
+			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 			                    if (!keepRangeStart) {
 			                        var sel = document.getSelection();
 			                        var r = document.createRange();
@@ -706,11 +709,13 @@ window.RTE = (function () {
                                 && $(sibling).find(that.range.endContainer).length
                             ) {
 							    var firstChild = sibling.firstChild;
+							    var startOffset = 0;
 							    if ($(sibling).find(that.range.startContainer).length) {
 							        firstChild = that.range.startContainer;
+							        startOffset = that.range.startOffset;
 							    }
                                 addedNodes = addedNodes.concat(
-									applyCSSBetween(firstChild, that.range.endContainer, css, true)
+									applyCSSBetween(firstChild, that.range.endContainer, css, true, startOffset)
 								);
                                 break;
 							}
