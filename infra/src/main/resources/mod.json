@@ -5,7 +5,6 @@
   "auto-redeploy": false,
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
-  "widgets-path": "/Users/elbywan/WSE/leo",
   "app-registry": {
     "name": "org.entcore~app-registry~1.23-SNAPSHOT",
     "config": {
