@@ -2,19 +2,129 @@
 ENT Core'S LICENCE
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 URI: http://www.ent-core.org
-////////////////////////////////////////////
+
 // English version (French version below) //
-////////////////////////////////////////////
+
+ENT Core is published by "Open Digital Education" (SAS “WebServices pour l’Education”). You must indicate the name of the software and the company in any production /contribution using the software and indicate on the home page of the software industry in question, "powered by Open Digital Education" with a reference to the website: https: //opendigitaleducation.com/.
+
 ENT Core is free software, licensed under the terms of the GNU Affero General Public License as published by the Free Software Foundation, version 3 of the License.
+
 For the sake of explanation, any module that communicate over native Web protocols, such as HTTP, with ENT Core is outside the scope of this license and could be license under its own terms. This is merely considered normal use of ENT Core, and does not fall under the heading of "covered work".
-You can redistribute it and/or modify since you respect the terms of this License.
 
+You can redistribute ENT Core and/or modify it since you respect the terms of the GNU Affero General Public License. If you modify the source code of ENT Core and then use this modified source code in your creation, you must make available the source code of your modifications of ENT Core.
 
-You should have received a copy of the GNU Affero General Public License along with ENT Core. If not, see : <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU Affero General Public License along with ENT Core. If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
+
 Finally, ENT Core is made using external components and libraries. They are listed at the end of this file.
+
 //////////////////// // French version // ////////////////////
-ENT Core est un logiciel libre, diffusé selon les termes de la GNU Affero General Public License telle que publiée par la Free Software Foundation dans sa version 3.
-Par souci de clarté, un module qui communique avec ENT Core au travers de protocoles Web standards natifs, tels que HTTP, est en dehors de l'étendue de cette licence et peut être diffusé sous ses propres termes. Cet usage est simplement considéré comme une utilisation normale de ENT Core, et ne tombe pas sous la qualification de « Covered Work ».
-Vous ne pouvez redistribuer ou modifier ces fichiers que si vous respectez les termes de cette licence. Vous devriez avoir reçu une copie de la GNU Affero General Public License avec le logiciel ENT Core. Si n'est pas le cas, vous la trouverez sur : <http://www.gnu.org/licenses/>
-Enfin, ENT Core utilise des composants et bibliothèques externes. Ils sont listés à la fin de ce fichier.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ENT Core est publié par "Open Digital Education" (SAS “WebServices pour l’Education”). Vous devez ainsi citer le logiciel et le nom de la société dans toute production/contribution utilisant le logiciel et indiquer  sur la page d’accueil de la production logicielle en question, « motorisé par Open Digital Education » avec un renvoi vers le site web : https://opendigitaleducation.com/.
+
+ENT Core est un logiciel libre, diffusé selon les termes de la GNU Affero General Public License telle que publiée par la Free Software Foundation dans sa version 3.
+
+Par souci de clarté, un module qui communique avec ENT Core au travers de protocoles Web standards natifs, tels que HTTP, est en dehors de l'étendue de cette licence et peut être diffusé sous ses propres termes. Cet usage est simplement considéré comme une utilisation normale de ENT Core, et ne tombe pas sous la qualification de « Covered Work ».
+
+Vous ne pouvez redistribuer ou modifier ces fichiers que si vous respectez les termes de la GNU Affero General Public License. Si vous modifiez les codes sources du logiciel ENT Core et utilisez les codes sources modifiés dans votre création, vous devez rendre votre création librement utilisable et disponible.
+
+Nous vous remercions de bien vouloir prendre connaissance de la GNU Affero General Public License avec le logiciel ENT Core, disponible au lien suivant : <http://www.gnu.org/licenses/> et de bien lire les dispositions et les directives de la licence afin de vous assurer de leur complet respect.
+
+Enfin, ENT Core utilise des composants et bibliothèques externes. Ils sont listés à la fin de ce fichier.
+
+
+/// Libraries ///
+
+This product includes/uses software, Vert.X (http://vertx.io/),
+developed by Vert.X  (http://vertx.io/)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, web-utils (https://github.com/web-education/web-utils),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, vertx-cron-timer (https://github.com/web-education/vertx-cron-timer),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, opencsv (https://code.google.com/p/opencsv/)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, juniversalchardet (https://code.google.com/p/juniversalchardet/)
+License: The Mozilla Public License, Version 1.1  (https://www.mozilla.org/MPL/1.1/)
+
+This product includes/uses software, mongodb-helper (https://github.com/web-education/mongodb-helper),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, AngularJS (https://angularjs.org/),
+developed by Google, Inc.  (http://angularjs.org)
+License: The MIT License  (http://mit-license.org/)
+
+This product includes/uses software, Underscore.js (http://underscorejs.org/),
+developed by Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+License: The MIT License  (http://mit-license.org/)
+
+This product includes/uses software, Moment.js (http://momentjs.com/),
+developed by Tim Wood, Iskren Chernev, Moment.js contributors
+License: The MIT License  (http://mit-license.org/)
+
+This product includes/uses software, CKEditor (http://ckeditor.com/),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The GNU General Public License, Version 2 or later (http://www.gnu.org/licenses/gpl.html)
+License: The GNU Lesser General Public License, Version 2.1 or later (http://www.gnu.org/licenses/lgpl.html)
+License: The Mozilla Public License, Version 1.1 or later (http://www.mozilla.org/MPL/MPL-1.1.html)
+
+This product includes/uses software, less (http://lesscss.org/),
+developed by Alexis Sellier  (https://github.com/cloudhead)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, jquery (http://jquery.com/),
+developed by jQuery Foundation and other contributors (https://jquery.org/)
+License: The MIT License  (http://mit-license.org/)
+
+This product includes/uses software, humane.js (https://wavded.github.io/humane-js/),
+developed by Marc Harter
+License: The MIT License  (http://mit-license.org/)
+
+This product includes/uses software, bootstrap-datepicker (https://github.com/eternicode/bootstrap-datepicker),
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-neo4j-persistor (https://github.com/web-education/mod-neo4j-persistor),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The GNU General Public License, Version 3.0 (http://www.gnu.org/licenses/gpl-3.0.txt)
+
+This product includes/uses software, json-schema-validator (https://github.com/campudus/vertx-json-schema-validator),
+developed by Campudus  (http://campudus.com/)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-mongo-persistor (https://github.com/vert-x/mod-mongo-persistor),
+developed by Vert.X  (https://github.com/vert-x)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-mailer (https://github.com/vert-x/mod-mailer),
+developed by Vert.X  (https://github.com/vert-x)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-zip (https://github.com/web-education/mod-zip),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-image-resizer (https://github.com/web-education/mod-image-resizer),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, mod-gridfs-persistor (https://github.com/web-education/mod-gridfs-persistor),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, http-proxy (https://github.com/web-education/http-proxy),
+developed by "Open Digital Education" (SAS "WebServices pour l'Education")  (http://web-education.net)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, Gatling (http://gatling.io/),
+developed by eBusiness Information, Groupe Excilys (www.ebusinessinformation.fr)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
+This product includes/uses software, Gradle (http://www.gradle.org/),
+developed by Gradleware (http://www.gradleware.com/)
+License: The Apache Software License, Version 2.0  (http://www.apache.org/licenses/LICENSE-2.0.txt)
+
