@@ -844,7 +844,7 @@ module.directive('calendar', function($compile) {
                 if(attributes.readonly && attributes.readonly !== 'false'){
                     scope.display.readonly = true;
                 }
-                if(attributes.readonly && attributes.readonly !== 'true'){
+                if(attributes.readonly && attributes.readonly == 'false'){
                     scope.display.readonly = false;
                 }
             });
