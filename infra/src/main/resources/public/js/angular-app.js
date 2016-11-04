@@ -841,8 +841,11 @@ module.directive('calendar', function($compile) {
                 }
             });
             attributes.$observe('readonly', function(){
-                if(attributes.readonly){
+                if(attributes.readonly && attributes.readonly !== 'false'){
                     scope.display.readonly = true;
+                }
+                if(attributes.readonly && attributes.readonly !== 'true'){
+                    scope.display.readonly = false;
                 }
             });
 
