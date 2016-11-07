@@ -3222,10 +3222,11 @@ window.RTE = (function () {
                                 if (blockContainer === editZone[0]) {
                                     var startOffset = range.startOffset;
                                     var wrapper = $('<div></div>');
-                                    $(blockContainer).append(wrapper);
-                                    for (var i = 0; i < editZone[0].childNodes.length; i++) {
-                                        $(wrapper).append(editZone[0].childNodes[i]);
+                                    
+                                    while (editZone[0].childNodes.length) {
+                                        $(wrapper).append(editZone[0].childNodes[0]);
                                     }
+                                    $(blockContainer).append(wrapper);
                                     blockContainer = wrapper[0];
                                     var sel = document.getSelection();
                                     var r = document.createRange();
