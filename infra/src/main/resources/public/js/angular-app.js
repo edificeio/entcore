@@ -5136,7 +5136,7 @@ var checkToolDelay = (function(){
 			setTimeout(function(){
 				scope.$apply();
 				applyAllowed = true;
-			}, 500);
+			}, 200);
 		}
 
 	}
