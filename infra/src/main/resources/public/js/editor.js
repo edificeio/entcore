@@ -3151,8 +3151,18 @@ window.RTE = (function () {
                         var editingTimer;
 
                         editZone.on('paste', function () {
-                            editorInstance.addState(editZone.html());
-                            editorInstance.trigger('contentupdated');
+							setTimeout(function(){
+								editorInstance.addState(editZone.html());
+								if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
+									var wrapper = $('<div></div>');
+									while(editorInstance.editZone[0].childNodes.length){
+										wrapper.append(editorInstance.editZone[0].childNodes[0]);
+									}
+									editorInstance.editZone.append(wrapper);
+								}
+								editorInstance.trigger('contentupdated');
+								editorInstance.scope.$apply();
+							}, 100);
                         });
 
                         editZone.on('keydown', function (e) {
