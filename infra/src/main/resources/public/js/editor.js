@@ -3289,7 +3289,11 @@ window.RTE = (function () {
                                 }
 
                                 var range = document.createRange();
-                                range.setStart(newLine[0].firstChild || newLine[0], rangeStart);
+								var newStartContainer = newLine[0];
+								while(newStartContainer.firstChild){
+									newStartContainer = newStartContainer.firstChild;
+								}
+                                range.setStart(newStartContainer, rangeStart);
 
                                 sel.removeAllRanges();
                                 sel.addRange(range);
