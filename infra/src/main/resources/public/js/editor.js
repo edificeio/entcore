@@ -2890,19 +2890,6 @@ window.RTE = (function () {
 
                         var previousScroll = 0;
                         function sticky() {
-							if(ui.breakpoints.tablette >= $(window).width()){
-								element.children('.editor-toolbar-opener').offset({
-									top: 0,
-									left: $(window).width() - 44
-								});
-
-								element.children('.close-focus').offset({
-									top: 0,
-									left: 0
-								});
-								var placeEditorToolbar = requestAnimationFrame(sticky);
-								return;
-							}
 							if(element.parents('.editor-media').length > 0){
 								return;
 							}
@@ -2944,7 +2931,9 @@ window.RTE = (function () {
                             var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
 
-						var placeEditorToolbar = requestAnimationFrame(sticky);
+						if(ui.breakpoints.tablette <= $(window).width()){
+							var placeEditorToolbar = requestAnimationFrame(sticky);
+						}
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
