@@ -832,7 +832,7 @@ window.RTE = (function () {
 			this.replaceHTML = function(htmlContent){
 				that.instance.addState(that.editZone.html());
 				var wrapper = $('<div></div>');
-				wrapper.html(htmlContent);
+				wrapper.html(htmlContent + '&#8203;');
 				if (this.range) {
 				    this.range.deleteContents();
 					this.range.insertNode(wrapper[0]);
@@ -3249,16 +3249,23 @@ window.RTE = (function () {
                                 
                                 e.preventDefault();
                                 var rangeStart = 1;
-                                var content = document.createElement('span');
-                                var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
-                                if(!content){
-                                    content = '&#8203;';
-                                }
-                                else {
-                                    rangeStart = 0;
-                                }
-                                newLine.html(content);
-                                parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+								if(parentContainer.nodeType === 3){
+									var content = document.createElement('span');
+									var content = parentContainer.textContent.substring(range.startOffset, parentContainer.textContent.length);
+									if(!content){
+										content = '&#8203;';
+									}
+									else {
+										rangeStart = 0;
+									}
+									newLine.html(content);
+									parentContainer.textContent = parentContainer.textContent.substring(0, range.startOffset);
+								}
+								else{
+									while(parentContainer.childNodes.length > range.startOffset){
+										newLine.append(parentContainer.childNodes[range.startOffset]);
+									}
+								}
 
                                 var nodeCursor = parentContainer;
                                 while (nodeCursor !== blockContainer) {
@@ -3282,7 +3289,7 @@ window.RTE = (function () {
                                     nodeCursor = nodeCursor.parentNode;
                                 }
 
-                                if (!parentContainer.wholeText) {
+                                if (!parentContainer.wholeText && parentContainer.nodeType === 3) {
                                     // FF forces encode on textContent, this is a hack to get the actual entities codes,
                                     // since innerHTML doesn't exist on text nodes
                                     parentContainer.textContent = $('<div>&#8203;</div>')[0].textContent;
