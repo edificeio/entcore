@@ -27,24 +27,32 @@ if(window.infraPrefix === undefined){
 var currentLanguage = '';
 (function(){
 
+	// Fallback
+	var fallBack = function(){
+		// Fallback : navigator language
+		var request = new XMLHttpRequest();
+		request.open('GET', '/locale', false);
+		request.async = false;
+		request.onload = function() {
+			if(request.status === 200){
+				currentLanguage = JSON.parse(request.responseText).locale;
+			} else {
+				currentLanguage = 'fr'
+			}
+		};
+		try {
+			request.send(null);
+		} catch (e) {
+			currentLanguage = 'fr'
+		}
+	}
+
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
 	preferencesRequest.open('GET', '/userbook/preference/language', false);
 	preferencesRequest.async = false;
 
 	preferencesRequest.onload = function(){
-        var fallBack = function(){
-            // Fallback : navigator language
-            var request = new XMLHttpRequest();
-            request.open('GET', '/locale', false);
-            request.async = false;
-            request.onload = function() {
-                if(request.status === 200){
-                    currentLanguage = JSON.parse(request.responseText).locale;
-                }
-            };
-            request.send(null);
-        }
 
         if(preferencesRequest.status === 200){
             try {
@@ -57,7 +65,12 @@ var currentLanguage = '';
         if(!currentLanguage)
             fallBack();
     };
-    preferencesRequest.send(null);
+	try {
+		preferencesRequest.send(null);
+	} catch(e) {
+		fallBack()
+	}
+
 }());
 
 if(document.addEventListener){
