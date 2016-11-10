@@ -85,14 +85,15 @@ public class DefaultQuotaService implements QuotaService {
 
 	@Override
 	public void quotaAndUsage(String userId, Handler<Either<String, JsonObject>> handler) {
-		String query =
-				" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
-						" MATCH (pg)-[DEPENDS]->(s:Structure) " +
-						" with min(s.quota-s.storage ) as minimum  " +
-						" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
-						" MATCH (pg)-[DEPENDS]->(c)-[:BELONGS*0..1]->(s:Structure) " +
-						" where (s.quota-s.storage) = minimum RETURN DISTINCT(u.displayName), ub.quota as quota, ub.storage as storage, " +
-						" s.quota as quotastructure, s.storage as storagestructure";
+		String query = 	" MATCH (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
+				" MATCH (pg)-[DEPENDS]->(s:Structure) " +
+				" with min(coalesce(s.quota, 0) - coalesce(s.storage, 0) ) as minimum  " +
+				" match (ub:UserBook { userid : {userId}})<-[USERBOOK]-(u:User)-[IN]->(pg:ProfileGroup) " +
+				" MATCH (pg)-[DEPENDS]->(c)-[:BELONGS*0..1]->(s:Structure) " +
+				" where (coalesce(s.quota, 0) - coalesce(s.storage, 0)) = minimum " +
+				" with collect(DISTINCT(u.displayName)) as displayName, ub, s " +
+				" RETURN coalesce(ub.quota, 0) as quota, coalesce(ub.storage, 0) as storage, " +
+				" coalesce(s.quota, 0) as quotastructure, coalesce(s.storage, 0) as storagestructure";
 
 		JsonObject params = new JsonObject().putString("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
