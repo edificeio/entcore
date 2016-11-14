@@ -1,0 +1,88 @@
+﻿<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>
+
+<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">
+    <div class="embed-container">
+        <div class="provider cell pick" ng-class="{ visible: display.provider.name === 'none' }">
+            <div class="provider-content">
+                <h2><i18n>editor.option.embed</i18n></h2>
+                <div class="supported-providers">
+                    <div class="info twelve cell">
+                        <i18n>video.embed.pickProvider</i18n>
+                    </div>
+                    <ul>
+                        <li ng-repeat="provider in providers">
+                            <img ng-src="[[provider.logo]]" alt="[[provider.name]]" ng-click="display.provider = provider" />
+                        </li>
+                    </ul>
+                </div>
+                <div class="others-option row">
+                    <div class="info twelve cell">
+                        <i18n>video.embed.pickOther</i18n>
+                    </div>
+                    <div class="row">
+                        <i ng-click="display.provider = { name: 'other' }" class="others"></i>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <button type="button" ng-click="cancel()" class="cancel right-magnet"><i18n>cancel</i18n></button>
+                </div>
+            </div>
+        </div>
+        <div class="provider cell other" ng-class="{ visible: display.provider.name === 'other' }">
+            <p class="info twelve cell"><i18n>info.video.embed</i18n></p>
+            <textarea ng-model="display.htmlCode"></textarea>
+            <div class="row">
+                <div class="preview" ng-if="!display.invalidPath"></div>
+                <div class="invalid-preview" ng-if="display.invalidPath">
+                    <i18n>video.embed.invalid</i18n>
+                </div>
+                <div class="invalid-preview" ng-if="!display.url">
+                    <i18n>video.embed.preview</i18n>
+                </div>
+            </div>
+            <div class="row">
+                <button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>
+                <button type="button" ng-click="unselectProvider()" class="cancel right-magnet"><i18n>retour</i18n></button>
+                <button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>
+            </div>
+        </div>
+        <div ng-repeat="provider in providers"
+             class="provider cell [[provider.name]]"
+             ng-class="{ visible: display.provider.name === provider.name }">
+            <div class="provider-content">
+                <div class="row">
+                    <h2><i18n>video.embed.provider.title</i18n></h2>
+                    <div class="info twelve cell">
+                        <i18n>video.embed.provider.info</i18n>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <input type="text"
+                           ng-model="display.url"
+                           ng-change="updatePreview()"
+                           ng-blur="updatePreview()"
+                           placeholder="[[provider.example]]"
+                           class="twelve cell" />
+                </div>
+
+                <div class="row">
+                    <div class="preview" ng-if="!display.invalidPath"></div>
+                    <div class="invalid-preview" ng-if="display.invalidPath">
+                        <i18n>video.embed.invalid</i18n>
+                    </div>
+                    <div class="invalid-preview" ng-if="!display.url">
+                        <i18n>video.embed.preview</i18n>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>
+                    <button type="button" ng-click="unselectProvider()" class="cancel right-magnet"><i18n>back</i18n></button>
+                    <button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</lightbox>

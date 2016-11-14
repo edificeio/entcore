@@ -1,0 +1,26 @@
+﻿[
+  {
+    "name": "youtube",
+    "displayName": "Youtube",
+    "url": "www.youtube.com/watch?v={id}",
+    "logo": "http://diylogodesigns.com/blog/wp-content/uploads/2016/05/best-quality-youtube-logo-download-png-format.png",
+    "embed": "<iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/{id}\" frameborder=\"0\" allowfullscreen></iframe>",
+    "example": "https://www.youtube.com/watch?v=_I6CQRHIGyg"
+  },
+  {
+    "name": "vimeo",
+    "displayName": "Vimeo",
+    "url": "vimeo.com/{id}",
+    "logo": "https://cdn3.iconfinder.com/data/icons/leaf/256/vimeo.png",
+    "embed": "<iframe src=\"https://player.vimeo.com/video/{id}\" width=\"640\" height=\"360\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>",
+    "example": "https://vimeo.com/147000414"
+  },
+  {
+    "name": "dailymotion",
+    "displayName": "Dailymotion",
+    "url": "http://www.dailymotion.com/video/{id}_{ignore}",
+    "logo": "http://static1.dmcdn.net/images/dailymotion-logo-ogtag.png.v2779e025da411e7f1",
+    "example": "http://www.dailymotion.com/video/x3pxgme_piano-and-violin-duet_music",
+    "embed": "<iframe frameborder=\"0\" width=\"480\" height=\"270\" src=\"//www.dailymotion.com/embed/video/{id}\" allowfullscreen></iframe>"
+  }
+]
