@@ -2296,7 +2296,7 @@ window.RTE = (function () {
 
 							if (instance.selection.isCursor()) {
 							    linkNode.text(scope.linker.params.link);
-							    instance.selection.replaceHTML(instance.compile(linkNode[0].outerHTML)(scope));
+							    instance.selection.replaceHTMLInline(instance.compile(linkNode[0].outerHTML)(scope));
 							}
 							else {
 							    instance.selection.wrapText(linkNode);
