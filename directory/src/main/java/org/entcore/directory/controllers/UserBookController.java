@@ -43,7 +43,6 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.DecodeException;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
@@ -808,18 +807,7 @@ public class UserBookController extends BaseController {
 					request.bodyHandler(new Handler<Buffer>() {
 						@Override
 						public void handle(Buffer body) {
-							String bodyString = body.toString("UTF-8");
-							try {
-								new JsonObject(bodyString);
-							} catch (DecodeException e){
-								try {
-									new JsonArray(bodyString);
-								}
-								catch (DecodeException e2){
-									bodyString = "{}";
-								}
-							}
-							params.putString("conf", bodyString);
+							params.putString("conf", body.toString("UTF-8"));
 							String query =
 									"MATCH (u:User {id:{userId}})"
 											+"MERGE (u)-[:PREFERS]->(uac:UserAppConf)"
