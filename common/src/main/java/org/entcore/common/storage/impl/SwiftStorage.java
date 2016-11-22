@@ -83,13 +83,15 @@ public class SwiftStorage implements Storage {
 		swiftClient.writeFromFileSystem(id, filename, container, handler);
 	}
 
-	private void writeStorageObject(final Handler<JsonObject> handler, StorageObject o) {
+	private void writeStorageObject(final Handler<JsonObject> handler, final StorageObject o) {
 		swiftClient.writeFile(o, new AsyncResultHandler<String>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				JsonObject j = new JsonObject();
 				if (event.succeeded()) {
-					j.putString("status", "ok").putString("_id", event.result());
+					final JsonObject metadata = new JsonObject().putString("content-type", o.getContentType())
+							.putString("filename", o.getFilename()).putNumber("size", o.getBuffer().length());
+					j.putString("status", "ok").putString("_id", event.result()).putObject("metadata", metadata);
 				} else {
 					j.putString("status", "error").putString("message", event.cause().getMessage());
 				}

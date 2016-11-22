@@ -167,7 +167,7 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public void writeBuffer(final String id, final Buffer buff, String contentType, String filename,
+	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
 			final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		try {
@@ -179,7 +179,9 @@ public class FileStorage implements Storage {
 						@Override
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
-								res.putString("status", "ok").putString("_id", id);
+								final JsonObject metadata = new JsonObject().putString("content-type", contentType)
+										.putString("filename", filename).putNumber("size", buff.length());
+								res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
 							} else {
 								res.putString("status", "error").putString("message", event.cause().getMessage());
 							}
