@@ -62,11 +62,11 @@
 					<div workflow="timeline.deleteOwnNotification">
 	            		<div class="notification-actions" ng-class="{'opened': notification.opened}">
 	            			<div class="opener" ng-click="notification.opened = !notification.opened">
-	            				<span class="symbol">◀</span>
+	            				<i class="left-open"></i>
 	            			</div>
 	            			<div class="actions">
 	            				<div ng-repeat="(name, action) in actions" class="action [[ name ]]" ng-click="action.action(notification)">
-	            					<i></i>
+	            					<i class="trash"></i>
 	            					<a> [[ translate(action.label) ]]</a>
 	            				</div>
 	            			</div>
