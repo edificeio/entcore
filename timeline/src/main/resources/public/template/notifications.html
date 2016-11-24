@@ -11,27 +11,41 @@
 </div>
 <div data-ng-controller="Timeline" class="twelve cell">
 
-	<microbox title="timeline.admin.filter.by" close="ok" class="micro-left">
-		<div class="row" ng-if="filtered.notificationTypes.length > 0">
-			<i18n>filters.title</i18n>
-		</div>
-		<filters>
-			<li ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" ng-class="{ selected: type.selected }">
-				<label>
-					<i class="[[type.data.toLowerCase()]] type" tooltip="[[type.data.toLowerCase()]]"></i>
-					<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-					<span translate content="[[type.data.toLowerCase()]]"></span>
-				</label>
-			</li>
-		</filters>
-	</microbox>
 
-	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification" bottom-scroll="loadPage()">
+
+<div class="row drop-down-block">
+
+	<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0">
+		<label><i18n>filters.title</i18n></label>
+		<i class="arrow"></i>
+	</div>
+
+	<div class="drop-down-content">
+		<div class="chips">
+			<label class="chip">
+				<span><i18n>filters.all.none</i18n></span>
+				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+			</label>
+			<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" >
+				<i class="[[type.data.toLowerCase()]] type"></i>
+				<span translate content="[[type.data.toLowerCase()]]"></span>
+				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+			</label>
+		</div>
+	</div>
+
+</div>
+
+
+
+
+	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
 		<article ng-class="{ 'unread': isUnRead(notification) }">
 			<div class="row">
 				<div class="avatar">
 					<i class="system-avatar" ng-if="!notification.sender"></i>
 					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+					<i class="sticker app type [[notification.type.toLowerCase()]]"></i>
 				</div>
 				<div class="content horizontal-spacing">
 					<p class="inline" bind-html="notification.message"></p>
@@ -41,7 +55,7 @@
 				<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
 			</div>
 		</article>
-		<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions()">
+		<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions(notification)">
 			<div class="opener" ng-click="notification.opened = !notification.opened">
 				<span class="symbol">◀</span>
 			</div>
