@@ -51,9 +51,9 @@ function Timeline($scope, date, model, lang){
 			}
 		}
 	}
-	$scope.showActions = function() {
+	$scope.showActions = function(notif) {
 		return _.any($scope.actions, function(act){
-			return act.condition()
+			return act.condition(notif)
 		})
 	}
 
