@@ -87,6 +87,9 @@
 									<a href="/userbook/annuaire#[[reporter.userId]]" target="_blank" ng-repeat="reporter in notification.reporters">
 										[[ reporter.firstName + ' ' + reporter.lastName ]]
 									</a>
+									<div ng-if="notification.deleted">
+										<em><i18n>timeline.notification.is.deleted</i18n></em>
+									</div>
 								</div>
 								<div ng-if="notification.reportAction" class="eight cell">
 									<i18n>timeline.admin.treated.on</i18n>

@@ -135,5 +135,6 @@
     "timeline.notify.report.text2": "Pour traiter le signalement",
     "timeline.notify.report.text3": "cliquez ici",
     "timeline": "Fil de nouveautés",
-    "timeline.notify-report": "Signalement d'une notification"
+    "timeline.notify-report": "Signalement d'une notification",
+    "timeline.notification.is.deleted": "La demande a été supprimée"
 }
