@@ -5,6 +5,10 @@ PendingNotification.prototype.action = function(structureId, action) {
 }
 
 function TreatedNotification() {}
+TreatedNotification.prototype.action = function(structureId, action) {
+    return http().put('/timeline/' + this._id + '/action/' + action +
+        '?structure=' + structureId)
+}
 
 function Structure() {}
 

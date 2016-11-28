@@ -285,7 +285,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			.putString("_id", id)
 			.putString("reportedStructures", structureId)
 			.putObject("reportAction", new JsonObject()
-				.putBoolean("$exists", false));
+				.putString("$ne", AdminAction.DELETE.name()));
 
 		JsonObject objSet = new JsonObject()
 			.putObject("reportAction", new JsonObject()

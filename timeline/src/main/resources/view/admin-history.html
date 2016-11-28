@@ -102,10 +102,19 @@
 								<button class="small right-magnet" ng-click="notifyTreatment(notification)" ng-if="tabs.selected === 'pending'">
 									<i18n>timeline.admin.treat</i18n>
 								</button>
-								<strong class="right-magnet" ng-if="notification.reportAction"
-									ng-style="{ color: notification.reportAction.action === 'DELETE' ? 'red' : 'green' }">
-									[[ lang.translate('timeline.admin.action.done.' + notification.reportAction.action) ]]
-								</strong>
+								<div class="right-magnet" ng-if="notification.reportAction">
+									<div>
+										<strong ng-style="{ color: notification.reportAction.action === 'DELETE' ? 'red' : 'green' }">
+											[[ lang.translate('timeline.admin.action.done.' + notification.reportAction.action) ]]
+										</strong>
+									</div>
+									<div>
+										<button class="small right-magnet" ng-click="notifyTreatment(notification)"
+											ng-if="notification.reportAction.action !== 'DELETE'">
+											<i18n>timeline.admin.treat</i18n>
+										</button>
+									</div>
+								</div>
 							</div>
 						</article>
 					</div>

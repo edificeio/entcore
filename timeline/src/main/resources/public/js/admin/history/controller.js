@@ -73,13 +73,21 @@ function HistoryAdminController($scope, model, date) {
 
         var keepNotification = function(){
             notification.action(notificationStructureId, 'keep').done(function(){
-                $scope.pending.remove(notification)
+                if(notification.reportAction) {
+                    notification.reportAction.action = "KEEP"
+                } else {
+                    $scope.pending.remove(notification)
+                }
                 $scope.$apply()
             }.bind(this))
         }
         var deleteNotification = function(){
             notification.action(notificationStructureId, 'delete').done(function(){
-                $scope.pending.remove(notification)
+                if(notification.reportAction) {
+                    notification.reportAction.action = "DELETE"
+                } else {
+                    $scope.pending.remove(notification)
+                }
                 $scope.$apply()
             }.bind(this))
         }
