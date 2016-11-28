@@ -16,6 +16,8 @@ function MainController($rootScope, $scope, template, lang, model){
 }
 
 function Timeline($scope, date, model, lang){
+
+
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
@@ -93,9 +95,30 @@ function Timeline($scope, date, model, lang){
 		model.notifications.sync();
 	};
 
+	$scope.allFilters = function(){
+		if(model.notificationTypes.selection().length === model.notificationTypes.length()){
+			model.notificationTypes.deselectAll();
+		}else{
+			model.notificationTypes.selectAll();
+		}
+
+		model.notifications.page = 0;
+		model.notifications.lastPage = false;
+		model.notifications.all= [];
+		model.notifications.sync();
+	};
+
+	$scope.unactivesFilters = function(){
+		var unactives = model.notificationTypes.length() - model.notificationTypes.selection().length;
+		return unactives;
+	}
+
 	$scope.loadPage = function(){
 		model.notifications.sync(true);
 	}
+
+	$scope.display = {};
+
 }
 
 function Personalization($rootScope, $scope, model, ui){

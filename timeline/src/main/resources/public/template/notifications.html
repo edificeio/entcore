@@ -13,34 +13,41 @@
 
 
 
-<div class="row drop-down-block">
+	<div class="row drop-down-block" ng-class="{slided: display.slide}">
 
-	<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0">
-		<label><i18n>filters.title</i18n></label>
-		<i class="arrow"></i>
-	</div>
-
-	<div class="drop-down-content">
-		<div class="chips">
-			<label class="chip">
-				<span><i18n>filters.all.none</i18n></span>
-				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-			</label>
-			<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" >
-				<i class="[[type.data.toLowerCase()]] type"></i>
-				<span translate content="[[type.data.toLowerCase()]]"></span>
-				<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-			</label>
-		</div>
-		<div class="drop-up-label">
-			<label><i18n>filters.close</i18n></label>
+		<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0"  ng-click="display.slide = !display.slide" >
 			<i class="arrow"></i>
+			<label><i18n>filters.title</i18n></label>
+		</div>
+		<div class="drop-down-info" ng-model="notificationTypes" ng-if="filtered.notificationTypes.length > 0">
+			<span><i18n>filters.unactives</i18n></span><span> [[unactivesFilters()]]</span>
+		</div>
+
+		<div class="drop-down-content" slide="display.slide">
+			<div class="chips">
+				<label class="chip multiselect" ng-if="filtered.notificationTypes.length > 0">
+					<span><i18n>filters.all.none</i18n></span>
+					<input type="checkbox" ng-model="notificationTypes" ng-change="allFilters()" />
+				</label>
+				<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)" >
+					<i class="[[type.data.toLowerCase()]] type"></i>
+					<span translate content="[[type.data.toLowerCase()]]"></span>
+					<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+				</label>
+			</div>
+			<div class="drop-up-label" ng-click="display.slide = !display.slide" ng-if="filtered.notificationTypes.length > 0">
+				<label><i18n>filters.close</i18n></label>
+				<i class="arrow"></i>
+			</div>
 		</div>
 	</div>
 
-</div>
-
-
+	<div class="info tuto" ng-if="notifications.all.length === 0">
+		<b><span><i18n>filters.unselected</i18n></span></b>
+	</div>
+	<div class="info" ng-if="notifications.all.length === 0 && notificationTypes.selection().length > 0">
+		<span><i18n>timeline.empty</i18n></span>
+	</div>
 
 
 	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
