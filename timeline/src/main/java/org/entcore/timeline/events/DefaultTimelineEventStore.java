@@ -303,4 +303,14 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
 	}
 
+	@Override
+	public void deleteReportNotification(String resourceId, Handler<Either<String, JsonObject>> result) {
+		JsonObject matcher = new JsonObject()
+			.putString("type", "TIMELINE")
+			.putString("event-type", "NOTIFY-REPORT")
+			.putString("resource", resourceId);
+
+		mongo.delete(TIMELINE_COLLECTION, matcher, MongoDbResult.validActionResultHandler(result));
+	}
+
 }

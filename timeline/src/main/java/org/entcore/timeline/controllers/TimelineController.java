@@ -504,6 +504,7 @@ public class TimelineController extends BaseController {
 											"timeline.notify-report",
 											null,
 											recipients,
+											id,
 											params);
 								}
 							}
@@ -614,7 +615,20 @@ public class TimelineController extends BaseController {
 					unauthorized(request);
 					return;
 				}
-				store.performAdminAction(id, structureId, user, AdminAction.KEEP, defaultResponseHandler(request));
+				store.performAdminAction(id, structureId, user, AdminAction.KEEP, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isRight()){
+							store.deleteReportNotification(id, new Handler<Either<String,JsonObject>>() {
+								public void handle(Either<String, JsonObject> event) {
+									if(event.isLeft()){
+										log.error(event.left().getValue());
+									}
+								}
+							});
+						}
+						defaultResponseHandler(request).handle(event);
+					}
+				});
 			}
 		});
 	}
@@ -631,7 +645,20 @@ public class TimelineController extends BaseController {
 					unauthorized(request);
 					return;
 				}
-				store.performAdminAction(id, structureId, user, AdminAction.DELETE, defaultResponseHandler(request));
+				store.performAdminAction(id, structureId, user, AdminAction.DELETE, new Handler<Either<String,JsonObject>>() {
+					public void handle(Either<String, JsonObject> event) {
+						if(event.isRight()){
+							store.deleteReportNotification(id, new Handler<Either<String,JsonObject>>() {
+								public void handle(Either<String, JsonObject> event) {
+									if(event.isLeft()){
+										log.error(event.left().getValue());
+									}
+								}
+							});
+						}
+						defaultResponseHandler(request).handle(event);
+					}
+				});
 			}
 		});
 	}

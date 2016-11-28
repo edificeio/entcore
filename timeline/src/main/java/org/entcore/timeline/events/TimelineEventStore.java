@@ -60,4 +60,5 @@ public interface TimelineEventStore {
 	// Admin actions
 	void listReported(String structure, boolean pending, int offset, int limit, Handler<Either<String, JsonArray>> result);
 	void performAdminAction(String id, String structureId, UserInfos user, AdminAction action, Handler<Either<String, JsonObject>> result);
+	void deleteReportNotification(String resourceId, Handler<Either<String, JsonObject>> result);
 }
