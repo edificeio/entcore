@@ -42,11 +42,12 @@
 		</div>
 	</div>
 
-	<div class="info tuto" ng-if="notifications.all.length === 0">
+	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() != notificationTypes.selection().length">
 		<b><span><i18n>filters.unselected</i18n></span></b>
 	</div>
-	<div class="info" ng-if="notifications.all.length === 0 && notificationTypes.selection().length > 0">
-		<span><i18n>timeline.empty</i18n></span>
+
+	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length">
+		<b><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
 	</div>
 
 

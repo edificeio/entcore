@@ -1,24 +1,31 @@
+
+<app-title>
+    <h1>
+        <a href="/userbook/mon-compte"><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
+    </h1>
+</app-title>
+
+<!-- <h2><i18n>xtnotifications.title</i18n></h2> -->
+
+<div class="twelve tabs vertical-spacing-twice heading-tabs">
+    <header class="horizontal-spacing-twice">
+        <a href="/userbook/mon-compte">
+            <span><i class="person"></i><i18n>panel.my.profile</i18n></span>
+        </a>
+    </header>
+    <header class="horizontal-spacing-twice selected" workflow="timeline.externalNotifications">
+        <a href="/timeline/preferencesView">
+            <span><i class="bell"></i><i18n>panel.notifications.set</i18n></span>
+        </a>
+    </header>
+    <header class="horizontal-spacing-twice" workflow="timeline.historyView">
+        <a href="/timeline/historyView">
+            <span><i class="history"></i><i18n>panel.user.history</i18n></span>
+        </a>
+    </header>
+</div>
+
 <div class="row my-notifications">
-
-    <app-title>
-        <h1>
-            <a href="/userbook/mon-compte"><i class="orange-user"></i><span translate content="account.myaccount"></span></a>
-        </h1>
-    </app-title>
-
-    <!-- <h2><i18n>xtnotifications.title</i18n></h2> -->
-
-    <div class="row twelve tabs vertical-spacing-twice">
-        <header class="horizontal-spacing-twice">
-            <a href="/userbook/mon-compte"><i18n>panel.my.profile</i18n></a>
-        </header>
-        <header class="horizontal-spacing-twice selected" workflow="timeline.externalNotifications">
-            <a href="/timeline/preferencesView"><i18n>panel.notifications.set</i18n></a>
-        </header>
-        <header class="horizontal-spacing-twice" workflow="timeline.historyView">
-            <a href="/timeline/historyView"><i18n>panel.user.history</i18n></a>
-        </header>
-    </div>
 
     <div class="row">
         <div class="cell reduce-block-six"><i18n>xtnotifications.mail</i18n></div>

@@ -45,15 +45,23 @@
 				</h1>
 			</app-title>
 
-			<div class="row twelve tabs vertical-spacing-twice">
-				<header class="horizontal-spacing-twice selected"><i18n>panel.my.profile</i18n></header>
+			<div class="twelve tabs vertical-spacing-twice heading-tabs">
+				<header class="horizontal-spacing-twice selected">
+					<a href="/userbook/mon-compte">
+						<span><i class="person"></i><i18n>panel.my.profile</i18n></span>
+					</a>
+				</header>
 				<header class="horizontal-spacing-twice"
 					ng-if="me.userId === account.id && account.email.length"
 					workflow="directory.externalNotifications">
-					<a href="/timeline/preferencesView"><i18n>panel.notifications.set</i18n></a>
+					<a href="/timeline/preferencesView">
+						<span><i class="bell"></i><i18n>panel.notifications.set</i18n></span>
+					</a>
 				</header>
 				<header class="horizontal-spacing-twice" workflow="directory.historyView">
-					<a href="/timeline/historyView"><i18n>panel.user.history</i18n></a>
+					<a href="/timeline/historyView">
+						<span><i class="history"></i><i18n>panel.user.history</i18n></span>
+					</a>
 				</header>
 			</div>
 
@@ -67,6 +75,8 @@
 					</a>
 				</div>
 			</div> -->
+
+
 			<div class="my-notifications" ng-if="me.userId === account.id && !account.email"
 				workflow="directory.externalNotifications">
 				<div class="row">
