@@ -118,7 +118,7 @@
 		},
 		"headTeacher" : {
 			"type" : "array-string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"teaches" : {
 			"type" : "boolean"

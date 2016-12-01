@@ -84,7 +84,7 @@ public final class AAFHandler extends DefaultHandler {
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
-		if (s == null || s.isEmpty()) {
+		if (s == null || (s.isEmpty() && !"ENTAuxEnsClassesPrincipal".equals(currentAttribute))) {
 			return;
 		}
 		JsonObject j = mapping.getObject(currentAttribute);
@@ -96,7 +96,7 @@ public final class AAFHandler extends DefaultHandler {
 		}
 		String type = j.getString("type");
 		String attribute = j.getString("attribute");
-		if ("birthDate".equals(attribute)) {
+		if ("birthDate".equals(attribute) && !s.isEmpty()) {
 			s = convertDate(s);
 		}
 		if (type != null && type.contains("array")) {
@@ -105,7 +105,9 @@ public final class AAFHandler extends DefaultHandler {
 				a = new JsonArray();
 				currentStructure.putArray(attribute, a);
 			}
-			a.add(JsonUtil.convert(s, type));
+			if (!s.isEmpty()) {
+				a.add(JsonUtil.convert(s, type));
+			}
 		} else {
 			Object v = JsonUtil.convert(s, type);
 			if (!(v instanceof JsonUtil.None)) {

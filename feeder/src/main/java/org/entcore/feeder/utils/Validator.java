@@ -349,6 +349,8 @@ public class Validator {
 					err = i18n.translate("empty.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage, attr);
 				}
 				break;
+			case "nop":
+				break;
 			default:
 				err =  i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
 		}
