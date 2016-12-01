@@ -424,7 +424,7 @@ window.RTE = (function () {
 				that.instance.addState(that.editZone.html());
 				setTimeout(function () {
 				    this.instance.trigger('selectionchange', { selection: this.instance.selection });
-					this.instance.trigger('contentupdated');
+					this.instance.trigger('change');
 				}.bind(this), 100);
 			};
 
@@ -841,7 +841,7 @@ window.RTE = (function () {
 					this.editZone.append(wrapper);
 				}
 
-				this.instance.trigger('contentupdated');
+				that.instance.trigger('change');
 			};
 
 			this.replaceHTMLInline = function (htmlContent) {
@@ -854,9 +854,14 @@ window.RTE = (function () {
 			    }
 			    else {
 			        this.editZone.append(wrapper);
+					var sel = window.getSelection();
+					var range = document.createRange();
+					range.setStart(wrapper[0], wrapper[0].childNodes.length);
+					sel.removeAllRanges();
+					sel.addRange(range);
 			    }
 
-			    this.instance.trigger('contentupdated');
+			    that.instance.trigger('change');
 			};
 
 			this.$ = function(){
@@ -922,7 +927,7 @@ window.RTE = (function () {
 							else{
 								element.removeClass('disabled');
 							}
-							instance.trigger('contentupdated')
+							instance.trigger('change');
 						});
 
 						instance.on('contentupdated', function(e){
@@ -950,7 +955,7 @@ window.RTE = (function () {
 							else{
 								element.removeClass('disabled');
 							}
-							instance.trigger('contentupdated');
+							instance.trigger('change');
 						});
 
 						instance.on('contentupdated', function(e){
@@ -1801,7 +1806,7 @@ window.RTE = (function () {
 							    label: 'editor.remove.image',
 							    action: function (e) {
 							        $(e.target).remove();
-							        instance.trigger('contentupdated');
+							        instance.trigger('change');
 							    }
 							},
                             {
@@ -1809,7 +1814,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             },
@@ -1818,7 +1823,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             },
@@ -1827,7 +1832,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             }
@@ -2836,14 +2841,21 @@ window.RTE = (function () {
                         if(attributes.toolbarConf){
                             toolbarConf = scope.$eval(attributes.toolbarConf);
                         }
-
-			            var editorInstance = new RTE.Instance({
-                            toolbarConfiguration: toolbarConf,
-                            element: element,
-                            scope: scope,
-                            compile: $compile,
-                            editZone: editZone
-                        });
+						
+						var editorInstance;
+						var instance = $parse(attributes.instance);
+						if(!instance(scope)){
+							editorInstance = new RTE.Instance({
+								toolbarConfiguration: toolbarConf,
+								element: element,
+								scope: scope,
+								compile: $compile,
+								editZone: editZone
+							});
+						}
+						else{
+							editorInstance = instance;
+						}
 
 			            editorInstance.addState('');
                         var ngModel = $parse(attributes.ngModel);
@@ -3019,6 +3031,18 @@ window.RTE = (function () {
                             });
                         });
 
+						editorInstance.on('change', function(){
+							editorInstance.trigger('contentupdated');
+							setTimeout(function(){
+								
+								if(attributes.onChange){
+									scope.$eval(attributes.onChange);
+								}
+								
+								scope.$apply();
+							}, 10);
+						});
+
                         editorInstance.on('contentupdated', function () {
                             if(parseInt(htmlZone.css('min-height')) < editZone.height()){
                                 htmlZone.css('min-height', editZone.height() + 'px');
@@ -3122,6 +3146,7 @@ window.RTE = (function () {
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
+								editorInstance.trigger('change');
                                 $('body').css({ overflow: 'auto' });
                                 element.parent().data('lock', false);
                                 element.parents('grid-cell').data('lock', false);
@@ -3437,6 +3462,7 @@ window.RTE = (function () {
                                 scope.$eval(attributes.ngChange);
                                 ngModel.assign(scope, htmlZone.val());
                             });
+							editorInstance.trigger('change');
                         });
 
                         element.on('dragover', function(e){
