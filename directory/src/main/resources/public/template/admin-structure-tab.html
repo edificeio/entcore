@@ -117,7 +117,7 @@
                        style="text-align:right"
                        ng-change="setQuotaStructureModified()"
                 /></div>
-            <span ng-if="!isADMC()">[[ formatQuota(structure.quota) ]]</span>
+            <span ng-if="!isADMC()">[[ formatQuota(structure.quotaInOctets) ]]</span>
         </em>
         <em class="twelve cell">
             <i18n>directory.storage</i18n> : [[ formatQuota(structure.storage) ]]
