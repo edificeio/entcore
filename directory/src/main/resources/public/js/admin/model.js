@@ -609,6 +609,7 @@ function Structures(){
                     })
                     struct.quotaActivity = [];
                     struct.quotaOri = struct.quota;
+                    struct.quotaInOctets = struct.quota;
                     struct.quota = Math.round(struct.quota * 100 / DEFAULT_QUOTA_UNIT) / 100;
                     struct.unit = DEFAULT_QUOTA_UNIT;
                     struct.parents = _.filter(struct.parents, function(parent){

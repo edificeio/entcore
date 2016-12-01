@@ -407,7 +407,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         return Math.min(100, Math.round((storage * 100) / quota * 100) / 100)
     }
 
-    // Angular user styling (depends on its role / isolated)
+	$scope.getStorageRatioStructure = function(storage, quota){
+		return Math.min(100, Math.round((storage  / quota) *1000) / 10)
+	}
+	
+	// Angular user styling (depends on its role / isolated)
     $scope.userStyle = function(user){
 		return {
 			'user-style': true,

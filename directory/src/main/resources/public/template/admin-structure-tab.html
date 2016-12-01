@@ -90,7 +90,53 @@
                 </ul>
             </div>
         </div>
+
+        <!------------------------------------------------------------------------------------------------------------->
+
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota.structure.title")]]</h3>
+
+        <em class="twelve cell">
+            <div class="three cell padding"><i18n>directory.quota.allocated.space.structure</i18n> :</div>
+
+            <div class="two cell padding" ng-if="isADMC()">
+                <select ng-model="structure.quotaUnit"
+                        ng-init="structure.quotaUnit = DEFAULT_QUOTA_UNIT"
+                        style="margin-right: 10px"
+                        ng-change="updateQuotaUnit(2, null, structure.quota, null, structure.quotaUnit)"
+                >
+                    <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
+                    <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
+                    <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
+                </select>
+            </div>
+            <div class="three cell padding" ng-if="isADMC()">
+                <input class="four cell"
+                       type="number"
+                       min="0"
+                       ng-model="structure.quota"
+                       style="text-align:right"
+                       ng-change="setQuotaStructureModified()"
+                /></div>
+            <span ng-if="!isADMC()">[[ formatQuota(structure.quota) ]]</span>
+        </em>
+        <em class="twelve cell">
+            <i18n>directory.storage</i18n> : [[ formatQuota(structure.storage) ]]
+        </em>
+        <em class="six cell">
+        <br><progress-bar max="100" filled="getStorageRatioStructure(structure.storage, structure.quotaInOctets)" unit=""></progress-bar>
+        </em>
+        <button class="small two right-magnet"
+                style="margin: 0; font-size: 12"
+                ng-attr-id="saveQuotaStructureButton"
+                ng-click="saveStructureQuotaStructure()"
+                ng-disabled="saveQuotaStructureDisabled">
+            [[lang.translate("directory.save")]]
+        </button>
+        <hr class="separator cell">
+
+        <!------------------------------------------------------------------------------------------------------------->
         <!-- Set quota -->
+
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota")]]</h3>
 
@@ -119,7 +165,7 @@
                     <td>
                         <input class="four cell"
                                type="number"
-                               step="0.01" min="0"
+                               min="0"
                                ng-model="pgroup.quota"
                                style="text-align:right"
                                ng-change="setQuotaModified($index)"
@@ -128,7 +174,7 @@
                     <td>
                         <div ng-if="isADMC()"><input class="four cell"
                                                      type="number"
-                                                     step="0.01" min="0"
+                                                     min="0"
                                                      ng-model="pgroup.maxquota"
                                                      style="text-align:right"
                                                      ng-change="setMaxQuotaModified($index)"
@@ -145,48 +191,6 @@
                 [[lang.translate("directory.save")]]
             </button>
         </div>
-
-        <hr class="separator cell">
-
-        <!------------------------------------------------------------------------------------------------------------->
-
-        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.quota.structure.title")]]</h3>
-
-        <em class="twelve cell">
-            <div class="three cell padding"><i18n>directory.quota.allocated.space.structure</i18n> :</div>
-
-            <div class="two cell padding" ng-if="isADMC()">
-                <select ng-model="structure.quotaUnit"
-                                        ng-init="structure.quotaUnit = DEFAULT_QUOTA_UNIT"
-                                        style="margin-right: 10px"
-                                        ng-change="updateQuotaUnit(2, null, structure.quota, null, structure.quotaUnit)"
-                >
-                    <option value="1048576">[[lang.translate("directory.megabyte")]]</option>
-                    <option value="1073741824">[[lang.translate("directory.gigabyte")]]</option>
-                    <option value="[[1073741824 * 1024]]">[[lang.translate("directory.terabyte")]]</option>
-                </select>
-            </div>
-            <div class="three cell padding" ng-if="isADMC()">
-                <input class="four cell"
-                     type="number"
-                     step="0.01" min="0"
-                     ng-model="structure.quota"
-                     style="text-align:right"
-                     ng-change="setQuotaStructureModified()"
-            /></div>
-            <span ng-if="!isADMC()">[[ formatQuota(structure.quota) ]]</span>
-        </em>
-        <em class="twelve cell">
-            <i18n>directory.storage</i18n> : [[ formatQuota(structure.storage) ]]
-        </em>
-        <button class="small two right-magnet"
-                style="margin: 0; font-size: 12"
-                ng-attr-id="saveQuotaStructureButton"
-                ng-click="saveStructureQuotaStructure()"
-                ng-disabled="saveQuotaStructureDisabled">
-            [[lang.translate("directory.save")]]
-        </button>
-
         <hr class="separator cell">
 
         <!------------------------------------------------------------------------------------------------------------->
@@ -198,7 +202,7 @@
             <div class="four cell padding">
                 <i18n>directory.quota.display</i18n>
                 <input type="number"
-                       step="1" min="1" max="1000"
+                       min="1" max="1000"
                        ng-model="structure.quotaFilterNbusers"
                        ng-init="structure.quotaFilterNbusers = 10"
                        style="text-align:right"
@@ -208,7 +212,7 @@
             <div class="four cell padding">
                 <i18n>directory.quota.percentage.limit</i18n>
                 <input type="number"
-                       step="1" min="0" max="100"
+                       min="0" max="100"
                        ng-model="structure.quotaFilterPercentageLimit"
                        ng-init="structure.quotaFilterPercentageLimit = 0"
                        style="text-align:right"
@@ -281,7 +285,7 @@
                 <td>
                     <input class="eight cell"
                            type="number"
-                           step="0.01" min="0"
+                           min="0"
                            ng-model="activity.quota"
                            style="text-align:right"
                            ng-change="setQuotaActivityModified($index)"

@@ -93,7 +93,8 @@ public class DefaultQuotaService implements QuotaService {
 				" where (coalesce(s.quota, 0) - coalesce(s.storage, 0)) = minimum " +
 				" with collect(DISTINCT(u.displayName)) as displayName, ub, s " +
 				" RETURN coalesce(ub.quota, 0) as quota, coalesce(ub.storage, 0) as storage, " +
-				" coalesce(s.quota, 0) as quotastructure, coalesce(s.storage, 0) as storagestructure";
+				" coalesce(s.quota, 0) as quotastructure, coalesce(s.storage, 0) as storagestructure " +
+				" limit 1"; // the limit 1 is for avoiding non unique results, when multiple structures have same storage / quota (rare cases)
 
 		JsonObject params = new JsonObject().putString("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
