@@ -3683,16 +3683,7 @@ window.RTE = (function () {
                         scope.updateFormula = function(newVal){
                             element.text('$$' + newVal + '$$');
 							if (window.MathJax && window.MathJax.Hub) {
-							    MathJax.Hub.Config({
-							        messageStyle: 'none',
-							        tex2jax: { preview: 'none' },
-							        jax: ["input/TeX", "output/CommonHTML"],
-							        extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
-							        TeX: {
-							            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-							        }
-							    });
-							    MathJax.Hub.Typeset();
+							    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 							}
                         };
 
