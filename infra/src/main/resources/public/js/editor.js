@@ -2070,6 +2070,7 @@ window.RTE = (function () {
                             if(editNode){
                                 $(editNode).attr('formula', scope.display.formula);
                                 angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
+				instance.trigger('change');
                             }
                             else{
                                 instance.selection.replaceHTMLInline(instance.compile(
