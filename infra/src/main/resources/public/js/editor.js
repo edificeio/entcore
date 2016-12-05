@@ -476,7 +476,7 @@ window.RTE = (function () {
 					addedNodes.forEach(that.selectNode);
 				}
 
-				that.instance.trigger('contentupdated');
+				that.instance.trigger('change');
 			};
 
 			function applyCSSCursor(css){
@@ -2289,7 +2289,7 @@ window.RTE = (function () {
 
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
-							    instance.trigger('contentupdated');
+							    instance.trigger('change');
 							    scope.linker.display.chooseLink = false;
 							    scope.linker.params = {};
 							    scope.linker.display.search = {
@@ -3142,7 +3142,7 @@ window.RTE = (function () {
                                 element.find('.editor-toolbar-opener').removeClass('active');
                             }
 
-                            if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
+                            if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
