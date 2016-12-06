@@ -97,7 +97,7 @@ Quota.prototype.sync = function(){
 
 		// if the remaining storage of the user is larger than the remaining storage of the structure, then we make our calculations
 		// on the structure.
-		if( data.quota - data.storage > data.quotastructure - data.storagestructure ) {
+		if(( data.quota - data.storage > data.quotastructure - data.storagestructure ) && data.quotastructure > 0 ) {
 			data.quota = data.quotastructure;
 			data.storage = data.storagestructure;
 			this.isStructureQuota = true;
