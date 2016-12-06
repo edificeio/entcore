@@ -973,6 +973,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	// when modifying allocated space field for profiles
 	$scope.setQuotaModified = function(index){
+		// verify value is not null
+		if( $scope.structure.pgroup[index].quota == null || $scope.structure.pgroup[index].quota == '') {
+			$scope.structure.pgroup[index].quota = 0;
+		}
 		// verify that the new value is under the maxquota value
 		if( $scope.structure.pgroup[index].quota > $scope.structure.pgroup[index].maxquota && $scope.structure.pgroup[index].maxquota != 0) {
 			// put back the old value (quotaOri)
@@ -987,12 +991,20 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	// when modifying allocated space field in structure
 	$scope.setQuotaStructureModified = function(){
+		// verify value is not null
+		if( $scope.structure.quota == null || $scope.structure.quota == '') {
+			$scope.structure.quota = 0;
+		}
 		$scope.structure.quotaOri = $scope.structure.quota * $scope.structure.unit;
 		$scope.saveQuotaStructureDisabled = false;
 	}
 
 	// when modifying allocated space field in activity
 	$scope.setQuotaActivityModified = function(index){
+		// verify value is not null
+		if( $scope.structure.quotaActivity[index].quota == null || $scope.structure.quotaActivity[index].quota == '') {
+			$scope.structure.quotaActivity[index].quota = 0;
+		}
 		// verify that the new value is under the maxquota value
 		if( $scope.structure.quotaActivity[index].quota > $scope.structure.quotaActivity[index].maxquota && $scope.structure.quotaActivity[index].maxquota != 0) {
 			// put back the old value (quotaOri)
@@ -1007,7 +1019,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	
 	// when modifying maximum authorized space field
     $scope.setMaxQuotaModified = function(index){
-        // we save the value in 2 places : 1 is the displayed in the field (rounded), the other is the not rounded
+		// verify value is not null
+		if( $scope.structure.pgroup[index].maxquota == null || $scope.structure.pgroup[index].maxquota == '') {
+			$scope.structure.pgroup[index].maxquota = 0;
+		}
+		// we save the value in 2 places : 1 is the displayed in the field (rounded), the other is the not rounded
         $scope.structure.pgroup[index].maxQuotaOri = $scope.structure.pgroup[index].maxquota * $scope.structure.pgroup[index].unit;
         $scope.saveQuotaDisabled = false;
     }
