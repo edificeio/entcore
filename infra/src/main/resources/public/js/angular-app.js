@@ -1409,7 +1409,12 @@ module.directive('bindHtml', function($compile) {
                 htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                 htmlVal.find('[bind-html]').removeAttr('bind-html');
                 htmlVal.find('[ng-include]').removeAttr('ng-include');
+                htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
                 htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
+                if(htmlVal.find('portal').length){
+                    var portal = htmlVal.find('portal');
+                    htmlVal = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+                }
                 var htmlContent = htmlVal[0].outerHTML;
                 if (!window.MathJax && !window.MathJaxLoading) {
                     window.MathJaxLoading = true;

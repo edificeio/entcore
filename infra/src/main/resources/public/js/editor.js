@@ -3186,6 +3186,16 @@ window.RTE = (function () {
 
                         editZone.on('paste', function () {
 							setTimeout(function(){
+								editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+								editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
+								editorInstance.editZone.find('[ng-include]').removeAttr('ng-include');
+								editorInstance.editZone.find('[ng-repeat]').removeAttr('ng-repeat');
+								editorInstance.editZone.find('[data-ng-repeat]').removeAttr('data-ng-repeat');
+								editorInstance.editZone.find('[ng-transclude]').removeAttr('ng-transclude');
+								if(editorInstance.editZone.find('portal').length){
+									var portal = editorInstance.editZone.find('portal');
+									editorInstance.editZone[0].innerHTML = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+								}
 								editorInstance.addState(editZone.html());
 								if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
 									var wrapper = $('<div></div>');
