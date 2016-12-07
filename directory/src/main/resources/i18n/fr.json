@@ -188,6 +188,7 @@
     "directory.notFilled": "Non renseignée",
     "directory.notify.classUpdate": "Classe mise à jour",
     "directory.notify.csv.imported": "Le fichier a été importé",
+    "directory.notify.structure.quota.too.small" : "La valeur du quota doit être supérieure à la quantité stockée",
     "directory.admin.email": "Courriel",
     "directory.admin.homePhone": "Téléphone fixe",
     "directory.admin.mobilePhone": "Téléphone mobile",

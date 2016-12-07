@@ -879,7 +879,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	//Save the quota for structure
 	$scope.saveStructureQuotaStructure = function() {
-		$scope.structure.saveStructureQStructure($scope.structure);
+		if( ($scope.structure.quota * $scope.structure.unit )< $scope.structure.storage ) {
+			notify.error('directory.notify.structure.quota.too.small');
+		} else {
+			$scope.structure.saveStructureQStructure($scope.structure);
+		}
 	}
 
 	//Save the quota for structure in activity table
