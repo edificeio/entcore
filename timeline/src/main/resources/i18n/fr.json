@@ -117,6 +117,8 @@
     "timeline.mark.flashmsg": "Fermer le message",
     "timeline.action.discard": "Supprimer de mon fil",
     "timeline.action.report": "Signaler la notification inappropriée",
+    "timeline.confirm.report": "Vous allez signaler une notification",
+    "timeline.confirm.report.text": "Attention ! Lorsque vous signalez une notification, un message vous identifiant et le contenu de la notification que vous signalez seront envoyés à un responsable.",
     "timeline.action.reported": "La notification a été signalée",
     "timeline.action.delete.own": "Supprimer de l'ENT",
     "panel.my.profile": "Mon profil",

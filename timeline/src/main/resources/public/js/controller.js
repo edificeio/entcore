@@ -43,10 +43,13 @@ function Timeline($scope, date, model, lang){
 			doneProperty: 'reported',
 			doneLabel: 'timeline.action.reported',
 			action: function(notification) {
-				notification.report().done(function() {
-					notification.reported = true
-					$scope.$apply()
-				})
+				$scope.display.confirmReport = true;
+				$scope.doReport = function(notif) {
+					notification.report().done(function() {
+						notification.reported = true
+						$scope.$apply()
+					})
+				}
 			},
 			condition: function(notif) {
 				return notif.sender && model.me.workflow.timeline.reportNotification
