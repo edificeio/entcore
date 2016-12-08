@@ -152,7 +152,7 @@ function DirectoryController($scope, route, date, template){
 			$scope.deselectUser('dominos');
 			$scope.$apply('users');
 			$scope.$apply('classrooms');
-			
+
 			setTimeout(function(){
 				$('body').trigger('whereami.update');
 			}, 100);
@@ -160,8 +160,12 @@ function DirectoryController($scope, route, date, template){
 
 
 	};
+	
+	$scope.display = {};
 
 	$scope.searchDirectory = function(){
+		$scope.display.searchmobile = false;
+
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field, $scope.filters);
 		model.directory.users.one('change', function(){
@@ -171,6 +175,9 @@ function DirectoryController($scope, route, date, template){
 
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
+		if (ui.breakpoints.checkMaxWidth("tablette") && $scope.currentUser) {
+			$scope.display.searchmobile = true;
+		}
 	};
 
 	$scope.deselectUser = function(tpl){
@@ -179,6 +186,8 @@ function DirectoryController($scope, route, date, template){
 	};
 
 	$scope.selectUser = function(user){
+		$scope.display.searchmobile = false;
+
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}

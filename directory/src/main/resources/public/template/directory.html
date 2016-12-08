@@ -81,10 +81,10 @@
 	</div>
 </form>
 <div class="row">
-	<div ng-class="{ 'twelve': !currentUser, 'four zero-mobile': currentUser }" class="cell">
+	<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
 		<div data-ng-include="template.containers.list"></div>
 	</div>
-	<div ng-if="currentUser !== undefined">
+	<div ng-if="currentUser !== undefined" ng-class="{ 'zero-mobile': display.searchmobile }" >
 		<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
 	</div>
 </div>
