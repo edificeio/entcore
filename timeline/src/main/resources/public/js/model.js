@@ -4,6 +4,8 @@ function Notification() {
 			return recipient.userId === model.me.userId;
 		}) !== undefined;
 	}
+
+	this.reported = this.reporters && this.reporters.length > 0
 }
 Notification.prototype.delete = function() {
 	return http().delete('/timeline/' + this._id)

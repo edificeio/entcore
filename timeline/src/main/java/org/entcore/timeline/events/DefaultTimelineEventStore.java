@@ -108,18 +108,24 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			}
 			JsonObject sort = new JsonObject().putNumber("date", -1);
 			JsonObject keys = new JsonObject()
-			.putNumber("message", 1)
-			.putNumber("params", 1)
-			.putNumber("date", 1)
-			.putNumber("sender", 1)
-			.putNumber("comments", 1)
-			.putNumber("type", 1)
-			.putNumber("event-type", 1)
-			.putNumber("resource", 1)
-			.putNumber("sub-resource", 1)
-			.putNumber("add-comment", 1);
-			if(!mine)
-				keys.putNumber("recipients.$", 1);
+				.putNumber("message", 1)
+				.putNumber("params", 1)
+				.putNumber("date", 1)
+				.putNumber("sender", 1)
+				.putNumber("comments", 1)
+				.putNumber("type", 1)
+				.putNumber("event-type", 1)
+				.putNumber("resource", 1)
+				.putNumber("sub-resource", 1)
+				.putNumber("add-comment", 1);
+			if(!mine){
+				keys.putObject("recipients", new JsonObject()
+						.putObject("$elemMatch", new JsonObject()
+							.putString("userId", user.getUserId())));
+				keys.putObject("reporters", new JsonObject()
+						.putObject("$elemMatch", new JsonObject()
+							.putString("userId", user.getUserId())));
+			}
 
 			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
 					offset, limit, 100, new Handler<Message<JsonObject>>() {
