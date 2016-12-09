@@ -77,6 +77,8 @@ function HistoryAdminController($scope, model, date) {
                     notification.reportAction.action = "KEEP"
                 } else {
                     $scope.pending.remove(notification)
+                    $scope.treated.reset()
+                    $scope.treated.feed(notificationStructureId)
                 }
                 $scope.$apply()
             }.bind(this))
@@ -87,6 +89,8 @@ function HistoryAdminController($scope, model, date) {
                     notification.reportAction.action = "DELETE"
                 } else {
                     $scope.pending.remove(notification)
+                    $scope.treated.reset()
+                    $scope.treated.feed(notificationStructureId)
                 }
                 $scope.$apply()
             }.bind(this))
