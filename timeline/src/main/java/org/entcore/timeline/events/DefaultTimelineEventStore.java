@@ -84,6 +84,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				query.putObject(mine ? "sender" : "recipients.userId", new JsonObject()
 						.putArray("$in", new JsonArray().add(recipient).add(externalId)));
 			}
+			query.putObject("reportAction.action", new JsonObject().putString("$ne", "DELETE"));
 			if (types != null && !types.isEmpty()) {
 				if (types.size() == 1) {
 					query.putString("type", types.get(0));
