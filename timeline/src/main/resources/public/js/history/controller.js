@@ -1,4 +1,6 @@
-model.notifications = { mine: true }
+model.notifications 	= { mine: true }
+model.notificationTypes = { mine: true }
+
 function HistoryController($scope, date, model, lang){
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
@@ -54,7 +56,7 @@ function HistoryController($scope, date, model, lang){
 		}
 		model.notifications.sync();
 	};
-	
+
 	$scope.allFilters = function(){
 		if(model.notificationTypes.selection().length === model.notificationTypes.length()){
 			model.notificationTypes.deselectAll();

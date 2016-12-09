@@ -104,11 +104,13 @@ model.build = function (){
 				notify.error(data);
 			});
 
-			http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs || {}, params));
+			if(!this.mine)
+				http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs || {}, params));
 		}
 	});
 
 	this.collection(NotificationType, {
+		mine: model.notificationTypes && model.notificationTypes.mine,
 		sync: function(){
 			http().get('/timeline/types').done(function(data){
 				this.load(data);
@@ -128,16 +130,21 @@ model.build = function (){
                         return access
                     })
 
-				    model.preferences.get(function(){
-                        var pref = model.preferences.prefs
-                        var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
-                        that.forEach(function(t){
-                            if(myFilters === null || myFilters.indexOf(t.data) >= 0){
-                                t.selected = true
-                            }
-                        });
-                        model.notifications.sync();
-                    })
+					if(that.mine) {
+						that.forEach(function(t){ t.selected = true })
+						model.notifications.sync()
+					} else {
+						model.preferences.get(function(){
+	                        var pref = model.preferences.prefs
+	                        var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
+	                        that.forEach(function(t){
+	                            if(myFilters === null || myFilters.indexOf(t.data) >= 0){
+	                                t.selected = true
+	                            }
+	                        });
+	                        model.notifications.sync();
+	                    })
+					}
 				})
 			}.bind(this));
 		},
