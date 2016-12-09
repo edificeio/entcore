@@ -131,5 +131,7 @@ function HistoryAdminController($scope, model, date) {
             $scope.currentModel = $scope[tabName]
         }
     }
+    $scope.tabs.selected = 'pending'
+    $scope.currentModel = $scope.pending
 
 }
