@@ -71,7 +71,8 @@ public class ManualFeeder extends BusModBase {
 		this.logger = LoggerFactory.getLogger(ManualFeeder.class);
 	}
 
-	public void createStructure(final Message<JsonObject> message) {
+	public void createStructure(final Message<JsonObject> message, final JsonObject config) {
+
 		JsonObject struct = getMandatoryObject("data", message);
 		if (struct == null) return;
 		if (struct.getString("externalId") == null) {
@@ -87,14 +88,63 @@ public class ManualFeeder extends BusModBase {
 					"WITH s " +
 					"MATCH (p:Profile) " +
 					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name})-[:DEPENDS]->s " +
-					"SET g.id = id(g)+'-'+timestamp() " +
+					"SET g.id = id(g)+'-'+timestamp(), s.quota = {quotaStructure} " +
 					"RETURN DISTINCT s.id as id ";
 			JsonObject params = new JsonObject()
-					.putObject("props", struct);
+					.putObject("props", struct)
+					.putNumber("quotaStructure", config.getNumber("quotaStructure", 0));
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
-				public void handle(Message<JsonObject> m) {
-					message.reply(m.body());
+				public void handle(final Message<JsonObject> m) {
+
+					if( m.body().getString("status") == "ok") {
+						JsonArray ret = m.body().getArray("result");
+						JsonObject obj = ret.get(0);
+						String id = obj.getString("id");
+						String query =
+								"match (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) where pg.name = s.name+'-'+'Teacher' and s.id = {id} " +
+										" set pg.quota = {quotaTeacher}, pg.maxquota = {quotaProfileMax} " +
+										" return s " +
+										" UNION " +
+										" match (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) where pg.name = s.name+'-'+'Personnel' and s.id = {id} " +
+										" set pg.quota = {quotaPersonnel}, pg.maxquota = {quotaProfileMax} " +
+										" return s " +
+										" UNION " +
+										" match (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) where pg.name = s.name+'-'+'Student' and s.id = {id} " +
+										" set pg.quota = {quotaStudent}, pg.maxquota = {quotaProfileMax} " +
+										" return s " +
+										" UNION " +
+										" match (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) where pg.name = s.name+'-'+'Relative' and s.id = {id} " +
+										" set pg.quota = {quotaRelative}, pg.maxquota = {quotaProfileMax} " +
+										" return s " +
+										" UNION " +
+										" match (s:Structure)<-[DEPENDS]-(pg:ProfileGroup) where pg.name = s.name+'-'+'Guest' and s.id = {id} " +
+										" set pg.quota = {quotaGuest}, pg.maxquota = {quotaProfileMax} " +
+										" return s";
+						Number quotaTeacher = config.getNumber("quotaTeacher", 0);
+						Number quotaPersonnel = config.getNumber("quotaPersonnel", 0);
+						Number quotaRelative = config.getNumber("quotaRelative", 0);
+						Number quotaStudent = config.getNumber("quotaStudent", 0);
+						Number quotaGuest = config.getNumber("quotaGuest", 0);
+						Number quotaProfileMax = config.getNumber("quotaProfileMax", 0);
+						JsonObject params = new JsonObject().putString("id", id)
+								.putString("id", id)
+								.putNumber("quotaTeacher", quotaTeacher)
+								.putNumber("quotaPersonnel", quotaPersonnel)
+								.putNumber("quotaRelative", quotaRelative)
+								.putNumber("quotaStudent", quotaStudent)
+								.putNumber("quotaGuest", quotaGuest)
+								.putNumber("quotaStudent", quotaStudent)
+								.putNumber("quotaProfileMax", quotaProfileMax);
+						neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> m2) {
+								if (m2.body().getString("status") == "ok") {
+									message.reply(m.body());
+								}
+							}
+						});
+					}
 				}
 			});
 		}
