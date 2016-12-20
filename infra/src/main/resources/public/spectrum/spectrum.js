@@ -44,7 +44,7 @@
         appendTo: "body",
         maxSelectionSize: 7,
         cancelText: "Annuler",
-        chooseText: "Sélectionner",
+        chooseText: "Selectionner",
         togglePaletteMoreText: "more",
         togglePaletteLessText: "less",
         clearText: "Clear Color Selection",
