@@ -352,7 +352,7 @@ function Conversation($scope, $timeout, date, notify, route, model){
 			}
 			var inactives = '';
 			result.inactive.forEach(function(name){
-				inactives += name + lang.translate('invalid') + '<br />';
+				inactives += name + ' ' + lang.translate('invalid') + '<br />';
 			});
 			if(result.inactive.length > 0){
 				notify.info(inactives);
