@@ -289,7 +289,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		},
 		{
 			name: "exportTab",
-			text: lang.translate("directory.export"),
+			text: lang.translate("directory.export.tab"),
 			templateName: 'admin-export-tab',
 			onClick: function(){
 				$scope.scrollOpts.reset()
