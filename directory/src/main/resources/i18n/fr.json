@@ -534,5 +534,6 @@
     "timetable.update.cm" : "Valider",
     "timetable.import" : "Importer",
     "timetable.file" : "Fichier d'alimentation",
-    "pronote.id" : "Identifiant pronote"
+    "pronote.id" : "Identifiant pronote",
+    "invalid.epj" : "Utilisateur sans identifiant"
 }
