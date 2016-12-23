@@ -52,6 +52,7 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
 
     $scope.import = function(structure, importFile) {
         $scope.errors = {};
+        $scope.importing = true;
         var formData = new FormData();
         formData.append("file", importFile[0]);
         structure.import(formData, function(data) {
@@ -62,6 +63,7 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
             } else {
                 notify.info('directory.params.success');
             }
+            $scope.importing = false;
         });
     };
 

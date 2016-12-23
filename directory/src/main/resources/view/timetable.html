@@ -99,7 +99,7 @@
             <legend><i18n>timetable.import</i18n></legend>
             <label class="six cell"><span><i18n>timetable.file</i18n></span></label>
             <input name="importFile" type="file" files-input-change ng-model="importFile"/>
-            <button type="button" class="right-magnet" ng-click="import(structure, importFile)">
+            <button type="button" class="right-magnet" ng-click="import(structure, importFile)" ng-disabled="importing">
               <i18n>timetable.import</i18n>
             </button>
           </fieldset>
