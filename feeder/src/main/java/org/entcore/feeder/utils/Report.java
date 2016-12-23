@@ -53,7 +53,7 @@ public class Report {
 	}
 
 	public void addErrorWithParams(String key, String... errors) {
-		addErrorByFile("global", key, errors);
+		addErrorByFile("error.global", key, errors);
 	}
 
 	public void addFailedUser(String filename, String key, JsonObject props, String... errors) {

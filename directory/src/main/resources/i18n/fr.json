@@ -468,7 +468,7 @@
     "wizard.return" : "Retour",
     "missing.be1d.files" : "Fichiers manquants",
     "missing.csv.files" : "Fichiers manquants",
-    "error.global" : "Erreurs globales",
+    "error.global" : "Des erreurs sont survenues lors de l'import :",
     "error.Personnel" : "Erreurs dans le fichier personnels",
     "error.Relative" : "Erreurs dans le fichier parents",
     "error.Student" : "Erreurs dans le fichier élèves",
