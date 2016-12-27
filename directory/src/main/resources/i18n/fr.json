@@ -535,5 +535,6 @@
     "timetable.import" : "Importer",
     "timetable.file" : "Fichier d'alimentation",
     "pronote.id" : "Identifiant pronote",
-    "invalid.epj" : "Utilisateur sans identifiant"
+    "invalid.epj" : "Utilisateur sans identifiant",
+    "timetable.import.loading" : "Import en cours..."
 }
