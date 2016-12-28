@@ -469,6 +469,7 @@
     "missing.be1d.files" : "Fichiers manquants",
     "missing.csv.files" : "Fichiers manquants",
     "error.global" : "Des erreurs sont survenues lors de l'import :",
+    "global" : "Des erreurs sont survenues lors de l'import, celui-ci n'a pu aboutir. Veuillez essayer de nouveau, et en référer au support si le problème persiste.",
     "error.Personnel" : "Erreurs dans le fichier personnels",
     "error.Relative" : "Erreurs dans le fichier parents",
     "error.Student" : "Erreurs dans le fichier élèves",
