@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "displayName": {
+            "type": "string"
+        },
+        "url": {
+            "type": "string"
+        },
+        "logo": {
+            "type": "string"
+        },
+        "example": {
+            "type": "string"
+        },
+        "embed": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "name",
+        "displayName",
+        "url",
+        "logo",
+        "example",
+        "embed"
+    ]
+}

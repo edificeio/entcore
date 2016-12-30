@@ -21,9 +21,13 @@ package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.validation.JsonSchemaValidator;
+
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.infra.controllers.EmbedController;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
 import org.entcore.infra.cron.HardBounceTask;
@@ -64,6 +68,8 @@ public class Starter extends BaseServer {
 			super.start();
 			final ConcurrentSharedMap<Object, Object> serverMap = vertx.sharedData().getMap("server");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+			CookieHelper.getInstance().init((String) vertx
+					.sharedData().getMap("server").get("signKey"), log);
 			cluster = config.getBoolean("cluster", false);
 			serverMap.put("cluster", cluster);
 			node = config.getString("node", "");
@@ -95,6 +101,12 @@ public class Starter extends BaseServer {
 				@Override
 				protected void handle() {
 					loadCypherScript(); // only in dev mode with embedded neo4j
+
+					JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
+					validator.setEventBus(getEventBus(vertx));
+					validator.setAddress(node + "json.schema.validator");
+					validator.loadJsonSchema(getPathPrefix(config), vertx);
+
 					deployModule(config.getObject("app-registry"), false, false, new Handler<AsyncResult<String>>() {
 						@Override
 						public void handle(AsyncResult<String> event) {
@@ -116,6 +128,7 @@ public class Starter extends BaseServer {
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
 		addController(new MonitoringController());
+		addController(new EmbedController());
 	}
 
 	private void loadInvalidEmails() {
