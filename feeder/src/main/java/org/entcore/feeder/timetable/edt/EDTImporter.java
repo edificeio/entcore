@@ -20,6 +20,7 @@
 package org.entcore.feeder.timetable.edt;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.Md5;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -565,17 +566,20 @@ public class EDTImporter extends AbstractTimetableImporter {
 	}
 
 	public static void launchImport(EDTUtils edtUtils, final String mode, final Message<JsonObject> message, final PostImport postImport) {
+		final I18n i18n = I18n.getInstance();
+		final String acceptLanguage = message.body().getString("language", "fr");
 		if (edtUtils == null) {
-			JsonObject json = new JsonObject().putString("status", "error").putString("message", "invalid.edt.key");
+			JsonObject json = new JsonObject().putString("status", "error").putString("message",
+					i18n.translate("invalid.edt.key", I18n.DEFAULT_DOMAIN, acceptLanguage));
 			message.reply(json);
 			return;
 		}
 		final String uai = message.body().getString("UAI");
 		final String path = message.body().getString("path");
-		final String acceptLanguage = message.body().getString("language", "fr");
 
 		if (isEmpty(uai) || isEmpty(path) || isEmpty(acceptLanguage)) {
-			JsonObject json = new JsonObject().putString("status", "error").putString("message", "invalid.params");
+			JsonObject json = new JsonObject().putString("status", "error").putString("message",
+					i18n.translate("invalid.params", I18n.DEFAULT_DOMAIN, acceptLanguage));
 			message.reply(json);
 		}
 
@@ -592,14 +596,16 @@ public class EDTImporter extends AbstractTimetableImporter {
 					} else {
 						log.error(event.cause().getMessage(), event.cause());
 						JsonObject json = new JsonObject().putString("status", "error")
-								.putString("message", event.cause().getMessage());
+								.putString("message",
+										i18n.translate(event.cause().getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 						message.reply(json);
 					}
 				}
 			});
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			JsonObject json = new JsonObject().putString("status", "error").putString("message", e.getMessage());
+			JsonObject json = new JsonObject().putString("status", "error").putString("message",
+					i18n.translate(e.getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 			message.reply(json);
 		}
 	}
