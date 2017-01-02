@@ -99,15 +99,17 @@ window.idiom = (function(){
 			var request = new XMLHttpRequest();
 			request.open('GET', path);
 			request.onreadystatechange = function(){
-				if(this.readyState === 4 && this.status === 200){
-					var newBundle = JSON.parse(this.response);
+				if(this.readyState === 4){
+					if(this.status === 200){
+						var newBundle = JSON.parse(this.response);
 
-					for(var property in newBundle){
-						bundle[property] = newBundle[property];
+						for(var property in newBundle){
+							bundle[property] = newBundle[property];
+						}
 					}
 
 					if(typeof callback === "function"){
-						callback();
+						callback(this.status === 200);
 					}
 				}
 			};
