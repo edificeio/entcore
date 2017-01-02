@@ -89,6 +89,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WHERE fg.externalId IN {groups} " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.outDate = {outDate} ";
+	private static final String PERSEDUCNAT_TO_CLASSES =
+			"MATCH (u:User {id : {id}}), (:Structure {externalId : {structureExternalId}})<-[:BELONGS]-(c:Class)" +
+			"<-[:DEPENDS]-(pg:ProfileGroup {name : c.name + '-' + {profile}}) " +
+			"WHERE u.source = {source} AND c.name IN {classes} " +
+			"MERGE u-[r:IN]->pg " +
+			"SET r.lastUpdated = {now}, r.source = {source}, r.outDate = {outDate} ";
 	private static final String UNLINK_GROUP =
 			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(fg:FunctionalGroup)<-[r:IN]-(u:User) " +
 			"WHERE r.source = {source} AND (r.outDate < {now} OR r.lastUpdated < {now}) " +
@@ -242,6 +248,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	protected void persistCourse(JsonObject object) {
+		persEducNatToClasses(object);
 		persEducNatToGroups(object);
 		persEducNatToSubjects(object);
 		object.putNumber("pending", importTimestamp);
@@ -261,6 +268,37 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 					}
 				});
 	}
+
+	private void persEducNatToClasses(JsonObject object) {
+		final JsonArray classes = object.getArray("classes");
+		if (classes != null) {
+			final JsonObject params = new JsonObject()
+					.putString("structureExternalId", structureExternalId)
+					.putArray("classes", classes)
+					.putString("source", getSource())
+					.putNumber("outDate", DateTime.now().plusDays(1).getMillis())
+					.putNumber("now", importTimestamp);
+			final JsonArray teacherIds = object.getArray("teacherIds");
+			if (teacherIds != null && teacherIds.size() > 0) {
+				params.putString("profile", "Teacher");
+				for (Object id : teacherIds) {
+					if (id != null) {
+						txXDT.add(PERSEDUCNAT_TO_CLASSES, params.copy().putString("id", id.toString()));
+					}
+				}
+			}
+			final JsonArray personnelIds = object.getArray("personnelIds");
+			if (personnelIds != null && personnelIds.size() > 0) {
+				params.putString("profile", "Personnel");
+				for (Object id : personnelIds) {
+					if (id != null) {
+						txXDT.add(PERSEDUCNAT_TO_CLASSES, params.copy().putString("id", id.toString()));
+					}
+				}
+			}
+		}
+	}
+
 
 	private void persEducNatToSubjects(JsonObject object) {
 		final String subjectId = object.getString("subjectId");
