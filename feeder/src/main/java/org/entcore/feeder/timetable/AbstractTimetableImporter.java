@@ -64,7 +64,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"r.lastUpdated = {now}, r.source = {source} ";
 	private static final String DELETE_SUBJECT =
 			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(sub:Subject {source: {source}}) " +
-			"WHERE sub.lastUpdated <> {now} " +
+			"WHERE NOT(sub.id IN {subjects}) " +
 			"DETACH DELETE sub";
 	private static final String UNLINK_SUBJECT =
 			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(:Subject)<-[r:TEACHES {source: {source}}]-(:User) " +
@@ -379,7 +379,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected void commit(final AsyncResultHandler<Report> handler) {
 		final JsonObject params = new JsonObject().putString("structureExternalId", structureExternalId)
 				.putString("source", getSource()).putNumber("now", importTimestamp);
-		txXDT.add(DELETE_SUBJECT, params);
+		txXDT.add(DELETE_SUBJECT, params.copy().putArray("subjects", new JsonArray(subjects.values().toArray())));
 		txXDT.add(UNLINK_SUBJECT, params);
 		txXDT.add(UNLINK_GROUP, params);
 		txXDT.add(DELETE_GROUPS, params);
