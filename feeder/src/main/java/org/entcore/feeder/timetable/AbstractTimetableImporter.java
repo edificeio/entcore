@@ -449,8 +449,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						transitionDeleteCourses(event.body().getObject("result"));
+					final JsonArray res = event.body().getArray("result");
+					if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
+						transitionDeleteCourses(res.<JsonObject>get(0));
 						transitionDeleteSubjects(structureExternalId);
 					}
 				}
