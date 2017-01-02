@@ -172,7 +172,7 @@ public class DefaultTimetableService implements TimetableService {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				final JsonArray errors = new JsonArray();
-				final JsonObject ge = new JsonObject().putArray("global", errors);
+				final JsonObject ge = new JsonObject().putArray("error.global", errors);
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")) &&
 						TIMETABLE_TYPES.contains(event.right().getValue().getString("timetable"))) {
 					if (!("EDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.xml")) &&

@@ -46,5 +46,6 @@
   "missing.columns" : "Ligne {0} : colonne manquante.",
   "unknown.student.line" : "Ligne {0} : Parent sans élève reconnu.",
   "empty.required.user.attribute" : "Utilisateur sans nom ou prénom : {0}.",
-  "invalid.edt.key" : "La clé de cryptage EDT est invalide"
+  "invalid.edt.key" : "La clé de cryptage EDT est invalide",
+  "invalid.epj" : "Utilisateur sans identifiant : {0}"
 }

@@ -314,7 +314,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void addEleve(JsonObject currentEntity) {
 		final String epj = currentEntity.getString("epj");
 		if (isEmpty(epj)) {
-			report.addError("invalid.epj");
+			report.addErrorWithParams("invalid.epj", currentEntity.encode());
 			return;
 		}
 		final String codeGroup = currentEntity.getString("gpe");
