@@ -119,7 +119,7 @@
     "timeline.action.discard": "Supprimer de mon fil",
     "timeline.action.report": "Signaler la notification inappropriée",
     "timeline.confirm.report": "Vous allez signaler une notification",
-    "timeline.confirm.report.text": "Attention ! Vous souhaitez signaler une notification inappropriée ou qui ne respecte pas les conditions d'utilisation de l'ENT. L’heure et l’origine de ce signalement seront enregistrés et transmis à un référent ENT pour traitement.",
+    "timeline.confirm.report.text": "Attention ! Vous souhaitez signaler une notification inappropriée ou qui ne respecte pas les conditions d'utilisation de l'ENT. L’heure et l’origine de ce signalement seront enregistrées et transmises à un référent ENT pour traitement.",
     "timeline.action.reported": "La notification a été signalée",
     "timeline.action.delete.own": "Supprimer de l'ENT",
     "panel.my.profile": "Mon profil",
