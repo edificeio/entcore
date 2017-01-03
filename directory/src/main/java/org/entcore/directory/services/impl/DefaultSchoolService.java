@@ -307,10 +307,15 @@ public class DefaultSchoolService implements SchoolService {
 			withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
 			returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
 		} else {
-			withStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName";
-			if(groupClasses)
-				withStr += ", classname: c.name";
-			withStr += "} END as child ";
+			if(groupClasses) {
+				withStr =
+					"WITH u, p, c, " +
+					"CASE count(child) WHEN 0 THEN null " +
+					"ELSE {firstName: child.firstName, lastName: child.lastName, classname: c.name} " +
+					"END as child " + withStr + ", child ";
+			} else {
+				withStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName } END as child ";
+			}
 			returnStr += ", child ";
 		}
 
