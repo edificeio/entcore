@@ -490,13 +490,13 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 					final JsonArray res = event.body().getArray("result");
 					if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
 						transitionDeleteCourses(res.<JsonObject>get(0));
-						transitionDeleteSubjects(structureExternalId);
+						transitionDeleteSubjectsAndMapping(structureExternalId);
 					}
 				}
 			});
 		} else {
 			transitionDeleteCourses(new JsonObject());
-			transitionDeleteSubjects(structureExternalId);
+			transitionDeleteSubjectsAndMapping(structureExternalId);
 		}
 	}
 
@@ -512,25 +512,29 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		});
 	}
 
-	private static void transitionDeleteSubjects(final String structureExternalId) {
+	private static void transitionDeleteSubjectsAndMapping(final String structureExternalId) {
 		final JsonObject params = new JsonObject();
 		String filter = "";
 		if (isNotEmpty(structureExternalId)) {
 			filter = " {externalId : {structureExternalId}}";
 			params.putString("structureExternalId", structureExternalId);
 		}
-		final String query =
-				"MATCH (:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject) " +
-				"DETACH DELETE sub";
-		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (!"ok".equals(event.body().getString("status"))) {
-					log.error("Subjects timetable transition error on structure " + params.encode() +
-							" - message : " + event.body().getString("message"));
+		try {
+			final TransactionHelper tx = TransactionManager.getTransaction();
+			tx.add("MATCH (:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject) DETACH DELETE sub", params);
+			tx.add("MATCH (:Structure" + filter + ")<-[:MAPPING]-(cm:ClassesMapping) DETACH DELETE cm", params);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if (!"ok".equals(event.body().getString("status"))) {
+						log.error("Subjects timetable transition error on structure " + params.encode() +
+								" - message : " + event.body().getString("message"));
+					}
 				}
-			}
-		});
+			});
+		} catch (TransactionException e) {
+			log.error("Unable to acquire transaction for timetable transition", e);
+		}
 	}
 
 	public static void initStructure(final EventBus eb, final Message<JsonObject> message) {
