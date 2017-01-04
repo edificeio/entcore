@@ -8,6 +8,8 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
         $scope.structure = structure;
         $scope.savedType = structure.timetable;
         $scope.importFile = "";
+        $scope.importSuccessful = false;
+        $scope.importing = false;
         $scope.errors = {};
         $scope.getClassesMapping(structure);
     };
@@ -53,6 +55,7 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
     $scope.import = function(structure, importFile) {
         $scope.errors = {};
         $scope.importing = true;
+        $scope.importSuccessful = false;
         var formData = new FormData();
         formData.append("file", importFile[0]);
         structure.import(formData, function(data) {
@@ -62,6 +65,7 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
                 $scope.$apply();
             } else {
                 notify.info('directory.params.success');
+                $scope.importSuccessful = true;
             }
             $scope.importing = false;
         });

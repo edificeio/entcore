@@ -107,6 +107,9 @@
         <div class="row vertical-spacing spinner-bar" ng-if="importing">
             <i class="spinner horizontal-spacing-twice"></i><i18n>timetable.import.loading</i18n>
         </div>
+          <div ng-if="importSuccessful">
+              <i18n>directory.params.success</i18n>
+          </div>
         <div ng-repeat="item in errors">
           <div class="row">
             <h5>[[item.title]]</h5>
