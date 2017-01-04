@@ -146,6 +146,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String basePath;
 	private boolean txSuccess = false;
 	protected Set<String> userImportedExternalId = new HashSet<>();
+	private volatile JsonArray coursesBuffer = new JsonArray();
 
 	protected AbstractTimetableImporter(String uai, String path, String acceptLanguage) {
 		UAI = uai;
@@ -252,21 +253,37 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		persEducNatToGroups(object);
 		persEducNatToSubjects(object);
 		object.putNumber("pending", importTimestamp);
-		countMongoQueries.incrementAndGet();
+		final int currentCount = countMongoQueries.incrementAndGet();
 		JsonObject m = new JsonObject().putObject("$set", object)
 				.putObject("$setOnInsert", new JsonObject().putNumber("created", importTimestamp));
-		mongoDb.update(COURSES, new JsonObject().putString("_id", object.getString("_id")), m, true, false,
-				new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-						if (!"ok".equals(event.body().getString("status"))) {
-							report.addError("error.persist.course");
-						}
-						if (countMongoQueries.decrementAndGet() == 0) {
-							end();
-						}
+		coursesBuffer.addObject(new JsonObject()
+						.putString("operation", "upsert")
+						.putObject("document", m)
+						.putObject("criteria", new JsonObject().putString("_id", object.getString("_id")))
+		);
+
+		if (currentCount % 1000 == 0) {
+			persistBulKCourses();
+		}
+	}
+
+	private void persistBulKCourses() {
+		final JsonArray cf = coursesBuffer;
+		coursesBuffer = new JsonArray();
+		final int countCoursesBuffer = cf.size();
+		if (countCoursesBuffer > 0) {
+			mongoDb.bulk(COURSES, cf, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if (!"ok".equals(event.body().getString("status"))) {
+						report.addError("error.persist.course");
 					}
-				});
+					if (countMongoQueries.addAndGet(-countCoursesBuffer) == 0) {
+						end();
+					}
+				}
+			});
+		}
 	}
 
 	private void persEducNatToClasses(JsonObject object) {
@@ -417,6 +434,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected void commit(final AsyncResultHandler<Report> handler) {
 		final JsonObject params = new JsonObject().putString("structureExternalId", structureExternalId)
 				.putString("source", getSource()).putNumber("now", importTimestamp);
+		persistBulKCourses();
 		txXDT.add(DELETE_SUBJECT, params.copy().putArray("subjects", new JsonArray(subjects.values().toArray())));
 		txXDT.add(UNLINK_SUBJECT, params);
 		txXDT.add(UNLINK_GROUP, params);
