@@ -231,7 +231,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			JsonObject p = persEducNat.applyMapping(currentEntity);
 			p.putArray("profiles", new JsonArray().addString("Teacher"));
 			if (isEmpty(externalId)) {
-				externalId = JsonUtil.checksum(p);
+				externalId = JsonUtil.checksum(p, JsonUtil.HashAlgorithm.MD5);
 			}
 			p.putString("externalId", externalId);
 			userImportedExternalId.add(externalId);

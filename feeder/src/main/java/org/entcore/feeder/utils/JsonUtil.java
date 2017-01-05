@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.utils;
 
+import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.Sha256;
 import org.vertx.java.core.json.JsonObject;
 
@@ -29,6 +30,8 @@ import java.util.TreeSet;
 public final class JsonUtil {
 
 	private JsonUtil() {}
+
+	public enum HashAlgorithm { SHA256, MD5 }
 
 	public static JsonObject loadFromResource(String resource) {
 		String src = new Scanner(JsonUtil.class.getClassLoader()
@@ -69,6 +72,10 @@ public final class JsonUtil {
 	public static class None{}
 
 	public static String checksum(JsonObject object) throws NoSuchAlgorithmException {
+		return checksum(object, HashAlgorithm.SHA256);
+	}
+
+	public static String checksum(JsonObject object, HashAlgorithm hashAlgorithm) throws NoSuchAlgorithmException {
 		if (object == null) {
 			return null;
 		}
@@ -77,7 +84,12 @@ public final class JsonUtil {
 		for (String attr : sorted) {
 			j.putValue(attr, object.getValue(attr));
 		}
-		return Sha256.hash(j.encode());
+		switch (hashAlgorithm) {
+			case MD5:
+				return Md5.hash(j.encode());
+			default:
+				return Sha256.hash(j.encode());
+		}
 	}
 
 }
