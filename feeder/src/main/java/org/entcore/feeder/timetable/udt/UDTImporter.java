@@ -26,7 +26,6 @@ import org.entcore.common.utils.FileUtils;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
-import org.entcore.feeder.timetable.edt.EDTUtils;
 import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.Report;
 import org.joda.time.DateTime;
@@ -189,12 +188,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 				if (o instanceof JsonObject) {
 					int week = Integer.parseInt(((JsonObject) o).getString("num"));
 					if (week != oldWeek) {
-						periods.put(oldWeek, week - 1);
+						periods.put(oldWeek, (week == 1 ? maxYearWeek : week - 1));
 						oldWeek = week;
 					}
 				}
 			}
 			periods.put(oldWeek, new DateTime(endStudents).getWeekOfWeekyear());
+			for (int i = new DateTime(endStudents).getWeekOfWeekyear() + 1; i < startDateWeek1.getWeekOfWeekyear(); i++) {
+				holidaysWeeks.add(i);
+			}
 		}
 	}
 
@@ -445,12 +447,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 			if (startPeriod < 1 && !holidaysWeeks.contains(j)) {
 				startPeriod = j;
 			}
-			if (startPeriod > 0 && holidaysWeeks.contains(j)) {
+			if (startPeriod > 0 && (holidaysWeeks.contains(j) && startPeriod != j)) {
 				p.put(startPeriod, j);
 				startPeriod = 0;
+
 			}
 		}
-		p.put(startPeriod, endPeriod);
+		if (startPeriod > 0) {
+			p.put(startPeriod, endPeriod);
+		}
 		return p;
 	}
 
@@ -483,6 +488,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 			endDate = endDate.minusWeeks(1);
 		}
 		endDate = endDate.plusSeconds(slotEnd.getEnd());
+		if (endDate.isBefore(startDate)) {
+			log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1 + ", endPeriodOfWeek : " + endPeriodWeek);
+		}
 		final Set<String> ce = coens.get(start);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {

@@ -249,6 +249,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	protected void persistCourse(JsonObject object) {
+		if (object == null) {
+			return;
+		}
 		persEducNatToClasses(object);
 		persEducNatToGroups(object);
 		persEducNatToSubjects(object);
