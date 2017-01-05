@@ -13,6 +13,10 @@ CREATE CONSTRAINT ON (ma:MessageAttachment) ASSERT ma.id IS UNIQUE;
 CREATE INDEX ON :ConversationMessage(from);
 CREATE INDEX ON :ConversationMessage(to);
 CREATE INDEX ON :ConversationMessage(cc);
+CREATE CONSTRAINT ON (sub:Subject) ASSERT sub.id IS UNIQUE;
+CREATE CONSTRAINT ON (sub:Subject) ASSERT sub.externalId IS UNIQUE;
+CREATE CONSTRAINT ON (fg:FunctionalGroup) ASSERT fg.externalId IS UNIQUE;
+CREATE CONSTRAINT ON (fg:FunctionalGroup) ASSERT fg.id IS UNIQUE;
 commit
 begin transaction
 CREATE (:DeleteGroup:ProfileGroup:Group);
