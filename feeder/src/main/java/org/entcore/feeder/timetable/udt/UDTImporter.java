@@ -114,10 +114,15 @@ public class UDTImporter extends AbstractTimetableImporter {
 							if (event.succeeded() && event.result().length > 0) {
 								try {
 									for (String p : event.result()) {
-										parse(p);
 										Matcher m = filenameWeekPatter.matcher(p);
 										if (m.find()) {
-											generateCourses(Integer.parseInt(m.group(1)));
+											final int weekNumber = Integer.parseInt(m.group(1));
+											if (periods.containsKey(weekNumber)) {
+												parse(p);
+												generateCourses(weekNumber);
+											} else {
+												log.warn("Ignore week : " + weekNumber);
+											}
 										}
 									}
 									commit(handler);
