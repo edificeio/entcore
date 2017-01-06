@@ -542,6 +542,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		}
 		try {
 			final TransactionHelper tx = TransactionManager.getTransaction();
+			tx.add("MATCH (s:Structure" + filter + ") SET s.timetable = 'NOP'", params);
 			tx.add("MATCH (:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject) DETACH DELETE sub", params);
 			tx.add("MATCH (:Structure" + filter + ")<-[:MAPPING]-(cm:ClassesMapping) DETACH DELETE cm", params);
 			tx.commit(new Handler<Message<JsonObject>>() {

@@ -7,6 +7,11 @@ function TimetableController($scope, $rootScope, model, template, route, date, l
     $scope.viewStructure = function(structure){
         $scope.structure = structure;
         $scope.savedType = structure.timetable;
+        if (typeof $scope.savedType === "undefined") {
+            structure.timetable = "";
+            $scope.structure.timetable = "";
+            $scope.savedType = "";
+        }
         $scope.importFile = "";
         $scope.importSuccessful = false;
         $scope.importing = false;

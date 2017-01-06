@@ -538,5 +538,6 @@
     "pronote.id" : "Identifiant pronote",
     "invalid.epj" : "Utilisateur sans identifiant",
     "timetable.import.loading" : "Import en cours...",
-    "attachmentId" : "Identifiant SIECLE"
+    "attachmentId" : "Identifiant SIECLE",
+    "default.import" : "Alimentation standard"
 }
