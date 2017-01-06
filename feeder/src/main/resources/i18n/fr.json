@@ -48,5 +48,6 @@
   "empty.required.user.attribute" : "Utilisateur sans nom ou prénom : {0}.",
   "invalid.edt.key" : "La clé de cryptage EDT est invalide",
   "invalid.epj" : "Utilisateur sans identifiant : {0}",
-  "not.found.users.not.empty" : "Utilisateurs non présents dans la base"
+  "not.found.users.not.empty" : "Utilisateurs non présents dans la base",
+  "missing.student" : "Élève manquant : {0}"
 }

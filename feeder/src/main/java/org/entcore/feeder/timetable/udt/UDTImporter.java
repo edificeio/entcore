@@ -23,6 +23,7 @@ import fr.wseduc.swift.storage.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import org.entcore.common.utils.FileUtils;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
@@ -57,9 +58,11 @@ import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_P
 public class UDTImporter extends AbstractTimetableImporter {
 
 	private static final String STUDENTS_TO_GROUPS =
-			"MATCH (u:User {externalId: {epj}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
+			"MATCH (:Structure {externalId:{structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User), " +
+			"(fg:FunctionalGroup {externalId:{externalId}}) " +
+			"WHERE lower(u.firstName) = {firstName} AND lower(u.lastName) = {lastName} AND u.birthDate = {birthDate} " +
 			"MERGE u-[r:IN]->fg " +
-			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";;
+			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
 	public static final String UDT = "UDT";
 	public static final String CODE = "code";
 	private static final Pattern filenameWeekPatter = Pattern.compile("UDCal_[0-9]{2}_([0-9]{2})\\.xml$");
@@ -76,6 +79,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private DateTime startDateStudents;
 	private Set<DateTime> holidays = new HashSet<>();
 	private Set<Integer> holidaysWeeks = new HashSet<>();
+	private Map<String, JsonObject> eleves = new HashMap<>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage) {
 		super(uai, path, acceptLanguage);
@@ -100,6 +104,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_05.xml");
 					parse(basePath + "UDCal_07.xml");
 					parse(basePath + "UDCal_08.xml");
+					parse(basePath + "UDCal_10.xml");
 					parse(basePath + "UDCal_19.xml");
 					parse(basePath + "UDCal_13.xml");
 					parse(basePath + "UDCal_21.xml");
@@ -318,10 +323,19 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
 	}
 
+	void eleveMapping(JsonObject currentEntity) {
+		eleves.put(currentEntity.getString(CODE), currentEntity);
+	}
+
 	void addEleve(JsonObject currentEntity) {
-		final String epj = currentEntity.getString("epj");
-		if (isEmpty(epj)) {
+		final String ele = currentEntity.getString("ele");
+		if (isEmpty(ele)) {
 			report.addErrorWithParams("invalid.epj", currentEntity.encode());
+			return;
+		}
+		JsonObject eleve = eleves.get(ele);
+		if (eleve == null) {
+			report.addErrorWithParams("missing.student", currentEntity.encode());
 			return;
 		}
 		final String codeGroup = currentEntity.getString("gpe");
@@ -335,8 +349,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			final String name = group.getString("code_div") + " Gr " + group.getString(CODE);
 			txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-					.putString("epj", epj)
+					.putString("firstName", eleve.getString("prenom", "").toLowerCase())
+					.putString("lastName", eleve.getString("nom", "").toLowerCase())
+					.putString("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
 					.putString("externalId", structureExternalId + "$" + name)
+					.putString("structureExternalId", structureExternalId)
 					.putString("source", UDT)
 					.putNumber("inDate", importTimestamp)
 					.putNumber("outDate", endStudents)
@@ -354,8 +371,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (groups != null) {
 			for (Object o2: groups) {
 				txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-						.putString("epj", epj)
+						.putString("firstName", eleve.getString("prenom", "").toLowerCase())
+						.putString("lastName", eleve.getString("nom", "").toLowerCase())
+						.putString("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
 						.putString("externalId", structureExternalId + "$" + o2.toString())
+						.putString("structureExternalId", structureExternalId)
 						.putString("source", UDT)
 						.putNumber("inDate", importTimestamp)
 						.putNumber("outDate", endStudents)

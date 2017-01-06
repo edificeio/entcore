@@ -71,6 +71,7 @@ public class UDTHandler extends DefaultHandler {
 			case "rgpmt":
 			case "mat":
 			case "ele_gpe":
+			case "eleve":
 			case "prof":
 			case "div":
 			case "gpe":
@@ -115,6 +116,9 @@ public class UDTHandler extends DefaultHandler {
 					break;
 				case "ele_gpe":
 					udtImporter.addEleve(currentEntity);
+					break;
+				case "eleve":
+					udtImporter.eleveMapping(currentEntity);
 					break;
 				case "prof":
 					udtImporter.addProfesseur(currentEntity);
