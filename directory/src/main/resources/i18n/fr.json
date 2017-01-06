@@ -530,7 +530,7 @@
     "timetable.title" : "Flux emploi du temps",
     "timetable.type" : "Type de flux emploi du temps",
     "timetable.update.type" : "Valider",
-    "timetable.confirm.change.type" : "Attention, le changement du type de flux supprimera tous les groupes d'enseignements et les matières de l'établissement.",
+    "timetable.confirm.change.type" : "Attention, le changement du type de flux supprimera tous les groupes d'enseignement de l'établissement et donc tous les partages associés.",
     "timetable.classes.mapping" : "Correspondance des classes non reconnues",
     "timetable.update.cm" : "Valider",
     "timetable.import" : "Importer",
