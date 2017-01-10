@@ -296,6 +296,29 @@ ManualGroup.prototype = {
     }
 }
 
+function FunctionalGroup(){}
+FunctionalGroup.prototype = {
+    getUsers: function(hook){
+        var that = this
+        return http().get("user/group/"+that.id).done(function(data){
+            that.data.users = data
+            hookCheck(hook)
+        })
+    },
+    addUser: function(user, hook){
+        var that = this
+        return http().post("user/group/"+user.id+"/"+that.id).done(function(){
+            hookCheck(hook)
+        })
+    },
+    removeUser: function(user, hook){
+        var that = this
+        return http().delete("user/group/"+user.id+"/"+that.id).done(function(){
+            hookCheck(hook)
+        })
+    }
+}
+
 //Duplicates
 function Duplicate(){}
 Duplicate.prototype = {
@@ -334,6 +357,17 @@ function Structure(){
             return http().get('group/admin/list', { type: 'ManualGroup', structureId: that.model.id }, { requestName: 'groups-request' }).done(function(groups){
                 that.load(groups)
                 that.forEach(function(group){ group.getUsers() })
+                hookCheck(hook)
+            })
+        }
+    })
+
+    this.collection(FunctionalGroup, {
+        sync: function(hook){
+            var that = this
+            return http().get('group/admin/list', { type: 'FunctionalGroup', structureId: that.model.id }, { requestName: 'func-groups-request' }).done(function(groups){
+                that.load(groups)
+                //that.forEach(function(group){ group.getUsers() })
                 hookCheck(hook)
             })
         }
@@ -565,7 +599,8 @@ Profiles.prototype.save = function(block, callback) {
 };
 
 model.build = function(){
-    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures, Classe, ManualGroup, Duplicate, Level, Profile, Profiles])
+    this.makeModels([User, IsolatedUsers, CrossUsers, Structure, Structures,
+        Classe, ManualGroup, FunctionalGroup, Duplicate, Level, Profile, Profiles])
 
     this.structures = new Structures()
     this.isolatedUsers = new IsolatedUsers()

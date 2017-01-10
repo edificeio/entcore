@@ -1,0 +1,67 @@
+<!--
+    ||||||||||||||||||||||||||||||||
+    |||  FUNCTIONAL GROUPS OPS   |||
+    ||||||||||||||||||||||||||||||||
+-->
+
+<!-- Structure selection menu -->
+<div ng-include="'structure-tree'"></div>
+
+<article class="side-tabs-content content-flex unpadded nine cell" ng-if="structure">
+    <!-- Group selection menu -->
+    <nav class="vertical cell search-container-left">
+        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructureGroups"/>
+        <ul>
+            <li ng-repeat="group in structure.functionalGroups.all | filter: filterStructureGroups | orderBy: 'name'" ng-click="$parent.groupSelected = group; refreshGroupUsers(group); setShowWhat('showCurrentGroup')" style="padding-left: 0">
+                [[group.name]]
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Group details -->
+    <div ng-if="groupSelected && showWhat === 'showCurrentGroup'" class="search-container-view">
+        <div class="row"><h1 style="margin-bottom: 0; text-align:center;">[[groupSelected.name]]</h1></div>
+        <div class="row" style="text-align:center">
+            <h5><i18n>directory.admin.functionalGroup</i18n></h5>
+        </div>
+        <hr class="separator">
+        <div class="row"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[groupSelected.id]]</div>
+        <div class="row">
+            <strong class="four cell padding-top-5">[[lang.translate("directory.name")]]</strong>
+            <label class="six cell">[[groupSelected.name]]</label>
+        </div>
+        <hr class="separator">
+        <nav class="vertical cell search-container-left" style="max-width: 40%; width: 40%; min-height: 480px; height: 480px; margin: 0">
+            <select style="width: 95%"
+                    ng-model="groupUsersStructure"
+                    ng-init="groupUsersStructure = structure"
+                    ng-options="structure as structure.name for structure in structures.all | orderBy: 'name'"
+                    ng-change="scrollOpts.reset(); groupUsersStructure.loadStructure(refreshScope, refreshScope)">
+            </select>
+            <select class="margin-top-5"
+                    style="width: 95%"
+                    ng-model="groupUsersClass"
+                    ng-init="groupUsersClass = groupSelected.classes ? structure.classes.findWhere({id: groupSelected.classes[0].id}) : null"
+                    ng-options="class as class.name for class in groupUsersStructure.classes.all | orderBy: 'name'"
+                    ng-change="scrollOpts.reset()">
+                    <option value="">[[lang.translate("directory.allClasses")]]</option>
+            </select>
+            <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterGroupUsers" ng-change="scrollOpts.reset()"/>
+            <ul bottom-scroll-action="scrollOpts.increment()" style="height: 355px; padding-top: 10; border-bottom: none; top: 100px; height: calc(100% - 120px);">
+                <li ng-repeat="user in groupUsersStructure.users.all | filter: groupUserFilteringFunction(filterGroupUsers, groupUsersClass) | orderBy: 'lastName' | limitTo: scrollOpts.scrollLimit"
+                    ng-click="addUserToGroup(user, groupSelected)"
+                    style="padding-left: 0">
+                    <span ng-class="userStyle(user)">[[user.lastName]] [[user.firstName]]</span>
+                </li>
+            </ul>
+        </nav>
+        <div style="width:60%; float: left">
+            <h3 style="text-align: center">[[lang.translate("directory.groupUsers")]]</h3>
+            <ul style="list-style-type: decimal; font-family: Lato;">
+                <li ng-repeat="user in groupSelected.data.users | orderBy: 'lastName'" ng-click="removeUserFromGroup(user, groupSelected)">
+					[[user.lastName]] [[user.firstName]]
+				</li>
+            </ul>
+        </div>
+    </div>
+</article>

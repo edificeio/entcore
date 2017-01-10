@@ -280,12 +280,29 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			name: "groupTab",
 			text: lang.translate("directory.groupOps"),
 			templateName: 'admin-group-tab',
-			onClick: function(){ $scope.scrollOpts.reset() },
+			onClick: function(){
+				delete $scope.groupSelected
+				$scope.scrollOpts.reset()
+			},
 			onStructureClick: function(structure){
 				$scope.viewStructure(structure)
 				structure.manualGroups.sync($scope.refreshScope)
 			},
 			requestName : "groups-request"
+		},
+		{
+			name: "funcGroupTab",
+			text: lang.translate("directory.funcGroupOps"),
+			templateName: 'admin-func-group-tab',
+			onClick: function(){
+				delete $scope.groupSelected
+				$scope.scrollOpts.reset()
+			},
+			onStructureClick: function(structure){
+				$scope.viewStructure(structure)
+				structure.functionalGroups.sync($scope.refreshScope)
+			},
+			requestName : "func-groups-request"
 		},
 		{
 			name: "exportTab",
@@ -939,6 +956,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		group.removeUser(user, function(){
 			group.getUsers($scope.refreshScope)
 		})
+	}
+	$scope.refreshGroupUsers = function(group) {
+		group.getUsers($scope.refreshScope)
 	}
 
 	//Structures
