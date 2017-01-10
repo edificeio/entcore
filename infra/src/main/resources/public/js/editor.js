@@ -2041,74 +2041,16 @@ window.RTE = (function () {
 
 			RTE.baseToolbarConf.option('embed', function (instance) {
 			    return {
-			        templateUrl: '/infra/public/template/editor-options/embed.html',
+			        template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
+					'<embedder ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
 			        link: function (scope, element, attributes) {
 			            scope.display = {
-			                provider: {
-                                name: 'none'
-			                }
+			                htmlCode: ''
 			            };
-
-			            scope.providers = [];
-
-			            http().get('/infra/public/json/embed-providers.json').done(function (providers) {
-			                providers.forEach(function (provider) {
-			                    scope.providers.push(provider);
-			                });
-			            });
 
 			            scope.applyHtml = function (template) {
-			                scope.display.copyEmbed = false;
-			                instance.selection.replaceHTML(scope.display.htmlCode);
-			                scope.unselectProvider();
-			            };
-
-			            scope.cancel = function () {
-			                scope.display.copyEmbed = false;
-			                scope.unselectProvider();
-			            }
-
-			            scope.unselectProvider = function () {
-			                scope.display.provider = { name: 'none' };
-			                scope.display.url = '';
-			                scope.display.htmlCode = '';
-			                var preview = element.find('.' + scope.display.provider.name + ' .preview');
-			                preview.html('');
-			            };
-			            
-			            scope.updatePreview = function () {
-			                scope.display.invalidPath = false;
-			                var agnosticUrl = scope.display.url.split('//')[1];
-			                var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', ["g"]);
-			                var params = scope.display.provider.url.match(matchParams);
-
-			                var computedEmbed = scope.display.provider.embed;
-
-			                params.splice(1, params.length);
-			                params.forEach(function (param) {
-			                    var paramBefore = scope.display.provider.url.split(param)[0];
-			                    var additionnalSplit = paramBefore.split('}')
-			                    if (additionnalSplit.length > 1) {
-			                        paramBefore = additionnalSplit[additionnalSplit.length - 1];
-			                    }
-			                    var paramAfter = scope.display.provider.url.split(param)[1].split('{')[0];
-			                    var paramValue = scope.display.url.split(paramBefore)[1];
-			                    if (!paramValue) {
-			                        scope.display.invalidPath = true;
-			                    }
-			                    if(paramAfter){
-			                        paramValue = paramValue.split(paramAfter)[0];
-			                    }
-			                    
-			                    var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
-			                    scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
-			                });
-
-			                var preview = element.find('.' + scope.display.provider.name + ' .preview');
-			                preview.html(
-                                scope.display.htmlCode
-                            );
-			            };
+							instance.selection.replaceHTML(scope.display.htmlCode);
+						};
 			        }
 			    }
 			});
