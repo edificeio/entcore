@@ -19,7 +19,6 @@
 
 package org.entcore.common.notification;
 
-import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.user.UserInfos;
@@ -41,7 +40,6 @@ import org.vertx.java.platform.Container;
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,7 +51,6 @@ public class TimelineHelper {
 	private final EventBus eb;
 	private final Renders render;
 	private final Vertx vertx;
-	private final TimelineMailer timelineMailer;
 	private final TimelineNotificationsLoader notificationsLoader;
 	private final Container container;
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
@@ -64,7 +61,6 @@ public class TimelineHelper {
 		this.vertx = vertx;
 		this.container = container;
 		this.notificationsLoader = TimelineNotificationsLoader.getInstance(vertx);
-		this.timelineMailer = new TimelineMailer(vertx, eb, container);
 		loadTimelineI18n();
 		loadAssetsTimelineDirectory();
 	}
@@ -89,7 +85,8 @@ public class TimelineHelper {
 				.putString("action", "add")
 				.putString("type", notification.getString("type"))
 				.putString("event-type", notification.getString("event-type"))
-				.putArray("recipients", r);
+				.putArray("recipients", r)
+				.putArray("recipientsIds", new JsonArray(recipients.toArray()));
 		if (resource != null) {
 			event.putString("resource", resource);
 		}
@@ -104,12 +101,19 @@ public class TimelineHelper {
 			event.putObject("date", new JsonObject().putNumber("$date", date));
 			params.removeField("timeline-publish-date");
 		}
-		event.putObject("params", params);
+		event.putObject("params", params)
+			.putString("notificationName", notificationName)
+			.putObject("notification", notification)
+			.putObject("request", new JsonObject()
+				.putString("Host", Renders.getHost(request))
+				.putString("X-Forwarded-Proto", Renders.getScheme(request))
+								.putString("Accept-Language", request.headers().get("Accept-Language"))
+				);
 		eb.send(TIMELINE_ADDRESS, event, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				JsonObject result = event.body();
 				if(!"error".equals(result.getString("status", "error"))){
-					timelineMailer.sendImmediateMails(request, notificationName, notification, params, recipients);
+					log.error("Error in timeline notification : " + result.getString("message"));
 				}
 			}
 		});
