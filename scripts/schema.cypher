@@ -20,6 +20,9 @@ CREATE CONSTRAINT ON (fg:FunctionalGroup) ASSERT fg.id IS UNIQUE;
 CREATE INDEX ON :User(firstName);
 CREATE INDEX ON :User(lastName);
 CREATE INDEX ON :User(birthDate);
+CREATE INDEX ON :User(source);
+CREATE CONSTRAINT ON (u:User) ASSERT u.IDPN IS UNIQUE;
+CREATE INDEX ON :User(attachmentId);
 commit
 begin transaction
 CREATE (:DeleteGroup:ProfileGroup:Group);

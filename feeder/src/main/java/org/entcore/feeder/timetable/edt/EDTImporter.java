@@ -492,7 +492,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 							teachersArray = new JsonArray();
 							c.putArray("teacherIds", teachersArray);
 						}
-						teachersArray.add(teachers.get(ident));
+						final String tId = teachers.get(ident);
+						if (isNotEmpty(tId)) {
+							teachersArray.add(tId);
+						}
 						break;
 					case "Classe":
 						JsonArray classesArray = c.getArray("classes");
@@ -522,7 +525,11 @@ public class EDTImporter extends AbstractTimetableImporter {
 							equipmentsArray = new JsonArray();
 							c.putArray("equipmentLabels", equipmentsArray);
 						}
-						equipmentsArray.add(equipments.get(ident));
+						final String eId = equipments.get(ident);
+						if (isNotEmpty(eId)) {
+							equipmentsArray.add(eId);
+						}
+
 						break;
 					case "Salle":
 						JsonArray roomsArray = c.getArray("roomLabels");
@@ -530,7 +537,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 							roomsArray = new JsonArray();
 							c.putArray("roomLabels", roomsArray);
 						}
-						roomsArray.add(rooms.get(ident));
+						final String rId = rooms.get(ident);
+						if (isNotEmpty(rId)) {
+							roomsArray.add(rId);
+						}
 						break;
 					case "Personnel":
 						JsonArray personnelsArray = c.getArray("personnelIds");
@@ -538,7 +548,10 @@ public class EDTImporter extends AbstractTimetableImporter {
 							personnelsArray = new JsonArray();
 							c.putArray("personnelIds", personnelsArray);
 						}
-						personnelsArray.add(personnels.get(ident));
+						final String pId = personnels.get(ident);
+						if (isNotEmpty(pId)) {
+							personnelsArray.add(pId);
+						}
 						break;
 				}
 			}

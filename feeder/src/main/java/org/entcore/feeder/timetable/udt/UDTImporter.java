@@ -518,17 +518,30 @@ public class UDTImporter extends AbstractTimetableImporter {
 		} else {
 			teacherIds = new JsonArray();
 		}
-		teacherIds.add(teachers.get(entity.getString("prof")));
+		final String pId = teachers.get(entity.getString("prof"));
+		if (isNotEmpty(pId)) {
+			teacherIds.add(pId);
+		}
 
 		final JsonObject c = new JsonObject()
 				.putString("structureId", structureId)
-				.putString("subjectId", subjects.get(entity.getString("mat")))
 				.putString("startDate", startDate.toString())
 				.putString("endDate", endDate.toString())
 				.putNumber("dayOfWeek", day)
-				.putArray("roomLabels", new JsonArray().add(rooms.get(entity.getString("salle"))))
-				.putArray("teacherIds", teacherIds)
-				.putArray("classes", new JsonArray().add(classes.get(entity.getString("div")).getString("className")));
+				.putArray("teacherIds", teacherIds);
+		final String sId = subjects.get(entity.getString("mat"));
+		if (isNotEmpty(sId)) {
+			c.putString("subjectId", sId);
+		}
+		final String rId = rooms.get(entity.getString("salle"));
+		if (isNotEmpty(rId)) {
+			c.putArray("roomLabels", new JsonArray().add(rId));
+		}
+		final JsonObject cId = classes.get(entity.getString("div"));
+		if (cId != null && isNotEmpty(cId.getString("className"))) {
+			c.putArray("classes", new JsonArray().add(cId.getString("className")));
+		}
+
 		JsonArray groups;
 		if (isNotEmpty(entity.getString("rgpmt")) || isNotEmpty(entity.getString("gpe"))) {
 			groups = new JsonArray();
