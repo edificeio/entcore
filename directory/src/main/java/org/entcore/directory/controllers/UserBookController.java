@@ -609,6 +609,10 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
 		String id = request.params().get("id");
+		final String assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath") +
+				"/assets/themes/" + vertx.sharedData().getMap("skins").get(getHost(request));
+		final String defaultAvatarPath = assetsPath + "/img/illustrations/no-avatar.svg";
+
 		if (id != null && !id.trim().isEmpty()) {
 			String query =
 					"MATCH (n:User)-[:USERBOOK]->(u:UserBook) " +
@@ -627,11 +631,11 @@ public class UserBookController extends BaseController {
 							return;
 						}
 					}
-					request.response().sendFile("./public/img/no-avatar.jpg");
+					request.response().sendFile(defaultAvatarPath);
 				}
 			});
 		} else {
-			request.response().sendFile("./public/img/no-avatar.jpg");
+			request.response().sendFile(defaultAvatarPath);
 		}
 	}
 
