@@ -35,6 +35,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.directory.exceptions.ImportException;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.ImportService;
+import org.entcore.directory.services.impl.DefaultMappingService;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -45,10 +46,14 @@ import org.vertx.java.core.json.JsonObject;
 import java.io.File;
 import java.util.UUID;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 
 public class ImportController extends BaseController {
 
 	private ImportService importService;
+	private DefaultMappingService mappingService;
+	private ImportInfos importInfos;
 
 	@Get("/wizard")
 	@ResourceFilter(AdminFilter.class)
@@ -73,6 +78,52 @@ public class ImportController extends BaseController {
 		});
 	}
 
+	@Post("/wizard/validateMapping/:profileName")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void validateMappingImport(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject association) {
+				String profileName = request.params().get("profileName");
+				String path = association.getString("profile");
+				final String importId = path;
+				path = container.config().getString("wizard-path", "/tmp") + File.separator + importId;
+				mappingService.mappingValidate( association, profileName, path, importInfos, new Handler<Either<String, JsonObject>>() {
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						if (event.isRight()) {
+							renderJson(request, event.right().getValue(), 200);
+						} else {
+							JsonObject error = new JsonObject()
+									.putString("errors", event.left().getValue());
+							renderJson(request, error, 400);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@Get("/wizard/mapping")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getMappingInfos(final HttpServerRequest request) {
+		String profile = request.params().get("profile");
+		mappingService.getRequestedFieldsForProfile(profile, importInfos, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> event) {
+				if (event.isRight()) {
+					renderJson(request, event.right().getValue(), 200);
+				} else {
+					JsonObject error = new JsonObject()
+							.putString("errors", event.left().getValue());
+					renderJson(request, error, 400);
+				}
+			}
+		});
+	}
+
 	private Handler<Either<JsonObject, JsonObject>> responseHandler(final String path, final HttpServerRequest request) {
 		return new Handler<Either<JsonObject, JsonObject>>() {
 			@Override
@@ -84,7 +135,7 @@ public class ImportController extends BaseController {
 							.putObject("errors", event.left().getValue());
 					renderJson(request, error, 400);
 				}
-				importService.deleteImportPath(path);
+				//importService.deleteImportPath(path);
 			}
 		};
 	}
@@ -97,7 +148,7 @@ public class ImportController extends BaseController {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				final ImportInfos importInfos = new ImportInfos();
+				importInfos = new ImportInfos();
 				importInfos.setId(importId);
 				importInfos.setPath(path);
 				importInfos.setStructureId(request.formAttributes().get("structureId"));
@@ -136,7 +187,8 @@ public class ImportController extends BaseController {
 								} else {
 									handler.handle(new DefaultAsyncResult<ImportInfos>(validate.cause()));
 									log.error("Validate error", validate.cause());
-									importService.deleteImportPath(path);
+									// no need to delete import path, we will make the mapping
+									//importService.deleteImportPath(path);
 								}
 							}
 						});
@@ -199,6 +251,10 @@ public class ImportController extends BaseController {
 
 	public void setImportService(ImportService importService) {
 		this.importService = importService;
+	}
+
+	public void setDefaultMappingService(DefaultMappingService mappingService) {
+		this.mappingService = mappingService;
 	}
 
 }

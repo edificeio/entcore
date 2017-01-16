@@ -113,6 +113,8 @@ public class Directory extends BaseServer {
 
 		ImportController importController = new ImportController();
 		importController.setImportService(new DefaultImportService(vertx, eb));
+		importController.setDefaultMappingService(new DefaultMappingService(vertx, eb));
+
 		addController(importController);
 
 		vertx.eventBus().registerLocalHandler("user.repository",

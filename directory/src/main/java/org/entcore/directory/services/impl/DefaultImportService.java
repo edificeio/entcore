@@ -65,8 +65,9 @@ public class DefaultImportService implements ImportService {
 						}
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
-								new JsonObject().putArray("global",
-								new JsonArray().addString(res.body().getString("message", "")))));
+								new JsonObject().putArray(
+												"global", new JsonArray().addString(res.body().getString("message", ""))
+								)));
 					}
 				}
 			});

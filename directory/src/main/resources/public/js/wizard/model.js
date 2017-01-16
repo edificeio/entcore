@@ -61,6 +61,46 @@ Wizard.prototype.loadAvailableFeeders = function(callback){
     });
 };
 
+// preparing the mapping : get 2 lists :
+//  - expected fields for the given profile
+//  - heading of users file
+Wizard.prototype.mapping = function(profile, fileName, callback) {
+    http().get("/directory/wizard/mapping",
+        {
+            profile : profile,
+            fileName : fileName
+        })
+   .done(function(data) {
+        if(typeof callback === 'function') {
+            callback(data);
+        }
+    }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
+Wizard.prototype.validateMapping = function(profile, association, fileName, callback) {
+    association["profile"] = fileName;
+    http().postJson("/directory/wizard/validateMapping/" + profile, association)
+        .done(function(data) {
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
+        var error = JSON.parse(e.responseText);
+        if(typeof callback === 'function') {
+            callback(error);
+        } else {
+            notify.error(error.error);
+        }
+    });
+};
+
 function Structure() {}
 
 model.build = function() {

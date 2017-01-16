@@ -19,6 +19,9 @@
 
 package org.entcore.feeder;
 
+import au.com.bytecode.opencsv.CSV;
+import au.com.bytecode.opencsv.CSVReadProc;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -43,9 +46,12 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -222,6 +228,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "validate" : launchImportValidation(message, null);
 				break;
+			case "mapping" : getMappingInfos(message, null);
+				break;
+			case "mappingValidate" : launchImportValidationMapping(message, null);
+				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(message);
 				break;
@@ -243,6 +253,90 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		checkEventQueue();
 	}
 
+	/**
+	 * Get the Json object from expected fields as given profile
+	 * @param profile : profile from witch we want the fields
+	 * @return
+     */
+	public static JsonObject getMappingFromProfile(String profile){
+		String source;
+		// getting the mapping expected for the profile
+		switch(profile) {
+			case "Teacher":
+			case "Personnel" : source =  "dictionary/schema/Personnel.json"; break;
+			case "Student" : source =  "dictionary/schema/Student.json"; break;
+			case "Relative" :
+			case "Guest" : source =  "dictionary/schema/User.json"; break;
+			default : source = "";
+		}
+		JsonObject obj = JsonUtil.loadFromResource(source);
+		return obj;
+	}
+
+	public void getMappingInfos(final Message<JsonObject> message, final Message<JsonObject> handler) {
+		logger.info(message.body().encodePrettily());
+		final String profile = message.body().getString("profile", defaultFeed);
+		final String filePath = message.body().getString("filePath", defaultFeed);
+		final JsonObject obj = getMappingFromProfile(profile);
+
+		// getting the fields from the user .csv file.
+		CSVUtil.getCharset(vertx, filePath, new Handler<String>() {
+
+				@Override
+				public void handle(String charset) {
+					CSV csvParser = CSV
+							.ignoreLeadingWhiteSpace()
+							.separator(';')
+							.skipLines(0)
+							.charset(charset)
+							.create();
+
+					final List<String> columns = new ArrayList<>();
+					csvParser.read(filePath, new CSVReadProc() {
+						@Override
+						public void procRow ( int i, String...strings){
+							if( i == 0 ) {
+								JsonArray header = new JsonArray(strings);
+								// sending the informations
+								sendOK(message, new JsonObject().putObject("profileFields", obj).putString("status", "ok").putArray("csvHeader", header));
+							}
+						}
+					});
+				}
+				});
+	}
+
+	/**
+	 * Validation after the user mapping on csv file
+	 * @param message
+	 * @param handler
+     */
+	private void launchImportValidationMapping(final Message<JsonObject> message, final Handler<Report> handler) {
+		final ImportValidator v;
+		final String acceptLanguage = message.body().getString("language", "fr");
+		JsonObject association = message.body().getObject("association");
+		//String profile = message.body().getString("profile");
+		String path = message.body().getString("path");
+		v = new CsvValidator(vertx, acceptLanguage,
+				container.config().getObject("csvMappings", new JsonObject()));
+
+		v.validate(path, association, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject result) {
+				if (result != null) {
+					sendError(message, result.getObject("errors").getString("error"));
+				} else {
+					sendOK(message, new JsonObject().putObject("result", result));
+				}
+			}
+		});
+	}
+
+	/**
+	 *
+	 * @param message
+	 * @param handler
+     */
 	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
 		logger.info(message.body().encodePrettily());
 		final String acceptLanguage = message.body().getString("language", "fr");
@@ -279,7 +373,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (path == null && !"CSV".equals(source)) {
 			path = container.config().getString("import-files");
 		}
-		v.validate(path, new Handler<JsonObject>() {
+		v.validate(path, null, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;
@@ -319,6 +413,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		});
 	}
+
+
 
 	private void launchExport(final Message<JsonObject> message) {
 		if (exporter == null) {

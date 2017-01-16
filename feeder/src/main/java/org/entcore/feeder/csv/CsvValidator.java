@@ -70,7 +70,7 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	@Override
-	public void validate(final String p, final Handler<JsonObject> handler) {
+	public void validate(final String p, final JsonObject association, final Handler<JsonObject> handler) {
 		vertx.fileSystem().readDir(p, new Handler<AsyncResult<String[]>>() {
 			@Override
 			public void handle(AsyncResult<String[]> event) {
@@ -82,7 +82,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					}
 					vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
 						@Override
-						public void handle(AsyncResult<String[]> event) {
+						public void handle(final AsyncResult<String[]> event) {
 							final String[] importFiles = event.result();
 							Arrays.sort(importFiles, Collections.reverseOrder());
 							if (event.succeeded() && importFiles.length > 0) {
@@ -105,15 +105,24 @@ public class CsvValidator extends Report implements ImportValidator {
 											CSVUtil.getCharset(vertx, file, new Handler<String>(){
 
 												@Override
-												public void handle(String charset) {
+												public void handle(final String charset) {
 													if (profiles.containsKey(profile)) {
 														log.info("Charset : " + charset);
-														checkFile(file, profile, charset, new Handler<JsonObject>() {
-															@Override
-															public void handle(JsonObject event) {
-																handlers[j + 1].handle(null);
-															}
-														});
+														if( association == null ) {
+															checkFile(file, profile, charset, new Handler<JsonObject>() {
+																@Override
+																public void handle(JsonObject event) {
+																	handlers[j + 1].handle(null);
+																}
+															});
+														} else {
+															mappingFields(file, profile, charset, association, new Handler<JsonObject>() {
+																@Override
+																public void handle(JsonObject event) {
+																	handlers[j + 1].handle(null);
+																}
+															});
+														}
 													} else {
 														addError("unknown.profile");
 														handler.handle(result);
@@ -138,6 +147,73 @@ public class CsvValidator extends Report implements ImportValidator {
 		});
 	}
 
+	private void mappingFields(final String path, final String profile, final String charset, final JsonObject association, final Handler<JsonObject> handler) {
+		CSV csvParser = CSV
+				.ignoreLeadingWhiteSpace()
+				.separator(';')
+				.skipLines(0)
+				.charset(charset)
+				.create();
+		final List<String> columns = new ArrayList<>();
+		final AtomicInteger filterExternalId = new AtomicInteger(-1);
+		final JsonArray externalIds = new JsonArray();
+		csvParser.read(path, new CSVReadProc() {
+			@Override
+			public void procRow(int i, String... strings) {
+				if (i == 0) {
+					JsonArray invalidColumns = columnsMapper.getColumsAssociations(strings, columns, profile, association);
+					if( invalidColumns.size() == 1) {
+						Object obj = invalidColumns.get(0);
+						if( obj instanceof JsonObject ){
+							JsonObject jobj = (JsonObject)obj;
+							String sError = jobj.getString("error");
+							if( sError != null ) {
+								addError(profile, sError);
+								handler.handle(result);
+							}
+						}
+					} else if (columns.contains("externalId")) {
+						int j = 0;
+						for (String c : columns) {
+							if ("externalId".equals(c)) {
+								filterExternalId.set(j);
+							}
+							j++;
+						}
+					} else if (structureId != null && !structureId.trim().isEmpty()) {
+						findUsersEnabled = false;
+						findUsers(path, profile, columns, charset, handler);
+					} else {
+						validateFile(path, profile, columns, null, charset, handler);
+					}
+				} else if (filterExternalId.get() >= 0) {
+					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
+						externalIds.addString(strings[filterExternalId.get()]);
+					} else if (findUsersEnabled) { // TODO add check to empty lines
+						findUsersEnabled = false;
+						final int eii = filterExternalId.get();
+						filterExternalId.set(-1);
+						findUsers(path, profile, columns, eii, charset, handler);
+					}
+				}
+			}
+		});
+		/*if (filterExternalId.get() >= 0) {
+			filterExternalIdExists(externalIds, new Handler<JsonArray>() {
+				@Override
+				public void handle(JsonArray externalIdsExists) {
+					if (externalIdsExists != null) {
+						validateFile(path, profile, columns, externalIdsExists, charset, handler);
+					} else {
+						addError(profile, "error.find.externalIds");
+						handler.handle(result);
+					}
+				}
+			});
+		}*/
+	}
+
+
 	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
@@ -157,7 +233,7 @@ public class CsvValidator extends Report implements ImportValidator {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {
 						int j = 0;
-						for (String c: columns) {
+						for (String c : columns) {
 							if ("externalId".equals(c)) {
 								filterExternalId.set(j);
 							}

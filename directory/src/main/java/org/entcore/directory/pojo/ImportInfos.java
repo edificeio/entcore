@@ -54,6 +54,8 @@ public class ImportInfos {
 	private String structureId;
 	private String structureExternalId;
 
+	private String finalPath;
+
 	private String language;
 
 	public String getFeeder() {
@@ -128,6 +130,10 @@ public class ImportInfos {
 		this.language = language;
 	}
 
+	public String getFinalPath() { return finalPath; }
+
+	public void setFinalPath(String finalPath) { this.finalPath = finalPath; }
+
 	public void validate(final boolean isAdmc, final Vertx vertx, final Handler<AsyncResult<String>> handler) {
 		if (!isAdmc && isEmpty(structureId)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.id"));
@@ -182,6 +188,7 @@ public class ImportInfos {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
+					finalPath = p;
 					final AtomicInteger count = new AtomicInteger(l.length);
 					for (String f: l) {
 						fs.move(f, p + File.separator + f.substring(path.length() + 1), new Handler<AsyncResult<Void>>() {

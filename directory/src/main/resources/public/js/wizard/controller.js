@@ -6,6 +6,11 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 	$scope.details = { "transition" : false, "preDelete" : false, "filesFormat" : false };
 	$scope.disabledButtons = { "validate" : false, "import" : false, "back" : false };
 	$scope.wizard = new Wizard();
+	$scope.wizard.expectedFields = [];
+	$scope.wizard.csvHeader = {};
+	$scope.selected = "0";
+	$scope.currentProfile = ""; //profile actually mapped
+	$scope.mappingAssociation = {}; // association between fields in csv and expected fields, made by user
 	$scope.wizard.loadAvailableFeeders(function(conf) {
 		if (conf.feeders && conf.feeders.length > 1) {
 			$scope.feeders = conf.feeders;
@@ -18,6 +23,76 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 
     template.open('wizard-container', 'wizard-step1');
 
+	$scope.displayMappingProfile = function(profileName, fileName) {
+		$scope.wizard.mapping(profileName, fileName, function(data) {
+			$scope.wizard.expectedFields = []; //data.profileFields;
+			$scope.wizard.expectedFields2 = [];
+			//$scope.wizard.csvHeader = data.csvHeader;
+			$scope.wizard.csvHeader = [];
+
+			for (var field in data.csvHeader) {
+				$scope.wizard.csvHeader.push({"id" : field, "name" : data.csvHeader[field]});
+			}
+
+			$scope.mappingAssociation = {};
+
+			// building list of possible fields for profile, including the indication that the field is required
+
+			//push empty line
+			$scope.wizard.expectedFields.push('');
+			for (var field in data.profileFields.required) {
+				$scope.wizard.expectedFields.push( {"translated":'*' + lang.translate('profile.' + data.profileFields.required[field]),"id":data.profileFields.required[field]});
+				$scope.wizard.expectedFields2.push('*' + lang.translate('profile.' + data.profileFields.required[field]));
+			}
+
+			/*for (var field in data.profileFields.validate) {
+				if( $scope.wizard.expectedFields.indexOf('*' + lang.translate('profile.' + data.profileFields.validate[field])) == -1 ){
+					$scope.wizard.expectedFields.push(lang.translate('profile.' + data.profileFields.validate[field]));
+				}
+			}*/
+			for (var field in data.profileFields.validate) {
+				if ($scope.wizard.expectedFields2.indexOf('*' + lang.translate('profile.' + field)) == -1) {
+					$scope.wizard.expectedFields.push({"translated":lang.translate('profile.' + field), "id":field});
+				}
+			}
+
+			template.open('wizard-container', 'wizard-mapping');
+			$scope.currentProfile = profileName;
+			$scope.currentFileName = fileName;
+			$scope.$apply();
+		});
+	};
+
+	$scope.displayMapping = function(data) {
+		// TODO : implement for multiple files import
+		$scope.profileError = '';
+		if (data.errors['error.Student']) {
+			$scope.displayMappingProfile('Student', $scope.wizard.Student.name);
+		}
+
+		if (data.errors['error.Teacher']) {
+			$scope.displayMappingProfile('Teacher', $scope.wizard.Teacher.name);
+		}
+
+		if (data.errors['error.Relative']) {
+			$scope.displayMappingProfile('Relative', $scope.wizard.Relative.name);
+		}
+
+		if (data.errors['error.Personnel']) {
+			$scope.displayMappingProfile('Personnel', $scope.wizard.Personnel.name);
+		}
+
+		if (data.errors['error.Guest']) {
+			$scope.displayMappingProfile('Guest', $scope.wizard.Guest.name);
+		}
+	};
+
+		/*
+		$scope.errors = _.map($scope.errors, function (errors, file) {
+			return {"title" : lang.translate(file), "elements" : errors };
+		});*/
+		//template.open('wizard-container', 'wizard-errors');
+
 	$scope.displayErrors = function(data) {
 		if (data.error) {
 			$scope.errors = {};
@@ -29,7 +104,8 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		$scope.errors = _.map($scope.errors, function (errors, file) {
 			return {"title" : lang.translate(file), "elements" : errors };
 		});
-		template.open('wizard-container', 'wizard-errors');
+		template.open('wizard-container', 'wizard-mapping');
+		//template.open('wizard-container', 'wizard-errors');
 	};
 
 	$scope.validate = function(wizard) {
@@ -56,7 +132,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		wizard.validate(function(data) {
 			console.log(data);
 			if (data.error || data.errors) {
-				$scope.displayErrors(data);
+				$scope.displayMapping(data);
 			} else {
 				wizard.valid = true;
 				$scope.validatedUsers = [];
@@ -118,6 +194,18 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 			delete wizard.check;
 		}
 		template.open('wizard-container', 'wizard-step1');
+	};
+
+	$scope.nextMappingStep = function(wizard) {
+		$scope.wizard.validateMapping($scope.currentProfile, $scope.mappingAssociation, $scope.currentFileName, function(data) {
+			if( data.errors ) {
+				notify.error(lang.translate(data.errors));
+			}
+		});
+	};
+
+	$scope.updateFieldsAssociation = function( fileIndex, expectedIndex ) {
+		$scope.mappingAssociation[fileIndex] = expectedIndex;
 	};
 
 	$scope.launchImport = function(wizard) {
