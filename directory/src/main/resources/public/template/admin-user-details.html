@@ -55,11 +55,11 @@
         <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!targetUser.birthDate">
             <div class="four cell" style="margin-bottom: 10px;"> [[lang.translate("directory.notFilled")]]</div>
-            <button class="small cell" style="padding: 0px 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
+            <button type="button" class="small cell" style="padding: 0px 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="targetUser.birthDate">
             <date-picker class="four cell" style="margin-bottom: 7px;" ng-model="targetUser.birthDate"></date-picker>
-            <button class="small cell" style="padding: 0px 5px; margin-left: 5%;" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
+            <button type="button" class="small cell" style="padding: 0px 5px; margin-left: 5%;" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
     <div class="twelve cell">
