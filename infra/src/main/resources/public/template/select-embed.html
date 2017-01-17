@@ -1,4 +1,4 @@
-<lightbox show="show" on-close="show = false;unselectProvider()">
+﻿<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">
     <div class="embed-container">
         <div class="provider cell pick" ng-class="{ visible: display.provider.name === 'none' }">
             <div class="provider-content">
@@ -29,17 +29,20 @@
         </div>
         <div class="provider cell other" ng-class="{ visible: display.provider.name === 'other' }">
             <p class="info twelve cell"><i18n>info.video.embed</i18n></p>
-            <textarea ng-model="display.htmlCode" ng-blur="updatePreview()"></textarea>
+            <textarea ng-model="display.htmlCode"></textarea>
             <div class="row">
-                <div class="preview" ng-if="display.htmlCode"></div>
-                <div class="invalid-preview" ng-if="!display.htmlCode">
+                <div class="preview" ng-if="!display.invalidPath"></div>
+                <div class="invalid-preview" ng-if="display.invalidPath">
+                    <i18n>video.embed.invalid</i18n>
+                </div>
+                <div class="invalid-preview" ng-if="!display.url">
                     <i18n>video.embed.preview</i18n>
                 </div>
             </div>
             <div class="row">
                 <button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>
-                <button type="button" ng-click="unselectProvider()" class="cancel right-magnet"><i18n>back</i18n></button>
-                <button type="button" ng-click="cancel()" class="cancel right-magnet"><i18n>cancel</i18n></button>
+                <button type="button" ng-click="unselectProvider()" class="cancel right-magnet"><i18n>retour</i18n></button>
+                <button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>
             </div>
         </div>
         <div ng-repeat="provider in providers"
@@ -57,13 +60,14 @@
                     <input type="text"
                            ng-model="display.url"
                            ng-change="updatePreview()"
+                           ng-blur="updatePreview()"
                            placeholder="[[provider.example]]"
                            class="twelve cell" />
                 </div>
 
                 <div class="row">
                     <div class="preview" ng-if="!display.invalidPath"></div>
-                    <div class="invalid-preview" ng-if="display.invalidPath && display.url">
+                    <div class="invalid-preview" ng-if="display.invalidPath">
                         <i18n>video.embed.invalid</i18n>
                     </div>
                     <div class="invalid-preview" ng-if="!display.url">
@@ -74,7 +78,7 @@
                 <div class="row">
                     <button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>
                     <button type="button" ng-click="unselectProvider()" class="cancel right-magnet"><i18n>back</i18n></button>
-                    <button type="button" ng-click="cancel()" class="cancel right-magnet"><i18n>cancel</i18n></button>
+                    <button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>
                 </div>
             </div>
         </div>
