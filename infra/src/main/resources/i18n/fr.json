@@ -9,13 +9,13 @@
     "embed.name": "Nom",
     "embed.name.tooltip": "Nom technique du fournisseur",
     "embed.displayName": "Nom d’affichage",
-    "embed.displayName.tooltip": "Nom affiché dans la plateforme",
-    "embed.url": "URL",
+    "embed.displayName.tooltip": "Nom affiché sur la plateforme",
+    "embed.url": "URL de la vidéo variabilisée",
     "embed.url.tooltip": "URL du fournisseur",
     "embed.logo": "Logo",
-    "embed.logo.tooltip": "Vous pouvez utiliser une image d’un site web (sous la forme http(s)://[lien-vers-image]). Cette image peut provenir de votre espace documentaire si elle est dans “document ajouté dans mes applis”. Faire un clic droit puis “copier l’adresse de l’image”.<br>Vous pouvez également charger une image au format carré.",
+    "embed.logo.tooltip": "Vous pouvez soit utiliser une image provenant d'un site web ou de votre espace documentaire, soit charger une image carrée",
     "embed.embed": "Embed",
-    "embed.embed.tooltip": "contenu embed variabilisé",
+    "embed.embed.tooltip": "Lien embed de la vidéo variabilisée",
     "embed.example": "Exemple",
-    "embed.example.tooltip": "URL d’exemple présent dans le message d’information<br>exemple: https://www.youtube.com/watch?v=_I6CQRHIGyg”"
+    "embed.example.tooltip": "URL d’exemple présent dans le message d’information"
 }
