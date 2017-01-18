@@ -50,6 +50,7 @@ model.build = function () {
             "justifyFull",
             "font",
             "fontSize",
+            "color",
             "linker",
             "unlink" ]
 
