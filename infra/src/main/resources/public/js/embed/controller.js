@@ -56,6 +56,9 @@ function EmbedController($scope) {
                 $scope.customEmbeds.push($scope.embed)
                 $scope.newEmbed()
                 $scope.$apply()
+                notify.info('embed.creation.notify')
+            } else {
+                notify.info('embed.modification.notify')
             }
         })
     }
