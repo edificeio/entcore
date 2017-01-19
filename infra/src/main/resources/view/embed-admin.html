@@ -10,6 +10,8 @@
 	</head>
 
 	<body ng-controller="EmbedController">
+		<top-notification trigger="topNotification.show" additional="topNotification.additional"
+			confirm="topNotification.confirm" content="topNotification.message"></top-notification>
         <admin-portal>
             <h1><i18n>admin.embed</i18n></h1>
             <nav class="three cell recursive-list">

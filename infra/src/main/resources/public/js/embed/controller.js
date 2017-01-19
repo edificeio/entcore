@@ -2,6 +2,22 @@ function EmbedController($scope) {
     $scope.defaultEmbeds = model.defaultEmbeds
     $scope.customEmbeds = model.customEmbeds
 
+    /////// TOP NOTIFICATIONS ///////
+    $scope.topNotification = {
+        show: false,
+        message: "",
+        confirm: null,
+        additional: []
+    }
+    $scope.notifyTop = function(text, action){
+        $scope.topNotification.message = "<p>"+text+"</p>"
+        $scope.topNotification.confirm = action
+        $scope.topNotification.show = true
+    }
+    $scope.colourText = function(text){
+        return '<span class="colored">'+text+'</span>'
+    }
+
     $scope.newEmbed = function() {
         $scope.embed = new CustomEmbed()
     }
@@ -64,14 +80,19 @@ function EmbedController($scope) {
     }
 
     $scope.delete = function() {
-        var id = $scope.embed._id
-        $scope.embed.remove().done(function() {
-            $scope.newEmbed()
-            $scope.customEmbeds.all = $scope.customEmbeds.reject(function(e){
-                return e._id === id
+        var target = $scope.embed
+        var action = function() {
+            target.remove().done(function() {
+                if($scope.embed === target) {
+                    $scope.newEmbed()
+                }
+                $scope.customEmbeds.all = $scope.customEmbeds.reject(function(e){
+                    return e._id === target._id
+                })
+                $scope.$apply()
             })
-            $scope.$apply()
-        })
+        }
+        $scope.notifyTop(lang.translate('embed.confirm.deletion') + ' ' + $scope.colourText($scope.embed.displayName) + '.', action)
     }
 
     $scope.newEmbed()
