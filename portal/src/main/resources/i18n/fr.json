@@ -1,5 +1,5 @@
 {
-  "navbar.myapps.more":  "Cliquez sur \"plus\" pour sélectionner vos applications favorites.",
+  "navbar.myapps.more": "Cliquez sur \"plus\" pour sélectionner vos applications favorites.",
   "add": "Ajouter",
   "admin.appRegistry": "Applications",
   "admin.communication": "Règles de communication",
@@ -55,6 +55,7 @@
   "homeworks": "Cahier de textes",
   "info.video.embed": "Au préalable, votre contenu doit être enregistré sur une plateforme de partage. Pour l’insérer ici, copiez le lien de partage \"Embed\" et collez-le ci-dessous.",
   "video.embed.pickProvider": "Sélectionnez un type de contenu multimédia",
+  "video.embed.placeholder.provider": "Saisir une URL",
   "video.embed.pickOther": "Collez votre propre code",
   "video.embed.invalid": "Le format du lien est invalide",
   "video.embed.preview": "Prévisualisation",
@@ -170,10 +171,10 @@
   "editor.format.title3": "Titre 3",
   "size": "Taille",
   "editor.format.warning": "Avertissement",
-  "editor.format.info":  "Information",
+  "editor.format.info": "Information",
   "editor.mode.wysiwyg": "Editeur de texte",
   "editor.mode.html": "Code HTML",
-  "editor.mode.mixed":  "Mode mixte",
+  "editor.mode.mixed": "Mode mixte",
   "editor.option.undo": "Annuler",
   "editor.option.redo": "Rétablir",
   "editor.option.bold": "Gras",
@@ -260,5 +261,5 @@
   "actualites": "Actualités",
   "rack": "Casier",
   "timeline": "Fil de nouveautés",
-  "admin.edtudt" : "Mode d'alimentation des groupes d'enseignement"
+  "admin.edtudt": "Mode d'alimentation des groupes d'enseignement"
 }

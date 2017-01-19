@@ -28,8 +28,9 @@
             </div>
         </div>
         <div class="provider cell other" ng-class="{ visible: display.provider.name === 'other' }">
-            <p class="info twelve cell"><i18n>info.video.embed</i18n></p>
-            <textarea ng-model="display.htmlCode" ng-blur="updatePreview()"></textarea>
+            <p class="embedder-help twelve cell"><i18n>info.video.embed</i18n></p>
+            <i class="copy"></i>
+            <textarea ng-model="display.htmlCode"></textarea>
             <div class="row">
                 <div class="preview" ng-if="display.htmlCode"></div>
                 <div class="invalid-preview" ng-if="!display.htmlCode">
@@ -48,17 +49,14 @@
             <div class="provider-content">
                 <div class="row">
                     <h2><i18n>video.embed.provider.title</i18n></h2>
-                    <div class="info twelve cell">
+                    <div class="embedder-help twelve cell">
                         <i18n>video.embed.provider.info</i18n>
                     </div>
                 </div>
 
                 <div class="row">
-                    <input type="text"
-                           ng-model="display.url"
-                           ng-change="updatePreview()"
-                           placeholder="[[provider.example]]"
-                           class="twelve cell" />
+                    <i class="copy"></i>
+                    <textarea ng-model="display.url" i18n-placeholder="video.embed.placeholder.provider"></textarea>
                 </div>
 
                 <div class="row">

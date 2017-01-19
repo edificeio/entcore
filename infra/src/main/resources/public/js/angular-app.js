@@ -5366,7 +5366,18 @@ module.directive('embedder', function($compile){
                     return scope.display.htmlCode;
                 }, 
                 function(newVal){
-                    setTimeout(function(){
+                    setTimeout(function () {
+                        scope.updatePreview();
+                    }, 20);
+                }
+            );
+
+            scope.$watch(
+                function () {
+                    return scope.display.url;
+                },
+                function (newVal) {
+                    setTimeout(function () {
                         scope.updatePreview();
                     }, 20);
                 }
