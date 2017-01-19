@@ -29,8 +29,11 @@
         </div>
         <div class="provider cell other" ng-class="{ visible: display.provider.name === 'other' }">
             <p class="embedder-help twelve cell"><i18n>info.video.embed</i18n></p>
-            <i class="copy"></i>
-            <textarea ng-model="display.htmlCode"></textarea>
+            <div class="row">
+                <i class="copy"></i>
+                <textarea ng-model="display.htmlCode"></textarea>
+            </div>
+            
             <div class="row">
                 <div class="preview" ng-if="display.htmlCode"></div>
                 <div class="invalid-preview" ng-if="!display.htmlCode">
