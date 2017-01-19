@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!--
+  ~ Copyright © WebServices pour l'Éducation, 2017
+  ~
+  ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+  ~
+  ~ This program is free software; you can redistribute it and/or modify
+  ~ it under the terms of the GNU Affero General Public License as
+  ~ published by the Free Software Foundation (version 3 of the License).
+  ~
+  ~ For the sake of explanation, any module that communicate over native
+  ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+  ~ license and could be license under its own terms. This is merely considered
+  ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  -->
+
+<html>
+
+<head>
+	<title>{{name}}</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+	<script type="text/javascript">var notLoggedIn = true;</script>
+</head>
+
+<body>
+<default-styles>
+	<div class="row">
+		<div class="twelve cell">
+			<div class="seven cell">
+				<h1>
+					<i18n>wayf.title</i18n>
+				</h1>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<hr>
+	<section id="credentials-content">
+		<article class="row">
+			<div class="rigid-grid row">
+				{{#providers}}
+					<a href="/auth/saml/authn/{{.}}"><i18n>{{.}}</i18n></a>
+				{{/providers}}
+			</div>
+		</article>
+	</section>
+</default-styles>
+</body>
+
+</html>

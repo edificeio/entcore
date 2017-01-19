@@ -19,15 +19,19 @@
 
 package org.entcore.auth.security;
 
+import fr.wseduc.webutils.data.ZLib;
 import org.joda.time.DateTime;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.common.SAMLObject;
+import org.opensaml.common.SAMLVersion;
 import org.opensaml.common.xml.SAMLConstants;
 import org.opensaml.saml2.core.*;
+import org.opensaml.saml2.core.impl.*;
 import org.opensaml.saml2.encryption.Decrypter;
 import org.opensaml.saml2.metadata.EntityDescriptor;
 import org.opensaml.saml2.metadata.IDPSSODescriptor;
 import org.opensaml.saml2.metadata.SingleLogoutService;
+import org.opensaml.saml2.metadata.SingleSignOnService;
 import org.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
 import org.opensaml.security.MetadataCredentialResolver;
@@ -55,19 +59,20 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.zip.Deflater;
 
 public class SamlValidator extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -113,12 +118,24 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	public void handle(Message<JsonObject> message) {
 		final String action = message.body().getString("action", "");
 		final String response = message.body().getString("response");
-		if (!"generate-slo-request".equals(action) && (response == null || response.trim().isEmpty())) {
+		final String idp = message.body().getString("IDP");
+		if (!"generate-slo-request".equals(action) && !"generate-authn-request".equals(action) &&
+				(response == null || response.trim().isEmpty())) {
 			sendError(message, "invalid.response");
 			return;
 		}
 		try {
 			switch (action) {
+				case "generate-authn-request" :
+					String sp = message.body().getString("SP");
+					String acs = message.body().getString("acs");
+					boolean sign = message.body().getBoolean("AuthnRequestsSigned", false);
+					if (message.body().getBoolean("SimpleSPEntityID", false)) {
+						sendOK(message, generateSimpleSPEntityIDRequest(idp, sp));
+					} else {
+						sendOK(message, generateAuthnRequest(idp, sp, acs, sign));
+					}
+					break;
 				case "validate-signature":
 					sendOK(message, new JsonObject().putBoolean("valid", validateSignature(response)));
 					break;
@@ -137,7 +154,6 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				case "generate-slo-request":
 					String sessionIndex = message.body().getString("SessionIndex");
 					String nameID = message.body().getString("NameID");
-					String idp = message.body().getString("IDP");
 					sendOK(message, new JsonObject().putString("slo", generateSloRequest(nameID, sessionIndex, idp)));
 					break;
 				default:
@@ -146,6 +162,74 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		} catch (Exception e) {
 			sendError(message, e.getMessage(), e);
 		}
+	}
+
+	private JsonObject generateSimpleSPEntityIDRequest(String idp, String sp) {
+		return new JsonObject()
+				.putString("authn-request", getAuthnRequestUri(idp) + "?SPEntityID=" + sp)
+				.putString("relay-state", SamlUtils.SIMPLE_RS);
+	}
+
+	private JsonObject generateAuthnRequest(String idp, String sp, String acs, boolean sign)
+			throws NoSuchFieldException, IllegalAccessException, MarshallingException, IOException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+		final String id = "ENT_" + UUID.randomUUID().toString();
+
+		//Create an issuer Object
+		Issuer issuer = new IssuerBuilder().buildObject("urn:oasis:names:tc:SAML:2.0:assertion", "Issuer", "samlp" );
+		issuer.setValue(sp);
+
+		final NameIDPolicy nameIdPolicy = new NameIDPolicyBuilder().buildObject();
+		nameIdPolicy.setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:transient");
+		//nameIdPolicy.setSPNameQualifier("");
+		nameIdPolicy.setAllowCreate(true);
+
+		//Create AuthnContextClassRef
+		AuthnContextClassRefBuilder authnContextClassRefBuilder = new AuthnContextClassRefBuilder();
+		AuthnContextClassRef authnContextClassRef =
+				authnContextClassRefBuilder.buildObject("urn:oasis:names:tc:SAML:2.0:assertion",
+						"AuthnContextClassRef", "saml");
+		authnContextClassRef.setAuthnContextClassRef("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
+
+		RequestedAuthnContext requestedAuthnContext = new RequestedAuthnContextBuilder().buildObject();
+		requestedAuthnContext.setComparison(AuthnContextComparisonTypeEnumeration.EXACT);
+		requestedAuthnContext.getAuthnContextClassRefs().add(authnContextClassRef);
+
+		final AuthnRequest authRequest =  new AuthnRequestBuilder()
+				.buildObject("urn:oasis:names:tc:SAML:2.0:protocol", "AuthnRequest", "samlp");
+		authRequest.setForceAuthn(false);
+		authRequest.setIsPassive(false);
+		authRequest.setIssueInstant(new DateTime());
+		authRequest.setProtocolBinding("urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST");
+		authRequest.setAssertionConsumerServiceURL(acs);
+		authRequest.setAssertionConsumerServiceIndex(1);
+		authRequest.setAttributeConsumingServiceIndex(1);
+		authRequest.setIssuer(issuer);
+		authRequest.setNameIDPolicy(nameIdPolicy);
+		authRequest.setRequestedAuthnContext(requestedAuthnContext);
+		authRequest.setID(id);
+		authRequest.setVersion(SAMLVersion.VERSION_20);
+
+		final String anr = SamlUtils.marshallAuthnRequest(authRequest)
+				.replaceFirst("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n", "");
+		final String rs = UUID.randomUUID().toString();
+		String queryString = "SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(anr), "UTF-8") +
+				"&RelayState=" + rs;
+		if (sign) {
+			queryString = sign(queryString);
+		}
+
+		return new JsonObject()
+				.putString("id", id)
+				.putString("relay-state", rs)
+				.putString("authn-request", getAuthnRequestUri(idp) + "?" + queryString);
+	}
+
+	private String sign(String c) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+		final String content = c + "&SigAlg=http%3A%2F%2Fwww.w3.org%2F2000%2F09%2Fxmldsig%23rsa-sha1";
+		java.security.Signature sign = java.security.Signature.getInstance("SHA1withRSA");
+		sign.initSign(privateKey);
+		sign.update(content.getBytes("UTF-8"));
+		return content + "&Signature=" +  URLEncoder.encode(Base64.encodeBytes(sign.sign(), Base64.DONT_BREAK_LINES), "UTF-8");
 	}
 
 	private String generateSloRequest(String nameID, String sessionIndex, String idp)
@@ -171,23 +255,24 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 		logoutRequest.setNameID(nameId);
 
-		byte[] lr = SamlUtils.marshallLogoutRequest(logoutRequest).getBytes("UTF-8");
+		String lr = SamlUtils.marshallLogoutRequest(logoutRequest);
 
-		// compress response
-		Deflater deflater = new Deflater();
-		deflater.setInput(lr);
-		deflater.finish();
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(lr.length);
-		byte[] buffer = new byte[1024];
-		while (!deflater.finished()) {
-			int bytesCompressed = deflater.deflate(buffer);
-			bos.write(buffer,0,bytesCompressed);
-		}
-		deflater.end();
-		bos.close();
-
-		return sloUri + "?SAMLRequest=" + URLEncoder.encode(Base64.encodeBytes(bos.toByteArray()), "UTF-8") +
+		return sloUri + "?SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(lr), "UTF-8") +
 				"&RelayState=NULL";
+	}
+
+	private String getAuthnRequestUri(String idp) {
+		String ssoServiceURI = null;
+		EntityDescriptor entityDescriptor = entityDescriptorMap.get(idp);
+		if (entityDescriptor != null) {
+			for (SingleSignOnService ssos : entityDescriptor.getIDPSSODescriptor(SAMLConstants.SAML20P_NS)
+					.getSingleSignOnServices()) {
+				if (ssos.getBinding().equals(SAMLConstants.SAML2_REDIRECT_BINDING_URI)) {
+					ssoServiceURI = ssos.getLocation();
+				}
+			}
+		}
+		return ssoServiceURI;
 	}
 
 	private String getLogoutUri(String idp) {
