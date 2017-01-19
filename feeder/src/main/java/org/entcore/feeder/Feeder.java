@@ -28,6 +28,7 @@ import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.be1d.Be1dValidator;
 import org.entcore.feeder.csv.CsvFeeder;
+import org.entcore.feeder.csv.CsvImportsLauncher;
 import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -177,6 +178,20 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							new ImportsLauncher(vertx, udtPath, postImport, edtUtils));
 				} catch (ParseException e) {
 					logger.error("Error in cron udt", e);
+				}
+			}
+		}
+		final JsonObject csv = container.config().getObject("csv");
+		if (csv != null) {
+			final String csvPath = csv.getString("path");
+			final String csvCron = csv.getString("cron");
+			final JsonObject csvConfig = csv.getObject("config");
+			if (isNotEmpty(csvPath) && isNotEmpty(csvCron) && csvConfig != null) {
+				try {
+					new CronTrigger(vertx, csvCron).schedule(
+							new CsvImportsLauncher(vertx, csvPath, csvConfig, postImport));
+				} catch (ParseException e) {
+					logger.error("Error in cron csv", e);
 				}
 			}
 		}
@@ -513,6 +528,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 		final String charset = message.body().getString("charset", "UTF-8");
 		final String importPath = message.body().getString("path");
+		final boolean executePostImport = message.body().getBoolean("postImport", true);
 
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
@@ -534,7 +550,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							public void handle(Message<JsonObject> m) {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
-									postImport.execute();
+									if (executePostImport) {
+										postImport.execute();
+									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
 									if (m != null) {
