@@ -182,7 +182,9 @@ var http = (function(){
 	return function(){
 		return new Http();
 	}
-}());
+} ());
+
+window.entcore.http = http;
 
 function Collection(obj){
 	this.all = [];
@@ -1352,7 +1354,9 @@ var Behaviours = (function(){
 		},
 		applicationsBehaviours: {}
 	}
-}());
+} ());
+
+window.entcore.Behaviours = Behaviours;
 
 var calendar = {
     setCalendar: function(cal){

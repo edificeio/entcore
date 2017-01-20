@@ -24,6 +24,11 @@ if(window.infraPrefix === undefined){
 	window.infraPrefix = 'infra';
 }
 
+window.entcore = {
+    appPrefix: appPrefix,
+    infraPrefix: infraPrefix
+};
+
 var currentLanguage = '';
 (function(){
 
