@@ -5415,7 +5415,9 @@ module.directive('embedder', function($compile){
                     return;
                 }
                 scope.display.invalidPath = false;
-                var agnosticUrl = scope.display.url.split('//')[1].toLowerCase();
+                var agnosticUrl = scope.display.url.split('//')[1];
+                var firstPartUrl = agnosticUrl.split('/')[0].split('?')[0];
+                agnosticUrl = agnosticUrl.replace(firstPartUrl, firstPartUrl.toLowerCase());
                 var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', ["g"]);
                 var params = scope.display.provider.url.match(matchParams);
 
@@ -5429,7 +5431,7 @@ module.directive('embedder', function($compile){
                         paramBefore = additionnalSplit[additionnalSplit.length - 1];
                     }
                     var paramAfter = scope.display.provider.url.split(param)[1].split('{')[0];
-                    var paramValue = scope.display.url.split(paramBefore)[1];
+                    var paramValue = agnosticUrl.split(paramBefore)[1];
                     if (!paramValue) {
                         scope.display.invalidPath = true;
                     }

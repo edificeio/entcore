@@ -2332,12 +2332,12 @@ window.RTE = (function () {
 
 						http().get('/resources-applications').done(function(apps){
 							scope.linker.apps = _.filter(model.me.apps, function(app){
-								return _.find(
-									apps,
-									function(match){
-										return app.address.indexOf(match) !== -1 && app.icon
-									}
-								);
+                                return _.find(
+                                    apps,
+                                    function (match) {
+                                        return app.address.indexOf(match) !== -1 && app.icon && app.address.indexOf('#') === -1
+                                    }
+                                );
 							});
 
 						    scope.linker.apps = _.map(scope.linker.apps, function(app) {
