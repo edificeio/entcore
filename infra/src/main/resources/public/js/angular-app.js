@@ -5344,12 +5344,18 @@ module.directive('embedder', function($compile){
                 providers.forEach(function (provider) {
                     scope.providers.push(provider);
                 });
+                scope.providers.sort(function (p1, p2) {
+                    return p1.name > p2.name
+                });
             });
 
             http().get('/infra/embed/custom').done(function (providers) {
                 providers.forEach(function (provider) {
                     provider.name = provider.name.toLowerCase().replace(/\ |\:|\?|#|%|\$|£|\^|\*|€|°|\(|\)|\[|\]|§|'|"|&|ç|ù|`|=|\+|<|@/g, '')
                     scope.providers.push(provider);
+                });
+                scope.providers.sort(function (p1, p2) {
+                    return p1.name > p2.name
                 });
             });
 
@@ -5409,7 +5415,7 @@ module.directive('embedder', function($compile){
                     return;
                 }
                 scope.display.invalidPath = false;
-                var agnosticUrl = scope.display.url.split('//')[1];
+                var agnosticUrl = scope.display.url.split('//')[1].toLowerCase();
                 var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', ["g"]);
                 var params = scope.display.provider.url.match(matchParams);
 
