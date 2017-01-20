@@ -28,28 +28,33 @@
 	<script type="text/javascript">var notLoggedIn = true;</script>
 </head>
 
-<body>
+<body class="wayf">
 <default-styles>
-	<div class="row">
-		<div class="twelve cell">
-			<div class="seven cell">
-				<h1>
-					<i18n>wayf.title</i18n>
-				</h1>
-			</div>
-		</div>
-		<div class="clear"></div>
-	</div>
-	<hr>
+
+	<header>
+		<i class="logo cell horizontal-spacing-twice"></i>
+		<h1 class="cell">
+			<i18n>wayf.title</i18n>
+		</h1>
+	</header>
+
+	<h2>
+		<i18n>wayf.select.profile</i18n>
+	</h2>
+
+<div class="container">
 	<section id="credentials-content">
-		<article class="row">
-			<div class="rigid-grid row">
-				{{#providers}}
-					<a href="/auth/saml/authn/{{.}}"><i18n>{{.}}</i18n></a>
-				{{/providers}}
-			</div>
-		</article>
+		<div class="vertical-divider horizontal-margin"></div>
+		<ul>
+			{{#providers}}
+				<li> <a href="{{uri}}"><i18n>{{name}}</i18n></a> </li>
+			{{/providers}}
+		</ul>
 	</section>
+</div>
+
+
+
 </default-styles>
 </body>
 
