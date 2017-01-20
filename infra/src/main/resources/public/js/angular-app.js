@@ -5320,6 +5320,20 @@ module.directive('embedder', function($compile){
                 }
             };
 
+            element.on('focus', 'textarea', function (e) {
+                $(e.target).next().addClass('focus');
+                $(e.target).next().addClass('move');
+                $(e.target).prev().addClass('focus');
+            });
+
+            element.on('blur', 'textarea', function (e) {
+                if (!$(e.target).val()) {
+                    $(e.target).next().removeClass('move');
+                }
+                $(e.target).next().removeClass('focus');
+                $(e.target).prev().removeClass('focus');
+            });
+
             scope.providers = [];
 
             scope.$watch('show', function(){
