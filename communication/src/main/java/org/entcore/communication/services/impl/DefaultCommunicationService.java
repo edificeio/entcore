@@ -386,7 +386,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		s.add(relativeOutgoing, params);
 		String setVisible =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), " +
-				"v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+				"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
 				"WHERE s.id IN {structures} AND NOT(v:Visible) " +
 				"WITH DISTINCT v " +
 				"SET v:Visible ";
@@ -430,7 +430,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		s.add(relativeOutgoing, params);
 		String setVisible =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(v), " +
-				"v<-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+				"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
 				"WHERE NOT(v:Visible) " +
 				"WITH DISTINCT v " +
 				"SET v:Visible ";
