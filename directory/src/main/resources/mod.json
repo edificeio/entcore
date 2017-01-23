@@ -10,7 +10,7 @@
     "host" : "http://localhost:8003",
     "user-book-data":{
 		"default-theme" : "default",
-        "default-avatar": "no-avatar.jpg",
+        "default-avatar": "no-avatar.svg",
         "default-mood" : "default",
         "hobbies": ["sport","cinema", "animals", "music", "places"]
     }

@@ -129,7 +129,7 @@ User.prototype.loadUserbook = function(){
 		if(!data.mood){
 			data.mood = 'default';
 		}
-		if(data.picture === 'no-avatar.jpg'){
+		if(data.picture === 'no-avatar.jpg' || data.picture === 'no-avatar.svg'){
 			data.picture = '';
 		}
 		data.mood = _.findWhere(User.prototype.moods, { id: data.mood });
