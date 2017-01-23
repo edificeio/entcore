@@ -75,33 +75,35 @@ Behaviours.register('workspace', {
 		viewRights: ["org-entcore-workspace-service-WorkspaceService|copyDocuments", "org-entcore-workspace-service-WorkspaceService|getDocument"]
 	},
 	loadResources: function(callback){
-		http().get('/workspace/documents').done(function(documents){
-			http().get('/workspace/documents?filter=protected').done(function(protectedDocuments){
-				this.resources = _.map(documents.concat(protectedDocuments), function(doc){
-					if(doc.metadata['content-type'].indexOf('image') !== -1){
-						doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
-					}
-					else{
-						doc.icon = '/img/icons/unknown-large.png';
-					}
-					return {
-						title: doc.name,
-						owner: {
-							name: doc.ownerName,
-							userId: doc.owner
-						},
-						icon: doc.icon,
-						path: '/workspace/document/' + doc._id,
-						_id: doc._id,
-						metadata: doc.metadata,
-						protected: doc.protected
-					};
-				});
-				if(typeof callback === 'function'){
-					callback(this.resources);
-				}
-			}.bind(this));
-		}.bind(this));
+        http().get('/workspace/documents').done(function (documents) {
+            http().get('/workspace/documents?filter=protected').done(function (protectedDocuments) {
+                http().get('/workspace/documents?filter=public').done(function (publicDocuments) {
+                    this.resources = _.map(documents.concat(protectedDocuments).concat(publicDocuments), function (doc) {
+                        if (doc.metadata['content-type'].indexOf('image') !== -1) {
+                            doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+                        }
+                        else {
+                            doc.icon = '/img/icons/unknown-large.png';
+                        }
+                        return {
+                            title: doc.name,
+                            owner: {
+                                name: doc.ownerName,
+                                userId: doc.owner
+                            },
+                            icon: doc.icon,
+                            path: '/workspace/document/' + doc._id,
+                            _id: doc._id,
+                            metadata: doc.metadata,
+                            protected: doc.protected
+                        };
+                    });
+                    if (typeof callback === 'function') {
+                        callback(this.resources);
+                    }
+                }.bind(this));
+            }.bind(this));
+        }.bind(this));
 	},
 	create: function(file, callback){
 		console.log('creating file');
@@ -154,7 +156,8 @@ Behaviours.register('workspace', {
 
 	},
 	sniplets: {
-		documents: {
+        documents: {
+            public: true,
 			title: 'workspace.sniplet.documents.title',
 			description: 'workspace.sniplet.documents.description',
 			controller: {
@@ -283,8 +286,14 @@ Behaviours.register('workspace', {
 					if(!doc.metadata){
 						return '/img/icons/folder-large.png';
 					}
-					if(doc.metadata['content-type'].indexOf('image') !== -1){
-						return '/workspace/document/' + doc._id + '?thumbnail=150x150';
+                    if (doc.metadata['content-type'].indexOf('image') !== -1) {
+                        if (this.snipletResource.visibility === 'PUBLIC') {
+                            return '/workspace/pub/document/' + doc._id + '?thumbnail=150x150';
+                        }
+                        else {
+                            return '/workspace/document/' + doc._id + '?thumbnail=150x150';
+                        }
+						
 					}
 					else{
 						return '/img/icons/unknown-large.png';
@@ -292,7 +301,8 @@ Behaviours.register('workspace', {
 				}
 			}
 		},
-		carousel: {
+        carousel: {
+            public: true,
 			title: 'workspace.sniplet.carousel.title',
 			description: 'workspace.sniplet.carousel.description',
 			controller: {
