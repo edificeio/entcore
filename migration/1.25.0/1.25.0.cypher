@@ -9,5 +9,6 @@ CREATE INDEX ON :User(birthDate);
 CREATE INDEX ON :User(source);
 CREATE CONSTRAINT ON (u:User) ASSERT u.IDPN IS UNIQUE;
 CREATE INDEX ON :User(attachmentId);
+MATCH (ub:UserBook) WHERE ub.picture='no-avatar.jpg' SET ub.picture='no-avatar.svg';
 commit
 
