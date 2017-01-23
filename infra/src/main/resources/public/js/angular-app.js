@@ -5518,7 +5518,7 @@ function Account($scope) {
         }).done(function(result) {
             $scope.avatar = result.result['0'].photo;
             if (!$scope.avatar || $scope.avatar === 'no-avatar.jpg' || $scope.avatar === 'no-avatar.svg') {
-                $scope.avatar = '/img/illustrations/no-avatar.svg';
+                $scope.avatar = '/assets/themes/' + skin.skin + '/img/illustrations/no-avatar.svg';
             }
             $scope.username = result.result['0'].displayName;
             model.me.profiles = result.result['0'].type;
