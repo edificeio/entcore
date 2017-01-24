@@ -206,9 +206,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 			var strFun = lang.translate(fun[0])
 			if(fun[1].length > 0){
-				strFun += ' [' + _.chain(fun[1]).map(function(id){
-					return _.findWhere($scope.structures.all, {id : id}).name
-				}).value().join(' / ') + ']'
+				strFun += ' [' +
+					_.chain(fun[1])
+						.map(function(id){
+							var struct = _.findWhere($scope.structures.all, {id : id})
+							return struct ? struct.name : undefined
+						})
+						.filter(function(item){
+							return item
+						})
+					.value()
+					.join(' / ') + ']'
 			}
 
 			return str ? str + ', ' + strFun : strFun
