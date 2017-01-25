@@ -59,10 +59,7 @@
 
 <div class="row">
 	<div class="cell">
-		<div class="row" style="min-height: 0">
-			<h2>Documents</h2>
-		</div>
-		<div class="row" ng-if="cursor.parentFolders.length" style="min-height: 0;">
+		<div class="row" ng-if="cursor.parentFolders.length">
 			<div class="cell" ng-repeat="folder in cursor.parentFolders"><a ng-click="openFolder(folder)">[[folder.title]]&nbsp;</a>>&nbsp;</div>[[cursor.currentFolder.title]]
 		</div>
 	</div>
