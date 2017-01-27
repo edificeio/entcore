@@ -108,8 +108,8 @@ public class CsvImportsLauncher implements Handler<Long> {
 												@Override
 												public void handle(AsyncResult<Void> event) {
 													try {
-														FileUtils.unzip(file, dirName);
-														moveCsvFiles(structureExternalId, fs, dirName, parentDir, handlers, j);
+														FileUtils.unzip(file.replaceAll("\\s", "%20"), dirName);
+																moveCsvFiles(structureExternalId, fs, dirName, parentDir, handlers, j);
 													} catch (IOException e) {
 														fs.delete(parentDir, true, null);
 														log.error("Error unzip : " + file, e);
