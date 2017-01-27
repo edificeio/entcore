@@ -34,7 +34,7 @@ public class TransactionHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(TransactionHelper.class);
 	private final Neo4j neo4j;
-	private JsonArray statements;
+	private volatile JsonArray statements;
 	private AtomicInteger remainingStatementNumber;
 	private final int statementNumber;
 	private Integer transactionId;
@@ -76,8 +76,9 @@ public class TransactionHelper {
 	public void add(String query, JsonObject params) {
 		if (autoSend && !waitingQuery && transactionId != null &&
 				remainingStatementNumber.getAndDecrement() == 0) {
-			send(statements.copy());
+			final JsonArray s = statements;
 			statements = new JsonArray();
+			send(s);
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}
 		if (query != null && !query.trim().isEmpty()) {
@@ -166,8 +167,9 @@ public class TransactionHelper {
 			flush = true;
 			flushHandler = handler;
 		} else if (transactionId != null) {
-			send(statements.copy(), handler);
+			final JsonArray s = statements;
 			statements = new JsonArray();
+			send(s, handler);
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}
 	}
