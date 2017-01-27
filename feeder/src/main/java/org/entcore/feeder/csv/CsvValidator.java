@@ -275,6 +275,10 @@ public class CsvValidator extends Report implements ImportValidator {
 						user.putArray("profiles", new JsonArray().add(profile));
 						List<String[]> classes = new ArrayList<>();
 						for (int j = 0; j < strings.length; j++) {
+							if (j >= columns.size()) {
+								addErrorByFile(profile, "out.columns", "" + i);
+								return;
+							}
 							final String c = columns.get(j);
 							final String v = strings[j].trim();
 							if (v.isEmpty()) continue;
