@@ -184,12 +184,14 @@ public class SamlController extends AbstractFederateController {
 					log.debug("slo request : " + event.body().encodePrettily());
 				}
 				String slo = event.body().getString("slo");
-				if (c != null && !c.isEmpty()) {
-					try {
+				try {
+					if (c != null && !c.isEmpty()) {
 						slo = c + URLEncoder.encode(slo, "UTF-8");
-					} catch (UnsupportedEncodingException e) {
-						log.error(e.getMessage(), e);
+					} else {
+						slo = URLEncoder.encode(slo, "UTF-8");
 					}
+				} catch (UnsupportedEncodingException e) {
+					log.error(e.getMessage(), e);
 				}
 				AuthController.logoutCallback(request, slo, container, eb);
 			}
