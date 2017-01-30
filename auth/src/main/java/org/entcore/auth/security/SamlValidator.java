@@ -239,7 +239,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		nameId.setValue(nameID);
 		LogoutRequest logoutRequest = SamlUtils.buildSAMLObjectWithDefaultName(LogoutRequest.class);
 
-		logoutRequest.setID(UUID.randomUUID().toString());
+		logoutRequest.setID("ENT_" + UUID.randomUUID().toString());
 		String sloUri = getLogoutUri(idp);
 		logoutRequest.setDestination(sloUri);
 		logoutRequest.setIssueInstant(new DateTime());
