@@ -1701,13 +1701,15 @@ public class WorkspaceService extends BaseController {
 							String comment = request.formAttributes().get("comment");
 							if (comment != null && !comment.trim().isEmpty()) {
 								final String id = UUID.randomUUID().toString();
-								String query = "{ \"$push\" : { \"comments\":" +
-										" { \"id\" : \"" + id + "\", " +
-										"\"author\" : \"" + user.getUserId() + "\", " +
-										"\"authorName\" : \"" + user.getUsername() +
-										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
-										"\", \"comment\": \"" + comment + "\" }}}";
-								documentDao.update(request.params().get("id"), new JsonObject(query),
+								JsonObject query = new JsonObject()
+									.putObject("$push", new JsonObject()
+										.putObject("comments", new JsonObject()
+											.putString("id", id)
+											.putString("author", user.getUserId())
+											.putString("authorName", user.getUsername())
+											.putString("posted", MongoDb.formatDate(new Date()))
+											.putString("comment", comment)));
+								documentDao.update(request.params().get("id"), query,
 										new Handler<JsonObject>() {
 									@Override
 									public void handle(JsonObject res) {
@@ -1745,13 +1747,15 @@ public class WorkspaceService extends BaseController {
 							String comment = request.formAttributes().get("comment");
 							if (comment != null && !comment.trim().isEmpty()) {
 								final String id = UUID.randomUUID().toString();
-								String query = "{ \"$push\" : { \"comments\":" +
-										" { \"id\" : \"" + id + "\", " +
-										"\"author\" : \"" + user.getUserId() + "\", " +
-										"\"authorName\" : \"" + user.getUsername() +
-										"\", \"posted\" : \"" + MongoDb.formatDate(new Date()) +
-										"\", \"comment\": \"" + comment + "\" }}}";
-								documentDao.update(request.params().get("id"), new JsonObject(query),
+								JsonObject query = new JsonObject()
+									.putObject("$push", new JsonObject()
+										.putObject("comments", new JsonObject()
+											.putString("id", id)
+											.putString("author", user.getUserId())
+											.putString("authorName", user.getUsername())
+											.putString("posted", MongoDb.formatDate(new Date()))
+											.putString("comment", comment)));
+								documentDao.update(request.params().get("id"), query,
 										new Handler<JsonObject>() {
 									@Override
 									public void handle(JsonObject res) {
