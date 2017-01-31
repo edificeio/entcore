@@ -6,6 +6,7 @@ function HistoryController($scope, date, model, lang){
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
+	$scope.me = model.me;
     $scope.filtered = {}
 
 	$scope.actions = {
@@ -78,6 +79,11 @@ function HistoryController($scope, date, model, lang){
 	$scope.loadPage = function(){
 		model.notifications.sync(true);
 	}
+
+	http().get('/userbook/api/person').done(function(data){
+		model.me.email = data.result[0].email;
+		$scope.$apply();
+	})
 
 	$scope.display = {};
 
