@@ -33,6 +33,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.UUID;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public abstract class AbstractFederateController extends BaseController {
 
 	public static final String LOGIN_PAGE = "/auth/login";
@@ -76,7 +78,12 @@ public abstract class AbstractFederateController extends BaseController {
 				if (sessionId != null && !sessionId.trim().isEmpty()) {
 					long timeout = container.config().getLong("cookie_timeout", Long.MIN_VALUE);
 					CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
-					redirect(request, "/");
+					final String callback = CookieHelper.getInstance().getSigned("callback", request);
+					if (isNotEmpty(callback)) {
+						redirect(request, callback, "");
+					} else {
+						redirect(request, "/");
+					}
 				} else {
 					redirect(request, LOGIN_PAGE);
 				}

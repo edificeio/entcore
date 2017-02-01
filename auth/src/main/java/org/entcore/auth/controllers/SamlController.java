@@ -88,7 +88,26 @@ public class SamlController extends AbstractFederateController {
 				}
 				samlWayfMustacheFormat = new JsonObject().putArray("providers", wmf);
 			}
-			renderView(request, samlWayfMustacheFormat, "wayf.html", null);
+			String callBack = request.params().get("callBack");
+			final JsonObject swmf;
+			if (isNotEmpty(callBack)) {
+				try {
+					callBack = URLEncoder.encode(callBack, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					log.error("Error encode wayf callback.", e);
+				}
+				swmf = samlWayfMustacheFormat.copy();
+				for (Object o: swmf.getArray("providers")) {
+					if (!(o instanceof JsonObject)) continue;
+					final String uri = ((JsonObject) o).getString("uri");
+					if (isNotEmpty(uri) && !uri.contains("callBack")) {
+						((JsonObject) o).putString("uri", uri + (uri.contains("?") ? "&" : "?") + "callBack=" + callBack);
+					}
+				}
+			} else {
+				swmf = samlWayfMustacheFormat;
+			}
+			renderView(request, swmf, "wayf.html", null);
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
 					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
@@ -112,6 +131,10 @@ public class SamlController extends AbstractFederateController {
 				final String authnRequest = event.body().getString("authn-request");
 				if (isNotEmpty(authnRequest)) {
 					CookieHelper.getInstance().setSigned("relaystate", event.body().getString("relay-state"), 900, request);
+					final String callBack = request.params().get("callBack");
+					if (isNotEmpty(callBack)) {
+						CookieHelper.getInstance().setSigned("callback", callBack, 900, request);
+					}
 					redirect(request, authnRequest, "");
 				} else {
 					badRequest(request, "empty.authn.request");
