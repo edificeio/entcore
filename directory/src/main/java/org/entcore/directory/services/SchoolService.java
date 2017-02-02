@@ -53,7 +53,8 @@ public interface SchoolService {
 	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren,
+			Boolean hasMail, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void getMetrics(String structureId, Handler<Either<String, JsonObject>> results);
 

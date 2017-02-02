@@ -208,11 +208,11 @@ public class DefaultSchoolService implements SchoolService {
 
 	@Override
 	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
-		this.massmailUsers(structureId, filterObj, true, true, userInfos, results);
+		this.massmailUsers(structureId, filterObj, true, true, null, userInfos, results);
 	}
 	@Override
-	public void massmailUsers(String structureId, JsonObject filterObj,
-			boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+	public void massmailUsers(String structureId, JsonObject filterObj, boolean groupClasses,
+			boolean groupChildren, Boolean hasMail, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 
 		String filter =
 				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
@@ -256,6 +256,16 @@ public class DefaultSchoolService implements SchoolService {
 			optional = "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
 			condition += " AND c.id IN {classesArray} ";
 			params.putArray("classesArray", filterObj.getArray("classes"));
+		}
+
+		//Email
+		if(hasMail != null) {
+			if(hasMail){
+				condition += " AND COALESCE(u.email, \"\") <> \"\" ";
+			} else {
+				condition += " AND COALESCE(u.email, \"\") = \"\" ";
+			}
+
 		}
 
 		//Admin check

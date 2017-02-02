@@ -152,11 +152,19 @@
             </div>
 
             <!-- Activation filter -->
-            <select class="six" ng-model="massmail.activated">
+            <select class="six vertical-spacing-twice" ng-model="massmail.activated">
                 <option value="all" selected>[[lang.translate("directory.ignoreActivation")]]</option>
                 <option value="true">[[lang.translate("directory.onlyActivatedUsers")]]</option>
                 <option value="false">[[lang.translate("directory.onlyInactiveUsers")]]</option>
             </select>
+
+            <!-- Email filter -->
+            <select class="six" ng-model="massmail.email">
+                <option value="" selected>[[lang.translate("directory.ignoreMail")]]</option>
+                <option value="true">[[lang.translate("directory.withMail")]]</option>
+                <option value="false">[[lang.translate("directory.withoutMail")]]</option>
+            </select>
+
         </div>
         <div class="six cell">
             <h3 class="subtitle"><i18n>directory.admin.sort.options</i18n></h3>
@@ -212,7 +220,8 @@
             <button class="cell" ng-click="massmail.process('pdf')"  ng-disabled="massmail.processing || massmail.fetchingUsers">
                 <i18n>directory.massmail.pdf</i18n>
             </button>
-            <button class="cell" ng-click="massmail.confirmSendMail = true" ng-disabled="massmail.processing || massmail.fetchingUsers">
+            <button class="cell" ng-click="massmail.confirmSendMail = true"
+                    ng-disabled="massmail.processing || massmail.fetchingUsers || massmail.countUsersWithoutMail() >= massmail.countUsers()">
                 <i18n>directory.massmail.mail</i18n>
             </button>
             <lightbox show="massmail.confirmSendMail" on-close="massmail.confirmSendMail = false">
