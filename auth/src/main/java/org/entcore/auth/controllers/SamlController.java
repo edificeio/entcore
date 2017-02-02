@@ -58,6 +58,7 @@ public class SamlController extends AbstractFederateController {
 	private SamlServiceProviderFactory spFactory;
 	private JsonObject samlWayfParams;
 	private JsonObject samlWayfMustacheFormat;
+	private String ignoreCallBackPattern;
 
 	public SamlController() throws ConfigurationException {
 		DefaultBootstrap.bootstrap();
@@ -90,7 +91,7 @@ public class SamlController extends AbstractFederateController {
 			}
 			String callBack = request.params().get("callBack");
 			final JsonObject swmf;
-			if (isNotEmpty(callBack)) {
+			if (isNotEmpty(callBack) && (ignoreCallBackPattern == null || !callBack.matches(ignoreCallBackPattern))) {
 				try {
 					callBack = URLEncoder.encode(callBack, "UTF-8");
 				} catch (UnsupportedEncodingException e) {
@@ -358,6 +359,10 @@ public class SamlController extends AbstractFederateController {
 
 	public void setSamlWayfParams(JsonObject samlWayfParams) {
 		this.samlWayfParams = samlWayfParams;
+	}
+
+	public void setIgnoreCallBackPattern(String ignoreCallBackPattern) {
+		this.ignoreCallBackPattern = ignoreCallBackPattern;
 	}
 
 }
