@@ -6196,7 +6196,7 @@ workspace.Document.prototype.upload = function(file, requestName, callback, visi
     }
     var formData = new FormData();
     formData.append('file', file, file.name);
-    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, {
+    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=0.7&' + workspace.thumbnails, formData, {
         requestName: requestName
     }).done(function(data) {
         if (typeof callback === 'function') {
@@ -6378,7 +6378,6 @@ function MediaLibrary($scope) {
     };
 
     $scope.importFiles = function() {
-        workspace.quality = $scope.upload.quality / 100;
         var waitNumber = $scope.upload.files.length;
         for (var i = 0; i < $scope.upload.files.length; i++) {
             $scope.upload.loading.push($scope.upload.files[i]);
