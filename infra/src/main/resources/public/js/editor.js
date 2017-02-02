@@ -3117,7 +3117,7 @@ window.RTE = (function () {
                         element.on('click', function(e){
                             placeToolbar();
 
-                            if(e.target === element.find('.close-focus')[0]){
+                            if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                                 return;
                             }
 
