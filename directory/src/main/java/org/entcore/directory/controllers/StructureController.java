@@ -231,6 +231,9 @@ public class StructureController extends BaseController {
 				final JsonObject filter = new JsonObject();
 				final String structureId = request.params().get("structureId");
 				final List<String> sorts = request.params().getAll("s");
+				final Boolean filterMail = request.params().contains("mail") ?
+						new Boolean(request.params().get("mail")) :
+						null;
 
 				filter
 					.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
@@ -242,18 +245,22 @@ public class StructureController extends BaseController {
 					filter.putString("activated", request.params().get("a"));
 				}
 
-				structureService.massmailUsers(structureId, filter, infos, arrayResponseHandler(request));
+				structureService.massmailUsers(structureId, filter, true, true, filterMail, infos, arrayResponseHandler(request));
 			}
 		});
 	}
 
 	@Get("/structure/:structureId/massMail/process/:type")
-	@SecuredAction(value="", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void performMassmail(final HttpServerRequest request){
 		final String structureId = request.params().get("structureId");
 		final String type = request.params().get("type");
 		final JsonObject filter = new JsonObject();
 		final String filename = request.params().get("filename");
+		final Boolean filterMail = request.params().contains("mail") ?
+				new Boolean(request.params().get("mail")) :
+				null;
+
 		filter
 			.putArray("profiles", new JsonArray(request.params().getAll("p").toArray()))
 			.putArray("levels", new JsonArray(request.params().getAll("l").toArray()))
@@ -278,7 +285,7 @@ public class StructureController extends BaseController {
 
 				//PDF
 				if("pdf".equals(type)){
-					structureService.massmailUsers(structureId, filter, groupClasses, false, infos, new Handler<Either<String,JsonArray>>() {
+					structureService.massmailUsers(structureId, filter, groupClasses, false, filterMail, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
@@ -337,7 +344,7 @@ public class StructureController extends BaseController {
 				}
 				//Mail
 				else if("mail".equals(type)){
-					structureService.massmailUsers(structureId, filter, infos, new Handler<Either<String,JsonArray>>() {
+					structureService.massmailUsers(structureId, filter, true, true, filterMail, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(final Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
@@ -377,7 +384,7 @@ public class StructureController extends BaseController {
 											log.error("[MassMail] Error on StringReader ("+exc.toString()+")");
 										}
 
-										processTemplate(request, user, "massmail.pdf.xhtml", reader, new Handler<Writer>(){
+										processTemplate(request, user, "massmail.mail.txt", reader, new Handler<Writer>(){
 											public void handle(Writer writer) {
 												String processedTemplate = ((StringWriter) writer).getBuffer().toString();
 
@@ -417,7 +424,7 @@ public class StructureController extends BaseController {
 	}
 
 	@Get("/structure/:structureId/metrics")
-	@SecuredAction(value="", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void metrics(final HttpServerRequest request){
 		structureService.getMetrics(request.params().get("structureId"), defaultResponseHandler(request));
 	}
