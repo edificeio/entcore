@@ -88,13 +88,13 @@ public class PortalController extends BaseController {
 		for (final String domain: skins.getFieldNames()) {
 			final String skin = skins.getString(domain);
 			this.hostSkin.put(domain, skin);
-			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin, false, new Handler<List<String>>() {
+			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin + "/skins", false, new Handler<List<String>>() {
 				@Override
 				public void handle(List<String> event) {
 					themes.put(domain, event);
 					JsonArray a = new JsonArray();
 					for (final String s : event) {
-						String path = assetsPath + "/assets/themes/" + skin + "/" + s + "/";
+						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
 						final JsonObject j = new JsonObject()
 								.putString("_id", s)
 								.putString("path", path);
@@ -284,12 +284,12 @@ public class PortalController extends BaseController {
 										result.<JsonObject>get(0).getString("theme") : null;
 								List<String> t = themes.get(getHost(request));
 								if (userTheme != null && t != null && t.contains(userTheme)) {
-									theme.putString("skin", getThemePrefix(request) + "/" + userTheme + "/");
+									theme.putString("skin", getThemePrefix(request) + "/skins/" + userTheme + "/");
 								} else {
-									theme.putString("skin", getThemePrefix(request) + "/default/");
+									theme.putString("skin", getThemePrefix(request) + "/skins/default/");
 								}
 							} else {
-								theme.putString("skin", getThemePrefix(request) + "/default/");
+								theme.putString("skin", getThemePrefix(request) + "/skins/default/");
 							}
 							renderJson(request, theme);
 							UserUtils.addSessionAttribute(eb, user.getUserId(), theme_attr, theme.encode(), null);
