@@ -1789,6 +1789,33 @@ function bootstrap(func) {
 				data.preference = null;
 			}
 			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
+			var upToDate = true;
+			let remove = [];
+			model.me.bookmarkedApps.forEach(function(app, index){
+				var foundApp = _.findWhere(model.me.apps, { name: app.name });
+				var updateApp = true;
+				if(foundApp){
+					updateApp = JSON.stringify(foundApp) !== JSON.stringify(app);
+					if(updateApp){
+						for(var property in foundApp){
+							app[property] = foundApp[property];
+						}
+					}
+				}
+				else{
+					remove.push(app);
+				}
+				
+				upToDate = upToDate && !updateApp;
+			});
+			remove.forEach(function(app) {
+				var index = model.me.bookmarkedApps.indexOf(app);
+				model.me.bookmarkedApps.splice(index, 1);
+			});
+			if(!upToDate){
+				http().put('/userbook/preference/apps', model.me.bookmarkedApps);
+			}
+
 			func();
 		});
 	})
