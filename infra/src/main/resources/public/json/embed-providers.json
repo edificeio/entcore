@@ -18,7 +18,7 @@
   {
     "name": "dailymotion",
     "displayName": "Dailymotion",
-    "url": "http://www.dailymotion.com/video/{id}_{ignore}",
+    "url": "www.dailymotion.com/video/{id}_{ignore}",
     "logo": "https://static1.dmcdn.net/images/dailymotion-logo-ogtag.png.v2779e025da411e7f1",
     "example": "http://www.dailymotion.com/video/x3pxgme_piano-and-violin-duet_music",
     "embed": "<iframe frameborder=\"0\" width=\"480\" height=\"270\" src=\"//www.dailymotion.com/embed/video/{id}\" allowfullscreen></iframe>"
