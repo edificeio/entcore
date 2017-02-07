@@ -1411,6 +1411,15 @@ module.directive('bindHtml', function($compile) {
                 htmlVal.find('[ng-include]').removeAttr('ng-include');
                 htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
                 htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
+                htmlVal.find('script').remove();
+				htmlVal.find('*').each((index, item) => {
+					var attributes = item.attributes;
+					for(var i = 0; i < attributes.length; i++){
+						if(attributes[i].name.startsWith('on')){
+							item.removeAttribute(attributes[i].name);
+						}
+					}
+				});
                 if(htmlVal.find('portal').length){
                     var portal = htmlVal.find('portal');
                     htmlVal = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
