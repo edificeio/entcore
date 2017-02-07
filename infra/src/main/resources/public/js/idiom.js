@@ -1,5 +1,15 @@
 window.idiom = (function(){
 	var bundle = {};
+	var xsrfCookie;
+	if(document.cookie){
+		var cookies = _.map(document.cookie.split(';'), function(c){
+			return {
+				name: c.split('=')[0].trim(), 
+				val: c.split('=')[1].trim()
+			};
+		});
+		xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+	}
 
 	var defaultDiacriticsRemovalMap = [
 		{'base':'A', 'letters':/[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g},
@@ -98,6 +108,9 @@ window.idiom = (function(){
 		addBundle: function(path, callback){
 			var request = new XMLHttpRequest();
 			request.open('GET', path);
+			if(xsrfCookie){
+				request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+			}
 			request.onreadystatechange = function(){
 				if(this.readyState === 4){
 					if(this.status === 200){

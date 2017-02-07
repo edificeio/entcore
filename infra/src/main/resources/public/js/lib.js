@@ -24,6 +24,16 @@ function Http(){
 
 var http = (function(){
 	var statusEvents = ['done', 'error', 'e401', 'e404', 'e409', 'e500', 'e400', 'e413', 'e504', 'e0'];
+	var xsrfCookie;
+	if(document.cookie){
+		var cookies = _.map(document.cookie.split(';'), function(c){
+			return {
+				name: c.split('=')[0].trim(), 
+				val: c.split('=')[1].trim()
+			};
+		});
+		xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+	}
 
 	Http.prototype = {
 		serialize: function(obj){
@@ -75,6 +85,12 @@ var http = (function(){
 			var that = this;
 			params.url = url;
 			params.cache = false;
+			if(!params.headers){
+				params.headers = {};
+			}
+			if(xsrfCookie){
+				params.headers['X-XSRF-TOKEN'] = xsrfCookie.val;
+			}
 
 			var requestName = params.requestName;
 			if(requestName && that.events['request-started.' + requestName]){
@@ -949,8 +965,8 @@ var skin = (function(){
 						async: false,
 						disableNotifications: true,
 						success: function(override){
-							that.templateMapping = override;
-						}
+							this.templateMapping = override;
+						}.bind(this)
 					}).e404(function(){});
 				}
 			});
