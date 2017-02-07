@@ -263,5 +263,7 @@
   "rack": "Casier",
   "timeline": "Fil de nouveautés",
   "admin.edtudt": "Mode d'alimentation des groupes d'enseignement",
-  "schoolbook" : "Carnet de liaison"
+  "schoolbook" : "Carnet de liaison",
+  "quickstart.discover": "Découvrir l'ENT",
+  "quickstart.done": "Terminé"
 }

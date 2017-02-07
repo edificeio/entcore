@@ -1,0 +1,22 @@
+<div class="arrow"></div>
+<div class="content">
+    <i class="inf"></i>
+    <i class="close" ng-click="closePulsar()"></i>
+
+    <div class="text" translate content="[[pulsarInfos.i18n]]"></div>
+
+    <nav class="dots">
+        <ul>
+            <li class="dot" ng-repeat="step in pulsarInfos.steps" ng-click="goTo(step)" ng-class="{ active: step.index === pulsarInfos.index }"></li>
+        </ul>
+    </nav>
+
+    <div class="row">
+        <button ng-click="next()" ng-if="pulsarInfos.steps.length - 1 !== pulsarInfos.index"><i18n>next</i18n></button>
+        <button ng-click="next()" ng-if="pulsarInfos.steps.length - 1 === pulsarInfos.index"><i18n>quickstart.done</i18n></button>
+        <button ng-click="previous()" class="cancel" ng-if="pulsarInfos.index > 0">
+            <i18n>previous</i18n>
+        </button>
+    </div>
+</div>
+

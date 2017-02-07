@@ -5461,7 +5461,262 @@ module.directive('embedder', function($compile){
             };
         }
     }
-})
+});
+
+module.directive('assistant', function(){
+    return {
+        restrict: 'E',
+        templateUrl: '/infra/public/template/assistant.html',
+        link: function(scope, element, attributes){
+            scope.show = { assistant: false };
+            quickstart.load(function(){
+                if(quickstart.state.assistant === -1){
+                    return;
+                }
+
+                scope.show.assistant = true;
+                scope.currentStep = quickstart.assistantIndex;
+                scope.steps = quickstart.mySteps;
+                scope.$apply();
+            });
+
+            scope.goTo = function(step){
+                quickstart.goTo(step.index);
+                scope.currentStep = quickstart.assistantIndex;
+            };
+
+            scope.next = function(){
+                quickstart.nextAssistantStep();
+                scope.currentStep = quickstart.assistantIndex;
+                if(!quickstart.assistantIndex){
+                    scope.show.assistant = false;
+                }
+            };
+
+            scope.previous = function(){
+                quickstart.previousAssistantStep();
+                scope.currentStep = quickstart.assistantIndex;
+            };
+
+            scope.closeAssistant = function(){
+                scope.show.assistant = false;
+                quickstart.state.assistant = -1;
+                quickstart.save();
+            };
+        }
+    }
+});
+
+module.directive('pulsar', function($compile){
+    return {
+        restrict: 'A',
+        link: function(scope, element, attributes){
+            let pulsarInfos = scope.$eval(attributes.pulsar);
+            scope.pulsarInfos = pulsarInfos;
+            scope.pulsarInfos.steps = [];
+            
+            let pulsars = $('[pulsar]');
+            pulsars.each(function(index, element){
+                let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
+                infos.el = element;
+                scope.pulsarInfos.steps.push(infos);
+            });
+
+            if(typeof pulsarInfos !== 'object' || pulsarInfos.index === undefined){
+                console.error('Invalid pulsar object. Should look like pulsar="{ index: 0, i18n: \'my.key\', position: \'top bottom\'}"')
+            }
+
+            let pulsarButton;
+            let pulsarElement;
+
+            let paintPulsar = function(){
+                if(!pulsarInfos.position){
+                    pulsarInfos.position = 'center center';
+                }
+                let xPosition = 'center';
+                if(pulsarInfos.position.indexOf('left') !== -1){
+                    xPosition = 'left';
+                }
+                if(pulsarInfos.position.indexOf('right') !== -1){
+                    xPosition = 'right';
+                }
+
+                let yPosition = 'center';
+                if(pulsarInfos.position.indexOf('top') !== -1){
+                    yPosition = 'top';
+                }
+                if(pulsarInfos.position.indexOf('bottom') !== -1){
+                    yPosition = 'bottom';
+                }
+
+                pulsarButton = $('<div class="pulsar-button"><div class="pulse"></div><div class="pulse2"></div></div>')
+                    .appendTo('body');
+                    if(pulsarInfos.className){
+                        pulsarInfos.className.split(' ').forEach(function(cls){
+                            pulsarButton.addClass(cls);
+                        });
+                    }
+                pulsarElement;
+
+                let placePulsar = function(){
+                    let xPositions = {
+                        left: element.offset().left - 40,
+                        right: element.offset().left + element.width() + 10,
+                        center: element.offset().left + (element.width() / 2) - 15
+                    };
+
+                    let yPositions = {
+                        top: element.offset().top - 40,
+                        bottom: element.offset().top + element.height() + 10,
+                        center: element.offset().top + (element.height() / 2) - 15
+                    };
+                    if(!pulsarButton.hasClass('hidden')){
+                        pulsarButton.offset({ left: xPositions[xPosition], top: yPositions[yPosition] });
+                    }
+                    
+                    if(pulsarElement){
+                        let left = xPositions[xPosition] - pulsarElement.children('.content').width() / 2;
+                        if(yPosition === 'center' && xPosition === 'center'){
+                            pulsarElement.addClass('middle');
+                            yPosition = 'bottom';
+                        }
+                        if(xPosition === 'right'){
+                            left = xPositions[xPosition] + 15;
+                        }
+                        if(xPosition === 'left'){
+                            left = xPositions[xPosition] - pulsarElement.children('.content').width() - 30;
+                        }
+
+                        let top = yPositions[yPosition] - pulsarElement.children('.content').height() / 2;
+                        if(yPosition === 'top' && xPosition === 'center'){
+                            top = yPositions[yPosition] - pulsarElement.children('.content').height() - 30;
+                        }
+                        if(yPosition === 'bottom'){
+                            top = yPositions[yPosition] + 15;
+                            if(xPosition === 'left'){
+                                left += 60;
+                            }
+                            if(xPosition === 'right'){
+                                left -= 60;
+                            }
+                        }
+
+                        pulsarElement.offset({ 
+                            left: left, 
+                            top: top
+                        });
+                    }
+                    setTimeout(placePulsar, 100);
+                }
+                placePulsar();
+                
+                pulsarButton.on('click', function(){
+                    pulsarElement = $('<pulsar></pulsar>')
+                        .addClass(xPosition)
+                        .addClass(yPosition);
+                    if(pulsarInfos.className){
+                        pulsarInfos.className.split(' ').forEach(function(cls){
+                            pulsarElement.addClass(cls);
+                        });
+                    }
+                    pulsarButton.addClass('hidden');
+
+                    $('<div class="pulsar-layer"></div>')
+                        .width(element.offset().left - 10)
+                        .height($(window).height())
+                        .offset({ top: 0, left: 0 })
+                        .hide()
+                        .appendTo('body')
+                        .fadeIn();
+                    $('<div class="pulsar-layer"></div>')
+                        .width($(window).width() - element.offset().left + 20)
+                        .height(element.offset().top - 10)
+                        .offset({ top: 0, left: element.offset().left - 10 })
+                        .hide()
+                        .appendTo('body')
+                        .fadeIn();
+                    $('<div class="pulsar-layer"></div>')
+                        .width($(window).width() - element.width() - element.offset().left + 10)
+                        .height(element.height() + 20)
+                        .offset({ top: element.offset().top - 10, left: element.offset().left + element.width() + 10 })
+                        .hide()
+                        .appendTo('body')
+                        .fadeIn();
+                    $('<div class="pulsar-layer"></div>')
+                        .width($(window).width() - element.offset().left + 10)
+                        .height($(window).height() - element.height() - element.offset().top - 10)
+                        .offset({ top: element.offset().top + element.height() + 10, left: element.offset().left - 10 })
+                        .hide()
+                        .appendTo('body')
+                        .fadeIn();
+
+                    http().get('/infra/public/template/pulsar.html').done(function(html){
+                        pulsarElement.html(
+                            $compile(html)(scope)
+                        );
+                    });
+                    $('body').append(pulsarElement);
+                });
+            }
+
+            function undraw(){
+                pulsarButton.fadeOut(function(){ pulsarButton.remove() });
+                pulsarElement.fadeOut(function(){ pulsarElement.remove() });
+                $('.pulsar-layer').remove();
+            }
+
+            scope.closePulsar = function(){
+                pulsarElement.fadeOut(function(){ pulsarElement.remove() });
+                $('.pulsar-layer').fadeOut(function(){ $('.pulsar-layer').remove() });
+                pulsarButton.removeClass('hidden');
+            };
+
+            scope.paintPulsar = function(){
+                paintPulsar();
+                pulsarButton.trigger('click');
+            };
+
+            scope.goTo = function(step){
+                undraw();
+                quickstart.goToAppStep(step);
+                angular.element(step.el).scope().paintPulsar();
+                
+            };
+
+            scope.next = function(){
+                undraw();
+                let index = quickstart.nextAppStep();
+                scope.pulsarInfos.steps.forEach(function(item){
+                    if(item.index === index){
+                        angular.element(item.el).scope().paintPulsar();
+                    }
+                });
+                
+            };
+
+            scope.previous = function(){
+                undraw();
+                let index = quickstart.previousAppStep();
+                scope.pulsarInfos.steps.forEach(function(item){
+                    if(item.index === index){
+                        angular.element(item.el).scope().paintPulsar();
+                    }
+                });
+                
+            };
+
+            quickstart.load(function(){
+                if(quickstart.appIndex() !== pulsarInfos.index){
+                    return;
+                }
+                
+                paintPulsar();
+            });
+           
+            
+        }
+    }
+});
 
 $(document).ready(function() {
     setTimeout(function() {
