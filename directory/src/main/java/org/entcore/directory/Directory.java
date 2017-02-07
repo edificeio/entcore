@@ -29,6 +29,7 @@ import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
+import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
@@ -46,6 +47,7 @@ public class Directory extends BaseServer {
 		clearFilters();
 		setOauthClientGrant(true);
 		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
+		addFilter(new UserbookCsrfFilter(eb));
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
