@@ -1813,7 +1813,7 @@ function bootstrap(func) {
 				model.me.bookmarkedApps.splice(index, 1);
 			});
 			if(!upToDate){
-				http().put('/userbook/preference/apps', model.me.bookmarkedApps);
+				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
 			}
 
 			func();
