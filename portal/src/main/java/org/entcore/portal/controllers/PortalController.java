@@ -56,6 +56,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.*;
 
 public class PortalController extends BaseController {
@@ -253,7 +254,7 @@ public class PortalController extends BaseController {
 					JsonObject urls = container.config().getObject("urls", new JsonObject());
 					final JsonObject theme = new JsonObject()
 							.putString("template", "/public/template/portal.html")
-							.putString("logoutCallback", urls.getString("logoutCallback", ""));
+							.putString("logoutCallback", getLogoutCallback(request, urls));
 					String query =
 							"MATCH (n:User)-[:USERBOOK]->u " +
 							"WHERE n.id = {id} " +
@@ -285,6 +286,11 @@ public class PortalController extends BaseController {
 				}
 			}
 		});
+	}
+
+	private String getLogoutCallback(HttpServerRequest request, JsonObject urls) {
+		final String logoutCallback = CookieHelper.get("logoutCallback", request);
+		return isNotEmpty(logoutCallback) ? logoutCallback : urls.getString("logoutCallback", "");
 	}
 
 	@Get("/skin")
