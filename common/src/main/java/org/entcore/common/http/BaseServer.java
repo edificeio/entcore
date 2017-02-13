@@ -32,7 +32,7 @@ import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.*;
-import org.entcore.common.http.request.CsrfHookRender;
+import org.entcore.common.http.request.SecurityHookRender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
@@ -63,6 +63,7 @@ public abstract class BaseServer extends Server {
 	private SearchingHandler searchingHandler;
 	private String schema;
 	private boolean oauthClientGrant = false;
+	private String contentSecurityPolicy;
 
 	@Override
 	public void start() {
@@ -71,6 +72,7 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
+		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
 			node = "";
@@ -108,8 +110,9 @@ public abstract class BaseServer extends Server {
 	@Override
 	protected Server addController(BaseController controller) {
 		super.addController(controller);
-		if (config.getBoolean("csrf-token", true)) {
-			controller.setHookRenderProcess(new CsrfHookRender(getEventBus(vertx)));
+		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
+			controller.setHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+					config.getBoolean("csrf-token", true), contentSecurityPolicy));
 		}
 		return this;
 	}
