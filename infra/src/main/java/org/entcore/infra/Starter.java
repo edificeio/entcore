@@ -50,6 +50,8 @@ import java.text.ParseException;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class Starter extends BaseServer {
 
 	String developerId = "";
@@ -85,6 +87,10 @@ public class Starter extends BaseServer {
 			JsonObject filesystem = config.getObject("file-system");
 			if (filesystem != null) {
 				serverMap.put("file-system", filesystem.encode());
+			}
+			final String csp = config.getString("content-security-policy");
+			if (isNotEmpty(csp)) {
+				serverMap.put("contentSecurityPolicy", csp);
 			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			initModulesHelpers(node);
