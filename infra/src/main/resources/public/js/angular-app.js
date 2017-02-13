@@ -1533,11 +1533,9 @@ module.directive('skinSrc', function($compile) {
             if (!$('#theme').attr('href')) {
                 return;
             }
-            var skinPath = $('#theme').attr('href').split('/');
-            var path = skinPath.slice(0, skinPath.length - 2).join('/');
             $attributes.$observe('skinSrc', function() {
                 if ($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('https://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1) {
-                    $element.attr('src', path + $attributes.skinSrc);
+                    $element.attr('src', skin.basePath + $attributes.skinSrc);
                 } else {
                     $element.attr('src', $attributes.skinSrc);
                 }
