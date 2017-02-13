@@ -947,7 +947,7 @@ var skin = (function(){
 	return {
 		templateMapping: {},
 		skin: 'raw',
-		theme: '/assets/themes/raw/default/',
+		theme: '/assets/themes/raw/skins/default/',
 		portalTemplate: '/assets/themes/raw/portal.html',
 		basePath: '',
 		logoutCallback: '/',
@@ -958,7 +958,7 @@ var skin = (function(){
 				async: false,
 				success: function(data){
 					that.skin = data.skin;
-					that.theme = '/assets/themes/' + data.skin + '/default/';
+					that.theme = '/assets/themes/' + data.skin + '/skins/default/';
 					that.basePath = that.theme + '../';
 
 					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
@@ -989,7 +989,7 @@ var skin = (function(){
 				async: false,
 				success: function(data){
 					that.theme = data.skin;
-					that.basePath = that.theme + '../';
+					that.basePath = that.theme + '../../';
 					that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 					that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
 					that.logoutCallback = data.logoutCallback;
