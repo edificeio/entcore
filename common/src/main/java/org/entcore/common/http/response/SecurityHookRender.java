@@ -17,13 +17,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.common.http.request;
+package org.entcore.common.http.response;
 
 import fr.wseduc.webutils.http.HookProcess;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
@@ -50,18 +51,18 @@ public class SecurityHookRender implements HookProcess {
 	}
 
 	@Override
-	public void execute(final HttpServerRequest request, final Handler<Boolean> handler) {
+	public void execute(final HttpServerRequest request, final VoidHandler handler) {
 		if (request instanceof SecureHttpServerRequest) {
 			final JsonObject session = ((SecureHttpServerRequest) request).getSession();
 			if (session == null) {
-				handler.handle(false);
+				handler.handle(null);
 				return;
 			}
 			contentSecurityPolicyHeader(request, session);
 			csrfToken(request, handler, session);
 		} else {
 			contentSecurityPolicyHeader(request, null);
-			handler.handle(true);
+			handler.handle(null);
 		}
 	}
 
@@ -102,10 +103,10 @@ public class SecurityHookRender implements HookProcess {
 		request.response().putHeader("Content-Security-Policy", csp);
 	}
 
-	private void csrfToken(final HttpServerRequest request, final Handler<Boolean> handler, JsonObject session) {
+	private void csrfToken(final HttpServerRequest request, final VoidHandler handler, JsonObject session) {
 		if (!csrf || request.path().contains("app-preview") ||
 				"XMLHttpRequest".equals(request.headers().get("X-Requested-With"))) {
-			handler.handle(true);
+			handler.handle(null);
 			return;
 		}
 		final String token = UUID.randomUUID().toString();
@@ -116,7 +117,7 @@ public class SecurityHookRender implements HookProcess {
 				if (Boolean.TRUE.equals(s)) {
 					CookieHelper.set("XSRF-TOKEN", token, request);
 				}
-				handler.handle(s);
+				handler.handle(null);
 			}
 		});
 	}
