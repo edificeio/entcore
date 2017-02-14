@@ -32,7 +32,8 @@ import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.*;
-import org.entcore.common.http.request.SecurityHookRender;
+import org.entcore.common.http.response.SecurityHookRender;
+import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
@@ -110,8 +111,11 @@ public abstract class BaseServer extends Server {
 	@Override
 	protected Server addController(BaseController controller) {
 		super.addController(controller);
+		if (config.getString("override-theme") != null) {
+			controller.addHookRenderProcess(new OverrideThemeHookRender(config.getString("override-theme")));
+		}
 		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
-			controller.setHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
 					config.getBoolean("csrf-token", true), contentSecurityPolicy));
 		}
 		return this;

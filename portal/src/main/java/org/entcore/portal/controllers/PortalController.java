@@ -26,6 +26,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
@@ -202,16 +203,29 @@ public class PortalController extends BaseController {
 		}
 	}
 
-	private String getSkinFromDomain(HttpServerRequest request) {
+	private String getSkinFromConditions(HttpServerRequest request) {
 		if (request == null) {
 			return defaultSkin;
+		}
+		final String overrideTheme = CookieHelper.get("theme", request);
+		if (isNotEmpty(overrideTheme)) {
+			return overrideTheme;
+		}
+		if (request instanceof SecureHttpServerRequest && ((SecureHttpServerRequest) request).getSession() != null) {
+			JsonObject cache = ((SecureHttpServerRequest) request).getSession().getObject("cache");
+			if (cache != null && cache.getObject("preferences") != null) {
+				final String theme = cache.getObject("preferences").getString("theme");
+				if (isNotEmpty(theme)) {
+					return theme;
+				}
+			}
 		}
 		String skin = hostSkin.get(getHost(request));
 		return (skin != null && !skin.trim().isEmpty()) ? skin : defaultSkin;
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		return "/assets/themes/" + getSkinFromDomain(request);
+		return "/assets/themes/" + getSkinFromConditions(request);
 	}
 
 	private void sendWithLastModified(final HttpServerRequest request, final String path) {
@@ -295,7 +309,7 @@ public class PortalController extends BaseController {
 
 	@Get("/skin")
 	public void getSkin(final HttpServerRequest request) {
-		renderJson(request, new JsonObject().putString("skin", getSkinFromDomain(request)));
+		renderJson(request, new JsonObject().putString("skin", getSkinFromConditions(request)));
 	}
 
 	@Get("/skins")
