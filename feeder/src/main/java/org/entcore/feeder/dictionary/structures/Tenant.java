@@ -19,8 +19,9 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.json.JsonArray;
@@ -41,7 +42,7 @@ public class Tenant {
 						"ON CREATE SET t.id = {id} " +
 						"WITH t " +
 						"WHERE t.checksum IS NULL OR t.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("t", object, "id") +
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id") +
 						"RETURN t.id as id ";
 			transactionHelper.add(query, object);
 		}

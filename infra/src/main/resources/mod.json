@@ -5,6 +5,10 @@
   "auto-redeploy": false,
   "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
+  "neo4jConfig" : {
+    "server-uri": "http://localhost:17474/db/data/",
+    "legacy-indexes" : [{ "for" : "node", "name" : "node_auto_index", "type" : "fulltext" }]
+  },
   "app-registry": {
     "name": "org.entcore~app-registry~1.26-SNAPSHOT",
     "config": {

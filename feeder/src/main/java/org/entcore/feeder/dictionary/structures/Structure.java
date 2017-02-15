@@ -19,7 +19,8 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
@@ -83,7 +84,7 @@ public class Structure {
 				"MATCH (s:Structure { externalId : {externalId}}) " +
 				"WITH s " +
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
-				"SET " + Neo4j.nodeSetPropertiesFromJson("s", struct, "id", "externalId");
+				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId");
 		getTransaction().add(query, struct);
 		this.struct = struct;
 	}

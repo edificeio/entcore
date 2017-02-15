@@ -50,12 +50,10 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class BaseServer extends Server {
 
@@ -140,8 +138,12 @@ public abstract class BaseServer extends Server {
 
 	protected void initModulesHelpers(String node) {
 		if (config.getBoolean("neo4j", true)) {
-			Neo4j.getInstance().init(getEventBus(vertx), node +
-					config.getString("neo4j-address", "wse.neo4j.persistor"));
+			if (config.getObject("neo4jConfig") != null) {
+				Neo4j.getInstance().init(vertx, config.getObject("neo4jConfig"));
+			} else {
+				String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+				Neo4j.getInstance().init(vertx, new JsonObject(neo4jConfig));
+			}
 		}
 		if (config.getBoolean("mongodb", true)) {
 			MongoDb.getInstance().init(getEventBus(vertx), node +

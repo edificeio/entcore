@@ -24,7 +24,7 @@ import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.*;
 import org.vertx.java.core.eventbus.EventBus;
@@ -78,7 +78,7 @@ public class PostImport {
 				"MATCH (:User) WITH count(*) as nbUsers " +
 						"MATCH (:Structure) WITH count(*) as nbStructures, nbUsers " +
 						"MATCH (:Class) RETURN nbUsers, nbStructures, count(*) as nbClasses ";
-		neo4j.execute(countQuery, null, new Handler<Message<JsonObject>>() {
+		neo4j.execute(countQuery, (JsonObject) null, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				JsonArray res = event.body().getArray("result");

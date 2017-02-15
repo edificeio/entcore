@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -42,14 +42,14 @@ public class GraphData {
 				"MATCH (s:Structure) " +
 				"OPTIONAL MATCH s<-[:DEPENDS]-(g:FunctionalGroup) " +
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
-				"return s, collect(g.externalId) as groups, collect(c.externalId) as classes ";
+				"return s, collect(distinct g.externalId) as groups, collect(distinct c.externalId) as classes ";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				String query =
 						"MATCH (p:Profile) " +
 						"OPTIONAL MATCH p<-[:COMPOSE]-(f:Function) " +
-						"return p, collect(f.externalId) as functions ";
+						"return p, collect(distinct f.externalId) as functions ";
 				final AtomicInteger count = new AtomicInteger(2);
 				neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 					@Override

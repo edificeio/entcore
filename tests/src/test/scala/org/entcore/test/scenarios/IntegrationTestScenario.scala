@@ -5,9 +5,11 @@ import io.gatling.core.Predef._
 object IntegrationTestScenario {
 
 	val scn = scenario("Integration Test Scenario")
+    .pause(10)
   .group("Import schools Scenario") {
     ImportScenario.scn
   }
+    .pause(10)
   .group("Directory Scenario") {
     DirectoryScenario.scn
   }

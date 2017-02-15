@@ -23,6 +23,7 @@ import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.be1d.Be1dFeeder;
@@ -72,16 +73,15 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	@Override
 	public void start() {
 		super.start();
-		String neo4jAddress = container.config().getString("neo4j-address");
-		if (neo4jAddress == null || neo4jAddress.trim().isEmpty()) {
-			logger.fatal("Missing neo4j address.");
-			return;
-		}
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
 			node = "";
 		}
-		neo4j = new Neo4j(vertx.eventBus(), node + neo4jAddress);
+		String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+		if (neo4jConfig != null) {
+			neo4j = Neo4j.getInstance();
+			neo4j.init(vertx, new JsonObject(neo4jConfig));
+		}
 		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		EventStoreFactory.getFactory().setVertx(vertx);

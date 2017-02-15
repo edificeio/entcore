@@ -19,8 +19,9 @@
 
 package org.entcore.feeder.dictionary.users;
 
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.timetable.edt.EDTImporter;
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
@@ -67,7 +68,7 @@ public class PersEducNat extends AbstractUser {
 				sb.append("u.displayName = {displayName} ");
 				sb.append("WITH u ");
 				sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
-				sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
+				sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 						"id", "externalId", "login", "activationCode", "displayName", "email"));
 				if (EDTImporter.EDT.equals(currentSource)) {
 					sb.append("RETURN u.id as id, u.IDPN as IDPN, head(u.profiles) as profile");

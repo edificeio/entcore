@@ -195,6 +195,7 @@ project(':cas') {
 
 project(':session') {
   dependencies {
+    compile project(':common')
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
   }
 }
