@@ -54,16 +54,12 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Starter extends BaseServer {
 
-	String developerId = "";
 	private String node;
 	private boolean cluster;
 
 	@Override
 	public void start() {
 		try {
-			if (vertx.fileSystem().existsSync("../../developer.id")) {
-				developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
-			}
 			if (container.config() == null || container.config().size() == 0) {
 				config = getConfig("", "mod.json");
 			}
@@ -327,13 +323,7 @@ public class Starter extends BaseServer {
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {
-		Buffer b;
-		if (! developerId.isEmpty() && vertx.fileSystem().existsSync(path + developerId + "." + fileName)) {
-			b = vertx.fileSystem().readFileSync(path + developerId + "." + fileName);
-		} else {
-			b = vertx.fileSystem().readFileSync(path + fileName);
-		}
-
+		Buffer b = vertx.fileSystem().readFileSync(path + fileName);
 		if (b == null) {
 			log.error("Configuration file "+ fileName +"not found");
 			throw new Exception("Configuration file "+ fileName +" not found");
