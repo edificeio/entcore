@@ -21,12 +21,13 @@ package org.entcore.feeder.timetable;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
@@ -366,7 +367,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected void updateUser(JsonObject user) {
 		user.removeField("Ident");
 		user.removeField("epj");
-		final String attrs = Neo4j.nodeSetPropertiesFromJson("u", user,
+		final String attrs = Neo4jUtils.nodeSetPropertiesFromJson("u", user,
 				"id", "externalId", "login", "activationCode", "displayName", "email");
 		if (isNotEmpty(attrs.trim())) {
 			final String updateUser =

@@ -23,6 +23,7 @@ import com.hazelcast.core.BaseMap;
 import com.hazelcast.core.IMap;
 import com.hazelcast.nio.serialization.HazelcastSerializationException;
 import fr.wseduc.mongodb.MongoDb;
+import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -44,8 +45,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private static final String SESSIONS_COLLECTION = "sessions";
 
 	private long sessionTimeout;
-	private String neo4jAddress;
 	private MongoDb mongo;
+	private Neo4j neo4j;
 
 	private static final class LoginInfo implements Serializable {
 		final long timerId;
@@ -60,9 +61,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	public void start() {
 		super.start();
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		String neo4jConfig = (String) server.get("neo4jConfig");
+		neo4j = Neo4j.getInstance();
+		neo4j.init(vertx, new JsonObject(neo4jConfig));
 		Boolean cluster = (Boolean) server.get("cluster");
 		String node = (String) server.get("node");
-		neo4jAddress = node + "wse.neo4j.persistor";
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 		if (Boolean.TRUE.equals(cluster)) {
@@ -582,7 +585,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				.add(new JsonObject().putString("statement", query3).putObject("parameters", params))
 				.add(new JsonObject().putString("statement", query4))
 				.add(new JsonObject().putString("statement", query5).putObject("parameters", params));
-		executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
+		neo4j.executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
@@ -700,18 +703,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		});
-	}
-
-	public void executeTransaction(JsonArray statements, Integer transactionId, boolean commit,
-			Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "executeTransaction");
-		jo.putArray("statements", statements);
-		jo.putBoolean("commit", commit);
-		if (transactionId != null) {
-			jo.putNumber("transactionId", transactionId);
-		}
-		eb.send(neo4jAddress, jo, handler);
 	}
 
 }

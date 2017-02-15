@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.test.integration.java;
 
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.vertx.java.core.AsyncResult;

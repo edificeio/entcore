@@ -20,6 +20,7 @@
 package org.entcore.feeder.utils;
 
 import fr.wseduc.webutils.I18n;
+import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;

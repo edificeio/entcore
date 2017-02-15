@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2017
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,40 +15,25 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
 package org.entcore.common.neo4j;
 
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+public class ExceptionUtils {
 
-public class Neo4jUtils {
-
-	public static String nodeSetPropertiesFromJson(String nodeAlias, JsonObject json, String... ignore) {
-		StringBuilder sb = new StringBuilder();
-		List<String> i;
-		if (ignore != null) {
-			i = Arrays.asList(ignore);
-		} else {
-			i = Collections.emptyList();
+	public static JsonObject exceptionToJson(Throwable e) {
+		JsonArray stacktrace = new JsonArray();
+		for (StackTraceElement s: e.getStackTrace()) {
+			stacktrace.add(s.toString());
 		}
-		for (String a: json.getFieldNames()) {
-			String attr = a.replaceAll("\\W+", "");
-			if (i.contains(attr)) continue;
-			sb.append(", ").append(nodeAlias).append(".").append(attr).append(" = {").append(attr).append("}");
-		}
-		if (sb.length() > 2) {
-			return sb.append(" ").substring(2);
-		}
-		return " ";
+		return new JsonObject()
+			.putString("message", e.getMessage())
+			.putString("exception", e.getClass().getSimpleName())
+			.putString("fullname", e.getClass().getName())
+			.putArray("stacktrace", stacktrace);
 	}
 
 }

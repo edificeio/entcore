@@ -25,7 +25,7 @@ import au.com.bytecode.opencsv.CSVWriteProc;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.feeder.utils.CSVUtil;
-import org.entcore.feeder.utils.Neo4j;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;

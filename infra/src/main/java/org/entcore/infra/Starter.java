@@ -88,6 +88,10 @@ public class Starter extends BaseServer {
 			if (filesystem != null) {
 				serverMap.put("file-system", filesystem.encode());
 			}
+			JsonObject neo4jConfig = config.getObject("neo4jConfig");
+			if (neo4jConfig != null) {
+				serverMap.put("neo4jConfig", neo4jConfig.encode());
+			}
 			final String csp = config.getString("content-security-policy");
 			if (isNotEmpty(csp)) {
 				serverMap.put("contentSecurityPolicy", csp);

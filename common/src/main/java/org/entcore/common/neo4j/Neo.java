@@ -30,27 +30,18 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 
+@Deprecated
 public class Neo  {
-	private EventBus eb;
-	private String address;
-	private Logger log;
+
+	private Neo4j neo4j;
 
 	public Neo (Vertx vertx, EventBus eb, Logger log) {
-		this.eb = eb;
-		this. log = log;
-		String node = (String) vertx.sharedData().getMap("server").get("node");
-		if (node == null) {
-			node = "";
-		}
-		this.address = node + "wse.neo4j.persistor";
+		neo4j = Neo4j.getInstance();
 	}
 
 	@Deprecated
 	public void sendBatch(JsonArray queries, final Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "executeBatch");
-		jo.putArray("queries", queries);
-		eb.send(address, jo, new Handler<Message<JsonObject>>() {
+		neo4j.executeBatch(queries, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (handler != null) {
@@ -91,6 +82,7 @@ public class Neo  {
 		send(query, null, handler);
 	}
 
+	@Deprecated
 	public void send(String query) {
 		send(query, (Map<String,Object>) null);
 	}
@@ -105,23 +97,17 @@ public class Neo  {
 		});
 	}
 
+	@Deprecated
 	public void send(String query, Map<String,Object> params) {
 		send(query, params, (Handler<Message<JsonObject>>) null);
 	}
 
 	@Deprecated
 	public void send(String query, Map<String,Object> params, final Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		if (params != null) {
-			jo.putObject("params", new JsonObject(params));
-		}
 		if (handler != null) {
-			eb.send(address, jo, new Handler<Message<JsonObject>>() {
+			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					log.debug(event.body().encode());
 					JsonArray result = event.body().getArray("result");
 					if ("ok".equals(event.body().getString("status")) && result != null) {
 						int i = 0;
@@ -136,7 +122,7 @@ public class Neo  {
 				}
 			});
 		} else {
-			eb.send(address, jo);
+			neo4j.execute(query, params, (Handler<Message<JsonObject>>) null);
 		}
 	}
 
@@ -145,12 +131,14 @@ public class Neo  {
 		send(query, null, response);
 	}
 
+	@Deprecated
 	public static JsonObject toJsonObject(String query, JsonObject params) {
 		return new JsonObject()
 		.putString("query", query)
 		.putObject("params", (params != null) ? params : new JsonObject());
 	}
 
+	@Deprecated
 	public static JsonArray resultToJsonArray(JsonObject j) {
 		JsonArray r = new JsonArray();
 		if (j != null) {
@@ -161,20 +149,17 @@ public class Neo  {
 		return r;
 	}
 
+	@Deprecated
 	public void execute(String query, JsonObject params, Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		if (params != null) {
-			jo.putObject("params", params);
-		}
-		eb.send(address, jo, handler);
+		neo4j.execute(query, params, handler);
 	}
 
+	@Deprecated
 	public void execute(String query, Map<String,Object> params, Handler<Message<JsonObject>> handler) {
 		execute(query, new JsonObject(params), handler);
 	}
 
+	@Deprecated
 	public void execute(String query, Map<String,Object> params, final HttpServerResponse response) {
 		execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -185,6 +170,7 @@ public class Neo  {
 		});
 	}
 
+	@Deprecated
 	public void execute(String query, JsonObject params, final HttpServerResponse response) {
 		execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -195,13 +181,12 @@ public class Neo  {
 		});
 	}
 
+	@Deprecated
 	public void executeBatch(JsonArray queries, final Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "executeBatch");
-		jo.putArray("queries", queries);
-		eb.send(address, jo, handler);
+		neo4j.executeBatch(queries, handler);
 	}
 
+	@Deprecated
 	public void executeBatch(JsonArray queries, final HttpServerResponse response) {
 		executeBatch(queries, new Handler<Message<JsonObject>>() {
 			@Override
@@ -212,30 +197,20 @@ public class Neo  {
 		});
 	}
 
+	@Deprecated
 	public void executeTransaction(JsonArray statements, Integer transactionId, boolean commit,
 			Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "executeTransaction");
-		jo.putArray("statements", statements);
-		jo.putBoolean("commit", commit);
-		if (transactionId != null) {
-			jo.putNumber("transactionId", transactionId);
-		}
-		eb.send(address, jo, handler);
+		neo4j.executeTransaction(statements, transactionId, commit, handler);
 	}
 
+	@Deprecated
 	public void resetTransactionTimeout(int transactionId, Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "resetTransactionTimeout");
-		jo.putNumber("transactionId", transactionId);
-		eb.send(address, jo, handler);
+		neo4j.resetTransactionTimeout(transactionId, handler);
 	}
 
+	@Deprecated
 	public void rollbackTransaction(int transactionId, Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "rollbackTransaction");
-		jo.putNumber("transactionId", transactionId);
-		eb.send(address, jo, handler);
+		neo4j.rollbackTransaction(transactionId, handler);
 	}
 
 }

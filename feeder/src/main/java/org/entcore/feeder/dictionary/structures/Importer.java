@@ -19,6 +19,8 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
@@ -237,7 +239,7 @@ public class Importer {
 						"ON CREATE SET fos.id = {id} " +
 						"WITH fos " +
 						"WHERE fos.checksum IS NULL OR fos.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("fos", object, "id", "externalId");
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("fos", object, "id", "externalId");
 				params = object;
 			} else {
 				query = "CREATE (fos:FieldOfStudy {props}) ";
@@ -261,7 +263,7 @@ public class Importer {
 						"ON CREATE SET m.id = {id} " +
 						"WITH m " +
 						"WHERE m.checksum IS NULL OR m.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("m", object, "id", "externalId");
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("m", object, "id", "externalId");
 				params = object;
 			} else {
 				query = "CREATE (m:Module {props}) ";
@@ -292,7 +294,7 @@ public class Importer {
 						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 								"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
@@ -335,7 +337,7 @@ public class Importer {
 						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 						"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
@@ -493,7 +495,7 @@ public class Importer {
 					sb.append("u.displayName = {displayName} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
-					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
+					sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 							"id", "externalId", "login", "activationCode", "displayName", "email"));
 					params = object;
 				} else {

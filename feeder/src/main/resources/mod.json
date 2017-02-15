@@ -1,7 +1,7 @@
 {
 	"main" : "org.entcore.feeder.Feeder",
 	"worker": true,
-	"multi-threaded": true,
+	"multi-threaded": false,
 	"address" : "entcore.feeder",
 	"neo4j-address" : "wse.neo4j.persistor",
 	"import-files" : "../../sample-be1d",
