@@ -28,6 +28,6 @@ public interface MappingService {
 
 	void getRequestedFieldsForProfile(String profile, ImportInfos importInfos, Handler<Either<String, JsonObject>> results);
 
-	void mappingValidate(final JsonObject association, String profile, String path, ImportInfos importInfos, final Handler<Either<String, JsonObject>> handler);
+	void mappingValidate(final JsonObject association, String profile, String path, ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler);
 
 }

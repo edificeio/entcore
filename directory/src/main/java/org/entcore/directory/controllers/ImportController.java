@@ -89,14 +89,14 @@ public class ImportController extends BaseController {
 				String path = association.getString("profile");
 				final String importId = path;
 				path = container.config().getString("wizard-path", "/tmp") + File.separator + importId;
-				mappingService.mappingValidate( association, profileName, path, importInfos, new Handler<Either<String, JsonObject>>() {
+				mappingService.mappingValidate( association, profileName, path, importInfos, new Handler<Either<JsonObject, JsonObject>>() {
 					@Override
-					public void handle(Either<String, JsonObject> event) {
+					public void handle(Either<JsonObject, JsonObject> event) {
 						if (event.isRight()) {
 							renderJson(request, event.right().getValue(), 200);
 						} else {
 							JsonObject error = new JsonObject()
-									.putString("errors", event.left().getValue());
+									.putObject("errors", event.left().getValue());
 							renderJson(request, error, 400);
 						}
 					}
@@ -158,6 +158,14 @@ public class ImportController extends BaseController {
 				importInfos.setStructureName(request.formAttributes().get("structureName"));
 				importInfos.setUAI(request.formAttributes().get("UAI"));
 				importInfos.setLanguage(I18n.acceptLanguage(request));
+
+				// if imported from mapping
+				if( paramToBoolean(request.formAttributes().get("fromMapping"))) {
+					JsonObject association = new JsonObject(request.formAttributes().get("association"));
+					importInfos.setAssociation(association);
+					importInfos.setProfile(request.formAttributes().get("profile"));
+				}
+
 				try {
 					importInfos.setFeeder(request.formAttributes().get("type"));
 				} catch (IllegalArgumentException | NullPointerException e) {

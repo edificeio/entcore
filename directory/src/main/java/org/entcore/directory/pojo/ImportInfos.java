@@ -27,6 +27,7 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.file.FileSystem;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
@@ -53,6 +54,9 @@ public class ImportInfos {
 	private String id;
 	private String structureId;
 	private String structureExternalId;
+
+	private String profile;
+	private JsonObject association; // for import after having manually mapped
 
 	private String finalPath;
 
@@ -210,6 +214,23 @@ public class ImportInfos {
 				}
 			}
 		});
+	}
+
+
+	public String getProfile() {
+		return profile;
+	}
+
+	public void setProfile(String profile) {
+		this.profile = profile;
+	}
+
+	public JsonObject getAssociation() {
+		return association;
+	}
+
+	public void setAssociation(JsonObject association) {
+		this.association = association;
 	}
 
 }

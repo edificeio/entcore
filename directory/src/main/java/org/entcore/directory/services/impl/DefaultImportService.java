@@ -66,7 +66,7 @@ public class DefaultImportService implements ImportService {
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
 								new JsonObject().putArray(
-												"global", new JsonArray().addString(res.body().getString("message", ""))
+										"global", new JsonArray().addString(res.body().getString("message", ""))
 								)));
 					}
 				}
@@ -82,7 +82,9 @@ public class DefaultImportService implements ImportService {
 	public void doImport(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
-					.putString("action", "import");
+					.putString("action", "import")
+					.putObject("association", importInfos.getAssociation())
+					.putString("profile", importInfos.getProfile());
 			eb.send("entcore.feeder", action, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
@@ -97,7 +99,7 @@ public class DefaultImportService implements ImportService {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().putArray("global",
 								new JsonArray().addString(event.body().getString("message", "")))));
 					}
-			}
+				}
 			});
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()

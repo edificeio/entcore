@@ -11,6 +11,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 	$scope.selected = "0";
 	$scope.currentProfile = ""; //profile actually mapped
 	$scope.mappingAssociation = {}; // association between fields in csv and expected fields, made by user
+	$scope.fromMapping = false; // used at step 2, to see if we launch import ($scope.launchImport) after a mapping, or after direct process.
 	$scope.wizard.loadAvailableFeeders(function(conf) {
 		if (conf.feeders && conf.feeders.length > 1) {
 			$scope.feeders = conf.feeders;
@@ -21,7 +22,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		$scope.$apply();
 	});
 
-    template.open('wizard-container', 'wizard-step1');
+	template.open('wizard-container', 'wizard-step1');
 
 	$scope.displayMappingProfile = function(profileName, fileName) {
 		$scope.wizard.mapping(profileName, fileName, function(data) {
@@ -46,10 +47,10 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 			}
 
 			/*for (var field in data.profileFields.validate) {
-				if( $scope.wizard.expectedFields.indexOf('*' + lang.translate('profile.' + data.profileFields.validate[field])) == -1 ){
-					$scope.wizard.expectedFields.push(lang.translate('profile.' + data.profileFields.validate[field]));
-				}
-			}*/
+			 if( $scope.wizard.expectedFields.indexOf('*' + lang.translate('profile.' + data.profileFields.validate[field])) == -1 ){
+			 $scope.wizard.expectedFields.push(lang.translate('profile.' + data.profileFields.validate[field]));
+			 }
+			 }*/
 			for (var field in data.profileFields.validate) {
 				if ($scope.wizard.expectedFields2.indexOf('*' + lang.translate('profile.' + field)) == -1) {
 					$scope.wizard.expectedFields.push({"translated":lang.translate('profile.' + field), "id":field});
@@ -87,11 +88,11 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		}
 	};
 
-		/*
-		$scope.errors = _.map($scope.errors, function (errors, file) {
-			return {"title" : lang.translate(file), "elements" : errors };
-		});*/
-		//template.open('wizard-container', 'wizard-errors');
+	/*
+	 $scope.errors = _.map($scope.errors, function (errors, file) {
+	 return {"title" : lang.translate(file), "elements" : errors };
+	 });*/
+	//template.open('wizard-container', 'wizard-errors');
 
 	$scope.displayErrors = function(data) {
 		if (data.error) {
@@ -133,17 +134,19 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 			console.log(data);
 			if (data.error || data.errors) {
 				$scope.displayMapping(data);
+				$scope.fromMapping = true;
 			} else {
+				$scope.fromMapping = false;
 				wizard.valid = true;
 				$scope.validatedUsers = [];
-            	$scope.userOrder = 'lastName';
-            	$scope.userFilter = {};
-            	$scope.classes = [];
-            	$scope.states = [];
-            	$scope.profiles = [];
-            	var uniqueClasses = {};
-            	var uniqueStates = {};
-            	var uniqueProfiles = {};
+				$scope.userOrder = 'lastName';
+				$scope.userFilter = {};
+				$scope.classes = [];
+				$scope.states = [];
+				$scope.profiles = [];
+				var uniqueClasses = {};
+				var uniqueStates = {};
+				var uniqueProfiles = {};
 				for (var attr in data) {
 					for (var i = 0; i < data[attr].length; i++) {
 						$scope.validatedUsers.push(data[attr][i]);
@@ -165,10 +168,10 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 							$scope.profiles.push(data[attr][i]['translatedProfile']);
 						}
 					}
- 				}
- 				$scope.states = $scope.states.sort();
- 				$scope.profiles = $scope.profiles.sort();
- 				template.open('wizard-container', 'wizard-step2');
+				}
+				$scope.states = $scope.states.sort();
+				$scope.profiles = $scope.profiles.sort();
+				template.open('wizard-container', 'wizard-step2');
 			}
 			$scope.disabledButtons.validate = false;
 			$scope.$apply();
@@ -199,7 +202,46 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 	$scope.nextMappingStep = function(wizard) {
 		$scope.wizard.validateMapping($scope.currentProfile, $scope.mappingAssociation, $scope.currentFileName, function(data) {
 			if( data.errors ) {
-				notify.error(lang.translate(data.errors));
+				var errorProfile = "error." + $scope.currentProfile;
+				notify.error(lang.translate(data.errors[errorProfile][0]));
+			} else {
+				wizard.valid = true;
+				$scope.validatedUsers = [];
+				$scope.userOrder = 'lastName';
+				$scope.userFilter = {};
+				$scope.classes = [];
+				$scope.states = [];
+				$scope.profiles = [];
+				var uniqueClasses = {};
+				var uniqueStates = {};
+				var uniqueProfiles = {};
+				for (var attr in data) {
+					for (var i = 0; i < data[attr].length; i++) {
+						$scope.validatedUsers.push(data[attr][i]);
+						if (data[attr][i]['classesStr']) {
+							var classesSplit = data[attr][i]['classesStr'].split(', ');
+							for (var j = 0; j < classesSplit.length; j++) {
+								if (!uniqueClasses[classesSplit[j]]) {
+									uniqueClasses[classesSplit[j]] = true;
+									$scope.classes.push(classesSplit[j]);
+								}
+							}
+						}
+						if (!uniqueStates[data[attr][i]['state']]) {
+							uniqueStates[data[attr][i]['state']] = true;
+							$scope.states.push(data[attr][i]['state']);
+						}
+						if (!uniqueProfiles[data[attr][i]['translatedProfile']]) {
+							uniqueProfiles[data[attr][i]['translatedProfile']] = true;
+							$scope.profiles.push(data[attr][i]['translatedProfile']);
+						}
+					}
+				}
+				$scope.states = $scope.states.sort();
+				$scope.profiles = $scope.profiles.sort();
+				template.open('wizard-container', 'wizard-step2');
+				template.open('wizard-container', 'wizard-step2');
+				$scope.$apply();
 			}
 		});
 	};
@@ -212,7 +254,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 		$scope.disabledButtons.import = true;
 		$scope.disabledButtons.back = true;
 		if (wizard.valid) {
-			wizard.import(function(data) {
+			wizard.import($scope.fromMapping, $scope.currentProfile, $scope.mappingAssociation, function(data) {
 				if (data.error || data.errors) {
 					$scope.displayErrors(data);
 				} else {
@@ -258,8 +300,8 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 			csvHeader += lang.translate(i18nArray[i]);
 		}
 		var csvString = bom + csvHeader + _.map($scope.validatedUsers, function(u) {
-			return "\r\n" + u.lastName + ";" + u.firstName + ";" + u.translatedProfile + ";" + u.classesStr + ";" + u.state;
-		}).join("");
+				return "\r\n" + u.lastName + ";" + u.firstName + ";" + u.translatedProfile + ";" + u.classesStr + ";" + u.state;
+			}).join("");
 		ajaxDownload(new Blob([csvString]), wizard.structureName + ".csv");
 	};
 

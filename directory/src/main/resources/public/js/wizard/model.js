@@ -2,11 +2,11 @@ function Wizard() {}
 
 Wizard.prototype.validate = function(callback) {
     http().postFile("/directory/wizard/validate", this.toFormData())
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        }
-    }).e400(function(e){
+        .done(function(data) {
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
         var error = JSON.parse(e.responseText);
         if(typeof callback === 'function') {
             callback(error);
@@ -16,13 +16,17 @@ Wizard.prototype.validate = function(callback) {
     });
 };
 
-Wizard.prototype.import = function(callback) {
+Wizard.prototype.import = function(fromMapping, profile, association, callback) {
+    this.fromMapping = fromMapping;
+    this.association = association;
+    this.profile = profile;
     http().postFile("/directory/wizard/import", this.toFormData())
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        }
-    }).e400(function(e){
+        .done(function(data) {
+            if(typeof callback === 'function') {
+                template.open('wizard-container', 'wizard-step2');
+                callback(data);
+            }
+        }).e400(function(e){
         var error = JSON.parse(e.responseText);
         if(typeof callback === 'function') {
             callback(error);
@@ -37,9 +41,13 @@ Wizard.prototype.toFormData = function() {
     var formData = new FormData();
     for (var attr in this) {
         // TODO remove useless objects
-        if ((typeof this[attr] === 'function')) continue;
+        if (typeof this[attr] === 'function') continue;
         if (this[attr]) {
-            formData.append(attr, this[attr]);
+            if( attr == "association" ) {
+                formData.append(attr, JSON.stringify(this[attr]));
+            } else {
+                formData.append(attr, this[attr]);
+            }
         }
     }
     return formData;
@@ -47,11 +55,11 @@ Wizard.prototype.toFormData = function() {
 
 Wizard.prototype.loadAvailableFeeders = function(callback){
     http().get('/directory/conf/public')
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        }
-    }).e400(function(e){
+        .done(function(data) {
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
         var error = JSON.parse(e.responseText);
         if(typeof callback === 'function') {
             callback(error);
@@ -70,11 +78,11 @@ Wizard.prototype.mapping = function(profile, fileName, callback) {
             profile : profile,
             fileName : fileName
         })
-   .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        }
-    }).e400(function(e){
+        .done(function(data) {
+            if(typeof callback === 'function') {
+                callback(data);
+            }
+        }).e400(function(e){
         var error = JSON.parse(e.responseText);
         if(typeof callback === 'function') {
             callback(error);

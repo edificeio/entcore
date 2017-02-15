@@ -109,14 +109,15 @@ public class CsvValidator extends Report implements ImportValidator {
 													if (profiles.containsKey(profile)) {
 														log.info("Charset : " + charset);
 														if( association == null ) {
-															checkFile(file, profile, charset, new Handler<JsonObject>() {
+															checkFile(file, profile, charset, null, new Handler<JsonObject>() {
 																@Override
 																public void handle(JsonObject event) {
 																	handlers[j + 1].handle(null);
 																}
 															});
 														} else {
-															mappingFields(file, profile, charset, association, new Handler<JsonObject>() {
+															//mappingFields(file, profile, charset, association, new Handler<JsonObject>() {
+															checkFile(file, profile, charset, association, new Handler<JsonObject>() {
 																@Override
 																public void handle(JsonObject event) {
 																	handlers[j + 1].handle(null);
@@ -147,7 +148,7 @@ public class CsvValidator extends Report implements ImportValidator {
 		});
 	}
 
-	private void mappingFields(final String path, final String profile, final String charset, final JsonObject association, final Handler<JsonObject> handler) {
+	private void checkFile(final String path, final String profile, final String charset, final JsonObject association, final Handler<JsonObject> handler) {
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
 				.separator(';')
@@ -161,89 +162,50 @@ public class CsvValidator extends Report implements ImportValidator {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					JsonArray invalidColumns = columnsMapper.getColumsAssociations(strings, columns, profile, association);
-					if( invalidColumns.size() == 1) {
-						Object obj = invalidColumns.get(0);
-						if( obj instanceof JsonObject ){
-							JsonObject jobj = (JsonObject)obj;
-							String sError = jobj.getString("error");
-							if( sError != null ) {
-								addError(profile, sError);
-								handler.handle(result);
+					JsonArray invalidColumns;
+					if( association != null ) { // mapping
+						invalidColumns = columnsMapper.getColumsAssociations(strings, columns, profile, association);
+						if( invalidColumns != null && invalidColumns.size() == 1) {
+							Object obj = invalidColumns.get(0);
+							if (obj instanceof JsonObject) {
+								JsonObject jobj = (JsonObject) obj;
+								String sError = jobj.getString("error");
+								if (sError != null) {
+									addError(profile, sError);
+									handler.handle(result);
+								}
 							}
 						}
+					} else { // normal
+						invalidColumns = columnsMapper.getColumsNames(strings, columns);
+					}
+					if( invalidColumns != null && invalidColumns.size() == 1 ) {
+						if( association == null) { // shouldn't be done if mapping
+							parseErrors("invalid.column", invalidColumns, profile, handler);
+						}
 					} else if (columns.contains("externalId")) {
-						int j = 0;
-						for (String c : columns) {
-							if ("externalId".equals(c)) {
-								filterExternalId.set(j);
+						if( association != null ) { // mapping
+							// find index of externalId in association
+							for (String field : association.getFieldNames()) {
+								if( association.getString(field).equals("externalId")){
+									filterExternalId.set(Integer.parseInt(field));
+									break;
+								}
 							}
-							j++;
+						} else {// normal
+							int j = 0;
+							for (String c : columns) {
+								if ("externalId".equals(c)) {
+									filterExternalId.set(j);
+								}
+								j++;
+							}
 						}
 					} else if (structureId != null && !structureId.trim().isEmpty()) {
 						findUsersEnabled = false;
 						findUsers(path, profile, columns, charset, handler);
 					} else {
-						validateFile(path, profile, columns, null, charset, handler);
-					}
-				} else if (filterExternalId.get() >= 0) {
-					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
-						externalIds.addString(strings[filterExternalId.get()]);
-					} else if (findUsersEnabled) { // TODO add check to empty lines
-						findUsersEnabled = false;
-						final int eii = filterExternalId.get();
-						filterExternalId.set(-1);
-						findUsers(path, profile, columns, eii, charset, handler);
-					}
-				}
-			}
-		});
-		/*if (filterExternalId.get() >= 0) {
-			filterExternalIdExists(externalIds, new Handler<JsonArray>() {
-				@Override
-				public void handle(JsonArray externalIdsExists) {
-					if (externalIdsExists != null) {
-						validateFile(path, profile, columns, externalIdsExists, charset, handler);
-					} else {
-						addError(profile, "error.find.externalIds");
-						handler.handle(result);
-					}
-				}
-			});
-		}*/
-	}
-
-
-	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(0)
-				.charset(charset)
-				.create();
-		final List<String> columns = new ArrayList<>();
-		final AtomicInteger filterExternalId = new AtomicInteger(-1);
-		final JsonArray externalIds = new JsonArray();
-		csvParser.read(path, new CSVReadProc() {
-			@Override
-			public void procRow(int i, String... strings) {
-				if (i == 0) {
-					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns);
-					if (invalidColumns.size() > 0) {
-						parseErrors("invalid.column", invalidColumns, profile, handler);
-					} else if (columns.contains("externalId")) {
-						int j = 0;
-						for (String c : columns) {
-							if ("externalId".equals(c)) {
-								filterExternalId.set(j);
-							}
-							j++;
-						}
-					} else if (structureId != null && !structureId.trim().isEmpty()) {
-						findUsersEnabled = false;
-						findUsers(path, profile, columns, charset, handler);
-					} else {
-						validateFile(path, profile, columns, null, charset, handler);
+						validateFile(path, profile, columns, null, charset, association, handler);
 					}
 				} else if (filterExternalId.get() >= 0) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
@@ -262,7 +224,7 @@ public class CsvValidator extends Report implements ImportValidator {
 				@Override
 				public void handle(JsonArray externalIdsExists) {
 					if (externalIdsExists != null) {
-						validateFile(path, profile, columns, externalIdsExists, charset, handler);
+						validateFile(path, profile, columns, externalIdsExists, charset, association, handler);
 					} else {
 						addError(profile, "error.find.externalIds");
 						handler.handle(result);
@@ -298,7 +260,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					handler.handle(result);
 				} else {
 					//validateFile(path, profile, columns, null, handler);
-					checkFile(path, profile, charset, handler);
+					checkFile(path, profile, charset, null, handler);
 				}
 			}
 		});
@@ -326,11 +288,26 @@ public class CsvValidator extends Report implements ImportValidator {
 		handler.handle(result);
 	}
 
-	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
+	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final JsonObject association, final Handler<JsonObject> handler) {
+		// if association == null, then it is no mapping
+		List<Integer> columnsMappingIndex = null; // list of indexes from the file that are mapped
+		final Integer nextMappingIndex = 0;
+		if( association != null ){
+			columnsMappingIndex = new ArrayList<>();
+			int fieldIndex = 0;
+			for (String field : association.getFieldNames()) {
+				if(! "profile".equals(field)) {
+					columnsMappingIndex.add(fieldIndex, Integer.parseInt(field));
+				}
+				fieldIndex++;
+			}
+		}
 		final Validator validator = profiles.get(profile);
+		final List<Integer> finalColumnsMappingIndex = columnsMappingIndex;
 		getStructure(path, new Handler<Structure>() {
 			@Override
 			public void handle(final Structure structure) {
+
 				if (structure == null) {
 					addError(profile, "invalid.structure");
 					handler.handle(result);
@@ -342,76 +319,109 @@ public class CsvValidator extends Report implements ImportValidator {
 						.skipLines(1)
 						.charset(charset)
 						.create();
+
+				int[] nextMappingIndexTmp = new int[1];
+				if( association != null ) {
+					nextMappingIndexTmp[0] = finalColumnsMappingIndex.get(0);
+				}
+
+				final int[] nextMappingIndex = nextMappingIndexTmp;
 				csvParser.read(path, new CSVReadProc() {
 					@Override
+					// reading the lines
 					public void procRow(int i, String... strings) {
 						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
 						user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 						user.putArray("profiles", new JsonArray().add(profile));
 						List<String[]> classes = new ArrayList<>();
+						// reading the columns
+						int nextIndexColumns = -1;
 						for (int j = 0; j < strings.length; j++) {
-							final String c = columns.get(j);
-							final String v = strings[j].trim();
-							if (v.isEmpty()) continue;
-							switch (validator.getType(c)) {
-								case "string":
-									if ("birthDate".equals(c)) {
-										Matcher m = frenchDatePatter.matcher(v);
-										if (m.find()) {
-											user.putString(c, m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+							boolean doNotRead = false; // if mapping and if column is not mapped
+							if(association != null ) {
+								//get next index to be read
+								if( nextIndexColumns + 1 >= finalColumnsMappingIndex.size()){ // we have already reached all the columns we wanted
+									doNotRead = true;
+								} else if( j != finalColumnsMappingIndex.get(nextIndexColumns+1)) { // that column (j) has not been mapped by user
+									doNotRead = true;
+								} else {
+									nextIndexColumns++;
+									if( association != null ) {
+										nextMappingIndex[0]++;
+									}
+								}
+							}
+							if( !doNotRead ) {
+								String ctmp;
+								if( association == null ) {
+									ctmp = columns.get(j);
+								} else {
+									// mapping
+									ctmp = columns.get(nextIndexColumns);
+								}
+								final String c = ctmp;
+								final String v = strings[j].trim();
+								if (v.isEmpty()) continue;
+								switch (validator.getType(c)) {
+									case "string":
+										if ("birthDate".equals(c)) {
+											Matcher m = frenchDatePatter.matcher(v);
+											if (m.find()) {
+												user.putString(c, m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+											} else {
+												user.putString(c, v);
+											}
 										} else {
 											user.putString(c, v);
 										}
-									} else {
-										user.putString(c, v);
-									}
-									break;
-								case "array-string":
-									JsonArray a = user.getArray(c);
-									if (a == null) {
-										a = new JsonArray();
-										user.putArray(c, a);
-									}
-									if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
-											!v.startsWith(structure.getExternalId() + "$")) {
-										a.add(structure.getExternalId() + "$" + v);
-									} else {
-										a.add(v);
-									}
-									break;
-								case "boolean":
-									user.putBoolean(c, "true".equals(v.toLowerCase()));
-									break;
-								default:
-									Object o = user.getValue(c);
-									final String v2;
-									if ("childClasses".equals(c) && !v.startsWith(structure.getExternalId() + "$")) {
-										v2 = structure.getExternalId() + "$" + v;
-									} else {
-										v2 = v;
-									}
-									if (o != null) {
-										if (o instanceof JsonArray) {
-											((JsonArray) o).add(v2);
-										} else {
-											JsonArray array = new JsonArray();
-											array.add(o).add(v2);
-											user.putArray(c, array);
+										break;
+									case "array-string":
+										JsonArray a = user.getArray(c);
+										if (a == null) {
+											a = new JsonArray();
+											user.putArray(c, a);
 										}
-									} else {
-										user.putString(c, v2);
-									}
-							}
-							if ("classes".equals(c)) {
-								String eId = structure.getExternalId() + '$' + v;
-								String[] classId = new String[2];
-								classId[0] = structure.getExternalId();
-								classId[1] = eId;
-								classes.add(classId);
-								classesNames.addString(v);
-							}
-						}
+										if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
+												!v.startsWith(structure.getExternalId() + "$")) {
+											a.add(structure.getExternalId() + "$" + v);
+										} else {
+											a.add(v);
+										}
+										break;
+									case "boolean":
+										user.putBoolean(c, "true".equals(v.toLowerCase()));
+										break;
+									default:
+										Object o = user.getValue(c);
+										final String v2;
+										if ("childClasses".equals(c) && !v.startsWith(structure.getExternalId() + "$")) {
+											v2 = structure.getExternalId() + "$" + v;
+										} else {
+											v2 = v;
+										}
+										if (o != null) {
+											if (o instanceof JsonArray) {
+												((JsonArray) o).add(v2);
+											} else {
+												JsonArray array = new JsonArray();
+												array.add(o).add(v2);
+												user.putArray(c, array);
+											}
+										} else {
+											user.putString(c, v2);
+										}
+								} // end switch
+								if ("classes".equals(c)) {
+									String eId = structure.getExternalId() + '$' + v;
+									String[] classId = new String[2];
+									classId[0] = structure.getExternalId();
+									classId[1] = eId;
+									classes.add(classId);
+									classesNames.addString(v);
+								}
+							} // end if doNotRead
+						} // end read columns
 						String ca;
 						long seed;
 						JsonArray classesA;

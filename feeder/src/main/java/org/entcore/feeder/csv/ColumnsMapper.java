@@ -104,8 +104,8 @@ public class ColumnsMapper {
 	 * Verifying if the required fields are present.
 	 * @param strings
 	 * @param columns
-     * @return
-     */
+	 * @return
+	 */
 	JsonArray getColumsAssociations(String[] strings, List<String> columns, String profile, JsonObject  association) {
 		JsonArray response = new JsonArray();
 		// getting the number of fields in "required" section of fields :
@@ -117,12 +117,12 @@ public class ColumnsMapper {
 
 		// check if all requested fields are in the association (check from number 1 to nbRequired)
 		//for( int req = 0; req < nbRequired; req++)*
-		int req = 1;
+		int req = 0;
 		boolean foundAll = true;
-		while( req <= nbRequired && foundAll == true ){
+		while( req < nbRequired && foundAll == true ){
 			boolean foundOne = false;
 			for (String field : association.getFieldNames()) {
-				if( association.getString(field).equals(String.valueOf(req))){
+				if( association.getString(field).equals(String.valueOf(required.get(req)))){
 					foundOne = true;
 				}
 			}
@@ -135,7 +135,7 @@ public class ColumnsMapper {
 		if( foundAll == false ){
 			// requested fields are missing
 			JsonObject jsonError = new JsonObject();
-			jsonError.putString("error", "Requested fields missing");
+			jsonError.putString("error", "wizard.mapping.error.requested.fields");
 			response.addObject(jsonError);
 			return response;
 		}
@@ -160,12 +160,10 @@ public class ColumnsMapper {
 		// get the names of the fields found
 		int fieldIndex = 0;
 		for (String field : association.getFieldNames()) {
-			String fieldObj = association.getString(field);
-			if( isNumeric(fieldObj) ) {
-				int associatedIndex = Integer.parseInt(fieldObj);
-				columns.add(fieldIndex, mappingForProfile[associatedIndex-1]);
-				fieldIndex++;
+			if(! "profile".equals(field)) {
+				columns.add(fieldIndex, association.getString(field));
 			}
+			fieldIndex++;
 		}
 
 		return null;

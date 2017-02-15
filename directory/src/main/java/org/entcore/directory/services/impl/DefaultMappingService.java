@@ -19,6 +19,7 @@
 
 package org.entcore.directory.services.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.Either;
 import org.entcore.directory.Directory;
@@ -64,20 +65,28 @@ public class DefaultMappingService implements MappingService {
 		});
 	}
 
-	public void mappingValidate(final JsonObject association, String profile, String path, ImportInfos importInfos, final Handler<Either<String, JsonObject>> handler) {
+	public void mappingValidate(final JsonObject association, String profile, String path, ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
 		JsonObject message = new JsonObject()
 				.putString("action", "mappingValidate")
 				.putObject("association", association)
 				.putString("profile", profile)
 				.putString("path", importInfos.getPath());
-				//.putString("path", path);
+		//.putString("path", path);
 		eb.send(Directory.FEEDER, message, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
-					handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+					JsonObject r = res.body().getObject("result", new JsonObject());
+					if (r.getObject("errors", new JsonObject()).size() > 0) {
+						handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
+					} else {
+						handler.handle(new Either.Right<JsonObject, JsonObject>(r.getObject("files")));
+					}
 				} else {
-					handler.handle(new Either.Left<String, JsonObject>("wizard.mapping.error.requested.fields"));
+					handler.handle(new Either.Left<JsonObject, JsonObject>(
+							new JsonObject().putArray(
+									"global", new JsonArray().addString(res.body().getString("message", ""))
+							)));
 				}
 			}
 		});
