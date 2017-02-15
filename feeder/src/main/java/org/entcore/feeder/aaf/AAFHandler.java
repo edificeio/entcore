@@ -26,8 +26,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static org.entcore.feeder.utils.AAFUtil.convertDate;
 
 public final class AAFHandler extends DefaultHandler {
 
@@ -37,7 +36,6 @@ public final class AAFHandler extends DefaultHandler {
 	private JsonObject currentStructure;
 	private final JsonObject mapping;
 	private final ImportProcessing processing;
-	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 
 	public AAFHandler(ImportProcessing processing) {
 		this.processing = processing;
@@ -84,7 +82,7 @@ public final class AAFHandler extends DefaultHandler {
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
-		if (s == null || s.isEmpty()) {
+		if (s == null || (s.isEmpty() && !"ENTAuxEnsClassesPrincipal".equals(currentAttribute))) {
 			return;
 		}
 		JsonObject j = mapping.getObject(currentAttribute);
@@ -96,7 +94,7 @@ public final class AAFHandler extends DefaultHandler {
 		}
 		String type = j.getString("type");
 		String attribute = j.getString("attribute");
-		if ("birthDate".equals(attribute)) {
+		if ("birthDate".equals(attribute) && !s.isEmpty()) {
 			s = convertDate(s);
 		}
 		if (type != null && type.contains("array")) {
@@ -105,21 +103,15 @@ public final class AAFHandler extends DefaultHandler {
 				a = new JsonArray();
 				currentStructure.putArray(attribute, a);
 			}
-			a.add(JsonUtil.convert(s, type));
+			if (!s.isEmpty()) {
+				a.add(JsonUtil.convert(s, type));
+			}
 		} else {
 			Object v = JsonUtil.convert(s, type);
 			if (!(v instanceof JsonUtil.None)) {
 				currentStructure.putValue(attribute, v);
 			}
 		}
-	}
-
-	private String convertDate(String s) {
-		Matcher m = frenchDatePatter.matcher(s);
-		if (m.find()) {
-			return m.group(3) + "-" + m.group(2) + "-" + m.group(1);
-		}
-		return s;
 	}
 
 	private void addExternalId(String s) throws SAXException {

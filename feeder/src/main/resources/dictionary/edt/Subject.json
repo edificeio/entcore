@@ -1,0 +1,21 @@
+{
+	"validate" : {
+		"Ident" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"Code" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"Libelle" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		}
+	},
+	"generate" : {
+		"id" : {"generator":"uuid4", "args":[]}
+	},
+	"required" : ["id", "externalId", "name"],
+	"modifiable" : []
+}

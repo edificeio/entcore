@@ -55,7 +55,7 @@ public class StorageFactory {
 		this.gridfsAddress = (String) server.get("gridfsAddress");
 		if (config != null && config.getObject("swift") != null) {
 			this.swift = config.getObject("swift");
-		} else if (config != null && config.getString("file-system") != null) {
+		} else if (config != null && config.getObject("file-system") != null) {
 			this.fs = config.getObject("file-system");
 		} else if (config != null && config.getString("gridfs-address") != null) {
 			this.gridfsAddress = config.getString("gridfs-address");

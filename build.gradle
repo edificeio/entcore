@@ -92,6 +92,7 @@ project(':common') {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
     compile "fr.wseduc:vertx-swift-client:$vertxSwiftClientVersion"
+    compile "joda-time:joda-time:$jodaTimeVersion"
   }
 }
 

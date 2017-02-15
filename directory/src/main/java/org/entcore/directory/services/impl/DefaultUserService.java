@@ -181,7 +181,7 @@ public class DefaultUserService implements UserService {
 				"MATCH " +filterClass + filterStructure +
 				"(u:User)-[:IN]->g-[:DEPENDS*0..1]->pg-[:HAS_PROFILE]->(p:Profile) " +
 				filterProfile +
-				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
+				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, u.IDPN as IDPN, " +
 				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName " +
 				"ORDER BY type DESC, displayName ASC ";

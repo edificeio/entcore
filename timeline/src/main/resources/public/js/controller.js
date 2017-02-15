@@ -16,13 +16,66 @@ function MainController($rootScope, $scope, template, lang, model){
 }
 
 function Timeline($scope, date, model, lang){
+
+
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
     $scope.filtered = {}
 
+	$scope.actions = {
+		discard: {
+			label: "timeline.action.discard",
+			action: function(notification) {
+				notification.opened = false
+				notification.discard().done(function() {
+					$scope.notifications.remove(notification)
+					$scope.$apply()
+				})
+			},
+			condition: function() {
+				return model.me.workflow.timeline.discardNotification
+			}
+		},
+		report: {
+			label: "timeline.action.report",
+			doneProperty: 'reported',
+			doneLabel: 'timeline.action.reported',
+			action: function(notification) {
+				$scope.display.confirmReport = true;
+				$scope.doReport = function(notif) {
+					notification.report().done(function() {
+						notification.reported = true
+						$scope.$apply()
+					})
+				}
+			},
+			condition: function(notif) {
+				return notif.sender && model.me.workflow.timeline.reportNotification
+			}
+		}
+	}
+	$scope.showActions = function(notif) {
+		return _.any($scope.actions, function(act){
+			return act.condition(notif)
+		})
+	}
+
+	ui.extendSelector.touchEvents('div.notification')
+	var applySwipeEvent = function() {
+	    $('div.notification').off('swipe-left')
+		$('div.notification').off('swipe-right')
+	    $('div.notification').on('swipe-left', function(event) {
+	        $(event.delegateTarget).find('.notification-actions').addClass('opened')
+	    })
+		$('div.notification').on('swipe-right', function(event) {
+	        $(event.delegateTarget).find('.notification-actions').removeClass('opened')
+	    })
+	}
+
 	model.on('notifications.change, notificationTypes.change', function(e){
+		applySwipeEvent()
 		if(!$scope.$$phase){
 			$scope.$apply('notifications');
 			$scope.$apply('notificationTypes');
@@ -45,9 +98,30 @@ function Timeline($scope, date, model, lang){
 		model.notifications.sync();
 	};
 
+	$scope.allFilters = function(){
+		if(model.notificationTypes.selection().length === model.notificationTypes.length()){
+			model.notificationTypes.deselectAll();
+		}else{
+			model.notificationTypes.selectAll();
+		}
+
+		model.notifications.page = 0;
+		model.notifications.lastPage = false;
+		model.notifications.all= [];
+		model.notifications.sync();
+	};
+
+	$scope.unactivesFilters = function(){
+		var unactives = model.notificationTypes.length() - model.notificationTypes.selection().length;
+		return unactives;
+	}
+
 	$scope.loadPage = function(){
 		model.notifications.sync(true);
 	}
+
+	$scope.display = {};
+
 }
 
 function Personalization($rootScope, $scope, model, ui){

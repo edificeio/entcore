@@ -31,8 +31,4 @@ public interface ImportService {
 
 	void doImport(ImportInfos result, Handler<Either<JsonObject, JsonObject>> eitherHandler);
 
-	void deleteImportPath(String path, Handler<AsyncResult<Void>> handler);
-
-	void deleteImportPath(String path);
-
 }

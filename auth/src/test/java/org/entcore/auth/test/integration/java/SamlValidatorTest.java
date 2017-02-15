@@ -56,8 +56,8 @@ public class SamlValidatorTest extends TestVerticle {
 	public void start() {
 		initialize();
 		JsonObject conf = new JsonObject()
-				.putString("saml-metadata-folder", "../../federation/metadata")
-				.putString("saml-private-key", "../../federation/private-key.pk8")
+				.putString("saml-metadata-folder", "../../federation/poitou-charentes/metadata")
+				.putString("saml-private-key", "../../federation/poitou-charentes/private/private-key.pk8")
 				.putString("saml-issuer", "urn:fi:ent:poitou-charentes:1.0");
 		eb = vertx.eventBus();
 		container.deployWorkerVerticle(SamlValidator.class.getName(), conf, 1, true, new AsyncResultHandler<String>() {
@@ -197,6 +197,45 @@ public class SamlValidatorTest extends TestVerticle {
 					String logoutRequest = new String(bos.toByteArray(), "UTF-8");
 
 //					System.out.println(logoutRequest);
+					assertNotNull(logoutRequest);
+					testComplete();
+				} catch (DataFormatException | IOException e) {
+					fail(e.getMessage());
+				}
+			}
+		});
+	}
+
+	@Test
+	public void generateAuthnRequest() throws Exception {
+		String assertion = new String(Base64.decode(encryptedAgriResponse));
+		JsonObject j = new JsonObject()
+				.putString("action", "generate-authn-request")
+				.putString("IDP", "urn:fi:ac-poitiers:entts:1.0");
+		eb.send("saml", j, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				assertEquals("ok", event.body().getString("status"));
+				try {
+					String sloUri = event.body().getString("authn-request");
+//					System.out.println(sloUri);
+					byte[] slo = Base64.decode(URLDecoder.decode(sloUri
+							.replaceAll("http.*?SAMLRequest=", "")
+							.replaceAll("&RelayState=.*?$", "")
+							, "UTF-8"));
+					Inflater inflater = new Inflater();
+					inflater.setInput(slo, 0, slo.length);
+					byte[] buffer = new byte[1024];
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					while (!inflater.finished()) {
+						int resultLength = inflater.inflate(buffer);
+						bos.write(buffer, 0, resultLength);
+					}
+					inflater.end();
+					bos.close();
+					String logoutRequest = new String(bos.toByteArray(), "UTF-8");
+
+					System.out.println(logoutRequest);
 					assertNotNull(logoutRequest);
 					testComplete();
 				} catch (DataFormatException | IOException e) {

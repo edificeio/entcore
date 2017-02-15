@@ -22,6 +22,7 @@ package org.entcore.common.http;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -30,10 +31,9 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.ActionFilter;
-import org.entcore.common.http.filter.HttpActionFilter;
-import org.entcore.common.http.filter.ResourceProviderFilter;
-import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.http.filter.*;
+import org.entcore.common.http.response.SecurityHookRender;
+import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
@@ -64,6 +64,7 @@ public abstract class BaseServer extends Server {
 	private SearchingHandler searchingHandler;
 	private String schema;
 	private boolean oauthClientGrant = false;
+	private String contentSecurityPolicy;
 
 	@Override
 	public void start() {
@@ -72,6 +73,7 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
+		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
 			node = "";
@@ -87,6 +89,10 @@ public abstract class BaseServer extends Server {
 		eventStoreFactory.setContainer(container);
 		eventStoreFactory.setVertx(vertx);
 
+		if (config.getBoolean("csrf-token", true)) {
+			addFilter(new CsrfFilter(getEventBus(vertx)));
+		}
+
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
@@ -100,6 +106,19 @@ public abstract class BaseServer extends Server {
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
+	}
+
+	@Override
+	protected Server addController(BaseController controller) {
+		super.addController(controller);
+		if (config.getString("override-theme") != null) {
+			controller.addHookRenderProcess(new OverrideThemeHookRender(config.getString("override-theme")));
+		}
+		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
+			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+					config.getBoolean("csrf-token", true), contentSecurityPolicy));
+		}
+		return this;
 	}
 
 	@Override

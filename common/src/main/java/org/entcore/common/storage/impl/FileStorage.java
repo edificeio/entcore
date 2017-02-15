@@ -24,13 +24,13 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageException;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.file.FileSystem;
+import org.vertx.java.core.file.FileSystemProps;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.HttpServerResponse;
@@ -167,7 +167,7 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public void writeBuffer(final String id, final Buffer buff, String contentType, String filename,
+	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
 			final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		try {
@@ -179,7 +179,9 @@ public class FileStorage implements Storage {
 						@Override
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
-								res.putString("status", "ok").putString("_id", id);
+								final JsonObject metadata = new JsonObject().putString("content-type", contentType)
+										.putString("filename", filename).putNumber("size", buff.length());
+								res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
 							} else {
 								res.putString("status", "error").putString("message", event.cause().getMessage());
 							}
@@ -425,9 +427,20 @@ public class FileStorage implements Storage {
 	}
 
 	@Override
-	public void stats(AsyncResultHandler<BucketStats> handler) {
-		// TODO implement
-		handler.handle(new DefaultAsyncResult<BucketStats>(new StorageException("Not implemented.")));
+	public void stats(final AsyncResultHandler<BucketStats> handler) {
+		fs.fsProps(basePath, new Handler<AsyncResult<FileSystemProps>>() {
+			@Override
+			public void handle(AsyncResult<FileSystemProps> event) {
+				if (event.succeeded()) {
+					final FileSystemProps fsProps = event.result();
+					final BucketStats bucketStats = new BucketStats();
+					bucketStats.setStorageSize(fsProps.totalSpace() - fsProps.usableSpace());
+					handler.handle(new DefaultAsyncResult<>(bucketStats));
+				} else {
+					handler.handle(new DefaultAsyncResult<BucketStats>(event.cause()));
+				}
+			}
+		});
 	}
 
 	private String getPath(String file) throws FileNotFoundException {

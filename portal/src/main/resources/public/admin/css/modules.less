@@ -2341,4 +2341,43 @@ article.flashmsg-edit {
     editor editor-toolbar {
         min-height: 70px;
     }
+}	
+div.flex-box-container{
+    display: flex;
+    flex-wrap: wrap;
+
+    > div {
+        margin: 10px;
+        border: 1px solid #444;
+        border-radius: 10px;
+        padding: 5px 10px;
+    }
+}
+
+.horizontal-margin{
+    margin: 0px 10px;
+}
+div.notification {
+	position: relative;
+
+	article {
+		height: auto;
+		padding: 15px;
+		box-shadow: 1px 2px 5px #aaa;
+	}
+
+	.avatar img {
+		border: 1px solid #444;
+	}
+
+	.content {
+		width: 75%;
+		float: left;
+	}
+
+	.notification-reports {
+		padding-top: 10px;
+		margin-top: 10px;
+		border-top: 1px solid @accent;
+	}
 }

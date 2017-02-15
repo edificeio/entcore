@@ -17,6 +17,8 @@ function LoginController($scope, template){
 	$scope.template = template;
 	$scope.template.open('main', 'login-form');
 	$scope.user = {};
+	$scope.lang = lang;
+
 
 	$scope.welcome = {
 

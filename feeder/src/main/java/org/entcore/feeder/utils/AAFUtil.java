@@ -31,6 +31,7 @@ public class AAFUtil {
 
 	private static final Pattern datePatter = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
 	private static final JsonObject functionCodes = new JsonObject().putString("ADMIN_LOCAL", "AL");
+	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 
 	public static Object convert(Object value, String type) {
 		if (value == null) {
@@ -163,6 +164,14 @@ public class AAFUtil {
 		res.putString("ENTElevePersRelEleve2", ENTElevePersRelEleve2);
 		res.putString("ENTEleveQualitePersRelEleve2", ENTEleveQualitePersRelEleve2);
 		return res;
+	}
+
+	public static String convertDate(String s) {
+		Matcher m = frenchDatePatter.matcher(s);
+		if (m.find()) {
+			return m.group(3) + "-" + m.group(2) + "-" + m.group(1);
+		}
+		return s;
 	}
 
 }

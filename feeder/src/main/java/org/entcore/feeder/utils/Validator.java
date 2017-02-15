@@ -51,7 +51,7 @@ public class Validator {
 	static {
 		patterns.put("email", Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$"));
 		patterns.put("zipCode", Pattern.compile("^[A-Za-z0-9\\-\\s]{4,9}$")); // ^[0-9]{5}$
-		patterns.put("phone", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")); // "^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$"
+		patterns.put("phone", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$")); // "^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$"
 		patterns.put("mobile", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$"));
 		patterns.put("notEmpty", Pattern.compile("^(?=\\s*\\S).*$"));
 		patterns.put("birthDate", Pattern.compile("^((19|20)\\d\\d)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"));
@@ -229,6 +229,7 @@ public class Validator {
 
 	private void generate(JsonObject object) {
 		for (String attr : generate.getFieldNames()) {
+			if (object.containsField(attr)) continue;
 			JsonObject j = generate.getObject(attr);
 			switch (j.getString("generator", "")) {
 				case "uuid4" :
@@ -348,6 +349,8 @@ public class Validator {
 				if (!(((JsonArray) value).size() > 0)) {
 					err = i18n.translate("empty.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage, attr);
 				}
+				break;
+			case "nop":
 				break;
 			default:
 				err =  i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);

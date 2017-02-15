@@ -1,3 +1,6 @@
+
+<!-- /myClass content -->
+
 <script type="text/ng-template" id="school-tree">
 	<nav class="vertical">
 		<div class="row">
@@ -22,11 +25,17 @@
 </script>
 
 <div class="row">
-	<section class="four cell">
-		<nav class="vertical" ng-include="'school-tree'"></nav>
+
+	<section class="four cell twelve-mobile">
+		<nav class="vertical mobile-navigation" side-nav>
+			<div ng-include="'school-tree'"></div>
+		</nav>
 	</section>
 
-
-	<div data-ng-include="template.containers.list" class="eight cell"></div>
-	<div data-ng-include="template.containers.details" class="eight cell"></div>
+	<div ng-if="currentUser === undefined">
+		<div data-ng-include="template.containers.list" class="eight cell twelve-mobile"></div>
+	</div>
+	<div ng-if="currentUser !== undefined">
+		<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
+	</div>
 </div>

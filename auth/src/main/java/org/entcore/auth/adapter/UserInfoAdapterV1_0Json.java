@@ -50,6 +50,9 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 		filteredInfos.removeField("cache");
 		if (filteredInfos.getString("level") == null) {
 			filteredInfos.putString("level", "");
+		} else if (filteredInfos.getString("level").contains("$")) {
+			String[] level = filteredInfos.getString("level").split("\\$");
+			filteredInfos.putString("level", level[level.length -1]);
 		}
 		if (clientId != null && !clientId.trim().isEmpty()) {
 			JsonArray classNames = filteredInfos.getArray("classNames");
@@ -69,6 +72,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 			filteredInfos.removeField("classes");
 			filteredInfos.removeField("apps");
 			filteredInfos.removeField("authorizedActions");
+			filteredInfos.removeField("children");
 			JsonArray authorizedActions = new JsonArray();
 			for (Object o: info.getArray("authorizedActions")) {
 				JsonObject j = (JsonObject) o;

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>{{#i18n}}admin.embed{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+		<script src="/infra/public/js/embed/model.js" type="text/javascript"></script>
+		<script src="/infra/public/js/embed/controller.js" type="text/javascript"></script>
+	</head>
+
+	<body ng-controller="EmbedController">
+		<top-notification trigger="topNotification.show" additional="topNotification.additional"
+			confirm="topNotification.confirm" content="topNotification.message"></top-notification>
+        <admin-portal>
+            <h1><i18n>admin.embed</i18n></h1>
+            <nav class="three cell recursive-list">
+        		<input type="text" i18n-placeholder="search" ng-model="filterEmbeds" />
+        		<ul>
+                    <li ng-click="newEmbed()" ng-class="{ selected: !$parent.embed.default && !$parent.embed._id }"
+                            style="border-bottom: 2px solid white">
+                        <i18n>create.embed</i18n>
+                    </li>
+        			<li ng-repeat="embed in mergeEmbeds() | filter: {displayName: filterEmbeds} | orderBy: 'displayName'"
+                        ng-click="viewEmbed(embed)" ng-class="{ selected: $parent.embed === embed }">
+        				[[embed.displayName]]
+        			</li>
+        		</ul>
+        	</nav>
+            <article class="side-tabs-content nine cell" style="padding: 25px">
+                <div class="row">
+                    <h2 ng-if="embed.default || embed._id">[[embed.displayName]]</h2>
+                    <h2 ng-if="!embed.default && !embed._id"><i18n>embed.creation</i18n></h2>
+                </div>
+                <div>
+                    <img ng-if="embed.logo" ng-src="[[embed.logo]]" style="height: 100px">
+                </div>
+                <div class="row">
+                    <fieldset ng-disabled="embed.default">
+                        <legend><i18n>embed.fields</i18n></legend>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.name" tooltip="embed.name.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.name" ng-disabled="embed.default" required/>
+                        </div>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.displayName" tooltip="embed.displayName.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.displayName" ng-disabled="embed.default" required/>
+                        </div>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.url" tooltip="embed.url.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.url" ng-disabled="embed.default" required/>
+                        </div>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.logo" tooltip="embed.logo.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.logo" ng-disabled="embed.default" required/>
+                        </div>
+                        <div class="row" style="padding-bottom: 10px">
+                            <input type="file" onchange="angular.element(this).scope().loadLogo(this)">
+                        </div>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.embed" tooltip="embed.embed.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.embed" ng-disabled="embed.default" required/>
+                        </div>
+                        <div class="row">
+                            <span class="five cell"><label translate content="embed.example" tooltip="embed.example.tooltip"></label></span>
+                            <input class="seven cell" type="text" ng-model="embed.example" ng-disabled="embed.default" required/>
+                        </div>
+                    </fieldset>
+                    <button ng-if="!embed.default" ng-disabled="!validateEmbed()" ng-click="save()">
+                        <i18n>save</i18n>
+                    </button>
+                    <button ng-if="!embed.default && embed._id" style="margin-left: 10px;" ng-click="delete()">
+                        <i18n>remove</i18n>
+                    </button>
+                </div>
+            </article>
+        </admin-portal>
+    </body>
+
+</html>

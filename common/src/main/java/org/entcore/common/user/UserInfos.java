@@ -59,6 +59,27 @@ public class UserInfos {
 
 	}
 
+	public static class Child {
+		private String firstName;
+		private String lastName;
+
+		public String getFirstName() {
+			return firstName;
+		}
+
+		public void setFirstName(String firstName) {
+			this.firstName = firstName;
+		}
+
+		public String getLastName() {
+			return lastName;
+		}
+
+		public void setLastName(String lastName) {
+			this.lastName = lastName;
+		}
+	}
+
 	public static class Application {
 		private String name;
 		private String address;
@@ -232,6 +253,7 @@ public class UserInfos {
 	private List<String> structureNames;
 	private List<String> uai;
 	private List<String> childrenIds;
+	private Map<String, Child> children;
 	private String level;
 	private String type;
 	private String login;
@@ -244,6 +266,10 @@ public class UserInfos {
 	private Boolean federated;
 	private List<Widget> widgets;
 	private Map<String, Object> otherProperties = new HashMap<>();
+
+	public Map<String, Child> getChildren() { return children; }
+
+	public void setChildren(Map<String, Child> children) { this.children = children; }
 
 	public Map<String, Function> getFunctions() {
 		return functions;

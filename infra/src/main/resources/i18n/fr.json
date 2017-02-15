@@ -1,3 +1,23 @@
 {
-    
+    "admin.embed": "Ressources multimédias",
+    "create.embed": "Créer une nouvelle ressource",
+    "embed.creation": "Création d'une nouvelle ressource",
+    "embed.creation.notify": "La ressource a été créée",
+    "embed.modification.notify": "La ressource a été modifiée",
+    "embed.fields": "Propriétés de la ressource",
+    "load.image": "Charger une image",
+    "embed.name": "Nom",
+    "embed.name.tooltip": "Nom technique du fournisseur",
+    "embed.displayName": "Nom d’affichage",
+    "embed.displayName.tooltip": "Nom affiché sur la plateforme",
+    "embed.url": "URL variabilisée",
+    "embed.url.tooltip": "URL variabilisée de la vidéo",
+    "embed.logo": "Logo",
+    "embed.logo.tooltip": "Vous pouvez soit utiliser une image provenant d'un site web ou de votre espace documentaire, soit charger une image carrée",
+    "embed.embed": "Embed",
+    "embed.embed.tooltip": "Lien embed variabilisé de la vidéo",
+    "embed.example": "Exemple",
+    "embed.example.tooltip": "URL d’exemple présente dans le message d’information",
+    "embed.confirm.deletion": "Veuillez confirmer la suppression définitive de la ressource ",
+    "confirm": "Confirmer"
 }

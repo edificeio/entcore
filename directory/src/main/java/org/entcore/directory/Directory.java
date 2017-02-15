@@ -19,9 +19,7 @@
 
 package org.entcore.directory;
 
-import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.email.EmailFactory;
@@ -31,6 +29,7 @@ import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
+import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
@@ -48,6 +47,7 @@ public class Directory extends BaseServer {
 		clearFilters();
 		setOauthClientGrant(true);
 		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
+		addFilter(new UserbookCsrfFilter(eb));
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
@@ -116,6 +116,10 @@ public class Directory extends BaseServer {
 		importController.setDefaultMappingService(new DefaultMappingService(vertx, eb));
 
 		addController(importController);
+
+		TimetableController timetableController = new TimetableController();
+		timetableController.setTimetableService(new DefaultTimetableService(eb));
+		addController(timetableController);
 
 		vertx.eventBus().registerLocalHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));

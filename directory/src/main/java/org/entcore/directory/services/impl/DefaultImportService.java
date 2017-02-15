@@ -108,34 +108,4 @@ public class DefaultImportService implements ImportService {
 		}
 	}
 
-	@Override
-	public void deleteImportPath(final String path) {
-		deleteImportPath(path, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.failed()) {
-					log.error("Error deleting import : " + path, event.cause());
-				}
-			}
-		});
-	}
-
-	@Override
-	public void deleteImportPath(final String path, final Handler<AsyncResult<Void>> handler) {
-		vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
-			@Override
-			public void handle(AsyncResult<Boolean> event) {
-				if (event.succeeded()) {
-					if (Boolean.TRUE.equals(event.result())) {
-						vertx.fileSystem().delete(path, true, handler);
-					} else {
-						handler.handle(new DefaultAsyncResult<>((Void) null));
-					}
-				} else {
-					handler.handle(new DefaultAsyncResult<Void>(event.cause()));
-				}
-			}
-		});
-	}
-
 }

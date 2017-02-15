@@ -729,6 +729,14 @@ public class AuthController extends BaseController {
 				final String mail = result.right().getValue().getString("email", "");
 				final String mobile = result.right().getValue().getString("mobile", "");
 
+				boolean mailCheck = mail != null && !mail.trim().isEmpty();
+				boolean mobileCheck = mobile != null && !mobile.trim().isEmpty();
+
+				if(!mailCheck && !mobileCheck){
+					badRequest(request, "no.match");
+					return;
+				}
+
 				final String obfuscatedMail = StringValidation.obfuscateMail(mail);
 				final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
 

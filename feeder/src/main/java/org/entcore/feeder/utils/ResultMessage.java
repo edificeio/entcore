@@ -29,6 +29,15 @@ import org.vertx.java.core.json.JsonObject;
 public class ResultMessage implements Message<JsonObject> {
 
 	private final JsonObject body = new JsonObject().putString("status", "ok");
+	private final Handler<JsonObject> handler;
+
+	public ResultMessage() {
+		handler = null;
+	}
+
+	public ResultMessage(Handler<JsonObject> handler) {
+		this.handler = handler;
+	}
 
 	public ResultMessage put(String attr, Object o) {
 		body.putValue(attr, o);
@@ -68,7 +77,9 @@ public class ResultMessage implements Message<JsonObject> {
 
 	@Override
 	public void reply(JsonObject message) {
-
+		if (handler != null) {
+			handler.handle(message);
+		}
 	}
 
 	@Override

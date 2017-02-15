@@ -1,9 +1,20 @@
-function Notification(){
-	this.isUnread = function(){
+function Notification() {
+	this.isUnread = function() {
 		return _.find(this.recipients, function(recipient){
 			return recipient.userId === model.me.userId;
 		}) !== undefined;
 	}
+
+	this.reported = this.reporters && this.reporters.length > 0
+}
+Notification.prototype.delete = function() {
+	return http().delete('/timeline/' + this._id)
+}
+Notification.prototype.discard = function() {
+	return http().put('/timeline/' + this._id)
+}
+Notification.prototype.report = function() {
+	return http().put('/timeline/' + this._id + '/report')
 }
 
 function NotificationType(){
@@ -53,6 +64,7 @@ model.build = function (){
 		page: 0,
 		lastPage: false,
 		loading: false,
+		mine: model.notifications && model.notifications.mine,
 		sync: function(paginate){
 			var that = this;
 
@@ -72,6 +84,8 @@ model.build = function (){
 				return type.data;
 			})};
 			params.page = that.page;
+			if(this.mine)
+				params.mine = 1
 
 			if(paginate)
 				that.loading = true;
@@ -90,11 +104,13 @@ model.build = function (){
 				notify.error(data);
 			});
 
-			http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs || {}, params));
+			if(!this.mine)
+				http().putJson('/userbook/preference/timeline', _.extend(model.preferences.prefs || {}, params));
 		}
 	});
 
 	this.collection(NotificationType, {
+		mine: model.notificationTypes && model.notificationTypes.mine,
 		sync: function(){
 			http().get('/timeline/types').done(function(data){
 				this.load(data);
@@ -114,16 +130,21 @@ model.build = function (){
                         return access
                     })
 
-				    model.preferences.get(function(){
-                        var pref = model.preferences.prefs
-                        var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
-                        that.forEach(function(t){
-                            if(myFilters === null || myFilters.indexOf(t.data) >= 0){
-                                t.selected = true
-                            }
-                        });
-                        model.notifications.sync();
-                    })
+					if(that.mine) {
+						that.forEach(function(t){ t.selected = true })
+						model.notifications.sync()
+					} else {
+						model.preferences.get(function(){
+	                        var pref = model.preferences.prefs
+	                        var myFilters = pref && pref.type && pref.type.length > 0  ? pref.type : null
+	                        that.forEach(function(t){
+	                            if(myFilters === null || myFilters.indexOf(t.data) >= 0){
+	                                t.selected = true
+	                            }
+	                        });
+	                        model.notifications.sync();
+	                    })
+					}
 				})
 			}.bind(this));
 		},

@@ -2255,3 +2255,36 @@ article.flashmsg-edit .outlined {
 article.flashmsg-edit editor editor-toolbar {
   min-height: 70px;
 }
+div.notification {
+  position: relative;
+}
+div.notification article {
+  height: auto;
+  padding: 15px;
+  box-shadow: 1px 2px 5px #aaa;
+}
+div.notification .avatar img {
+  border: 1px solid #444;
+}
+div.notification .content {
+  width: 75%;
+  float: left;
+}
+div.notification .notification-reports {
+  padding-top: 10px;
+  margin-top: 10px;
+  border-top: 1px solid #9C27B0;
+}
+div.flex-box-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+div.flex-box-container > div {
+  margin: 10px;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 5px 10px;
+}
+.horizontal-margin {
+  margin: 0px 10px;
+}

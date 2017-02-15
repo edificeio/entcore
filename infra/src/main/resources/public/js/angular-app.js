@@ -1400,7 +1400,21 @@ module.directive('bindHtml', function($compile) {
                 htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                 htmlVal.find('[bind-html]').removeAttr('bind-html');
                 htmlVal.find('[ng-include]').removeAttr('ng-include');
+                htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
                 htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
+                htmlVal.find('script').remove();
+				htmlVal.find('*').each((index, item) => {
+					var attributes = item.attributes;
+					for(var i = 0; i < attributes.length; i++){
+						if(attributes[i].name.startsWith('on')){
+							item.removeAttribute(attributes[i].name);
+						}
+					}
+				});
+                if(htmlVal.find('portal').length){
+                    var portal = htmlVal.find('portal');
+                    htmlVal = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+                }
                 var htmlContent = htmlVal[0].outerHTML;
                 if (!window.MathJax && !window.MathJaxLoading) {
                     window.MathJaxLoading = true;
@@ -1583,16 +1597,19 @@ module.directive('topNotification', function() {
     return {
         restrict: 'E',
         template: '<div class="notify-top">' +
-        '<div class="notify-top-content" ng-bind-html="content"></div>' +
-        '<div class="notify-top-actions">' +
-        '<span ng-click="cancel()">[[doConfirm ? labels().cancel : labels().ok]]</span>' +
-        '<span ng-click="ok()" ng-show="doConfirm">[[labels().confirm]]</span> ' +
-        '</div>' +
-        '</div>',
+            '<div class="notify-top-content" ng-bind-html="content"></div>' +
+            '<div class="notify-top-actions">' +
+            '<span ng-click="cancel()">[[doConfirm ? labels().cancel : labels().ok]]</span>' +
+            '<span ng-click="ok()" ng-show="doConfirm">[[labels().confirm]]</span> ' +
+            '<span ng-repeat="add in additional" ng-click="add.action()">[[ add.label ]]</span> ' +
+            '</div>' +
+            '</div>',
+
         scope: {
             trigger: '=',
             confirm: '=',
             content: '=',
+            additional: '=',
             labels: '&'
         },
         link: function(scope, element, attributes) {
@@ -1614,6 +1631,8 @@ module.directive('topNotification', function() {
                     }
                 }
             }
+            if(!scope.additional || ! (scope.additional instanceof Array))
+                scope.additional = []
             scope.$watch('trigger', function(newVal) {
                 if (newVal)
                     element.slideDown()
@@ -5284,6 +5303,153 @@ module.directive('explorer', function() {
     }
 });
 
+module.directive('embedder', function($compile){
+    return {
+        restrict: 'E',
+        scope: {
+            ngModel: '=',
+            onChange: '&',
+            show: '='
+        },
+        templateUrl: '/' + infraPrefix + '/public/template/embedder.html',
+        link: function(scope, element, attributes){
+            scope.display = {
+                provider: {
+                    name: 'none'
+                }
+            };
+
+            element.on('focus', 'textarea', function (e) {
+                $(e.target).next().addClass('focus');
+                $(e.target).next().addClass('move');
+                $(e.target).prev().addClass('focus');
+            });
+
+            element.on('blur', 'textarea', function (e) {
+                if (!$(e.target).val()) {
+                    $(e.target).next().removeClass('move');
+                }
+                $(e.target).next().removeClass('focus');
+                $(e.target).prev().removeClass('focus');
+            });
+
+            scope.providers = [];
+
+            scope.$watch('show', function(){
+                scope.unselectProvider();
+            });
+
+            http().get('/infra/embed/default').done(function (providers) {
+                providers.forEach(function (provider) {
+                    scope.providers.push(provider);
+                });
+                scope.providers.sort(function (p1, p2) {
+                    return p1.name > p2.name
+                });
+            });
+
+            http().get('/infra/embed/custom').done(function (providers) {
+                providers.forEach(function (provider) {
+                    provider.name = provider.name.toLowerCase().replace(/\ |\:|\?|#|%|\$|£|\^|\*|€|°|\(|\)|\[|\]|§|'|"|&|ç|ù|`|=|\+|<|@/g, '')
+                    scope.providers.push(provider);
+                });
+                scope.providers.sort(function (p1, p2) {
+                    return p1.name > p2.name
+                });
+            });
+
+            scope.applyHtml = function (template) {
+                scope.show = false;
+                scope.ngModel = scope.display.htmlCode;
+                scope.$apply();
+                scope.onChange();
+                scope.unselectProvider();
+            };
+
+            scope.cancel = function () {
+                scope.show = false;
+                scope.unselectProvider();
+            };
+
+            scope.unselectProvider = function () {
+                var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                preview.html('');
+                scope.display.provider = { name: 'none' };
+                scope.display.url = '';
+                scope.display.htmlCode = '';
+                scope.display.invalidPath = false;
+            };
+
+            scope.$watch(
+                function(){
+                    return scope.display.htmlCode;
+                }, 
+                function(newVal){
+                    setTimeout(function () {
+                        scope.updatePreview();
+                    }, 20);
+                }
+            );
+
+            scope.$watch(
+                function () {
+                    return scope.display.url;
+                },
+                function (newVal) {
+                    setTimeout(function () {
+                        scope.updatePreview();
+                    }, 20);
+                }
+            );
+            
+            scope.updatePreview = function () {
+                if(scope.display.provider.name === 'other'){
+                    var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                    preview.html(
+                        scope.display.htmlCode
+                    );
+                    return;
+                }
+                if(!scope.display.url){
+                    return;
+                }
+                scope.display.invalidPath = false;
+                var agnosticUrl = scope.display.url.split('//')[1];
+                var firstPartUrl = agnosticUrl.split('/')[0].split('?')[0];
+                agnosticUrl = agnosticUrl.replace(firstPartUrl, firstPartUrl.toLowerCase());
+                var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', ["g"]);
+                var params = scope.display.provider.url.match(matchParams);
+
+                var computedEmbed = scope.display.provider.embed;
+
+                params.splice(1, params.length);
+                params.forEach(function (param) {
+                    var paramBefore = scope.display.provider.url.split(param)[0];
+                    var additionnalSplit = paramBefore.split('}')
+                    if (additionnalSplit.length > 1) {
+                        paramBefore = additionnalSplit[additionnalSplit.length - 1];
+                    }
+                    var paramAfter = scope.display.provider.url.split(param)[1].split('{')[0];
+                    var paramValue = agnosticUrl.split(paramBefore)[1];
+                    if (!paramValue) {
+                        scope.display.invalidPath = true;
+                    }
+                    if(paramAfter){
+                        paramValue = paramValue.split(paramAfter)[0];
+                    }
+                    
+                    var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
+                    scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
+                });
+
+                var preview = element.find('.' + scope.display.provider.name + ' .preview');
+                preview.html(
+                    scope.display.htmlCode
+                );
+            };
+        }
+    }
+})
 
 $(document).ready(function() {
     setTimeout(function() {
@@ -5350,8 +5516,8 @@ function Account($scope) {
             requestName: "refreshAvatar"
         }).done(function(result) {
             $scope.avatar = result.result['0'].photo;
-            if (!$scope.avatar || $scope.avatar === 'no-avatar.jpg') {
-                $scope.avatar = '/directory/public/img/no-avatar.jpg';
+            if (!$scope.avatar || $scope.avatar === 'no-avatar.jpg' || $scope.avatar === 'no-avatar.svg') {
+                $scope.avatar = '/assets/themes/' + skin.skin + '/img/illustrations/no-avatar.svg';
             }
             $scope.username = result.result['0'].displayName;
             model.me.profiles = result.result['0'].type;
@@ -6029,7 +6195,7 @@ workspace.Document.prototype.upload = function(file, requestName, callback, visi
     }
     var formData = new FormData();
     formData.append('file', file, file.name);
-    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, {
+    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=0.7&' + workspace.thumbnails, formData, {
         requestName: requestName
     }).done(function(data) {
         if (typeof callback === 'function') {
@@ -6211,7 +6377,6 @@ function MediaLibrary($scope) {
     };
 
     $scope.importFiles = function() {
-        workspace.quality = $scope.upload.quality / 100;
         var waitNumber = $scope.upload.files.length;
         for (var i = 0; i < $scope.upload.files.length; i++) {
             $scope.upload.loading.push($scope.upload.files[i]);

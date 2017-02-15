@@ -23,11 +23,11 @@
 
 		<div class="cell four height-four reduce-block-six avatar">
 			<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
-				<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.jpg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
+				<image-select ng-model="account.picture" default="/img/illustrations/no-avatar.svg" thumbnails="[{ width: 381, height: 381 }]" ng-change="saveChanges()"></image-select>
 			</div>
 			<div class="fluid cell twelve" ng-if="!account.edit.userbook">
 				<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
-				<img skin-src="/img/illustrations/no-avatar.jpg" ng-if="!account.picture" class="absolute" />
+				<img skin-src="/img/illustrations/no-avatar.svg" ng-if="!account.picture" class="absolute" />
 			</div>
 		</div>
 

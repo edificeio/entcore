@@ -1,0 +1,8 @@
+{
+  	"Ident" : { "attribute" : "Ident", "type" : "string" },
+	"DateNaissance" : { "attribute" : "birthDate", "type" : "string" },
+	"Nom" : { "attribute" : "lastName", "type" : "string" },
+	"Prenom" : { "attribute" : "firstName", "type" : "string" },
+	"IDPN" : { "attribute" : "IDPN", "type" : "string" },
+	"CodePostal" : { "attribute" : "zipCode", "type" : "string" }
+}

@@ -22,7 +22,6 @@ package org.entcore.timeline.services.impl;
 import static org.entcore.common.mongodb.MongoDbResult.*;
 
 import org.entcore.common.service.impl.MongoDbCrudService;
-import org.entcore.common.user.UserInfos;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.json.JsonArray;
@@ -34,11 +33,6 @@ public class DefaultTimelineConfigService extends MongoDbCrudService implements 
 
 	public DefaultTimelineConfigService(String collection) {
 		super(collection);
-	}
-
-	@Override
-	public void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-		super.create(data, user, handler);
 	}
 
 	@Override

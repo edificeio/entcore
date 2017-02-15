@@ -424,7 +424,7 @@ window.RTE = (function () {
 				that.instance.addState(that.editZone.html());
 				setTimeout(function () {
 				    this.instance.trigger('selectionchange', { selection: this.instance.selection });
-					this.instance.trigger('contentupdated');
+					this.instance.trigger('change');
 				}.bind(this), 100);
 			};
 
@@ -476,7 +476,7 @@ window.RTE = (function () {
 					addedNodes.forEach(that.selectNode);
 				}
 
-				that.instance.trigger('contentupdated');
+				that.instance.trigger('change');
 			};
 
 			function applyCSSCursor(css){
@@ -841,7 +841,7 @@ window.RTE = (function () {
 					this.editZone.append(wrapper);
 				}
 
-				this.instance.trigger('contentupdated');
+				that.instance.trigger('change');
 			};
 
 			this.replaceHTMLInline = function (htmlContent) {
@@ -854,9 +854,14 @@ window.RTE = (function () {
 			    }
 			    else {
 			        this.editZone.append(wrapper);
+					var sel = window.getSelection();
+					var range = document.createRange();
+					range.setStart(wrapper[0], wrapper[0].childNodes.length);
+					sel.removeAllRanges();
+					sel.addRange(range);
 			    }
 
-			    this.instance.trigger('contentupdated');
+			    that.instance.trigger('change');
 			};
 
 			this.$ = function(){
@@ -885,8 +890,16 @@ window.RTE = (function () {
 				var optionScope = instance.scope.$new();
 
 				var optionResult = option.run(instance);
-				optionElement.html(instance.compile(optionResult.template)(optionScope));
-				optionResult.link(optionScope, optionElement, instance.attributes);
+				if (optionResult.template) {
+				    optionElement.html(instance.compile(optionResult.template)(optionScope));
+				    optionResult.link(optionScope, optionElement, instance.attributes);
+				}
+				if (optionResult.templateUrl) {
+				    http().get(optionResult.templateUrl).done(function (content) {
+				        optionElement.html(instance.compile(content)(optionScope));
+				        optionResult.link(optionScope, optionElement, instance.attributes);
+				    }.bind(this));
+				}
 			});
 		},
 		ToolbarConfiguration: function(){
@@ -922,7 +935,7 @@ window.RTE = (function () {
 							else{
 								element.removeClass('disabled');
 							}
-							instance.trigger('contentupdated')
+							instance.trigger('change');
 						});
 
 						instance.on('contentupdated', function(e){
@@ -950,7 +963,7 @@ window.RTE = (function () {
 							else{
 								element.removeClass('disabled');
 							}
-							instance.trigger('contentupdated');
+							instance.trigger('change');
 						});
 
 						instance.on('contentupdated', function(e){
@@ -1801,7 +1814,7 @@ window.RTE = (function () {
 							    label: 'editor.remove.image',
 							    action: function (e) {
 							        $(e.target).remove();
-							        instance.trigger('contentupdated');
+							        instance.trigger('change');
 							    }
 							},
                             {
@@ -1809,7 +1822,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'right', margin: '10px', 'z-index': '0' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             },
@@ -1818,7 +1831,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'left', margin: '10px', 'z-index': '0' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             },
@@ -1827,7 +1840,7 @@ window.RTE = (function () {
                                 action: function (e) {
                                     $(e.target).css({ float: 'none', margin: 'auto', 'z-index': '1' });
                                     instance.selection.selectNode(e.target);
-                                    instance.trigger('contentupdated');
+                                    instance.trigger('change');
                                     instance.trigger('justify-changed');
                                 }
                             }
@@ -2029,21 +2042,15 @@ window.RTE = (function () {
 			RTE.baseToolbarConf.option('embed', function (instance) {
 			    return {
 			        template: '<i ng-click="display.copyEmbed = true" tooltip="editor.option.embed"></i>' +
-					'<lightbox show="display.copyEmbed" on-close="display.copyEmbed = false;">' +
-					'<h2><i18n>editor.option.embed</i18n></h2>' +
-					'<p class="info"><i18n>info.video.embed</i18n></p>' +
-					'<textarea ng-model="display.htmlCode"></textarea>' +
-					'<div class="row">' +
-					'<button type="button" ng-click="applyHtml()" class="right-magnet"><i18n>apply</i18n></button>' +
-					'<button type="button" ng-click="display.copyEmbed = false" class="cancel right-magnet"><i18n>cancel</i18n></button>' +
-					'</div>' +
-					'</lightbox>',
+					'<embedder ng-model="display.htmlCode" on-change="applyHtml()" show="display.copyEmbed"></embedder>',
 			        link: function (scope, element, attributes) {
-			            scope.display = {};
-			            scope.applyHtml = function (template) {
-			                scope.display.copyEmbed = false;
-			                instance.selection.replaceHTML(scope.display.htmlCode);
+			            scope.display = {
+			                htmlCode: ''
 			            };
+
+			            scope.applyHtml = function (template) {
+							instance.selection.replaceHTML(scope.display.htmlCode);
+						};
 			        }
 			    }
 			});
@@ -2070,6 +2077,7 @@ window.RTE = (function () {
                             if(editNode){
                                 $(editNode).attr('formula', scope.display.formula);
                                 angular.element(editNode.firstChild).scope().updateFormula(scope.display.formula);
+				instance.trigger('change');
                             }
                             else{
                                 instance.selection.replaceHTMLInline(instance.compile(
@@ -2283,7 +2291,7 @@ window.RTE = (function () {
 
 							if (selectedNode && selectedNode.nodeName === 'A') {
 							    instance.selection.moveCaret(linkNode[0], linkNode.text().length);
-							    instance.trigger('contentupdated');
+							    instance.trigger('change');
 							    scope.linker.display.chooseLink = false;
 							    scope.linker.params = {};
 							    scope.linker.display.search = {
@@ -2296,7 +2304,7 @@ window.RTE = (function () {
 
 							if (instance.selection.isCursor()) {
 							    linkNode.text(scope.linker.params.link);
-							    instance.selection.replaceHTML(instance.compile(linkNode[0].outerHTML)(scope));
+							    instance.selection.replaceHTMLInline(instance.compile(linkNode[0].outerHTML)(scope));
 							}
 							else {
 							    instance.selection.wrapText(linkNode);
@@ -2324,12 +2332,12 @@ window.RTE = (function () {
 
 						http().get('/resources-applications').done(function(apps){
 							scope.linker.apps = _.filter(model.me.apps, function(app){
-								return _.find(
-									apps,
-									function(match){
-										return app.address.indexOf(match) !== -1 && app.icon
-									}
-								);
+                                return _.find(
+                                    apps,
+                                    function (match) {
+                                        return app.address.indexOf(match) !== -1 && app.icon && app.address.indexOf('#') === -1
+                                    }
+                                );
 							});
 
 						    scope.linker.apps = _.map(scope.linker.apps, function(app) {
@@ -2835,14 +2843,21 @@ window.RTE = (function () {
                         if(attributes.toolbarConf){
                             toolbarConf = scope.$eval(attributes.toolbarConf);
                         }
-
-			            var editorInstance = new RTE.Instance({
-                            toolbarConfiguration: toolbarConf,
-                            element: element,
-                            scope: scope,
-                            compile: $compile,
-                            editZone: editZone
-                        });
+						
+						var editorInstance;
+						var instance = $parse(attributes.instance);
+						if(!instance(scope)){
+							editorInstance = new RTE.Instance({
+								toolbarConfiguration: toolbarConf,
+								element: element,
+								scope: scope,
+								compile: $compile,
+								editZone: editZone
+							});
+						}
+						else{
+							editorInstance = instance;
+						}
 
 			            editorInstance.addState('');
                         var ngModel = $parse(attributes.ngModel);
@@ -3018,6 +3033,18 @@ window.RTE = (function () {
                             });
                         });
 
+						editorInstance.on('change', function(){
+							editorInstance.trigger('contentupdated');
+							setTimeout(function(){
+								
+								if(attributes.onChange){
+									scope.$eval(attributes.onChange);
+								}
+								
+								scope.$apply();
+							}, 10);
+						});
+
                         editorInstance.on('contentupdated', function () {
                             if(parseInt(htmlZone.css('min-height')) < editZone.height()){
                                 htmlZone.css('min-height', editZone.height() + 'px');
@@ -3090,7 +3117,7 @@ window.RTE = (function () {
                         element.on('click', function(e){
                             placeToolbar();
 
-                            if(e.target === element.find('.close-focus')[0]){
+                            if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                                 return;
                             }
 
@@ -3117,10 +3144,11 @@ window.RTE = (function () {
                                 element.find('.editor-toolbar-opener').removeClass('active');
                             }
 
-                            if(element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose')){
+                            if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                                 element.children('editor-toolbar').removeClass('show');
                                 element.trigger('editor-blur');
                                 element.removeClass('focus');
+								editorInstance.trigger('change');
                                 $('body').css({ overflow: 'auto' });
                                 element.parent().data('lock', false);
                                 element.parents('grid-cell').data('lock', false);
@@ -3160,6 +3188,16 @@ window.RTE = (function () {
 
                         editZone.on('paste', function () {
 							setTimeout(function(){
+								editorInstance.editZone.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+								editorInstance.editZone.find('[bind-html]').removeAttr('bind-html');
+								editorInstance.editZone.find('[ng-include]').removeAttr('ng-include');
+								editorInstance.editZone.find('[ng-repeat]').removeAttr('ng-repeat');
+								editorInstance.editZone.find('[data-ng-repeat]').removeAttr('data-ng-repeat');
+								editorInstance.editZone.find('[ng-transclude]').removeAttr('ng-transclude');
+								if(editorInstance.editZone.find('portal').length){
+									var portal = editorInstance.editZone.find('portal');
+									editorInstance.editZone[0].innerHTML = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
+								}
 								editorInstance.addState(editZone.html());
 								if(editorInstance.editZone[0].childNodes.length > editorInstance.editZone[0].children.length){
 									var wrapper = $('<div></div>');
@@ -3436,6 +3474,7 @@ window.RTE = (function () {
                                 scope.$eval(attributes.ngChange);
                                 ngModel.assign(scope, htmlZone.val());
                             });
+							editorInstance.trigger('change');
                         });
 
                         element.on('dragover', function(e){
@@ -3683,16 +3722,7 @@ window.RTE = (function () {
                         scope.updateFormula = function(newVal){
                             element.text('$$' + newVal + '$$');
 							if (window.MathJax && window.MathJax.Hub) {
-							    MathJax.Hub.Config({
-							        messageStyle: 'none',
-							        tex2jax: { preview: 'none' },
-							        jax: ["input/TeX", "output/CommonHTML"],
-							        extensions: ["tex2jax.js", "MathMenu.js", "MathZoom.js", "AssistiveMML.js"],
-							        TeX: {
-							            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
-							        }
-							    });
-							    MathJax.Hub.Typeset();
+							    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 							}
                         };
 

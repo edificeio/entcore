@@ -66,7 +66,7 @@ public class FeederTest extends TestVerticle {
 			.putObject("neo4j", new JsonObject()
 					.putString("node_keys_indexable", "externalId")
 					.putString("node_auto_indexing", "true"));
-		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.5.1", neo4jConfig, 1,
+		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.6.0", neo4jConfig, 1,
 				new AsyncResultHandler<String>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
@@ -200,7 +200,7 @@ public class FeederTest extends TestVerticle {
 				switch (action) {
 					case "delete-groups" :
 						JsonArray groups = message.body().getArray("old-groups", new JsonArray());
-						assertEquals(177 * 5 + 177, groups.size());
+						assertEquals(177 * 5 + 167, groups.size());
 						String countQuery =
 								"MATCH (s:Structure) " +
 								"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
@@ -264,7 +264,7 @@ public class FeederTest extends TestVerticle {
 						assertEquals(13295, (int) r.getInteger("nbUsers", 0));
 						assertEquals(10, (int) r.getInteger("nbStructures", 0));
 						assertEquals(177, (int) r.getInteger("nbClasses", 0));
-						assertEquals(177, (int) r.getInteger("nbFunctionalGroups", 0));
+						assertEquals(167, (int) r.getInteger("nbFunctionalGroups", 0));
 						assertEquals(177 * 5 + 10 * 5 + 5, (int) r.getInteger("nbProfileGroups", 0));
 						handler.handle(null);
 					}

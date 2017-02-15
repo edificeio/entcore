@@ -27,8 +27,8 @@ import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
+import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
@@ -44,18 +44,104 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class SamlController extends AbstractFederateController {
 
 	private SamlServiceProviderFactory spFactory;
+	private JsonObject samlWayfParams;
+	private JsonObject samlWayfMustacheFormat;
+	private String ignoreCallBackPattern;
 
 	public SamlController() throws ConfigurationException {
 		DefaultBootstrap.bootstrap();
+	}
+
+	@Get("/saml/wayf")
+	public void wayf(HttpServerRequest request) {
+		if (samlWayfParams != null) {
+			if (samlWayfMustacheFormat == null) {
+				final JsonArray wmf = new JsonArray();
+				for (String attr : samlWayfParams.getFieldNames()) {
+					JsonObject i = samlWayfParams.getObject(attr);
+					if (i == null) continue;
+					final String acs = i.getString("acs");
+					if (isEmpty(acs)) continue;
+					URI uri;
+					try {
+						uri = new URI(acs);
+					} catch (URISyntaxException e) {
+						log.error("Invalid acs URI", e);
+						continue;
+					}
+					JsonObject o = new JsonObject()
+							.putString("name", attr)
+							.putString("uri", uri.getScheme() + "://" + uri.getHost() +
+									(attr.startsWith("login") ? "/auth/login" : "/auth/saml/authn/" + attr));
+					wmf.addObject(o);
+				}
+				samlWayfMustacheFormat = new JsonObject().putArray("providers", wmf);
+			}
+			String callBack = request.params().get("callBack");
+			final JsonObject swmf;
+			if (isNotEmpty(callBack) && (ignoreCallBackPattern == null || !callBack.matches(ignoreCallBackPattern))) {
+				try {
+					callBack = URLEncoder.encode(callBack, "UTF-8");
+				} catch (UnsupportedEncodingException e) {
+					log.error("Error encode wayf callback.", e);
+				}
+				swmf = samlWayfMustacheFormat.copy();
+				for (Object o: swmf.getArray("providers")) {
+					if (!(o instanceof JsonObject)) continue;
+					final String uri = ((JsonObject) o).getString("uri");
+					if (isNotEmpty(uri) && !uri.contains("callBack")) {
+						((JsonObject) o).putString("uri", uri + (uri.contains("?") ? "&" : "?") + "callBack=" + callBack);
+					}
+				}
+			} else {
+				swmf = samlWayfMustacheFormat;
+			}
+			renderView(request, swmf, "wayf.html", null);
+		} else {
+			request.response().setStatusCode(401).setStatusMessage("Unauthorized")
+					.putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
+		}
+	}
+
+	@Get("/saml/authn/:providerId")
+	public void auth(final HttpServerRequest request) {
+		final JsonObject item = samlWayfParams.getObject(request.params().get("providerId"));
+		if (item == null) {
+			forbidden(request, "invalid.provider");
+			return;
+		}
+		final JsonObject event = item.copy().putString("action", "generate-authn-request");
+		vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				if (log.isDebugEnabled()) {
+					log.debug("authn request : " + event.body().encodePrettily());
+				}
+				final String authnRequest = event.body().getString("authn-request");
+				if (isNotEmpty(authnRequest)) {
+					CookieHelper.getInstance().setSigned("relaystate", event.body().getString("relay-state"), 900, request);
+					final String callBack = request.params().get("callBack");
+					if (isNotEmpty(callBack)) {
+						CookieHelper.getInstance().setSigned("callback", callBack, 900, request);
+					}
+					redirect(request, authnRequest, "");
+				} else {
+					badRequest(request, "empty.authn.request");
+				}
+			}
+		});
 	}
 
 	@Post("/saml/acs")
@@ -122,12 +208,14 @@ public class SamlController extends AbstractFederateController {
 					log.debug("slo request : " + event.body().encodePrettily());
 				}
 				String slo = event.body().getString("slo");
-				if (c != null && !c.isEmpty()) {
-					try {
+				try {
+					if (c != null && !c.isEmpty()) {
 						slo = c + URLEncoder.encode(slo, "UTF-8");
-					} catch (UnsupportedEncodingException e) {
-						log.error(e.getMessage(), e);
+					} else {
+						slo = URLEncoder.encode(slo, "UTF-8");
 					}
+				} catch (UnsupportedEncodingException e) {
+					log.error(e.getMessage(), e);
 				}
 				AuthController.logoutCallback(request, slo, container, eb);
 			}
@@ -246,7 +334,14 @@ public class SamlController extends AbstractFederateController {
 		request.endHandler(new VoidHandler() {
 			@Override
 			protected void handle() {
-				log.debug("handle");
+				if (samlWayfParams != null) {
+					final String state = CookieHelper.getInstance().getSigned("relaystate", request);
+					if (isEmpty(state) || (!state.equals(request.formAttributes().get("RelayState")) &&
+							!state.equals(SamlUtils.SIMPLE_RS))) {
+						forbidden(request, "invalid_state");
+						return;
+					}
+				}
 				String samlResponse = request.formAttributes().get("SAMLResponse");
 				log.debug(samlResponse);
 				if (samlResponse != null && !samlResponse.trim().isEmpty()) {
@@ -260,6 +355,14 @@ public class SamlController extends AbstractFederateController {
 
 	public void setServiceProviderFactory(SamlServiceProviderFactory spFactory) {
 		this.spFactory = spFactory;
+	}
+
+	public void setSamlWayfParams(JsonObject samlWayfParams) {
+		this.samlWayfParams = samlWayfParams;
+	}
+
+	public void setIgnoreCallBackPattern(String ignoreCallBackPattern) {
+		this.ignoreCallBackPattern = ignoreCallBackPattern;
 	}
 
 }

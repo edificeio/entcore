@@ -24,27 +24,61 @@ if(window.infraPrefix === undefined){
 	window.infraPrefix = 'infra';
 }
 
+window.entcore = {
+    appPrefix: appPrefix,
+    infraPrefix: infraPrefix
+};
+
 var currentLanguage = '';
 (function(){
+	var xsrfCookie;
+	if(document.cookie){
+		var cookiesSplit = document.cookie.split(';');
+		var cookies = [];
+		for(var i = 0; i < cookiesSplit.length; i++){
+			var cookie = {
+				name: cookiesSplit[i].split('=')[0].trim(), 
+				val: cookiesSplit[i].split('=')[1].trim()
+			};
+			cookies.push(cookie);
+			if(cookie.name === 'XSRF-TOKEN'){
+				xsrfCookie = cookie;
+			}
+		}
+	}
+
+	// Fallback
+	var fallBack = function(){
+		// Fallback : navigator language
+		var request = new XMLHttpRequest();
+		request.open('GET', '/locale', false);
+		if(xsrfCookie){
+			request.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+		}
+		request.async = false;
+		request.onload = function() {
+			if(request.status === 200){
+				currentLanguage = JSON.parse(request.responseText).locale;
+			} else {
+				currentLanguage = 'fr'
+			}
+		};
+		try {
+			request.send(null);
+		} catch (e) {
+			currentLanguage = 'fr'
+		}
+	}
 
     // User preferences language
     var preferencesRequest = new XMLHttpRequest();
 	preferencesRequest.open('GET', '/userbook/preference/language', false);
+	if(xsrfCookie){
+		preferencesRequest.setRequestHeader('X-XSRF-TOKEN', xsrfCookie.val);
+	}
 	preferencesRequest.async = false;
 
 	preferencesRequest.onload = function(){
-        var fallBack = function(){
-            // Fallback : navigator language
-            var request = new XMLHttpRequest();
-            request.open('GET', '/locale', false);
-            request.async = false;
-            request.onload = function() {
-                if(request.status === 200){
-                    currentLanguage = JSON.parse(request.responseText).locale;
-                }
-            };
-            request.send(null);
-        }
 
         if(preferencesRequest.status === 200){
             try {
@@ -57,7 +91,12 @@ var currentLanguage = '';
         if(!currentLanguage)
             fallBack();
     };
-    preferencesRequest.send(null);
+	try {
+		preferencesRequest.send(null);
+	} catch(e) {
+		fallBack()
+	}
+
 }());
 
 if(document.addEventListener){

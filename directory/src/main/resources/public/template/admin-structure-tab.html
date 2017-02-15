@@ -66,6 +66,22 @@
         <button class="three cell margin-top-5" ng-click="exportItem(structure, 'structureId')" style="margin-left: 0%; font-size: 12; padding: 2;">
             [[lang.translate("directory.export")]]
         </button>
+        <!-- Metrics -->
+        <hr class="separator cell">
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.metrics")]]</h3>
+        <div class="row flex-box-container">
+            <div ng-repeat="metric in structure.metrics">
+                <h4><strong>[[lang.translate(metric.profile)]]</strong></h4>
+                <div>
+                    <strong class="inline-middle horizontal-margin" style=""><i18n>directory.onlyActivatedUsers</i18n></strong>
+                    <em class="inline-middle horizontal-margin">[[metric.active]]</em>
+                </div>
+                <div>
+                    <strong class="inline-middle horizontal-margin"><i18n>directory.onlyInactiveUsers</i18n></strong>
+                    <em class="inline-middle horizontal-margin">[[metric.inactive]]</em>
+                </div>
+            </div>
+        </div>
         <!-- Structure grouping -->
         <hr class="separator cell" ng-if="isCentralAdmin()">
         <div class="twelve cell" ng-if="isCentralAdmin()">

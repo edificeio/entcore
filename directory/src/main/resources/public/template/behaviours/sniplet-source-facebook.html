@@ -1,32 +1,39 @@
-<h2>Groupes</h2>
-		<wizard on-finish="applySource()" on-cancel="cancelSniplet()">
-			<step on-next="loadGroups()">
-				<h1><i18n>directory.structure</i18n></h1>
-				<div class="row">
-					<ul class="selectable-list">
-						<li ng-repeat="structure in search.structures" ng-click="search.structure = structure;" ng-class="{ selected: structure === search.structure }">
-							[[structure.name]]
-						</li>
-					</ul>
-				</div>
-			</step>
-			<step>
-				<h1><i18n>sniplet.facebook.selected.groups</i18n></h1>
-				<div class="info" ng-if="source.groups.length === 0">
-					<i18n>sniplet.facebook.search</i18n>
-				</div>
-				<div class="row" ng-if="source.groups.length > 0">
-					<div class="twelve cell" ng-repeat="group in source.groups">
-						[[group.translatedName]] <i class="close right-magnet" ng-click="removeGroup($index, group)"></i>
-					</div>
-				</div>
-				<h2><i18n>sniplet.facebook.search.title</i18n></h2>
-				<input type="text" ng-model="search.text" i18n-placeholder="search" class="twelve cell" />
+<button ng-click="display.pickGroup = true" class="centered" style="float: none">
+    <i18n>sniplet.facebook.pickGroup</i18n>
+</button>
 
-				<div class="row search-results" ng-if="search.text !== ''">
-					<div class="group" ng-repeat="group in search.groups | filter:{ translatedName: search.text }" ng-click="addGroup(group)">
-						[[group.translatedName]]
-					</div>
-				</div>
-			</step>
-		</wizard>
+<lightbox show="display.pickGroup" on-close="display.pickGroup = false">
+    <h2>Groupes</h2>
+    <wizard on-finish="applySource()" on-cancel="cancelSniplet()">
+        <step on-next="loadGroups()" next-condition="search.structure">
+            <h1><i18n>directory.structure</i18n></h1>
+            <div class="row">
+                <ul class="selectable-list">
+                    <li ng-repeat="structure in search.structures" ng-click="search.structure = structure;" ng-class="{ selected: structure === search.structure }">
+                        [[structure.name]]
+                    </li>
+                </ul>
+            </div>
+        </step>
+        <step>
+            <h1><i18n>sniplet.facebook.selected.groups</i18n></h1>
+            <div class="info" ng-if="source.groups.length === 0">
+                <i18n>sniplet.facebook.search</i18n>
+            </div>
+            <div class="row" ng-if="source.groups.length > 0">
+                <div class="twelve cell" ng-repeat="group in source.groups">
+                    [[group.translatedName]] <i class="close right-magnet" ng-click="removeGroup($index, group)"></i>
+                </div>
+            </div>
+            <h2><i18n>sniplet.facebook.search.title</i18n></h2>
+            <input type="text" ng-model="search.text" i18n-placeholder="search" class="twelve cell" />
+
+            <div class="row search-results" ng-if="search.text !== ''">
+                <div class="group" ng-repeat="group in search.groups | filter:{ translatedName: search.text }" ng-click="addGroup(group)">
+                    [[group.translatedName]]
+                </div>
+            </div>
+        </step>
+    </wizard>
+
+</lightbox>

@@ -338,6 +338,10 @@ public class CsvValidator extends Report implements ImportValidator {
 						// reading the columns
 						int nextIndexColumns = -1;
 						for (int j = 0; j < strings.length; j++) {
+  						if (j >= columns.size()) {
+								addErrorByFile(profile, "out.columns", "" + i);
+								return;
+							}
 							boolean doNotRead = false; // if mapping and if column is not mapped
 							if(association != null ) {
 								//get next index to be read

@@ -20,10 +20,12 @@
 package org.entcore.auth.security;
 
 import org.opensaml.saml2.core.Assertion;
+import org.opensaml.saml2.core.AuthnRequest;
 import org.opensaml.saml2.core.LogoutRequest;
 import org.opensaml.saml2.core.Response;
 import org.opensaml.saml2.core.impl.AssertionMarshaller;
 import org.opensaml.saml2.core.impl.AssertionUnmarshaller;
+import org.opensaml.saml2.core.impl.AuthnRequestMarshaller;
 import org.opensaml.xml.Configuration;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.Marshaller;
@@ -42,6 +44,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 
 public final class SamlUtils {
+
+	public static final String SIMPLE_RS = "SimpleRS";
 
 	public static Response unmarshallResponse(String response) throws Exception {
 		Document document = getDocumentFromString(response);
@@ -69,6 +73,12 @@ public final class SamlUtils {
 	public static String marshallAssertion(Assertion assertion) throws MarshallingException {
 		AssertionMarshaller marshaller = new AssertionMarshaller();
 		Element plaintextElement = marshaller.marshall(assertion);
+		return XMLHelper.nodeToString(plaintextElement);
+	}
+
+	public static String marshallAuthnRequest(AuthnRequest authnRequest) throws MarshallingException {
+		AuthnRequestMarshaller marshaller = new AuthnRequestMarshaller();
+		Element plaintextElement = marshaller.marshall(authnRequest);
 		return XMLHelper.nodeToString(plaintextElement);
 	}
 

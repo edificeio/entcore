@@ -47,6 +47,8 @@ import java.io.File;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.reportResponseHandler;
+import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 
 public class ImportController extends BaseController {
@@ -70,7 +72,7 @@ public class ImportController extends BaseController {
 			@Override
 			public void handle(AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.validate(event.result(), responseHandler(event.result().getPath(), request));
+					importService.validate(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}
@@ -140,6 +142,7 @@ public class ImportController extends BaseController {
 		};
 	}
 
+
 	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
@@ -170,7 +173,7 @@ public class ImportController extends BaseController {
 					importInfos.setFeeder(request.formAttributes().get("type"));
 				} catch (IllegalArgumentException | NullPointerException e) {
 					handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.import.type", e)));
-					importService.deleteImportPath(path);
+					deleteImportPath(vertx, path);
 					return;
 				}
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -178,7 +181,7 @@ public class ImportController extends BaseController {
 					public void handle(UserInfos user) {
 						if (user == null) {
 							handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.admin")));
-							importService.deleteImportPath(path);
+							deleteImportPath(vertx, path);
 							return;
 						}
 						importInfos.validate(user.getFunctions() != null && user.getFunctions()
@@ -190,11 +193,12 @@ public class ImportController extends BaseController {
 										handler.handle(new DefaultAsyncResult<>(importInfos));
 									} else {
 										handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException(validate.result())));
-										importService.deleteImportPath(path);
+										deleteImportPath(vertx, path);
 									}
 								} else {
 									handler.handle(new DefaultAsyncResult<ImportInfos>(validate.cause()));
 									log.error("Validate error", validate.cause());
+
 									// no need to delete import path, we will make the mapping
 									//importService.deleteImportPath(path);
 								}
@@ -208,7 +212,7 @@ public class ImportController extends BaseController {
 			@Override
 			public void handle(Throwable event) {
 				handler.handle(new DefaultAsyncResult<ImportInfos>(event));
-				importService.deleteImportPath(path);
+				deleteImportPath(vertx, path);
 			}
 		});
 		request.uploadHandler(new Handler<HttpServerFileUpload>() {
@@ -249,7 +253,7 @@ public class ImportController extends BaseController {
 			@Override
 			public void handle(final AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.doImport(event.result(), responseHandler(event.result().getPath(), request));
+					importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}

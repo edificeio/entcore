@@ -19,11 +19,13 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.feeder.Feeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -182,6 +184,14 @@ public class Transition {
 			}
 		}
 		return tx;
+	}
+
+
+	public static void publishDeleteGroups(EventBus eb, Logger logger, JsonArray groups) {
+		logger.info("Delete groups : " + groups.encode());
+		eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+				.putString("action", "delete-groups")
+				.putArray("old-groups", groups));
 	}
 
 }

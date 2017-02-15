@@ -40,10 +40,7 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
@@ -147,6 +144,7 @@ public class CsvFeeder implements Feed {
 	private void launchFiles(final String path, final String[] files, final Structure structure,
 							 final Importer importer, final Handler<Message<JsonObject>> handler) {
 		Arrays.sort(files, Collections.reverseOrder());
+		final Set<String> parsedFiles = new HashSet<>();
 		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
 		handlers[handlers.length -1] = new VoidHandler() {
 			@Override
@@ -161,6 +159,9 @@ public class CsvFeeder implements Feed {
 				@Override
 				protected void handle() {
 					final String file = files[j];
+					if (!parsedFiles.add(file)) {
+						return;
+					}
 					try {
 						log.info("Parsing file : " + file);
 						final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");

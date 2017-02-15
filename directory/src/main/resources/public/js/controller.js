@@ -142,18 +142,30 @@ function DirectoryController($scope, route, date, template){
 	});
 
 	$scope.showSchool = function(school){
+
 		$scope.currentSchool = school;
 		school.sync();
+
 		school.one('sync', function(){
 			$scope.users = school.users;
 			$scope.classrooms = school.classrooms;
 			$scope.deselectUser('dominos');
 			$scope.$apply('users');
 			$scope.$apply('classrooms');
+
+			setTimeout(function(){
+				$('body').trigger('whereami.update');
+			}, 100);
 		});
+
+
 	};
+	
+	$scope.display = {};
 
 	$scope.searchDirectory = function(){
+		$scope.display.searchmobile = false;
+
 		model.directory.users.all = [];
 		model.directory.users.searchDirectory($scope.search.field, $scope.filters);
 		model.directory.users.one('change', function(){
@@ -163,25 +175,25 @@ function DirectoryController($scope, route, date, template){
 
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
+		if (ui.breakpoints.checkMaxWidth("tablette") && $scope.currentUser) {
+			$scope.display.searchmobile = true;
+		}
 	};
 
 	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;
-		template.open('list', tpl);
 		template.close('details');
-		template.close('classNav');
 	};
 
 	$scope.selectUser = function(user){
+		$scope.display.searchmobile = false;
+
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
 
 		if($scope.currentUser !== undefined){
 			ui.scrollToTop();
-		}
-		else{
-			window.scrollTo(0, 200);
 		}
 
 		user.open();
@@ -190,9 +202,7 @@ function DirectoryController($scope, route, date, template){
 			$scope.$apply('currentUser');
 		});
 
-		template.open('classNav', 'class-vertical-content');
 		template.open('details', 'user-infos');
-		template.close('list');
 	};
 
 	$scope.selectClassroom = function(classroom){
@@ -412,7 +422,7 @@ function ClassAdminController($scope, date, notify){
 
 	$scope.checkUsersSource = function(selectedUsers) {
 		return _.filter(selectedUsers, function(user) {
-			return user.source != 'MANUAL' && user.source != 'CLASS_PARAM'
+			return user.source != 'MANUAL' && user.source != 'CLASS_PARAM' && user.source != 'BE1D' && user.source != 'CSV'
 		}).length < 1;
 	}
 

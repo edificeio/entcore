@@ -196,10 +196,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String basicQuery =
 			"MATCH (n:User) " +
-			"WHERE n.login = {login} AND " +
-			"NOT(n.email IS NULL) " +
-			"AND n.activationCode IS NULL AND " +
-			"(NOT(HAS(n.federated)) OR n.federated = false) " +
+			"WHERE n.login = {login} " +
+			"AND n.activationCode IS NULL " +
+			"AND (NOT(HAS(n.federated)) OR n.federated = false) " +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN n.email as email, n.mobile as mobile";
 

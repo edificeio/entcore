@@ -118,10 +118,18 @@
 		},
 		"headTeacher" : {
 			"type" : "array-string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"teaches" : {
 			"type" : "boolean"
+		},
+		"IDPN" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"id" : {
+		  "type": "string",
+		  "validator" : "notEmpty"
 		}
 	},
 	"generate" : {

@@ -22,9 +22,12 @@ package org.entcore.common.http.response;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class DefaultResponseHandler {
 
@@ -111,6 +114,23 @@ public class DefaultResponseHandler {
 							.putString("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
+			}
+		};
+	}
+
+	public static Handler<Either<JsonObject, JsonObject>> reportResponseHandler(
+			final Vertx vertx, final String path, final HttpServerRequest request) {
+		return new Handler<Either<JsonObject, JsonObject>>() {
+			@Override
+			public void handle(Either<JsonObject, JsonObject> event) {
+				if (event.isRight()) {
+					Renders.renderJson(request, event.right().getValue(), 200);
+				} else {
+					JsonObject error = new JsonObject()
+							.putObject("errors", event.left().getValue());
+					Renders.renderJson(request, error, 400);
+				}
+				deleteImportPath(vertx, path);
 			}
 		};
 	}

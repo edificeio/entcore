@@ -27,6 +27,8 @@
 <div class="twelve cell warning" ng-if="targetUser.blocked"><strong translate content="admin.blocked.account"/></div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userId")]]</strong> [[targetUser.id]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.externalId")]] :</strong> [[targetUser.externalId]]</div>
+<div class="twelve cell" ng-if="targetUser.IDPN"><strong class="four cell">[[lang.translate("pronote.id")]] :</strong> [[targetUser.IDPN]]</div>
+<div class="twelve cell" ng-if="targetUser.attachmentId"><strong class="four cell">[[lang.translate("attachmentId")]] :</strong> [[targetUser.attachmentId]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+targetUser.type)]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[targetUser.login]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
@@ -53,11 +55,11 @@
         <strong class="four cell">[[lang.translate("directory.userBirth")]]</strong>
         <div ng-if="!targetUser.birthDate">
             <div class="four cell" style="margin-bottom: 10px;"> [[lang.translate("directory.notFilled")]]</div>
-            <button class="small cell" style="padding: 0px 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
+            <button type="button" class="small cell" style="padding: 0px 5px" ng-click="initUserBirth(targetUser)">[[lang.translate("directory.modifyDate")]]</button>
         </div>
         <div ng-if="targetUser.birthDate">
             <date-picker class="four cell" style="margin-bottom: 7px;" ng-model="targetUser.birthDate"></date-picker>
-            <button class="small cell" style="padding: 0px 5px; margin-left: 5%;" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
+            <button type="button" class="small cell" style="padding: 0px 5px; margin-left: 5%;" ng-click="targetUser.birthDate = undefined">[[lang.translate("directory.deleteDate")]]</button>
         </div>
     </div>
     <div class="twelve cell">
@@ -78,12 +80,12 @@
     </div>
     <div class="twelve cell">
         <strong class="four cell padding-top-5">[[lang.translate("userBook.profile.telephone")]] :</strong>
-        <input class="six cell" type="tel" ng-pattern="phonePattern"
+        <input class="six cell" type="tel"
                name="homePhone" ng-model="targetUser.homePhone"/>
     </div>
     <div class="twelve cell">
         <strong class="four cell padding-top-5">[[lang.translate("directory.admin.mobilePhone")]] :</strong>
-        <input class="six cell" type="tel" ng-pattern="phonePattern"
+        <input class="six cell" type="tel"
                name="mobilePhone" ng-model="targetUser.mobile"/>
     </div>
     <hr class="separator cell" ng-if="!targetUser.code">
