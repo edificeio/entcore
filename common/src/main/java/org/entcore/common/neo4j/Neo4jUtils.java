@@ -19,6 +19,12 @@
 
 package org.entcore.common.neo4j;
 
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -30,6 +36,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Neo4jUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(Neo4jUtils.class);
+	private static final String UPDATE_SCRIPTS =
+			"MERGE (n:System {name : {appName}}) SET n.scripts = coalesce(n.scripts, []) + {newFiles} ";
 
 	public static String nodeSetPropertiesFromJson(String nodeAlias, JsonObject json, String... ignore) {
 		StringBuilder sb = new StringBuilder();
@@ -48,6 +58,94 @@ public class Neo4jUtils {
 			return sb.append(" ").substring(2);
 		}
 		return " ";
+	}
+
+	public static void loadScripts(final String appName, final Vertx vertx, final String path) {
+		String query = "MATCH (n:System) WHERE n.name = {appName} RETURN n.scripts as scripts";
+		Neo4j.getInstance().execute(query, new JsonObject().putString("appName", appName), new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				JsonArray res = event.body().getArray("result");
+				JsonArray scripts;
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
+					scripts = res.<JsonObject>get(0).getArray("scripts", new JsonArray());
+				} else {
+					scripts = new JsonArray();
+				}
+				loadAndExecute(appName, vertx, path, true, scripts);
+				loadAndExecute(appName, vertx, path, false, scripts);
+			}
+		});
+	}
+
+	private static void loadAndExecute(final String schema, final Vertx vertx, final String path,
+			final boolean index, final JsonArray excludeFileNames) {
+		final String pattern = index ? ".*?-index\\.cypher$" : "^(?!.*-index).*?\\.cypher$";
+		vertx.fileSystem().readDir(path, pattern, new Handler<AsyncResult<String[]>>() {
+			@Override
+			public void handle(AsyncResult<String[]> asyncResult) {
+				if (asyncResult.succeeded()) {
+					final String [] files = asyncResult.result();
+					Arrays.sort(files);
+					final StatementsBuilder s = new StatementsBuilder();
+					final JsonArray newFiles = new JsonArray();
+					final AtomicInteger count = new AtomicInteger(files.length);
+					for (final String f : files) {
+						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);
+						if (!excludeFileNames.contains(filename)) {
+							vertx.fileSystem().readFile(f, new Handler<AsyncResult<Buffer>>() {
+								@Override
+								public void handle(AsyncResult<Buffer> bufferAsyncResult) {
+									if (bufferAsyncResult.succeeded()) {
+										String script = bufferAsyncResult.result().toString();
+										for (String q : script.replaceAll("(\r|\n)", " ").split(";")) {
+											s.add(q);
+										}
+										newFiles.addString(filename);
+									} else {
+										log.error("Error reading file : " + f, bufferAsyncResult.cause());
+									}
+									if (count.decrementAndGet() == 0) {
+										commit(schema, s, newFiles, index);
+									}
+								}
+							});
+						} else if (count.decrementAndGet() == 0 && newFiles.size() > 0) {
+							commit(schema, s, newFiles, index);
+						}
+					}
+				} else {
+					log.error("Error reading neo4j directory : " + path, asyncResult.cause());
+				}
+			}
+
+			private void commit(final String schema, StatementsBuilder s, final JsonArray newFiles, final boolean index) {
+				final JsonObject params = new JsonObject().putString("appName", schema).putArray("newFiles", newFiles);
+				if (!index) {
+					s.add(UPDATE_SCRIPTS, params);
+				}
+				Neo4j.getInstance().executeTransaction(s.build(), null, true, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> message) {
+						if ("ok".equals(message.body().getString("status"))) {
+							if (index) {
+								Neo4j.getInstance().execute(UPDATE_SCRIPTS, params, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if (!"ok".equals(event.body().getString("status"))) {
+											log.error("Error update scripts : " + event.body().getString("message"));
+										}
+									}
+								});
+							}
+							log.info("Scripts added : " + newFiles.encode());
+						} else {
+							log.error("Error when commit transaction : " + message.body().getString("message"));
+						}
+					}
+				});
+			}
+		});
 	}
 
 }
