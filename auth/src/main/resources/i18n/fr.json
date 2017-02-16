@@ -41,6 +41,8 @@
     "browser.outdated.download": "Vous pouvez aussi, alternativement, télécharger un autre navigateur supporté : ",
     "browser.outdated.title": "Votre navigateur n'est pas à jour",
     "browser.outdated.update": "Afin d'avoir une expérience d'utilisation optimale, nous vous conseillons de télécharger la dernière version de votre navigateur : ",
+    "cookies.missing.title": "Cookies désactivés",
+    "cookies.missing.text": "Les cookies du navigateur sont désactivés. Vous devez <a href=\"http://www.accepterlescookies.com\" target=\"_blank\">activer vos cookies</a> pour vous connecter à l'ENT.",
     "cancel": "Annuler",
     "cgu": "",
     "cgu.title": "Conditions générales d'utilisation",
