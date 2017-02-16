@@ -1,6 +1,11 @@
 <div class="centered container row">
 	<section class="main">
-		<div class="login panel" ng-class="{'browser-container': !browser || (browser && browser.outdated)}">
+		<div class="login panel" ng-class="{'browser-container': !browser || (browser && browser.outdated) || !cookieEnabled}">
+			<div ng-if="!cookieEnabled" class="browser">
+				<h1><i18n>cookies.missing.title</i18n></h1>
+				<p class="warning"><i18n>cookies.missing.text</i18n></p>
+			</div>
+
 			<div ng-if="!browser" class="browser">
 				<h1><i18n>browser.not.supported.title</i18n></h1>
 				<p><i18n>browser.not.supported.download</i18n></p>
