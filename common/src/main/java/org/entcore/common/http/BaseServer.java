@@ -89,7 +89,7 @@ public abstract class BaseServer extends Server {
 		eventStoreFactory.setContainer(container);
 		eventStoreFactory.setVertx(vertx);
 
-		if (config.getBoolean("csrf-token", true)) {
+		if (config.getBoolean("csrf-token", false)) {
 			addFilter(new CsrfFilter(getEventBus(vertx)));
 		}
 
