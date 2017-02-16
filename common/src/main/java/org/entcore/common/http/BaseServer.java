@@ -35,6 +35,7 @@ import org.entcore.common.http.filter.*;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
@@ -50,7 +51,6 @@ import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.io.File;
 import java.util.*;
@@ -71,11 +71,11 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
-		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
-			node = "";
+			return;
 		}
+		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
@@ -144,6 +144,7 @@ public abstract class BaseServer extends Server {
 				String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
 				Neo4j.getInstance().init(vertx, new JsonObject(neo4jConfig));
 			}
+			Neo4jUtils.loadScripts(this.getClass().getSimpleName(), vertx, config.getString("neo4j-init-scripts", "neo4j"));
 		}
 		if (config.getBoolean("mongodb", true)) {
 			MongoDb.getInstance().init(getEventBus(vertx), node +
@@ -157,10 +158,7 @@ public abstract class BaseServer extends Server {
 			Sql.getInstance().init(getEventBus(vertx), node +
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
-			if ("dev".equals(config.getString("mode"))) {
-				DB.loadScripts(schema,
-						vertx, config.getString("init-scripts", "sql"));
-			}
+			DB.loadScripts(schema, vertx, config.getString("init-scripts", "sql"));
 		}
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();

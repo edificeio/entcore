@@ -3,7 +3,6 @@
   "port": 8001,
   "mode": "dev",
   "auto-redeploy": false,
-  "scripts-folder" : "../../data/tests/scripts",
   "path-prefix": "infra",
   "neo4jConfig" : {
     "server-uri": "http://localhost:17474/db/data/",
@@ -20,19 +19,6 @@
     }
   },
   "pre-required-modules": [{
-    "name": "fr.wseduc~mod-neo4j-persistor~1.6.0",
-    "config": {
-      "worker": true,
-      "address": "wse.neo4j.persistor",
-      "datastore-path": "./data/tests/neo4j",
-      "neo4j" : {
-        "allow_store_upgrade" : "true",
-      	"node_auto_indexing" : "true",
-      	"node_keys_indexable" : "externalId,firstName,lastName",
-        "legacy-indexes" : [{ "for" : "node", "name" : "node_auto_index", "type" : "fulltext" }]
-      }
-    }
-  },{
 	"name": "com.campudus~json-schema-validator~1.1.0",
 	"config": {
 	  "address": "json.schema.validator",
