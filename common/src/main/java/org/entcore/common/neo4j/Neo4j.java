@@ -68,7 +68,7 @@ public class Neo4j {
 						config.getLong("checkDelay", 3000l),
 						config.getInteger("poolSize", 16),
 						config.getBoolean("keepAlive", true),
-						config.getObject("neo4j"));
+						config);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}

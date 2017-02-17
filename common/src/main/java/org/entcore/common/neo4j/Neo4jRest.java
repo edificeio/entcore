@@ -72,8 +72,13 @@ public class Neo4jRest implements GraphDatabase {
 					.post("/db/data/index/" + j.getString("for"), new Handler<HttpClientResponse>() {
 				@Override
 				public void handle(HttpClientResponse event) {
-					if (event.statusCode() != 200) {
-						logger.error("Error creating index " + j.encode());
+					if (event.statusCode() != 201) {
+						event.bodyHandler(new Handler<Buffer>() {
+							@Override
+							public void handle(Buffer event) {
+								logger.error("Error creating index : " + j.encode() + " -> " + event.toString());
+							}
+						});
 					}
 				}
 			});

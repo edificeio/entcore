@@ -1,0 +1,8 @@
+neo4j:
+  image: neo4j:3.1
+  ports:
+    - "17474:7474"
+  volumes:
+    - ./neo4j-conf:/conf
+#    - ./data/tests:/data
+
