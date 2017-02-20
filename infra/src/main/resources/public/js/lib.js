@@ -959,7 +959,7 @@ var skin = (function(){
 				success: function(data){
 					that.skin = data.skin;
 					that.theme = '/assets/themes/' + data.skin + '/skins/default/';
-					that.basePath = that.theme + '../';
+					that.basePath = that.theme + '../../';
 
 					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
 						async: false,
@@ -968,7 +968,7 @@ var skin = (function(){
 							this.templateMapping = override;
 						}.bind(this)
 					}).e404(function(){});
-				}
+				}.bind(this)
 			});
 		},
 		listThemes: function(cb){
