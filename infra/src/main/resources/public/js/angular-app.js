@@ -1407,6 +1407,7 @@ module.directive('bindHtml', function($compile) {
                 var htmlVal = $('<div>' + (newVal || '') + '</div>')
                     //Remove resizable attributes
                 htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+                htmlVal.find('[draggable]').removeAttr('draggable').css('cursor', 'initial');
                 htmlVal.find('[bind-html]').removeAttr('bind-html');
                 htmlVal.find('[ng-include]').removeAttr('ng-include');
                 htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
