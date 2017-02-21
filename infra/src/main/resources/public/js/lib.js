@@ -1344,9 +1344,12 @@ var Behaviours = (function(){
 				return returnWorkflows();
 			}
 
-			if(window.loader){
+			if(window.loader && serviceName !== '.'){
 				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
 				return returnWorkflows();
+			}
+			else{
+				return {};
 			}
 		},
 		workflowsFrom: function(obj, dependencies){
