@@ -8,7 +8,7 @@
     <div class="row" >
         <h3><i18n>directory.admin.importTitle</i18n></h3>
         <label class="five cell"><span>[[lang.translate("directory.launchImport")]]</span></label>
-        <button class="three cell" style="margin-bottom: 5px" onclick="$.post('/directory/import', function(){ notify.info('directory.notify.import'); })">[[lang.translate("directory.import")]]</button>
+        <button class="three cell" style="margin-bottom: 5px" ng-click="localImport()">[[lang.translate("directory.import")]]</button>
     </div>
     <hr class="separator cell">
     <div class="row">
