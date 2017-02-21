@@ -1530,15 +1530,18 @@ module.directive('skinSrc', function($compile) {
     return {
         restrict: 'A',
         scope: '&',
-        link: function($scope, $element, $attributes) {
+        link: function(scope, element, attributes) {
             if (!$('#theme').attr('href')) {
                 return;
             }
-            $attributes.$observe('skinSrc', function() {
-                if ($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('https://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1) {
-                    $element.attr('src', skin.basePath + $attributes.skinSrc);
+            attributes.$observe('skinSrc', function() {
+                if (attributes.skinSrc.indexOf('http://') === -1 && attributes.skinSrc.indexOf('https://') === -1 && attributes.skinSrc.indexOf('/workspace/') === -1) {
+                    if(attributes.skinSrc[0] === '/'){
+                        attributes.skinSrc = attributes.skinSrc.substring(1);
+                    }
+                    element.attr('src', skin.basePath + attributes.skinSrc);
                 } else {
-                    $element.attr('src', $attributes.skinSrc);
+                    element.attr('src', attributes.skinSrc);
                 }
             });
 
