@@ -63,6 +63,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		})
 	}
 
+	$scope.localImport = function(){
+		http().post('/directory/import', function(){ 
+			notify.info('directory.notify.import'); 
+		});
+	};
+
     route({
 		default: function(){
 			$scope.structures.sync(function(){
