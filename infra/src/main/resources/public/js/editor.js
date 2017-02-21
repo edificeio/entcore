@@ -3713,7 +3713,7 @@ window.RTE = (function () {
 								            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
 								        }
 								    });
-					            	MathJax.Hub.Typeset();
+					            	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 								}
 							});
 					    }
