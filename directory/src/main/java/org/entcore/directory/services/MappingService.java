@@ -17,14 +17,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.feeder;
+package org.entcore.directory.services;
 
+import fr.wseduc.webutils.Either;
+import org.entcore.directory.pojo.ImportInfos;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public interface ImportValidator {
+public interface MappingService {
 
-	void validate(String path, JsonObject association, Handler<JsonObject> handler);
+	void getRequestedFieldsForProfile(String profile, ImportInfos importInfos, Handler<Either<String, JsonObject>> results);
+
+	void mappingValidate(final JsonObject association, String profile, String path, ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler);
 
 }

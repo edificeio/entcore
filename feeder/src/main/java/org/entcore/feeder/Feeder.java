@@ -19,6 +19,9 @@
 
 package org.entcore.feeder;
 
+import au.com.bytecode.opencsv.CSV;
+import au.com.bytecode.opencsv.CSVReadProc;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
@@ -48,9 +51,12 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -249,7 +255,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-relative-student" : manual.relativeStudent(message);
 				break;
 			case "manual-unlink-relative-student" : manual.unlinkRelativeStudent(message);
-			break;
+				break;
 			case "manual-add-user-function" : manual.addUserFunction(message);
 				break;
 			case "manual-remove-user-function" : manual.removeUserFunction(message);
@@ -275,6 +281,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "export" : launchExport(message);
 				break;
 			case "validate" : launchImportValidation(message, null);
+				break;
+			case "mapping" : getMappingInfos(message, null);
+				break;
+			case "mappingValidate" : launchImportValidationMapping(message, null);
 				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(message);
@@ -314,10 +324,127 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		checkEventQueue();
 	}
 
+	/**
+	 * Get the Json object from expected fields as given profile
+	 * @param profile : profile from witch we want the fields
+	 * @return
+	 */
+	public static JsonObject getMappingFromProfile(String profile){
+		String source;
+		// getting the mapping expected for the profile
+		switch(profile) {
+			case "Teacher":
+			case "Personnel" : source =  "dictionary/schema/Personnel.json"; break;
+			case "Student" : source =  "dictionary/schema/Student.json"; break;
+			case "Relative" :
+			case "Guest" : source =  "dictionary/schema/User.json"; break;
+			default : source = "";
+		}
+		JsonObject obj = JsonUtil.loadFromResource(source);
+		return obj;
+	}
+
+	public void getMappingInfos(final Message<JsonObject> message, final Message<JsonObject> handler) {
+		logger.info(message.body().encodePrettily());
+		final String profile = message.body().getString("profile", defaultFeed);
+		final String filePath = message.body().getString("filePath", defaultFeed);
+		final JsonObject obj = getMappingFromProfile(profile);
+
+		// getting the fields from the user .csv file.
+		CSVUtil.getCharset(vertx, filePath, new Handler<String>() {
+
+			@Override
+			public void handle(String charset) {
+				CSV csvParser = CSV
+						.ignoreLeadingWhiteSpace()
+						.separator(';')
+						.skipLines(0)
+						.charset(charset)
+						.create();
+
+				final List<String> columns = new ArrayList<>();
+				csvParser.read(filePath, new CSVReadProc() {
+					@Override
+					public void procRow ( int i, String...strings){
+						if( i == 0 ) {
+							JsonArray header = new JsonArray(strings);
+							// sending the informations
+							sendOK(message, new JsonObject().putObject("profileFields", obj).putString("status", "ok").putArray("csvHeader", header));
+						}
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * Validation after the user mapping on csv file
+	 * @param message
+	 * @param handler
+	 */
+	private void launchImportValidationMapping(final Message<JsonObject> message, final Handler<Report> handler) {
+		final ImportValidator v;
+		final String acceptLanguage = message.body().getString("language", "fr");
+		JsonObject association = message.body().getObject("association");
+
+		String path = message.body().getString("path");
+		v = new CsvValidator(vertx, acceptLanguage,
+				container.config().getObject("csvMappings", new JsonObject()));
+
+		final String structureExternalId = message.body().getString("structureExternalId");
+		final boolean preDelete = message.body().getBoolean("preDelete", false);
+
+		v.validate(path, association, new Handler<JsonObject>() {
+			@Override
+			public void handle(final JsonObject result) {
+				final Report r = (Report) v;
+				if (preDelete && structureExternalId != null && !r.containsErrors()) {
+					final JsonArray externalIds = r.getUsersExternalId();
+					new User.PreDeleteTask(0).findMissingUsersInStructure(
+							structureExternalId, "CSV", externalIds, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									final JsonArray res = event.body().getArray("result");
+									if ("ok".equals(event.body().getString("status")) && res != null) {
+										for (Object o : res) {
+											if (!(o instanceof JsonObject)) continue;
+											JsonObject j = (JsonObject) o;
+											String filename = j.getString("profile"); // TODO manage BE1D
+											r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
+													.putString("translatedProfile", r.translate(j.getString("profile"))));
+										}
+										r.getResult().putArray("usersExternalIds", externalIds);
+									} else {
+										r.addError("error.find.preDelete");
+									}
+									if (handler != null) {
+										handler.handle(r);
+									} else {
+										sendOK(message, new JsonObject().putObject("result", r.getResult()));
+									}
+								}
+							});
+				} else {
+					if (handler != null) {
+						handler.handle(r);
+					} else {
+						sendOK(message, new JsonObject().putObject("result", r.getResult()));
+					}
+				}
+			}
+		});
+	}
+
+	/**
+	 *
+	 * @param message
+	 * @param handler
+	 */
 	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
 		logger.info(message.body().encodePrettily());
 		final String acceptLanguage = message.body().getString("language", "fr");
 		final String source = message.body().getString("feeder", defaultFeed);
+		JsonObject association = message.body().getObject("association");
 
 		// TODO make validator factory
 		final ImportValidator v;
@@ -350,7 +477,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (path == null && !"CSV".equals(source)) {
 			path = container.config().getString("import-files");
 		}
-		v.validate(path, new Handler<JsonObject>() {
+		// association is null if not from mapping.
+		v.validate(path, association, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;
@@ -358,28 +486,28 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					final JsonArray externalIds = r.getUsersExternalId();
 					new User.PreDeleteTask(0).findMissingUsersInStructure(
 							structureExternalId, source, externalIds, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							final JsonArray res = event.body().getArray("result");
-							if ("ok".equals(event.body().getString("status")) && res != null) {
-								for (Object o : res) {
-									if (!(o instanceof JsonObject)) continue;
-									JsonObject j = (JsonObject) o;
-									String filename = j.getString("profile"); // TODO manage BE1D
-									r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
-											.putString("translatedProfile", r.translate(j.getString("profile"))));
+								@Override
+								public void handle(Message<JsonObject> event) {
+									final JsonArray res = event.body().getArray("result");
+									if ("ok".equals(event.body().getString("status")) && res != null) {
+										for (Object o : res) {
+											if (!(o instanceof JsonObject)) continue;
+											JsonObject j = (JsonObject) o;
+											String filename = j.getString("profile"); // TODO manage BE1D
+											r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
+													.putString("translatedProfile", r.translate(j.getString("profile"))));
+										}
+										r.getResult().putArray("usersExternalIds", externalIds);
+									} else {
+										r.addError("error.find.preDelete");
+									}
+									if (handler != null) {
+										handler.handle(r);
+									} else {
+										sendOK(message, new JsonObject().putObject("result", r.getResult()));
+									}
 								}
-								r.getResult().putArray("usersExternalIds", externalIds);
-							} else {
-								r.addError("error.find.preDelete");
-							}
-							if (handler != null) {
-								handler.handle(r);
-							} else {
-								sendOK(message, new JsonObject().putObject("result", r.getResult()));
-							}
-						}
-					});
+							});
 				} else {
 					if (handler != null) {
 						handler.handle(r);
@@ -390,6 +518,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		});
 	}
+
+
 
 	private void launchExport(final Message<JsonObject> message) {
 		if (exporter == null) {
@@ -482,7 +612,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void validateAndImport(final Message<JsonObject> message, final Feed feed, final boolean preDelete,
-			final String structureExternalId, final String source) {
+								   final String structureExternalId, final String source) {
 		launchImportValidation(message, new Handler<Report>() {
 			@Override
 			public void handle(final Report report) {
@@ -499,14 +629,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 									existingUsers.size() > 0 && !importReport.containsErrors()) {
 								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
 										structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> event) {
-										if (!"ok".equals(event.body().getString("status"))) {
-											importReport.addError("preDelete.error");
-										}
-										sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
-									}
-								});
+											@Override
+											public void handle(Message<JsonObject> event) {
+												if (!"ok".equals(event.body().getString("status"))) {
+													importReport.addError("preDelete.error");
+												}
+												sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
+											}
+										});
 							} else {
 								sendOK(message, new JsonObject().putObject("result", importReport.getResult()));
 							}
@@ -528,6 +658,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 		final String charset = message.body().getString("charset", "UTF-8");
 		final String importPath = message.body().getString("path");
+		final JsonObject association = message.body().getObject("association");
+		final String profile = message.body().getString("profile");
 		final boolean executePostImport = message.body().getBoolean("postImport", true);
 
 		final Importer importer = Importer.getInstance();
@@ -572,6 +704,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							}
 						};
 						if (importPath != null && !importPath.trim().isEmpty()) {
+							importer.setAssociation(association);
+							importer.setProfile(profile);
 							feed.launch(importer, importPath, handler);
 						} else {
 							feed.launch(importer, handler);
@@ -603,5 +737,4 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 	}
-
 }

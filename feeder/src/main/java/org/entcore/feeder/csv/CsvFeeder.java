@@ -38,6 +38,7 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -102,7 +103,7 @@ public class CsvFeeder implements Feed {
 					final Structure s;
 					try {
 						JsonObject structure = CSVUtil.getStructure(path);
-			//			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
+						//			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
 						s = importer.createOrUpdateStructure(structure);
 						if (s == null) {
 							log.error("Structure error with directory " + path + ".");
@@ -118,7 +119,7 @@ public class CsvFeeder implements Feed {
 						@Override
 						public void handle(final AsyncResult<String[]> event) {
 							if (event.succeeded()) {
-								checkNotModifiableExternalId(event.result(), new Handler<Message<JsonObject>>() {
+								checkNotModifiableExternalId(event.result(), importer.getProfile(), importer.getAssociation(), new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> m) {
 										if ("ok".equals(m.body().getString("status"))) {
@@ -141,7 +142,7 @@ public class CsvFeeder implements Feed {
 	}
 
 	private void launchFiles(final String path, final String[] files, final Structure structure,
-			final Importer importer, final Handler<Message<JsonObject>> handler) {
+							 final Importer importer, final Handler<Message<JsonObject>> handler) {
 		Arrays.sort(files, Collections.reverseOrder());
 		final Set<String> parsedFiles = new HashSet<>();
 		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
@@ -198,7 +199,7 @@ public class CsvFeeder implements Feed {
 		return "CSV";
 	}
 
-	private void checkNotModifiableExternalId(String[] files, final Handler<Message<JsonObject>> handler) {
+	private void checkNotModifiableExternalId(String[] files, final String profile, final JsonObject association, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
@@ -206,15 +207,30 @@ public class CsvFeeder implements Feed {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					columnsMapper.getColumsNames(strings, columns, handler);
+					if( association != null ) { // mapping
+						columnsMapper.getColumsAssociations(strings, columns, profile, association);
+					} else { // normal
+						columnsMapper.getColumsNames(strings, columns, handler);
+					}
+
 					if (columns.isEmpty()) {
 						handler.handle(new ResultMessage().error("invalid.columns"));
 						return;
 					}
-					for (int j = 0; j < columns.size(); j++) {
-						if ("externalId".equals(columns.get(j))) {
-							externalIdIdx.set(j);
-							break;
+					if( association != null ) { // mapping
+						// find index of externalId in association
+						for (String field : association.getFieldNames()) {
+							if( association.getString(field).equals("externalId")){
+								externalIdIdx.set(Integer.parseInt(field));
+								break;
+							}
+						}
+					} else {// normal
+						for (int j = 0; j < columns.size(); j++) {
+							if ("externalId".equals(columns.get(j))) {
+								externalIdIdx.set(j);
+								break;
+							}
 						}
 					}
 				} else if (externalIdIdx.get() >= 0) {
@@ -247,33 +263,33 @@ public class CsvFeeder implements Feed {
 		if (externalIds.size() > 0) {
 			String query =
 					"MATCH (u:User) where u.externalId IN {ids} AND u.source IN ['AAF', 'AAF1D'] " +
-					"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
-					"RETURN COLLECT(u.externalId) as ids";
+							"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
+							"RETURN COLLECT(u.externalId) as ids";
 			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().putArray("ids", externalIds),
 					new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						JsonArray res = event.body().getArray("result");
-						JsonArray ids;
-						if (res != null && res.size() > 0 && res.<JsonObject>get(0) != null &&
-								(ids = res.<JsonObject>get(0).getArray("ids")) != null && ids.size() > 0) {
-							handler.handle(new ResultMessage().error("unmodifiable.externalId-" + ids.encode()));
-						} else {
-							handler.handle(new ResultMessage());
+						@Override
+						public void handle(Message<JsonObject> event) {
+							if ("ok".equals(event.body().getString("status"))) {
+								JsonArray res = event.body().getArray("result");
+								JsonArray ids;
+								if (res != null && res.size() > 0 && res.<JsonObject>get(0) != null &&
+										(ids = res.<JsonObject>get(0).getArray("ids")) != null && ids.size() > 0) {
+									handler.handle(new ResultMessage().error("unmodifiable.externalId-" + ids.encode()));
+								} else {
+									handler.handle(new ResultMessage());
+								}
+							} else {
+								handler.handle(event);
+							}
 						}
-					} else {
-						handler.handle(event);
-					}
-				}
-			});
+					});
 		} else {
 			handler.handle(new ResultMessage());
 		}
 	}
 
-	public void start(final String profile, final Structure structure, String file, String charset,
-			final Importer importer, final Handler<Message<JsonObject>> handler) {
+	public void start(String profileIn, final Structure structure, String file, String charset,
+					  final Importer importer, final Handler<Message<JsonObject>> handler) {
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
@@ -281,12 +297,13 @@ public class CsvFeeder implements Feed {
 		importer.createOrUpdateProfile(GUEST_PROFILE);
 		DefaultFunctions.createOrUpdateFunctions(importer);
 
+		if( importer.getProfile() != null ){
+			profileIn = importer.getProfile(); // mapping way
+		}
+
+		final String profile = profileIn;
+
 		final Validator validator = ManualFeeder.profiles.get(profile);
-//		final Structure structure = importer.getStructure(structureExternalId);
-//		if (structure == null) {
-//			handler.handle(new ResultMessage().error("invalid.structure"));
-//			return;
-//		}
 
 		CSV csvParser = CSV
 				.ignoreLeadingWhiteSpace()
@@ -295,19 +312,52 @@ public class CsvFeeder implements Feed {
 				.charset(charset)
 				.create();
 		final List<String> columns = new ArrayList<>();
+
+		// initialisation of indexes from associated mapped fields
+		int indexInit[] = null;
+		if( importer.getAssociation() != null ) {
+			indexInit = new int[importer.getAssociation().size()];
+			int cpt = 0;
+			for (String field : importer.getAssociation().getFieldNames()) {
+				if(! "profile".equals(field)) {
+					indexInit[cpt] = Integer.parseInt(field);
+					cpt++;
+				}
+			}
+
+		}
+
+		final int index[] = indexInit;
+
 		csvParser.read(file, new CSVReadProc() {
 			@Override
 			public void procRow(int i, String... strings) {
 				if (i == 0) {
-					columnsMapper.getColumsNames(strings, columns, handler);
+					if( importer.getAssociation() != null ) {
+						columnsMapper.getColumsAssociations(strings, columns, profile, importer.getAssociation());
+					} else {
+						columnsMapper.getColumsNames(strings, columns, handler);
+					}
 				} else if (!columns.isEmpty()) {
 					JsonObject user = new JsonObject();
 					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 					user.putArray("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
+
+
 					for (int j = 0; j < strings.length; j++) {
+						String vtemp = "";
+						// if mapping, we have to get the good index
+						if( importer.getAssociation() != null ) {
+							if( j >= columns.size() ) {
+								continue;
+							}
+							vtemp = strings[index[j]].trim(); // by mapping
+						} else {
+							vtemp = strings[j].trim(); // normal way
+						}
+						final String v = vtemp;
 						final String c = columns.get(j);
-						final String v = strings[j].trim();
 						if (v.isEmpty()) continue;
 						switch (validator.getType(c)) {
 							case "string":
@@ -475,7 +525,7 @@ public class CsvFeeder implements Feed {
 //				importer.persist(handler);
 //			}
 //		});
-	//	importer.persist(handler);
+		//	importer.persist(handler);
 	}
 
 }

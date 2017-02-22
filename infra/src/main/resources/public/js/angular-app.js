@@ -87,9 +87,9 @@ var notify = {
 };
 
 var module = angular.module('app', ['ngSanitize', 'ngRoute'], function($interpolateProvider) {
-        $interpolateProvider.startSymbol('[[');
-        $interpolateProvider.endSymbol(']]');
-    })
+    $interpolateProvider.startSymbol('[[');
+    $interpolateProvider.endSymbol(']]');
+})
     .factory('notify', function() {
         return notify;
     })
@@ -283,15 +283,15 @@ module.directive('lightbox', function($compile) {
             onClose: '&'
         },
         template: '<section class="lightbox">' +
-            '<div class="background"></div>' +
-            '<div class="content">' +
-            '<div class="twelve cell" ng-transclude></div>' +
-            '<div class="close-lightbox">' +
-            '<i class="close-2x"></i>' +
-            '</div>' +
-            '</div>' +
-            '</section>' +
-            '</div>',
+        '<div class="background"></div>' +
+        '<div class="content">' +
+        '<div class="twelve cell" ng-transclude></div>' +
+        '<div class="close-lightbox">' +
+        '<i class="close-2x"></i>' +
+        '</div>' +
+        '</div>' +
+        '</section>' +
+        '</div>',
         link: function(scope, element, attributes) {
             var content = element.find('.content');
             element.children('.lightbox').find('> .background, > .content > .close-lightbox > i.close-2x').on('click', function(e) {
@@ -830,7 +830,6 @@ module.directive('calendar', function($compile) {
         link: function(scope, element, attributes) {
             var allowCreate;
             scope.display = {};
-            scope.display.readonly = false;
             attributes.$observe('createTemplate', function() {
                 if (attributes.createTemplate) {
                     template.open('schedule-create-template', attributes.createTemplate);
@@ -838,14 +837,6 @@ module.directive('calendar', function($compile) {
                 }
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
-                }
-            });
-            attributes.$observe('readonly', function(){
-                if(attributes.readonly && attributes.readonly !== 'false'){
-                    scope.display.readonly = true;
-                }
-                if(attributes.readonly && attributes.readonly == 'false'){
-                    scope.display.readonly = false;
                 }
             });
 
@@ -874,8 +865,8 @@ module.directive('scheduleItem', function($compile) {
         restrict: 'E',
         require: '^calendar',
         template: '<div class="schedule-item" resizable horizontal-resize-lock draggable>' +
-            '<container template="schedule-display-template" class="absolute"></container>' +
-            '</div>',
+        '<container template="schedule-display-template" class="absolute"></container>' +
+        '</div>',
         controller: function($scope) {
 
         },
@@ -1047,12 +1038,12 @@ module.directive('colorSelect', function($compile) {
         },
         replace: true,
         template: '' +
-            '<div class="color-picker" ng-class="{ opened: pickColor }">' +
-            '<button class="colors-opener" type="button"></button>' +
-            '<div class="colors-list">' +
-            '<button type="button" ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
-            '</div>' +
-            '</div>',
+        '<div class="color-picker" ng-class="{ opened: pickColor }">' +
+        '<button class="colors-opener" type="button"></button>' +
+        '<div class="colors-list">' +
+        '<button type="button" ng-repeat="color in colors" class="[[color]]" ng-click="setColor(color)"></button>' +
+        '</div>' +
+        '</div>',
         link: function(scope, element, attributes) {
             scope.colors = ['orange', 'pink', 'purple', 'blue', 'green', 'black', 'white', 'transparent'];
             scope.setColor = function(color) {
@@ -1083,16 +1074,16 @@ module.directive('imageSelect', function($compile) {
             default: '@'
         },
         template: '<div><img ng-src="[[ngModel]]?[[getThumbnails()]]" class="pick-file" draggable="false" ng-if="ngModel" style="cursor: pointer" />' +
-            '<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
-            '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-            '<media-library ' +
-            'visibility="selectedFile.visibility"' +
-            'ng-change="updateDocument()" ' +
-            'ng-model="selectedFile.file" ' +
-            'file-format="\'img\'">' +
-            '</media-library>' +
-            '</lightbox>' +
-            '</div>',
+        '<img skin-src="[[default]]" class="pick-file" draggable="false" ng-if="!ngModel" style="cursor: pointer" />' +
+        '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+        '<media-library ' +
+        'visibility="selectedFile.visibility"' +
+        'ng-change="updateDocument()" ' +
+        'ng-model="selectedFile.file" ' +
+        'file-format="\'img\'">' +
+        '</media-library>' +
+        '</lightbox>' +
+        '</div>',
         link: function(scope, element, attributes) {
             scope.selectedFile = {
                 file: {},
@@ -1172,15 +1163,15 @@ module.directive('soundSelect', function($compile) {
             visibility: '@'
         },
         template: '<div><audio ng-src="[[ngModel]]" controls ng-if="ngModel" style="cursor: pointer"></audio>' +
-            '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-            '<media-library ' +
-            'visibility="selectedFile.visibility"' +
-            'ng-change="updateDocument()" ' +
-            'ng-model="selectedFile.file" ' +
-            'file-format="\'audio\'">' +
-            '</media-library>' +
-            '</lightbox>' +
-            '</div>',
+        '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+        '<media-library ' +
+        'visibility="selectedFile.visibility"' +
+        'ng-change="updateDocument()" ' +
+        'ng-model="selectedFile.file" ' +
+        'file-format="\'audio\'">' +
+        '</media-library>' +
+        '</lightbox>' +
+        '</div>',
         link: function(scope, element, attributes) {
             scope.selectedFile = {
                 file: {},
@@ -1227,10 +1218,10 @@ module.directive('mediaSelect', function($compile) {
             mytooltip: "@"
         },
         template: '<div><input type="button" class="pick-file [[class]]" tooltip="[[mytooltip]]" />' +
-            '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
-            '<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
-            '</lightbox>' +
-            '</div>',
+        '<lightbox show="userSelecting" on-close="userSelecting = false;">' +
+        '<media-library ng-change="updateDocument()" ng-model="selectedFile.file" multiple="multiple" file-format="fileFormat" visibility="selectedFile.visibility"></media-library>' +
+        '</lightbox>' +
+        '</div>',
         compile: function(element, attributes) {
 
             if (!attributes.mytooltip && attributes.tooltip) {
@@ -1298,8 +1289,8 @@ module.directive('filesPicker', function($compile) {
         link: function(scope, element, attributes) {
             element.on('click', function() {
                 var fileSelector = $('<input />', {
-                        type: 'file'
-                    })
+                    type: 'file'
+                })
                     .hide()
                     .appendTo('body');
                 if (attributes.multiple !== undefined) {
@@ -1354,20 +1345,20 @@ module.directive('iconsSelect', function($compile) {
             })
         },
         template: '' +
-            '<div>' +
-            '<div class="current fixed cell twelve" data-selected="[[current.id]]">' +
-            '<i class="[[current.icon]]"></i>' +
-            '<span translate content="[[current.text]]"></span>' +
-            '</div>' +
-            '<div class="options-list icons-view">' +
-            '<div class="wrapper">' +
-            '<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">' +
-            '<i class="[[option.icon]]"></i>' +
-            '<span translate content="[[option.text]]"></span>' +
-            '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
+        '<div>' +
+        '<div class="current fixed cell twelve" data-selected="[[current.id]]">' +
+        '<i class="[[current.icon]]"></i>' +
+        '<span translate content="[[current.text]]"></span>' +
+        '</div>' +
+        '<div class="options-list icons-view">' +
+        '<div class="wrapper">' +
+        '<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">' +
+        '<i class="[[option.icon]]"></i>' +
+        '<span translate content="[[option.text]]"></span>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        '</div>'
     };
 });
 
@@ -1375,9 +1366,9 @@ module.directive('preview', function($compile) {
     return {
         restrict: 'E',
         template: '<div class="row content-line"><div class="row fixed-block height-four">' +
-            '<div class="four cell fixed image clip text-container"></div>' +
-            '<div class="eight cell fixed-block left-four paragraph text-container"></div>' +
-            '</div></div>',
+        '<div class="four cell fixed image clip text-container"></div>' +
+        '<div class="eight cell fixed-block left-four paragraph text-container"></div>' +
+        '</div></div>',
         replace: true,
         scope: {
             content: '='
@@ -1405,7 +1396,7 @@ module.directive('bindHtml', function($compile) {
         link: function(scope, element) {
             scope.$watch('bindHtml', function(newVal) {
                 var htmlVal = $('<div>' + (newVal || '') + '</div>')
-                    //Remove resizable attributes
+                //Remove resizable attributes
                 htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
                 htmlVal.find('[draggable]').removeAttr('draggable').css('cursor', 'initial');
                 htmlVal.find('[bind-html]').removeAttr('bind-html');
@@ -1615,6 +1606,7 @@ module.directive('topNotification', function() {
             '<span ng-repeat="add in additional" ng-click="add.action()">[[ add.label ]]</span> ' +
             '</div>' +
             '</div>',
+
         scope: {
             trigger: '=',
             confirm: '=',
@@ -1719,13 +1711,13 @@ module.directive('dropDown', function($compile, $timeout) {
             ngModel: '='
         },
         template: '<div data-drop-down class="drop-down">' +
-            '<div>' +
-            '<ul class="ten cell right-magnet">' +
-            '<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
-            '<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">' + lang.translate('seemore') + '</li>' +
-            '</ul>' +
-            '</div>' +
-            '</div>',
+        '<div>' +
+        '<ul class="ten cell right-magnet">' +
+        '<li ng-repeat="option in options | limitTo:limit" ng-model="option">[[option.toString()]]</li>' +
+        '<li class="display-more" ng-show="limit < options.length" ng-click="increaseLimit()">' + lang.translate('seemore') + '</li>' +
+        '</ul>' +
+        '</div>' +
+        '</div>',
         link: function(scope, element, attributes) {
             scope.limit = 6;
             var dropDown = element.find('[data-drop-down]');
@@ -1819,16 +1811,16 @@ module.directive('autocomplete', function($compile, $timeout) {
             search: '=?'
         },
         template: '' +
-            '<div class="row">' +
-            '<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />' +
-            '<div data-drop-down class="drop-down autocomplete">' +
-            '<div>' +
-            '<ul class="ten cell right-magnet">' +
-            '<li ng-repeat="option in match | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
-            '</ul>' +
-            '</div>' +
-            '</div>' +
-            '</div>',
+        '<div class="row">' +
+        '<input type="text" class="twelve cell" ng-model="search" translate attr="placeholder" placeholder="search" autocomplete="off" />' +
+        '<div data-drop-down class="drop-down autocomplete">' +
+        '<div>' +
+        '<ul class="ten cell right-magnet">' +
+        '<li ng-repeat="option in match | limitTo:10" ng-model="option">[[option.toString()]]</li>' +
+        '</ul>' +
+        '</div>' +
+        '</div>' +
+        '</div>',
         link: function(scope, element, attributes) {
             var token;
             if (attributes.autocomplete === 'off') {
@@ -1880,10 +1872,10 @@ module.directive('autocomplete', function($compile, $timeout) {
                 scope.match = _.filter(scope.options(), function(option) {
                     var words = newVal.split(' ');
                     return _.find(words, function(word) {
-                        var formattedOption = lang.removeAccents(option.toString()).toLowerCase();
-                        var formattedWord = lang.removeAccents(word).toLowerCase();
-                        return formattedOption.indexOf(formattedWord) === -1
-                    }) === undefined;
+                            var formattedOption = lang.removeAccents(option.toString()).toLowerCase();
+                            var formattedWord = lang.removeAccents(word).toLowerCase();
+                            return formattedOption.indexOf(formattedWord) === -1
+                        }) === undefined;
                 });
                 if (!scope.match || scope.match.length === 0) {
                     dropDownContainer.height("");
@@ -2041,12 +2033,12 @@ module.directive('textEditor', function($compile) {
             ngChange: '&'
         },
         template: '<div contenteditable="true" style="width: 100%;" class="contextual-editor"></div>' +
-            '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
-            '<lightbox show="editHtml" on-close="editHtml = false;">' +
-            '<h2><i18n>html</i18n></h2>' +
-            '<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
-            '<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
-            '</lightbox>',
+        '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
+        '<lightbox show="editHtml" on-close="editHtml = false;">' +
+        '<h2><i18n>html</i18n></h2>' +
+        '<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
+        '<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
+        '</lightbox>',
         compile: function() {
             CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
             if (window.CKEDITOR === undefined) {
@@ -2171,25 +2163,25 @@ module.directive('htmlEditor', function($compile, $parse) {
             $scope.notify = null;
         },
         template: '<div class="twelve cell block-editor">' +
-            '<div contenteditable="true" loading-panel="ckeditor-image">' +
-            '</div><div class="clear"></div>' +
-            '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
-            '<lightbox show="editHtml" on-close="editHtml = false;">' +
-            '<h2><i18n>html</i18n></h2>' +
-            '<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
-            '<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
-            '</lightbox>' +
-            '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
-            '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
-            '</media-library></lightbox>' +
-            '<lightbox show="inputVideo" on-close="inputVideo = false">' +
-            '<p style="padding-bottom: 10px;">' +
-            '<i18n>info.video.embed</i18n>' +
-            '</p>' +
-            '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
-            '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
-            '</lightbox>' +
-            '</div>',
+        '<div contenteditable="true" loading-panel="ckeditor-image">' +
+        '</div><div class="clear"></div>' +
+        '<linker editor="contextEditor" on-change="updateContent()"></linker>' +
+        '<lightbox show="editHtml" on-close="editHtml = false;">' +
+        '<h2><i18n>html</i18n></h2>' +
+        '<textarea class="twelve cell" ng-model="selected.html"></textarea>' +
+        '<div class="row"><button ng-click="applyHtml()"><i18n>save</i18n></button></div>' +
+        '</lightbox>' +
+        '<lightbox show="selectFiles" on-close="selectFiles = false;">' +
+        '<media-library ng-model="selected.files" ng-change="addContent()" multiple="true" file-format="format">' +
+        '</media-library></lightbox>' +
+        '<lightbox show="inputVideo" on-close="inputVideo = false">' +
+        '<p style="padding-bottom: 10px;">' +
+        '<i18n>info.video.embed</i18n>' +
+        '</p>' +
+        '<input type="test" ng-model="videoText" style="border: 0; width: 99%; margin-bottom: 10px; height: 20px; border-bottom: 1px dashed black; border-top: 1px dashed black;"/>' +
+        '<div style="text-align: center"><button type="button" ng-click="addVideoLink(videoText)">Valider</button></div>' +
+        '</lightbox>' +
+        '</div>',
         compile: function(element, attributes, transclude) {
             CKEDITOR_BASEPATH = '/' + infraPrefix + '/public/ckeditor/';
             if (window.CKEDITOR === undefined) {
@@ -2482,9 +2474,6 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
-            if(ui.breakpoints.tablette >= $(window).width()){
-                return;
-            }
             var tip;
             element.on('mouseover', function() {
                 if (!attributes.tooltip || attributes.tooltip === 'undefined') {
@@ -2851,7 +2840,7 @@ module.directive('gridResizable', function($compile) {
                     resizeLimits = {
                         horizontal: element.offset().left + element.width() + 5 > mouse.x && mouse.x > element.offset().left + element.width() - 15,
                         vertical: (element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) +
-                            5 > mouse.y && mouse.y > element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) - 15) && !lock.vertical
+                        5 > mouse.y && mouse.y > element.offset().top + (element.height() + parseInt(element.css('padding-bottom'))) - 15) && !lock.vertical
                     };
 
                     var orientations = {
@@ -3634,8 +3623,8 @@ module.directive('progressBar', function($compile) {
             unit: '@'
         },
         template: '<div class="progress-bar">' +
-            '<div class="filled">[[filled]] <span translate content="[[unit]]"></span></div>[[max]] <span translate content="[[unit]]"></span>' +
-            '</div>',
+        '<div class="filled">[[filled]] <span translate content="[[unit]]"></span></div>[[max]] <span translate content="[[unit]]"></span>' +
+        '</div>',
         link: function(scope, element, attributes) {
             function updateBar() {
                 var filledPercent = scope.filled * 100 / scope.max;
@@ -3703,15 +3692,15 @@ module.directive('datePicker', function($compile) {
 
             loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function() {
                 element.datepicker({
-                        dates: {
-                            months: moment.months(),
-                            monthsShort: moment.monthsShort(),
-                            days: moment.weekdays(),
-                            daysShort: moment.weekdaysShort(),
-                            daysMin: moment.weekdaysMin()
-                        },
-                        weekStart: 1
-                    })
+                    dates: {
+                        months: moment.months(),
+                        monthsShort: moment.monthsShort(),
+                        days: moment.weekdays(),
+                        daysShort: moment.weekdaysShort(),
+                        daysMin: moment.weekdaysMin()
+                    },
+                    weekStart: 1
+                })
                     .on('changeDate', function() {
                         setTimeout(setNewDate, 10);
 
@@ -3761,15 +3750,15 @@ module.directive('datePickerIcon', function($compile) {
                 input_element.value = moment(new Date()).format('DD/MM/YYYY')
 
                 input_element.datepicker({
-                        dates: {
-                            months: moment.months(),
-                            monthsShort: moment.monthsShort(),
-                            days: moment.weekdays(),
-                            daysShort: moment.weekdaysShort(),
-                            daysMin: moment.weekdaysMin()
-                        },
-                        weekStart: 1
-                    })
+                    dates: {
+                        months: moment.months(),
+                        monthsShort: moment.monthsShort(),
+                        days: moment.weekdays(),
+                        daysShort: moment.weekdaysShort(),
+                        daysMin: moment.weekdaysMin()
+                    },
+                    weekStart: 1
+                })
                     .on('changeDate', function(event) {
                         $scope.ngModel = event.date
                         $scope.$apply('ngModel')
@@ -3794,10 +3783,10 @@ module.directive('filters', function() {
     return {
         restrict: 'E',
         template: '<div class="row line filters">' +
-            '<div class="filters-icons">' +
-            '<ul ng-transclude>' +
-            '</ul></div>' +
-            '</div><div class="row"></div> ',
+        '<div class="filters-icons">' +
+        '<ul ng-transclude>' +
+        '</ul></div>' +
+        '</div><div class="row"></div> ',
         transclude: true,
         link: function(scope, element, attributes) {}
     }
@@ -3911,7 +3900,7 @@ module.directive('dragItem', function() {
                     matchedElement = undefined;
                     $("[drop-item]").each(function(index, el){
                         if($(el).offset().left < mouse.x && $(el).offset().left + $(el).width() > mouse.x &&
-                        $(el).offset().top - (window.scrollY || window.pageYOffset) < mouse.y && $(el).offset().top + $(el).height() - (window.scrollY || window.pageYOffset) > mouse.y)
+                            $(el).offset().top - (window.scrollY || window.pageYOffset) < mouse.y && $(el).offset().top + $(el).height() - (window.scrollY || window.pageYOffset) > mouse.y)
                         {
                             $(el).addClass('drag-over');
                             matchedElement = $(el);
@@ -4143,10 +4132,10 @@ module.directive('attachments', function($parse) {
             http().get('/resources-applications').done(function(apps) {
                 scope.attachments.apps = _.filter(model.me.apps, function(app) {
                     return _.find(apps, function(match) {
-                        return app.address.indexOf(match) !== -1 && app.icon
-                    }) && _.find(scope.apps, function(match) {
-                        return app.address.indexOf(match) !== -1
-                    });
+                            return app.address.indexOf(match) !== -1 && app.icon
+                        }) && _.find(scope.apps, function(match) {
+                            return app.address.indexOf(match) !== -1
+                        });
                 });
 
                 scope.attachments.display.search.application = scope.attachments.apps[0];
@@ -4397,13 +4386,13 @@ module.directive('pdfViewer', function() {
     return {
         restrict: 'E',
         template: '' +
-            '<div class="file-controls">' +
-            '<i class="previous" ng-click="previousPage()"></i>' +
-            '<i class="next" ng-click="nextPage()"></i>' +
-            '</div>' +
-            '<div class="pagination">' +
-            '<input type="text" ng-model="pageIndex" ng-change="openPage()" /> / [[numPages]]' +
-            '</div>',
+        '<div class="file-controls">' +
+        '<i class="previous" ng-click="previousPage()"></i>' +
+        '<i class="next" ng-click="nextPage()"></i>' +
+        '</div>' +
+        '<div class="pagination">' +
+        '<input type="text" ng-model="pageIndex" ng-change="openPage()" /> / [[numPages]]' +
+        '</div>',
         link: function(scope, element, attributes) {
             var pdf;
             scope.pageIndex = 1;
@@ -4556,12 +4545,12 @@ module.directive('inputPassword', function() {
         restrict: 'E',
         replace: false,
         template: '<input type="password"/>' +
-            '<button type="button" \
-				ng-mousedown="show(true)" \
-				ng-touchstart="show(true)" \
-				ng-touchend="show(false)" \
-				ng-mouseup="show(false)" \
-				ng-mouseleave="show(false)"></button>',
+        '<button type="button" \
+            ng-mousedown="show(true)" \
+            ng-touchstart="show(true)" \
+            ng-touchend="show(false)" \
+            ng-mouseup="show(false)" \
+            ng-mouseleave="show(false)"></button>',
         scope: true,
         compile: function(element, attributes) {
             element.addClass('toggleable-password');
@@ -4584,9 +4573,9 @@ module.directive('sidePanel', function() {
         restrict: 'E',
         transclude: true,
         template: '<div class="opener"></div>' +
-            '<div class="toggle">' +
-            '<div class="content" ng-transclude></div>' +
-            '</div>',
+        '<div class="toggle">' +
+        '<div class="content" ng-transclude></div>' +
+        '</div>',
         link: function(scope, element, attributes) {
             element.addClass('hidden');
             element.children('.opener').on('click', function(e) {
@@ -4612,13 +4601,13 @@ module.directive('plus', function($compile) {
         restrict: 'E',
         transclude: true,
         template: '' +
-            '<div class="opener">' +
-            '<div class="plus"></div>' +
-            '<div class="minus"></div>' +
-            '</div>' +
-            '<section class="toggle-buttons">' +
-            '<div class="toggle" ng-transclude></div>' +
-            '</div>',
+        '<div class="opener">' +
+        '<div class="plus"></div>' +
+        '<div class="minus"></div>' +
+        '</div>' +
+        '<section class="toggle-buttons">' +
+        '<div class="toggle" ng-transclude></div>' +
+        '</div>',
         link: function(scope, element, attributes) {
             element.children('.toggle-buttons').addClass('hide');
             element.children('.opener').addClass('plus');
@@ -4648,7 +4637,7 @@ module.directive('help', function() {
         restrict: 'E',
         scope: {},
         template: '<i class="help"></i>' +
-            '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
+        '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
         link: function(scope, element) {
             scope.display = {};
             scope.helpPath = '/help/application/' + appPrefix + '/';
@@ -4708,28 +4697,28 @@ module.directive('stickToTop', function() {
             var actualScrollTop = $(window).scrollTop()
 
             var animation = function() {
-				element.addClass('scrolling')
-                   element.offset({
-                       top: element.offset().top + (
-                           actualScrollTop + $('.height-marker').height() - (
-                               element.offset().top
-                           )
-                       ) / 20
-                   });
+                element.addClass('scrolling')
+                element.offset({
+                    top: element.offset().top + (
+                        actualScrollTop + $('.height-marker').height() - (
+                            element.offset().top
+                        )
+                    ) / 20
+                });
                 requestAnimationFrame(animation)
             }
 
             var scrolls = false;
-				$(window).scroll(function() {
-	                actualScrollTop = $(window).scrollTop()
-					if(actualScrollTop <= initialPosition - $('.height-marker').height()){
-						actualScrollTop = initialPosition - $('.height-marker').height();
-					}
-	                if (!scrolls) {
-	                    animation();
-	                }
-	                scrolls = true;
-	            })
+            $(window).scroll(function() {
+                actualScrollTop = $(window).scrollTop()
+                if(actualScrollTop <= initialPosition - $('.height-marker').height()){
+                    actualScrollTop = initialPosition - $('.height-marker').height();
+                }
+                if (!scrolls) {
+                    animation();
+                }
+                scrolls = true;
+            })
 
         }
     }
@@ -4742,10 +4731,10 @@ module.directive('floatingNavigation', function() {
         transclude: true,
         scope: {},
         template: '<nav class="vertical hash-magnet floating" stick-to-top>' +
-            '<div class="previous arrow" ng-class="{ visible: step > 0 }"></div>' +
-            '<div class="content" ng-transclude></div>' +
-            '<div class="next arrow" ng-class="{ visible: step < stepsLength && stepsLength > 0 }"></div>' +
-            '</nav>',
+        '<div class="previous arrow" ng-class="{ visible: step > 0 }"></div>' +
+        '<div class="content" ng-transclude></div>' +
+        '<div class="next arrow" ng-class="{ visible: step < stepsLength && stepsLength > 0 }"></div>' +
+        '</nav>',
         link: function(scope, element, attributes) {
 
             var initialPosition;
@@ -4995,7 +4984,7 @@ module.directive('sideNav', function() {
                     }
 
                     ui.extendElement.touchEvents(body, {
-                         exclude: ['longclick'],
+                        exclude: ['longclick'],
                         allowDefault: true
                     });
 
@@ -5149,18 +5138,19 @@ module.directive('whereami', function() {
 var checkToolDelay = (function(){
     var applyAllowed = true;
 
-	return function checkApplication(scope){
-    	if(applyAllowed){
-			applyAllowed = false;
+    return function checkApplication(scope){
+        if(applyAllowed){
+            applyAllowed = false;
 
-			setTimeout(function(){
-				scope.$apply();
-				applyAllowed = true;
-			}, 200);
-		}
+            setTimeout(function(){
+                scope.$apply();
+                applyAllowed = true;
+            }, 500);
+        }
 
-	}
+    }
 }());
+
 
 module.directive('checkTool', function() {
     return {
@@ -5841,10 +5831,10 @@ function Share($rootScope, $scope, ui, _, lang) {
         if (!element.actions[action.displayName]) {
             setPath = 'remove';
             _.filter($scope.actions, function(item) {
-                    return _.find(item.requires, function(dependency) {
+                return _.find(item.requires, function(dependency) {
                         return action.displayName.split('.')[1].indexOf(dependency) !== -1;
                     }) !== undefined
-                })
+            })
                 .forEach(function(item) {
                     if (item) {
                         element.actions[item.displayName] = false;

@@ -19,7 +19,9 @@
 
 package org.entcore.feeder.csv;
 
+import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.CSVUtil;
+import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.Handler;
@@ -29,6 +31,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.entcore.feeder.Feeder.getMappingFromProfile;
 
 public class ColumnsMapper {
 
@@ -93,6 +97,84 @@ public class ColumnsMapper {
 				handler.handle(new ResultMessage().error("invalid.column " + cm));
 				return;
 			}
+		}
+	}
+
+	/**
+	 * Verifying if the required fields are present.
+	 * @param strings
+	 * @param columns
+	 * @return
+	 */
+	JsonArray getColumsAssociations(String[] strings, List<String> columns, String profile, JsonObject  association) {
+		JsonArray response = new JsonArray();
+		// getting the number of fields in "required" section of fields :
+
+		// getting the mapping expected for the profile
+		final JsonObject obj = getMappingFromProfile(profile);
+		JsonArray required = obj.getArray("required");
+		int nbRequired = required.size();
+
+		// check if all requested fields are in the association (check from number 1 to nbRequired)
+		//for( int req = 0; req < nbRequired; req++)*
+		int req = 0;
+		boolean foundAll = true;
+		while( req < nbRequired && foundAll == true ){
+			boolean foundOne = false;
+			for (String field : association.getFieldNames()) {
+				if( association.getString(field).equals(String.valueOf(required.get(req)))){
+					foundOne = true;
+				}
+			}
+			if( foundOne == false){
+				foundAll = false;
+			}
+			req++;
+		}
+
+		if( foundAll == false ){
+			// requested fields are missing
+			JsonObject jsonError = new JsonObject();
+			jsonError.putString("error", "wizard.mapping.error.requested.fields");
+			response.addObject(jsonError);
+			return response;
+		}
+
+		// put profile fields in array
+		final JsonObject mappingForProfileJson = getMappingFromProfile(profile);
+		String[] mappingForProfile = new String[mappingForProfileJson.getObject("validate").size() + nbRequired];
+		int cpt = 0;
+		for (Object field : mappingForProfileJson.getArray("required")) {
+			if( field instanceof String) {
+				mappingForProfile[cpt] = field.toString();
+			}
+			cpt++;
+		}
+
+		cpt = 0;
+		for (String field : mappingForProfileJson.getObject("validate").getFieldNames()) {
+			mappingForProfile[cpt + nbRequired] = field;
+			cpt++;
+		}
+
+		// get the names of the fields found
+		int fieldIndex = 0;
+		for (String field : association.getFieldNames()) {
+			if(! "profile".equals(field)) {
+				columns.add(fieldIndex, association.getString(field));
+			}
+			fieldIndex++;
+		}
+
+		return null;
+	}
+
+	boolean isNumeric( String value){
+		try {
+			Integer.parseInt(value);
+			return true;
+		} catch (Exception e) {
+			return false;
 		}
 	}
 
