@@ -5,18 +5,16 @@ import { Router, ActivatedRoute } from '@angular/router'
 
 import { SessionModel, StructureModel, structureCollection } from '../../models'
 import { Session } from '../../models/mappings'
-import { Subscription } from 'rxjs'
+import { Subscription } from 'rxjs/Subscription'
 
 @Component({
     selector: 'admin-portal',
-    templateUrl: require('./portal.component.html'),//'/admin/public/templates/admin-root.component.html',
+    templateUrl: './portal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class Portal implements OnInit, OnDestroy {
 
     private session: Session
-
-    private structures: StructureModel[]
     private _currentStructure: StructureModel
     set currentStructure(struct: StructureModel){
         this._currentStructure = struct
@@ -27,8 +25,11 @@ export class Portal implements OnInit, OnDestroy {
         this.router.navigateByUrl(newPath)
     }
     get currentStructure(){ return this._currentStructure }
+    openside: boolean
+    structureFilter: String
+    structures: StructureModel[]
 
-    @ViewChild("sidePanelOpener") private sidePanelOpener: ElementRef
+    @ViewChild("sidePanelOpener") sidePanelOpener: ElementRef
 
     private structureSubscriber : Subscription
 

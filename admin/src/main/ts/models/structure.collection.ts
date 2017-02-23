@@ -6,7 +6,7 @@ export class StructureCollection extends Collection<StructureModel>{
 
     constructor(){
         super({
-            sync: '/directory/structure/admin/list',
+            sync:   '/directory/structure/admin/list',
             create: '/directory/school',
             update: '/directory/structure/:id'
         }, StructureModel)

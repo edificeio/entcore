@@ -9,7 +9,9 @@ import '@angular/router'
 // RxJS
 import 'rxjs/Observable'
 import 'rxjs/Subscription'
+import 'rxjs/Subject'
 import 'rxjs/add/operator/map'
+import 'rxjs/add/operator/merge'
 
 // Infra Components
 import 'infra-components/dist'

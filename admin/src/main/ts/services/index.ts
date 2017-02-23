@@ -1,3 +1,4 @@
 export * from './loading.service'
 export * from './sijil.labels.service'
-export * from './users'
+export * from './userlist.service'
+export { UserlistFiltersService } from './userlist.filters.service'

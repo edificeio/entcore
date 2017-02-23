@@ -42,6 +42,9 @@ import { StructureModel } from '../../../../models'
 })
 export class UserSearchCard implements AfterViewInit {
 
+    loading : boolean = false
+    foundUsers: Array<{id: string, firstName: string, lastName: string}> = []
+
     constructor(private cdRef: ChangeDetectorRef){}
 
     @Input() structure: StructureModel
@@ -64,8 +67,6 @@ export class UserSearchCard implements AfterViewInit {
         }
         this.cdRef.markForCheck()
     }
-    private loading : boolean = false
-    private foundUsers: Array<{id: string, firstName: string, lastName: string}> = []
 
     ngAfterViewInit() {
         this.cdRef.markForCheck()

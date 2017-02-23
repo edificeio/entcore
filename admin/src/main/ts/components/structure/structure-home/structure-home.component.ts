@@ -3,7 +3,7 @@ import { StructureCollection, structureCollection } from '../../../models'
 import { ActivatedRoute } from '@angular/router'
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit,
     Input, OnDestroy } from '@angular/core'
-import { Subscription } from 'rxjs'
+import { Subscription } from 'rxjs/Subscription'
 
 @Component({
     selector: 'structure-home',
@@ -23,8 +23,8 @@ import { Subscription } from 'rxjs'
 export class StructureHome implements OnInit, OnDestroy {
 
     private structures : StructureCollection = structureCollection
-    private structure: StructureModel
     private routeSubscriber: Subscription
+    structure: StructureModel
 
     constructor(private route: ActivatedRoute, private cdRef: ChangeDetectorRef){}
 
