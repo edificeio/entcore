@@ -21,6 +21,7 @@ package org.entcore.common.email;
 
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.email.SendInBlueSender;
+import fr.wseduc.webutils.email.GoMailSender;
 import fr.wseduc.webutils.exception.InvalidConfigurationException;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.json.JsonObject;
@@ -60,12 +61,21 @@ public class EmailFactory {
 
 	public EmailSender getSender() {
 		EmailSender sender = null;
-		if (config != null && "SendInBlue".equals(config.getString("type"))) {
-			try {
-				sender = new SendInBlueSender(vertx, container, config);
-			} catch (InvalidConfigurationException | URISyntaxException e) {
-				log.error(e.getMessage(), e);
-				vertx.stop();
+		if (config != null){
+			if ("SendInBlue".equals(config.getString("type"))) {
+				try {
+					sender = new SendInBlueSender(vertx, container, config);
+				} catch (InvalidConfigurationException | URISyntaxException e) {
+					log.error(e.getMessage(), e);
+					vertx.stop();
+				}
+			} else if ("GoMail".equals(config.getString("type"))) {
+				try {
+					sender = new GoMailSender(vertx, container, config);
+				} catch (InvalidConfigurationException | URISyntaxException e) {
+					log.error(e.getMessage(), e);
+					vertx.stop();
+				}
 			}
 		} else {
 			sender = new SmtpSender(vertx, container);
