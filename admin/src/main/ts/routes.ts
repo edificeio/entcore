@@ -13,20 +13,15 @@ export let routes : Routes = [
 		resolve: { session: SessionResolve, structures : StructuresResolve, i18n: I18nResolve },
 		children: [
 			{
-				path: 'admin/:structureId',
-				component: Portal,
-				resolve: { structure: StructureResolve },
-				children: [
-					{ path: '', 		component: StructureHome },
-					{ path: 'users', 	loadChildren: './modules/users/users.module#UsersModule' },
-					{ path: 'groups', 	loadChildren: './modules/groups/groups.module#GroupsModule' }
-				]
-			},
-			{
 				path: 'admin',
 				component: Portal,
 				children: [
-					{ path: '', component: Home }
+					{ path: '', component: Home },
+					{ path: ':structureId', resolve: { structure: StructureResolve }, children: [
+						{ path: '', 		component: StructureHome },
+						{ path: 'users', 	loadChildren: './modules/users/users.module#UsersModule' },
+						{ path: 'groups', 	loadChildren: './modules/groups/groups.module#GroupsModule' }
+					]}
 				]
 			}
 		]

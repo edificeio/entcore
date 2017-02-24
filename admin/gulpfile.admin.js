@@ -43,10 +43,10 @@ gulp.task('admin2:sass', function() {
         .pipe(gulp.dest('./admin/src/main/resources/public/styles'))
 })
 
-gulp.task('admin2:build', ['admin2:ts', 'admin2:sass'], function(){
+gulp.task('admin2:build', ['admin2:ts'], function(){
 
 })
-gulp.task('admin2:build-prod', ['admin2:ts-prod', 'admin2:sass'], function(){
+gulp.task('admin2:build-prod', ['admin2:ts-prod'], function(){
 
 })
 

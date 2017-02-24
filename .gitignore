@@ -58,3 +58,8 @@ vertx_classpath.txt
 javaconfig.json
 classpath.txt
 .vscode/
+bower_components/
+admin/src/main/resources/public/js
+admin/src/main/resources/public/templates
+admin/src/main/resources/view
+admin/src/main/resources/public/styles/admin.css
