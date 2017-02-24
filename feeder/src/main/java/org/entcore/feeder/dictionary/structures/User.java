@@ -129,7 +129,7 @@ public class User {
 			final String query =
 					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 					"WHERE u.source = {source} AND NOT(u.externalId IN {existingUsers}) " +
-					"RETURN u.id as id, u.external as externalId, u.lastName as lastName, " +
+					"RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
 							"u.firstName as firstName, HEAD(u.profiles) as profile";
 			final JsonObject params = new JsonObject()
 					.putString("structureExternalId", structureExternalId)
