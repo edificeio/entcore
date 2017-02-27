@@ -2,7 +2,7 @@ import { Component, Input, Output, OnInit, EventEmitter,
     ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 import { BundlesService } from 'sijil'
 
-import { User } from '../../../../models/mappings'
+import { User } from '../../../../store/mappings'
 import { UserListService, UserlistFiltersService } from '../../../../services'
 import { OnDestroy } from '@angular/core'
 import { Subscription } from 'rxjs/Subscription'

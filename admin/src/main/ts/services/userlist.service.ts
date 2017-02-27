@@ -1,4 +1,4 @@
-import { User } from '../models/mappings/user'
+import { User } from '../store/mappings/user'
 import { Injectable } from '@angular/core'
 import { BundlesService } from 'sijil'
 

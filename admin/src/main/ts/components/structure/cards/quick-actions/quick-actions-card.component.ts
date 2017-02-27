@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core'
-import { StructureModel } from '../../../../models'
+import { StructureModel } from '../../../../store'
 
 @Component({
     selector: 'quick-actions-card',

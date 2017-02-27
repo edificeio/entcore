@@ -4,8 +4,8 @@ import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
 import { LoadingService, UserListService } from '../../../../../../services'
-import { User } from '../../../../../../models/mappings/user'
-import { structureCollection, StructureCollection } from '../../../../../../models'
+import { User } from '../../../../../../store/mappings/user'
+import { structureCollection, StructureCollection } from '../../../../../../store'
 
 @Component({
     selector: 'user-structures-section',

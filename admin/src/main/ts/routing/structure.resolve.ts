@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router'
 
-import { StructureModel } from '../models'
-import { structureCollection } from '../models'
+import { structureCollection, StructureModel } from '../store'
 import { LoadingService } from '../services'
 
 @Injectable()

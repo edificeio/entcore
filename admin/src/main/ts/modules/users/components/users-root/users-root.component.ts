@@ -1,4 +1,4 @@
-import { StructureModel } from '../../../../models'
+import { StructureModel } from '../../../../store'
 import { routing } from '../../../../routing/routing.utils'
 import { LoadingService } from '../../../../services'
 import { UserlistFiltersService } from '../../../../services/userlist.filters.service'

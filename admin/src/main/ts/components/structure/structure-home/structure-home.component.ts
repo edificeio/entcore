@@ -1,5 +1,4 @@
-import { StructureModel } from '../../../models'
-import { StructureCollection, structureCollection } from '../../../models'
+import { StructureCollection, structureCollection, StructureModel } from '../../../store'
 import { ActivatedRoute } from '@angular/router'
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit,
     Input, OnDestroy } from '@angular/core'

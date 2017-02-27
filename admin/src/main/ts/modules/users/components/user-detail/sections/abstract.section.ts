@@ -1,6 +1,5 @@
 import { Input, ViewChild, ChangeDetectorRef } from '@angular/core'
-import { UserModel } from '../../../../../models'
-import { UserDetailsModel, StructureModel, structureCollection } from '../../../../../models'
+import { UserDetailsModel, StructureModel, structureCollection, UserModel } from '../../../../../store'
 import { LoadingService } from '../../../../../services'
 
 export abstract class AbstractSection {

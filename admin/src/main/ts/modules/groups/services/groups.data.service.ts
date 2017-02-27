@@ -1,6 +1,6 @@
-import { Group } from '../../../models/mappings/group'
 import { AbstractDataService } from '../../../services/abstract.data.service'
-import { StructureModel } from '../../../models/structure.model'
+import { Group } from '../../../store/mappings/group'
+import { StructureModel } from '../../../store/structure.model'
 
 export class GroupsDataService extends AbstractDataService {
 

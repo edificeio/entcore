@@ -1,6 +1,6 @@
 import { AbstractDataService } from '../../../services/abstract.data.service'
-import { StructureModel } from '../../../models/structure.model'
-import { UserModel } from '../../../models/user.model'
+import { StructureModel } from '../../../store/structure.model'
+import { UserModel } from '../../../store/user.model'
 
 export class UsersDataService extends AbstractDataService {
 

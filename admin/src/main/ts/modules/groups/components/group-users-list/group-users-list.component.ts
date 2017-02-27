@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectorRef } from '@angular/core'
-import { Group, GroupUser } from '../../../../models/mappings/group'
+import { Group, GroupUser } from '../../../../store/mappings/group'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BundlesService } from 'sijil'
 import { UserListService } from '../../../../services'

@@ -2,9 +2,8 @@ import { routing } from '../../../routing/routing.utils'
 import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router'
 
-import { structureCollection } from '../../../models'
+import { structureCollection, UserModel } from '../../../store'
 import { LoadingService } from '../../../services'
-import { UserModel } from '../../../models'
 
 @Injectable()
 export class UsersResolve implements Resolve<UserModel[]> {

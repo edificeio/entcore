@@ -2,9 +2,9 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
 import { LoadingService, UserListService } from '../../../../../../services'
-import { SessionModel } from '../../../../../../models/session.model'
-import { Session } from '../../../../../../models/mappings/session'
-import { structureCollection } from '../../../../../../models/structure.collection'
+import { SessionModel } from '../../../../../../store/session.model'
+import { Session } from '../../../../../../store/mappings/session'
+import { structureCollection } from '../../../../../../store/structure.collection'
 import { Router } from '@angular/router'
 
 @Component({

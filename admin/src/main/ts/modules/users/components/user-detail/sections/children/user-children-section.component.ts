@@ -3,7 +3,7 @@ import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
 import { UserListService, LoadingService } from '../../../../../../services'
-import { User } from '../../../../../../models/mappings/user'
+import { User } from '../../../../../../store/mappings/user'
 
 @Component({
     selector: 'user-children-section',

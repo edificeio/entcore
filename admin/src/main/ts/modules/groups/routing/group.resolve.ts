@@ -1,4 +1,4 @@
-import { structureCollection } from '../../../models'
+import { structureCollection } from '../../../store'
 import { LoadingService } from '../../../services'
 import { routing } from '../../../routing/routing.utils'
 import { ActivatedRoute, ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from '@angular/router'

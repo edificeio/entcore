@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router'
-import { structureCollection, GroupCollection } from '../../../models'
-import { Group } from '../../../models/mappings'
+import { structureCollection, GroupCollection } from '../../../store'
+import { Group } from '../../../store/mappings'
 import { LoadingService } from '../../../services'
 import { routing } from '../../../routing/routing.utils'
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Resolve } from '@angular/router'
 
-import { structureCollection } from '../models'
+import { structureCollection } from '../store'
 
 @Injectable()
 export class StructuresResolve implements Resolve<void> {

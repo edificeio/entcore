@@ -2,9 +2,9 @@ import { routing } from '../../../routing/routing.utils'
 import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router'
 
-import { structureCollection } from '../../../models'
 import { LoadingService } from '../../../services'
-import { User } from '../../../models/mappings'
+import { structureCollection } from '../../../store'
+import { User } from '../../../store/mappings'
 
 @Injectable()
 export class UserResolve implements Resolve<User | Error> {

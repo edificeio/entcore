@@ -57,13 +57,17 @@ gulp.task('admin2:copymod', function() {
 })
 
 gulp.task('admin2:watch', function() {
-    gulp.watch(basePath + '/resources/**/*', ['admin2-copymod']);
-    //gulp.watch(basePath + '/ts/**/*.ts', ['admin2-ts']);
+    gulp.watch(basePath + '/resources/**/*', ['admin2-copymod'])
+    //gulp.watch(basePath + '/ts/**/*.ts', ['admin2-ts'])
 })
 
 gulp.task('admin2:dev-server', function() {
-    const compiler = webpack(devConf);
-    new WebpackDevServer(compiler, devServConf).listen(9000, "localhost", function(err, stats) {
+    for(entry in devConf.entry) {
+        devConf.entry[entry] = ["webpack-dev-server/client?http://localhost:9000/", devConf.entry[entry]]
+    }
+    const compiler = webpack(devConf)
+    const server = new WebpackDevServer(compiler, devServConf)
+    server.listen(devServConf.port, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err)
     })
 })

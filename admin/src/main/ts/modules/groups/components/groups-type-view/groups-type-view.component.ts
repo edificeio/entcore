@@ -1,5 +1,5 @@
 import { Subscription } from 'rxjs/Subscription'
-import { Group } from '../../../../models/mappings'
+import { Group } from '../../../../store/mappings'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
 import { GroupsDataService } from '../../services/groups.data.service'

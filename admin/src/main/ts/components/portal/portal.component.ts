@@ -3,8 +3,8 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input,
 import { Location } from '@angular/common'
 import { Router, ActivatedRoute } from '@angular/router'
 
-import { SessionModel, StructureModel, structureCollection } from '../../models'
-import { Session } from '../../models/mappings'
+import { SessionModel, StructureModel, structureCollection } from '../../store'
+import { Session } from '../../store/mappings'
 import { Subscription } from 'rxjs/Subscription'
 
 @Component({
