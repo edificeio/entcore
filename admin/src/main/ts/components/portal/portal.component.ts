@@ -42,7 +42,7 @@ export class Portal implements OnInit, OnDestroy {
         this.structures = structureCollection.asTree()
         SessionModel.getSession().then((session) => { this.session = session })
 
-        this.structureSubscriber = this.route.params.subscribe(params => {
+        this.structureSubscriber = this.route.children[0].params.subscribe(params => {
             let structureId = params['structureId']
             if(structureId) {
                 this.currentStructure = structureCollection.data.find(s => s.id === structureId)

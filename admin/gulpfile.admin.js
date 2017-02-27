@@ -62,10 +62,11 @@ gulp.task('admin2:watch', function() {
 })
 
 gulp.task('admin2:dev-server', function() {
-    for(entry in devConf.entry) {
-        devConf.entry[entry] = ["webpack-dev-server/client?http://localhost:9000/", devConf.entry[entry]]
+    const conf = devConf
+    for(entry in conf.entry) {
+        conf.entry[entry] = [`webpack-dev-server/client?http://localhost:${devServConf.port}/`, conf.entry[entry]]
     }
-    const compiler = webpack(devConf)
+    const compiler = webpack(conf)
     const server = new WebpackDevServer(compiler, devServConf)
     server.listen(devServConf.port, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err)
