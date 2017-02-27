@@ -28,7 +28,7 @@ var http = (function(){
 	if(document.cookie){
 		var cookies = _.map(document.cookie.split(';'), function(c){
 			return {
-				name: c.split('=')[0].trim(), 
+				name: c.split('=')[0].trim(),
 				val: c.split('=')[1].trim()
 			};
 		});
@@ -966,7 +966,7 @@ var quickstart = {
 		else{
 			this.assistantIndex = this.mySteps[this.state.assistant];
 		}
-		
+
 		this.save();
 	},
 	nextAppStep: function(){
@@ -1022,7 +1022,7 @@ var quickstart = {
 		if(index !== -1){
 			this.assistantIndex = this.mySteps[index];
 		}
-		
+
 		this.save();
 	},
 	awaiters: [],
@@ -1101,6 +1101,7 @@ var skin = (function(){
 		logoutCallback: '/',
 		loadDisconnected: function(){
 			var rand = Math.random();
+			var that = this;
 			http().get('/skin', { token: rand }, {
 				async: false,
 				success: function(data){
@@ -1971,7 +1972,7 @@ function bootstrap(func) {
 				else{
 					remove.push(app);
 				}
-				
+
 				upToDate = upToDate && !updateApp;
 			});
 			remove.forEach(function(app) {
