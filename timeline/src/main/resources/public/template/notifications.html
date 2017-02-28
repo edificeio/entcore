@@ -1,48 +1,48 @@
-<app-title>
-	<h1 data-reload class="application-title"><i18n>timeline.title</i18n></h1>
-</app-title>
-<div data-ng-controller="FlashMessages" class="twelve cell">
-	<div class="flashmsg" ng-repeat="message in messages.all" ng-class="message.color" ng-style="{ 'background-color': message.customColor }">
-		<i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
-		<div bind-html="message.contents[currentLanguage]"></div>
+<div class="twelve cell" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'top left', className: 'pulse-notifications'}">
+
+	<app-title>
+		<h1 data-reload class="application-title"><i18n>timeline.title</i18n></h1>
+	</app-title>
+	<div data-ng-controller="FlashMessages" class="twelve cell">
+		<div class="flashmsg" ng-repeat="message in messages.all" ng-class="message.color" ng-style="{ 'background-color': message.customColor }">
+			<i class="close-2x right-magnet" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)"></i>
+			<div bind-html="message.contents[currentLanguage]"></div>
+		</div>
 	</div>
-</div>
-<div data-ng-controller="Timeline" class="twelve cell" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'top left', className: 'pulse-notifications'}">
+	<div data-ng-controller="Timeline" class="twelve cell">
 
+		<div class="row drop-down-block" ng-class="{slided: display.slide}">
 
-
-	<div class="row drop-down-block" ng-class="{slided: display.slide}">
-
-		<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0" ng-click="display.slide = !display.slide">
-			<i class="arrow"></i>
-			<label>
-				<i18n>filters.title</i18n>
-			</label>
-		</div>
-		<div class="drop-down-info" ng-model="notificationTypes" ng-if="filtered.notificationTypes.length > 0">
-			<span><i18n>filters.unactives</i18n></span><span> [[unactivesFilters()]]</span>
-		</div>
-
-		<div class="drop-down-content" slide="display.slide">
-			<div class="chips">
-				<label class="chip multiselect" ng-if="filtered.notificationTypes.length > 0">
-					<span><i18n>filters.all.none</i18n></span>
-					<input type="checkbox" ng-model="notificationTypes" ng-change="allFilters()" />
-				</label>
-				<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)">
-					<i class="[[type.data.toLowerCase()]] type"></i>
-					<span translate content="[[type.data.toLowerCase()]]"></span>
-					<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
-				</label>
-			</div>
-			<div class="drop-up-label" ng-click="display.slide = !display.slide" ng-if="filtered.notificationTypes.length > 0">
-				<label>
-					<i18n>filters.close</i18n>
-				</label>
+			<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0" ng-click="display.slide = !display.slide">
 				<i class="arrow"></i>
+				<label>
+					<i18n>filters.title</i18n>
+				</label>
+			</div>
+			<div class="drop-down-info" ng-model="notificationTypes" ng-if="filtered.notificationTypes.length > 0">
+				<span><i18n>filters.unactives</i18n></span><span> [[unactivesFilters()]]</span>
+			</div>
+
+			<div class="drop-down-content" slide="display.slide">
+				<div class="chips">
+					<label class="chip multiselect" ng-if="filtered.notificationTypes.length > 0">
+						<span><i18n>filters.all.none</i18n></span>
+						<input type="checkbox" ng-model="notificationTypes" ng-change="allFilters()" />
+					</label>
+					<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)">
+						<i class="[[type.data.toLowerCase()]] type"></i>
+						<span translate content="[[type.data.toLowerCase()]]"></span>
+						<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
+					</label>
+				</div>
+				<div class="drop-up-label" ng-click="display.slide = !display.slide" ng-if="filtered.notificationTypes.length > 0">
+					<label>
+						<i18n>filters.close</i18n>
+					</label>
+					<i class="arrow"></i>
+				</div>
 			</div>
 		</div>
-	</div>
 
 	<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() !== notificationTypes.selection().length">
 		<b><span><i18n>filters.unselected</i18n></span></b>
@@ -53,52 +53,53 @@
 	</div>
 
 
-	<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
-		<article ng-class="{ 'unread': isUnRead(notification) }">
+		<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
+			<article ng-class="{ 'unread': isUnRead(notification) }">
+				<div class="row">
+					<div class="avatar">
+						<i class="system-avatar" ng-if="!notification.sender"></i>
+						<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+						<i class="sticker app type [[notification.type.toLowerCase()]]"></i>
+					</div>
+					<div class="content horizontal-spacing">
+						<p class="inline" bind-html="notification.message"></p>
+					</div>
+				</div>
+				<div class="notification-date">
+					<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
+				</div>
+			</article>
+			<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions(notification)">
+				<div class="opener" ng-click="notification.opened = !notification.opened">
+					<i class="left-open"></i>
+				</div>
+				<div class="actions">
+					<div ng-repeat="(name, action) in actions" ng-show="!action.condition || action.condition(notification)" class="action [[ name ]]">
+						<i class="[[name]]"></i>
+						<a ng-click="action.action(notification)" ng-disabled="notification[action.doneProperty]">
+							[[ notification[action.doneProperty] ? lang.translate(action.doneLabel) : lang.translate(action.label) ]]
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<lightbox show="display.confirmReport" on-close="display.confirmReport = false">
+			<h2><i18n>timeline.confirm.report</i18n></h2>
+			<p>
+				<i18n>timeline.confirm.report.text</i18n>
+			</p>
 			<div class="row">
-				<div class="avatar">
-					<i class="system-avatar" ng-if="!notification.sender"></i>
-					<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
-					<i class="sticker app type [[notification.type.toLowerCase()]]"></i>
-				</div>
-				<div class="content horizontal-spacing">
-					<p class="inline" bind-html="notification.message"></p>
-				</div>
+				<button ng-click="doReport(notification); display.confirmReport = false" class="right-magnet">
+					<i18n>timeline.action.report</i18n>
+				</button>
+				<button type="button" ng-click="display.confirmReport = false" class="right-magnet cancel">
+					<i18n>cancel</i18n>
+				</button>
 			</div>
-			<div class="notification-date">
-				<em class="low-importance right-magnet">[[formatDate(notification.date.$date)]]</em>
-			</div>
-		</article>
-		<div class="notification-actions" ng-class="{'opened': notification.opened}" ng-if="showActions(notification)">
-			<div class="opener" ng-click="notification.opened = !notification.opened">
-				<i class="left-open"></i>
-			</div>
-			<div class="actions">
-				<div ng-repeat="(name, action) in actions" ng-show="!action.condition || action.condition(notification)" class="action [[ name ]]">
-					<i class="[[name]]"></i>
-					<a ng-click="action.action(notification)" ng-disabled="notification[action.doneProperty]">
-						[[ notification[action.doneProperty] ? lang.translate(action.doneLabel) : lang.translate(action.label) ]]
-					</a>
-				</div>
-			</div>
-		</div>
-	</div>
-	<lightbox show="display.confirmReport" on-close="display.confirmReport = false">
-		<h2><i18n>timeline.confirm.report</i18n></h2>
-		<p>
-			<i18n>timeline.confirm.report.text</i18n>
-		</p>
-		<div class="row">
-			<button ng-click="doReport(notification); display.confirmReport = false" class="right-magnet">
-				<i18n>timeline.action.report</i18n>
-			</button>
-			<button type="button" ng-click="display.confirmReport = false" class="right-magnet cancel">
-				<i18n>cancel</i18n>
-			</button>
-		</div>
-	</lightbox>
+		</lightbox>
 
-	<div class="row notification" ng-show="notifications.loading">
-		<h1 class="reduce-block-eight nomargin"><i18n>loading</i18n></h1>
+		<div class="row notification" ng-show="notifications.loading">
+			<h1 class="reduce-block-eight nomargin"><i18n>loading</i18n></h1>
+		</div>
 	</div>
 </div>
