@@ -416,60 +416,6 @@ public class Importer {
 		return firstImport;
 	}
 
-	public void structureConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.UAI IS UNIQUE;", j);
-	}
-
-	public void fieldOfStudyConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (fos:FieldOfStudy) ASSERT fos.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (fos:FieldOfStudy) ASSERT fos.externalId IS UNIQUE;", j);
-	}
-
-	public void moduleConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (module:Module) ASSERT module.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (module:Module) ASSERT module.externalId IS UNIQUE;", j);
-	}
-
-	public void userConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.login IS UNIQUE;", j);
-		transactionHelper.add("CREATE INDEX ON :User(displayNameSearchField);", j);
-	}
-
-	public void profileConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.name IS UNIQUE;", j);
-	}
-
-	public void functionConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.externalId IS UNIQUE;", j);
-	}
-
-	public void classConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.externalId IS UNIQUE;", j);
-	}
-
-	public void groupConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.externalId IS UNIQUE;", j);
-	}
-
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
 			String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		persEducNat.createOrUpdatePersonnel(object, profileExternalId, structuresByFunctions,

@@ -80,30 +80,7 @@ public class Be1dFeeder implements Feed {
 
 	@Override
 	public void launch(Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
-		if (importer.isFirstImport()) {
-			importer.profileConstraints();
-			importer.functionConstraints();
-			importer.structureConstraints();
-			importer.fieldOfStudyConstraints();
-			importer.moduleConstraints();
-			importer.userConstraints();
-			importer.classConstraints();
-			importer.groupConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if (message != null && "ok".equals(message.body().getString("status"))) {
-						start(path,handler);
-					} else {
-						if (handler != null) {
-							handler.handle(message);
-						}
-					}
-				}
-			});
-		} else {
-			start(path, handler);
-		}
+		start(path, handler);
 	}
 
 	@Override

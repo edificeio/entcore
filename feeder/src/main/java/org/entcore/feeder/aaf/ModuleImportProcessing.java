@@ -32,21 +32,7 @@ public class ModuleImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		if (importer.isFirstImport()) {
-			importer.fieldOfStudyConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						parse(handler, new StudentImportProcessing(path, vertx));
-					} else {
-						error(message, handler);
-					}
-				}
-			});
-		} else {
-			parse(handler, new StudentImportProcessing(path, vertx));
-		}
+		parse(handler, new StudentImportProcessing(path, vertx));
 	}
 
 	@Override

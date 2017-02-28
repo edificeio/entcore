@@ -45,40 +45,7 @@ public class AafFeeder implements Feed {
 
 	@Override
 	public void launch(final Importer importer, final Handler<Message<JsonObject>> handler) throws Exception {
-		if (importer.isFirstImport() && aafPlugin) {
-			TransactionManager.getInstance().getNeo4j().unmanagedExtension("post", "/aaf/import",
-					new JsonObject().putString("path", path).encode(), new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
-								log.info("Indexing...");
-								importer.reinitTransaction();
-								importer.profileConstraints();
-								importer.functionConstraints();
-								importer.structureConstraints();
-								importer.fieldOfStudyConstraints();
-								importer.moduleConstraints();
-								importer.userConstraints();
-								importer.classConstraints();
-								importer.groupConstraints();
-								importer.persist(new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> message) {
-										if (handler != null) {
-											handler.handle(message);
-										}
-									}
-								});
-							} else {
-								if (handler != null) {
-									handler.handle(new ResultMessage().error(event.body().getString("message")));
-								}
-							}
-						}
-					});
-		} else {
-			new StructureImportProcessing(path,vertx).start(handler);
-		}
+		new StructureImportProcessing(path,vertx).start(handler);
 	}
 
 	@Override

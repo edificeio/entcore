@@ -67,30 +67,7 @@ public class CsvFeeder implements Feed {
 
 	@Override
 	public void launch(final Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
-		if (importer.isFirstImport()) {
-			importer.profileConstraints();
-			importer.functionConstraints();
-			importer.structureConstraints();
-			importer.fieldOfStudyConstraints();
-			importer.moduleConstraints();
-			importer.userConstraints();
-			importer.classConstraints();
-			importer.groupConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if (message != null && "ok".equals(message.body().getString("status"))) {
-						parse(importer, path, handler);
-					} else {
-						if (handler != null) {
-							handler.handle(message);
-						}
-					}
-				}
-			});
-		} else {
-			parse(importer, path, handler);
-		}
+		parse(importer, path, handler);
 	}
 
 	private void parse(final Importer importer, final String p, final Handler<Message<JsonObject>> handler) {

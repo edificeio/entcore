@@ -39,21 +39,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		if (importer.isFirstImport()) {
-			importer.moduleConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						parse(handler, getNextImportProcessing());
-					} else {
-						error(message, handler);
-					}
-				}
-			});
-		} else {
-			parse(handler, getNextImportProcessing());
-		}
+		parse(handler, getNextImportProcessing());
 	}
 
 	@Override
