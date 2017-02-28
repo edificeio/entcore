@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Resolve } from '@angular/router'
 
-import { SessionModel } from '../store'
-import { Session } from '../store/mappings'
+import { Session, SessionModel } from '../store'
 
 @Injectable()
 export class SessionResolve implements Resolve<Session> {

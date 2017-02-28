@@ -3,7 +3,7 @@ import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
 import { UserListService, LoadingService } from '../../../../../../services'
-import { User } from '../../../../../../store/mappings/user'
+import { UserModel } from '../../../../../../store'
 
 @Component({
     selector: 'user-relatives-section',
@@ -57,11 +57,11 @@ export class UserRelativesSection extends AbstractSection {
 
     protected onUserChange(){}
 
-    private isStudent(u:User){
+    private isStudent(u: UserModel){
         return u.type === 'Student'
     }
 
-    private filterRelatives = (u: User) => {
+    private filterRelatives = (u: UserModel) => {
         return this.details && this.details.parents &&
             u.type === 'Relative' && !this.details.parents.find(p => p.id === u.id)
     }

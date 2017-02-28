@@ -2,9 +2,8 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
 import { LoadingService, UserListService } from '../../../../../../services'
-import { SessionModel } from '../../../../../../store/session.model'
+import { SessionModel, globalStore } from '../../../../../../store'
 import { Session } from '../../../../../../store/mappings/session'
-import { structureCollection } from '../../../../../../store/structure.collection'
 import { Router } from '@angular/router'
 
 @Component({
@@ -80,7 +79,7 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
     }
 
     findVisibleStruct(sIds: string[]) {
-        return sIds.find(id => structureCollection.data.some(struct => struct.id === id))
+        return sIds.find(id => globalStore.structures.data.some(struct => struct.id === id))
     }
 
     protected wrap = (func, label, ...args) => {

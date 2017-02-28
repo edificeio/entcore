@@ -1,5 +1,5 @@
 import { LoadingService } from '../../../../services'
-import { GroupsDataService } from '../../services/groups.data.service'
+import { GroupsStore } from '../../store'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
 import { ActivatedRoute, Data, Router } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
@@ -42,14 +42,14 @@ export class GroupsRoot implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
-        private dataService: GroupsDataService,
+        private groupsStore: GroupsStore,
         private ls: LoadingService) { }
 
     ngOnInit(): void {
         // Watch selected structure
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure']) {
-                this.dataService.structure = data['structure']
+                this.groupsStore.structure = data['structure']
                 this.cdRef.markForCheck()
             }
         })

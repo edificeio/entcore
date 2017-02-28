@@ -3,8 +3,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input,
 import { Location } from '@angular/common'
 import { Router, ActivatedRoute } from '@angular/router'
 
-import { SessionModel, StructureModel, structureCollection } from '../../store'
-import { Session } from '../../store/mappings'
+import { Session, SessionModel, StructureModel, globalStore } from '../../store'
 import { Subscription } from 'rxjs/Subscription'
 
 @Component({
@@ -33,19 +32,20 @@ export class Portal implements OnInit, OnDestroy {
 
     private structureSubscriber : Subscription
 
-    constructor(private cdRef: ChangeDetectorRef,
+    constructor(
+        private cdRef: ChangeDetectorRef,
         private router: Router,
         private location: Location,
         private route: ActivatedRoute) {}
 
     ngOnInit() {
-        this.structures = structureCollection.asTree()
+        this.structures = globalStore.structures.asTree()
         SessionModel.getSession().then((session) => { this.session = session })
 
         this.structureSubscriber = this.route.children[0].params.subscribe(params => {
             let structureId = params['structureId']
             if(structureId) {
-                this.currentStructure = structureCollection.data.find(s => s.id === structureId)
+                this.currentStructure = globalStore.structures.data.find(s => s.id === structureId)
             }
         })
     }

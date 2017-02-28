@@ -28,5 +28,5 @@ import { StructureModel } from '../../../../store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ImportsExportsCard {
-        @Input() structure: StructureModel
+    @Input() structure: StructureModel
 }

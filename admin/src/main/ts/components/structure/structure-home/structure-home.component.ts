@@ -1,4 +1,4 @@
-import { StructureCollection, structureCollection, StructureModel } from '../../../store'
+import { StructureModel } from '../../../store'
 import { ActivatedRoute } from '@angular/router'
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit,
     Input, OnDestroy } from '@angular/core'
@@ -21,11 +21,12 @@ import { Subscription } from 'rxjs/Subscription'
 })
 export class StructureHome implements OnInit, OnDestroy {
 
-    private structures : StructureCollection = structureCollection
     private routeSubscriber: Subscription
     structure: StructureModel
 
-    constructor(private route: ActivatedRoute, private cdRef: ChangeDetectorRef){}
+    constructor(
+        private route: ActivatedRoute,
+        private cdRef: ChangeDetectorRef){}
 
     ngOnInit() {
         this.routeSubscriber = this.route.data.subscribe(data => {

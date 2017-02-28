@@ -114,7 +114,8 @@ export class SpinnerComponent implements OnInit, OnDestroy {
 
     private subscription : Subscription
 
-    constructor(public ls: LoadingService,
+    constructor(
+        public ls: LoadingService,
         private cdRef: ChangeDetectorRef) {}
 
     ngOnInit() {

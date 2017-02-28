@@ -1,5 +1,5 @@
 import { Collection } from 'toolkit'
-import { Group } from './mappings'
+import { Group } from '..'
 
 export class GroupCollection extends Collection<Group> {
 

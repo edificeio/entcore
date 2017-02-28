@@ -7,7 +7,6 @@ import { SijilModule } from 'sijil'
 import { InfraComponentsModule, LabelsService } from 'infra-components/dist'
 import { UxModule } from './modules'
 
-//import { declarations, providers } from './module.properties'
 import { AdminRoot, Portal, Home, StructureCard, StructureHome, ImportsExportsCard, QuickActionsCard, UserSearchCard } from './components'
 import { SessionResolve, StructureResolve, StructuresResolve, I18nResolve } from './routing'
 import { routes } from './routes'

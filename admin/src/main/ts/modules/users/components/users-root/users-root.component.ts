@@ -2,7 +2,7 @@ import { StructureModel } from '../../../../store'
 import { routing } from '../../../../routing/routing.utils'
 import { LoadingService } from '../../../../services'
 import { UserlistFiltersService } from '../../../../services/userlist.filters.service'
-import { UsersDataService } from '../../services'
+import { UsersStore } from '../../store'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
@@ -12,15 +12,15 @@ import { Subscription } from 'rxjs/Subscription'
     template: `
         <h1><i class="fa fa-user"></i><s5l>users.title</s5l></h1>
         <side-layout (closeCompanion)="closeCompanion()"
-                [showCompanion]="!router.isActive('/admin/' + dataService.structure?.id + '/users', true)">
+                [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users', true)">
             <div side-card>
                 <div class="round-button top-right-button"
                     (click)="openCreationView()"
-                    [class.selected]="router.isActive('/admin/' + dataService.structure?.id + '/users/create', true)"
+                    [class.selected]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)"
                     [tooltip]="'create.user' | translate" position="top">+</div>
-                <user-list [userlist]="dataService.structure.users.data"
+                <user-list [userlist]="usersStore.structure.users.data"
                     (listCompanionChange)="openCompanionView($event)"
-                    [selectedUser]="dataService.user"
+                    [selectedUser]="usersStore.user"
                     (selectedUserChange)="openUserDetail($event)"></user-list>
             </div>
             <div side-companion>
@@ -37,7 +37,7 @@ export class UsersRoot implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
-        private dataService: UsersDataService,
+        private usersStore: UsersStore,
         private filtersService: UserlistFiltersService,
         private ls: LoadingService){}
 
@@ -49,7 +49,7 @@ export class UsersRoot implements OnInit, OnDestroy {
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure']) {
                 let structure: StructureModel = data['structure']
-                this.dataService.structure = structure
+                this.usersStore.structure = structure
                 this.filtersService.resetFilters()
                 this.filtersService.setClasses(structure.classes)
                 this.cdRef.markForCheck()
@@ -69,12 +69,12 @@ export class UsersRoot implements OnInit, OnDestroy {
 
     closeCompanion() {
         this.router.navigate(['../users'], {relativeTo: this.route }).then(() => {
-            this.dataService.user = null
+            this.usersStore.user = null
         })
     }
 
     openUserDetail(user) {
-        this.dataService.user = user
+        this.usersStore.user = user
         this.router.navigate([user.id], {relativeTo: this.route })
     }
 

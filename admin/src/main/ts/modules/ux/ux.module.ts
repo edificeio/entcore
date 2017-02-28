@@ -3,7 +3,6 @@ import { InfraComponentsModule } from 'infra-components/dist'
 import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
-//import { declarations, providers } from './module.properties'
 
 import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent } from './components'
 import { AnchorDirective } from './directives'

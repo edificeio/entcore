@@ -1,11 +1,10 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 import { BundlesService } from 'sijil'
-import { User } from '../../../../store/mappings'
 import { StructureModel } from '../../../../store'
 import { UserlistFiltersService } from '../../../../services'
 import { Subscription } from 'rxjs/Subscription'
 import { ActivatedRoute, Data } from '@angular/router'
-import { UsersDataService } from '../../services/users.data.service'
+import { UsersStore } from '../../store'
 
 @Component({
     selector: 'user-filters',
@@ -47,11 +46,11 @@ export class UserFilters implements OnInit, OnDestroy {
     constructor(private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
-        private dataService: UsersDataService,
+        private usersStore: UsersStore,
         private listFilters: UserlistFiltersService){}
 
     ngOnInit() {
-        this.dataSubscriber = this.dataService.onchange.subscribe(() => {
+        this.dataSubscriber = this.usersStore.onchange.subscribe(() => {
             this.cdRef.markForCheck()
         })
     }
@@ -61,7 +60,7 @@ export class UserFilters implements OnInit, OnDestroy {
     }
 
     private dataSubscriber : Subscription
-    private structure: StructureModel = this.dataService.structure
+    private structure: StructureModel = this.usersStore.structure
 
     private orderer(a){
         return a

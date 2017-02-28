@@ -1,6 +1,5 @@
-import { UserCollection } from './user.collection';
+import { UserCollection, GroupCollection } from '..';
 import { Model } from 'toolkit'
-import { GroupCollection } from './group.collection'
 
 export class StructureModel extends Model<StructureModel> {
 

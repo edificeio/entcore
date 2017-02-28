@@ -1,4 +1,4 @@
-import { User } from '../store/mappings/user'
+import { UserModel } from '../store'
 import { Injectable } from '@angular/core'
 import { BundlesService } from 'sijil'
 
@@ -47,14 +47,14 @@ export class UserListService {
     get inputFilter() {
         return this._inputFilter
     }
-    filterByInput = (user:User) => {
+    filterByInput = (user: UserModel) => {
         if(!this.inputFilter) return true
         return `${user.lastName} ${user.firstName}`.toLowerCase()
             .indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
     // Display
-    display = (user: User): string => {
+    display = (user: UserModel): string => {
         return `${ user.lastName.toUpperCase() } ${user.firstName} - ${this.bundlesService.translate(user.type)}`
     }
 

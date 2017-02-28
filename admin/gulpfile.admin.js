@@ -26,14 +26,18 @@ const buildTs = function(prodMode) {
 }
 
 gulp.task('admin2:clean', function() {
-    return del(['./admin/src/main/resources/public/js/*', './admin/src/main/resources/public/templates/*'])
+    return del([
+        './admin/src/main/resources/public/js/*',
+        './admin/src/main/resources/public/templates/*',
+        './admin/src/main/resources/public/styles/admin.css',
+        './admin/src/main/resources/view/*'])
 })
 
-gulp.task('admin2:ts', function() {
+gulp.task('admin2:ts-dev', function() {
     return buildTs()
 })
 
-gulp.task('admin2:ts-prod', function() {
+gulp.task('admin2:ts', function() {
     return buildTs(true)
 })
 
@@ -43,10 +47,10 @@ gulp.task('admin2:sass', function() {
         .pipe(gulp.dest('./admin/src/main/resources/public/styles'))
 })
 
-gulp.task('admin2:build', ['admin2:ts'], function(){
+gulp.task('admin2:build-dev', ['admin2:ts-dev'], function(){
 
 })
-gulp.task('admin2:build-prod', ['admin2:ts-prod'], function(){
+gulp.task('admin2:build', ['admin2:ts'], function(){
 
 })
 

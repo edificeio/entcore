@@ -1,4 +1,4 @@
-import { StructureModel } from './structure.model'
+import { StructureModel } from '..'
 import { Collection } from 'toolkit'
 import { UserCollection } from './user.collection'
 
@@ -35,5 +35,3 @@ export class StructureCollection extends Collection<StructureModel>{
     }
 
 }
-
-export let structureCollection = new StructureCollection()

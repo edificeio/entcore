@@ -1,4 +1,4 @@
-import { User } from './user'
+import { UserModel } from '..'
 import http from 'axios'
 
 export type GroupUser = {

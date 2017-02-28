@@ -4,8 +4,7 @@ import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
 import { LoadingService, UserListService } from '../../../../../../services'
-import { User } from '../../../../../../store/mappings/user'
-import { structureCollection, StructureCollection } from '../../../../../../store'
+import { globalStore, StructureCollection, UserModel } from '../../../../../../store'
 
 @Component({
     selector: 'user-structures-section',
@@ -57,7 +56,7 @@ export class UserStructuresSection extends AbstractSection {
         super(ls, cdRef)
     }
 
-    private structureCollection : StructureCollection = structureCollection
+    private structureCollection : StructureCollection = globalStore.structures
 
     @ViewChild("codeInput") codeInput : AbstractControl
 

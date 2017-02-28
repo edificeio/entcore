@@ -1,5 +1,5 @@
 import { Input, ViewChild, ChangeDetectorRef } from '@angular/core'
-import { UserDetailsModel, StructureModel, structureCollection, UserModel } from '../../../../../store'
+import { UserDetailsModel, StructureModel, globalStore, UserModel } from '../../../../../store'
 import { LoadingService } from '../../../../../services'
 
 export abstract class AbstractSection {
@@ -21,7 +21,7 @@ export abstract class AbstractSection {
     protected emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
     protected getStructure(id: string) {
-        return structureCollection.data.find(s => s.id === id)
+        return globalStore.structures.data.find(s => s.id === id)
     }
 
     protected wrap = (func, label, delay = 0, ...args) => {

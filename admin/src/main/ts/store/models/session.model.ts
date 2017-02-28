@@ -1,4 +1,4 @@
-import { Session } from './mappings'
+import { Session } from '..'
 
 import http from 'axios'
 

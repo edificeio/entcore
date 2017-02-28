@@ -2,7 +2,7 @@ import { Component, Input, Output, OnInit, EventEmitter,
     ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 import { BundlesService } from 'sijil'
 
-import { User } from '../../../../store/mappings'
+import { UserModel } from '../../../../store'
 import { UserListService, UserlistFiltersService } from '../../../../services'
 import { OnDestroy } from '@angular/core'
 import { Subscription } from 'rxjs/Subscription'
@@ -78,21 +78,21 @@ export class UserList implements OnInit, OnDestroy {
 
     private filtersUpdatesSubscriber: Subscription
 
-    @Input() userlist: User[] = []
+    @Input() userlist: UserModel[] = []
 
     @Input() listCompanion: string
     @Output("listCompanionChange") companionChange: EventEmitter<string> = new EventEmitter<string>()
 
     // Selection
-    @Input() selectedUser: User
-    @Output("selectedUserChange") onselect: EventEmitter<User> = new EventEmitter<User>()
+    @Input() selectedUser: UserModel
+    @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>()
 
-    private selectUser(user: User) {
+    private selectUser(user: UserModel) {
         this.selectedUser = user
         this.onselect.emit(user)
     }
 
-    private setStyles = (user: User) => {
+    private setStyles = (user: UserModel) => {
         return {
             selected: this.isSelected(user),
             blocked: user.blocked,
@@ -100,7 +100,7 @@ export class UserList implements OnInit, OnDestroy {
         }
     }
 
-    private isSelected = (user: User) => {
+    private isSelected = (user: UserModel) => {
         return this.selectedUser && user &&
             this.selectedUser.id === user.id
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router'
 
-import { structureCollection, StructureModel } from '../store'
+import { StructureModel, globalStore } from '../store'
 import { LoadingService } from '../services'
 
 @Injectable()
@@ -10,7 +10,7 @@ export class StructureResolve implements Resolve<StructureModel> {
     constructor(private ls: LoadingService){}
 
     resolve(route: ActivatedRouteSnapshot): Promise<StructureModel> {
-        let target = structureCollection.data.find(s => s.id === route.params['structureId'])
+        let target = globalStore.structures.data.find(s => s.id === route.params['structureId'])
         if(!target){
             return new Promise((res, rej) => {
                 rej('structure.not.found')

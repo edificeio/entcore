@@ -1,9 +1,8 @@
 import { Model } from 'toolkit'
-import { User } from './mappings/user'
 import { UserDetailsModel } from './userdetails.model'
-import { structureCollection } from './structure.collection'
+import { globalStore } from '..'
 
-export class UserModel extends Model<User> implements User {
+export class UserModel extends Model<UserModel> {
 
     constructor() {
         super({})
@@ -32,16 +31,16 @@ export class UserModel extends Model<User> implements User {
     userDetails: UserDetailsModel
 
     visibleStructures() {
-        return this.structures.filter(s => structureCollection.data.find(struct => struct.id === s.id))
+        return this.structures.filter(s => globalStore.structures.data.find(struct => struct.id === s.id))
     }
 
     invisibleStructures() {
-        return this.structures.filter(s => structureCollection.data.every(struct => struct.id !== s.id))
+        return this.structures.filter(s => globalStore.structures.data.every(struct => struct.id !== s.id))
     }
 
     addStructure(structureId: string) {
         return this.http.put(`/directory/structure/${structureId}/link/${this.id}`).then(() => {
-            let targetStructure = structureCollection.data.find(s => s.id === structureId)
+            let targetStructure = globalStore.structures.data.find(s => s.id === structureId)
             if(targetStructure) {
                 this.structures.push({id: targetStructure.id, name: targetStructure.name})
                 if(targetStructure.users.data.length > 0)
@@ -53,7 +52,7 @@ export class UserModel extends Model<User> implements User {
     removeStructure(structureId: string) {
         return this.http.delete(`/directory/structure/${structureId}/unlink/${this.id}`).then(() => {
             this.structures = this.structures.filter(s => s.id !== structureId)
-            let targetStructure = structureCollection.data.find(s => s.id === structureId)
+            let targetStructure = globalStore.structures.data.find(s => s.id === structureId)
             if(targetStructure && targetStructure.users.data.length > 0) {
                targetStructure.users.data = targetStructure.users.data.filter(u => u.id !== this.id)
             }
@@ -76,7 +75,7 @@ export class UserModel extends Model<User> implements User {
         return this.http.delete(`/directory/duplicate/ignore/${this.id}/${duplicateId}`).then(() => {
             let duplicate = this.duplicates.find(d => d.id === duplicateId)
             duplicate.structures.forEach(s => {
-                let structure = structureCollection.data.find(struct => struct.id === s)
+                let structure = globalStore.structures.data.find(struct => struct.id === s)
                 if(structure && structure.users.data.length > 0) {
                     let dup = structure.users.data.find(u => u.id === duplicateId)
                     if(dup) dup.duplicates = dup.duplicates.filter(d => d.id !== this.id)

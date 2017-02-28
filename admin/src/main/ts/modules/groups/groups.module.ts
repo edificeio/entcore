@@ -1,4 +1,3 @@
-import { GroupsDataService } from './services'
 import { InfraComponentsModule } from 'infra-components/dist'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
@@ -11,6 +10,7 @@ import { routes } from './routing/routes'
 //import { declarations, providers } from './module.properties'
 import { GroupDetailComponent, GroupsRoot, GroupsTypeView, GroupUsersList } from './components'
 import { GroupResolve, GroupsResolve } from './routing'
+import { GroupsStore } from './store'
 
 @NgModule({
     imports: [
@@ -28,7 +28,7 @@ import { GroupResolve, GroupsResolve } from './routing'
         GroupsTypeView
     ],
     providers: [
-        GroupsDataService,
+        GroupsStore,
         GroupResolve,
         GroupsResolve
     ],

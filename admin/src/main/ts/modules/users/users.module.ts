@@ -6,13 +6,11 @@ import { NgModule } from '@angular/core'
 
 import { SijilModule } from 'sijil'
 import { UxModule } from '..'
-import { routes } from './routing/routes'
-//import { declarations, providers } from './module.properties'
 import { UserDetail, UsersRoot, UserList, UserFilters, UserError, UserCreate,
     UserChildrenSection, UserAdministrativeSection, UserInfoSection, UserRelativesSection,
     UserStructuresSection, UserDuplicatesSection } from './components'
-import { UserResolve, UsersResolve } from './routing'
-import { UsersDataService } from './services'
+import { UserResolve, UsersResolve, routes } from './routing'
+import { UsersStore } from './store'
 
 @NgModule({
     imports: [
@@ -40,7 +38,7 @@ import { UsersDataService } from './services'
     providers: [
         UserResolve,
         UsersResolve,
-        UsersDataService
+        UsersStore
     ],
     exports: [
         RouterModule

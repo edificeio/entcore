@@ -2,7 +2,7 @@ import { Subscription } from 'rxjs/Subscription'
 import { Group } from '../../../../store/mappings'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
-import { GroupsDataService } from '../../services/groups.data.service'
+import { GroupsStore } from '../../store'
 import { LoadingService } from '../../../../services'
 
 @Component({
@@ -11,7 +11,7 @@ import { LoadingService } from '../../../../services'
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="!router.isActive(rootRoute(), true)">
             <div side-card>
                 <list-component
-                    [model]="dataService.structure?.groups.data"
+                    [model]="groupsStore.structure?.groups.data"
                     [filters]="{type: groupType}"
                     [inputFilter]="filterByInput"
                     sort="name"
@@ -36,7 +36,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
     private dataSubscriber : Subscription
 
     constructor(
-        private dataService: GroupsDataService,
+        private groupsStore: GroupsStore,
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
@@ -53,7 +53,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
                 this.router.navigate([".."], { relativeTo: this.route })
             }
         })
-        this.dataSubscriber = this.dataService.onchange.subscribe(field => {
+        this.dataSubscriber = this.groupsStore.onchange.subscribe(field => {
             if(field === "structure"){
                 this.cdRef.markForCheck()
                 this.cdRef.detectChanges()
@@ -68,7 +68,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
     // List component  properties
     private groupInputFilter : string
     private isSelected = (group: Group) => {
-        return this.dataService.group === group
+        return this.groupsStore.group === group
     }
     private filterByInput = (group: Group) => {
         if(!this.groupInputFilter) return true
@@ -79,7 +79,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
 
     // Routing
     private rootRoute = () => {
-        return '/admin/' + (this.dataService.structure ? this.dataService.structure.id : '') +
+        return '/admin/' + (this.groupsStore.structure ? this.groupsStore.structure.id : '') +
         '/groups/' + this.groupType
     }
     private closePanel() {

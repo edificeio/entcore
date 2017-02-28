@@ -33,12 +33,12 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     functionalGroups?: Array<string>
     administrativeStructures?: Array<string>
-    deleteDate: number
+    deleteDate?: number
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
-                this.blocked = !this.blocked
-            })
+            this.blocked = !this.blocked
+        })
     }
 
     sendResetPassword(email: string) {

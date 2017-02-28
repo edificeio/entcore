@@ -15,7 +15,7 @@ import { StructureModel } from '../../../../store'
                 [delay]="500"
                 [attr.placeholder]="'search.user' | translate"
                 (onChange)="inputValue = $event"></search-input>
-            <!-- position hack ... -->
+                <!-- position hack ... -->
                 <i class="fa fa-spinner fa-pulse fa-2x fa-fw"
                     *ngIf="loading"
                     style="position: absolute; top: 35px; right: -20px;"></i>

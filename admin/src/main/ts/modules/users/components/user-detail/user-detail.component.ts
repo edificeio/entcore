@@ -1,11 +1,10 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
 import { AbstractControl, NgForm } from '@angular/forms'
 import { LoadingService } from '../../../../services'
-import { User } from '../../../../store/mappings'
-import { structureCollection, StructureModel, UserDetailsModel } from '../../../../store'
+import { UserModel, StructureModel, UserDetailsModel } from '../../../../store'
 import { Subscription } from 'rxjs/Subscription'
 import { ActivatedRoute, Data, Router } from '@angular/router'
-import { UsersDataService } from '../../services/users.data.service'
+import { UsersStore } from '../../store'
 
 @Component({
     selector: 'user-detail',
@@ -15,7 +14,7 @@ import { UsersDataService } from '../../services/users.data.service'
 export class UserDetail implements OnInit, OnDestroy{
 
     constructor(private loadingService: LoadingService,
-        private dataService: UsersDataService,
+        private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
         private router: Router){}
@@ -24,20 +23,20 @@ export class UserDetail implements OnInit, OnDestroy{
     @ViewChild("administrativeForm") administrativeForm : NgForm
 
     ngOnInit() {
-        this.dataSubscriber = this.dataService.onchange.subscribe(field => {
+        this.dataSubscriber = this.usersStore.onchange.subscribe(field => {
             if(field === 'user') {
-                if(this.dataService.user &&
-                        !this.dataService.user.structures.find(s => this.dataService.structure.id === s.id)) {
+                if(this.usersStore.user &&
+                        !this.usersStore.user.structures.find(s => this.usersStore.structure.id === s.id)) {
                     setTimeout(() => {
                         this.router.navigate(['..'], {relativeTo: this.route, replaceUrl: true})
                     }, 0)
-                } else if(this.user !== this.dataService.user) {
-                    this.user = this.dataService.user
+                } else if(this.user !== this.usersStore.user) {
+                    this.user = this.usersStore.user
                 }
             }
         })
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
-            this.dataService.user = data['user']
+            this.usersStore.user = data['user']
         })
     }
 
@@ -50,7 +49,7 @@ export class UserDetail implements OnInit, OnDestroy{
     private userSubscriber: Subscription
     private dataSubscriber: Subscription
 
-    set user(user: User) {
+    set user(user: UserModel) {
         this._user = user
         this.details = user.userDetails
         if(this.codeInput)
@@ -60,9 +59,9 @@ export class UserDetail implements OnInit, OnDestroy{
         this.cdRef.markForCheck()
     }
     get user(){ return this._user }
-    private _user : User
+    private _user : UserModel
     private details : UserDetailsModel
-    private structure: StructureModel = this.dataService.structure
+    private structure: StructureModel = this.usersStore.structure
 
     private isContextAdml() {
         return this.details && this.details.functions &&

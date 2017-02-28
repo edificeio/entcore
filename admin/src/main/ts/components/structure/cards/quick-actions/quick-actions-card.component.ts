@@ -32,5 +32,5 @@ import { StructureModel } from '../../../../store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class QuickActionsCard {
-        @Input() structure: StructureModel
+     @Input() structure: StructureModel
 }
