@@ -5614,6 +5614,14 @@ module.directive('pulsar', function($compile){
                 placePulsar();
 
                 pulsarButton.on('click', function(){
+                    scope.pulsarInfos.steps = [];
+                    pulsars = $('[pulsar]');
+                    pulsars.each(function(index, element){
+                        let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
+                        infos.el = element;
+                        scope.pulsarInfos.steps.push(infos);
+                    });
+
                     pulsarElement = $('<pulsar></pulsar>')
                         .addClass(xPosition)
                         .addClass(yPosition);
