@@ -351,6 +351,12 @@ public class PortalController extends BaseController {
 		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
 	}
 
+	@Get("/quickstart")
+	@SecuredAction("portal.quickstart")
+	public void quickstart(HttpServerRequest request){
+		renderJson(request, new JsonArray());
+	}
+
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
