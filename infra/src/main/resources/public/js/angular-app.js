@@ -5470,7 +5470,7 @@ module.directive('assistant', function(){
         link: function(scope, element, attributes){
             scope.show = { assistant: false };
             quickstart.load(function(){
-                if(quickstart.state.assistant === -1){
+                if(quickstart.state.assistant === -1 || quickstart.mySteps.length === 0){
                     return;
                 }
 
@@ -5511,6 +5511,9 @@ module.directive('pulsar', function($compile){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
+            if(!model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|quickstart')){
+                return;
+            }
             let pulsarInfos = scope.$eval(attributes.pulsar);
             scope.pulsarInfos = pulsarInfos;
             scope.pulsarInfos.steps = [];
