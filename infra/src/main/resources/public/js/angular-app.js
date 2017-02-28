@@ -5395,7 +5395,7 @@ module.directive('embedder', function($compile){
             scope.$watch(
                 function(){
                     return scope.display.htmlCode;
-                }, 
+                },
                 function(newVal){
                     setTimeout(function () {
                         scope.updatePreview();
@@ -5413,7 +5413,7 @@ module.directive('embedder', function($compile){
                     }, 20);
                 }
             );
-            
+
             scope.updatePreview = function () {
                 if(scope.display.provider.name === 'other'){
                     var preview = element.find('.' + scope.display.provider.name + ' .preview');
@@ -5449,7 +5449,7 @@ module.directive('embedder', function($compile){
                     if(paramAfter){
                         paramValue = paramValue.split(paramAfter)[0];
                     }
-                    
+
                     var replace = new RegExp('\\' + param.replace(/}/, '\\}'), 'g');
                     scope.display.htmlCode = computedEmbed.replace(replace, paramValue);
                 });
@@ -5517,7 +5517,7 @@ module.directive('pulsar', function($compile){
             let pulsarInfos = scope.$eval(attributes.pulsar);
             scope.pulsarInfos = pulsarInfos;
             scope.pulsarInfos.steps = [];
-            
+
             let pulsars = $('[pulsar]');
             pulsars.each(function(index, element){
                 let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
@@ -5552,7 +5552,7 @@ module.directive('pulsar', function($compile){
                     yPosition = 'bottom';
                 }
 
-                pulsarButton = $('<div class="pulsar-button"><div class="pulse"></div><div class="pulse2"></div></div>')
+                pulsarButton = $('<div class="pulsar-button"><div class="pulse"></div><div class="pulse2"></div><div class="pulse-spot"></div></div>')
                     .appendTo('body');
                     if(pulsarInfos.className){
                         pulsarInfos.className.split(' ').forEach(function(cls){
@@ -5576,7 +5576,7 @@ module.directive('pulsar', function($compile){
                     if(!pulsarButton.hasClass('hidden')){
                         pulsarButton.offset({ left: xPositions[xPosition], top: yPositions[yPosition] });
                     }
-                    
+
                     if(pulsarElement){
                         let left = xPositions[xPosition] - pulsarElement.children('.content').width() / 2;
                         if(yPosition === 'center' && xPosition === 'center'){
@@ -5604,15 +5604,15 @@ module.directive('pulsar', function($compile){
                             }
                         }
 
-                        pulsarElement.offset({ 
-                            left: left, 
+                        pulsarElement.offset({
+                            left: left,
                             top: top
                         });
                     }
                     setTimeout(placePulsar, 100);
                 }
                 placePulsar();
-                
+
                 pulsarButton.on('click', function(){
                     pulsarElement = $('<pulsar></pulsar>')
                         .addClass(xPosition)
@@ -5683,7 +5683,7 @@ module.directive('pulsar', function($compile){
                 undraw();
                 quickstart.goToAppStep(step);
                 angular.element(step.el).scope().paintPulsar();
-                
+
             };
 
             scope.next = function(){
@@ -5694,7 +5694,7 @@ module.directive('pulsar', function($compile){
                         angular.element(item.el).scope().paintPulsar();
                     }
                 });
-                
+
             };
 
             scope.previous = function(){
@@ -5705,18 +5705,18 @@ module.directive('pulsar', function($compile){
                         angular.element(item.el).scope().paintPulsar();
                     }
                 });
-                
+
             };
 
             quickstart.load(function(){
                 if(quickstart.appIndex() !== pulsarInfos.index){
                     return;
                 }
-                
+
                 paintPulsar();
             });
-           
-            
+
+
         }
     }
 });
