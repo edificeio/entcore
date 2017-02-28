@@ -1027,7 +1027,7 @@ var quickstart = {
 	},
 	awaiters: [],
 	load: function(cb){
-		if(this.steps.assistant){
+		if(this.steps[this.types[model.me.type]]){
 			if(typeof cb === 'function'){
 				cb();
 			}
