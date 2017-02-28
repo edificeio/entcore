@@ -39,27 +39,9 @@ public class StructureImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		if (importer.isFirstImport()) {
-			importer.structureConstraints();
-			importer.profileConstraints();
-			importer.functionConstraints();
-			importer.persist(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> message) {
-					if ("ok".equals(message.body().getString("status"))) {
-						createOrUpdateProfiles();
-						DefaultFunctions.createOrUpdateFunctions(importer);
-						parse(handler, getNextImportProcessing());
-					} else {
-						error(message, handler);
-					}
-				}
-			});
-		} else {
-			createOrUpdateProfiles();
-			DefaultFunctions.createOrUpdateFunctions(importer);
-			parse(handler, getNextImportProcessing());
-		}
+		createOrUpdateProfiles();
+		DefaultFunctions.createOrUpdateFunctions(importer);
+		parse(handler, getNextImportProcessing());
 	}
 
 	protected ImportProcessing getNextImportProcessing() {
