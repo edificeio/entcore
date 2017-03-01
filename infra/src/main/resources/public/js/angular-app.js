@@ -5583,8 +5583,13 @@ module.directive('pulsar', function($compile){
                 pulsarElement;
 
                 let placePulsar = function(){
-                    let deltaX = parseInt(pulsarInfos.delta.split(' ')[0]);
-                    let deltaY = parseInt(pulsarInfos.delta.split(' ')[1]);
+                    let deltaX = 0;
+                    let deltaY = 0;
+                    if(pulsarInfos.delta){
+                        deltaX = parseInt(pulsarInfos.delta.split(' ')[0]);
+                        deltaY = parseInt(pulsarInfos.delta.split(' ')[1]);
+                    }
+                    
                     let xPositions = {
                         left: element.offset().left - 40,
                         right: element.offset().left + element.width() + 10,
