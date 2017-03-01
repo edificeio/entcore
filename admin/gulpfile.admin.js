@@ -18,10 +18,7 @@ const devServConf   = require('./webpack.config.devserver.js')
 
 const buildTs = function(prodMode) {
     return gulp.src('./admin')
-        .pipe(webpackstream(prodMode ? prodConf : devConf, webpack)
-            .on('error', function(err) {
-                console.log
-            }))
+        .pipe(webpackstream(prodMode ? prodConf : devConf, webpack).on('error', console.log))
         .pipe(gulp.dest('./admin/src/main/resources/public'))
 }
 
@@ -30,11 +27,12 @@ gulp.task('admin2:clean', function() {
         './admin/src/main/resources/public/js/*',
         './admin/src/main/resources/public/templates/*',
         './admin/src/main/resources/public/styles/admin.css',
+        './admin/src/main/resources/public/styles/admin.css.map',
         './admin/src/main/resources/view/*'])
 })
 
 gulp.task('admin2:ts-dev', function() {
-    return buildTs()
+    return buildTs(false)
 })
 
 gulp.task('admin2:ts', function() {
