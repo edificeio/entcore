@@ -85,7 +85,7 @@ var ui = (function() {
                 });
                 var favicon = $('<link>', {
                     rel: 'icon',
-                    href: stylePath + '../img/illustrations/favicon.ico'
+                    href: skin.basePath + 'img/illustrations/favicon.ico'
                 });
                 style.on('load', function() {
                     $('body').show();

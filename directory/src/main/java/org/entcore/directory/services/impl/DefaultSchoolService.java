@@ -208,11 +208,11 @@ public class DefaultSchoolService implements SchoolService {
 
 	@Override
 	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
-		this.massmailUsers(structureId, filterObj, true, true, userInfos, results);
+		this.massmailUsers(structureId, filterObj, true, true, null, userInfos, results);
 	}
 	@Override
-	public void massmailUsers(String structureId, JsonObject filterObj,
-			boolean groupClasses, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+	public void massmailUsers(String structureId, JsonObject filterObj, boolean groupClasses,
+			boolean groupChildren, Boolean hasMail, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 
 		String filter =
 				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
@@ -256,6 +256,16 @@ public class DefaultSchoolService implements SchoolService {
 			optional = "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
 			condition += " AND c.id IN {classesArray} ";
 			params.putArray("classesArray", filterObj.getArray("classes"));
+		}
+
+		//Email
+		if(hasMail != null) {
+			if(hasMail){
+				condition += " AND COALESCE(u.email, \"\") <> \"\" ";
+			} else {
+				condition += " AND COALESCE(u.email, \"\") = \"\" ";
+			}
+
 		}
 
 		//Admin check
@@ -330,6 +340,23 @@ public class DefaultSchoolService implements SchoolService {
 		String query = filter + condition + optional + withStr + returnStr + sort;
 
 		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
+	@Override
+	public void getMetrics(String structureId, Handler<Either<String, JsonObject>> results){
+		String query = "MATCH (s:Structure) " +
+				"WHERE s.id = {structureId} " +
+				"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s)," +
+				"(pg)-[:HAS_PROFILE]->(p:Profile) " +
+				"WITH p, collect(u) as allUsers " +
+				"WITH p, FILTER(u IN allUsers WHERE u.activationCode IS NULL) as active, " +
+				"FILTER(u IN allUsers WHERE NOT(u.activationCode IS NULL)) as inactive " +
+				"WITH p, length (active) as active, length(inactive) as inactive " +
+				"RETURN collect({profile: p.name, active: active, inactive: inactive}) as metrics";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		neo.execute(query.toString(), params, validUniqueResultHandler(results));
 	}
 
 }

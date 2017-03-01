@@ -2556,8 +2556,7 @@ window.RTE = (function () {
 					'</ul>' +
 					'</lightbox>',
 					link: function (scope, element, attributes) {
-					    var split = $('#theme').attr('href').split('/');
-					    var skinPath = split.slice(0, split.length - 2).join('/') + '/../entcore-css-lib/editor-resources/img/';
+					    var skinPath = skin.basePath + '../entcore-css-lib/editor-resources/img/';
 						scope.templates = [
 							{
 							    title: 'editor.templates.emptypage.title',
@@ -3117,7 +3116,7 @@ window.RTE = (function () {
                         element.on('click', function(e){
                             placeToolbar();
 
-                            if(e.target === element.find('.close-focus')[0]){
+                            if(e.target === element.find('.close-focus')[0] || element.hasClass('focus')){
                                 return;
                             }
 
@@ -3714,7 +3713,7 @@ window.RTE = (function () {
 								            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
 								        }
 								    });
-					            	MathJax.Hub.Typeset();
+					            	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 								}
 							});
 					    }

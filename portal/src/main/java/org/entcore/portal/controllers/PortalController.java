@@ -26,6 +26,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
@@ -56,6 +57,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.*;
 
 public class PortalController extends BaseController {
@@ -86,13 +88,13 @@ public class PortalController extends BaseController {
 		for (final String domain: skins.getFieldNames()) {
 			final String skin = skins.getString(domain);
 			this.hostSkin.put(domain, skin);
-			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin, false, new Handler<List<String>>() {
+			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin + "/skins", false, new Handler<List<String>>() {
 				@Override
 				public void handle(List<String> event) {
 					themes.put(domain, event);
 					JsonArray a = new JsonArray();
 					for (final String s : event) {
-						String path = assetsPath + "/assets/themes/" + skin + "/" + s + "/";
+						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
 						final JsonObject j = new JsonObject()
 								.putString("_id", s)
 								.putString("path", path);
@@ -201,16 +203,29 @@ public class PortalController extends BaseController {
 		}
 	}
 
-	private String getSkinFromDomain(HttpServerRequest request) {
+	private String getSkinFromConditions(HttpServerRequest request) {
 		if (request == null) {
 			return defaultSkin;
+		}
+		final String overrideTheme = CookieHelper.get("theme", request);
+		if (isNotEmpty(overrideTheme)) {
+			return overrideTheme;
+		}
+		if (request instanceof SecureHttpServerRequest && ((SecureHttpServerRequest) request).getSession() != null) {
+			JsonObject cache = ((SecureHttpServerRequest) request).getSession().getObject("cache");
+			if (cache != null && cache.getObject("preferences") != null) {
+				final String theme = cache.getObject("preferences").getString("theme");
+				if (isNotEmpty(theme)) {
+					return theme;
+				}
+			}
 		}
 		String skin = hostSkin.get(getHost(request));
 		return (skin != null && !skin.trim().isEmpty()) ? skin : defaultSkin;
 	}
 
 	private String getThemePrefix(HttpServerRequest request) {
-		return "/assets/themes/" + getSkinFromDomain(request);
+		return "/assets/themes/" + getSkinFromConditions(request);
 	}
 
 	private void sendWithLastModified(final HttpServerRequest request, final String path) {
@@ -253,7 +268,7 @@ public class PortalController extends BaseController {
 					JsonObject urls = container.config().getObject("urls", new JsonObject());
 					final JsonObject theme = new JsonObject()
 							.putString("template", "/public/template/portal.html")
-							.putString("logoutCallback", urls.getString("logoutCallback", ""));
+							.putString("logoutCallback", getLogoutCallback(request, urls));
 					String query =
 							"MATCH (n:User)-[:USERBOOK]->u " +
 							"WHERE n.id = {id} " +
@@ -269,12 +284,12 @@ public class PortalController extends BaseController {
 										result.<JsonObject>get(0).getString("theme") : null;
 								List<String> t = themes.get(getHost(request));
 								if (userTheme != null && t != null && t.contains(userTheme)) {
-									theme.putString("skin", getThemePrefix(request) + "/" + userTheme + "/");
+									theme.putString("skin", getThemePrefix(request) + "/skins/" + userTheme + "/");
 								} else {
-									theme.putString("skin", getThemePrefix(request) + "/default/");
+									theme.putString("skin", getThemePrefix(request) + "/skins/default/");
 								}
 							} else {
-								theme.putString("skin", getThemePrefix(request) + "/default/");
+								theme.putString("skin", getThemePrefix(request) + "/skins/default/");
 							}
 							renderJson(request, theme);
 							UserUtils.addSessionAttribute(eb, user.getUserId(), theme_attr, theme.encode(), null);
@@ -287,9 +302,14 @@ public class PortalController extends BaseController {
 		});
 	}
 
+	private String getLogoutCallback(HttpServerRequest request, JsonObject urls) {
+		final String logoutCallback = CookieHelper.get("logoutCallback", request);
+		return isNotEmpty(logoutCallback) ? logoutCallback : urls.getString("logoutCallback", "");
+	}
+
 	@Get("/skin")
 	public void getSkin(final HttpServerRequest request) {
-		renderJson(request, new JsonObject().putString("skin", getSkinFromDomain(request)));
+		renderJson(request, new JsonObject().putString("skin", getSkinFromConditions(request)));
 	}
 
 	@Get("/skins")

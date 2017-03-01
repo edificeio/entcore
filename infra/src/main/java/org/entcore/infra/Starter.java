@@ -48,20 +48,17 @@ import org.vertx.java.core.spi.cluster.ClusterManager;
 import java.io.File;
 import java.text.ParseException;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Starter extends BaseServer {
 
-	String developerId = "";
 	private String node;
 	private boolean cluster;
 
 	@Override
 	public void start() {
 		try {
-			if (vertx.fileSystem().existsSync("../../developer.id")) {
-				developerId = vertx.fileSystem().readFileSync("../../developer.id").toString().trim();
-			}
 			if (container.config() == null || container.config().size() == 0) {
 				config = getConfig("", "mod.json");
 			}
@@ -86,6 +83,14 @@ public class Starter extends BaseServer {
 			if (filesystem != null) {
 				serverMap.put("file-system", filesystem.encode());
 			}
+			JsonObject neo4jConfig = config.getObject("neo4jConfig");
+			if (neo4jConfig != null) {
+				serverMap.put("neo4jConfig", neo4jConfig.encode());
+			}
+			final String csp = config.getString("content-security-policy");
+			if (isNotEmpty(csp)) {
+				serverMap.put("contentSecurityPolicy", csp);
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			initModulesHelpers(node);
 
@@ -100,8 +105,6 @@ public class Starter extends BaseServer {
 			deployPreRequiredModules(config.getArray("pre-required-modules"), new VoidHandler() {
 				@Override
 				protected void handle() {
-					loadCypherScript(); // only in dev mode with embedded neo4j
-
 					JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
 					validator.setEventBus(getEventBus(vertx));
 					validator.setAddress(node + "json.schema.validator");
@@ -317,13 +320,7 @@ public class Starter extends BaseServer {
 	}
 
 	protected JsonObject getConfig(String path, String fileName) throws Exception {
-		Buffer b;
-		if (! developerId.isEmpty() && vertx.fileSystem().existsSync(path + developerId + "." + fileName)) {
-			b = vertx.fileSystem().readFileSync(path + developerId + "." + fileName);
-		} else {
-			b = vertx.fileSystem().readFileSync(path + fileName);
-		}
-
+		Buffer b = vertx.fileSystem().readFileSync(path + fileName);
 		if (b == null) {
 			log.error("Configuration file "+ fileName +"not found");
 			throw new Exception("Configuration file "+ fileName +" not found");
@@ -331,97 +328,6 @@ public class Starter extends BaseServer {
 		else {
 			return new JsonObject(b.toString());
 		}
-	}
-
-	private void loadCypherScript() {
-		if ("dev".equals(config.getString("mode"))) {
-			String neo4jServerUri = config.getObject("neo4j-persistor", new JsonObject())
-					.getObject("config", new JsonObject()).getString("server-uri");
-			final String scriptsFolder = config.getString("scripts-folder");
-			if ((neo4jServerUri == null || neo4jServerUri.isEmpty()) && scriptsFolder != null) {
-				execute("MATCH (n:System) WHERE n.name = 'neo4j' RETURN n.scripts as scripts", null,
-						new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-						if ("ok".equals(event.body().getString("status"))) {
-							JsonArray res = event.body().getArray("result");
-							if (log.isDebugEnabled() && res != null) {
-								log.debug(res.encode());
-							}
-							Handler<JsonArray> handler;
-							JsonArray executedScripts;
-							if (res != null && res.size() == 0) {
-								executedScripts = new JsonArray();
-								handler = new Handler<JsonArray>() {
-									@Override
-									public void handle(JsonArray scripts) {
-										execute("CREATE (n:System {scripts : {scripts}, name : 'neo4j'})",
-												new JsonObject().putArray("scripts", scripts), null);
-									}
-								};
-								executeCypherScript(scriptsFolder, executedScripts, handler);
-							} else if (res != null) {
-								executedScripts = ((JsonObject) res.get(0)).getArray("scripts", new JsonArray());
-								handler = new Handler<JsonArray>() {
-									@Override
-									public void handle(JsonArray scripts) {
-										execute("MATCH (n:System) WHERE n.name = 'neo4j' SET n.scripts = {scripts}",
-												new JsonObject().putArray("scripts", scripts), null);
-									}
-								};
-								executeCypherScript(scriptsFolder, executedScripts, handler);
-							}
-						}
-					}
-				});
-			}
-		}
-	}
-
-	private void executeCypherScript(String folder, final JsonArray executedScripts,
-			final Handler<JsonArray> handler) {
-		if (folder == null || folder.isEmpty()) return;
-		vertx.fileSystem().readDir(folder, ".*?cypher$", new Handler<AsyncResult<String[]>>() {
-			@Override
-			public void handle(AsyncResult<String[]> ar) {
-				if (ar.succeeded()) {
-					final AtomicInteger count = new AtomicInteger(ar.result().length);
-					for (String path: ar.result()) {
-						if (executedScripts.contains(path)) continue;
-						executedScripts.add(path);
-						vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
-							@Override
-							public void handle(AsyncResult<Buffer> ar) {
-								if (ar.succeeded()) {
-									String queries = ar.result().toString("UTF-8")
-											.replaceAll("\n", "")
-											.replaceAll("begin transaction", "")
-											.replaceAll("commit", "");
-									for (String query : queries.split(";")) {
-										execute(query, null, null);
-									}
-								}
-								if (count.decrementAndGet() == 0) {
-									handler.handle(executedScripts);
-								}
-							}
-						});
-					}
-				} else {
-					log.error(ar.cause());
-				}
-			}
-		});
-	}
-
-	private void execute(String query, JsonObject params, Handler<Message<JsonObject>> handler) {
-		JsonObject jo = new JsonObject();
-		jo.putString("action", "execute");
-		jo.putString("query", query);
-		if (params != null) {
-			jo.putObject("params", params);
-		}
-		vertx.eventBus().send("wse.neo4j.persistor", jo, handler);
 	}
 
 }

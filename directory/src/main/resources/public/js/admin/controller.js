@@ -63,6 +63,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		})
 	}
 
+	$scope.localImport = function(){
+		http().post('/directory/import', function(){ 
+			notify.info('directory.notify.import'); 
+		});
+	};
+
     route({
 		default: function(){
 			$scope.structures.sync(function(){
@@ -206,9 +212,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 			var strFun = lang.translate(fun[0])
 			if(fun[1].length > 0){
-				strFun += ' [' + _.chain(fun[1]).map(function(id){
-					return _.findWhere($scope.structures.all, {id : id}).name
-				}).value().join(' / ') + ']'
+				strFun += ' [' +
+					_.chain(fun[1])
+						.map(function(id){
+							var struct = _.findWhere($scope.structures.all, {id : id})
+							return struct ? struct.name : undefined
+						})
+						.filter(function(item){
+							return item
+						})
+					.value()
+					.join(' / ') + ']'
 			}
 
 			return str ? str + ', ' + strFun : strFun
@@ -259,7 +273,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				$scope.initExportData()
 			},
 			onStructureClick: function(structure){
-				$scope.structure = structure
+                $scope.structure = structure
+                structure.getMetrics(function(){
+                    $scope.$apply()
+                })
 			}
 		},
 		{
@@ -1050,6 +1067,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		classes: [],
 		/* Activation */
 		activated: "false",
+		/* Email */
+		email: "",
 		/* Sort by */
 		sortmethods: [
 			{
@@ -1106,14 +1125,17 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 					.pluck('id')
 					.value()
 			)
+			var params = {
+				a: that.activated,
+				p: _.map(that.profiles, function(p){ return p.label }),
+				//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
+				c: joinClassesAndLevels,
+				s: sortArray
+			}
+			if(that.email)
+				params.mail = that.email
 			$http.get('/directory/structure/'+that.getStructure().id+'/massMail/users', {
-				params: {
-					a: that.activated,
-					p: _.map(that.profiles, function(p){ return p.label }),
-					//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
-					c: joinClassesAndLevels,
-					s: sortArray
-				}
+				params: params
 			}).success(function(data){
 				that.modified = false
 				that.userList = data
@@ -1185,16 +1207,18 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 					.pluck('id')
 					.value()
 			)
+			var params = {
+				a: that.activated,
+				p: _.map(that.profiles, function(p){ return p.label }),
+				c: joinClassesAndLevels,
+				//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
+				filename: lang.translate("directory.massmail.filename")
+			}
 			if(type === 'pdf'){
-				$http.get('/directory/structure/'+that.getStructure().id+'/massMail/process/pdf', {
-					params: {
-						a: that.activated,
-						p: _.map(that.profiles, function(p){ return p.label }),
-						//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
-						c: joinClassesAndLevels,
-						s: sortArray,
-						filename: lang.translate("directory.massmail.filename")
-					},
+				params.s = sortArray
+				if(that.email) params.mail = that.email
+				$http.get('/directory/structure/' + that.getStructure().id + '/massMail/process/pdf', {
+					params: params,
 					responseType: 'blob'
 				}).success(function(blob){
 					$scope.massmail.ajaxDownload(blob, lang.translate("directory.massmail.filename")+".pdf")
@@ -1204,14 +1228,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 					that.processing = false
 				})
 			} else if(type === 'mail'){
-				$http.get('/directory/structure/'+that.getStructure().id+'/massMail/process/mail', {
-					params: {
-						a: that.activated,
-						p: _.map(that.profiles, function(p){ return p.label }),
-						//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
-						c: joinClassesAndLevels,
-						filename: lang.translate("directory.massmail.filename")
-					},
+				if(that.email) params.mail = that.email
+				$http.get('/directory/structure/' + that.getStructure().id + '/massMail/process/mail', {
+					params: params,
 					responseType: 'json'
 				}).success(function(json){
 					notify.success("directory.massmail.mail.done")

@@ -29,7 +29,7 @@ import java.util.*;
 public class ThemeUtils {
 
 
-	public static void availableThemes(Vertx vertx, String themeDirectory, final boolean fullPath,
+	public static void availableThemes(final Vertx vertx, String themeDirectory, final boolean fullPath,
 			final Handler<List<String>> themes) {
 		vertx.fileSystem().readDir(themeDirectory, new Handler<AsyncResult<String[]>>() {
 			@Override
@@ -43,11 +43,12 @@ public class ThemeUtils {
 						List<String> t = new ArrayList<>();
 						for (int i = 0; i < files.length; i++) {
 							String file = files[i];
-							if (idx > -1 && file.length() > idx + 1) {
-								file = file.substring(idx + 1);
+							if(vertx.fileSystem().propsSync(file).isDirectory()) {
+								if (idx > -1 && file.length() > idx + 1) {
+									file = file.substring(idx + 1);
+								}
+								t.add(file);
 							}
-							if (Arrays.asList("css","font","fonts","img","template","i18n","portal.html","js","bower.json",".bower.json","LICENSE", "override-img", "override-js", "override-template", "override-css", "override-default", "override-i18n", "README.md", "how-to-override.md").contains(file)) continue;
-							t.add(file);
 						}
 						themes.handle(t);
 					}

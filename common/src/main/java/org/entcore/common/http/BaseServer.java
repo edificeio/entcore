@@ -22,6 +22,7 @@ package org.entcore.common.http;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -30,11 +31,11 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.ActionFilter;
-import org.entcore.common.http.filter.HttpActionFilter;
-import org.entcore.common.http.filter.ResourceProviderFilter;
-import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.http.filter.*;
+import org.entcore.common.http.response.SecurityHookRender;
+import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
@@ -52,10 +53,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public abstract class BaseServer extends Server {
 
@@ -64,6 +62,7 @@ public abstract class BaseServer extends Server {
 	private SearchingHandler searchingHandler;
 	private String schema;
 	private boolean oauthClientGrant = false;
+	private String contentSecurityPolicy;
 
 	@Override
 	public void start() {
@@ -74,8 +73,9 @@ public abstract class BaseServer extends Server {
 
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 		if (node == null) {
-			node = "";
+			return;
 		}
+		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
@@ -86,6 +86,10 @@ public abstract class BaseServer extends Server {
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
 		eventStoreFactory.setContainer(container);
 		eventStoreFactory.setVertx(vertx);
+
+		if (config.getBoolean("csrf-token", false)) {
+			addFilter(new CsrfFilter(getEventBus(vertx)));
+		}
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
@@ -100,6 +104,19 @@ public abstract class BaseServer extends Server {
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
+	}
+
+	@Override
+	protected Server addController(BaseController controller) {
+		super.addController(controller);
+		if (config.getString("override-theme") != null) {
+			controller.addHookRenderProcess(new OverrideThemeHookRender(config.getString("override-theme")));
+		}
+		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
+			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+					config.getBoolean("csrf-token", true), contentSecurityPolicy));
+		}
+		return this;
 	}
 
 	@Override
@@ -121,8 +138,13 @@ public abstract class BaseServer extends Server {
 
 	protected void initModulesHelpers(String node) {
 		if (config.getBoolean("neo4j", true)) {
-			Neo4j.getInstance().init(getEventBus(vertx), node +
-					config.getString("neo4j-address", "wse.neo4j.persistor"));
+			if (config.getObject("neo4jConfig") != null) {
+				Neo4j.getInstance().init(vertx, config.getObject("neo4jConfig"));
+			} else {
+				String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+				Neo4j.getInstance().init(vertx, new JsonObject(neo4jConfig));
+			}
+			Neo4jUtils.loadScripts(this.getClass().getSimpleName(), vertx, config.getString("neo4j-init-scripts", "neo4j"));
 		}
 		if (config.getBoolean("mongodb", true)) {
 			MongoDb.getInstance().init(getEventBus(vertx), node +
@@ -136,10 +158,7 @@ public abstract class BaseServer extends Server {
 			Sql.getInstance().init(getEventBus(vertx), node +
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
-			if ("dev".equals(config.getString("mode"))) {
-				DB.loadScripts(schema,
-						vertx, config.getString("init-scripts", "sql"));
-			}
+			DB.loadScripts(schema, vertx, config.getString("init-scripts", "sql"));
 		}
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();

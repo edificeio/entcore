@@ -24,6 +24,16 @@ function Http(){
 
 var http = (function(){
 	var statusEvents = ['done', 'error', 'e401', 'e404', 'e409', 'e500', 'e400', 'e413', 'e504', 'e0'];
+	var xsrfCookie;
+	if(document.cookie){
+		var cookies = _.map(document.cookie.split(';'), function(c){
+			return {
+				name: c.split('=')[0].trim(), 
+				val: c.split('=')[1].trim()
+			};
+		});
+		xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
+	}
 
 	Http.prototype = {
 		serialize: function(obj){
@@ -75,6 +85,12 @@ var http = (function(){
 			var that = this;
 			params.url = url;
 			params.cache = false;
+			if(!params.headers){
+				params.headers = {};
+			}
+			if(xsrfCookie){
+				params.headers['X-XSRF-TOKEN'] = xsrfCookie.val;
+			}
 
 			var requestName = params.requestName;
 			if(requestName && that.events['request-started.' + requestName]){
@@ -182,7 +198,9 @@ var http = (function(){
 	return function(){
 		return new Http();
 	}
-}());
+} ());
+
+window.entcore.http = http;
 
 function Collection(obj){
 	this.all = [];
@@ -929,7 +947,7 @@ var skin = (function(){
 	return {
 		templateMapping: {},
 		skin: 'raw',
-		theme: '/assets/themes/raw/default/',
+		theme: '/assets/themes/raw/skins/default/',
 		portalTemplate: '/assets/themes/raw/portal.html',
 		basePath: '',
 		logoutCallback: '/',
@@ -940,17 +958,17 @@ var skin = (function(){
 				async: false,
 				success: function(data){
 					that.skin = data.skin;
-					that.theme = '/assets/themes/' + data.skin + '/default/';
-					that.basePath = that.theme + '../';
+					that.theme = '/assets/themes/' + data.skin + '/skins/default/';
+					that.basePath = that.theme + '../../';
 
 					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
 						async: false,
 						disableNotifications: true,
 						success: function(override){
-							that.templateMapping = override;
-						}
+							this.templateMapping = override;
+						}.bind(this)
 					}).e404(function(){});
-				}
+				}.bind(this)
 			});
 		},
 		listThemes: function(cb){
@@ -971,7 +989,7 @@ var skin = (function(){
 				async: false,
 				success: function(data){
 					that.theme = data.skin;
-					that.basePath = that.theme + '../';
+					that.basePath = that.theme + '../../';
 					that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
 					that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
 					that.logoutCallback = data.logoutCallback;
@@ -1326,9 +1344,12 @@ var Behaviours = (function(){
 				return returnWorkflows();
 			}
 
-			if(window.loader){
+			if(window.loader && serviceName !== '.'){
 				loader.syncLoadFile('/' + serviceName + '/public/js/behaviours.js');
 				return returnWorkflows();
+			}
+			else{
+				return {};
 			}
 		},
 		workflowsFrom: function(obj, dependencies){
@@ -1352,7 +1373,9 @@ var Behaviours = (function(){
 		},
 		applicationsBehaviours: {}
 	}
-}());
+} ());
+
+window.entcore.Behaviours = Behaviours;
 
 var calendar = {
     setCalendar: function(cal){
@@ -1785,6 +1808,33 @@ function bootstrap(func) {
 				data.preference = null;
 			}
 			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
+			var upToDate = true;
+			let remove = [];
+			model.me.bookmarkedApps.forEach(function(app, index){
+				var foundApp = _.findWhere(model.me.apps, { name: app.name });
+				var updateApp = true;
+				if(foundApp){
+					updateApp = JSON.stringify(foundApp) !== JSON.stringify(app);
+					if(updateApp){
+						for(var property in foundApp){
+							app[property] = foundApp[property];
+						}
+					}
+				}
+				else{
+					remove.push(app);
+				}
+				
+				upToDate = upToDate && !updateApp;
+			});
+			remove.forEach(function(app) {
+				var index = model.me.bookmarkedApps.indexOf(app);
+				model.me.bookmarkedApps.splice(index, 1);
+			});
+			if(!upToDate){
+				http().putJson('/userbook/preference/apps', model.me.bookmarkedApps);
+			}
+
 			func();
 		});
 	})

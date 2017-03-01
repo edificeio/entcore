@@ -167,6 +167,9 @@
     "directory.groupUsers": "Utilisateurs dans le groupe",
     "directory.guest": "Invité",
     "directory.ignoreActivation": "Pas de filtre sur l'activation",
+    "directory.ignoreMail": "Pas de filtre sur le courriel",
+    "directory.withMail": "Utilisateurs avec courriel",
+    "directory.withoutMail": "Utilisateurs sans courriel",
     "directory.import": "Importer",
     "directory.import.already.exists": "Des utilisateurs dans ce fichier sont déjà présents",
     "directory.importCSV": "Import CSV",
@@ -541,5 +544,6 @@
     "invalid.epj" : "Utilisateur sans identifiant",
     "timetable.import.loading" : "Import en cours...",
     "attachmentId" : "Identifiant SIECLE",
-    "default.import" : "Alimentation standard (AAF, CSV)"
+    "default.import" : "Alimentation standard (AAF, CSV)",
+    "directory.metrics": "Métriques"
 }

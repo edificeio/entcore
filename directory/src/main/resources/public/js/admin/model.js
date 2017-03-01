@@ -509,6 +509,15 @@ Structure.prototype.detachParent = function(parent, hook){
     })
 }
 
+Structure.prototype.getMetrics = function(cb){
+    var structure = this
+    http().get("structure/"+structure.id+"/metrics").done(function(data){
+        structure.metrics = data.metrics
+        if(typeof cb === "function")
+            cb()
+    })
+}
+
 Structure.prototype.toString = function(){
     return this.name;
 }

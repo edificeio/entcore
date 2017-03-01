@@ -61,6 +61,7 @@ object DuplicateScenario {
     .formParam("""type""", """Relative""")
     .formParam("""childrenIds""", """${childrenId}""")
     .check(status.is(200)))
+    .pause(3)
     .exec(http("Create manual parent")
     .post("""/directory/api/user""")
     .formParam("""classId""", """${classId}""")

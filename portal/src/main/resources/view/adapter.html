@@ -60,14 +60,19 @@
 </portal>
 <script>
 	if(window.location.href.split('#').length > 1){
-		var appAddress = window.location.href.split('#')[1];
+		var appAddress = window.location.href.split('#')[1],
+		regex = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/gi);
 		if(appAddress.indexOf('?') !== -1){
 			appAddress = appAddress;
 		}
 		else{
 			appAddress = appAddress;
 		}
-		document.getElementById('adapter').setAttribute('src', appAddress);
+		if (appAddress.match(regex)) {
+			document.getElementById('adapter').setAttribute('src', appAddress);
+		} else {
+			window.location.href = "/welcome";
+		}
 	}
 </script>
 </body>

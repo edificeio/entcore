@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.utils;
 
+import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;

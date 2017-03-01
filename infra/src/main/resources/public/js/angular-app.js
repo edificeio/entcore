@@ -1407,10 +1407,20 @@ module.directive('bindHtml', function($compile) {
                 var htmlVal = $('<div>' + (newVal || '') + '</div>')
                     //Remove resizable attributes
                 htmlVal.find('[resizable]').removeAttr('resizable').css('cursor', 'initial');
+                htmlVal.find('[draggable]').removeAttr('draggable').css('cursor', 'initial');
                 htmlVal.find('[bind-html]').removeAttr('bind-html');
                 htmlVal.find('[ng-include]').removeAttr('ng-include');
                 htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
                 htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
+                htmlVal.find('script').remove();
+				htmlVal.find('*').each((index, item) => {
+					var attributes = item.attributes;
+					for(var i = 0; i < attributes.length; i++){
+						if(attributes[i].name.startsWith('on')){
+							item.removeAttribute(attributes[i].name);
+						}
+					}
+				});
                 if(htmlVal.find('portal').length){
                     var portal = htmlVal.find('portal');
                     htmlVal = $('<div>' + (portal.find('[bind-html]').html() || '') + '</div>')
@@ -1435,7 +1445,7 @@ module.directive('bindHtml', function($compile) {
                                     extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
                                 }
                             });
-                            MathJax.Hub.Typeset();
+                            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
                         }
                     });
                 }
@@ -1451,7 +1461,7 @@ module.directive('bindHtml', function($compile) {
                 });
 
                 if (window.MathJax && window.MathJax.Hub) {
-                    MathJax.Hub.Typeset();
+                    MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
                 }
             });
         }
@@ -1520,17 +1530,18 @@ module.directive('skinSrc', function($compile) {
     return {
         restrict: 'A',
         scope: '&',
-        link: function($scope, $element, $attributes) {
+        link: function(scope, element, attributes) {
             if (!$('#theme').attr('href')) {
                 return;
             }
-            var skinPath = $('#theme').attr('href').split('/');
-            var path = skinPath.slice(0, skinPath.length - 2).join('/');
-            $attributes.$observe('skinSrc', function() {
-                if ($attributes.skinSrc.indexOf('http://') === -1 && $attributes.skinSrc.indexOf('https://') === -1 && $attributes.skinSrc.indexOf('/workspace/') === -1) {
-                    $element.attr('src', path + $attributes.skinSrc);
+            attributes.$observe('skinSrc', function() {
+                if (attributes.skinSrc.indexOf('http://') === -1 && attributes.skinSrc.indexOf('https://') === -1 && attributes.skinSrc.indexOf('/workspace/') === -1) {
+                    if(attributes.skinSrc[0] === '/'){
+                        attributes.skinSrc = attributes.skinSrc.substring(1);
+                    }
+                    element.attr('src', skin.basePath + attributes.skinSrc);
                 } else {
-                    $element.attr('src', $attributes.skinSrc);
+                    element.attr('src', attributes.skinSrc);
                 }
             });
 
@@ -6196,7 +6207,7 @@ workspace.Document.prototype.upload = function(file, requestName, callback, visi
     }
     var formData = new FormData();
     formData.append('file', file, file.name);
-    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=' + workspace.quality + '&' + workspace.thumbnails, formData, {
+    http().postFile('/workspace/document?' + visibility + '=true&application=media-library&quality=0.7&' + workspace.thumbnails, formData, {
         requestName: requestName
     }).done(function(data) {
         if (typeof callback === 'function') {
@@ -6378,7 +6389,6 @@ function MediaLibrary($scope) {
     };
 
     $scope.importFiles = function() {
-        workspace.quality = $scope.upload.quality / 100;
         var waitNumber = $scope.upload.files.length;
         for (var i = 0; i < $scope.upload.files.length; i++) {
             $scope.upload.loading.push($scope.upload.files[i]);

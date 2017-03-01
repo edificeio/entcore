@@ -23,6 +23,8 @@ import au.com.bytecode.opencsv.CSV;
 import au.com.bytecode.opencsv.CSVReadProc;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.*;
@@ -153,7 +155,7 @@ public class ManualFeeder extends BusModBase {
 			}
 			String query =
 					"MATCH (c:`Class` { id : {classId}}) " +
-					"SET " + Neo4j.nodeSetPropertiesFromJson("c", c) +
+					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("c", c) +
 					rename +
 					"RETURN DISTINCT c.id as id ";
 			JsonObject params = c.putString("classId", classId);
@@ -423,7 +425,7 @@ public class ManualFeeder extends BusModBase {
 					}
 					String query =
 							"MATCH (u:User { id : {userId}}) " +
-							"SET " + Neo4j.nodeSetPropertiesFromJson("u", user) +
+							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
 							"RETURN DISTINCT u.id as id ";
 					JsonObject params = user.putString("userId", userId);
 					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -952,7 +954,7 @@ public class ManualFeeder extends BusModBase {
 			}
 			String query =
 					"MATCH (s:`Structure` { id : {structureId}}) " +
-					rename + Neo4j.nodeSetPropertiesFromJson("s", s) +
+					rename + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
 					"RETURN DISTINCT s.id as id ";
 			JsonObject params = s.putString("structureId", structureId);
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {

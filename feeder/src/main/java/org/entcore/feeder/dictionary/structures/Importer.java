@@ -19,6 +19,8 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
@@ -237,7 +239,7 @@ public class Importer {
 						"ON CREATE SET fos.id = {id} " +
 						"WITH fos " +
 						"WHERE fos.checksum IS NULL OR fos.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("fos", object, "id", "externalId");
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("fos", object, "id", "externalId");
 				params = object;
 			} else {
 				query = "CREATE (fos:FieldOfStudy {props}) ";
@@ -261,7 +263,7 @@ public class Importer {
 						"ON CREATE SET m.id = {id} " +
 						"WITH m " +
 						"WHERE m.checksum IS NULL OR m.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("m", object, "id", "externalId");
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("m", object, "id", "externalId");
 				params = object;
 			} else {
 				query = "CREATE (m:Module {props}) ";
@@ -292,7 +294,7 @@ public class Importer {
 						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 								"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
@@ -335,7 +337,7 @@ public class Importer {
 						"u.displayName = {displayName} " +
 						"WITH u " +
 						"WHERE u.checksum IS NULL OR u.checksum <> {checksum} " +
-						"SET " + Neo4j.nodeSetPropertiesFromJson("u", object,
+						"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 						"id", "externalId", "login", "activationCode", "displayName", "email");
 				params = object;
 			} else {
@@ -414,60 +416,6 @@ public class Importer {
 		return firstImport;
 	}
 
-	public void structureConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (structure:Structure) ASSERT structure.UAI IS UNIQUE;", j);
-	}
-
-	public void fieldOfStudyConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (fos:FieldOfStudy) ASSERT fos.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (fos:FieldOfStudy) ASSERT fos.externalId IS UNIQUE;", j);
-	}
-
-	public void moduleConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (module:Module) ASSERT module.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (module:Module) ASSERT module.externalId IS UNIQUE;", j);
-	}
-
-	public void userConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (user:User) ASSERT user.login IS UNIQUE;", j);
-		transactionHelper.add("CREATE INDEX ON :User(displayNameSearchField);", j);
-	}
-
-	public void profileConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (profile:Profile) ASSERT profile.name IS UNIQUE;", j);
-	}
-
-	public void functionConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Function) ASSERT function.externalId IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (function:Functions) ASSERT function.externalId IS UNIQUE;", j);
-	}
-
-	public void classConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (class:Class) ASSERT class.externalId IS UNIQUE;", j);
-	}
-
-	public void groupConstraints() {
-		JsonObject j = new JsonObject();
-		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.id IS UNIQUE;", j);
-		transactionHelper.add("CREATE CONSTRAINT ON (group:Group) ASSERT group.externalId IS UNIQUE;", j);
-	}
-
 	public void createOrUpdatePersonnel(JsonObject object, String profileExternalId, JsonArray structuresByFunctions,
 			String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		persEducNat.createOrUpdatePersonnel(object, profileExternalId, structuresByFunctions,
@@ -493,7 +441,7 @@ public class Importer {
 					sb.append("u.displayName = {displayName} ");
 					sb.append("WITH u ");
 					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
-					sb.append("SET ").append(Neo4j.nodeSetPropertiesFromJson("u", object,
+					sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 							"id", "externalId", "login", "activationCode", "displayName", "email"));
 					params = object;
 				} else {

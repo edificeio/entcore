@@ -568,7 +568,7 @@ public class UserBookController extends BaseController {
 						message.body().getString("additionalWhere", "") +
 						"OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf)  " +
 						"RETURN COLLECT(DISTINCT {userId: u.id, userMail: u.email, lastDomain: u.lastDomain, preferences: uac"+
-						message.body().getString("additionalCollectFields") +
+						message.body().getString("additionalCollectFields", "") +
 						"}) AS preferences";
 				neo.execute(query,
 					new JsonObject().putArray("userIds", userIds),
