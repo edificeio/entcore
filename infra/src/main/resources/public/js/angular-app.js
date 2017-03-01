@@ -5533,6 +5533,9 @@ module.directive('pulsar', function($compile){
                 return;
             }
             let pulsarInfos = scope.$eval(attributes.pulsar);
+            if(!model.me.hasWorkflow(pulsarInfos.workflow)){
+                return;
+            }
             scope.pulsarInfos = pulsarInfos;
             scope.pulsarInfos.steps = [];
 
@@ -5580,6 +5583,8 @@ module.directive('pulsar', function($compile){
                 pulsarElement;
 
                 let placePulsar = function(){
+                    let deltaX = parseInt(pulsarInfos.delta.split(' ')[0]);
+                    let deltaY = parseInt(pulsarInfos.delta.split(' ')[1]);
                     let xPositions = {
                         left: element.offset().left - 40,
                         right: element.offset().left + element.width() + 10,
@@ -5592,7 +5597,7 @@ module.directive('pulsar', function($compile){
                         center: element.offset().top + (element.height() / 2) - 15
                     };
                     if(!pulsarButton.hasClass('hidden')){
-                        pulsarButton.offset({ left: xPositions[xPosition], top: yPositions[yPosition] });
+                        pulsarButton.offset({ left: xPositions[xPosition] + deltaX, top: yPositions[yPosition] + deltaY });
                     }
 
                     if(pulsarElement){
@@ -5623,8 +5628,8 @@ module.directive('pulsar', function($compile){
                         }
 
                         pulsarElement.offset({
-                            left: left,
-                            top: top
+                            left: left + deltaX,
+                            top: top + deltaY
                         });
                     }
                     setTimeout(placePulsar, 100);
