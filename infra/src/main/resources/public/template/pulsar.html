@@ -7,7 +7,7 @@
 
     <nav class="dots">
         <ul>
-            <li class="dot" ng-repeat="step in pulsarInfos.steps" ng-click="goTo(step)" ng-class="{ active: step.index === pulsarInfos.index }"></li>
+            <li class="dot" ng-repeat="step in pulsarInfos.steps | orderBy:'index'" ng-click="goTo(step)" ng-class="{ active: step.index === pulsarInfos.index }"></li>
         </ul>
     </nav>
 

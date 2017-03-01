@@ -5469,11 +5469,19 @@ module.directive('assistant', function(){
         templateUrl: '/infra/public/template/assistant.html',
         link: function(scope, element, attributes){
             scope.show = { assistant: false };
+
+            var token;
+            var hidePulsars = function(){
+                $('.pulsar-button').hide();
+                token = setTimeout(hidePulsars, 50);
+            }
+
             quickstart.load(function(){
                 if(quickstart.state.assistant === -1 || quickstart.mySteps.length === 0){
                     return;
                 }
 
+                hidePulsars();
                 scope.show.assistant = true;
                 scope.currentStep = quickstart.assistantIndex;
                 scope.steps = quickstart.mySteps;
@@ -5490,6 +5498,8 @@ module.directive('assistant', function(){
                 scope.currentStep = quickstart.assistantIndex;
                 if(!quickstart.assistantIndex){
                     scope.show.assistant = false;
+                    $('.pulsar-button').show();
+                    clearTimeout(token);
                 }
             };
 
@@ -5498,8 +5508,16 @@ module.directive('assistant', function(){
                 scope.currentStep = quickstart.assistantIndex;
             };
 
+            scope.seeLater = function(){
+                scope.show.assistant = false;
+                $('.pulsar-button').show();
+                clearTimeout(token);
+            };
+
             scope.closeAssistant = function(){
                 scope.show.assistant = false;
+                $('.pulsar-button').show();
+                clearTimeout(token);
                 quickstart.state.assistant = -1;
                 quickstart.save();
             };
@@ -5613,26 +5631,9 @@ module.directive('pulsar', function($compile){
                 }
                 placePulsar();
 
-                pulsarButton.on('click', function(){
-                    scope.pulsarInfos.steps = [];
-                    pulsars = $('[pulsar]');
-                    pulsars.each(function(index, element){
-                        let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
-                        infos.el = element;
-                        scope.pulsarInfos.steps.push(infos);
-                    });
-
-                    pulsarElement = $('<pulsar></pulsar>')
-                        .addClass(xPosition)
-                        .addClass(yPosition);
-                    if(pulsarInfos.className){
-                        pulsarInfos.className.split(' ').forEach(function(cls){
-                            pulsarElement.addClass(cls);
-                        });
-                    }
-                    pulsarButton.addClass('hidden');
-
-                    $('<div class="pulsar-layer"></div>')
+                var placeLayers = function(){
+                    $('.pulsar-layer').remove();
+                     $('<div class="pulsar-layer"></div>')
                         .width(element.offset().left - 10)
                         .height($(window).height())
                         .offset({ top: 0, left: 0 })
@@ -5660,6 +5661,28 @@ module.directive('pulsar', function($compile){
                         .hide()
                         .appendTo('body')
                         .fadeIn();
+                };
+
+                pulsarButton.on('click', function(){
+                    scope.pulsarInfos.steps = [];
+                    pulsars = $('[pulsar]');
+                    pulsars.each(function(index, element){
+                        let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
+                        infos.el = element;
+                        scope.pulsarInfos.steps.push(infos);
+                    });
+
+                    pulsarElement = $('<pulsar></pulsar>')
+                        .addClass(xPosition)
+                        .addClass(yPosition);
+                    if(pulsarInfos.className){
+                        pulsarInfos.className.split(' ').forEach(function(cls){
+                            pulsarElement.addClass(cls);
+                        });
+                    }
+                    pulsarButton.addClass('hidden');
+                    placeLayers();
+                    $(window).on('resize.placeLayers', placeLayers);
 
                     http().get('/infra/public/template/pulsar.html').done(function(html){
                         pulsarElement.html(
@@ -5671,6 +5694,7 @@ module.directive('pulsar', function($compile){
             }
 
             function undraw(){
+                $(window).off('resize.placeLayers');
                 pulsarButton.fadeOut(function(){ pulsarButton.remove() });
                 pulsarElement.fadeOut(function(){ pulsarElement.remove() });
                 $('.pulsar-layer').remove();

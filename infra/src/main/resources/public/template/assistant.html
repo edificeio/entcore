@@ -13,7 +13,7 @@
     </div>
     <hr>
     <div class="row">
-        <button ng-click="show.assistant = false;" class="cancel"><i18n>quickstart.see.later</i18n></button>
+        <button ng-click="seeLater()" class="cancel"><i18n>quickstart.see.later</i18n></button>
 
         <button class="right-magnet" ng-click="next()" ng-if="currentStep.index !== 0 && currentStep.index !== steps.length -1"><i18n>next</i18n></button>
         <button class="right-magnet" ng-click="next()" ng-if="currentStep.index === 0"><i18n>quickstart.discover</i18n></button>

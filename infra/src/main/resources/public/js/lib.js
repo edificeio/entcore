@@ -1025,9 +1025,10 @@ var quickstart = {
 
 		this.save();
 	},
+	loaded: false,
 	awaiters: [],
 	load: function(cb){
-		if(this.steps[this.types[model.me.type]]){
+		if(this.loaded){
 			if(typeof cb === 'function'){
 				cb();
 			}
@@ -1073,6 +1074,7 @@ var quickstart = {
 						});
 						this.assistantIndex = this.mySteps[this.state.assistant];
 					}
+					this.loaded = true;
 					this.awaiters.forEach(function(cb){
 						if(typeof cb === 'function'){
 							cb();
@@ -1081,6 +1083,7 @@ var quickstart = {
 				}.bind(this));
 			}
 			else{
+				this.loaded = true;
 				this.awaiters.forEach(function(cb){
 					if(typeof cb === 'function'){
 						cb();
