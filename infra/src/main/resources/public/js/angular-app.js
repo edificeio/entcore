@@ -5472,8 +5472,9 @@ module.directive('assistant', function(){
 
             var token;
             var hidePulsars = function(){
-                $('.pulsar-button').hide();
+                $('.pulsar-button').addClass('hidden');
                 token = setTimeout(hidePulsars, 50);
+                // cache TOUS les pulsars
             }
 
             quickstart.load(function(){
@@ -5498,7 +5499,7 @@ module.directive('assistant', function(){
                 scope.currentStep = quickstart.assistantIndex;
                 if(!quickstart.assistantIndex){
                     scope.show.assistant = false;
-                    $('.pulsar-button').show();
+                    $('.pulsar-button').removeClass('hidden');
                     clearTimeout(token);
                 }
             };
@@ -5510,13 +5511,13 @@ module.directive('assistant', function(){
 
             scope.seeLater = function(){
                 scope.show.assistant = false;
-                $('.pulsar-button').show();
+                $('.pulsar-button').removeClass('hidden');
                 clearTimeout(token);
             };
 
             scope.closeAssistant = function(){
                 scope.show.assistant = false;
-                $('.pulsar-button').show();
+                $('.pulsar-button').removeClass('hidden');
                 clearTimeout(token);
                 quickstart.state.assistant = -1;
                 quickstart.save();
@@ -5529,13 +5530,27 @@ module.directive('pulsar', function($compile){
     return {
         restrict: 'A',
         link: function(scope, element, attributes){
+
             if(!model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|quickstart')){
+                element.removeAttr('pulsar');
                 return;
             }
+            // wokflow console
+
             let pulsarInfos = scope.$eval(attributes.pulsar);
-            if(!model.me.hasWorkflow(pulsarInfos.workflow)){
+            //contenu des attrs
+
+            // if(!model.me.hasWorkflow(pulsarInfos.workflow)){
+            //     element.removeAttr('pulsar') // ne remonte pas dans liste steps
+            //     return;
+            // }
+
+            if(pulsarInfos.workflow && !model.me.hasWorkflow(pulsarInfos.workflow)){
+                element.removeAttr('pulsar')// ne remonte pas dans liste steps
+                //vire les pulsars qui ont pas les droits (pb si dernier & premier !!)
                 return;
             }
+
             scope.pulsarInfos = pulsarInfos;
             scope.pulsarInfos.steps = [];
 
@@ -5585,11 +5600,15 @@ module.directive('pulsar', function($compile){
                 let placePulsar = function(){
                     let deltaX = 0;
                     let deltaY = 0;
+
                     if(pulsarInfos.delta){
+                        pulsarInfos.delta = lang.translate(pulsarInfos.delta)
+
                         deltaX = parseInt(pulsarInfos.delta.split(' ')[0]);
                         deltaY = parseInt(pulsarInfos.delta.split(' ')[1]);
                     }
-                    
+
+
                     let xPositions = {
                         left: element.offset().left - 40,
                         right: element.offset().left + element.width() + 10,
@@ -5601,11 +5620,14 @@ module.directive('pulsar', function($compile){
                         bottom: element.offset().top + element.height() + 10,
                         center: element.offset().top + (element.height() / 2) - 15
                     };
+
+
                     if(!pulsarButton.hasClass('hidden')){
                         pulsarButton.offset({ left: xPositions[xPosition] + deltaX, top: yPositions[yPosition] + deltaY });
                     }
 
                     if(pulsarElement){
+
                         let left = xPositions[xPosition] - pulsarElement.children('.content').width() / 2;
                         if(yPosition === 'center' && xPosition === 'center'){
                             pulsarElement.addClass('middle');
@@ -5676,7 +5698,10 @@ module.directive('pulsar', function($compile){
                 pulsarButton.on('click', function(){
                     scope.pulsarInfos.steps = [];
                     pulsars = $('[pulsar]');
+                    //recup tt les pulsar
+
                     pulsars.each(function(index, element){
+                        //on recup les infos de chaque pulsar
                         let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
                         infos.el = element;
                         scope.pulsarInfos.steps.push(infos);
@@ -5693,6 +5718,8 @@ module.directive('pulsar', function($compile){
                     pulsarButton.addClass('hidden');
                     placeLayers();
                     $(window).on('resize.placeLayers', placeLayers);
+                    //scroll voir hauteur document ou bloquer scroll
+                    // ok pour xp on layers
 
                     http().get('/infra/public/template/pulsar.html').done(function(html){
                         pulsarElement.html(
@@ -5725,6 +5752,7 @@ module.directive('pulsar', function($compile){
                 undraw();
                 quickstart.goToAppStep(step);
                 angular.element(step.el).scope().paintPulsar();
+                //element(step.className) == celui de l'objet en cours
 
             };
 
