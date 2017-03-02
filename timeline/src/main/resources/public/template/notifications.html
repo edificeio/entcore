@@ -1,4 +1,4 @@
-<div class="twelve cell" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'top left'}">
+<div class="twelve cell" pulsar="{ index: 0, i18n: 'timeline.pulsar.notifications', position: 'top left', className: 'pulse-notifications'}">
 
 	<app-title>
 		<h1 data-reload class="application-title"><i18n>timeline.title</i18n></h1>
@@ -13,11 +13,17 @@
 
 		<div class="row drop-down-block" ng-class="{slided: display.slide}">
 
-			<div class="drop-down-label" ng-if="filtered.notificationTypes.length > 0" ng-click="display.slide = !display.slide">
-				<i class="arrow"></i>
-				<label>
-					<i18n>filters.title</i18n>
-				</label>
+			<div class="drop-down-label"
+				ng-if="filtered.notificationTypes.length > 0"
+				ng-click="display.slide = !display.slide">
+
+				<div class="twelve cell"
+					pulsar="{ index: 7, i18n: 'timeline.pulsar.filters', position: 'center right', className: 'pulse-filters'}">
+					<i class="arrow"></i>
+					<label>
+						<i18n>filters.title</i18n>
+					</label>
+				</div>
 			</div>
 			<div class="drop-down-info" ng-model="notificationTypes" ng-if="filtered.notificationTypes.length > 0">
 				<span><i18n>filters.unactives</i18n></span><span> [[unactivesFilters()]]</span>
