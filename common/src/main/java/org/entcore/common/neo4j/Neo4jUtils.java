@@ -114,8 +114,8 @@ public class Neo4jUtils {
 							commit(schema, s, newFiles, index);
 						}
 					}
-				} else {
-					log.error("Error reading neo4j directory : " + path, asyncResult.cause());
+				} else if (log.isDebugEnabled()) {
+					log.debug("Error reading neo4j directory : " + path, asyncResult.cause());
 				}
 			}
 
