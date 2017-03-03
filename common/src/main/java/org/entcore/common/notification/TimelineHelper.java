@@ -104,11 +104,12 @@ public class TimelineHelper {
 		event.putObject("params", params)
 			.putString("notificationName", notificationName)
 			.putObject("notification", notification)
-			.putObject("request", new JsonObject()
-				.putString("Host", Renders.getHost(request))
-				.putString("X-Forwarded-Proto", Renders.getScheme(request))
-								.putString("Accept-Language", request.headers().get("Accept-Language"))
-				);
+			.putObject("request", new JsonObject().putObject("headers",
+					new JsonObject()
+						.putString("Host", Renders.getHost(request))
+						.putString("X-Forwarded-Proto", Renders.getScheme(request))
+						.putString("Accept-Language", request.headers().get("Accept-Language"))
+			));
 		eb.send(TIMELINE_ADDRESS, event, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				JsonObject result = event.body();
