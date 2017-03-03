@@ -113,7 +113,7 @@ public class TimelineHelper {
 		eb.send(TIMELINE_ADDRESS, event, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				JsonObject result = event.body();
-				if(!"error".equals(result.getString("status", "error"))){
+				if("error".equals(result.getString("status", "error"))){
 					log.error("Error in timeline notification : " + result.getString("message"));
 				}
 			}
