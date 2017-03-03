@@ -12,8 +12,8 @@
     </nav>
 
     <div class="row">
-        <button ng-click="next()" ng-if="pulsarInfos.steps.length - 1 !== pulsarInfos.index"><i18n>next</i18n></button>
-        <button ng-click="next()" ng-if="pulsarInfos.steps.length - 1 === pulsarInfos.index"><i18n>quickstart.done</i18n></button>
+        <button ng-click="next()" ng-if="!isLastStep()"><i18n>next</i18n></button>
+        <button ng-click="next()" ng-if="isLastStep()"><i18n>quickstart.done</i18n></button>
         <button ng-click="previous()" class="cancel" ng-if="pulsarInfos.index > 0">
             <i18n>previous</i18n>
         </button>
