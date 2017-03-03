@@ -180,6 +180,11 @@ public class Neo4jRest implements GraphDatabase {
 	@Override
 	public void executeTransaction(JsonArray statements, Integer transactionId,
 								   boolean commit, final Handler<JsonObject> handler) {
+		executeTransaction(statements, transactionId, commit, true, handler);
+	}
+
+	public void executeTransaction(final JsonArray statements, final Integer transactionId,
+			final boolean commit, final boolean allowRetry, final Handler<JsonObject> handler) {
 		String uri = "/transaction";
 		if (transactionId != null) {
 			uri += "/" +transactionId;
@@ -217,6 +222,23 @@ public class Neo4jRest implements GraphDatabase {
 									json.removeField("errors");
 									handler.handle(json);
 								} else {
+									if (transactionId == null && commit && allowRetry && json.getArray("errors") != null && json.getArray("errors").size() > 0) {
+										JsonArray errors = json.getArray("errors");
+										for (Object o : errors) {
+											if (!(o instanceof JsonObject)) continue;
+											switch (((JsonObject) o).getString("code", "")) {
+												case "Neo.TransientError.Transaction.ConstraintsChanged":
+												case "Neo.TransientError.Transaction.DeadlockDetected":
+												case "Neo.TransientError.Transaction.InstanceStateChanged":
+												case "Neo.TransientError.Schema.SchemaModifiedConcurrently":
+													executeTransaction(statements, transactionId, commit, false, handler);
+													if (logger.isDebugEnabled()) {
+														logger.debug("Retry transaction : " + statements.encode());
+													}
+													return;
+											}
+										}
+									}
 									handler.handle(new JsonObject().putString("message",
 											json.getArray("errors", new JsonArray()).encode()));
 								}
