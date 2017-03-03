@@ -36,7 +36,9 @@ import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
@@ -147,6 +149,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			public void handle(final Either<String, JsonArray> event) {
 				if (event.isRight()) {
 					JsonArray ids = new JsonArray();
+					final Set<String> userIds = new HashSet<>();
 					final JsonArray users = event.right().getValue();
 					for (Object o: users) {
 						if (!(o instanceof JsonObject)) continue;
@@ -155,6 +158,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 							handler.handle(new Either.Left<String, JsonElement>("blocked.profile"));
 							return;
 						}
+						userIds.add(j.getString("id"));
 						if (Utils.isNotEmpty(j.getString("id")) && !j.getBoolean("federated", false)) {
 							ids.addString(j.getString("id"));
 						}
@@ -170,7 +174,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 						Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event2) {
-								if (users.size() == 1) {
+								if (userIds.size() == 1) {
 									handler.handle(new Either.Right<String, JsonElement>(users.<JsonObject>get(0)));
 								} else {
 									handler.handle(new Either.Right<String, JsonElement>(users));
@@ -178,7 +182,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 							}
 						});
 					} else {
-						if (users.size() == 1) {
+						if (userIds.size() == 1) {
 							handler.handle(new Either.Right<String, JsonElement>(users.<JsonObject>get(0)));
 						} else {
 							handler.handle(new Either.Right<String, JsonElement>(users));
