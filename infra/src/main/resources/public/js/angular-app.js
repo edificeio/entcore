@@ -5529,10 +5529,10 @@ module.directive('assistant', function(){
 module.directive('pulsar', function($compile){
     return {
         restrict: 'A',
+        scope: true,
         link: function(scope, element, attributes){
 
             if(!model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|quickstart')){
-                element.removeAttr('pulsar');
                 return;
             }
             // wokflow console
@@ -5540,13 +5540,8 @@ module.directive('pulsar', function($compile){
             let pulsarInfos = scope.$eval(attributes.pulsar);
             //contenu des attrs
 
-            // if(!model.me.hasWorkflow(pulsarInfos.workflow)){
-            //     element.removeAttr('pulsar') // ne remonte pas dans liste steps
-            //     return;
-            // }
-
             if(pulsarInfos.workflow && !model.me.hasWorkflow(pulsarInfos.workflow)){
-                element.removeAttr('pulsar')// ne remonte pas dans liste steps
+                element.data('skip-pulsar', 'true');// ne remonte pas dans liste steps
                 //vire les pulsars qui ont pas les droits (pb si dernier & premier !!)
                 return;
             }
@@ -5622,12 +5617,11 @@ module.directive('pulsar', function($compile){
                     };
 
 
-                    if(!pulsarButton.hasClass('hidden')){
-                        pulsarButton.offset({ left: xPositions[xPosition] + deltaX, top: yPositions[yPosition] + deltaY });
+                    if(pulsarButton.css('display') !== 'none'){
+                        pulsarButton.offset({ left: parseInt(xPositions[xPosition] + deltaX), top: parseInt(yPositions[yPosition] + deltaY) });
                     }
 
                     if(pulsarElement){
-
                         let left = xPositions[xPosition] - pulsarElement.children('.content').width() / 2;
                         if(yPosition === 'center' && xPosition === 'center'){
                             pulsarElement.addClass('middle');
@@ -5655,8 +5649,8 @@ module.directive('pulsar', function($compile){
                         }
 
                         pulsarElement.offset({
-                            left: left + deltaX,
-                            top: top + deltaY
+                            left: parseInt(left + deltaX),
+                            top: parseInt(top + deltaY)
                         });
                     }
                     setTimeout(placePulsar, 100);
@@ -5675,21 +5669,21 @@ module.directive('pulsar', function($compile){
                     $('<div class="pulsar-layer"></div>')
                         .width($(window).width() - element.offset().left + 20)
                         .height(element.offset().top - 10)
-                        .offset({ top: 0, left: element.offset().left - 10 })
+                        .offset({ top: 0, left: parseInt(element.offset().left - 10) })
                         .hide()
                         .appendTo('body')
                         .fadeIn();
                     $('<div class="pulsar-layer"></div>')
                         .width($(window).width() - element.width() - element.offset().left + 10)
                         .height(element.height() + 20)
-                        .offset({ top: element.offset().top - 10, left: element.offset().left + element.width() + 10 })
+                        .offset({ top: parseInt(element.offset().top - 10), left: parseInt(element.offset().left + element.width() + 10) })
                         .hide()
                         .appendTo('body')
                         .fadeIn();
                     $('<div class="pulsar-layer"></div>')
                         .width($(window).width() - element.offset().left + 10)
                         .height($(window).height() - element.height() - element.offset().top - 10)
-                        .offset({ top: element.offset().top + element.height() + 10, left: element.offset().left - 10 })
+                        .offset({ top: parseInt(element.offset().top + element.height() + 10), left: parseInt(element.offset().left - 10) })
                         .hide()
                         .appendTo('body')
                         .fadeIn();
@@ -5715,7 +5709,7 @@ module.directive('pulsar', function($compile){
                             pulsarElement.addClass(cls);
                         });
                     }
-                    pulsarButton.addClass('hidden');
+                    pulsarButton.hide();
                     placeLayers();
                     $(window).on('resize.placeLayers', placeLayers);
                     //scroll voir hauteur document ou bloquer scroll
@@ -5748,34 +5742,59 @@ module.directive('pulsar', function($compile){
                 pulsarButton.trigger('click');
             };
 
+            scope.isLastStep = function(){
+                return _.find(scope.pulsarInfos.steps, function(step){
+                    return step.index > scope.pulsarInfos.index;
+                }) === undefined;
+            };
+
             scope.goTo = function(step){
                 undraw();
-                quickstart.goToAppStep(step);
+                quickstart.goToAppStep(step.index);
                 angular.element(step.el).scope().paintPulsar();
-                //element(step.className) == celui de l'objet en cours
 
             };
 
             scope.next = function(){
                 undraw();
                 let index = quickstart.nextAppStep();
-                scope.pulsarInfos.steps.forEach(function(item){
+                if(_.findWhere(scope.pulsarInfos.steps, { index: index}) === undefined){
+                    if(_.find(scope.pulsarInfos.steps, function(item){ return item.index > index}) !== undefined){
+                        scope.next();
+                    }
+                    return;
+                }
+                for(let i = 0; i < scope.pulsarInfos.steps.length; i++){
+                    let item = scope.pulsarInfos.steps[i];
                     if(item.index === index){
+                        if($(item.el).data('skip-pulsar')){
+                            scope.next();
+                            return;
+                        }
                         angular.element(item.el).scope().paintPulsar();
                     }
-                });
-
+                }
             };
 
             scope.previous = function(){
                 undraw();
                 let index = quickstart.previousAppStep();
-                scope.pulsarInfos.steps.forEach(function(item){
+                if(_.findWhere(scope.pulsarInfos.steps, { index: index}) === undefined){
+                    if(_.find(scope.pulsarInfos.steps, function(item){ return item.index < index}) !== undefined){
+                        scope.previous();
+                    }
+                    return;
+                }
+                for(let i = 0; i < scope.pulsarInfos.steps.length; i++){
+                    let item = scope.pulsarInfos.steps[i];
                     if(item.index === index){
+                        if($(item.el).data('skip-pulsar')){
+                            scope.previous();
+                            return;
+                        }
                         angular.element(item.el).scope().paintPulsar();
                     }
-                });
-
+                }
             };
 
             quickstart.load(function(){
@@ -5785,8 +5804,6 @@ module.directive('pulsar', function($compile){
 
                 paintPulsar();
             });
-
-
         }
     }
 });
