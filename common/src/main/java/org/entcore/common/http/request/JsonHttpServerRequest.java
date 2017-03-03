@@ -30,6 +30,7 @@ import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.security.cert.X509Certificate;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class JsonHttpServerRequest implements HttpServerRequest {
 
@@ -121,6 +122,14 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public URI absoluteURI() {
+		final String uri = object.getString("absoluteURI", object.getString("uri"));
+		if (uri != null) {
+			try {
+				return new URI(uri);
+			} catch (URISyntaxException e) {
+
+			}
+		}
 		return null;
 	}
 
