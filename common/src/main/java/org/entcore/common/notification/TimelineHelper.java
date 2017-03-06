@@ -21,6 +21,7 @@ package org.entcore.common.notification;
 
 import fr.wseduc.webutils.http.Renders;
 
+import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -73,7 +74,7 @@ public class TimelineHelper {
 			UserInfos sender, List<String> recipients, String resource, JsonObject params){
 		notifyTimeline(request, notificationName, sender, recipients, resource, null, params);
 	}
-	public void notifyTimeline(final HttpServerRequest request, final String notificationName,
+	public void notifyTimeline(HttpServerRequest request, final String notificationName,
 			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params){
 		final JsonObject notification = notificationsLoader.getNotification(notificationName);
 
@@ -100,6 +101,9 @@ public class TimelineHelper {
 		if (date != null) {
 			event.putObject("date", new JsonObject().putNumber("$date", date));
 			params.removeField("timeline-publish-date");
+		}
+		if (request == null) {
+			request = new JsonHttpServerRequest(new JsonObject());
 		}
 		event.putObject("params", params)
 			.putString("notificationName", notificationName)
