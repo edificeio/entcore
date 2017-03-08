@@ -52,6 +52,7 @@ import org.entcore.auth.adapter.UserInfoAdapter;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.validation.StringValidation;
 
@@ -795,6 +796,7 @@ public class AuthController extends BaseController {
 
 	@Post("/sendResetPassword")
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
+	@IgnoreCsrf
 	public void sendResetPassword(final HttpServerRequest request) {
 		String login = request.formAttributes().get("login");
 		String email = request.formAttributes().get("email");
