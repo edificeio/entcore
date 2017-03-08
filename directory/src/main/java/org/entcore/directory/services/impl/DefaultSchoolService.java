@@ -348,7 +348,7 @@ public class DefaultSchoolService implements SchoolService {
 				"WHERE s.id = {structureId} " +
 				"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s)," +
 				"(pg)-[:HAS_PROFILE]->(p:Profile) " +
-				"WITH p, collect(u) as allUsers " +
+				"WITH p, collect(distinct u) as allUsers " +
 				"WITH p, FILTER(u IN allUsers WHERE u.activationCode IS NULL) as active, " +
 				"FILTER(u IN allUsers WHERE NOT(u.activationCode IS NULL)) as inactive " +
 				"WITH p, length (active) as active, length(inactive) as inactive " +
