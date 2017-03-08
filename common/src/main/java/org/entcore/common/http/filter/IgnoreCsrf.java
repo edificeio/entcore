@@ -17,31 +17,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-package org.entcore.directory.security;
+package org.entcore.common.http.filter;
 
-import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.entcore.common.http.filter.CsrfFilter;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
+import java.lang.annotation.*;
 
-import java.util.Set;
+@Retention(RetentionPolicy.SOURCE)
+@Documented
+@Target(ElementType.METHOD)
+public @interface IgnoreCsrf {
 
-public class UserbookCsrfFilter extends CsrfFilter {
-
-	public UserbookCsrfFilter(EventBus eb, Set<Binding> bindings) {
-		super(eb, bindings);
-	}
-
-	@Override
-	public void canAccess(final HttpServerRequest request, final Handler<Boolean> handler) {
-		if (request instanceof SecureHttpServerRequest && "GET".equals(request.method()) &&
-				(request.uri().contains("/userbook/api/edit") || request.uri().contains("/userbook/api/set"))) {
-			compareToken(request, handler);
-		} else {
-			handler.handle(true);
-		}
-	}
+	boolean value() default true;
 
 }

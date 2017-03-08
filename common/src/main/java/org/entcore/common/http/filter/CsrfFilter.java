@@ -19,33 +19,85 @@
 
 package org.entcore.common.http.filter;
 
+import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.DecodeException;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
 public class CsrfFilter implements Filter {
 
+	private static final Logger log = LoggerFactory.getLogger(CsrfFilter.class);
 	private static final List<String> securedMethods = Arrays.asList("POST", "PUT", "DELETE");
 	private final EventBus eb;
+	private final Set<Binding> bindings;
+	private Set<Binding> ignoreBinding;
 
-	public CsrfFilter(EventBus eb) {
+	public CsrfFilter(EventBus eb, Set<Binding> bindings) {
 		this.eb = eb;
+		this.bindings = bindings;
+	}
+
+	private void loadIgnoredMethods() {
+		ignoreBinding = new HashSet<>();
+		InputStream is = CsrfFilter.class.getClassLoader().getResourceAsStream(IgnoreCsrf.class.getSimpleName() + ".json");
+		if (is != null) {
+			BufferedReader r = null;
+			try {
+				r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+				String line;
+				while((line = r.readLine()) != null) {
+					final JsonObject ignore = new JsonObject(line);
+					if (ignore.getBoolean("ignore", false)) {
+						for (Binding binding: bindings) {
+							if (binding != null && ignore.getString("method", "").equals(binding.getServiceMethod())) {
+								ignoreBinding.add(binding);
+								break;
+							}
+						}
+					}
+				}
+			} catch (IOException | DecodeException e) {
+				log.error("Unable to load ignoreCsrf", e);
+			} finally {
+				if (r != null) {
+					try {
+						r.close();
+					} catch (IOException e) {
+						log.error("Close inputstream error", e);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
 	public void canAccess(final HttpServerRequest request, final Handler<Boolean> handler) {
+		if (ignoreBinding == null) {
+			loadIgnoredMethods();
+		}
 		if (request instanceof SecureHttpServerRequest && securedMethods.contains(request.method()) &&
-				isEmpty(((SecureHttpServerRequest) request).getAttribute("client_id"))) {
+				isEmpty(((SecureHttpServerRequest) request).getAttribute("client_id")) && !ignore(request)) {
 			compareToken(request, handler);
 		} else {
 			handler.handle(true);
@@ -56,9 +108,15 @@ public class CsrfFilter implements Filter {
 		UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject session) {
-				handler.handle(!(session == null || session.getObject("cache") == null ||
-						session.getObject("cache").getString("xsrf-token") == null ||
-						!session.getObject("cache").getString("xsrf-token").equals(request.headers().get("X-XSRF-TOKEN"))));
+				String XSRFToken = null;
+				if (session != null && session.getObject("cache") != null) {
+					XSRFToken = session.getObject("cache").getString("xsrf-token");
+					if (XSRFToken == null) { // TODO remove when support session cache persistence
+						XSRFToken = CookieHelper.get("XSRF-TOKEN", request);
+					}
+				}
+				handler.handle(XSRFToken != null && !XSRFToken.isEmpty() &&
+						XSRFToken.equals(request.headers().get("X-XSRF-TOKEN")));
 			}
 		});
 	}
@@ -66,6 +124,21 @@ public class CsrfFilter implements Filter {
 	@Override
 	public void deny(HttpServerRequest request) {
 		Renders.forbidden(request, "invalid.xsrf.token");
+	}
+
+	protected boolean ignore(HttpServerRequest request) {
+		if (!ignoreBinding.isEmpty()) {
+			for (Binding binding : ignoreBinding) {
+				if (!request.method().equals(binding.getMethod().name())) {
+					continue;
+				}
+				Matcher m = binding.getUriPattern().matcher(request.path());
+				if (m.matches()) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }
