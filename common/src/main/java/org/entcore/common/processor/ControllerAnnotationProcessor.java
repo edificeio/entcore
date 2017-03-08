@@ -22,6 +22,7 @@ package org.entcore.common.processor;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.controller.RightsController;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
 
@@ -38,7 +39,8 @@ import java.util.*;
 
 @SupportedAnnotationTypes({"fr.wseduc.security.SecuredAction", "fr.wseduc.bus.BusAddress",
 		"fr.wseduc.rs.Get", "fr.wseduc.rs.Post", "fr.wseduc.rs.Delete", "fr.wseduc.rs.Put",
-		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc"})
+		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc",
+		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf"})
 @SupportedSourceVersion(SourceVersion.RELEASE_7)
 public class ControllerAnnotationProcessor extends fr.wseduc.processor.ControllerAnnotationProcessor {
 
@@ -46,7 +48,26 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 	public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		super.process(annotations, roundEnv);
 		resourceFilter(roundEnv);
+		ignoreCsrf(roundEnv);
 		return false;
+	}
+
+	private void ignoreCsrf(RoundEnvironment roundEnv) {
+		final Map<String,Set<String>> filtersMap = new HashMap<>();
+		Set<String> filters = new TreeSet<>();
+		filtersMap.put("IgnoreCsrf", filters);
+		for (Element element : roundEnv.getElementsAnnotatedWith(IgnoreCsrf.class)) {
+			IgnoreCsrf annotation = element.getAnnotation(IgnoreCsrf.class);
+			TypeElement clazz = (TypeElement) element.getEnclosingElement();
+			if(annotation == null || !isMethod(element) || clazz == null) {
+				continue;
+			}
+			filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" +
+					element.getSimpleName().toString() + "\", \"ignore\" :  " + annotation.value() + " }");
+		}
+		if (filters.size() > 0) {
+			writeFile("", filtersMap);
+		}
 	}
 
 	private void resourceFilter(RoundEnvironment roundEnv) {

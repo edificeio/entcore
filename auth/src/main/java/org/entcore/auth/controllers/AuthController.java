@@ -387,6 +387,7 @@ public class AuthController extends BaseController {
 							long timeout = rememberMe ? 3600l * 24 * 365 : container.config()
 									.getLong("cookie_timeout", Long.MIN_VALUE);
 							CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
+							CookieHelper.set("authenticated", "true", timeout, request);
 							redirect(request, callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?") ?
 									callBack.replaceFirst("/auth/login", "") : callBack, "");
 						} else {
@@ -453,6 +454,7 @@ public class AuthController extends BaseController {
 				public void handle(Boolean deleted) {
 					if (Boolean.TRUE.equals(deleted)) {
 						CookieHelper.set("oneSessionId", "", 0l, request);
+						CookieHelper.set("authenticated", "", 0l, request);
 					}
 					redirect(request, callback.toString(), "");
 				}

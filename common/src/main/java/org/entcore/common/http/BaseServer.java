@@ -88,7 +88,7 @@ public abstract class BaseServer extends Server {
 		eventStoreFactory.setVertx(vertx);
 
 		if (config.getBoolean("csrf-token", false)) {
-			addFilter(new CsrfFilter(getEventBus(vertx)));
+			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
 		}
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {

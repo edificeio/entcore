@@ -33,6 +33,7 @@ import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
@@ -297,6 +298,7 @@ public class UserController extends BaseController {
 	@Post("/user/function/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AddFunctionFilter.class)
+	@IgnoreCsrf
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		bodyToJson(request, pathPrefix + "addFunction", new Handler<JsonObject>() {

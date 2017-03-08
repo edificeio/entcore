@@ -47,7 +47,7 @@ public class Directory extends BaseServer {
 		clearFilters();
 		setOauthClientGrant(true);
 		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
-		addFilter(new UserbookCsrfFilter(eb));
+		addFilter(new UserbookCsrfFilter(eb, securedUriBinding));
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 

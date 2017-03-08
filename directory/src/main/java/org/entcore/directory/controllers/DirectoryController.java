@@ -30,6 +30,7 @@ import fr.wseduc.webutils.security.BCrypt;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
@@ -87,6 +88,7 @@ public class DirectoryController extends BaseController {
 	@Post("/import")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructuresByExternalId.class)
+	@IgnoreCsrf
 	public void launchImport(final HttpServerRequest request) {
 		final JsonObject json = new JsonObject()
 				.putString("action", "import")
@@ -101,6 +103,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/transition")
 	@SecuredAction("directory.transition")
+	@IgnoreCsrf
 	public void launchTransition(final HttpServerRequest request) {
 		JsonObject t = new JsonObject().putString("action", "transition");
 		String structureId = request.params().get("structureExternalId");
@@ -118,6 +121,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/duplicates/mark")
 	@SecuredAction("directory.duplicates.mark")
+	@IgnoreCsrf
 	public void markDuplicates(final HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().putString("action", "mark-duplicates"), new Handler<Message<JsonObject>>() {
 			@Override
@@ -127,14 +131,9 @@ public class DirectoryController extends BaseController {
 		});
 	}
 
-//	@Post("/automerge")
-//	public void launchAutoMerge(HttpServerRequest request) {
-//		eb.send("entcore.feeder", new JsonObject().putString("action", "automerge-duplicates"));
-//		request.response().end();
-//	}
-
 	@Post("/export")
 	@SecuredAction("directory.export")
+	@IgnoreCsrf
 	public void launchExport(HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().putString("action", "export"));
 		request.response().end();
@@ -160,6 +159,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/school")
 	@SecuredAction("directory.school.create")
+	@IgnoreCsrf
 	public void createSchool(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -200,6 +200,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/class/:schoolId")
 	@SecuredAction("directory.class.create")
+	@IgnoreCsrf
 	public void createClass(final HttpServerRequest request) {
 		final String schoolId = request.params().get("schoolId");
 		if (schoolId == null || schoolId.trim().isEmpty()) {
@@ -299,6 +300,7 @@ public class DirectoryController extends BaseController {
 
 	@Post("/api/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@IgnoreCsrf
 	public void createUser(final HttpServerRequest request) {
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
