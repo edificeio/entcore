@@ -20,7 +20,7 @@ import { UsersStore } from '../../store'
                         [comboModel]="filter.comboModel"
                         [(outputModel)]="filter.outputModel"
                         [title]="filter.label | translate"
-                        [display]="filter.display || translateFunction"
+                        [display]="filter.display || bundles.translate"
                         [orderBy]="filter.order || orderer"
                         [filter]="filter.filterProp"
                     ></multi-combo>
@@ -43,7 +43,8 @@ import { UsersStore } from '../../store'
 })
 export class UserFilters implements OnInit, OnDestroy {
 
-    constructor(private bundles: BundlesService,
+    constructor(
+        public bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
         private usersStore: UsersStore,
@@ -64,10 +65,6 @@ export class UserFilters implements OnInit, OnDestroy {
 
     private orderer(a){
         return a
-    }
-
-    private translateFunction = (key) => {
-        return this.bundles.translate(key)
     }
 
     private deselect(filter, item) {

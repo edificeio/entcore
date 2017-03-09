@@ -7,7 +7,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@
 })
 export class AdminRoot implements OnInit {
 
-    constructor(private _cdRef: ChangeDetectorRef){}
+    constructor(private cdRef: ChangeDetectorRef){}
 
     ngOnInit() {}
 

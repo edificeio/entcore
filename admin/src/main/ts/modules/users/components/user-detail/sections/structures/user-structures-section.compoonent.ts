@@ -26,7 +26,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../../../s
                         [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableStructure"
-                        (onSelect)="wrap(user?.addStructure, $event.id, 0, $event.id)">
+                        (onSelect)="ls.perform($event.id, user?.addStructure($event.id), 0)">
                     </list-component>
                 </div>
             </light-box>
@@ -35,7 +35,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../../../s
                     <a class="action" [routerLink]="['/admin', structure.id, 'users', user.id]">
                         {{ structure.name }}
                     </a>
-                    <i  class="fa fa-times action" (click)="wrap(user?.removeStructure, structure.id, 0, structure.id)"
+                    <i  class="fa fa-times action" (click)="ls.perform(structure.id, user?.removeStructure(structure.id), 0)"
                         [tooltip]="'delete.this.structure' | translate"
                         [ngClass]="{ disabled: ls.isLoading(structure.id)}"></i>
                 </li>
@@ -89,11 +89,6 @@ export class UserStructuresSection extends AbstractSection {
     // Display
     private display = (s: {id: string, name: string}): string => {
         return s.name
-    }
-
-    // Loading wrapper
-    protected wrap = (func, label, delay = 0, ...args) => {
-        return this.ls.wrap(func, label, {delay: delay, cdRef: this.cdRef, binding: this.user}, ...args)
     }
 
     //Routing

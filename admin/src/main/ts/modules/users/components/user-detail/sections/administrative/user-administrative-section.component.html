@@ -38,7 +38,7 @@
     </form>
     <div>
         <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || ls.isLoading('user.update', 1)"
-            (click)="wrap(details.update, 'user.update')" class="relative">
+            (click)="updateDetails()" class="relative">
                 <spinner-cube class="button-spinner" waitingFor="user.update"></spinner-cube>
                 <s5l>save.modifications</s5l>
             </button>

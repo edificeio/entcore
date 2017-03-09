@@ -1,6 +1,5 @@
 import { Component, Input, Output, OnInit, EventEmitter,
     ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
-import { BundlesService } from 'sijil'
 
 import { UserModel } from '../../../../store'
 import { UserListService, UserlistFiltersService } from '../../../../services'
@@ -62,7 +61,6 @@ import { Subscription } from 'rxjs/Subscription'
 export class UserList implements OnInit, OnDestroy {
 
     constructor(private cdRef: ChangeDetectorRef,
-        private bundlesService: BundlesService,
         public userListService: UserListService,
         private listFilters: UserlistFiltersService){}
 

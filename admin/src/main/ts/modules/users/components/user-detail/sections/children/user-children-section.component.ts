@@ -25,7 +25,7 @@ import { UserModel } from '../../../../../../store'
                         [display]="userListService.display"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableChild"
-                        (onSelect)="wrap(details?.addChild, $event.id, 0, $event)">
+                        (onSelect)="ls.perform($event.id, details?.addChild($event), 0)">
                     </list-component>
                 </div>
             </light-box>
@@ -34,7 +34,7 @@ import { UserModel } from '../../../../../../store'
                     <a class="action" [routerLink]="['..', child.id]">
                         {{ child.lastName | uppercase }} {{ child.firstName }}
                     </a>
-                    <i  class="fa fa-times action" (click)="wrap(details?.removeChild, child.id, 0, child)"
+                    <i  class="fa fa-times action" (click)="ls.perform(child.id, details?.removeChild(child), 0)"
                         [tooltip]="'delete.this.child' | translate"
                         [ngClass]="{ disabled: ls.isLoading(child.id)}"></i>
                 </li>

@@ -108,5 +108,14 @@
     "blocking.duplicate": "Bloquant",
     "blocking.duplicate.tooltip": "Le doublon bloque l'activation des utilisateurs concernés",
     "minor.duplicate": "Mineur",
-    "minor.duplicate.tooltip": "Le doublon est sans conséquence"
+    "minor.duplicate.tooltip": "Le doublon est sans conséquence",
+    "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
+    "notify.user.update.title": "Modifications effectuées",
+    "notify.user.update.content": "Les données de l'utilisateur {{user}} ont bien été mises à jour.",
+    "notify.user.update.error.title": "Erreur lors de la modification",
+    "notify.user.update.error.content": "L'utilisateur {{user}} n'a pas pu être mis à jour.",
+    "notify.user.toggleblock.title": "{{blocked ? Blocage : Déblocage}} effectué",
+    "notify.user.toggleblock.content": "L'utilisateur {{user}} est maintenant {{blocked ? bloqué(e) : débloqué(e)}}.",
+    "notify.user.toggleblock.error.title": "Erreur lors du {{blocked ? blocage : déblocage}}",
+    "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}."
 }

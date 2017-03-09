@@ -24,10 +24,6 @@ export abstract class AbstractSection {
         return globalStore.structures.data.find(s => s.id === id)
     }
 
-    protected wrap = (func, label, delay = 0, ...args) => {
-        return this.ls.wrap(func, label, {delay: delay, cdRef: this.cdRef, binding: this.details}, ...args)
-    }
-
     protected abstract onUserChange()
 
 }

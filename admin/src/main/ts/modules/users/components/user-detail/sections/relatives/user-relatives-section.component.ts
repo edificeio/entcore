@@ -25,7 +25,7 @@ import { UserModel } from '../../../../../../store'
                         [display]="userListService.display"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableRelative"
-                        (onSelect)="wrap(details?.addRelative, $event.id, 0, $event)">
+                        (onSelect)="ls.perform($event.id, details?.addRelative($event), 0)">
                     </list-component>
                 </div>
             </light-box>
@@ -34,7 +34,7 @@ import { UserModel } from '../../../../../../store'
                     <a class="action" [routerLink]="['..', parent.id]">
                         {{ parent.lastName | uppercase }} {{ parent.firstName }}
                     </a>
-                    <i  class="fa fa-times action" (click)="wrap(details?.removeRelative, parent.id, 0, parent)"
+                    <i  class="fa fa-times action" (click)="ls.perform(parent.id, details?.removeRelative(parent), 0)"
                         [tooltip]="'delete.this.relative' | translate"
                         [ngClass]="{ disabled: ls.isLoading(parent.id) }"></i>
                 </li>

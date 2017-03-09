@@ -59,7 +59,7 @@ export class UserModel extends Model<UserModel> {
         })
     }
 
-    async mergeDuplicate(duplicateId: string) {
+    async mergeDuplicate(duplicateId: string) : Promise<{ id: string } | { id: string, structure: string }> {
         await this.http.put(`/directory/duplicate/merge/${this.id}/${duplicateId}`)
         let duplicate = this.duplicates.find(d => d.id === duplicateId)
         this.duplicates = this.duplicates.filter(d => d.id !== duplicateId)

@@ -372,7 +372,7 @@ a.old-console {
     padding-left: 20px;
 }
 
-/** Light boxes **/
+/* Light boxes */
 light-box {
     div[content] {
         border-radius: 10px;
@@ -396,8 +396,7 @@ light-box {
     }
 }
 
-/** TOOLTIP **/
-
+/* Tooltips */
 body > div.tooltip {
     padding: 2px 10px;
     font-size: 11px;
@@ -412,7 +411,6 @@ body > div.tooltip.shown {
 }
 
 /* Portal */
-
 ux-portal {
     > header {
         position: fixed !important;
@@ -487,8 +485,7 @@ side-panel {
     }
 }
 
-/* ITEM TREE */
-
+/* Item tree */
 item-tree {
 
     ul {
@@ -530,7 +527,7 @@ item-tree {
     }
 }
 
-/* spinners */
+/* "Spinners" */
 div.spinner-wrapper{
     z-index: 2;
     background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.3), transparent);
@@ -625,7 +622,6 @@ div.panel-message {
 }
 
 /* Panel sections */
-
 .panel-section-header {
     background: $main;
     border-bottom: 3px solid $accent;
@@ -653,6 +649,8 @@ div.panel-message {
     }
 }
 
+/*** Lists ***/
+
 /* Generic lists */
 list-component {
     li {
@@ -670,9 +668,6 @@ list-component {
         }
     }
 }
-
-
-/* Lists */
 
 /* User list */
 user-list {
@@ -731,8 +726,8 @@ user-detail {
         padding-top: 25px !important;
     }
 }
-/* MULTI-COMBO */
 
+/* Multi-combo */
 multi-combo {
     >button {
         min-width: 150px;
@@ -856,3 +851,20 @@ multi-combo {
     }
 }
 
+/* Notifications */
+
+.notification {
+    div.notify-title {
+        margin-bottom: 1em;
+        font-size: 0.9em;
+    }
+    div.notify-content {
+        font-size: 0.8em;
+    }
+    div.notify-footer {
+        font-size: 0.7em;
+        margin-top: 1em;
+        padding-top: 1em;
+        border-top: 1px solid white;
+    }
+}

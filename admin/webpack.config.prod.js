@@ -12,7 +12,8 @@ module.exports = webpackMerge(commonConfig, {
     devtool: 'source-map',
 
     entry: {
-        'admin': path_prefix + '/ts/app.aot.ts'
+        'admin': path_prefix + '/ts/app.aot.ts',
+        'vendor': path_prefix + '/ts/libs/vendor.aot.ts'
     },
 
     output: {
@@ -35,7 +36,7 @@ module.exports = webpackMerge(commonConfig, {
 
     plugins: [
         new webpack.optimize.CommonsChunkPlugin({
-            name: ['admin', 'polyfills']
+            name: ['admin', 'vendor', 'polyfills']
         }),
         new webpack.DefinePlugin({
             'process.env': {

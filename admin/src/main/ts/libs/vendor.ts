@@ -21,3 +21,9 @@ import 'sijil'
 
 // Toolkit
 import 'toolkit'
+
+//Jquery
+import 'jquery'
+
+//Noty
+import 'noty'

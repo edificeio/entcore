@@ -59,8 +59,8 @@ gulp.task('admin2:copymod', function() {
 })
 
 gulp.task('admin2:watch', function() {
-    gulp.watch(basePath + '/resources/**/*', ['admin2-copymod'])
-    //gulp.watch(basePath + '/ts/**/*.ts', ['admin2-ts'])
+    gulp.watch(basePath + '/resources/**/*', ['admin2:copymod'])
+    //gulp.watch(basePath + '/ts/**/*.ts', ['admin2:ts'])
 })
 
 gulp.task('admin2:dev-server', function() {

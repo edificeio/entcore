@@ -30,7 +30,7 @@ import { Router } from '@angular/router'
                         <s5l>minor.duplicate</s5l>
                     </span>
                     <div>
-                        <button (click)="wrap(user.separateDuplicate, duplicate.id, duplicate.id)" [disabled]="ls.isLoading(duplicate.id)">
+                        <button (click)="ls.perform(duplicate.id, user.separateDuplicate(duplicate.id))" [disabled]="ls.isLoading(duplicate.id)">
                             <spinner-cube class="button-spinner" waitingFor="duplicate.id"></spinner-cube>
                             <s5l>separate</s5l>
                         </button>
@@ -82,14 +82,10 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
         return sIds.find(id => globalStore.structures.data.some(struct => struct.id === id))
     }
 
-    protected wrap = (func, label, ...args) => {
-        return this.ls.wrap(func, label, {delay: 0, cdRef: this.cdRef, binding: this.user}, ...args)
-    }
-
     private merge = (dupId) => {
-        return this.wrap(this.user.mergeDuplicate, dupId, dupId).then(res => {
-            if(res.id !== this.user.id && res.structure) {
-                this.router.navigate(['/admin', res.structure, 'users', res.id])
+        return this.ls.perform(dupId, this.user.mergeDuplicate(dupId)).then(res => {
+            if(res.id !== this.user.id && res['structure']) {
+                this.router.navigate(['/admin', res['structure'], 'users', res.id])
             }
         })
     }

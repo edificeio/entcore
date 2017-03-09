@@ -10,7 +10,7 @@ import { UxModule } from './modules'
 import { AdminRoot, Portal, Home, StructureCard, StructureHome, ImportsExportsCard, QuickActionsCard, UserSearchCard } from './components'
 import { SessionResolve, StructureResolve, StructuresResolve, I18nResolve } from './routing'
 import { routes } from './routes'
-import { LoadingService, SijilLabelsService, UserListService, UserlistFiltersService } from './services'
+import { LoadingService, SijilLabelsService, UserListService, UserlistFiltersService, NotifyService } from './services'
 
 @NgModule({
     imports: [
@@ -42,7 +42,8 @@ import { LoadingService, SijilLabelsService, UserListService, UserlistFiltersSer
         StructuresResolve,
         I18nResolve,
         LoadingService,
-        SijilLabelsService
+        SijilLabelsService,
+        NotifyService
     ],
     bootstrap: [ AdminRoot ]
 })

@@ -21,15 +21,18 @@ export class LoadingService {
             (pending && this.timers.has(something))
     }
 
-    perform<T>(something, promise: Promise<T>, timer?: number) : Promise<T>{
+    perform<T>(something: any, promise: Promise<T>, timer?: number) : Promise<T>{
         this.load(something, timer)
-        return promise.then(_ => {
-             this.done(something)
-             return _
+        return promise.catch( err => {
+            this.done(something)
+            throw err
+        }).then( _ => {
+            this.done(something)
+            return _
         })
     }
 
-    load(something, timer?: number) : void {
+    load(something: any, timer?: number) : void {
         if(this.timers.has(something)){
             window.clearTimeout(this.timers.get(something))
         }
@@ -65,10 +68,11 @@ export class LoadingService {
             func(...args)
 
         promise.catch((err) => {
-            console.error(err)
-        }).then(() => {
             this.done(label)
-            if(props.cdRef) props.cdRef.markForCheck()
+            throw err
+        }).then(_ => {
+            this.done(label)
+            return _
         })
         if(props.cdRef) props.cdRef.markForCheck()
 
