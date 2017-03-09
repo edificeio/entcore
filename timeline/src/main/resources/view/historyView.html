@@ -70,7 +70,7 @@
 					<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() != notificationTypes.selection().length">
 						<b><span><i18n>filters.history.unselected</i18n></span></b>
 					</div>
-					<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length">
+					<div class="info tuto" ng-if="notifications.all.length === 0 && notificationTypes.length() === notificationTypes.selection().length && notifications.lastPage">
 						<b><span><i class="sad-face"></i><i18n>timeline.history.empty</i18n></span></b>
 					</div>
 
