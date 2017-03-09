@@ -69,20 +69,26 @@ model.build = function (){
 			var that = this;
 
 			if(that.loading || (paginate && that.lastPage))
-				return
+				return;
 
 			var types = model.notificationTypes.selection();
 			if(model.notificationTypes.noFilter){
 				types = model.notificationTypes.all;
 			}
 
+			if(model.notificationTypes.all.length === 0) {
+				that.lastPage = true;
+				return;
+			}
 			if(!types.length){
 				return;
 			}
 
-			var params = { type: _.map(types, function(type){
-				return type.data;
-			})};
+			var params = {
+				type: _.map(types, function(type){
+					return type.data;
+				})
+			};
 			params.page = that.page;
 			if(this.mine)
 				params.mine = 1
@@ -97,6 +103,7 @@ model.build = function (){
 					that.page++;
 				} else {
 					that.lastPage = true;
+					model.trigger('notifications.change')
 				}
 
 			}).error(function(data){
