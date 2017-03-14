@@ -82,8 +82,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
-				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 3) as duplicates " +
-				"WHERE LENGTH(duplicates) = 0 " +
+				"OPTIONAL MATCH (p:Profile) " +
+				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 3) as duplicates, p.blocked as blockedProfile " +
+				"WHERE LENGTH(duplicates) = 0 AND (blockedProfile IS NULL OR blockedProfile = false) " +
 				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone} " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile ";
 		Map<String, Object> params = new HashMap<>();
