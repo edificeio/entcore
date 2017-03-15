@@ -18,12 +18,12 @@ export class UserResolve implements Resolve<UserModel | Error> {
         if(user) {
              return this.ls.perform('users-content', user.userDetails.sync()
                 .catch((err) => {
-                    this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: true})
+                    this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
                 }).then(() => {
                     return user
                 }))
         } else {
-            this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: true})
+            this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
         }
     }
 }

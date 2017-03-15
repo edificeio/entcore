@@ -46,7 +46,7 @@
                 order="name"
                 display="name"
                 [flatten]="structureFilter && structureFilter.trim() ? ['children'] : []"
-                [filter]="{ name : structureFilter && structureFilter.trim() }"
+                [filter]="{ name : structureFilter?.trim() }"
                 (onSelect)="currentStructure = $event"
                 [lastSelected]="currentStructure"></item-tree>
         </side-panel>
