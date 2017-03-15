@@ -6,7 +6,7 @@ import { AbstractControl } from '@angular/forms'
     template: `
         <div *ngIf="ref && ref.errors && (ref.dirty || ref.touched)" class="form-errors">
             <div *ngFor="let error of getErrorsArray()">
-                <span>{{ 'form.error.' + error.name | translate:error.value }}</span>
+                <span>{{ 'form.error.' + error.name | translate: error.value }}</span>
             </div>
         </div>
     `,

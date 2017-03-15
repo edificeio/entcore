@@ -18,7 +18,7 @@ import { GroupsStore } from './store'
         FormsModule,
         UxModule,
         SijilModule.forChild(),
-        InfraComponentsModule,
+        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

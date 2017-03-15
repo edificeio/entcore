@@ -11,6 +11,7 @@ import { UserDetail, UsersRoot, UserList, UserFilters, UserError, UserCreate,
     UserStructuresSection, UserDuplicatesSection } from './components'
 import { UserResolve, UsersResolve, routes } from './routing'
 import { UsersStore } from './store'
+import { UserlistFiltersService } from '../../services'
 
 @NgModule({
     imports: [
@@ -18,7 +19,7 @@ import { UsersStore } from './store'
         FormsModule,
         UxModule,
         SijilModule.forChild(),
-        InfraComponentsModule,
+        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [
@@ -38,7 +39,8 @@ import { UsersStore } from './store'
     providers: [
         UserResolve,
         UsersResolve,
-        UsersStore
+        UsersStore,
+        UserlistFiltersService
     ],
     exports: [
         RouterModule

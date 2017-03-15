@@ -28,8 +28,7 @@ import { Subscription } from 'rxjs/Subscription'
             </div>
         </side-layout>
     `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [UserlistFiltersService]
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersRoot implements OnInit, OnDestroy {
 

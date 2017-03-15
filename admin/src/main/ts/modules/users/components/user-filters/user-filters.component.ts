@@ -20,7 +20,7 @@ import { UsersStore } from '../../store'
                         [comboModel]="filter.comboModel"
                         [(outputModel)]="filter.outputModel"
                         [title]="filter.label | translate"
-                        [display]="filter.display || bundles.translate"
+                        [display]="filter.display || translate"
                         [orderBy]="filter.order || orderer"
                         [filter]="filter.filterProp"
                     ></multi-combo>
@@ -44,7 +44,7 @@ import { UsersStore } from '../../store'
 export class UserFilters implements OnInit, OnDestroy {
 
     constructor(
-        public bundles: BundlesService,
+        private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
         private usersStore: UsersStore,
@@ -59,6 +59,8 @@ export class UserFilters implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.dataSubscriber.unsubscribe()
     }
+
+    translate = (...args) => { return (<any> this.bundles.translate)(...args) }
 
     private dataSubscriber : Subscription
     private structure: StructureModel = this.usersStore.structure
