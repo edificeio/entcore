@@ -9,22 +9,17 @@ import { routing } from './routing/routing.utils'
 
 export let routes : Routes = [
 	{
-		path: '',
+		path: 'admin',
 		resolve: { session: SessionResolve, structures : StructuresResolve, i18n: I18nResolve },
-		children: [
-			{
-				path: 'admin',
-				component: Portal,
-				children: [
-					{ path: '', component: Home },
-					{ path: ':structureId', resolve: { structure: StructureResolve }, children: [
-						{ path: '', 		component: StructureHome },
-						{ path: 'users', 	loadChildren: './modules/users/users.module#UsersModule' },
-						{ path: 'groups', 	loadChildren: './modules/groups/groups.module#GroupsModule' }
-					]}
-				]
-			}
-		]
+		component: Portal,
+			children: [
+				{ path: '', component: Home },
+				{ path: ':structureId', resolve: { structure: StructureResolve }, children: [
+					{ path: '', 		component: StructureHome },
+					{ path: 'users', 	loadChildren: './modules/users/users.module#UsersModule' },
+					{ path: 'groups', 	loadChildren: './modules/groups/groups.module#GroupsModule' }
+				]}
+			]
 	},
 	{ path: '**', redirectTo: '/admin' }
 ]
