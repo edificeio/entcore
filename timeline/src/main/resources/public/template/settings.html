@@ -1,3 +1,4 @@
+
 <div ng-controller="Personalization">
 	<div ng-class="{ 'toggle-panel': true, hide: !showPanel }">
 		<div class="toggle cell">
@@ -47,11 +48,14 @@
 
 		</div>
 	</div>
-	<ul class="icons-tabs">
+
+	<ul class="icons-tabs row"
+		pulsar="{ index: 5, i18n: 'timeline.pulsar.settings', position: 'center left', className: 'pulse-settings'}">
+
 		<li ng-click="togglePanel($event)"
-			ng-class="{ active: showPanel }"
-			pulsar="{ index: 5, i18n: 'timeline.pulsar.settings', position: 'bottom left', className: 'pulse-settings'}">
-				<i class="tools"></i>
+			ng-class="{ active: showPanel }">
+				<i class="tools">
+				</i>
 		</li>
 	</ul>
 </div>
