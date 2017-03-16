@@ -5468,6 +5468,11 @@ module.directive('assistant', function(){
         restrict: 'E',
         templateUrl: '/infra/public/template/assistant.html',
         link: function(scope, element, attributes){
+
+            if($(window).width() <= ui.breakpoints.fatMobile){
+                return;
+            }
+
             scope.show = { assistant: false };
 
             var token;
