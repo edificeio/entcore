@@ -2,22 +2,29 @@
     <div class="logo-quickstart"></div>
     <a class="ignore" ng-click="closeAssistant()"><i18n>ignore</i18n></a>
 
-    <div ng-include="currentStep.path" class="block-container"></div>
 
-    <div class="row">
-        <nav class="dots">
-            <ul>
-                <li ng-repeat="step in steps" class="dot" ng-click="goTo(step)" ng-class="{ active: step.index === currentStep.index }"></li>
-            </ul>
-        </nav>
-    </div>
-    <hr>
-    <div class="row">
-        <button ng-click="seeLater()" class="cancel"><i18n>quickstart.see.later</i18n></button>
+    <div class="reduce-block-eight">
+        <div ng-include="currentStep.path" class="block-container"></div>
 
-        <button class="right-magnet" ng-click="next()" ng-if="currentStep.index !== 0 && currentStep.index !== steps.length -1"><i18n>next</i18n></button>
-        <button class="right-magnet" ng-click="next()" ng-if="currentStep.index === 0"><i18n>quickstart.discover</i18n></button>
-        <button class="right-magnet" ng-click="next()" ng-if="currentStep.index === steps.length - 1"><i18n>quickstart.done</i18n></button>
-        <button class="cancel right-magnet" ng-click="previous()" ng-if="currentStep.index !== 0"><i18n>previous</i18n></button>
+        <div class="row">
+            <nav class="dots">
+                <ul>
+                    <li ng-repeat="step in steps" class="dot" ng-click="goTo(step)" ng-class="{ active: step.index === currentStep.index }"></li>
+                </ul>
+            </nav>
+        </div>
+        <hr>
+        <div class="row">
+
+            <button ng-click="seeLater()" class="cancel zero-mobile"><i18n>quickstart.see.later</i18n></button>
+            <div class="right-magnet">
+                <button class="right-magnet" ng-click="next()" ng-if="currentStep.index !== 0 && currentStep.index !== steps.length -1"><i18n>next</i18n></button>
+                <button class="right-magnet" ng-click="next()" ng-if="currentStep.index === 0"><i18n>quickstart.discover</i18n></button>
+                <button class="right-magnet" ng-click="next()" ng-if="currentStep.index === steps.length - 1"><i18n>quickstart.done</i18n></button>
+                <button class="cancel right-magnet" ng-click="previous()" ng-if="currentStep.index !== 0"><i18n>previous</i18n></button>
+            </div>
+            <button ng-click="seeLater()" class="cancel zero"><i18n>quickstart.see.later</i18n></button>
+        </div>
     </div>
+
 </lightbox>
