@@ -5532,13 +5532,18 @@ module.directive('pulsar', function($compile){
         scope: true,
         link: function(scope, element, attributes){
 
-            if(!model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|quickstart')){
+            if($(window).width() <= ui.breakpoints.tablette || !model.me.hasWorkflow('org.entcore.portal.controllers.PortalController|quickstart')){
                 return;
             }
-            // wokflow console
+            //if wokflow console false quit quickstart
 
             let pulsarInfos = scope.$eval(attributes.pulsar);
             //contenu des attrs
+
+            if(!model.me.hasWorkflow(pulsarInfos.workflow)){
+                element.removeAttr('pulsar') // ne remonte pas dans liste steps
+                return;
+            }
 
             if(pulsarInfos.workflow && !model.me.hasWorkflow(pulsarInfos.workflow)){
                 element.data('skip-pulsar', 'true');// ne remonte pas dans liste steps
@@ -5556,12 +5561,20 @@ module.directive('pulsar', function($compile){
                 scope.pulsarInfos.steps.push(infos);
             });
 
+
+
             if(typeof pulsarInfos !== 'object' || pulsarInfos.index === undefined){
                 console.error('Invalid pulsar object. Should look like pulsar="{ index: 0, i18n: \'my.key\', position: \'top bottom\'}"')
             }
 
             let pulsarButton;
             let pulsarElement;
+            // content box
+
+            let pulsarSize = 40;
+            let pulsarMarge = 5;
+            let pulsarLayerMarge = 10;
+
 
             let paintPulsar = function(){
                 if(!pulsarInfos.position){
@@ -5585,13 +5598,15 @@ module.directive('pulsar', function($compile){
 
                 pulsarButton = $('<div class="pulsar-button"><div class="pulse"></div><div class="pulse2"></div><div class="pulse-spot"></div></div>')
                     .appendTo('body');
-                    if(pulsarInfos.className){
-                        pulsarInfos.className.split(' ').forEach(function(cls){
-                            pulsarButton.addClass(cls);
-                        });
-                    }
-                pulsarElement;
+                if(pulsarInfos.className){
+                    pulsarInfos.className.split(' ').forEach(function(cls){
+                        pulsarButton.addClass(cls);
+                    });
+                }
 
+                pulsarButton.data('active', true);
+
+                let firstCycle = true;
                 let placePulsar = function(){
                     let deltaX = 0;
                     let deltaY = 0;
@@ -5605,16 +5620,20 @@ module.directive('pulsar', function($compile){
 
 
                     let xPositions = {
-                        left: element.offset().left - 40,
-                        right: element.offset().left + element.width() + 10,
-                        center: element.offset().left + (element.width() / 2) - 15
+                        left: element.offset().left - (pulsarSize + pulsarMarge),
+                        right: element.offset().left + element.width() + pulsarMarge,
+                        center: element.offset().left + (element.width() / 2) - pulsarSize / 2
                     };
 
                     let yPositions = {
-                        top: element.offset().top - 40,
-                        bottom: element.offset().top + element.height() + 10,
-                        center: element.offset().top + (element.height() / 2) - 15
+                        top: element.offset().top,
+                        bottom: element.offset().top + element.height() + pulsarMarge,
+                        center: element.offset().top + (element.height() / 2) - pulsarSize / 2
                     };
+
+                    if(pulsarInfos.position === 'top center'){
+                        yPositions.top = element.offset().top - pulsarSize - pulsarMarge;
+                    }
 
 
                     if(pulsarButton.css('display') !== 'none'){
@@ -5622,32 +5641,121 @@ module.directive('pulsar', function($compile){
                     }
 
                     if(pulsarElement){
-                        let left = xPositions[xPosition] - pulsarElement.children('.content').width() / 2;
+
+                        console.log('new element');
+
+                        let left = xPositions[xPosition] - pulsarElement.children('.content').width() - pulsarSize / 2
+                        let top = yPositions[yPosition] - pulsarLayerMarge ;
+
+                    // place pulsarElement // element
+
+                        if(yPosition === 'top' && xPosition === 'center'){
+                            top = yPositions[yPosition] - pulsarElement.children('.content').height() - pulsarSize / 2;
+                        }
+                        if(yPosition === 'center'){
+                            top = yPositions[yPosition] - (pulsarElement.children('.content').height() / 2);
+
+                            //top = yPositions[yPosition] - (pulsarElement.children('.content').width() / 2) + pulsarLayerMarge + pulsarMarge * 2;
+                        }
+                        if(xPosition === 'center'){
+                            left = (xPositions[xPosition] - (pulsarElement.children('.content').width() / 2)) -2;
+                        }
                         if(yPosition === 'center' && xPosition === 'center'){
                             pulsarElement.addClass('middle');
                             yPosition = 'bottom';
                         }
                         if(xPosition === 'right'){
-                            left = xPositions[xPosition] + 15;
-                        }
-                        if(xPosition === 'left'){
-                            left = xPositions[xPosition] - pulsarElement.children('.content').width() - 30;
-                        }
-
-                        let top = yPositions[yPosition] - pulsarElement.children('.content').height() / 2;
-                        if(yPosition === 'top' && xPosition === 'center'){
-                            top = yPositions[yPosition] - pulsarElement.children('.content').height() - 30;
+                            left = xPositions[xPosition] + pulsarLayerMarge + pulsarMarge * 2;
                         }
                         if(yPosition === 'bottom'){
-                            top = yPositions[yPosition] + 15;
-                            if(xPosition === 'left'){
-                                left += 60;
-                            }
-                            if(xPosition === 'right'){
-                                left -= 60;
+                            if(xPosition === 'center'){
+                                top = yPositions[yPosition] + pulsarLayerMarge + pulsarMarge * 2;
+                            }else{
+                                top = yPositions[yPosition] - (pulsarLayerMarge + pulsarMarge);
                             }
                         }
 
+
+                    // If pulsarElement position is cropped by browser:
+
+                        var pulsarElementMarge = 15;
+
+                        var oldTop = top;
+                        var oldLeft = left
+
+                        var maxX = oldLeft + (pulsarElement.width()) + pulsarElementMarge;
+                        var maxY = oldTop + (pulsarElement.height()) + pulsarElementMarge
+
+                        var newLeft = $(window).width() - (pulsarElement.width() + pulsarElementMarge);
+                        var newBottom = $(window).height() - (pulsarElement.height() + pulsarElementMarge);
+
+                        var gapLeft = oldLeft - newLeft;
+                        var gapRight = pulsarElementMarge - (oldLeft);
+                        var gapBottom = oldTop - newBottom;
+                        var gapTop = pulsarElementMarge - (oldTop);
+
+                        var arrow = pulsarElement.find('.arrow');
+                        var arrowXpos = arrow.position().left;
+                        var arrowYpos = arrow.position().top;
+
+                        //console.log('init posY ' + arrowYpos);
+
+                        //// X CORRECT
+
+                        //right
+                        if(maxX > $(window).width()){
+
+                            left = $(window).width() - (pulsarElement.width() + pulsarElementMarge);
+                            if(xPosition === 'center'){
+                                if(firstCycle){
+                                    arrow.css({left : arrowXpos + gapLeft, right : 'auto'});
+                                    firstCycle = false;
+                                 }
+                            }
+                        }
+                        //left
+                        if(left <= pulsarElementMarge){
+
+                            left = pulsarElementMarge;
+                            if(xPosition === 'center'){
+                                if(firstCycle){
+                                    arrow.css({left : gapRight + pulsarLayerMarge, right : 'auto'});
+                                    firstCycle = false;
+                                 }
+                            }
+                        }
+
+                        //// Y CORRECT
+
+                        //bottom
+                        if(maxY > $(window).height()){
+                            top = newBottom;
+                            if(yPosition === 'bottom'){
+                                if(firstCycle){
+                                    arrow.css({top : gapBottom + pulsarMarge, bottom : 'auto'});
+                                    firstCycle = false;
+                                 }
+                            }
+                        }
+                        //top --ok
+                        if(top < pulsarElementMarge){
+                            top = pulsarElementMarge;
+
+                            if(yPosition === 'center' && xPosition !== 'center'){
+                                if(firstCycle){
+                                    console.log(" old top : " + oldTop + ", new top : " + top + ", old arrowYpos : " + arrowYpos );
+
+                                    arrow.css({top : (arrowYpos - gapTop), bottom : 'auto'});
+                                    console.log("new arrow : " + arrow.position().top);
+
+                                    firstCycle = false;
+
+                                 }
+                            }
+                        }
+
+
+                        // apply content box position
                         pulsarElement.offset({
                             left: parseInt(left + deltaX),
                             top: parseInt(top + deltaY)
@@ -5657,39 +5765,38 @@ module.directive('pulsar', function($compile){
                 }
                 placePulsar();
 
+
                 var placeLayers = function(){
                     $('.pulsar-layer').remove();
+
+                    var check = '[pulsar-highlight=' + pulsarInfos.index +']';
+                    var highlight = $( "body" ).find(check);
+                    if(highlight.length !== 0){
+                        var pulsarHighlight = highlight;
+                    }
+
+                    if(!pulsarHighlight){
+                        var pulsarHighlight = element;
+                    }
+
                      $('<div class="pulsar-layer"></div>')
-                        .width(element.offset().left - 10)
-                        .height($(window).height())
-                        .offset({ top: 0, left: 0 })
+
+                        .width(pulsarHighlight.width() + pulsarLayerMarge * 2)
+                        .height(pulsarHighlight.height() + pulsarLayerMarge *  2)
+                        .offset({ top: pulsarHighlight.offset().top - pulsarLayerMarge, left: pulsarHighlight.offset().left - pulsarLayerMarge, })
                         .hide()
                         .appendTo('body')
-                        .fadeIn();
-                    $('<div class="pulsar-layer"></div>')
-                        .width($(window).width() - element.offset().left + 20)
-                        .height(element.offset().top - 10)
-                        .offset({ top: 0, left: parseInt(element.offset().left - 10) })
-                        .hide()
-                        .appendTo('body')
-                        .fadeIn();
-                    $('<div class="pulsar-layer"></div>')
-                        .width($(window).width() - element.width() - element.offset().left + 10)
-                        .height(element.height() + 20)
-                        .offset({ top: parseInt(element.offset().top - 10), left: parseInt(element.offset().left + element.width() + 10) })
-                        .hide()
-                        .appendTo('body')
-                        .fadeIn();
-                    $('<div class="pulsar-layer"></div>')
-                        .width($(window).width() - element.offset().left + 10)
-                        .height($(window).height() - element.height() - element.offset().top - 10)
-                        .offset({ top: parseInt(element.offset().top + element.height() + 10), left: parseInt(element.offset().left - 10) })
-                        .hide()
-                        .appendTo('body')
-                        .fadeIn();
+                        .fadeIn("slow");
                 };
 
                 pulsarButton.on('click', function(){
+                    $('body').css('pointer-events', 'none');
+                    $('body').on('scroll touchmove mousewheel', function(e){
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return false;
+                    })
+
                     scope.pulsarInfos.steps = [];
                     pulsars = $('[pulsar]');
                     //recup tt les pulsar
@@ -5701,6 +5808,8 @@ module.directive('pulsar', function($compile){
                         scope.pulsarInfos.steps.push(infos);
                     });
 
+
+                    // create content box
                     pulsarElement = $('<pulsar></pulsar>')
                         .addClass(xPosition)
                         .addClass(yPosition);
@@ -5724,18 +5833,47 @@ module.directive('pulsar', function($compile){
                 });
             }
 
+            $(window).on('resize', function(){
+                if($(window).width() <= ui.breakpoints.tablette){
+                    pulsarButton.hide();
+                }
+                else if(pulsarButton.data('active')){
+                    pulsarButton.show();
+                }
+            })
+
             function undraw(){
+                // chaque nextStep + end
                 $(window).off('resize.placeLayers');
-                pulsarButton.fadeOut(function(){ pulsarButton.remove() });
-                pulsarElement.fadeOut(function(){ pulsarElement.remove() });
+                pulsarButton.fadeOut('slow', function(){ pulsarButton.remove() });
+                pulsarElement.fadeOut('slow', function(){ pulsarElement.remove() });
                 $('.pulsar-layer').remove();
+                $('body').off('scroll touchmove mousewheel');
+                $('body').css('pointer-events', '');
+                let firstCycle = true;
+                pulsarButton.data('active', false);
             }
 
             scope.closePulsar = function(){
-                pulsarElement.fadeOut(function(){ pulsarElement.remove() });
-                $('.pulsar-layer').fadeOut(function(){ $('.pulsar-layer').remove() });
+                // clic close
+                pulsarElement.fadeOut(0 , function(){ pulsarElement.remove() });
                 pulsarButton.removeClass('hidden');
+                $('.pulsar-layer').fadeOut(0 , function(){ $('.pulsar-layer').remove() });
+                $('body').off('scroll touchmove mousewheel');
+                $('body').css('pointer-events', '');
+                let firstCycle = true;
+                pulsarButton.data('active', false);
             };
+            $(document).on('click', function(e){
+                if(
+                    $(e.target).parents('pulsar').length > 0 ||
+                    $(e.target).parents('.pulsar-button').length > 0 ||
+                    $(e.target).hasClass('pulsar-button')
+                ){
+                    return;
+                }
+                scope.closePulsar();
+            });
 
             scope.paintPulsar = function(){
                 paintPulsar();
