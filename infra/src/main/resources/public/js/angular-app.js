@@ -5855,7 +5855,9 @@ module.directive('pulsar', function($compile){
             }
 
             scope.closePulsar = function(){
-                // clic close
+                if(!pulsarElement || !pulsarButton){
+                    return
+                }
                 pulsarElement.fadeOut(0 , function(){ pulsarElement.remove() });
                 pulsarButton.removeClass('hidden');
                 $('.pulsar-layer').fadeOut(0 , function(){ $('.pulsar-layer').remove() });
@@ -5863,6 +5865,7 @@ module.directive('pulsar', function($compile){
                 $('body').css('pointer-events', '');
                 let firstCycle = true;
                 pulsarButton.data('active', false);
+
             };
             $(document).on('click', function(e){
                 if(
