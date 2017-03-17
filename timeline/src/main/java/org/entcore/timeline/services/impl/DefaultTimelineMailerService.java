@@ -277,6 +277,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
+		final AtomicInteger endPage = new AtomicInteger(0);
 		final Calendar dayDate = Calendar.getInstance();
 		dayDate.add(Calendar.DAY_OF_MONTH, dayDelta);
 		dayDate.set(Calendar.HOUR_OF_DAY, 0);
@@ -297,7 +298,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				public void handle(final JsonArray users) {
 					final int nbUsers = users.size();
 					if(nbUsers == 0){
-						continuation.handle(false);
+						continuation.handle(userPagination.get() != endPage.get());
 						return;
 					}
 					final AtomicInteger usersCountdown = new AtomicInteger(nbUsers);
@@ -305,7 +306,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final VoidHandler usersEndHandler = new VoidHandler() {
 						protected void handle() {
 							if(usersCountdown.decrementAndGet() <= 0){
-								continuation.handle(nbUsers == USERS_LIMIT);
+								continuation.handle(userPagination.get() != endPage.get());
 							}
 						}
 					};
@@ -438,6 +439,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			public void handle(JsonArray event) {
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.toList());
+					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
 				}
 				getNotificationsDefaults(new Handler<JsonArray>() {
 					public void handle ( final JsonArray notifications){
@@ -460,6 +462,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
+		final AtomicInteger endPage = new AtomicInteger(0);
 		final Calendar weekDate = Calendar.getInstance();
 		weekDate.add(Calendar.DAY_OF_MONTH, dayDelta - 6);
 		weekDate.set(Calendar.HOUR_OF_DAY, 0);
@@ -480,7 +483,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				public void handle(final JsonArray users) {
 					final int nbUsers = users.size();
 					if (nbUsers == 0) {
-						continuation.handle(false);
+						continuation.handle(userPagination.get() != endPage.get());
 						return;
 					}
 					final AtomicInteger usersCountdown = new AtomicInteger(nbUsers);
@@ -488,7 +491,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final VoidHandler usersEndHandler = new VoidHandler() {
 						protected void handle() {
 							if (usersCountdown.decrementAndGet() <= 0) {
-								continuation.handle(nbUsers == USERS_LIMIT);
+								continuation.handle(userPagination.get() != endPage.get());
 							}
 						}
 					};
@@ -637,6 +640,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			public void handle(JsonArray event) {
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.toList());
+					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
 				}
 				getNotificationsDefaults(new Handler<JsonArray>() {
 					public void handle(final JsonArray notifications) {
@@ -806,12 +810,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				"MATCH (u:User)-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) " +
 				"WHERE u.id IN {notifiedUsers} AND u.activationCode IS NULL AND u.email IS NOT NULL AND length(u.email) > 0 " +
 				"AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\"" +
-				"RETURN DISTINCT u.email as mail, u.id as id " +
-				"SKIP {skip} LIMIT {limit}";
+				"RETURN DISTINCT u.email as mail, u.id as id ";
 		JsonObject params = new JsonObject()
-				.putArray("notifiedUsers", new JsonArray(recipients.subList(fromIdx, toIdx).toArray()))
-				.putNumber("skip", page * USERS_LIMIT)
-				.putNumber("limit", USERS_LIMIT);
+				.putArray("notifiedUsers", new JsonArray(recipients.subList(fromIdx, toIdx).toArray()));
 		neo4j.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
