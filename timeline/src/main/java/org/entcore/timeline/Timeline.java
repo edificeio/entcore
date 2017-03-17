@@ -70,11 +70,12 @@ public class Timeline extends BaseServer {
 		timelineController.setMailerService(mailerService);
 		timelineController.setRegisteredNotifications(registeredNotifications);
 		timelineController.setEventsI18n(eventsI18n);
-		addController(timelineController);
 
 		addController(new FlashMsgController());
 
 		setRepositoryEvents(new FlashMsgRepositoryEventsSql());
+
+		addController(timelineController);
 
 		final String dailyMailingCron = container.config().getString("daily-mailing-cron", "0 0 2 * * ?");
 		final String weeklyMailingCron = container.config().getString("weekly-mailing-cron", "0 0 5 ? * MON");
