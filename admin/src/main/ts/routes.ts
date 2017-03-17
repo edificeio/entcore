@@ -1,4 +1,3 @@
-//import { GroupsModule } from '../modules/groups/groups.module'
 import { Routes } from '@angular/router'
 import { I18nResolve } from './routing/i18n.resolve'
 import { StructuresResolve } from './routing/structures.resolve'
