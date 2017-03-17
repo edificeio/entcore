@@ -104,7 +104,7 @@ public class SecurityHookRender implements HookProcess {
 	}
 
 	private void csrfToken(final HttpServerRequest request, final VoidHandler handler, JsonObject session) {
-		if (!csrf || request.path().contains("app-preview") || request.path().contains("widget-preview") ||
+		if (!csrf || request.path().contains("preview") ||
 				"XMLHttpRequest".equals(request.headers().get("X-Requested-With"))) {
 			handler.handle(null);
 			return;
