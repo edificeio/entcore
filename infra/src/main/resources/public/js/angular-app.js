@@ -1729,15 +1729,16 @@ module.directive('dropDown', function($compile, $timeout) {
         link: function(scope, element, attributes) {
             scope.limit = 6;
             var dropDown = element.find('[data-drop-down]');
+            var dropDownContent = element.find('[data-drop-down] ul')
 
             scope.setDropDownHeight = function() {
                 var liHeight = 0;
                 var max = Math.min(scope.limit, scope.options.length);
-                dropDown.find('li').each(function(index, el) {
+                dropDownContent.find('li').each(function(index, el) {
                     liHeight += $(el).height();
                     return index < max;
                 });
-                dropDown.height(liHeight)
+                dropDownContent.height(liHeight)
             };
             scope.increaseLimit = function() {
                 scope.limit += 5;
@@ -1747,9 +1748,10 @@ module.directive('dropDown', function($compile, $timeout) {
             };
             scope.$watchCollection('options', function(newValue) {
                 if (!scope.options || scope.options.length === 0) {
-                    dropDown.height();
+                    dropDownContent.height();
                     dropDown.addClass('hidden');
                     scope.limit = 6;
+                    dropDownContent.attr('style', '');
                     dropDown.attr('style', '');
                     return;
                 }
@@ -1782,6 +1784,7 @@ module.directive('dropDown', function($compile, $timeout) {
                 }
                 scope.limit = 6;
                 dropDown.attr('style', '');
+                dropDownContent.attr('style', '');
                 scope.current = $(this).scope().option;
                 scope.ngModel = $(this).scope().option;
                 scope.$apply('ngModel');
