@@ -298,6 +298,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				public void handle(final JsonArray users) {
 					final int nbUsers = users.size();
 					if(nbUsers == 0){
+						log.info("[DailyMails] Page0 : " + userPagination.get() + "/" + endPage.get());
 						continuation.handle(userPagination.get() != endPage.get());
 						return;
 					}
@@ -306,6 +307,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final VoidHandler usersEndHandler = new VoidHandler() {
 						protected void handle() {
 							if(usersCountdown.decrementAndGet() <= 0){
+								log.info("[DailyMails] Page : " + userPagination.get() + "/" + endPage.get());
 								continuation.handle(userPagination.get() != endPage.get());
 							}
 						}
@@ -486,6 +488,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				public void handle(final JsonArray users) {
 					final int nbUsers = users.size();
 					if (nbUsers == 0) {
+						log.info("[WeeklyMails] Page0 : " + userPagination.get() + "/" + endPage.get());
 						continuation.handle(userPagination.get() != endPage.get());
 						return;
 					}
@@ -494,6 +497,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final VoidHandler usersEndHandler = new VoidHandler() {
 						protected void handle() {
 							if (usersCountdown.decrementAndGet() <= 0) {
+								log.info("[WeeklyMails] Page : " + userPagination.get() + "/" + endPage.get());
 								continuation.handle(userPagination.get() != endPage.get());
 							}
 						}
