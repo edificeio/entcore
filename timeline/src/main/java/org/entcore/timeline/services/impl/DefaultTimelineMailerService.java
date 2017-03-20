@@ -440,6 +440,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.toList());
 					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
+				} else {
+					handler.handle(new Either.Right<String, JsonObject>(results));
+					return;
 				}
 				getNotificationsDefaults(new Handler<JsonArray>() {
 					public void handle ( final JsonArray notifications){
@@ -641,6 +644,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.toList());
 					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
+				} else {
+					handler.handle(new Either.Right<String, JsonObject>(results));
+					return;
 				}
 				getNotificationsDefaults(new Handler<JsonArray>() {
 					public void handle(final JsonArray notifications) {
