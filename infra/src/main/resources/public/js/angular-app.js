@@ -5645,9 +5645,7 @@ module.directive('pulsar', function($compile){
                         pulsarButton.offset({ left: parseInt(xPositions[xPosition] + deltaX), top: parseInt(yPositions[yPosition] + deltaY) });
                     }
 
-                    if(pulsarElement){
-
-                        console.log('new element');
+                    if(pulsarElement && pulsarElement.find('.arrow').length){
 
                         let left = xPositions[xPosition] - pulsarElement.children('.content').width() - pulsarSize / 2
                         let top = yPositions[yPosition] - pulsarLayerMarge ;
@@ -5748,17 +5746,12 @@ module.directive('pulsar', function($compile){
 
                             if(yPosition === 'center' && xPosition !== 'center'){
                                 if(firstCycle){
-                                    console.log(" old top : " + oldTop + ", new top : " + top + ", old arrowYpos : " + arrowYpos );
-
                                     arrow.css({top : (arrowYpos - gapTop), bottom : 'auto'});
-                                    console.log("new arrow : " + arrow.position().top);
-
                                     firstCycle = false;
 
                                  }
                             }
                         }
-
 
                         // apply content box position
                         pulsarElement.offset({
@@ -5812,7 +5805,6 @@ module.directive('pulsar', function($compile){
                         infos.el = element;
                         scope.pulsarInfos.steps.push(infos);
                     });
-
 
                     // create content box
                     pulsarElement = $('<pulsar></pulsar>')
