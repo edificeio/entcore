@@ -94,7 +94,7 @@ public abstract class BaseServer extends Server {
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
-			addFilter(new ActionFilter(securedUriBinding, getEventBus(vertx), resourceProvider, oauthClientGrant));
+			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider, oauthClientGrant));
 		}
 		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
 		vertx.eventBus().registerLocalHandler("search.searching", this.searchingHandler);

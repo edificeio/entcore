@@ -21,6 +21,7 @@ package org.entcore.common.http.filter;
 
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.Filter;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.http.response.DefaultPages;
@@ -49,11 +50,13 @@ public class HttpActionFilter implements Filter {
 	private final Set<Binding> bindings;
 	private final ResourcesProvider provider;
 	private final HttpClient httpClient;
+	private final Vertx vertx;
 
 	public HttpActionFilter(Set<Binding> bindings, JsonObject conf, Vertx vertx,
 			ResourcesProvider provider) {
 		this.bindings = bindings;
 		this.provider = provider;
+		this.vertx = vertx;
 		this.httpClient = vertx.createHttpClient()
 				.setHost("localhost")
 				.setPort(conf.getInteger("entcore.port", 8009))
@@ -81,7 +84,7 @@ public class HttpActionFilter implements Filter {
 							}
 							userIsAuthorized(request, session, handler);
 						} else {
-							handler.handle(false);
+							UserAuthFilter.redirectLogin(vertx, request);
 						}
 					}
 				});

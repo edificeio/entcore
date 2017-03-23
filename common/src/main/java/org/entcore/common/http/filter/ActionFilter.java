@@ -24,12 +24,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import fr.wseduc.webutils.request.filter.Filter;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
@@ -41,26 +44,28 @@ import fr.wseduc.webutils.security.ActionType;
 public class ActionFilter implements Filter {
 
 	private final Set<Binding> bindings;
+	private final Vertx vertx;
 	private final EventBus eb;
 	private final ResourcesProvider provider;
 	private final boolean oauthEnabled;
 
-	public ActionFilter(Set<Binding> bindings, EventBus eb, ResourcesProvider provider, boolean oauthEnabled) {
+	public ActionFilter(Set<Binding> bindings, Vertx vertx, ResourcesProvider provider, boolean oauthEnabled) {
 		this.bindings = bindings;
-		this.eb = eb;
+		this.vertx = vertx;
+		this.eb = Server.getEventBus(vertx);
 		this.provider = provider;
 		this.oauthEnabled = oauthEnabled;
 	}
 
-	public ActionFilter(Set<Binding> bindings, EventBus eb, ResourcesProvider provider) {
-		this(bindings, eb, provider, false);
+	public ActionFilter(Set<Binding> bindings, Vertx vertx, ResourcesProvider provider) {
+		this(bindings, vertx, provider, false);
 	}
 
-	public ActionFilter(Set<Binding> bindings, EventBus eb) {
-		this(bindings, eb, null);
+	public ActionFilter(Set<Binding> bindings, Vertx vertx) {
+		this(bindings, vertx, null);
 	}
 
-	public ActionFilter(List<Set<Binding>> bindings, EventBus eb, ResourcesProvider provider, boolean oauthEnabled) {
+	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx, ResourcesProvider provider, boolean oauthEnabled) {
 		Set<Binding> b = new HashSet<>();
 		if (bindings != null) {
 			for (Set<Binding> bs: bindings) {
@@ -68,17 +73,18 @@ public class ActionFilter implements Filter {
 			}
 		}
 		this.bindings = b;
-		this.eb = eb;
+		this.vertx = vertx;
+		this.eb = Server.getEventBus(vertx);
 		this.provider = provider;
 		this.oauthEnabled = oauthEnabled;
 	}
 
-	public ActionFilter(List<Set<Binding>> bindings, EventBus eb, ResourcesProvider provider) {
-		this(bindings, eb, provider, false);
+	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx, ResourcesProvider provider) {
+		this(bindings, vertx, provider, false);
 	}
 
-	public ActionFilter(List<Set<Binding>> bindings, EventBus eb) {
-		this(bindings, eb, null);
+	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx) {
+		this(bindings, vertx, null);
 	}
 
 	@Override
@@ -93,7 +99,7 @@ public class ActionFilter implements Filter {
 						((SecureHttpServerRequest) request).getAttribute("client_id") != null) {
 					clientIsAuthorizedByScope((SecureHttpServerRequest) request, handler);
 				} else {
-					handler.handle(false);
+					UserAuthFilter.redirectLogin(vertx, request);
 				}
 			}
 		});
