@@ -683,6 +683,10 @@ window.RTE = (function () {
 								continue;
 							}
 
+							if(sibling === that.range.endContainer && that.range.endOffset === 0){
+								break;
+							}
+
 							if (
                                 sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length
                             ) {
