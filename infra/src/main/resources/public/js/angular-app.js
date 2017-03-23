@@ -5831,6 +5831,9 @@ module.directive('pulsar', function($compile){
             }
 
             $(window).on('resize', function(){
+                if(!pulsarButton){
+                    return;
+                }
                 if($(window).width() <= ui.breakpoints.tablette){
                     pulsarButton.hide();
                 }
