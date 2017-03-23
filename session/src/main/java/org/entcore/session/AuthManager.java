@@ -184,7 +184,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
 		}
 		if (session == null) {
-			sendError(message, "Session not found.");
+			sendError(message, "Session not found. 6");
 			return;
 		}
 		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
@@ -250,7 +250,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 													.putObject("session", s);
 											sendOK(message, sessionResponse);
 										} else {
-											sendError(message, "Session not found.");
+											sendError(message, "Session not found. 1");
 										}
 									} catch (HazelcastSerializationException e) {
 										logger.warn("Error in deserializing new hazelcast session " + sId);
@@ -263,18 +263,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 													sendOK(message, new JsonObject().putString("status", "ok")
 															.putObject("session", event));
 												} else {
-													sendError(message, "Session not found.");
+													sendError(message, "Session not found. 2");
 												}
 											}
 										});
 									}
 								} else {
-									sendError(message, "Session not found.");
+									sendError(message, "Session not found. 3");
 								}
 							}
 						});
 					} else {
-						sendError(message, "Session not found.");
+						sendError(message, "Session not found. 4");
 					}
 				}
 			});
@@ -402,7 +402,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			}
 		}
 		if (session == null) {
-			sendError(message, "Session not found.");
+			sendError(message, "Session not found. 5");
 			return;
 		}
 
@@ -493,7 +493,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
 		}
 		if (session == null) {
-			sendError(message, "Session not found.");
+			sendError(message, "Session not found. 7");
 			return null;
 		}
 		return session;
