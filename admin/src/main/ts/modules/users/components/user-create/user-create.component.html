@@ -1,0 +1,70 @@
+<div class="panel-header">
+    <i class="fa">+</i>
+    <span><s5l>new.user.creation</s5l></span>
+</div>
+
+<panel-section section-title="create.user">
+    <form #createForm="ngForm" (ngSubmit)="createUser();">
+        <form-field label="firstName">
+            <input type="text" [(ngModel)]="newUser.firstName" name="firstName" required #firstNameInput="ngModel">
+            <form-errors [control]="firstNameInput"></form-errors>
+        </form-field>
+        <form-field label="lastName">
+            <input type="text" [(ngModel)]="newUser.lastName" name="lastName" required #lastNameInput="ngModel">
+            <form-errors [control]="lastNameInput"></form-errors>
+        </form-field>
+        <form-field label="birthDate">
+            <input type="date" [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" [max]="now" #birthDateInput="ngModel">
+            <form-errors [control]="birthDateInput"></form-errors>
+        </form-field>
+        <form-field label="profile">
+            <select [(ngModel)]="newUser.type" name="type">
+                <option value="Teacher"><s5l>Teacher</s5l></option>
+                <option value="Personnel"><s5l>Personnel</s5l></option>
+                <option value="Relative"><s5l>Relative</s5l></option>
+                <option value="Student"><s5l>Student</s5l></option>
+                <option value="Guest"><s5l>Guest</s5l></option>
+            </select>
+        </form-field>
+        <form-field label="create.user.classe">
+            <select [(ngModel)]="newUser.classes" name="classes">
+                <option [ngValue]="noClasses"><s5l>create.user.sansclasse</s5l></option>
+                <option *ngFor="let classe of usersStore.structure.classes" [ngValue]="[classe]">{{classe.name}}</option>
+            </select>
+        </form-field>
+
+        <div class="children-container" *ngIf="newUser.type === 'Relative'">
+            <hr>
+            <div class="search">
+                <search-input
+                    [delay]="300"
+                    [attr.placeholder]="'create.user.search.children' | translate"
+                    (onChange)="userListService.inputFilter = $event"></search-input>
+
+                <div class="list-wrapper" *ngIf="userListService.inputFilter?.length > 0">
+                    <ul>
+                        <li *ngFor="let child of usersStore.structure.users.data | filter: {type: 'Student'} | filter: userListService.filterByInput"
+                            (click)="addChild(child)">
+                            {{ child.lastName | uppercase }} {{ child.firstName }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="children-list">
+                <h3><s5l>create.user.selectedchildren</s5l></h3>
+                <ul>
+                    <li *ngFor="let child of newUser.userDetails.children">
+                        {{ child.lastName | uppercase }} {{ child.firstName }}
+                        <i  class="fa fa-times action" 
+                            (click)="removeChild(child)"
+                            [tooltip]="'create.user.deselect.child' | translate"></i>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <button [disabled]="createForm.pristine || createForm.invalid" class="relative">
+            <s5l>create.user.submit</s5l>
+        </button>
+    </form>
+</panel-section>

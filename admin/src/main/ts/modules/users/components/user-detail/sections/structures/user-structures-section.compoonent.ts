@@ -53,7 +53,7 @@ export class UserStructuresSection extends AbstractSection {
             private router: Router,
             protected ls: LoadingService,
             protected cdRef: ChangeDetectorRef) {
-        super(ls, cdRef)
+        super()
     }
 
     private structureCollection : StructureCollection = globalStore.structures

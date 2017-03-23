@@ -10,13 +10,13 @@
         </div>
     </form-field>
     <form-field label="login">
-        <span>{{ user.login }}</span>
+        <span>{{ details.login }}</span>
         <div><button>
                 <i class="fa fa-trash"></i>
                 <s5l>delete.account</s5l>
             </button></div>
     </form-field>
-    <form-field label="activation.code" *ngIf="user.code">
+    <form-field label="activation.code" *ngIf="details.activationCode">
         <input type="text" [(ngModel)]="details.activationCode" #codeInput="ngModel" [attr.placeholder]="'activation.code.placeholder' | translate"
             required minlength="4">
         <form-errors [control]="codeInput"></form-errors>
@@ -28,7 +28,7 @@
         <span>{{ user.id }}</span>
     </form-field>
     <form-field label="source">
-        <span>{{ user.source }}</span>
+        <span>{{ details.source }}</span>
     </form-field>
     <form-field label="administration" *ngIf="details.functions && details.functions[0] && details.functions[0][0]">
         <div *ngFor="let function of details.functions">
@@ -41,7 +41,7 @@
                 </span>
         </div>
     </form-field>
-    <div class="form-row" *ngIf="!user.code">
+    <div class="form-row" *ngIf="!details.activationCode">
         <button class="relative" (click)="wrap(details.sendResetPassword, 'user.password.mail', null, passwordResetMail)" [disabled]="!passwordResetMail || passwordMailInput.errors">
                 <spinner-cube class="button-spinner" waitingFor="user.password.mail"></spinner-cube>
                 <s5l>send.reset.password</s5l>

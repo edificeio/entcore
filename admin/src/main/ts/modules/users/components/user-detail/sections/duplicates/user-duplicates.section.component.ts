@@ -58,7 +58,7 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
     constructor(protected ls: LoadingService,
         protected cdRef: ChangeDetectorRef,
         private router: Router) {
-        super(ls, cdRef)
+        super()
     }
 
     private open = true

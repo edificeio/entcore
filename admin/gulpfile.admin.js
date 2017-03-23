@@ -8,7 +8,7 @@ const sass = require('gulp-sass')
 const del = require('del')
 
 const entCoreVersion = '1.23-SNAPSHOT'
-const springboardPath = '../leo'
+const springboardPath = '../springboard-open-ent'
 const basePath = './admin/src/main'
 const target = springboardPath + '/mods/org.entcore~admin~' + entCoreVersion
 

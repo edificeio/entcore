@@ -14,7 +14,7 @@ export class UserInfoSection extends AbstractSection {
         private ns: NotifyService,
         protected ls: LoadingService,
         protected cdRef: ChangeDetectorRef) {
-        super(ls, cdRef)
+        super()
     }
 
     @ViewChild("passwordMailInput") passwordMailInput : NgModel

@@ -5,7 +5,7 @@ const commonConfig = require('./webpack.config.common.js')
 const path_prefix = './admin/src/main'
 
 module.exports = webpackMerge(commonConfig, {
-    devtool: 'cheap-module-eval-source-map',
+    devtool: 'eval-source-map',
 
     entry: {
         'admin': path_prefix + '/ts/app.ts',

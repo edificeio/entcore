@@ -14,7 +14,7 @@ export class UserAdministrativeSection extends AbstractSection {
         private ns: NotifyService,
         protected ls: LoadingService,
         protected cdRef: ChangeDetectorRef) {
-        super(ls, cdRef)
+        super()
     }
 
     @ViewChild("administrativeForm") administrativeForm : NgForm

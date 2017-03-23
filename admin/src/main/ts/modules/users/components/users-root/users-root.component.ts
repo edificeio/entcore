@@ -28,6 +28,7 @@ import { Subscription } from 'rxjs/Subscription'
             </div>
         </side-layout>
     `,
+    providers: [UsersStore],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersRoot implements OnInit, OnDestroy {
@@ -36,7 +37,7 @@ export class UsersRoot implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
-        private usersStore: UsersStore,
+        public usersStore: UsersStore,
         private filtersService: UserlistFiltersService,
         private ls: LoadingService){}
 

@@ -50,7 +50,7 @@ export class UserRelativesSection extends AbstractSection {
             private userListService: UserListService,
             protected ls: LoadingService,
             protected cdRef: ChangeDetectorRef) {
-        super(ls, cdRef)
+        super()
     }
 
     @ViewChild("codeInput") codeInput : AbstractControl

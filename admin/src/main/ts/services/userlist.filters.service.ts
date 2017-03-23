@@ -19,7 +19,6 @@ export abstract class UserFilter<T> {
         return this._outputModel
     }
 
-    filterProp?: boolean | string
     display?: string
     order?: string
 }
@@ -55,7 +54,6 @@ class ClassesFilter extends UserFilter<{id: string, name: string}> {
     comboModel = []
     display = 'name'
     order = '+name'
-    filterProp = 'name'
 
     filter = (classes: {id: string, name: string}[]) => {
         let outputModel = this.outputModel

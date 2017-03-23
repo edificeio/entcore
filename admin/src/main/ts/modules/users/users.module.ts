@@ -39,7 +39,6 @@ import { UserlistFiltersService } from '../../services'
     providers: [
         UserResolve,
         UsersResolve,
-        UsersStore,
         UserlistFiltersService
     ],
     exports: [

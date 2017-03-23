@@ -5,7 +5,9 @@ import { globalStore } from '..'
 export class UserModel extends Model<UserModel> {
 
     constructor() {
-        super({})
+        super({
+            create: '/directory/api/user'
+        })
         this.userDetails = new UserDetailsModel()
     }
 

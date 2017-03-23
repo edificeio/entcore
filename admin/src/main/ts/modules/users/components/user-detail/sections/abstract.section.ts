@@ -4,8 +4,7 @@ import { LoadingService } from '../../../../../services'
 
 export abstract class AbstractSection {
 
-    constructor(protected ls: LoadingService,
-        protected cdRef: ChangeDetectorRef){}
+    constructor(){}
 
     get user(){ return this._user }
     set user(u: UserModel){

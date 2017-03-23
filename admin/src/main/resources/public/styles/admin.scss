@@ -10,6 +10,7 @@ $accent-light: lighten($accent, 20%);
 $accent-dark: darken($accent, 10%);
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: crimson;
+$user-li-hover: #ffccb8;
 
 /* Elements */
 body {
@@ -724,6 +725,49 @@ group-users-list list-component {
 user-detail {
     user-info-section div.panel-section-header {
         padding-top: 25px !important;
+    }
+}
+
+/* User create */
+user-create {
+    panel-section {
+        div.children-container {
+            hr {
+                margin: 20px 0;
+            }
+            div.search {
+                float: left; 
+                margin-right: 50px;
+                min-width: 20%;
+                
+                ul {
+                    overflow-y: scroll; 
+                    height: 150px;
+
+                    li {
+                        cursor: pointer;
+                        transition: background-color 0.25s;
+                        
+                        &:hover {
+                            background: $user-li-hover;
+                        }
+                    }
+                }
+            }
+            div.children-list {
+                float: left;
+                min-width: 30%;
+                
+                h3 {
+                    margin-top: 5px;
+                }
+            }
+        }
+        button {
+            clear: both; 
+            float: left;
+            margin: 20px 0;
+        }
     }
 }
 

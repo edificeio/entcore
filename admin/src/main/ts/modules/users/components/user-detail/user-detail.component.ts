@@ -56,7 +56,6 @@ export class UserDetail implements OnInit, OnDestroy{
             this.codeInput.reset()
         if(this.administrativeForm)
             this.administrativeForm.reset()
-        this.cdRef.markForCheck()
     }
     get user(){ return this._user }
     private _user : UserModel

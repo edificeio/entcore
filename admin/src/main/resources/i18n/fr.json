@@ -12,6 +12,12 @@
     "Relative": "Parent",
     "Guest": "Invité",
     "create.user": "Créer un utilisateur",
+    "create.user.classe": "Classe",
+    "create.user.sansclasse": "Sans classe",
+    "create.user.selectedchildren": "Enfant(s) sélectionné(s)",
+    "create.user.search.children": "Rechercher un élève",
+    "create.user.deselect.child": "Enlever",
+    "create.user.submit": "Créer",
     "create.group": "Créer un groupe",
     "manage.duplicates": "Gérer les doublons",
     "manage.reports": "Gérer les signalements",
@@ -117,5 +123,9 @@
     "notify.user.toggleblock.title": "{{blocked ? Blocage : Déblocage}} effectué",
     "notify.user.toggleblock.content": "L'utilisateur {{user}} est maintenant {{blocked ? bloqué(e) : débloqué(e)}}.",
     "notify.user.toggleblock.error.title": "Erreur lors du {{blocked ? blocage : déblocage}}",
-    "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}."
+    "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}.",
+    "notify.user.create.title": "Création effectuée",
+    "notify.user.create.content": "L'utilisateur {{user}} a bien été créé.",
+    "notify.user.create.error.title" : "Erreur lors de la création",
+    "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé."
 }
