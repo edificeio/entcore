@@ -75,7 +75,11 @@ public class TimelineHelper {
 		notifyTimeline(request, notificationName, sender, recipients, resource, null, params);
 	}
 	public void notifyTimeline(HttpServerRequest request, final String notificationName,
-			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params){
+							   UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params) {
+		notifyTimeline(request, notificationName, sender, recipients, resource, subResource, params, false);
+	}
+	public void notifyTimeline(HttpServerRequest request, final String notificationName,
+			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
 		final JsonObject notification = notificationsLoader.getNotification(notificationName);
 
 		JsonArray r = new JsonArray();
@@ -96,6 +100,9 @@ public class TimelineHelper {
 		}
 		if (subResource != null && !subResource.trim().isEmpty()) {
 			event.putString("sub-resource", subResource);
+		}
+		if (disableAntiFlood) {
+			event.putBoolean("disableAntiFlood", disableAntiFlood);
 		}
 		Long date = params.getLong("timeline-publish-date");
 		if (date != null) {
