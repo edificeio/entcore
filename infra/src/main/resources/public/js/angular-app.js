@@ -1413,7 +1413,7 @@ module.directive('bindHtml', function($compile) {
                 htmlVal.find('[ng-repeat]').removeAttr('ng-repeat');
                 htmlVal.find('[ng-transclude]').removeAttr('ng-transclude');
                 htmlVal.find('script').remove();
-				htmlVal.find('*').each((index, item) => {
+				htmlVal.find('*').each(function(index, item) {
 					var attributes = item.attributes;
 					for(var i = 0; i < attributes.length; i++){
 						if(attributes[i].name.startsWith('on')){
