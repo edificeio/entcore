@@ -600,7 +600,7 @@ public class TimelineController extends BaseController {
 		switch (action) {
 		case "add":
 			final String sender = json.getString("sender");
-			if (sender == null || sender.startsWith("no-reply") || antiFlood.add(sender)) {
+			if (sender == null || sender.startsWith("no-reply") || json.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
 				store.add(json, new Handler<JsonObject>() {
 					public void handle(JsonObject result) {
 						mailerService.sendImmediateMails(
