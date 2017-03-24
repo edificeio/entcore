@@ -74,6 +74,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class SamlValidator extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private final Map<String, SignatureTrustEngine> signatureTrustEngineMap = new HashMap<>();
@@ -232,11 +234,19 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		return content + "&Signature=" +  URLEncoder.encode(Base64.encodeBytes(sign.sign(), Base64.DONT_BREAK_LINES), "UTF-8");
 	}
 
-	private String generateSloRequest(String nameID, String sessionIndex, String idp)
-			throws NoSuchFieldException, IllegalAccessException, MarshallingException, IOException {
+	private String generateSloRequest(String nameID, String sessionIndex, String idp) throws Exception {
+		NameID nId = SamlUtils.unmarshallNameId(nameID);
 		NameID nameId = SamlUtils.buildSAMLObjectWithDefaultName(NameID.class);
-		nameId.setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:entity");
-		nameId.setValue(nameID);
+		nameId.setFormat(nId.getFormat());
+		nameId.setValue(nId.getValue());
+		String spIssuer = this.issuer;
+		if (isNotEmpty(nId.getNameQualifier())) {
+			nameId.setNameQualifier(nId.getNameQualifier());
+		}
+		if (isNotEmpty(nId.getSPNameQualifier())) {
+			nameId.setSPNameQualifier(nId.getSPNameQualifier());
+			spIssuer = nId.getSPNameQualifier();
+		}
 		LogoutRequest logoutRequest = SamlUtils.buildSAMLObjectWithDefaultName(LogoutRequest.class);
 
 		logoutRequest.setID("ENT_" + UUID.randomUUID().toString());
@@ -245,7 +255,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		logoutRequest.setIssueInstant(new DateTime());
 
 		Issuer issuer = SamlUtils.buildSAMLObjectWithDefaultName(Issuer.class);
-		issuer.setValue(this.issuer);
+		issuer.setValue(spIssuer);
 		logoutRequest.setIssuer(issuer);
 
 		SessionIndex sessionIndexElement = SamlUtils.buildSAMLObjectWithDefaultName(SessionIndex.class);
@@ -255,10 +265,16 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 		logoutRequest.setNameID(nameId);
 
-		String lr = SamlUtils.marshallLogoutRequest(logoutRequest);
+		String lr = SamlUtils.marshallLogoutRequest(logoutRequest)
+				.replaceFirst("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n", "");
+		logger.info("lr : " + lr);
+		String queryString = "SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(lr), "UTF-8") + "&RelayState=" + config.getString("saml-slo-relayState", "NULL");
 
-		return sloUri + "?SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(lr), "UTF-8") +
-				"&RelayState=" + config.getString("saml-slo-relayState", "NULL");
+			queryString = sign(queryString);
+
+		logger.info("querystring : " + queryString);
+
+		return sloUri + "?" + queryString;
 	}
 
 	private String getAuthnRequestUri(String idp) {

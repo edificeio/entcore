@@ -19,13 +19,8 @@
 
 package org.entcore.auth.security;
 
-import org.opensaml.saml2.core.Assertion;
-import org.opensaml.saml2.core.AuthnRequest;
-import org.opensaml.saml2.core.LogoutRequest;
-import org.opensaml.saml2.core.Response;
-import org.opensaml.saml2.core.impl.AssertionMarshaller;
-import org.opensaml.saml2.core.impl.AssertionUnmarshaller;
-import org.opensaml.saml2.core.impl.AuthnRequestMarshaller;
+import org.opensaml.saml2.core.*;
+import org.opensaml.saml2.core.impl.*;
 import org.opensaml.xml.Configuration;
 import org.opensaml.xml.XMLObjectBuilderFactory;
 import org.opensaml.xml.io.Marshaller;
@@ -105,6 +100,18 @@ public final class SamlUtils {
 		StringWriter rspWrt = new StringWriter();
 		XMLHelper.writeNode(authDOM, rspWrt);
 		return rspWrt.toString();
+	}
+
+	public static String marshallNameId(NameID nameID) throws MarshallingException {
+		NameIDMarshaller marshaller = new NameIDMarshaller();
+		Element plaintextElement = marshaller.marshall(nameID);
+		return XMLHelper.nodeToString(plaintextElement);
+	}
+
+	public static NameID unmarshallNameId(String nameId) throws Exception {
+		Document document = getDocumentFromString(nameId);
+		NameIDUnmarshaller unmarshaller = new NameIDUnmarshaller();
+		return (NameID) unmarshaller.unmarshall(document.getDocumentElement());
 	}
 
 }

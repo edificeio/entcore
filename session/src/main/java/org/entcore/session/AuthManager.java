@@ -339,7 +339,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("_id", sessionId).putString("userId", userId)
 								.putObject("created", now).putObject("lastUsed", now);
 						if (sessionIndex != null && nameId != null) {
-							json.putString("SessionIndex", sessionId).putString("NameID", nameId);
+							json.putString("SessionIndex", sessionIndex).putString("NameID", nameId);
 						}
 						mongo.save(SESSIONS_COLLECTION, json);
 					} else {
