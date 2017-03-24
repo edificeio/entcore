@@ -5844,6 +5844,7 @@ module.directive('pulsar', function($compile){
 
             function undraw(){
                 // chaque nextStep + end
+                pulsarElement.find('button').css('pointer-events', 'none');
                 $(window).off('resize.placeLayers');
                 pulsarButton.fadeOut('slow', function(){ pulsarButton.remove() });
                 pulsarElement.fadeOut('slow', function(){ pulsarElement.remove() });
@@ -5897,6 +5898,7 @@ module.directive('pulsar', function($compile){
             };
 
             scope.next = function(){
+
                 undraw();
                 let index = quickstart.nextAppStep();
                 if(_.findWhere(scope.pulsarInfos.steps, { index: index}) === undefined){
