@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class BRNERegisteredService extends DefaultRegisteredService {
 
-    protected static final String PROFIL = "PROFIL_NATIONAL";
+    protected static final String PROFIL = "ENTPersonProfils";
 
     @Override
     public void configure(org.vertx.java.core.eventbus.EventBus eb, Map<String,Object> conf){
