@@ -2386,7 +2386,8 @@ module.directive('loadingIcon', function($compile) {
             var addImage = function() {
                 if ($('#theme').length === 0)
                     return;
-                var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/anim_loading_small.gif';
+
+                var loadingIllustrationPath = '/assets/themes/' + skin.skin + '/img/icons/anim_loading_small.gif';
                 $('<img>')
                     .attr('src', loadingIllustrationPath)
                     .attr('class', $attributes.class)
@@ -2403,7 +2404,7 @@ module.directive('loadingIcon', function($compile) {
 
             if ($attributes.onlyLoadingIcon === undefined) {
                 http().bind('request-ended.' + $attributes.request, function(e) {
-                    var loadingDonePath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/icons/checkbox-checked.png';
+                    var loadingDonePath = '/assets/themes/' + skin.skin + '/img/icons/checkbox-checked.png';
                     $element.find('.loading-icon').remove();
                     $('<img>')
                         .attr('src', loadingDonePath)
@@ -2424,7 +2425,8 @@ module.directive('loadingPanel', function($compile) {
         link: function($scope, $element, $attributes) {
             $attributes.$observe('loadingPanel', function(val) {
                 http().bind('request-started.' + $attributes.loadingPanel, function(e) {
-                    var loadingIllustrationPath = $('#theme').attr('href').split('/theme.css')[0] + '/../img/illustrations/loading.gif';
+                    var loadingIllustrationPath = '/assets/themes/' + skin.skin + '/img/illustrations/loading.gif';
+
                     if ($element.children('.loading-panel').length === 0) {
                         $element.append('<div class="loading-panel">' +
                             '<h1>' + lang.translate('loading') + '</h1>' +
