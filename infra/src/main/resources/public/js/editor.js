@@ -2012,7 +2012,7 @@ window.RTE = (function () {
 
 							instance.selection.replaceHTML(
 								'<div><br /></div>' +
-								'<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls draggable native></audio></div>' +
+								'<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls draggable native preload="none"></audio></div>' +
 								'<div><br /></div>'
 							);
 							scope.soundOption.display.pickFile = false;
