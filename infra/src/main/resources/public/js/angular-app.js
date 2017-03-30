@@ -2387,7 +2387,12 @@ module.directive('loadingIcon', function($compile) {
                 if ($('#theme').length === 0)
                     return;
 
-                var loadingIllustrationPath = '/assets/themes/' + skin.skin + '/img/icons/anim_loading_small.gif';
+                if($('body').find('admin-portal')){
+                    var loadingIllustrationPath = '/public/' + skin.skin + '/img/icons/anim_loading_small.gif';
+                }else{
+                    var loadingIllustrationPath = '/assets/themes/' + skin.skin + '/img/icons/anim_loading_small.gif';
+                }
+
                 $('<img>')
                     .attr('src', loadingIllustrationPath)
                     .attr('class', $attributes.class)
