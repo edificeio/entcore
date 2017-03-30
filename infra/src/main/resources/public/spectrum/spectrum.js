@@ -2307,11 +2307,4 @@
 
     window.tinycolor = tinycolor;
     })();
-
-    $(function () {
-        if ($.fn.spectrum.load) {
-            $.fn.spectrum.processNativeColorInputs();
-        }
-    });
-
 });
