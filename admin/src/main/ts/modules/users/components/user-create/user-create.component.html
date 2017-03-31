@@ -13,10 +13,14 @@
             <input type="text" [(ngModel)]="newUser.lastName" name="lastName" required #lastNameInput="ngModel">
             <form-errors [control]="lastNameInput"></form-errors>
         </form-field>
+
         <form-field label="birthDate">
-            <input type="date" [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" [max]="now" #birthDateInput="ngModel">
+            <datepicker minDate="1900-01-01" maxDate="today">
+                <input type="text" [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" #birthDateInput="ngModel">
+            </datepicker>
             <form-errors [control]="birthDateInput"></form-errors>
         </form-field>
+
         <form-field label="profile">
             <select [(ngModel)]="newUser.type" name="type">
                 <option value="Teacher"><s5l>Teacher</s5l></option>

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 
-import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent } from './components'
+import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent, Datepicker } from './components'
 import { AnchorDirective } from './directives'
 
 @NgModule({
@@ -21,7 +21,8 @@ import { AnchorDirective } from './directives'
         ListComponent,
         FormField,
         FormErrors,
-        AnchorDirective
+        AnchorDirective,
+        Datepicker
     ],
     exports: [
         SpinnerComponent,
@@ -30,7 +31,8 @@ import { AnchorDirective } from './directives'
         ListComponent,
         FormField,
         FormErrors,
-        AnchorDirective
+        AnchorDirective,
+        Datepicker
     ]
 })
 export class UxModule{}

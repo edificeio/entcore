@@ -912,3 +912,13 @@ multi-combo {
         border-top: 1px solid white;
     }
 }
+
+/* Datepicker */
+div.flatpickr {
+    a {
+        cursor: pointer;
+    }
+    input {
+        width: 70px;
+    }
+}

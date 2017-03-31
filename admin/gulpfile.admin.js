@@ -28,6 +28,7 @@ gulp.task('admin2:clean', function() {
         './admin/src/main/resources/public/templates/*',
         './admin/src/main/resources/public/styles/admin.css',
         './admin/src/main/resources/public/styles/admin.css.map',
+        './admin/src/main/resources/public/styles/flatpickr.min.css',
         './admin/src/main/resources/view/*'])
 })
 
@@ -45,10 +46,10 @@ gulp.task('admin2:sass', function() {
         .pipe(gulp.dest('./admin/src/main/resources/public/styles'))
 })
 
-gulp.task('admin2:build-dev', ['admin2:ts-dev'], function(){
+gulp.task('admin2:build-dev', ['admin2:ts-dev', 'admin2:copy-flatpickr-css'], function(){
 
 })
-gulp.task('admin2:build', ['admin2:ts'], function(){
+gulp.task('admin2:build', ['admin2:ts', 'admin2:copy-flatpickr-css'], function(){
 
 })
 
@@ -73,4 +74,9 @@ gulp.task('admin2:dev-server', function() {
     server.listen(devServConf.port, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err)
     })
+})
+
+gulp.task('admin2:copy-flatpickr-css', function() {
+    return gulp.src('./node_modules/flatpickr/dist/flatpickr.min.css')
+        .pipe(gulp.dest(basePath + '/resources/public/styles'))
 })
