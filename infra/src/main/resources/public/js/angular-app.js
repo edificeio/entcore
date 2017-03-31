@@ -2387,7 +2387,7 @@ module.directive('loadingIcon', function($compile) {
                 if ($('#theme').length === 0)
                     return;
 
-                if($('body').find('admin-portal')){
+                if($('body').find('admin-portal').length){
                     var loadingIllustrationPath = '/public/' + skin.skin + '/img/icons/anim_loading_small.gif';
                 }else{
                     var loadingIllustrationPath = '/assets/themes/' + skin.skin + '/img/icons/anim_loading_small.gif';
