@@ -66,3 +66,4 @@ admin/src/main/resources/view
 admin/src/main/resources/public/styles/admin.css
 admin/src/main/resources/public/styles/admin.css.map
 auth/
+admin/src/main/resources/public/styles/flatpickr\.min\.css
