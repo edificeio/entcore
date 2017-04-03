@@ -920,5 +920,9 @@ div.flatpickr {
     }
     input {
         width: 70px;
+
+        &.cursor-default {
+            cursor: default;
+        }
     }
 }

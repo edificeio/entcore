@@ -13,7 +13,8 @@
             <form-errors [control]="displayNameInput"></form-errors>
         </form-field>
         <form-field label="birthDate">
-            <input type="date" [(ngModel)]="details.birthDate" name="birthDate" [max]="now" #birthDateInput="ngModel">
+            <date-picker [(ngModel)]="details.birthDate" name="birthDate" #birthDateInput="ngModel" minDate="1900-01-01" maxDate="today">
+            </date-picker>
             <form-errors [control]="birthDateInput"></form-errors>
         </form-field>
         <form-field label="address">

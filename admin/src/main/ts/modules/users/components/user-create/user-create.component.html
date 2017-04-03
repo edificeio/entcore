@@ -15,9 +15,8 @@
         </form-field>
 
         <form-field label="birthDate">
-            <datepicker minDate="1900-01-01" maxDate="today">
-                <input type="text" [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" #birthDateInput="ngModel">
-            </datepicker>
+            <date-picker [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" minDate="1900-01-01" maxDate="today" #birthDateInput="ngModel">
+            </date-picker>
             <form-errors [control]="birthDateInput"></form-errors>
         </form-field>
 
