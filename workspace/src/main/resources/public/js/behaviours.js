@@ -167,6 +167,10 @@ Behaviours.register('workspace', {
 					});
 				},
 				init: function(){
+					this.visibility = 'protected';
+					if(this.snipletResource.visibility === 'PUBLIC'){
+						this.visibility = 'public';
+					}
 					this.displaySniplet = {};
 					this.create = {
 						document: {},
@@ -312,6 +316,10 @@ Behaviours.register('workspace', {
 					};
 				},
 				init: function () {
+					this.visibility = 'protected';
+					if(this.snipletResource.visibility === 'PUBLIC'){
+						this.visibility = 'public';
+					}
 					http().get('/workspace/documents', { filter: 'owner' }).done(function (data) {
 						this.documents = data;
 						this.$apply();
