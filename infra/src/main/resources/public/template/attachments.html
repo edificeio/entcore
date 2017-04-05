@@ -1,7 +1,7 @@
 <div drop-files="linker.resource.file"
 	on-drop="linker.resource.title = linker.resource.file[0].name; linker.createResource()">
 
-	<input type="button" value="Ajouter une pièce jointe" ng-click="attachments.display.pickFile = true" />
+	<input type="button" i18n-value="attachment.add" ng-click="attachments.display.pickFile = true" />
 
 	<h2 ng-if="linker.resource.file.length"><i18n>editor.attachment.title</i18n></h2>
 
