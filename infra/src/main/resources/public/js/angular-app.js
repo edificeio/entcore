@@ -5068,7 +5068,7 @@ module.directive('microbox', function($compile) {
             var content = element.html();
 
             return function(scope, element, attributes) {
-                var title = lang.translate(attributes.title);
+                var microtitle = lang.translate(attributes.microtitle);
                 var closeBox = lang.translate(attributes.close);
                 element.addClass('zero-mobile');
 
@@ -5085,7 +5085,7 @@ module.directive('microbox', function($compile) {
                                 '</div></div>');
 
                             $('.microbox-material').html($compile(content)(scope));
-                            element.after('<button class="microbox">' + title + '</button>');
+                            element.after('<button class="microbox">' + microtitle + '</button>');
 
                             $('button.microbox').on('click', function() {
                                 if ($('.microbox-wrapper').hasClass('zero')) {
