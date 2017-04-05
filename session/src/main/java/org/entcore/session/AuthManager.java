@@ -401,20 +401,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				logger.error("In doDrop - Error getting object after removing hazelcast session " + sessionId, e);
 			}
 		}
-		if (session == null) {
-			sendError(message, "Session not found. 5");
-			return;
-		}
-
-		JsonObject s =  unmarshal(sessions.remove(sessionId));
-		if (s != null) {
-			final String userId = s.getString("userId");
-			LoginInfo info = removeLoginInfo(sessionId, userId);
-			if (config.getBoolean("slo", false)) {
-				eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
-			}
-			if (info != null) {
-				vertx.cancelTimer(info.timerId);
+		if (session != null) {
+			JsonObject s = unmarshal(sessions.remove(sessionId));
+			if (s != null) {
+				final String userId = s.getString("userId");
+				LoginInfo info = removeLoginInfo(sessionId, userId);
+				if (config.getBoolean("slo", false)) {
+					eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
+				}
+				if (info != null) {
+					vertx.cancelTimer(info.timerId);
+				}
 			}
 		}
 		JsonObject res = new JsonObject().putString("status", "ok");
