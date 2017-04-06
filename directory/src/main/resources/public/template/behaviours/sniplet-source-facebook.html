@@ -5,9 +5,9 @@
     </button>
 </div>
 
-<lightbox show="display.pickGroup" on-close="display.pickGroup = false">
+<lightbox show="display.pickGroup">
     <h2>Groupes</h2>
-    <wizard on-finish="applySource()" on-cancel="cancelSniplet()">
+    <wizard on-finish="applySource()" on-cancel="display.pickGroup = false">
         <step on-next="loadGroups()" next-condition="search.structure">
             <h1><i18n>directory.structure</i18n></h1>
             <div class="row">
