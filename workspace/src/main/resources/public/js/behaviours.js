@@ -243,6 +243,9 @@ Behaviours.register('workspace', {
 					$originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
 				},
 				dropTo: function(targetItem, $originalEvent){
+					if(!targetItem || targetItem.path){
+						return;
+					}
 					var originalItem = JSON.parse($originalEvent.dataTransfer.getData('Text'));
 					var foundItem = _.find(this.cursor.currentFolder.documents, function(document){
 						return (document._id === originalItem._id && originalItem.metadata) || (document._id === undefined && originalItem.title === document.title);
