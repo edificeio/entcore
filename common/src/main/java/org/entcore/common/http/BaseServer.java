@@ -72,16 +72,17 @@ public abstract class BaseServer extends Server {
 		super.start();
 
 		String node = (String) vertx.sharedData().getMap("server").get("node");
-		if (node == null) {
-			return;
-		}
+
 		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
 
 		Config.getInstance().setConfig(config);
-		initModulesHelpers(node);
+
+		if (node != null) {
+			initModulesHelpers(node);
+		}
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
 		eventStoreFactory.setContainer(container);
