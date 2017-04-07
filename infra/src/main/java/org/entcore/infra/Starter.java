@@ -27,6 +27,7 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.infra.controllers.EmbedController;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
@@ -47,6 +48,8 @@ import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -55,6 +58,7 @@ public class Starter extends BaseServer {
 
 	private String node;
 	private boolean cluster;
+	public final static Map<String,String> MAP_APP_VERSION = new HashMap<>();
 
 	@Override
 	public void start() {
@@ -249,6 +253,13 @@ public class Starter extends BaseServer {
 				conf, module.getInteger("instances", 1), handler);
 	}
 
+	private void addAppVersion(final JsonObject module) {
+		final List<String> lNameVersion = StringUtils.split(module.getString("name", ""), "~");
+		if (lNameVersion != null && lNameVersion.size() == 3) {
+			MAP_APP_VERSION.put(lNameVersion.get(0) + "." + lNameVersion.get(1), lNameVersion.get(2));
+		}
+	}
+
 	private void deployModules(JsonArray modules, boolean internal) {
 		for (Object o : modules) {
 			JsonObject module = (JsonObject) o;
@@ -265,6 +276,7 @@ public class Starter extends BaseServer {
 				}
 			}
 			conf = conf.mergeIn(module.getObject("config", new JsonObject()));
+			addAppVersion(module);
 			container.deployModule(module.getString("name"),
 					conf, module.getInteger("instances", 1));
 		}
