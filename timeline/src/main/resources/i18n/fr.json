@@ -150,6 +150,28 @@
     "timeline.pulsar.notifications": "Grâce au fil de nouveautés vous retrouvez dès la page d’accueil toutes les informations qui vous concernent. Ainsi, vous pouvez accéder aux contenus mis à jour en un seul clic.",
     "timeline.pulsar.settings": "Activez ou désactivez les widgets (outils) de votre choix qui s’afficheront sur votre page d’accueil.",
     "timeline.pulsar.widgets": "Personnalisez vos widgets (outils) et placez-les comme vous le souhaitez par simple glisser-déposer.",
-    "timeline.pulsar.filters": "Le panneau déroulant des filtres du fil de nouveautés vous permet de définir les applications dont vous voulez voir les notifications et de cacher celles qui vous intéressent moins. Ce paramétrage vous est personnel et est sauvegardé automatiquement. Pas d'inquiétude vous pourrez toujours modifier vos préférences par la suite !"
+    "timeline.pulsar.filters": "Le panneau déroulant des filtres du fil de nouveautés vous permet de définir les applications dont vous voulez voir les notifications et de cacher celles qui vous intéressent moins. Ce paramétrage vous est personnel et est sauvegardé automatiquement. Pas d'inquiétude vous pourrez toujours modifier vos préférences par la suite !",
+    "assistant.welcome.title": "Bienvenue dans L'ENT !",
+    "assistant.welcome.message": "L'ENT est l'espace numérique de travail à destination de l’ensemble de la communauté éducative. Elèves, parents, professeurs, personnels, vous trouverez tous les services vous permettant d’être informé, de communiquer, de collaborer et de réaliser ou de participer à des activités éducatives.",
+    "assistant.goodbye": "Bonne navigation dans votre ENT !",
+
+    "assistant.personnel.title": "Personnel, avec l'ENT vous pourrez...",
+    "assistant.relative.title": "Parent, avec l'ENT vous pourrez...",
+    "assistant.student.title": "Lycéen, avec l'ENT vous pourrez...",
+    "assistant.teacher.title": "Enseignant, avec l'ENT vous pourrez...",
+
+    "assistant.personnel.ensure": "Assurer la communication de l'établissement grâce aux services...",
+    "assistant.personnel.strenght": "Renforcer les liens avec les familles grâce aux services...",
+
+    "assistant.relative.inform": "Être informé(e) de la vie de l'établissement grâce aux services...",
+    "assistant.relative.communicate": "Communiquer avec les équipes du Lycée grâce aux services...",
+
+    "assistant.student.organize": "Organiser votre travail et suivre vos cours grâce aux services...",
+    "assistant.student.lead": "Mener des projets de groupe grâce aux services collaboratifs...",
+    "assistant.student.inform": "Vous informer sur les événements de la vie lycéenne grâce aux services...",
+    "assistant.student.communicate": "Communiquer facilement avec vos enseignants et vos camarades grâce aux services...",
+
+    "assistant.teacher.accompany": "Accompagner le travail des élèves grâce aux services...",
+    "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services..."
 
 }
