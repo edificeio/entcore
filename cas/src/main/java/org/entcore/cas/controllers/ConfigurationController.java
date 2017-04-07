@@ -41,6 +41,7 @@ public class ConfigurationController extends BaseController {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
+					services.cleanPatterns();
 					JsonArray externalApps = event.body().getArray("result");
 					for (Object o: externalApps) {
 						if (!(o instanceof JsonObject)) continue;
