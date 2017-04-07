@@ -587,8 +587,6 @@ function Conversation($scope, $timeout, $compile, $sanitize, date, notify, route
 	}
 
 	var letterIcon = document.createElement("img")
-	//letterIcon.src = skin.theme +".."+"/img/icons/message-icon.png"
-
 	letterIcon.src = skin.theme +".."+"/../img/icons/message-icon.png"
 	$scope.drag = function(item, $originalEvent){
 		$originalEvent.dataTransfer.setDragImage(letterIcon, 0, 0);
