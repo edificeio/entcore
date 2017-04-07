@@ -274,11 +274,23 @@ public class User {
 	}
 
 	public static void delete(long delay, TransactionHelper transactionHelper) {
-		JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
-		String query =
-				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
-				"RETURN u.id as id, u.externalId as externalId, u.displayName as displayName, HEAD(u.profiles) as type ";
+        JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+        String query =
+                "MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+                "WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+                "OPTIONAL MATCH (fgroup:FunctionalGroup) " +
+                "WHERE fgroup.externalId IN u.groups " +
+                "OPTIONAL MATCH (c:Class) " +
+                "WHERE c.externalId IN u.classes " +
+                "OPTIONAL MATCH (s:Structure) " +
+                "WHERE s.externalId IN u.structures " +
+                "RETURN u.id as id, u.externalId as externalId, u.displayName as displayName, " +
+                "u.structures as structures, HEAD(u.profiles) as type, " +
+                "CASE WHEN u.classes IS NULL THEN [] ELSE u.classes END as classes," +
+                "CASE WHEN u.groups IS NULL THEN [] ELSE u.groups END as groups," +
+                "CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
+                "CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as groupIds, " +
+                "CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds";
 		transactionHelper.add(query, params);
 		query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
