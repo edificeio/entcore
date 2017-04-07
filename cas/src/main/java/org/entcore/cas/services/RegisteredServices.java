@@ -81,4 +81,10 @@ public class RegisteredServices {
 		return false;
 	}
 
+	public void cleanPatterns() {
+		for (RegisteredService registeredService: services) {
+			registeredService.cleanPatterns();
+		}
+	}
+
 }

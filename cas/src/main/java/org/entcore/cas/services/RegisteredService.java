@@ -41,6 +41,8 @@ public interface RegisteredService {
 
 	void addPatterns(String... pattern);
 
+	void cleanPatterns();
+
 	JsonObject getInfos(String acceptLanguage);
 
 	String getId();

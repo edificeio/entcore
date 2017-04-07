@@ -39,6 +39,7 @@ public class DefaultRegisteredService implements RegisteredService {
 
 	protected final I18n i18n = I18n.getInstance();
 	protected final Set<Pattern> patterns = new HashSet<>();
+	private final Set<Pattern> confPatterns = new HashSet<>();
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
 	protected String directoryAction = "getUser";
@@ -53,7 +54,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		try {
 			List<String> patterns = (List<String>) conf.get(CONF_PATTERNS);
 			if (patterns != null && !patterns.isEmpty()) {
-				addPatterns(patterns.toArray(new String[patterns.size()]));
+				addConfPatterns(patterns.toArray(new String[patterns.size()]));
 			}
 			this.principalAttributeName = String.valueOf(conf.get(CONF_PRINCIPAL_ATTR_NAME));
 		}
@@ -98,6 +99,18 @@ public class DefaultRegisteredService implements RegisteredService {
 		return serviceUri;
 	}
 
+	private void addConfPatterns(String... patterns) {
+		for (String pattern : patterns) {
+			try {
+				this.confPatterns.add(Pattern.compile(pattern));
+				this.patterns.add(Pattern.compile(pattern));
+			}
+			catch (PatternSyntaxException pe) {
+				log.error("Bad service configuration : failed to compile regex : " + pattern);
+			}
+		}
+	}
+
 	@Override
 	public void addPatterns(String... patterns) {
 		for (String pattern : patterns) {
@@ -108,6 +121,12 @@ public class DefaultRegisteredService implements RegisteredService {
 				log.error("Bad service configuration : failed to compile regex : " + pattern);
 			}
 		}
+	}
+
+	@Override
+	public void cleanPatterns() {
+		this.patterns.clear();
+		this.patterns.addAll(this.confPatterns);
 	}
 
 	@Override
