@@ -71,5 +71,6 @@ export class UserFilters implements OnInit, OnDestroy {
 
     private deselect(filter, item) {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
+        filter.observable.next()
     }
 }

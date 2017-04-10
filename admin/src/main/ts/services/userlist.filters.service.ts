@@ -21,13 +21,15 @@ export abstract class UserFilter<T> {
 
     display?: string
     order?: string
+    filterProp?: string
 }
+
 export type UserFilterList<T> = UserFilter<T>[]
 
 class ProfileFilter extends UserFilter<string> {
     type = 'type'
     label = 'profiles.multi.combo.title'
-    comboModel = [ 'Student', 'Teacher', 'Relative', 'Personnel', 'Guest' ]
+    comboModel = []
 
     filter = (type: string) => {
         let outputModel = this.outputModel
@@ -54,6 +56,7 @@ class ClassesFilter extends UserFilter<{id: string, name: string}> {
     comboModel = []
     display = 'name'
     order = '+name'
+    filterProp = 'name'
 
     filter = (classes: {id: string, name: string}[]) => {
         let outputModel = this.outputModel
@@ -65,6 +68,70 @@ class ClassesFilter extends UserFilter<{id: string, name: string}> {
     }
 }
 
+class SourcesFilter extends UserFilter<string> {
+    type = 'source'
+    label = 'sources.multi.combo.title'
+    comboModel = []
+    order = '+'
+    filterProp = 'this'
+
+    filter = (source: string) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 || outputModel.indexOf(source) >= 0
+    }
+}
+
+class FunctionsFilter extends UserFilter<string> {
+    type = 'aafFunctions'
+    label = 'functions.multi.combo.title'
+    comboModel = []
+    order = '+'
+    filterProp = 'this'
+
+    filter = (functions: string[]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 || 
+            functions && functions.length > 0 &&
+            functions.some(f => {
+                return outputModel.some(o => o === f)
+            })
+    }
+}
+
+class MatieresFilter extends UserFilter<string> {
+    type = 'aafFunctions'
+    label = 'matieres.multi.combo.title'
+    comboModel = []
+    order = '+'
+    filterProp = 'this'
+
+    filter = (matieres: string[]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+            matieres && matieres.length > 0 &&
+            matieres.some(m => {
+                return outputModel.some(o => o === m)
+            })
+    }
+}
+
+class FunctionalGroupsFilter extends UserFilter<string> {
+    type = 'functionalGroups'
+    label = 'functionalGroups.multi.combo.title'
+    comboModel = []
+    order = '+'
+    filterProp = 'this'
+
+    filter = (fgroups: string[]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+            fgroups && fgroups.length > 0 &&
+            fgroups.some(f => {
+                return outputModel.some(o => o === f)
+            })
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -72,14 +139,23 @@ export class UserlistFiltersService {
 
     updateSubject: Subject<any> = new Subject<any>()
 
-    private profileFilter       =  new ProfileFilter(this.updateSubject)
-    private activationFilter    =  new ActivationFilter(this.updateSubject)
-    private classesFilter       =  new ClassesFilter(this.updateSubject)
+    private profileFilter       = new ProfileFilter(this.updateSubject)
+    private classesFilter       = new ClassesFilter(this.updateSubject)
+    private functionalGroupsFilter = new FunctionalGroupsFilter(this.updateSubject)
+    // groupe ent
+    private activationFilter    = new ActivationFilter(this.updateSubject)
+    private functionsFilter     = new FunctionsFilter(this.updateSubject)
+    private matieresFilter      = new MatieresFilter(this.updateSubject)
+    private sourcesFilter       = new SourcesFilter(this.updateSubject) 
 
     filters : UserFilterList<any> = [
         this.profileFilter,
+        this.classesFilter,
+        this.functionalGroupsFilter,
         this.activationFilter,
-        this.classesFilter
+        this.functionsFilter,
+        this.matieresFilter,
+        this.sourcesFilter
     ]
 
     resetFilters(){
@@ -88,8 +164,28 @@ export class UserlistFiltersService {
         }
     }
 
+    setProfiles(profiles: string[]) {
+        this.profileFilter.comboModel = profiles
+    }
+
     setClasses(classes: {id:string, name:string}[]) {
         this.classesFilter.comboModel = classes
+    }
+
+    setSources(sources: string[]) {
+        this.sourcesFilter.comboModel = sources
+    }
+
+    setFunctions(functions: string[]) {
+        this.functionsFilter.comboModel = functions
+    }
+
+    setMatieres(matieres: string[]) {
+        this.matieresFilter.comboModel = matieres
+    }
+
+    setFunctionalGroupsFilter(fgroups: string[]) {
+        this.functionalGroupsFilter.comboModel = fgroups
     }
 
     getFormattedFilters() : Object {

@@ -1,6 +1,6 @@
-import { StructureModel } from '../../../../store'
+import { StructureModel, UserModel } from '../../../../store'
 import { routing } from '../../../../routing/routing.utils'
-import { LoadingService } from '../../../../services'
+import { LoadingService, NotifyService } from '../../../../services'
 import { UserlistFiltersService } from '../../../../services/userlist.filters.service'
 import { UsersStore } from '../../store'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
@@ -39,7 +39,8 @@ export class UsersRoot implements OnInit, OnDestroy {
         private cdRef: ChangeDetectorRef,
         public usersStore: UsersStore,
         private filtersService: UserlistFiltersService,
-        private ls: LoadingService){}
+        private ls: LoadingService,
+        private ns: NotifyService){}
 
     // Subscriptions
     private structureSubscriber : Subscription
@@ -47,11 +48,10 @@ export class UsersRoot implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
-            if(data['structure']) {
+            if(data['structure'] && data['userlist']) {
                 let structure: StructureModel = data['structure']
                 this.usersStore.structure = structure
-                this.filtersService.resetFilters()
-                this.filtersService.setClasses(structure.classes)
+                this.initFilters(structure)
                 this.cdRef.markForCheck()
             }
         })
@@ -86,4 +86,65 @@ export class UsersRoot implements OnInit, OnDestroy {
         this.router.navigate([view], { relativeTo: this.route })
     }
 
+    private initFilters(structure) {
+        this.filtersService.resetFilters()
+        this.filtersService.setClasses(structure.classes)
+
+        if (structure.users && structure.users.data) {
+            let profiles = []
+            let sources = []
+            let functions = []
+            let matieres = []
+            let functionalGroups = []
+
+            const usersLength = structure.users.data.length
+            for (let i = 0; i < usersLength; i++) {
+                let u: UserModel = structure.users.data[i]
+
+                if (profiles.indexOf(u.type) < 0) {
+                    profiles.push(u.type)
+                }
+                if (sources.indexOf(u.source) < 0) {
+                    sources.push(u.source)
+                }
+                if(u.aafFunctions) {
+                    if (u.type === 'Personnel' || u.type === 'Teacher') {
+                        const aafLength = u.aafFunctions.length
+                        for (let i = 0; i < aafLength; i++) {
+                            let f = u.aafFunctions[i]
+                            switch (u.type) {
+                                case 'Personnel':
+                                    if (functions.indexOf(f) < 0) {
+                                        functions.push(f)
+                                    }
+                                    break;
+                                case 'Teacher':
+                                    if (matieres.indexOf(f) < 0) {
+                                        matieres.push(f)
+                                    }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+
+                if (u.functionalGroups) {
+                    const fgLength = u.functionalGroups.length
+                    for (let i = 0; i < fgLength; i++) {
+                        let fg = u.functionalGroups[i];
+                        if (functionalGroups.indexOf(fg) < 0) {
+                            functionalGroups.push(fg)
+                        }
+                    }
+                }
+            }
+
+            this.filtersService.setProfiles(profiles)
+            this.filtersService.setSources(sources)
+            this.filtersService.setFunctions(functions)
+            this.filtersService.setMatieres(matieres)
+            this.filtersService.setFunctionalGroupsFilter(functionalGroups)
+        }
+    }
 }
