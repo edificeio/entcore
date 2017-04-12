@@ -27,6 +27,7 @@ export class UserModel extends Model<UserModel> {
     blocked: boolean
     aafFunctions: string[]
     functionalGroups: string[]
+    manualGroups: string[]
     structures: { id: string, name: string }[]
     classes: { id: string, name: string}[]
     duplicates: { id: string, firstName: string, lastName: string, code: string, structures: string[] }[]

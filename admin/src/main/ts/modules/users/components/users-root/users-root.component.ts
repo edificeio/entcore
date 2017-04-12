@@ -94,8 +94,10 @@ export class UsersRoot implements OnInit, OnDestroy {
             let profiles = []
             let sources = []
             let functions = []
-            let matieres = []
+            // FIXME : when user model updated
+            // let matieres = []
             let functionalGroups = []
+            let manualGroups = []
 
             const usersLength = structure.users.data.length
             for (let i = 0; i < usersLength; i++) {
@@ -112,19 +114,24 @@ export class UsersRoot implements OnInit, OnDestroy {
                         const aafLength = u.aafFunctions.length
                         for (let i = 0; i < aafLength; i++) {
                             let f = u.aafFunctions[i]
-                            switch (u.type) {
-                                case 'Personnel':
-                                    if (functions.indexOf(f) < 0) {
-                                        functions.push(f)
-                                    }
-                                    break;
-                                case 'Teacher':
-                                    if (matieres.indexOf(f) < 0) {
-                                        matieres.push(f)
-                                    }
-                                default:
-                                    break;
+                            if (functions.indexOf(f) < 0) {
+                                functions.push(f)
                             }
+
+                            // FIXME : when user model updated
+                            // switch (u.type) {
+                            //     case 'Personnel':
+                            //         if (functions.indexOf(f) < 0) {
+                            //             functions.push(f)
+                            //         }
+                            //         break;
+                            //     case 'Teacher':
+                            //         if (matieres.indexOf(f) < 0) {
+                            //             matieres.push(f)
+                            //         }
+                            //     default:
+                            //         break;
+                            // }
                         }
                     }
                 }
@@ -138,13 +145,25 @@ export class UsersRoot implements OnInit, OnDestroy {
                         }
                     }
                 }
+
+                if (u.manualGroups) {
+                    const gLength = u.manualGroups.length
+                    for (let i = 0; i < gLength; i++) {
+                        let fg = u.manualGroups[i];
+                        if (manualGroups.indexOf(fg) < 0) {
+                            manualGroups.push(fg)
+                        }
+                    }
+                }
             }
 
             this.filtersService.setProfiles(profiles)
             this.filtersService.setSources(sources)
             this.filtersService.setFunctions(functions)
-            this.filtersService.setMatieres(matieres)
+            // FIXME : when user model updated
+            // this.filtersService.setMatieres(matieres)
             this.filtersService.setFunctionalGroupsFilter(functionalGroups)
+            this.filtersService.setManualGroupsFilter(manualGroups)
         }
     }
 }

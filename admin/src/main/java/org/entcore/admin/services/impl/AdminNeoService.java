@@ -37,7 +37,8 @@ public class AdminNeoService implements AdminService {
 			"OPTIONAL MATCH (u)-[d: DUPLICATE]-(duplicate: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(sd: Structure) " +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct: Structure) " +
 			"OPTIONAL MATCH (u)-[:IN]->(fgroup: FunctionalGroup) " +
-			"WITH u, p, class, fgroup, struct, duplicate, d, collect(sd.id) as structuresDup " +
+			"OPTIONAL MATCH (u)-[:IN]->(mgroup: ManualGroup) " +
+			"WITH u, p, class, fgroup, mgroup, struct, duplicate, d, collect(sd.id) as structuresDup " +
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
@@ -47,6 +48,8 @@ public class AdminNeoService implements AdminService {
 			"ELSE COLLECT(distinct {id: class.id, name: class.name}) END as classes," +
 			"CASE WHEN fgroup IS NULL THEN [] " +
 			"ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
+			"CASE WHEN mgroup IS NULL THEN [] " +
+			"ELSE COLLECT(distinct mgroup.name) END as manualGroups, " +
 			"CASE WHEN duplicate IS NULL THEN [] " +
 			"ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
 			"COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +

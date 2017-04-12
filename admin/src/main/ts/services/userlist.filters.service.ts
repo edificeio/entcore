@@ -132,6 +132,23 @@ class FunctionalGroupsFilter extends UserFilter<string> {
     }
 }
 
+class ManualGroupsFilter extends UserFilter<string> {
+    type = 'manualGroups'
+    label = 'manualGroups.multi.combo.title'
+    comboModel = []
+    order = '+'
+    filterProp = 'this'
+
+    filter = (mgroups: string[]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+            mgroups && mgroups.length > 0 &&
+            mgroups.some(g => {
+                return outputModel.some(o => o === g)
+            })
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -139,22 +156,25 @@ export class UserlistFiltersService {
 
     updateSubject: Subject<any> = new Subject<any>()
 
-    private profileFilter       = new ProfileFilter(this.updateSubject)
-    private classesFilter       = new ClassesFilter(this.updateSubject)
-    private functionalGroupsFilter = new FunctionalGroupsFilter(this.updateSubject)
-    // groupe ent
-    private activationFilter    = new ActivationFilter(this.updateSubject)
-    private functionsFilter     = new FunctionsFilter(this.updateSubject)
-    private matieresFilter      = new MatieresFilter(this.updateSubject)
-    private sourcesFilter       = new SourcesFilter(this.updateSubject) 
+    private profileFilter           = new ProfileFilter(this.updateSubject)
+    private classesFilter           = new ClassesFilter(this.updateSubject)
+    private functionalGroupsFilter  = new FunctionalGroupsFilter(this.updateSubject)
+    private manualGroupsFilter      = new ManualGroupsFilter(this.updateSubject)
+    private activationFilter        = new ActivationFilter(this.updateSubject)
+    private functionsFilter         = new FunctionsFilter(this.updateSubject)
+    // FIXME when user model updated
+    // private matieresFilter          = new MatieresFilter(this.updateSubject)
+    private sourcesFilter           = new SourcesFilter(this.updateSubject)
 
     filters : UserFilterList<any> = [
         this.profileFilter,
         this.classesFilter,
         this.functionalGroupsFilter,
+        this.manualGroupsFilter,
         this.activationFilter,
         this.functionsFilter,
-        this.matieresFilter,
+        // FIXME when user model updated
+        // this.matieresFilter,
         this.sourcesFilter
     ]
 
@@ -180,12 +200,17 @@ export class UserlistFiltersService {
         this.functionsFilter.comboModel = functions
     }
 
-    setMatieres(matieres: string[]) {
-        this.matieresFilter.comboModel = matieres
-    }
+    // FIXME when user model updated
+    // setMatieres(matieres: string[]) {
+    //     this.matieresFilter.comboModel = matieres
+    // }
 
     setFunctionalGroupsFilter(fgroups: string[]) {
         this.functionalGroupsFilter.comboModel = fgroups
+    }
+
+    setManualGroupsFilter(mgroups: string[]) {
+        this.manualGroupsFilter.comboModel = mgroups
     }
 
     getFormattedFilters() : Object {

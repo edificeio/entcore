@@ -31,9 +31,11 @@
     "code.multi.combo.title": "Activation",
     "classes.multi.combo.title": "Classes",
     "sources.multi.combo.title": "Sources",
-    "functions.multi.combo.title": "Fonctions (personnels)",
-    "matieres.multi.combo.title": "Matières (enseignants)",
+    // "functions.multi.combo.title": "Fonctions (personnels)", // FIXME when user model updated
+    "functions.multi.combo.title": "Fonctions & matières",
+    // "matieres.multi.combo.title": "Matières (enseignants)", // FIXME when user model updated
     "functionalGroups.multi.combo.title": "Groupes d'enseignement",
+    "manualGroups.multi.combo.title": "Groupes ENT",
     "users.activated": "Utilisateurs activés",
     "users.not.activated": "Utilisateurs non activés",
     "new.user.creation": "Création d'un nouvel utilisateur",
