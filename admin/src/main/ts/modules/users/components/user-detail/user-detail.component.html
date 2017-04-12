@@ -24,22 +24,28 @@
     </div>
 
     <user-info-section [user]="user" [structure]="structure"></user-info-section>
+
     <user-administrative-section [user]="user" [structure]="structure"></user-administrative-section>
+    
     <user-duplicates-section [user]="user" [structure]="structure" [open]="forceDuplicates"></user-duplicates-section>
+    
     <user-relatives-section [user]="user" [structure]="structure"></user-relatives-section>
+    
     <user-children-section [user]="user" [structure]="structure"></user-children-section>
-    <user-structures-section [user]="user" [structure]="structure"></user-structures-section>
-
-    <panel-section section-title="users.details.section.classes" [folded]="true">
-        <ul><li *ngFor="let c of user?.classes">{{ c.name }}</li></ul>
-    </panel-section>
-
+    
     <panel-section section-title="users.details.section.functions" [folded]="true">
+        <ul><li *ngFor="let f of user?.aafFunctions">{{ f }}</li></ul>
     </panel-section>
+
+    <user-structures-section [user]="user" [structure]="structure"></user-structures-section>
+    
+    <user-classes-section [user]="user" [structure]="structure"></user-classes-section>
 
     <panel-section section-title="users.details.section.learning.groups" [folded]="true">
+        <ul><li *ngFor="let fg of user?.userDetails?.functionalGroups">{{ fg.name }}</li></ul>
     </panel-section>
 
     <panel-section section-title="users.details.section.manual.groups" [folded]="true">
+        <ul><li *ngFor="let g of user?.userDetails?.groups">{{ g }}</li></ul>
     </panel-section>
 </div>

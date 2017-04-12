@@ -63,6 +63,18 @@ export class UserModel extends Model<UserModel> {
         })
     }
 
+    addClass(classe: {id: string, name: string}) {
+        return this.http.put(`/directory/class/${classe.id}/link/${this.id}`).then(() => {
+            this.classes.push(classe)
+        })
+    }
+
+    removeClass(classId: string) {
+        return this.http.delete(`/directory/class/${classId}/unlink/${this.id}`).then(() => {
+            this.classes = this.classes.filter(c => c.id !== classId)
+        })
+    }
+
     async mergeDuplicate(duplicateId: string) : Promise<{ id: string } | { id: string, structure: string }> {
         await this.http.put(`/directory/duplicate/merge/${this.id}/${duplicateId}`)
         let duplicate = this.duplicates.find(d => d.id === duplicateId)
