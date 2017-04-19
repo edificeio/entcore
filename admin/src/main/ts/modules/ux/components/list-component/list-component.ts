@@ -14,7 +14,7 @@ import { Component, Input, Output, ChangeDetectionStrategy,
         ul li {
             cursor: pointer;
             border-top: 1px solid #ddd;
-            padding: 5px 10px;
+            padding: 10px 10px;
         }
 
         ul li.disabled {

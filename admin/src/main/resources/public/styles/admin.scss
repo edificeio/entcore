@@ -4,19 +4,23 @@
 /* Variables */
 $main: rgb(0, 200, 248);
 $main-light: rgb(99, 218, 247);
-$main-dark: darken($main, 10%);
+$main-dark: darken($main, 5%);
 $accent: rgb(255, 131, 82);
 $accent-light: lighten($accent, 20%);
 $accent-dark: darken($accent, 10%);
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: crimson;
+$button-bg: #EBEBEB;
 $user-li-hover: #ffccb8;
+$user-profile-img-width: 200px;
+$fontawesome-size: 1.5em;
 
 /* Elements */
 body {
     padding: 0;
     margin: 0;
     font-family: 'Oxygen', sans-serif;
+    background-color: #F2F2F2;
 }
 
 a {
@@ -30,20 +34,42 @@ a:hover { color: initial; }
 h1 {
     margin: 0;
     padding: 1em 0;
+    color: $main-dark;
+    font-weight: normal;
 }
 
 button {
-    &:not(:disabled) { cursor: pointer; }
-    background: white;
-    border: 1px solid black;
-    transition: background 0.25s;
+    text-align: left;
+    padding: 10px 10px;
+    background-color: $button-bg;
+    border: 1px solid $button-bg;
+    border-radius: 3px;
+    transition: background 0.25s, color 0.25s;
+    line-height: 1.5em;
+
+    &.thin {
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    &.input-inline {
+        margin-left: 10px;
+    }
+
+    &:not(:disabled) { 
+        cursor: pointer;
+        color: $accent;
+    }
 
     &:hover:not(:disabled) {
         background-color: $accent;
+        color: white;
     }
 
     i {
-        margin: 0px 5px;
+        padding-left: 10px;
+        float: right;
+        color: #444;
     }
 }
 
@@ -51,11 +77,11 @@ input[type="search"] {
     width: 100%;
     font-size: 0.8em;
     display: block;
-    padding: 10px;
+    padding: 20px 10px;
     background: none;
     outline: none;
     border: none;
-    border-bottom: 2px solid black;
+    border-bottom: 1px solid black;
     transition: border-color 0.25s;
 
     &:focus {
@@ -70,7 +96,7 @@ input[type="search"] {
 
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     border: none;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid #ddd;
     outline: none;
     transition: border-color 0.25s;
     padding: 0;
@@ -173,9 +199,6 @@ ul {
 button.leaf-button {
     padding: 10px 20px;
     font-size: 1.1em;
-    border-bottom-left-radius: 20px;
-    border-top-right-radius: 20px;
-    border: 1px solid #AAA;
 
      i {
         float: right;
@@ -185,9 +208,7 @@ button.leaf-button {
     }
 
     &:hover {
-        color:#444;
         background-color: $accent;
-        border-color: white;
 
         i {
             color: white;
@@ -220,7 +241,6 @@ button.leaf-button {
         flex: 1 0 100%;
         font-size: 1.5em;
         line-height: 1.5em;
-        font-weight: bold;
 
         i {
             margin-right: 15px;
@@ -422,6 +442,10 @@ ux-portal {
         height: 50px;
         box-shadow: 0px 0px 2px black;
         padding-right: 0px;
+
+        span {
+            font-size: 1.5em;
+        }
     }
 
     side-panel {
@@ -447,9 +471,9 @@ ux-portal {
             &:visited, &:active { color: initial; }
         }
         i {
-            font-size: 1.3em;
+            font-size: 1.5em;
             cursor: pointer;
-            padding: 15px 10px;
+            padding: 13px 10px;
             transition: color 0.25s, background-color 0.25s;
 
             &:hover {
@@ -472,14 +496,27 @@ ux-portal {
     }
 }
 
+/* Home Cards */
+quick-actions-card {
+    background-color: white;
+}
+
+user-search-card {
+    background-color: white;
+}
+
+structure-card {
+    background-color: white;
+}
+
+imports-exports-card {
+    background-color: white;
+}
+
 /* Side panel */
 
 side-panel {
     > div { background-color: $main; }
-
-    div.side-search {
-
-    }
 
     > div > item-tree > ul {
         padding-left: 0px;
@@ -575,39 +612,27 @@ spinner-cube.button-spinner {
 
     .side-card {
         @extend .card;
+        background-color: white;
     }
 
     .side-companion {
         @extend .card;
 
+        div[side-companion] {
+            background-color: white;
+        }
+
         .panel-header {
             font-size: 1.6em;
-            background: $main;
-            padding: 10px 20px;
+            color: $main-dark;
+            padding: 10px 15px;
 
-            > img, > i {
-                height: 2.3em;
-                width: 2.3em;
-                border-radius: 2em;
-                box-shadow: 0px 0px 2px;
-                padding: 5px;
-                box-sizing: border-box;
-                background: $accent;
-                position: relative;
-                top: -0.5em;
-                float: left;
+            div {
+                padding: 5px 0;
             }
 
-            > i {
-                background: white;
-                color: $accent;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            > span {
-                margin-left: 20px;
+            img {
+                width: $user-profile-img-width;
             }
         }
     }
@@ -616,16 +641,20 @@ spinner-cube.button-spinner {
 /* Panel message */
 div.panel-message {
     background-color: $contrast;
-    padding: 5px 5em;
+    padding: 5px 5px;
     color: white;
     border-top: 1px solid white;
     border-bottom: 1px solid white;
+    font-size: 0.7em;
+    margin: 20px 0;
+    line-height: 20px;
+    text-align: center;
 }
 
 /* Panel sections */
 .panel-section-header {
-    background: $main;
-    border-bottom: 3px solid $accent;
+    background: $main-dark;
+    border-bottom: 1px solid $main-light;
 
     i.opener{ font-size: 1.3em }
 }
@@ -635,10 +664,7 @@ div.panel-message {
 
 /* Forms */
 .form-field {
-    margin: 5px 0px;
-    > label:first-child {
-        font-weight: bold;
-    }
+    margin: 15px 0px;
 }
 
 .form-row {
@@ -723,22 +749,42 @@ group-users-list list-component {
 
 /* User detail */
 user-detail {
-    user-info-section div.panel-section-header {
-        padding-top: 25px !important;
+    .panel-header {
+        button {
+            width: $user-profile-img-width;
+        }
+    }
+
+    .fa {
+        font-size: $fontawesome-size;
+    }
+}
+
+/* User Filters */
+user-filters {
+    .fa {
+        font-size: $fontawesome-size;
     }
 }
 
 /* User create */
 user-create {
     panel-section {
+        form {
+            margin-bottom: 0px;
+        }
+
         div.children-container {
-            hr {
-                margin: 20px 0;
+            display: flex;
+
+            div.empty {
+                flex: 0 0 200px;
             }
+
             div.search {
-                float: left; 
+                flex: 1;
+
                 margin-right: 50px;
-                min-width: 20%;
                 
                 ul {
                     overflow-y: scroll; 
@@ -755,32 +801,91 @@ user-create {
                 }
             }
             div.children-list {
-                float: left;
-                min-width: 30%;
+                flex: 2;
                 
                 h3 {
+                    line-height: 40px;
                     margin-top: 5px;
+                }
+
+                ul {
+                    display: table;
+                    border-spacing: 10px 5px;
+                    text-align: center;
+
+                    li {
+                        display: table-row;
+
+                        span {
+                            text-align: left;
+                            display: table-cell;
+                        }
+
+                        i {
+                            display: table-cell;
+                        }
+                    }
                 }
             }
         }
         button {
-            clear: both; 
-            float: left;
-            margin: 20px 0;
+            padding: 10px 10px;
+            margin-top: 20px;
+            min-width: 100px;
+            font-size: 1.2em;
+            text-align: center;
+
+            &:not([disabled]) {
+                background-color: $accent;
+                color: white;
+            }
+
+            &:not([disabled]):hover {
+                background-color: $accent-dark;
+            }
         }
     }
+
+    div.panel-header {
+        padding: 10px 15px !important;
+    }
+
+    .panel-section-header {
+        background: none;
+        border-bottom: none;
+    }
+
+    .fa {
+        font-size: $fontawesome-size;
+    }
 }
+
+// user-administrative-section {
+//     button {
+//         color: $accent;
+//         width: 200px;
+//         text-align: left;
+//         padding: 10px 5px;
+//         background-color: #EBEBEB;
+//         border: 1px solid #EBEBEB;
+//         border-radius: 3px;
+
+//         &:hover {
+//             background-color: $accent-light;
+//             border: 1px solid $accent-light;
+//         }
+//     }
+// }
 
 /* Multi-combo */
 multi-combo {
     >button {
-        min-width: 150px;
+        min-width: 200px !important;
         outline: none;
-        border: 2px solid black;
         font-weight: bolder;
 
         &:not([disabled]) {
-            background-color: white;
+            background-color: #EBEBEB;
         }
 
         &::after {
@@ -802,6 +907,10 @@ multi-combo {
     >div {
         padding: 0px 10px;
         margin-top: -2px;
+        
+        &:not(.hidden) {
+            border: 1px solid #ddd !important;
+        }
 
         >div.options {
             margin-top: 10px;
@@ -813,9 +922,12 @@ multi-combo {
                 transition: all 0.25s;
                 margin: 2px 0px;
                 width: 100%;
+                padding-top: 5px;
+                padding-bottom: 5px;
 
                 &:hover {
-                    background: $accent;
+                    background: $accent-light;
+                    border: none;
                 }
             }
         }
@@ -850,11 +962,11 @@ multi-combo {
 
                 &.selected {
                     color: white;
-                    background-color: $accent-dark;
+                    background-color: $main-dark;
                 }
 
                 &:not(.selected):not([disabled]):hover {
-                    background-color: transparentize($accent, 0.5);
+                    background-color: transparentize($main, 0.5);
                 }
 
                 &:not(.selected)[disabled="true"] {
@@ -869,23 +981,26 @@ multi-combo {
     margin: 10px 0px;
 
     > div {
-        border: 2px solid black;
+        border: 1px solid $main-dark;
         display: inline-block;
         font-size: 0.8em;
         margin-right: 10px;
-        margin-bottom: 5px;
-        padding: 2px 10px;
+        margin-bottom: 10px;
+        padding: 10px 10px;
         cursor: pointer;
         transition: all 0.25s;
+        border-radius: 3px;
+        background-color: $main-dark;
+        min-width: 150px;
 
         i {
-            margin-left: 5px;
             opacity: 0;
             transition: opacity 0.25s;
+            float: right;
         }
 
         &:hover {
-            background: $accent-light;
+            background-color: $main-light;
             border-color: white;
 
             i {
@@ -917,12 +1032,41 @@ multi-combo {
 div.flatpickr {
     a {
         cursor: pointer;
+        
+        i:hover {
+            color: $accent;
+        }
     }
     input {
         width: 70px;
 
         &.cursor-default {
             cursor: default;
+        }
+    }
+}
+
+.flatpickr-calendar {
+
+    &.arrowTop:after {
+        border-bottom-color: $accent !important;
+    }
+
+    .flatpickr-month {
+        background-color: $accent;
+    }
+
+    .flatpickr-weekdays {
+        background-color: $accent;
+        .flatpickr-weekday {
+            background-color: $accent;
+        }
+    }
+
+    .flatpickr-days {
+        .flatpickr-day.selected {
+            background-color: $accent;
+            border-color: $accent;
         }
     }
 }

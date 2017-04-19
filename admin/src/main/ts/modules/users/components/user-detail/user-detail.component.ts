@@ -13,7 +13,7 @@ import { UsersStore } from '../../store'
 })
 export class UserDetail implements OnInit, OnDestroy{
 
-    constructor(private loadingService: LoadingService,
+    constructor(private ls: LoadingService,
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,

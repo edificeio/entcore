@@ -5,6 +5,7 @@ const WebpackDevServer = require('webpack-dev-server')
 const changed = require('gulp-changed')
 const gutil = require('gulp-util')
 const sass = require('gulp-sass')
+const rename = require('gulp-rename')
 const del = require('del')
 
 const entCoreVersion = '1.23-SNAPSHOT'
@@ -28,7 +29,7 @@ gulp.task('admin2:clean', function() {
         './admin/src/main/resources/public/templates/*',
         './admin/src/main/resources/public/styles/admin.css',
         './admin/src/main/resources/public/styles/admin.css.map',
-        './admin/src/main/resources/public/styles/flatpickr.min.css',
+        './admin/src/main/resources/public/styles/flatpickr-confetti.css',
         './admin/src/main/resources/view/*'])
 })
 
@@ -77,6 +78,7 @@ gulp.task('admin2:dev-server', function() {
 })
 
 gulp.task('admin2:copy-flatpickr-css', function() {
-    return gulp.src('./node_modules/flatpickr/dist/flatpickr.min.css')
+    return gulp.src('./node_modules/flatpickr/dist/themes/confetti.css')
+        .pipe(rename('flatpickr-confetti.css'))
         .pipe(gulp.dest(basePath + '/resources/public/styles'))
 })

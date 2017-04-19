@@ -18,7 +18,7 @@ import { Component, Input } from '@angular/core'
         .panel-section {}
         .panel-section-header {
             font-size: 1.1em;
-            padding: 5px 10px;
+            padding: 10px 10px;
         }
         .panel-section-header.foldable {
             cursor: pointer;

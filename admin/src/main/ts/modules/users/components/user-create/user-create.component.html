@@ -1,9 +1,8 @@
 <div class="panel-header">
-    <i class="fa">+</i>
     <span><s5l>new.user.creation</s5l></span>
 </div>
 
-<panel-section section-title="create.user">
+<panel-section class="thin">
     <form #createForm="ngForm" (ngSubmit)="createUser();">
         <form-field label="firstName">
             <input type="text" [(ngModel)]="newUser.firstName" name="firstName" required #firstNameInput="ngModel">
@@ -29,15 +28,9 @@
                 <option value="Guest"><s5l>Guest</s5l></option>
             </select>
         </form-field>
-        <form-field label="create.user.classe">
-            <select [(ngModel)]="newUser.classes" name="classes">
-                <option [ngValue]="noClasses"><s5l>create.user.sansclasse</s5l></option>
-                <option *ngFor="let classe of usersStore.structure.classes" [ngValue]="[classe]">{{classe.name}}</option>
-            </select>
-        </form-field>
 
         <div class="children-container" *ngIf="newUser.type === 'Relative'">
-            <hr>
+            <div class="empty"></div>
             <div class="search">
                 <search-input
                     [delay]="300"
@@ -57,7 +50,7 @@
                 <h3><s5l>create.user.selectedchildren</s5l></h3>
                 <ul>
                     <li *ngFor="let child of newUser.userDetails.children">
-                        {{ child.lastName | uppercase }} {{ child.firstName }}
+                        <span>{{ child.lastName | uppercase }} {{ child.firstName }}</span>
                         <i  class="fa fa-times action" 
                             (click)="removeChild(child)"
                             [tooltip]="'create.user.deselect.child' | translate"></i>
@@ -65,6 +58,13 @@
                 </ul>
             </div>
         </div>
+
+        <form-field label="create.user.classe">
+            <select [(ngModel)]="newUser.classes" name="classes">
+                <option [ngValue]="noClasses"><s5l>create.user.sansclasse</s5l></option>
+                <option *ngFor="let classe of usersStore.structure.classes" [ngValue]="[classe]">{{classe.name}}</option>
+            </select>
+        </form-field>
 
         <button [disabled]="createForm.pristine || createForm.invalid" class="relative">
             <s5l>create.user.submit</s5l>

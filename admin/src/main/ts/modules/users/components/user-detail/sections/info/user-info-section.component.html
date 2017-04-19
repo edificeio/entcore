@@ -1,27 +1,16 @@
 <panel-section section-title="users.details.section.infos">
     <form-field label="profile">
         <span>{{ user.type | translate }}</span>
-        <div>
-            <button (click)="toggleUserBlock()" [disabled]="ls.isLoading('user.block', 1)" class="relative">
-                    <spinner-cube class="button-spinner" waitingFor="user.block"></spinner-cube>
-                    <i class="fa fa-ban"></i>
-                    <s5l [s5l-params]="[details.blocked]">toggle.account</s5l>
-                </button>
-        </div>
     </form-field>
     <form-field label="login">
         <span>{{ details.login }}</span>
-        <div><button>
-                <i class="fa fa-trash"></i>
-                <s5l>delete.account</s5l>
-            </button></div>
     </form-field>
     <form-field label="activation.code" *ngIf="details.activationCode">
         <input type="text" [(ngModel)]="details.activationCode" #codeInput="ngModel" [attr.placeholder]="'activation.code.placeholder' | translate"
             required minlength="4">
         <form-errors [control]="codeInput"></form-errors>
         <div>
-            <button [disabled]="codeInput.invalid"><s5l>change.activation.code</s5l></button>
+            <button class="thin input-inline" [disabled]="codeInput.invalid"><s5l>change.activation.code</s5l></button>
         </div>
     </form-field>
     <form-field label="id">

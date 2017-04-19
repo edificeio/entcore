@@ -138,5 +138,7 @@
     "notify.user.create.title": "Création effectuée",
     "notify.user.create.content": "L'utilisateur {{user}} a bien été créé.",
     "notify.user.create.error.title" : "Erreur lors de la création",
-    "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé."
+    "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé.",
+    "datepicker.open": "Ouvrir le calendrier",
+    "datepicker.delete": "Supprimer la date"
 }

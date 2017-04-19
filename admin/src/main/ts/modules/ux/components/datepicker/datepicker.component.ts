@@ -20,11 +20,11 @@ import Flatpickr from 'flatpickr';
     template: `
         <div class="flatpickr" #datePickerElement>
             <input type="date" [(ngModel)]="value" [ngClass]="{ 'cursor-default': disabled }" placeholder="{{ placeholder }}" #inputRef>
-            <a *ngIf="!disabled" data-toggle><i class="fa fa-calendar" aria-hidden="true"></i></a>
-            <a *ngIf="!disabled" data-clear><i class="fa fa-times" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-toggle [tooltip]="'datepicker.open' | translate"><i class="fa fa-calendar open" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-clear [tooltip]="'datepicker.delete' | translate"><i class="fa fa-times delete" aria-hidden="true"></i></a>
         </div>
     `,
-    styles: ['@import url("/admin/public/styles/flatpickr.min.css")'],
+    styles: ['@import url("/admin/public/styles/flatpickr-confetti.css")'],
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ]
 })
 export class Datepicker implements OnDestroy, AfterViewInit, ControlValueAccessor {
