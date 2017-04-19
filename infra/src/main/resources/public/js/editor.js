@@ -602,7 +602,10 @@ window.RTE = (function () {
 			                
 			            }
 			        }
-			        sibling = sibling.nextSibling;
+					if(sibling !== nodeEnd){
+						sibling = sibling.nextSibling;
+					}
+			        
 			        i++;
 			    } while (
                     sibling && sibling !== nodeEnd
@@ -770,6 +773,18 @@ window.RTE = (function () {
 						selection: that.instance.selection
 					});
 				}
+
+				//cleanup
+				that.editZone.find('span').each(function(index, item){
+					if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
+						let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
+						$(item).css(cssObj);
+						$(item).html($(item).children().first().html());
+					}
+					if(!$(item).html()){
+						$(item).remove();
+					}
+				});
 
                 that.instance.addState(that.editZone.html());
 				that.instance.trigger('contentupdated');
@@ -1050,7 +1065,7 @@ window.RTE = (function () {
 					link: function(scope, element, attributes){
 						element.on('click', function(){
 						    if (document.queryCommandState('underline')) {
-						        instance.selection.css({ 'text-decoration': 'none' });
+								instance.execCommand('underline');
 						        element.removeClass('toggled');
 							}
 						    else {
