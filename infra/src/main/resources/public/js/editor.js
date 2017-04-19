@@ -1874,7 +1874,7 @@ window.RTE = (function () {
 						    }
 						    var html = '<div>';
 						    scope.imageOption.display.files.forEach(function (file) {
-						        html += '<img src="' + path + file._id + '" draggable native />';
+						        html += '<img src="' + path + file._id + '" />';
 						    });
 
 						    html += '<div><br></div><div><br></div></div>';
@@ -1897,7 +1897,6 @@ window.RTE = (function () {
                                     image.remove();
                                 }
                                 instance.addState(instance.editZone.html());
-
 							    ui.extendElement.resizable(instance.editZone.find('img'), {
 							        moveWithResize: false,
                                     mouseUp: function() {
@@ -1905,7 +1904,7 @@ window.RTE = (function () {
                                         instance.addState(instance.editZone.html());
                                     }
 							    });
-							}, 200)
+							}, 20)
 						});
 					}
 				}
@@ -2027,33 +2026,12 @@ window.RTE = (function () {
 
 							instance.selection.replaceHTML(
 								'<div><br /></div>' +
-								'<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls draggable native preload="none"></audio></div>' +
+								'<div class="audio-wrapper"><audio src="' + path + scope.soundOption.display.file._id + '" controls preload="none"></audio></div>' +
 								'<div><br /></div>'
 							);
 							scope.soundOption.display.pickFile = false;
 							scope.soundOption.display.file = undefined;
 						};
-
-						instance.element.on('drop', function (e) {
-                            var audio;
-						    if (e.originalEvent.dataTransfer.mozSourceNode) {
-						        audio = e.originalEvent.dataTransfer.mozSourceNode;
-						    }
-
-							//delay to account for sound destruction and recreation
-							setTimeout(function(){
-                                if(audio && audio.tagName && audio.tagName === 'AUDIO'){
-                                    audio.remove();
-                                }
-								ui.extendElement.resizable(instance.editZone.find('audio'), {
-								    moveWithResize: false,
-                                    mouseUp: function() {
-                                        instance.trigger('contentupdated');
-                                        instance.addState(instance.editZone.html());
-                                    }
-								});
-							}, 200)
-						});
 					}
 				}
 			});
@@ -2433,7 +2411,7 @@ window.RTE = (function () {
 						    //do not replace with i, as i is used by other websites for italic and
                             //is often copy-pasted in the editor
 						    var content = instance.compile(
-                                '<img skin-src="/img/smileys/' + smiley + '.png" draggable native class="smiley" />'
+                                '<img skin-src="/img/smileys/' + smiley + '.png" class="smiley" />'
                             )(scope.$parent);
 							instance.selection.replaceHTMLInline(content);
 							scope.display.pickSmiley = false;
@@ -3504,6 +3482,9 @@ window.RTE = (function () {
                         });
 
                         element.find('[contenteditable]').on('drop', function (e) {
+							if(!e.originalEvent.dataTransfer){
+								return;
+							}
                             var visibility = 'protected';
                             if (element.attr('public') !== undefined) {
                                 visibility = 'public';
@@ -3543,11 +3524,11 @@ window.RTE = (function () {
                                         }
 
                                         if (name.indexOf('.mp3') !== -1 || name.indexOf('.wav') !== -1 || name.indexOf('.ogg') !== -1) {
-                                            el = $('<audio draggable native controls></audio>');
+                                            el = $('<audio controls></audio>');
                                             el.attr('src', path + doc._id)
                                         }
                                         else if (name.toLowerCase().indexOf('.png') !== -1 || name.toLowerCase().indexOf('.jpg') !== -1 || name.toLowerCase().indexOf('.jpeg') !== -1 || name.toLowerCase().indexOf('.svg') !== -1) {
-                                            el = $('<img draggable native />');
+                                            el = $('<img />');
                                             el.attr('src', path + doc._id)
                                         }
                                         else {
