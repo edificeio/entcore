@@ -40,6 +40,10 @@
 			"type": "string",
 			"validator":"notEmpty"
 		},
+		"title" : {
+		  "type": "string",
+		  "validator":"notEmpty"
+		},
 		"otherNames" : {
 			"type": "array-string",
 			"validator":"notEmpty"
