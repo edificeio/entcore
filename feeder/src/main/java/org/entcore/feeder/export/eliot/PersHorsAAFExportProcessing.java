@@ -1,5 +1,5 @@
 /*
- * Copyright © WebServices pour l'Éducation, 2014
+ * Copyright © WebServices pour l'Éducation, 2017
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -24,21 +24,21 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class PersEducNatExportProcessing extends UserExportProcessing {
+public class PersHorsAAFExportProcessing extends UserExportProcessing {
 
 	private final String date;
 	private final String stdPrefix;
 
-	public PersEducNatExportProcessing(String path, String date, String stdPrefix, boolean concat) {
-		super("dictionary/export/eliot/PersEducNat.json", 5000, path,
-				new JsonArray().add("Personnel").add("Teacher"), "PersEducNat", date, stdPrefix, concat);
+	public PersHorsAAFExportProcessing(String path, String date, String stdPrefix, boolean concat) {
+		super("dictionary/export/eliot/PersRelEleve.json", 10000, path,
+				new JsonArray().add("Guest"), "PersHorsAAF", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}
 
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
-		export(handler, new PersHorsAAFExportProcessing(basePath, date, stdPrefix, concat));
+		export(handler, new EtabEducNatExportProcessing(basePath, date, stdPrefix, concat));
 	}
 
 }
