@@ -107,7 +107,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 							}
 						});
 						xr.parse(in);
-						importer.flush(new Handler<Message<JsonObject>>() {
+						importer.persist(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {
 								if ("ok".equals(message.body().getString("status"))) {
