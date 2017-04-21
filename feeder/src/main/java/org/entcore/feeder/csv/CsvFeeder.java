@@ -336,11 +336,19 @@ public class CsvFeeder implements Feed {
 								}
 						}
 						if ("classes".equals(c)) {
-							String eId = structure.getExternalId() + '$' + v;
+							String [] cc = v.split("\\$");
+							if (cc.length == 2 && !cc[1].matches("[0-9]+")) {
+								final String fosEId = importer.getFieldOfStudy().get(cc[1]);
+								if (fosEId != null) {
+									cc[1] = fosEId;
+								}
+							}
+							String eId = structure.getExternalId() + '$' + cc[0];
 							structure.createClassIfAbsent(eId, v);
-							String[] classId = new String[2];
+							final String[] classId = new String[3];
 							classId[0] = structure.getExternalId();
 							classId[1] = eId;
+							classId[2] = (cc.length == 2) ? cc[1] : "";
 							classes.add(classId);
 						}
 					}
@@ -440,6 +448,9 @@ public class CsvFeeder implements Feed {
 
 		});
 		switch (profile) {
+			case "Teacher":
+				importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
+				break;
 			case "Relative":
 				importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
 				importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
