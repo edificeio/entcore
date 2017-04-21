@@ -55,6 +55,7 @@ public class Importer {
 	private ConcurrentMap<String, Structure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
 	private Report report;
 
 	private Importer() {
@@ -75,7 +76,7 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, String source, String acceptLanguage, final Handler<Message<JsonObject>> handler) {
+	public void init(final Neo4j neo4j, final String source, String acceptLanguage, final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
@@ -89,13 +90,36 @@ public class Importer {
 				externalIdMapping = GraphData.getExternalIdMapping();
 				profiles = GraphData.getProfiles();
 				persEducNat = new PersEducNat(transactionHelper, externalIdMapping, userImportedExternalId, report, currentSource);
+				if ("CSV".equals(source) && "ok".equals(event.body().getString("status"))) {
+					loadFieldOfStudy(handler);
+				} else {
+					if (handler != null) {
+						handler.handle(event);
+					}
+				}
+			}
+		});
+	}
+
+	private void loadFieldOfStudy(final Handler<Message<JsonObject>> handler) {
+		Neo4j.getInstance().execute("MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name", new JsonObject(),
+				new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> event) {
+				final JsonArray res = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null) {
+					for (Object o : res) {
+						if (!(o instanceof JsonObject)) continue;
+						final JsonObject j = (JsonObject) o;
+						fieldOfStudy.putIfAbsent(j.getString("name"), j.getString("externalId"));
+					}
+				}
 				if (handler != null) {
 					handler.handle(event);
 				}
 			}
 		});
 	}
-
 
 	public TransactionHelper getTransaction() {
 		return transactionHelper;
@@ -792,6 +816,10 @@ public class Importer {
 
 	public PersEducNat getPersEducNat() {
 		return persEducNat;
+	}
+
+	public ConcurrentMap<String, String> getFieldOfStudy() {
+		return fieldOfStudy;
 	}
 
 }

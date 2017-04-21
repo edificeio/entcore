@@ -245,9 +245,21 @@ public class PersEducNat extends AbstractUser {
 	}
 
 	public void createAndLinkSubjects() {
+		createAndLinkSubjects(null);
+	}
+
+	public void createAndLinkSubjects(String structureExternalId) {
 		final long now = System.currentTimeMillis();
+		final JsonObject params = new JsonObject().putNumber("now", now).putString("source", currentSource);
+		String filter = "";
+		String filter2 = "";
+		if (isNotEmpty(structureExternalId)) {
+			filter = " {externalId : {structureExternalId}}";
+			filter2 = " (:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-";
+			params.putString("structureExternalId", structureExternalId);
+		}
 		final String query =
-				"MATCH (f:FieldOfStudy)<-[r:TEACHES_FOS]-(u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"MATCH (f:FieldOfStudy)<-[r:TEACHES_FOS]-(u:User {source : {source}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure" + filter + ") " +
 				"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
 				"ON CREATE SET sub.code = f.externalId, sub.label = f.name, sub.id = id(sub) + '-' + {now} " +
@@ -257,13 +269,13 @@ public class PersEducNat extends AbstractUser {
 				"SET r1.classes = FILTER(cId IN coalesce(r.classes, []) WHERE cId starts with sExternalId), " +
 				"r1.groups = FILTER(gId IN coalesce(r.groups, []) WHERE gId starts with sExternalId), " +
 				"r1.lastUpdated = {now}, r.source = {source} ";
-		transactionHelper.add(query, new JsonObject().putNumber("now", now).putString("source", currentSource));
+		transactionHelper.add(query, params);
 		final String deleteOldSubjects =
-				"MATCH (sub:Subject {source : {source}}) WHERE sub.lastUpdated <> {now} detach delete sub";
-		transactionHelper.add(deleteOldSubjects, new JsonObject().putNumber("now", now).putString("source", currentSource));
+				"MATCH " + filter2 + "(sub:Subject {source : {source}}) WHERE sub.lastUpdated <> {now} detach delete sub";
+		transactionHelper.add(deleteOldSubjects, params);
 		final String deleteOldTeaches =
-				"MATCH (sub:Subject)<-[r1:TEACHES {source : {source}}]-(u:User) WHERE r1.lastUpdated <> {now} delete r1";
-		transactionHelper.add(deleteOldTeaches, new JsonObject().putNumber("now", now).putString("source", currentSource));
+				"MATCH " + filter2 + "(sub:Subject)<-[r1:TEACHES {source : {source}}]-(u:User) WHERE r1.lastUpdated <> {now} delete r1";
+		transactionHelper.add(deleteOldTeaches, params);
 	}
 
 }
