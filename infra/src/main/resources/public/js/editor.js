@@ -177,6 +177,20 @@ window.RTE = (function () {
 		Selection: function(){
 			var that = this;
 			this.selectedElements = [];
+			this.nextRanges = [];
+
+			this.applyNextRanges = function(){
+				let selection = window.getSelection();
+				selection.removeAllRanges();
+				this.nextRanges.forEach(function(range){
+					selection.addRange(range);
+				});
+				that.instance.trigger('selectionchange', {
+					selection: that.instance.selection
+				});
+
+				this.nextRanges = [];
+			};
 
 			function getSelectedElements(){
 				var selection = getSelection();
@@ -429,7 +443,9 @@ window.RTE = (function () {
 			};
 
 			this.isCursor = function () {
-			    return this.range.startContainer === this.range.endContainer && this.range.startOffset === this.range.endOffset;
+			    return window.getSelection().rangeCount === 1 && 
+				this.range.startContainer === this.range.endContainer && 
+				this.range.startOffset === this.range.endOffset;
 			}
 
 			this.wrapText = function(el){
@@ -507,8 +523,8 @@ window.RTE = (function () {
 				that.moveCaret(el[0], 1);
 			}
 
-			function applyCSSNode(css){
-				var element = that.range.startContainer;
+			function applyCSSNode(css, range){
+				var element = range.startContainer;
 				if (element.nodeType !== 1 && element.parentNode.nodeName !== 'SPAN') {
 					var el = document.createElement('span');
 					el.textContent = element.textContent;
@@ -524,11 +540,10 @@ window.RTE = (function () {
 				that.selectNode(element);
 			}
 
-			function applyCSSBetween(nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
+			function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
 			    if (startOffset === undefined) {
-			        startOffset = that.range.startOffset;
+			        startOffset = range.startOffset;
 			    }
-			    var addedNodes = [];
 			    var sibling = nodeStart;
 			    var i = startOffset;
 			    do {
@@ -539,42 +554,36 @@ window.RTE = (function () {
 			            var el = $('<span></span>')
 							.css(css);
 			            if (sibling === nodeStart && sibling === nodeEnd) {
-			                el.html(sibling.textContent.substring(startOffset, that.range.endOffset));
+			                el.html(sibling.textContent.substring(startOffset, range.endOffset));
 			                if (el.html().length > 0) {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
-			                    var afterText = document.createTextNode(sibling.textContent.substring(that.range.endOffset));
+			                    let afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
 			                    sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
-			                    var sel = document.getSelection();
+								that.moveRanges(range, sibling, -(el.text().length), afterText);
 			                    var r = document.createRange();
 			                    if (keepRangeStart) {
-			                        r.setStart(that.range.startContainer, startOffset);
+									r = that.nextRanges[that.nextRanges.length - 1];
+									r.setEnd(el[0], 1);
 			                    }
 			                    else {
 			                        r.setStart(el[0], 0);
+									r.setEnd(el[0], 1);
+									that.nextRanges.push(r);
 			                    }
-
-			                    r.setEnd(el[0], 1);
-			                    sel.removeAllRanges();
-			                    sel.addRange(r);
-			                    that.range = r;
 			                }
 			            }
 			            else if (
                             sibling === nodeEnd
-                            || (sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
+                            || (sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
                         ) {
-			                el.text(sibling.textContent.substring(0, that.range.endOffset));
+			                el.text(sibling.textContent.substring(0, range.endOffset));
 			                if (el.text()) {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
-			                    sibling.textContent = sibling.textContent.substring(that.range.endOffset);
-			                    var sel = document.getSelection();
-			                    var r = document.createRange();
-			                    r.setStart(that.range.startContainer, startOffset);
+			                    sibling.textContent = sibling.textContent.substring(range.endOffset);
+								that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
+			                    var r = that.nextRanges[that.nextRanges.length - 1];
 			                    r.setEnd(el[0], 1);
-			                    sel.removeAllRanges();
-			                    sel.addRange(r);
-			                    that.range = r;
 			                }
 			            }
 			            else if (sibling === nodeStart) {
@@ -583,13 +592,9 @@ window.RTE = (function () {
 			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 			                    if (!keepRangeStart) {
-			                        var sel = document.getSelection();
 			                        var r = document.createRange();
 			                        r.setStart(el[0], 0);
-			                        r.setEnd(that.range.endContainer, that.range.endOffset);
-			                        sel.removeAllRanges();
-			                        sel.addRange(r);
-			                        that.range = r;
+			                        that.nextRanges.push(r);
 			                    }
 			                }
 			            }
@@ -598,6 +603,7 @@ window.RTE = (function () {
 			                if (el.text()) {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
 			                    sibling.textContent = sibling.textContent.substring(sibling.textContent.length);
+								that.moveRanges(range, sibling, -el.text().length);
 			                }
 			                
 			            }
@@ -609,76 +615,74 @@ window.RTE = (function () {
 			        i++;
 			    } while (
                     sibling && sibling !== nodeEnd
-                    && !(sibling.parentNode === that.range.endContainer && sibling === that.range.endContainer.childNodes[that.range.endOffset])
-                    && !$(sibling).find(that.range.endContainer).length
+                    && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
+                    && !$(sibling).find(range.endContainer).length
                 );
-
-			    return addedNodes;
 			}
 
-			function applyCSSText(css){
+			function applyCSSText(css, range){
 				var el = $(document.createElement('span'));
 				$(el).css(css);
 
-				el.html(that.range.startContainer.textContent.substring(that.range.startOffset, that.range.endOffset));
+				el.html(range.startContainer.textContent.substring(range.startOffset, range.endOffset));
 				var textBefore = document.createTextNode('');
-				textBefore.textContent = that.range.startContainer.textContent.substring(0, that.range.startOffset);
-				that.range.startContainer.parentNode.insertBefore(el[0], that.range.startContainer);
-				that.range.startContainer.parentNode.insertBefore(textBefore, el[0]);
-				that.range.startContainer.textContent = that.range.startContainer.textContent.substring(that.range.endOffset);
+				textBefore.textContent = range.startContainer.textContent.substring(0, range.startOffset);
+				range.startContainer.parentNode.insertBefore(el[0], range.startContainer);
+				range.startContainer.parentNode.insertBefore(textBefore, el[0]);
+				range.startContainer.textContent = range.startContainer.textContent.substring(range.endOffset);
 
-				var sel = document.getSelection();
+				that.moveRanges(range, range.startContainer, -(el.text().length + range.startOffset));
+
 				var r = document.createRange();
 				r.setStart(el[0], 0);
 				r.setEnd(el[0], 1);
-				sel.removeAllRanges();
-				sel.addRange(r);
+				that.nextRanges.push(r);
 			}
 
-			function applyCSS(css) {
+			function applyCSS(css, range) {
 			    that.instance.addState(that.editZone.html());
 
 				if(that.isCursor()){
 					applyCSSCursor(css);
+					return;
 				}
-				else if (that.range.startContainer === that.range.endContainer &&
+				
+				if (range.startContainer === range.endContainer &&
 					(
-						that.range.startContainer.nodeType === 3 &&
-						that.range.startOffset === 0 &&
-						that.range.endOffset === that.range.startContainer.textContent.length
+						range.startContainer.nodeType === 3 &&
+						range.startOffset === 0 &&
+						range.endOffset === range.startContainer.textContent.length
 					)
                 ) {
-				    applyCSSNode(css)
+				    applyCSSNode(css, range)
 				}
-				else if(that.range.startContainer === that.range.endContainer && 
+				else if(range.startContainer === range.endContainer && 
 					(
-						that.range.startContainer.nodeType === 1 &&
-						that.range.startOffset === 0 &&
-						that.range.endOffset === that.range.startContainer.childNodes.length
+						range.startContainer.nodeType === 1 &&
+						range.startOffset === 0 &&
+						range.endOffset === range.startContainer.childNodes.length
 					)
 				){
-					if(that.range.startContainer !== that.editZone[0]){
-					    $(that.range.startContainer).css(css);
-					    $(that.range.startContainer).find('span').css(css);
+					if(range.startContainer !== that.editZone[0]){
+					    $(range.startContainer).css(css);
+					    $(range.startContainer).find('span').css(css);
 					}
 					else{
-						$(that.range.startContainer).find('*').css(css);
+						$(range.startContainer).find('*').css(css);
 					}
 				}
 				else{
-					var addedNodes = [];
-
-					if(that.range.commonAncestorContainer.nodeType === 3){
-						addedNodes = addedNodes.concat(applyCSSText(css));
+					if(range.commonAncestorContainer.nodeType === 3){
+						applyCSSText(css, range);
 					}
 					else{
 						var foundFirst = false;
-						for(var i = 0; i < that.range.commonAncestorContainer.childNodes.length; i++){
-							var sibling = that.range.commonAncestorContainer.childNodes[i];
+						for(var i = 0; i < range.commonAncestorContainer.childNodes.length; i++){
+							var sibling = range.commonAncestorContainer.childNodes[i];
 							if(
-								sibling === that.range.startContainer || 
-								(sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length) || 
-								(that.range.startContainer.nodeType === 1 && $(that.range.startContainer).find(sibling).length && that.range.startOffset === i)
+								sibling === range.startContainer || 
+								(sibling.nodeType === 1 && $(sibling).find(range.startContainer).length) || 
+								(range.startContainer.nodeType === 1 && $(range.startContainer).find(sibling).length && range.startOffset === i)
 							){
 								foundFirst = true;
 							}
@@ -686,70 +690,61 @@ window.RTE = (function () {
 								continue;
 							}
 
-							if(sibling === that.range.endContainer && that.range.endOffset === 0){
+							if(sibling === range.endContainer && range.endOffset === 0){
 								break;
 							}
 
 							if (
-                                sibling.nodeType === 1 && $(sibling).find(that.range.startContainer).length
+                                sibling.nodeType === 1 && $(sibling).find(range.startContainer).length
                             ) {
-							    addedNodes = addedNodes.concat(
-									applyCSSBetween(that.range.startContainer, that.range.endContainer, css)
-								);
+							    applyCSSBetween(range, range.startContainer, range.endContainer, css);
 							    continue;
 							}
 
 							if (
                                 (
-                                    that.range.startContainer.nodeType === 1
-                                    && $(that.range.startContainer).find(sibling).length
-                                    && that.range.startOffset === i
+                                    range.startContainer.nodeType === 1
+                                    && $(range.startContainer).find(sibling).length
+                                    && range.startOffset === i
                                 )
-                                || sibling === that.range.startContainer
+                                || sibling === range.startContainer
                             ) {
-							    addedNodes = addedNodes.concat(
-									applyCSSBetween(sibling, that.range.endContainer, css)
-								);
+							    applyCSSBetween(range, sibling, range.endContainer, css);
 							    continue;
 							}
 
 							if (
                                 sibling.nodeType === 1 
-                                && $(sibling).find(that.range.endContainer).length
+                                && $(sibling).find(range.endContainer).length
                             ) {
 							    var firstChild = sibling.firstChild;
 							    var startOffset = 0;
-							    if ($(sibling).find(that.range.startContainer).length) {
-							        firstChild = that.range.startContainer;
-							        startOffset = that.range.startOffset;
+							    if ($(sibling).find(range.startContainer).length) {
+							        firstChild = range.startContainer;
+							        startOffset = range.startOffset;
 							    }
-                                addedNodes = addedNodes.concat(
-									applyCSSBetween(firstChild, that.range.endContainer, css, true, startOffset)
-								);
+                                applyCSSBetween(range, firstChild, range.endContainer, css, true, startOffset);
                                 break;
 							}
 
 							if (
                                 (
-                                    that.range.endContainer.nodeType === 1
-                                    && $(that.range.endContainer).find(sibling).length
-                                    && that.range.endOffset === i
+                                    range.endContainer.nodeType === 1
+                                    && $(range.endContainer).find(sibling).length
+                                    && range.endOffset === i
                                 ) ||
-                                    sibling === that.range.endContainer
+                                    sibling === range.endContainer
                                 )
 							{
-							    var firstChild = that.range.endContainer.firstChild;
+							    var firstChild = range.endContainer.firstChild;
 							    if (!firstChild) {
-							        firstChild = that.range.endContainer;
+							        firstChild = range.endContainer;
 							    }
-							    addedNodes = addedNodes.concat(
-									applyCSSBetween(firstChild,  that.range.endContainer, css, true)
-								);
+							    applyCSSBetween(range, firstChild, range.endContainer, css, true, 0);
 							    break;
 							}
 
 							if(sibling.nodeType === 1){
-								addedNodes.push(sibling);
 								$(sibling).css(css);
 								$(sibling).find('*').css(css);
 								continue;
@@ -757,37 +752,17 @@ window.RTE = (function () {
 							else{
 								var el = $(document.createElement('span'));
 								el.css(css);
-								addedNodes.push(el[0]);
 								el.text(sibling.textContent);
 								sibling.parentNode.insertBefore(el[0], sibling);
 								sibling.remove();
 							}
 
-							if(sibling === that.range.endContainer){
+							if(sibling === range.endContainer){
 								break;
 							}
 						}
 					}
-
-					that.instance.trigger('selectionchange', {
-						selection: that.instance.selection
-					});
 				}
-
-				//cleanup
-				that.editZone.find('span').each(function(index, item){
-					if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
-						let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
-						$(item).css(cssObj);
-						$(item).html($(item).children().first().html());
-					}
-					if(!$(item).html()){
-						$(item).remove();
-					}
-				});
-
-                that.instance.addState(that.editZone.html());
-				that.instance.trigger('contentupdated');
 			}
 
 			this.isEmpty = function () {
@@ -805,9 +780,64 @@ window.RTE = (function () {
 			    return $(element);
 			}
 
+			this.moveRanges = function(mover, container, offset, newContainer){
+				let selection = window.getSelection();
+				this.ranges.forEach(function(range){
+					if(range === mover){
+						return;
+					}
+					if(range.startContainer === container){
+						range.startOffset += offset;
+						if(newContainer){
+							range.startContainer = newContainer;
+						}
+					}
+					if(range.endContainer === container){
+						range.endOffset += offset;
+						if(newContainer){
+							range.endContainer = newContainer;
+						}
+					}
+				});
+			};
+
 			this.css = function(params){
 				if(typeof params === 'object'){
-					applyCSS(params);
+					let selection = window.getSelection();
+					this.ranges = [];
+					let isCursor = this.isCursor();
+					for(let i = 0; i < selection.rangeCount; i++){
+						let range = selection.getRangeAt(i);
+						this.ranges.push({
+							startContainer: range.startContainer,
+							endContainer: range.endContainer,
+							startOffset: range.startOffset,
+							endOffset: range.endOffset,
+							commonAncestorContainer: range.commonAncestorContainer
+						});
+						
+					}
+					this.ranges.forEach(function(range){
+						applyCSS(params, range);
+					});
+					if(this.nextRanges.length){
+						this.applyNextRanges();
+					}
+					
+					//cleanup
+					that.editZone.find('span').each(function(index, item){
+						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
+							let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
+							$(item).css(cssObj);
+							$(item).html($(item).children().first().html());
+						}
+						if(!$(item).html()){
+							$(item).remove();
+						}
+					});
+
+					that.instance.addState(that.editZone.html());
+					that.instance.trigger('contentupdated');
 				}
 				else {
 				    if (!this.selectedElements.length) {
@@ -2897,6 +2927,7 @@ window.RTE = (function () {
 
                         $(window).on('resize', function () {
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+							toolbarElement.css({ 'position': 'relative' });
                         });
 
                         var previousScroll = 0;
