@@ -2,15 +2,20 @@
 @import url('https://fonts.googleapis.com/css?family=Oxygen');
 
 /* Variables */
-$main: rgb(0, 200, 248);
-$main-light: rgb(99, 218, 247);
-$main-dark: darken($main, 5%);
+// $main: rgb(0, 200, 248);
+$main: rgb(42, 156, 200);
+// $main-light: rgb(99, 218, 247);
+// $main-dark: darken($main, 5%);
+$main-light: lighten($main, 15%);
+$main-dark: darken($main, 10%);
+
 $accent: rgb(255, 131, 82);
 $accent-light: lighten($accent, 20%);
 $accent-dark: darken($accent, 10%);
+
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: crimson;
-$button-bg: #EBEBEB;
+$button-bg: #f2f2f2;
 $user-li-hover: #ffccb8;
 $user-profile-img-width: 200px;
 $fontawesome-size: 1.5em;
@@ -434,6 +439,7 @@ body > div.tooltip.shown {
 /* Portal */
 ux-portal {
     > header {
+        color: white;
         position: fixed !important;
         z-index: 9;
         background-color: $main;
@@ -457,6 +463,16 @@ ux-portal {
             border-right: 2px solid #AAA;
             box-sizing: border-box;
         }
+
+        input[type="search"] {
+            border-bottom: 1px solid white;
+            color: white;
+
+            &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4); }
+            &::placeholder{ color:rgba(250,250,250,0.4); }
+            &:-ms-input-placeholder{ color:rgba(250,250,250,0.4); }
+            &::-moz-placeholder { color:rgba(250,250,250,0.4); }
+        }
     }
 
     div[header-left] > * {
@@ -467,8 +483,8 @@ ux-portal {
     }
     div[header-left], div[header-right] {
         a {
-            color: black;
-            &:visited, &:active { color: initial; }
+            color: white;
+            // &:visited, &:active { color: initial; }
         }
         i {
             font-size: 1.5em;
@@ -492,7 +508,7 @@ ux-portal {
         top: 50px;
     }
     div[section] div.portal-body {
-        padding: 0px 25px;
+        padding: 0px 5%;
     }
 }
 
@@ -531,7 +547,7 @@ item-tree {
             padding: 0px;
 
             > a {
-                color: black;
+                color: white;
                 padding: 10px 5px;
                 display: block;
                 text-decoration: none;
@@ -539,6 +555,7 @@ item-tree {
 
                 &:hover {
                     background-color: $main-light;
+                    color: white;
                 }
             }
 
@@ -554,7 +571,7 @@ item-tree {
                 color: $nuance;
 
                 &:hover i {
-                    color: black;
+                    color: white;
                 }
             }
         }
@@ -653,7 +670,8 @@ div.panel-message {
 
 /* Panel sections */
 .panel-section-header {
-    background: $main-dark;
+    color: white;
+    background: $main;
     border-bottom: 1px solid $main-light;
 
     i.opener{ font-size: 1.3em }
@@ -752,6 +770,28 @@ user-detail {
     .panel-header {
         button {
             width: $user-profile-img-width;
+        }
+
+        .panel-header-content {
+            display: flex;
+            align-items: center;
+
+            .right {
+                flex: 1;
+                text-align: center;
+            }
+
+            button.big {
+                background-color: $main-light;
+                color: white;
+                padding: 30px;
+                width: 90%;
+                font-size: 0.7em;
+
+                i {
+                    color: white;
+                }
+            }
         }
     }
 
@@ -860,23 +900,6 @@ user-create {
     }
 }
 
-// user-administrative-section {
-//     button {
-//         color: $accent;
-//         width: 200px;
-//         text-align: left;
-//         padding: 10px 5px;
-//         background-color: #EBEBEB;
-//         border: 1px solid #EBEBEB;
-//         border-radius: 3px;
-
-//         &:hover {
-//             background-color: $accent-light;
-//             border: 1px solid $accent-light;
-//         }
-//     }
-// }
-
 /* Multi-combo */
 multi-combo {
     >button {
@@ -885,7 +908,7 @@ multi-combo {
         font-weight: bolder;
 
         &:not([disabled]) {
-            background-color: #EBEBEB;
+            background-color: $button-bg;
         }
 
         &::after {
@@ -978,6 +1001,7 @@ multi-combo {
 }
 
 .multi-combo-companion {
+    color: white;
     margin: 10px 0px;
 
     > div {
@@ -1037,12 +1061,8 @@ div.flatpickr {
             color: $accent;
         }
     }
-    input {
-        width: 70px;
-
-        &.cursor-default {
-            cursor: default;
-        }
+    input.cursor-default {
+        cursor: default;
     }
 }
 

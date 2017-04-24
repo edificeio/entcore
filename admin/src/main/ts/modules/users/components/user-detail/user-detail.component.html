@@ -1,7 +1,7 @@
 <spinner-cube class="component-spinner" waitingFor="users-content"></spinner-cube>
 
 <div class="panel-header">
-    <span>{{ user.lastName | uppercase }} {{ user.firstName }}</span><span class="user-class" *ngIf="user.classes[0]"> - {{ user.classes[0].name }}</span>
+    <span>{{ user.lastName | uppercase }} {{ user.firstName }}</span><span class="user-class" *ngIf="user.type === 'Student' && user.classes[0]"> - {{ user.classes[0].name }}</span>
     
     <div class="panel-message" *ngIf="details?.blocked">
         <i class="fa fa-ban"></i>
@@ -20,20 +20,38 @@
         </button>
     </div>
 
-    <div>
-        <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
-        <div>
-            <button (click)="toggleUserBlock()" [disabled]="ls.isLoading('user.block', 1)" class="relative">
-                <spinner-cube class="button-spinner" waitingFor="user.block"></spinner-cube>
-                <s5l [s5l-params]="[details.blocked]">toggle.account</s5l>
-                <i class="fa fa-ban"></i>
-            </button>
+    <div class="panel-header-content">
+        <div class="left">
+            <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
+            <div>
+                <button (click)="toggleUserBlock()" [disabled]="ls.isLoading('user.block', 1)" class="relative">
+                    <spinner-cube class="button-spinner" waitingFor="user.block"></spinner-cube>
+                    <s5l [s5l-params]="[details.blocked]">toggle.account</s5l>
+                    <i class="fa fa-ban"></i>
+                </button>
+            </div>
+            <div>
+                <button>
+                    <s5l>delete.account</s5l>
+                    <i class="fa fa-trash"></i>
+                </button>
+            </div>
         </div>
-        <div>
-            <button>
-                <s5l>delete.account</s5l>
-                <i class="fa fa-trash"></i>
-            </button>
+
+        <div class="right">
+            <div>
+                <button class="big">
+                    <s5l>users.details.button.comm.rules</s5l>
+                    <i class="fa fa-podcast"></i>
+                </button>
+            </div>
+
+            <div>
+                <button class="big">
+                    <s5l>users.details.button.group.app.rights</s5l>
+                    <i class="fa fa-th"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>

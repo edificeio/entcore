@@ -1,6 +1,6 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
 import { AbstractControl, NgForm } from '@angular/forms'
-import { LoadingService } from '../../../../services'
+import { LoadingService, NotifyService } from '../../../../services'
 import { UserModel, StructureModel, UserDetailsModel } from '../../../../store'
 import { Subscription } from 'rxjs/Subscription'
 import { ActivatedRoute, Data, Router } from '@angular/router'
@@ -14,6 +14,7 @@ import { UsersStore } from '../../store'
 export class UserDetail implements OnInit, OnDestroy{
 
     constructor(private ls: LoadingService,
+        private ns: NotifyService,
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
@@ -80,5 +81,41 @@ export class UserDetail implements OnInit, OnDestroy{
             this.cdRef.markForCheck()
             this.cdRef.detectChanges()
         }, 0)
+    }
+
+    private toggleUserBlock() {
+        this.ls.perform('user.block', this.details.toggleBlock())
+            .then(() => {
+                this.user.blocked = !this.user.blocked
+                this.ns.success(
+                    {
+                        key: 'notify.user.toggleblock.content',
+                        parameters: {
+                            user:       this.user.firstName + ' ' + this.user.lastName,
+                            blocked:    this.user.blocked
+                        }
+                    },
+                    {
+                        key: 'notify.user.toggleblock.title',
+                        parameters: {
+                            blocked:    this.user.blocked
+                        }
+                    })
+            }).catch(err => {
+                 this.ns.error(
+                    {
+                        key: 'notify.user.toggleblock.error.content',
+                        parameters: {
+                            user:       this.details.firstName + ' ' + this.user.lastName,
+                            blocked:    !this.user.blocked
+                        }
+                    },
+                    {
+                        key: 'notify.user.toggleblock.error.title',
+                        parameters: {
+                            blocked:    !this.user.blocked
+                        }
+                    }, err)
+            })
     }
 }
