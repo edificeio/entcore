@@ -100,4 +100,20 @@ export class UserModel extends Model<UserModel> {
             this.duplicates = this.duplicates.filter(d => d.id !== duplicateId)
         })
     }
+
+    createNewUser(structureId) {
+        let payload = new window['URLSearchParams']()
+
+        payload.append('firstName', this.firstName)
+        payload.append('lastName', this.lastName)
+        payload.append('type', this.type)
+        if (this.classes && this.classes.length > 0) {
+            payload.append('classId', this.classes[0].id)
+        }
+        payload.append('structureId', structureId)
+        payload.append('birthDate', this.userDetails.birthDate)
+        this.userDetails.children.forEach(child => payload.append('childrenIds', child.id))
+
+        return this.create(payload, {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}})
+    }
 }

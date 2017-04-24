@@ -49,45 +49,29 @@ export class UserCreate implements OnInit, OnDestroy {
         this.structureSubscriber.unsubscribe()
     }
 
-    createUser() {
-        let payload = new window['URLSearchParams']();
+    private createNewUser() {
+        this.ls.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
+            .then(res => {
+                this.newUser.id = res.data.id
+                this.ns.success({
+                        key: 'notify.user.create.content',
+                        parameters: {
+                            user: this.newUser.firstName + ' ' + this.newUser.lastName}
+                        }
+                    , 'notify.user.create.title')
 
-        payload.append('firstName', this.newUser.firstName)
-        payload.append('lastName', this.newUser.lastName)
-        payload.append('type', this.newUser.type)
-        if (this.newUser.classes && this.newUser.classes.length > 0) {
-            payload.append('classId', this.newUser.classes[0].id)
-        }
-        payload.append('structureId', this.usersStore.structure.id)
-        payload.append('birthDate', this.newUser.userDetails.birthDate)
-        this.newUser.userDetails.children.forEach(child => payload.append('childrenIds', child.id))
+                this.usersStore.structure.users.data.push(this.newUser)
 
-        this.ls.perform('portal-content', this.newUser.create(payload, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-            }
-        })).then(res => {
-            this.newUser.id = res.data.id
-            this.ns.success(
-                {
-                    key: 'notify.user.create.content',
-                    parameters: {
-                        user: this.newUser.firstName + ' ' + this.newUser.lastName}
-                    }
-                , 'notify.user.create.title')
-
-            this.usersStore.structure.users.data.push(this.newUser)
-
-            this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
-        }).catch(err => {
-            this.ns.error(
-                {
-                    key: 'notify.user.create.error.content',
-                    parameters: {
-                        user: this.newUser.firstName + ' ' + this.newUser.lastName}
-                    }
-                , 'notify.user.create.error.title', err)
-        });
+                this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
+            }).catch(err => {
+                this.ns.error({
+                        key: 'notify.user.create.error.content',
+                        parameters: {
+                            user: this.newUser.firstName + ' ' + this.newUser.lastName}
+                        }
+                    , 'notify.user.create.error.title', err)
+            })
+        )
     }
 
     addChild(child) {

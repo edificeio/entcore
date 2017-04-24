@@ -3,7 +3,7 @@
 </div>
 
 <panel-section class="thin">
-    <form #createForm="ngForm" (ngSubmit)="createUser();">
+    <form #createForm="ngForm" (ngSubmit)="createNewUser()">
         <form-field label="firstName">
             <input type="text" [(ngModel)]="newUser.firstName" name="firstName" required #firstNameInput="ngModel">
             <form-errors [control]="firstNameInput"></form-errors>
