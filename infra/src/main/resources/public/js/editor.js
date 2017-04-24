@@ -256,8 +256,12 @@ window.RTE = (function () {
 				}
 				var range = sel.getRangeAt(0);
 
-				var same = this.range && this.range.startContainer === range.startContainer && this.range.startOffset === range.startOffset
-						&& this.range.endContainer === range.endContainer && range.endOffset === this.range.endOffset;
+				var same = this.range && 
+				this.range.startContainer === range.startContainer && 
+				this.range.startOffset === range.startOffset && 
+				this.range.endContainer === range.endContainer && 
+				range.endOffset === this.range.endOffset &&
+				sel.rangeCount === this.rangeCount;
 			    same = same || (this.editZone.find(range.startContainer).length === 0 && this.editZone[0] !== range.startContainer);
 				var selectedElements = getSelectedElements();
 
@@ -266,6 +270,7 @@ window.RTE = (function () {
 				}
 				if (!same && this.editZone.is(':focus')) {
 				    this.range = range;
+					this.rangeCount = sel.rangeCount;
 				}
 				return !same;
 			};
@@ -280,8 +285,9 @@ window.RTE = (function () {
 				var range = document.createRange();
 				range.setStart(element.firstChild || element, offset);
 				this.range = range;
-
+				
 				var sel = getSelection();
+				this.rangeCount = sel.rangeCount;
 				this.selectedElements = [];
 				sel.removeAllRanges();
 				sel.addRange(range);
@@ -313,6 +319,7 @@ window.RTE = (function () {
 
 				sel.removeAllRanges();
 				sel.addRange(range);
+				this.rangeCount = 1;
 			};
 
 			this.wrap = function(element){
@@ -443,56 +450,153 @@ window.RTE = (function () {
 			};
 
 			this.isCursor = function () {
-			    return window.getSelection().rangeCount === 1 && 
+			    return (this.rangeCount === 1 || this.rangeCount === 0) && 
 				this.range.startContainer === this.range.endContainer && 
 				this.range.startOffset === this.range.endOffset;
 			}
 
+			let wrapTextOnNode = function(el, node, last){
+				if(!node){
+					node = this.range.commonAncestorContainer;
+				}
+				if(node.nodeType === 3){
+					let start = 0;
+					if(node === this.range.startContainer){
+						start = this.range.startOffset;
+					}
+					let textNode = document.createTextNode(node.textContent.substring(start));
+					if(node === this.range.endContainer){
+						textNode = document.createTextNode(node.textContent.substring(start, this.range.endOffset));
+						let nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
+						node.parentNode.insertBefore(nextText, node.nextSibling);
+					}
+					el.append(textNode);
+					
+					node.textContent = node.textContent.substring(0, start);
+				}
+
+				let foundFirst = false;
+				if(last){
+					foundFirst = true;
+				}
+				let nodes = [];
+				for(let i = 0; i < node.childNodes.length; i++){
+					let child = node.childNodes[i];
+					nodes.push(child);
+				}
+
+				for(let i = 0; i < nodes.length; i++){
+					let child = nodes[i];
+					
+					if(child === this.range.startContainer){
+						foundFirst = true;
+						if(this.range.startOffset === 0){
+							el.append(child);
+						}
+						if(child.nodeType === 1){
+							let last = child.childNodes.length;
+							if(this.range.startContainer === this.range.endContainer){
+								last = this.range.endOffset;
+							}
+
+							for(let i = this.range.startOffset; i < last; i++){
+								el.append(child.childNodes[i]);
+							}
+						}
+						else{
+							let textNode;
+							if(this.range.startContainer === this.range.endContainer){
+								textNode = document.createTextNode(child.textContent.substring(this.range.startOffset, this.range.endOffset));
+								
+								let nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
+								child.parentNode.insertBefore(nextText, child.nextSibling);
+								child.textContent = child.textContent.substring(0, this.range.startOffset);
+							}
+							else{
+								textNode = document.createTextNode(child.textContent.substring(this.range.startOffset));
+								child.textContent = child.textContent.substring(0, this.range.startOffset);
+							}
+							el.append(textNode);
+						}
+						
+						continue;
+					}
+
+					if(child.contains(this.range.startContainer)){
+						let container = document.createElement(child.nodeName);
+						$(container).attr('style', $(child).attr('style'));
+						el.append(container);
+						wrapTextOnNode(container, child);
+						foundFirst = true;
+						continue;
+					}
+
+					if(!foundFirst){
+						continue;
+					}
+
+					if(child === this.range.endContainer){
+						if(child.nodeType === 1){
+							let last = this.range.endOffset;
+							for(let i = this.range.startOffset; i < last; i++){
+								el.append(child.childNodes[i]);
+							}
+						}
+						else{
+							let textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
+							child.textContent = child.textContent.substring(this.range.endOffset);
+
+							el.append(textNode);
+						}
+
+						break;
+					}
+
+					if(child.contains(this.range.endContainer)){
+						let container = document.createElement(child.nodeName);
+						$(container).attr('style', $(child).attr('style'));
+						el.append(container);
+						wrapTextOnNode(container, child, true);
+						break;
+					}
+
+					el.append(child);
+				}
+			}.bind(this);
+
 			this.wrapText = function(el){
 				this.instance.addState(this.editZone.html());
-				if(!this.selectedElements.length){
+				if(this.isCursor()){
 					el.html('<br />');
 					this.editZone.append(el);
 					this.selectNode(el[0]);
 				}
-				else{
-					var addedNodes = [];
-					this.selectedElements.forEach(function(item, index){
-						var node = $(el[0].outerHTML);
-						if(item.nodeType === 1){
-							$(item).wrapInner(node);
+				else if(this.range.startContainer === this.range.commonAncestorContainer && this.range.startContainer === this.range.endContainer){
+					let container = this.range.startContainer;
+					if(this.instance.editZone[0] === this.range.startContainer){
+						let newEl = document.createElement('div');
+						
+						while (this.instance.editZone[0].childNodes.length) {
+							$(newEl).append(this.instance.editZone[0].childNodes[0]);
 						}
-						else{
-							if(that.range.startContainer === item && that.range.startOffset >= 0 && that.range.startContainer !== that.range.endContainer){
-							    node.html(item.textContent.substring(that.range.startOffset));
-							    item.parentNode.insertBefore(node[0], item.nextSibling);
-								item.textContent = item.textContent.substring(0, that.range.startOffset);
-							}
-							else if (that.range.endContainer === item && that.range.endOffset <= item.textContent.length && that.range.startContainer !== that.range.endContainer) {
-							    node.text(item.textContent.substring(0, that.range.endOffset));
-								item.parentNode.insertBefore(node[0], item);
-								item.textContent = item.textContent.substring(that.range.endOffset);
-							}
-							else if (that.range.startContainer === that.range.endContainer && that.range.startContainer === item) {
-							    node.html(item.textContent.substring(that.range.startOffset, that.range.endOffset));
-								var textBefore = document.createTextNode('');
-								textBefore.textContent = item.textContent.substring(0, that.range.startOffset);
-								item.parentNode.insertBefore(node[0], item);
-								item.parentNode.insertBefore(textBefore, node[0]);
-								item.textContent = item.textContent.substring(that.range.endOffset);
-							}
-							else {
-							    node.html(item.textContent);
-							    item.parentNode.insertBefore(node[0], item);
-							    item.textContent = "";
-							}
-							addedNodes.push(node[0]);
-						}
-					});
-					addedNodes.forEach(that.selectNode);
+						this.instance.editZone.append(newEl);
+						container = newEl;
+					}
+					while(container.childNodes.length === 1){
+						container = container.firstChild;
+					}
+					container.parentNode.insertBefore(el[0], container);
+					el.append(container);
+					
 				}
-
-				that.instance.trigger('change');
+				else{
+					wrapTextOnNode(el);
+					this.range.endContainer.parentNode.insertBefore(el[0], this.range.endContainer);
+				}
+					
+				
+				this.instance.trigger('change');
+				this.selectNode(el[0]);
 			};
 
 			function applyCSSCursor(css){
@@ -804,8 +908,16 @@ window.RTE = (function () {
 			this.css = function(params){
 				if(typeof params === 'object'){
 					let selection = window.getSelection();
+					if(!this.instance.editZone.html()){
+						this.instance.editZone.html('<div>&#8203;</div>');
+					}
+					if(!this.instance.editZone.is(':focus')){
+						this.instance.editZone[0].focus();
+						let range = selection.getRangeAt(0);
+						this.range = range;
+						this.rangeCount = 1;
+					}
 					this.ranges = [];
-					let isCursor = this.isCursor();
 					for(let i = 0; i < selection.rangeCount; i++){
 						let range = selection.getRangeAt(i);
 						this.ranges.push({
@@ -1596,7 +1708,7 @@ window.RTE = (function () {
 
 						scope.setFontFamily = function (font) {
 						    scope.font = font;
-							instance.execCommand('fontName', false, scope.font.fontFamily);
+							instance.selection.css({ 'font-family': font.fontFamily });
 						};
 
 						instance.on('selectionchange', function(e){
@@ -1904,11 +2016,15 @@ window.RTE = (function () {
 						    }
 						    var html = '<div>';
 						    scope.imageOption.display.files.forEach(function (file) {
-						        html += '<img src="' + path + file._id + '" />';
+						        html += '<img src="' + path + file._id + '" class="latest-image" />';
 						    });
 
 						    html += '<div><br></div><div><br></div></div>';
 						    instance.selection.replaceHTML(html);
+							let image = instance.editZone
+								.find('.latest-image')
+								.removeClass('latest-image');
+							instance.selection.selectNode(image[0]);
 						    instance.addState(instance.editZone.html());
 							scope.imageOption.display.pickFile = false;
 							scope.imageOption.display.files = [];
@@ -2183,6 +2299,7 @@ window.RTE = (function () {
 						scope.linker.openLinker = function (appPrefix, address, element) {
 						    var sel = window.getSelection();
 						    instance.selection.range = sel.getRangeAt(0);
+							this.rangeCount = 1;
 						    scope.linker.display.chooseLink = true;
 						    if (appPrefix) {
 						        scope.linker.search.application.address = '/' + appPrefix;
@@ -3354,7 +3471,11 @@ window.RTE = (function () {
                                 while (nodeCursor !== blockContainer) {
                                     var cursorClone;
                                     if (nodeCursor.nodeType === 1) {
-                                        cursorClone = document.createElement(nodeCursor.nodeName.toLowerCase());
+										let nodeName = nodeCursor.nodeName.toLowerCase();
+										if(nodeName === 'a'){
+											nodeName = 'span';
+										}
+                                        cursorClone = document.createElement(nodeName);
                                         $(cursorClone).attr('style', $(nodeCursor).attr('style'));
                                         $(cursorClone).attr('class', $(nodeCursor).attr('class'));
                                         $(cursorClone).append(newLine[0].firstChild);
@@ -3539,10 +3660,10 @@ window.RTE = (function () {
                                 range.setStart(caretPosition.offsetNode, caretPosition.offset);
                             }
                             if (range) {
-                                
                                 sel.removeAllRanges();
                                 sel.addRange(range);
                                 editorInstance.selection.range = range;
+								editorInstance.selection.rangeCount = 1;
                             }
 
                             for(var i = 0; i < files.length; i++){
