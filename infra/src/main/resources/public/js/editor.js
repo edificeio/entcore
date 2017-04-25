@@ -182,14 +182,24 @@ window.RTE = (function () {
 			this.applyNextRanges = function(){
 				let selection = window.getSelection();
 				selection.removeAllRanges();
-				this.nextRanges.forEach(function(range){
-					selection.addRange(range);
-				});
-				that.instance.trigger('selectionchange', {
-					selection: that.instance.selection
-				});
+				if(selection.rangeCount > 1){
+					this.nextRanges.forEach(function(range){
+						selection.addRange(range);
+					});
+					that.instance.trigger('selectionchange', {
+						selection: that.instance.selection
+					});
 
-				this.nextRanges = [];
+					this.nextRanges = [];
+				}
+				else{
+					selection.addRange(this.nextRanges[0]);
+					that.instance.trigger('selectionchange', {
+						selection: that.instance.selection
+					});
+
+					this.nextRanges = [];
+				}
 			};
 
 			function getSelectedElements(){
@@ -450,6 +460,10 @@ window.RTE = (function () {
 			};
 
 			this.isCursor = function () {
+				let sel = window.getSelection();
+				this.rangeCount = sel.rangeCount;
+				this.range = sel.getRangeAt(0);
+
 			    return (this.rangeCount === 1 || this.rangeCount === 0) && 
 				this.range.startContainer === this.range.endContainer && 
 				this.range.startOffset === this.range.endOffset;
@@ -571,7 +585,11 @@ window.RTE = (function () {
 					this.editZone.append(el);
 					this.selectNode(el[0]);
 				}
-				else if(this.range.startContainer === this.range.commonAncestorContainer && this.range.startContainer === this.range.endContainer){
+				else if(
+					this.range.startContainer === this.range.commonAncestorContainer && 
+					this.range.startContainer === this.range.endContainer &&
+					this.range.startContainer.nodeType === 1
+				){
 					let container = this.range.startContainer;
 					if(this.instance.editZone[0] === this.range.startContainer){
 						let newEl = document.createElement('div');
@@ -591,7 +609,7 @@ window.RTE = (function () {
 				}
 				else{
 					wrapTextOnNode(el);
-					this.range.endContainer.parentNode.insertBefore(el[0], this.range.endContainer);
+					this.range.startContainer.parentNode.insertBefore(el[0], this.range.startContainer.nextSibling);
 				}
 					
 				
@@ -645,6 +663,7 @@ window.RTE = (function () {
 			}
 
 			function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
+				let startSet = false;
 			    if (startOffset === undefined) {
 			        startOffset = range.startOffset;
 			    }
@@ -652,6 +671,17 @@ window.RTE = (function () {
 			    var i = startOffset;
 			    do {
 			        if (sibling.nodeType === 1) {
+						let r;
+						if(!keepRangeStart && !startSet){
+							r = document.createRange();
+							r.setStart(sibling, 0);
+							that.nextRanges.push(r);
+							startSet = true;
+						}
+						else{
+							r = that.nextRanges[that.nextRanges.length - 1];
+						}
+						r.setEnd(sibling, 1);
 			            $(sibling).css(css);
 			        }
 			        else {
@@ -666,11 +696,12 @@ window.RTE = (function () {
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 								that.moveRanges(range, sibling, -(el.text().length), afterText);
 			                    var r = document.createRange();
-			                    if (keepRangeStart) {
+			                    if (keepRangeStart || startSet) {
 									r = that.nextRanges[that.nextRanges.length - 1];
 									r.setEnd(el[0], 1);
 			                    }
 			                    else {
+									startSet = true;
 			                        r.setStart(el[0], 0);
 									r.setEnd(el[0], 1);
 									that.nextRanges.push(r);
@@ -695,11 +726,17 @@ window.RTE = (function () {
 			                if(el.text()){
 			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
-			                    if (!keepRangeStart) {
+			                    if (!keepRangeStart && !startSet) {
 			                        var r = document.createRange();
 			                        r.setStart(el[0], 0);
+									r.setEnd(el[0], 1);
 			                        that.nextRanges.push(r);
+									startSet = true;
 			                    }
+								else{
+									let r = that.nextRanges[that.nextRanges.length - 1];
+									r.setEnd(el[0], 1);
+								}
 			                }
 			            }
 			            else {
@@ -794,7 +831,10 @@ window.RTE = (function () {
 								continue;
 							}
 
-							if(sibling === range.endContainer && range.endOffset === 0){
+							if(
+								(sibling === range.endContainer && range.endOffset === 0) ||
+								($(range.endContainer).find(sibling).length && range.endOffset === i)
+							){
 								break;
 							}
 
@@ -832,11 +872,6 @@ window.RTE = (function () {
 							}
 
 							if (
-                                (
-                                    range.endContainer.nodeType === 1
-                                    && $(range.endContainer).find(sibling).length
-                                    && range.endOffset === i
-                                ) ||
                                     sibling === range.endContainer
                                 )
 							{
@@ -938,12 +973,69 @@ window.RTE = (function () {
 					
 					//cleanup
 					that.editZone.find('span').each(function(index, item){
-						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
-							let cssObj = '{' + $(item).attr('style').replace(/;/i, ',').slice(0,-1) + '}';
-							$(item).css(cssObj);
-							$(item).html($(item).children().first().html());
+						if(item.childNodes.length > 1){
+							let child = item.firstChild;
+							while(child !== null){
+								let nextChild = child.nextSibling;
+								if(child.nodeType === 3 && child.textContent === ""){
+									child.remove();
+								}
+								child = nextChild;
+							}
 						}
-						if(!$(item).html()){
+						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
+							for(let i = 0; i < item.childNodes[0].style.length; i++){
+								let prop = item.childNodes[0].style[i];
+								$(item).css(prop, $(item.childNodes[0]).css(prop));
+							}
+							let sel = window.getSelection();
+							let newRanges = [];
+							for(let i = 0; i < sel.rangeCount; i++){
+								let range = {
+									startContainer: sel.getRangeAt(i).startContainer,
+									endContainer: sel.getRangeAt(i).endContainer,
+									startOffset: sel.getRangeAt(i).startOffset,
+									endOffset: sel.getRangeAt(i).endOffset
+								};
+
+								if(range.startContainer === item.childNodes[0]){
+									if(range.startContainer.nodeType === 1 && item.nodeType === 3 && range.startOffset === 1){
+										range.startOffset = item.textContent.length;
+									}
+									range.startContainer = item;
+								}
+								if(range.endContainer === item.childNodes[0]){
+									if(range.endContainer.nodeType === 1 && item.nodeType === 3 && range.endOffset === 1){
+										range.endOffset = item.textContent.length;
+									}
+									range.endContainer = item;
+								}
+								newRanges.push(range);
+							}
+
+							while(item.childNodes[0].childNodes.length){
+								$(item).append(item.childNodes[0].childNodes[0]);
+							}
+							item.childNodes[0].remove();
+
+							sel.removeAllRanges();
+							newRanges.forEach(function(rangeDef){
+								let range = document.createRange();
+								range.setStart(rangeDef.startContainer, rangeDef.startOffset);
+								range.setEnd(rangeDef.endContainer, rangeDef.endOffset);
+								sel.addRange(range);
+							});
+						}
+						if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
+							let nextCss = $(item.nextSibling).attr('style');
+							if(nextCss && nextCss.indexOf($(item).attr('style')) !== -1){
+								while(item.childNodes.length){
+									$(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
+								}
+								item.remove();
+							}
+						}
+						if($(item).html() === ""){
 							$(item).remove();
 						}
 					});
@@ -3173,7 +3265,9 @@ window.RTE = (function () {
 
                             scope.$apply(function(){
                                 scope.$eval(attributes.ngChange);
-                                ngModel.assign(scope, editZone.html());
+								let content = editZone.html();
+								$(content).find('mathjax').html('');
+                                ngModel.assign(scope, content);
                             });
                         });
 
@@ -3237,13 +3331,15 @@ window.RTE = (function () {
                             if (!scope.$$phase) {
                                 scope.$apply(function () {
                                     scope.$eval(attributes.ngChange);
-                                    var content = editZone.html();
-                                    ngModel.assign(scope, content);
+                                    let content = editZone.html();
+									$(content).find('mathjax').html('');
+									ngModel.assign(scope, content);
                                 });
                             }
                             else {
                                 scope.$eval(attributes.ngChange);
-                                var content = editZone.html();
+                                let content = editZone.html();
+								$(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             }
                         });
