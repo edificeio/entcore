@@ -618,12 +618,18 @@ window.RTE = (function () {
 			};
 
 			function applyCSSCursor(css){
+				var elementAtCaret;
 			    var el = $('<span>&#8203;</span>');
-				if (!that.range && !that.editZone.html()) {
-					var elementAtCaret = $('<div></div>').appendTo(that.editZone);
+				if (!that.range && !that.editZone.html() || that.range.startContainer === that.editZone[0]) {
+					if(that.editZone.children('div').length > 0){
+						elementAtCaret = that.editZone.children('div')[0].firstChild;
+					}
+					else{
+						elementAtCaret = $('<div>&#8203;</div>').appendTo(that.editZone)[0].firstChild;
+					}
 				}
 				else {
-					var elementAtCaret = that.range.startContainer;
+					elementAtCaret = that.range.startContainer;
 					if (elementAtCaret.nodeType === 1 && elementAtCaret.nodeName === 'SPAN') {
 						el.attr('style', $(elementAtCaret).attr('style'));
 					}
