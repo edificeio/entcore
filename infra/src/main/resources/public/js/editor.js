@@ -1033,8 +1033,14 @@ window.RTE = (function () {
 							});
 						}
 						if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
-							let nextCss = $(item.nextSibling).attr('style');
-							if(nextCss && nextCss.indexOf($(item).attr('style')) !== -1){
+							let sameStyle = true;
+							for(let i = 0; i < item.nextSibling.style.length; i++){
+								sameStyle = sameStyle && $(item).css(item.nextSibling.style[i]) === $(item.nextSibling).css(item.nextSibling.style[i]);
+							}
+							for(let i = 0; i < item.style.length; i++){
+								sameStyle = sameStyle && $(item.nextSibling).css(item.style[i]) === $(item).css(item.style[i]);
+							}
+							if(sameStyle){
 								while(item.childNodes.length){
 									$(item.nextSibling).prepend(item.childNodes[item.childNodes.length - 1]);
 								}
