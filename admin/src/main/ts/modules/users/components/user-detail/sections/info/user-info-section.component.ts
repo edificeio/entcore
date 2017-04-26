@@ -23,4 +23,42 @@ export class UserInfoSection extends AbstractSection {
         if(this.passwordMailInput)
             this.passwordMailInput.reset()
     }
+
+    private addAdml() {
+        this.ls.perform('portal-content', this.details.addAdml(this.structure.id))
+            .then(res => {
+                this.ns.success({
+                        key: 'notify.user.add.adml.content',
+                        parameters: {
+                            user: this.user.firstName + ' ' + this.user.lastName}
+                        }
+                    , 'notify.user.add.adml.title')
+            }).catch(err => {
+                this.ns.error({
+                        key: 'notify.user.add.adml.error.content',
+                        parameters: {
+                            user: this.user.firstName + ' ' + this.user.lastName}
+                        }
+                    , 'notify.user.add.adml.error.title', err)
+            })
+    }
+
+    private removeAdml() {
+        this.ls.perform('portal-content', this.details.removeAdml())
+            .then(res => {
+                this.ns.success({
+                        key: 'notify.user.remove.adml.content',
+                        parameters: {
+                            user: this.user.firstName + ' ' + this.user.lastName}
+                        }
+                    , 'notify.user.remove.adml.title')
+            }).catch(err => {
+                this.ns.error({
+                        key: 'notify.user.remove.adml.error.content',
+                        parameters: {
+                            user: this.user.firstName + ' ' + this.user.lastName}
+                        }
+                    , 'notify.user.remove.adml.error.title', err)
+            })
+    }
 }

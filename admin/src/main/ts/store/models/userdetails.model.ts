@@ -86,6 +86,33 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
+    addAdml(structureId) {
+        return this.http.post(`/directory/user/function/${this.id}`, {
+            functionCode: "ADMIN_LOCAL",
+            inherit: "s",
+            scope: [structureId]
+        }).then(() => {
+            if (this.isAdml()) {
+                this.functions[0][1].push(structureId)
+            } else {
+                this.functions = [[ 'ADMIN_LOCAL', [ structureId ]]]
+            }
+
+        })
+    }
+
+    removeAdml() {
+        return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
+            this.functions[0] = ["", []]
+        })
+    }
+
+    isAdml() {
+        return this.functions && this.functions.length > 0 
+            && this.functions[0] && this.functions[0].length > 0 
+            && this.functions[0][0] === 'ADMIN_LOCAL'
+    }
+
     toJSON() {
         return {
             firstName:      this.firstName,

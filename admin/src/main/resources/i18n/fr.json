@@ -86,6 +86,8 @@
     "structure.or.more": "{{ rest ? $head et $rest établissement(s) : $head }}",
     "member.of.n.structures": "{{ count > 1 ? $count établissements : $count établissement }}",
     "adml.current.structure": "Administrateur local sur cet établissement",
+    "adml.add": "Attribuer droit d'ADML",
+    "adml.remove": "Retirer droit d'ADML",
     "quick.actions": "Actions rapides",
     "structure": "Etablissement",
     "imports.exports": "Imports / Exports",
@@ -141,6 +143,14 @@
     "notify.user.create.content": "L'utilisateur {{user}} a bien été créé.",
     "notify.user.create.error.title" : "Erreur lors de la création",
     "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé.",
+    "notify.user.add.adml.title": "Rôle ADML attribué",
+    "notify.user.add.adml.content": "Le rôle d'ADML a bien été attribué à l'utilisateur {{user}}.",
+    "notify.user.add.adml.error.title": "Erreur lors de l'attribution de rôle ADML",
+    "notify.user.add.adml.error.content": "Le rôle d'ADML n'a pas pu être attribué à l'utilisateur {{user}}.",
+    "notify.user.remove.adml.title": "Rôle ADML retiré",
+    "notify.user.remove.adml.content": "Le rôle d'ADML a bien été retiré à l'utilisateur {{user}}.",
+    "notify.user.remove.adml.error.title": "Erreur lors du retrait du rôle ADML",
+    "notify.user.remove.adml.error.content": "Le rôle d'ADML n'a pas pu être retiré à l'utilisateur {{user}}.",
     "datepicker.open": "Ouvrir le calendrier",
     "datepicker.delete": "Supprimer la date"
 }

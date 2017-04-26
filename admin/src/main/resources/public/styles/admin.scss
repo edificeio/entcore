@@ -683,6 +683,10 @@ div.panel-message {
 /* Forms */
 .form-field {
     margin: 15px 0px;
+
+    button.thin.input-line {
+        flex: 0 0 auto;
+    }
 }
 
 .form-row {

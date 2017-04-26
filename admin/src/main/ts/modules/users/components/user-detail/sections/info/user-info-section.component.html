@@ -19,23 +19,34 @@
     <form-field label="source">
         <span>{{ details.source }}</span>
     </form-field>
-    <form-field label="administration" *ngIf="details.functions && details.functions[0] && details.functions[0][0]">
+    <form-field label="administration">
+        <button *ngIf="!details.functions || !details.functions[0] || !details.functions[0][0]" 
+            (click)="addAdml()" 
+            class="thin input-line">
+            <s5l>adml.add</s5l>
+        </button>
         <div *ngFor="let function of details.functions">
-                {{ function[0] | translate }}
-                <span *ngIf="function[1].length > 0 && getStructure(function[1][0])">
-                    ({{ 'structure.or.more' | translate:{ head: getStructure(function[1][0]).name, rest: function[1].length - 1 } }})
-                </span>
-                <span *ngIf="function[1].length > 0 && !getStructure(function[1][0])">
-                    ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
-                </span>
+            {{ function[0] | translate }}
+            <span *ngIf="function[1] && function[1].length > 0 && getStructure(function[1][0])">
+                ({{ 'structure.or.more' | translate:{ head: getStructure(function[1][0]).name, rest: function[1].length - 1 } }})
+            </span>
+            <span *ngIf="function[1] && function[1].length > 0 && !getStructure(function[1][0])">
+                ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
+            </span>
+            <button *ngIf="details.isAdml()" 
+                (click)="removeAdml()"
+                class="thin input-line">
+                <s5l>adml.remove</s5l>
+            </button>
         </div>
     </form-field>
+        
     <div class="form-row" *ngIf="!details.activationCode">
         <button class="relative" (click)="wrap(details.sendResetPassword, 'user.password.mail', null, passwordResetMail)" [disabled]="!passwordResetMail || passwordMailInput.errors">
-                <spinner-cube class="button-spinner" waitingFor="user.password.mail"></spinner-cube>
-                <s5l>send.reset.password</s5l>
-                <i class="fa fa-envelope"></i>
-            </button>
+            <spinner-cube class="button-spinner" waitingFor="user.password.mail"></spinner-cube>
+            <s5l>send.reset.password</s5l>
+            <i class="fa fa-envelope"></i>
+        </button>
         <input type="email" [(ngModel)]="passwordResetMail" name="passwordResetMail" [attr.placeholder]="'send.reset.password.placeholder' | translate"
             #passwordMailInput="ngModel" [pattern]="emailPattern">
         <form-errors [control]="passwordMailInput"></form-errors>
