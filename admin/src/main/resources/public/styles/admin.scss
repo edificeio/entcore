@@ -536,6 +536,19 @@ ux-portal {
     }
 }
 
+/* Admin Home */
+admin-home {
+    h3 {
+        font-weight: normal;
+
+        i {
+            padding: 10px;
+            background-color: $main;
+            color: white;
+        }
+    }
+}
+
 /* Home Cards */
 quick-actions-card {
     background-color: white;
