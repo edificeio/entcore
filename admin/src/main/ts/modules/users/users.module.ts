@@ -8,7 +8,8 @@ import { SijilModule } from 'sijil'
 import { UxModule } from '..'
 import { UserDetail, UsersRoot, UserList, UserFilters, UserError, UserCreate,
     UserChildrenSection, UserAdministrativeSection, UserInfoSection, UserRelativesSection,
-    UserStructuresSection, UserDuplicatesSection, UserClassesSection, UserManualGroupsSection } from './components'
+    UserStructuresSection, UserDuplicatesSection, UserClassesSection, UserManualGroupsSection, 
+    UserFunctionalGroupsSection } from './components'
 import { UserResolve, UsersResolve, routes } from './routing'
 import { UsersStore } from './store'
 import { UserlistFiltersService } from '../../services'
@@ -36,7 +37,8 @@ import { UserlistFiltersService } from '../../services'
         UserStructuresSection,
         UserDuplicatesSection,
         UserClassesSection,
-        UserManualGroupsSection
+        UserManualGroupsSection,
+        UserFunctionalGroupsSection
     ],
     providers: [
         UserResolve,

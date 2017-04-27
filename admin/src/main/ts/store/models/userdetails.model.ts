@@ -32,7 +32,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     functions?: Array<[string, Array<string>]>
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
-    functionalGroups?: Array<string>
+    functionalGroups?: Group[]
     manualGroups?: Group[]
     administrativeStructures?: Array<string>
     deleteDate?: number
@@ -74,15 +74,27 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
-    addManualGroup(mgroup: Group) {
-        return this.http.post(`/directory/user/group/${this.id}/${mgroup.id}`, {}).then(() => {
-            this.manualGroups.push(mgroup)
+    addManualGroup(g: Group) {
+        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
+            this.manualGroups.push(g)
         })
     }
 
-    removeManualGroup(mgroup: Group) {
-        return this.http.delete(`/directory/user/group/${this.id}/${mgroup.id}`).then(() => {
-            this.manualGroups = this.manualGroups.filter(g => mgroup.id !== g.id)
+    removeManualGroup(g: Group) {
+        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
+            this.manualGroups = this.manualGroups.filter(mg => g.id !== mg.id)
+        })
+    }
+
+    addFunctionalGroup(g: Group) {
+        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
+            this.functionalGroups.push(g)
+        })
+    }
+
+    removeFunctionalGroup(g: Group) {
+        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
+            this.functionalGroups = this.functionalGroups.filter(fg => g.id !== fg.id)
         })
     }
 

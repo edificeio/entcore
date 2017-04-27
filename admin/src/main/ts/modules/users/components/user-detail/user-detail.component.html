@@ -76,9 +76,7 @@
     
     <user-classes-section [user]="user" [structure]="structure"></user-classes-section>
 
-    <panel-section section-title="users.details.section.learning.groups" [folded]="true">
-        <ul><li *ngFor="let fg of user?.userDetails?.functionalGroups">{{ fg.name }}</li></ul>
-    </panel-section>
+    <user-functionalgroups-section [user]="user" [structure]="structure"></user-functionalgroups-section>
 
     <user-manualgroups-section [user]="user" [structure]="structure"></user-manualgroups-section>
 </div>
