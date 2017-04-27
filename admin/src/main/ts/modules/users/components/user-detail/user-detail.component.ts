@@ -87,35 +87,19 @@ export class UserDetail implements OnInit, OnDestroy{
         this.ls.perform('user.block', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
+
                 this.ns.success(
-                    {
-                        key: 'notify.user.toggleblock.content',
-                        parameters: {
-                            user:       this.user.firstName + ' ' + this.user.lastName,
-                            blocked:    this.user.blocked
-                        }
-                    },
-                    {
-                        key: 'notify.user.toggleblock.title',
-                        parameters: {
-                            blocked:    this.user.blocked
-                        }
-                    })
+                    { key: 'notify.user.toggleblock.content', 
+                    parameters: { user: this.user.firstName + ' ' + this.user.lastName, blocked: this.user.blocked }},
+                    { key: 'notify.user.toggleblock.title', 
+                    parameters: { blocked: this.user.blocked }})
             }).catch(err => {
                  this.ns.error(
-                    {
-                        key: 'notify.user.toggleblock.error.content',
-                        parameters: {
-                            user:       this.details.firstName + ' ' + this.user.lastName,
-                            blocked:    !this.user.blocked
-                        }
-                    },
-                    {
-                        key: 'notify.user.toggleblock.error.title',
-                        parameters: {
-                            blocked:    !this.user.blocked
-                        }
-                    }, err)
+                    { key: 'notify.user.toggleblock.error.content',
+                    parameters: { user: this.details.firstName + ' ' + this.user.lastName, blocked: !this.user.blocked }},
+                    { key: 'notify.user.toggleblock.error.title',
+                    parameters: { blocked: !this.user.blocked }}, 
+                    err)
             })
     }
 }

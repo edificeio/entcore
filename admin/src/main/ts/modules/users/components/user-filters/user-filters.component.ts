@@ -1,6 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 import { BundlesService } from 'sijil'
-import { StructureModel } from '../../../../store'
 import { UserlistFiltersService } from '../../../../services'
 import { Subscription } from 'rxjs/Subscription'
 import { UsersStore } from '../../store'
@@ -40,7 +39,7 @@ import { UsersStore } from '../../store'
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserFilters implements OnInit, OnDestroy {
+export class UserFilters {
 
     constructor(
         private bundles: BundlesService,
@@ -48,20 +47,7 @@ export class UserFilters implements OnInit, OnDestroy {
         private usersStore: UsersStore,
         private listFilters: UserlistFiltersService){}
 
-    ngOnInit() {
-        this.dataSubscriber = this.usersStore.onchange.subscribe(() => {
-            this.cdRef.markForCheck()
-        })
-    }
-
-    ngOnDestroy() {
-        this.dataSubscriber.unsubscribe()
-    }
-
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }
-
-    private dataSubscriber : Subscription
-    private structure: StructureModel = this.usersStore.structure
 
     private orderer(a){
         return a

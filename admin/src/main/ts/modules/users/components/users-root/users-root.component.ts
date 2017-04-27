@@ -53,7 +53,6 @@ export class UsersRoot implements OnInit, OnDestroy {
                 let structure: StructureModel = data['structure']
                 this.usersStore.structure = structure
                 this.initFilters(structure)
-                this.cdRef.markForCheck()
             }
         })
 
