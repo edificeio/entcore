@@ -28,7 +28,7 @@
         <i class="fa fa-user" aria-hidden="true"
             *ngIf="currentStructure"
             [tooltip]="'users' | translate"
-            [routerLink]="'/admin/' + currentStructure?.id + '/users'"
+            [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
             [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"></i>
         <i class="fa fa-home" aria-hidden="true"
             *ngIf="currentStructure"

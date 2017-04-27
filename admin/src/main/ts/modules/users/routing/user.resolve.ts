@@ -23,7 +23,7 @@ export class UserResolve implements Resolve<UserModel | Error> {
                     return user
                 }))
         } else {
-            this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
+            this.router.navigate(['/admin', structure.id, 'users', 'filter'], {replaceUrl: false})
         }
     }
 }
