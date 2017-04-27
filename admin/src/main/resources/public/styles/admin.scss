@@ -513,6 +513,27 @@ ux-portal {
     div[section] div.portal-body {
         padding: 0px 5%;
     }
+
+    div[section] div.welcome-message {
+        background-color: rgba(crimson, 0.7);
+        color: white;
+        padding: 20px;
+        text-align: center;
+
+        a.old-console {
+            background-color: rgba(crimson, 0.7);
+            padding: 13px 0px;
+
+            &:hover {
+                background-color: $accent;
+            }
+
+            i {
+                font-size: 1.5em;
+                padding: 13px 10px;
+            }
+        }
+    }
 }
 
 /* Home Cards */

@@ -53,6 +53,14 @@
 
         <spinner-cube class="portal-spinner" waitingFor="portal-content"></spinner-cube>
 
+        <div class="welcome-message" *ngIf="router.url === '/admin'">
+            <s5l>message.new.console</s5l>
+            <a class="old-console" href="/directory/admin-console"
+                [tooltip]="'switch.old.admin.console.tooltip' | translate">
+                <i class="fa fa-step-backward"></i>
+            </a>
+        </div>
+
         <div class="portal-body">
             <router-outlet></router-outlet>
         </div>

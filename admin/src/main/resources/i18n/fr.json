@@ -1,4 +1,5 @@
 {
+    "message.new.console": "Bienvenue sur la version ALPHA de la nouvelle console d'administration. Toutes les fonctionnalités ne sont pas encore présentes. <br/>Pour revenir à la version stable de la console d'administration, veuillez cliquer ici : ",
     "admin.title": "Console d'administration",
     "search.structure": "Rechercher un établissement",
     "search.user": "Rechercher un utilisateur",
@@ -98,7 +99,7 @@
     "import.users": "Importer des utilisateurs",
     "massmail.accounts": "Publipostage des comptes",
     "switch.old.admin.console": "Version classique",
-    "switch.old.admin.console.tooltip": "Quitter la version BETA et revenir à la version classique de la console d'administration",
+    "switch.old.admin.console.tooltip": "Quitter la version ALPHA et revenir à la version classique de la console d'administration",
     "no.user.found": "Aucun utilisateur trouvé",
     "users.quick.search.intro": "Tapez quelques lettres dans le champ ci-dessus pour trouver les utilisateurs (maximum 5) qui ont un nom ou un prénom correspondant",
     "user.root.error": "Erreur",
