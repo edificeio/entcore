@@ -4,7 +4,7 @@
            [ngClass]="{'fa-times': openside, 'fa-bars': !openside}"
            (click)="openside = !openside"
            #sidePanelOpener></i>
-        <span>{{ currentStructure?.name }}</span>
+        <span class="link" [routerLink]="'/admin/' + currentStructure?.id">{{ currentStructure?.name }}</span>
     </div>
     <div header-right>
         <a class="old-console" href="/directory/admin-console"

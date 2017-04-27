@@ -501,6 +501,9 @@ ux-portal {
                 color: $accent;
             }
         }
+        span.link {
+            cursor: pointer;
+        }
     }
     div[section] {
         position: relative;
