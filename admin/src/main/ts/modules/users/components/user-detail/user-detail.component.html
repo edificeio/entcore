@@ -14,7 +14,7 @@
     <div class="panel-message" *ngIf="hasDuplicates()">
         <i class="fa fa-users"></i>
         <s5l>user.has.duplicates</s5l>
-        <button style="float: right" anchor="user-duplicates-section" (click)="openDuplicates()">
+        <button class="goto-duplicate" anchor="user-duplicates-section" (click)="openDuplicates()">
             <i class="fa fa-compress"></i>
             <s5l>manage.duplicates</s5l>
         </button>

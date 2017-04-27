@@ -669,6 +669,17 @@ div.panel-message {
     margin: 20px 0;
     line-height: 20px;
     text-align: center;
+
+    button.goto-duplicate {
+        padding: 1px 5px;
+        width: auto;
+        color: crimson;
+
+        &:hover {
+            background-color: lighten(crimson, 10%);
+            color: white;
+        }
+    }
 }
 
 /* Panel sections */
