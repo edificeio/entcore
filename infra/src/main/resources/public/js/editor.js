@@ -174,7 +174,7 @@ window.RTE = (function () {
 
 			this.toolbar = new RTE.Toolbar(this);
 		},
-		Selection: function(){
+		Selection: function(data){
 			var that = this;
 			this.selectedElements = [];
 			this.nextRanges = [];
@@ -723,7 +723,7 @@ window.RTE = (function () {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
 			                    sibling.textContent = sibling.textContent.substring(range.endOffset);
 								that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
-			                    var r = that.nextRanges[that.nextRanges.length - 1];
+			                    let r = that.nextRanges[that.nextRanges.length - 1];
 			                    r.setEnd(el[0], 1);
 			                }
 			            }
@@ -733,7 +733,7 @@ window.RTE = (function () {
 			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 			                    if (!keepRangeStart && !startSet) {
-			                        var r = document.createRange();
+			                        let r = document.createRange();
 			                        r.setStart(el[0], 0);
 									r.setEnd(el[0], 1);
 			                        that.nextRanges.push(r);
@@ -2678,7 +2678,7 @@ window.RTE = (function () {
 			RTE.baseToolbarConf.option('table', function(instance){
 				return {
 					template: '' +
-					'<popover mouse-event="click">' +
+					'<popover mouse-event="click" on-close="resetScroll()">' +
 					'<i popover-opener opening-event="click" tooltip="editor.option.table"></i>' +
 					'<popover-content>' +
 					'<div class="draw-table"></div>' +
@@ -2695,6 +2695,13 @@ window.RTE = (function () {
 								line.append('<div class="one cell"></div>');
 							}
 						}
+
+						scope.resetScroll = function(){
+							element.parents().css({ overflow: '' });
+							element.parents('editor-toolbar').each(function (index, item) {
+								$(item).css({ 'margin-top': '', 'min-height': '', height: '' })
+							});
+						};
 
 						ui.extendSelector.touchEvents('[contenteditable] td');
 
@@ -2748,8 +2755,10 @@ window.RTE = (function () {
 									row.append(cell);
 								}
 							}
+
 							instance.selection.replaceHTML('<div>' + table.outerHTML + '</div>');
 							instance.trigger('contentupdated');
+							
 						});
 
 						instance.bindContextualMenu(scope, 'td', [
@@ -3897,7 +3906,11 @@ window.RTE = (function () {
 					controller: function(){},
 					restrict: 'E',
 					link: function (scope, element, attributes) {
-
+						element.on('close', function(){
+							if(attributes.onClose){
+								scope.$eval(attributes.onClose);
+							}
+						});
 					}
 				};
 			});
@@ -3916,6 +3929,7 @@ window.RTE = (function () {
                                 }
 
 						        $('body').one('click', function (e) {
+									parentNode.trigger('close');
 						            popover.addClass("hidden");
 						        });
 						    }
@@ -3934,6 +3948,7 @@ window.RTE = (function () {
 
                          if(mouseEvent === 'mouseover') {
                             parentNode.on('mouseout', function (e) {
+								parentNode.trigger('close');
                                 popover.addClass("hidden");
                             });
                         }
