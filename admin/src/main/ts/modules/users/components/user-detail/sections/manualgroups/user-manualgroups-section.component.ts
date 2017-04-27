@@ -18,21 +18,21 @@ import { Group } from '../../../../../../store'
                     <list-component class="inner-list"
                         [model]="listGroupModel"
                         [inputFilter]="filterByInput"
-                        [filters]="filterManualGroups"
+                        [filters]="filterGroups"
                         searchPlaceholder="search.group"
                         sort="name"
                         [display]="display"
                         (inputChange)="inputFilter = $event"
-                        [isDisabled]="disableManualGroup"
-                        (onSelect)="ls.perform($event.id, details.addManualGroup($event), 0)">
+                        [isDisabled]="disableGroup"
+                        (onSelect)="ls.perform($event.id, user.addManualGroup($event), 0)">
                     </list-component>
                 </div>
             </light-box>
             
             <ul class="actions-list">
-                <li *ngFor="let mg of user?.userDetails?.manualGroups">
+                <li *ngFor="let mg of details?.manualGroups">
                     <span>{{ mg.name }}</span>
-                    <i  class="fa fa-times action" (click)="ls.perform(mg.id, details.removeManualGroup(mg), 0)"
+                    <i  class="fa fa-times action" (click)="ls.perform(mg.id, user.removeManualGroup(mg), 0)"
                         [tooltip]="'delete.this.group' | translate"
                         [ngClass]="{ disabled: ls.isLoading(mg.id)}">
                     </i>
@@ -69,11 +69,11 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
         return `${mg.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
-    private filterManualGroups = (mg: {id: string, name: string}) => {
+    private filterGroups = (mg: {id: string, name: string}) => {
         return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id)
     }
     
-    private disableManualGroup = (mg) => {
+    private disableGroup = (mg) => {
         return this.ls.isLoading(mg.id)
     }
 

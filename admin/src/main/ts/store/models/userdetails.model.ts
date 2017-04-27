@@ -74,30 +74,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
-    addManualGroup(g: Group) {
-        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
-            this.manualGroups.push(g)
-        })
-    }
-
-    removeManualGroup(g: Group) {
-        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
-            this.manualGroups = this.manualGroups.filter(mg => g.id !== mg.id)
-        })
-    }
-
-    addFunctionalGroup(g: Group) {
-        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
-            this.functionalGroups.push(g)
-        })
-    }
-
-    removeFunctionalGroup(g: Group) {
-        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
-            this.functionalGroups = this.functionalGroups.filter(fg => g.id !== fg.id)
-        })
-    }
-
     addAdml(structureId) {
         return this.http.post(`/directory/user/function/${this.id}`, {
             functionCode: "ADMIN_LOCAL",

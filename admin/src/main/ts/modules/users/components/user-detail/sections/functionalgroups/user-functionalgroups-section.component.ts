@@ -24,15 +24,15 @@ import { Group } from '../../../../../../store'
                         [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
-                        (onSelect)="ls.perform($event.id, details.addFunctionalGroup($event), 0)">
+                        (onSelect)="ls.perform($event.id, user.addFunctionalGroup($event), 0)">
                     </list-component>
                 </div>
             </light-box>
             
             <ul class="actions-list">
-                <li *ngFor="let g of user?.userDetails?.functionalGroups">
+                <li *ngFor="let g of details?.functionalGroups">
                     <span>{{ g.name }}</span>
-                    <i  class="fa fa-times action" (click)="ls.perform(g.id, details.removeFunctionalGroup(g), 0)"
+                    <i  class="fa fa-times action" (click)="ls.perform(g.id, user.removeFunctionalGroup(g), 0)"
                         [tooltip]="'delete.this.group' | translate"
                         [ngClass]="{ disabled: ls.isLoading(g.id)}">
                     </i>

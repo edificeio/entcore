@@ -1,6 +1,7 @@
 import { Model } from 'toolkit'
 import { UserDetailsModel } from './userdetails.model'
 import { globalStore } from '..'
+import { Group } from '../../store'
 
 export class UserModel extends Model<UserModel> {
 
@@ -72,6 +73,34 @@ export class UserModel extends Model<UserModel> {
     removeClass(classId: string) {
         return this.http.delete(`/directory/class/${classId}/unlink/${this.id}`).then(() => {
             this.classes = this.classes.filter(c => c.id !== classId)
+        })
+    }
+
+    addManualGroup(g: Group) {
+        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
+            this.manualGroups.push(g.name)
+            this.userDetails.manualGroups.push(g)
+        })
+    }
+
+    removeManualGroup(g: Group) {
+        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
+            this.manualGroups = this.manualGroups.filter(mg => mg === g.name)
+            this.userDetails.manualGroups = this.userDetails.manualGroups.filter(mg => g.id !== mg.id)
+        })
+    }
+
+    addFunctionalGroup(g: Group) {
+        return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
+            this.functionalGroups.push(g.name)
+            this.userDetails.functionalGroups.push(g)
+        })
+    }
+
+    removeFunctionalGroup(g: Group) {
+        return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
+            this.functionalGroups = this.functionalGroups.filter(fg => fg === g.name)
+            this.userDetails.functionalGroups = this.userDetails.functionalGroups.filter(fg => g.id !== fg.id)
         })
     }
 
