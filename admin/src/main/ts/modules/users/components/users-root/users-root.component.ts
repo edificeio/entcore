@@ -9,14 +9,16 @@ import { Subscription } from 'rxjs/Subscription'
 @Component({
     selector: 'users-root',
     template: `
-        <h1><i class="fa fa-user"></i><s5l>users.title</s5l></h1>
+        <div class="flex-header">
+            <h1><i class="fa fa-user"></i><s5l>users.title</s5l></h1>
+            <button (click)="openCreationView()"
+                [class.hidden]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)">
+                <s5l>create.user</s5l>
+            </button>
+        </div>
         <side-layout (closeCompanion)="closeCompanion()"
                 [showCompanion]="!router.isActive('/admin/' + usersStore.structure?.id + '/users', true)">
             <div side-card>
-                <div class="round-button top-right-button"
-                    (click)="openCreationView()"
-                    [class.selected]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)"
-                    [tooltip]="'create.user' | translate" position="top">+</div>
                 <user-list [userlist]="usersStore.structure.users.data"
                     (listCompanionChange)="openCompanionView($event)"
                     [selectedUser]="usersStore.user"

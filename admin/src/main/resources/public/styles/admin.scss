@@ -53,8 +53,8 @@ button {
     line-height: 1.5em;
 
     &.thin {
-        padding-top: 5px;
-        padding-bottom: 5px;
+        padding-top: 0px;
+        padding-bottom: 0px;
     }
 
     &.input-inline {
@@ -717,6 +717,29 @@ list-component {
 
         &.disabled {
             color: #CCC;
+        }
+    }
+}
+
+/* User root */
+users-root {
+    div.flex-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+
+        button {
+            background-color: $accent;
+            color: white;
+            padding: 10px 10px;
+
+            &:hover {
+                background-color: $accent-dark;
+            }
+
+            &.hidden {
+                display: none;
+            }
         }
     }
 }
