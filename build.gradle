@@ -151,6 +151,8 @@ project(':workspace') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    compile "com.sun.jna:jna:$jnaVersion"
+    compile "net.sf:lamejb:$lamejbVersion"
   }
 }
 

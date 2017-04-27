@@ -20,12 +20,13 @@
 package org.entcore.workspace;
 
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.service.impl.MongoDbSearchService;
+import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.workspace.service.impl.AudioRecorderWorker;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
 import org.entcore.common.storage.Storage;
@@ -61,6 +62,12 @@ public class Workspace extends BaseServer {
 		QuotaController quotaController = new QuotaController();
 		quotaController.setQuotaService(quotaService);
 		addController(quotaController);
+
+		if (config.getInteger("wsPort") != null) {
+			container.deployWorkerVerticle(AudioRecorderWorker.class.getName(), config);
+			vertx.createHttpServer().setMaxWebSocketFrameSize(1024 * 1024)
+					.websocketHandler(new AudioRecorderHandler(vertx)).listen(config.getInteger("wsPort"));
+		}
 
 	}
 

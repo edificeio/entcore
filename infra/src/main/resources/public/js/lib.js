@@ -1697,16 +1697,54 @@ var recorder = (function(){
 	window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
 	var context,
+		ws = null,
+		intervalId,
 		gainNode,
 		recorder,
 		player = new Audio();
 	var leftChannel = [],
 		rightChannel = [];
 
-	var bufferSize = 4096,
+	var bufferSize = 16384,
 		loaded = false,
 		recordingLength = 0,
+		lastIndex = 0,
+		encoder = new Worker('/infra/public/js/audioEncoder.js'),
 		followers = [];
+
+	function uuid() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            return v.toString(16);
+        });
+	}
+
+	function sendWavChunk() {
+		var	index = rightChannel.length;
+		if (!(index > lastIndex)) return;
+		encoder.postMessage(['chunk', leftChannel.slice(lastIndex, index), rightChannel.slice(lastIndex, index), (index - lastIndex) * bufferSize]);
+		encoder.onmessage = function(e) {
+			var deflate = new Zlib.Deflate(e.data);
+			ws.send(deflate.compress());
+		};
+		lastIndex = index;
+	}
+
+	function closeWs() {
+		if (ws) {
+			if (ws.readyState === 1) {
+				ws.close()
+			}
+		}
+        clearWs();
+	}
+
+	function clearWs() {
+		ws = null;
+        leftChannel = [];
+		rightChannel = [];
+		lastIndex = 0;
+	}
 
 	function notifyFollowers(status, data){
 		followers.forEach(function(follower){
@@ -1724,6 +1762,7 @@ var recorder = (function(){
 			navigator.getUserMedia({
 				audio: true
 			}, function(mediaStream){
+
 				context = new AudioContext();
 				var audioInput = context.createMediaStreamSource(mediaStream);
 				gainNode = context.createGain();
@@ -1741,13 +1780,17 @@ var recorder = (function(){
 					if(this.status !== 'recording'){
 						return;
 					}
-					var left = e.inputBuffer.getChannelData (0);
-					leftChannel.push (new Float32Array(left));
-					var right = e.inputBuffer.getChannelData (1);
-					rightChannel.push (new Float32Array(right));
+					var left = new Float32Array(e.inputBuffer.getChannelData (0));
+					leftChannel.push (left);
+					var right = new Float32Array(e.inputBuffer.getChannelData (1));
+					rightChannel.push (right);
 
 					recordingLength += bufferSize;
+
 					this.elapsedTime += e.inputBuffer.duration;
+
+					sendWavChunk();
+
 					notifyFollowers(this.status);
 				}.bind(this);
 
@@ -1762,6 +1805,9 @@ var recorder = (function(){
 			return navigator.getUserMedia !== undefined && window.AudioContext !==undefined;
 		},
 		stop: function(){
+			if (ws) {
+				ws.send("cancel");
+			}
 			this.status = 'idle';
 			player.pause();
 			if(player.currentTime > 0){
@@ -1779,14 +1825,50 @@ var recorder = (function(){
 		},
 		record: function(){
 			player.pause();
-			if(player.currentTime > 0){
-				player.currentTime = 0;
-			}
+			var that = this;
+			if (ws) {
+				that.status = 'recording';
+				notifyFollowers(that.status);
+				if(!loaded){
+					that.loadComponents();
+				}
+			} else {
+				ws = new WebSocket((window.location.protocol === "https:" ? "wss": "ws") + "://" +
+						window.location.hostname + "/audio/" + uuid());
+				ws.onopen = function () {
+					if(player.currentTime > 0){
+						player.currentTime = 0;
+					}
 
-			this.status = 'recording';
-			notifyFollowers(this.status);
-			if(!loaded){
-				this.loadComponents();
+					that.status = 'recording';
+					notifyFollowers(this.status);
+					if(!loaded){
+						that.loadComponents();
+					}
+				};
+				ws.onerror = function (event) {
+					console.log(event);
+					that.status = 'stop';
+                    notifyFollowers(that.status);
+                    closeWs();
+                    notify.info(event.data);
+				}
+                ws.onmessage = function (event) {
+                	if (event.data && event.data.indexOf("error") !== -1) {
+                		console.log(event.data);
+						closeWs();
+						notify.info(event.data);
+                	} else if (event.data && event.data === "ok") {
+                		closeWs();
+                		notify.info("recorder.saved")
+                	}
+
+                }
+                ws.onclose = function (event) {
+                	that.status = 'stop';
+                    notifyFollowers(that.status);
+                    clearWs();
+                }
 			}
 		},
 		pause: function(){
@@ -1811,32 +1893,11 @@ var recorder = (function(){
 		title: "",
 		status: 'idle',
 		save: function(callback, format){
-			this.stop();
+//			this.stop();
+			sendWavChunk();
+			ws.send("save-" +  this.title);
 			this.status = 'encoding';
 			notifyFollowers(this.status);
-			if(!format){
-				format = 'mp3';
-			}
-
-			var form = new FormData();
-			var encoder = new Worker('/infra/public/js/audioEncoder.js');
-			encoder.postMessage([format, rightChannel, leftChannel, recordingLength]);
-			encoder.onmessage = function(e){
-				this.status = 'uploading';
-				notifyFollowers(this.status);
-				form.append('blob', e.data, this.title + '.' + format);
-				var url = '/workspace/document';
-				if(this.protected){
-					url += '?application=mediaLibrary&protected=true';
-				}
-				http().postFile(url, form).done(function(doc){
-					if(typeof callback === 'function'){
-						callback(doc);
-						this.flush();
-						notify.info('recorder.saved');
-					}
-				}.bind(this));
-			}.bind(this);
 		},
 		mute: function(mute){
 			if(mute){
