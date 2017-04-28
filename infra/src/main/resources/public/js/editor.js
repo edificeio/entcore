@@ -1804,6 +1804,9 @@ window.RTE = (function () {
 							importedFonts = _.uniq(importedFonts, function(item, key, a) { 
 								return item.fontFamily;
 							});
+							importedFonts = _.reject(importedFonts, function(font){ 
+								return font.fontFamily.trim() === 'generic-icons' || font.fontFamily.trim() === 'editor';
+							});
 							scope.fonts = scope.fonts.concat(importedFonts);
 							scope.font = _.find(scope.fonts, function (font) {
 							    return $('p').css('font-family').toLowerCase().indexOf(font.fontFamily.toLowerCase()) !== -1
