@@ -45,7 +45,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'Chrome',
 				version: version,
-				outdated: version < 39
+				outdated: version < 55
 			}
 		}
 		else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
@@ -53,7 +53,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'Safari',
 				version: version,
-				outdated: version < 7
+				outdated: version < 10
 			}
 		}
 		else if(userAgent.indexOf('Firefox') !== -1){
@@ -61,7 +61,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'Firefox',
 				version: version,
-				outdated: version < 34
+				outdated: version < 53
 			}
 		}
 		else if(userAgent.indexOf('MSIE') !== -1){
@@ -69,7 +69,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'MSIE',
 				version: version,
-				outdated: version < 10
+				outdated: version < 11
 			}
 		}
 		else if(userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1){
@@ -77,7 +77,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'MSIE',
 				version: version,
-				outdated: version < 10
+				outdated: version < 11
 			}
 		}
 	};

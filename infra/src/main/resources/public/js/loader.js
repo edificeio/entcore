@@ -111,7 +111,52 @@ var routes = {
 	}
 };
 
-if(!Array.prototype.forEach){
+var userAgent = navigator.userAgent;
+var findVersion = function(){
+	if(userAgent.indexOf('Chrome') !== -1){
+		version = parseInt(userAgent.split('Chrome/')[1].split('.')[0]);
+		return {
+			browser: 'Chrome',
+			version: version,
+			outdated: version < 55
+		}
+	}
+	else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
+		version = parseInt(userAgent.split('Version/')[1].split('.')[0]);
+		return {
+			browser: 'Safari',
+			version: version,
+			outdated: version < 10
+		}
+	}
+	else if(userAgent.indexOf('Firefox') !== -1){
+		version = parseInt(userAgent.split('Firefox/')[1].split('.')[0]);
+		return {
+			browser: 'Firefox',
+			version: version,
+			outdated: version < 53
+		}
+	}
+	else if(userAgent.indexOf('MSIE') !== -1){
+		version = parseInt(userAgent.split('MSIE ')[1].split(';')[0]);
+		return {
+			browser: 'MSIE',
+			version: version,
+			outdated: version < 11
+		}
+	}
+	else if(userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1){
+		version = parseInt(userAgent.split('rv:')[1].split('.')[0]);
+		return {
+			browser: 'MSIE',
+			version: version,
+			outdated: version < 11
+		}
+	}
+}
+
+var version = findVersion();
+if(version.outdated){
 	window.location.href = "/auth/upgrade";
 }
 
