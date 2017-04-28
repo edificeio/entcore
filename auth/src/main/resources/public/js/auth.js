@@ -38,8 +38,8 @@ function LoginController($scope, template){
 
 	$scope.cookieEnabled = navigator.cookieEnabled;
 
-	let browser = function(userAgent){
-		let version;
+	var browser = function(userAgent){
+		var version;
 		if(userAgent.indexOf('Chrome') !== -1){
 			version = parseInt(userAgent.split('Chrome/')[1].split('.')[0]);
 			return {
