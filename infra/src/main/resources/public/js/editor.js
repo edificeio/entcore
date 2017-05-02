@@ -461,8 +461,10 @@ window.RTE = (function () {
 
 			this.isCursor = function () {
 				let sel = window.getSelection();
-				this.rangeCount = sel.rangeCount;
-				this.range = sel.getRangeAt(0);
+				if(sel.rangeCount > 0){
+					this.rangeCount = sel.rangeCount;
+					this.range = sel.getRangeAt(0);
+				}
 
 			    return (this.rangeCount === 1 || this.rangeCount === 0) && 
 				this.range.startContainer === this.range.endContainer && 
@@ -989,7 +991,7 @@ window.RTE = (function () {
 								child = nextChild;
 							}
 						}
-						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1){
+						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN'){
 							for(let i = 0; i < item.childNodes[0].style.length; i++){
 								let prop = item.childNodes[0].style[i];
 								$(item).css(prop, $(item.childNodes[0]).css(prop));
