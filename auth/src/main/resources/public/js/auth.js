@@ -45,7 +45,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'Chrome',
 				version: version,
-				outdated: version < 55
+				outdated: version < 49
 			}
 		}
 		else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
@@ -61,7 +61,7 @@ function LoginController($scope, template){
 			return {
 				browser: 'Firefox',
 				version: version,
-				outdated: version < 53
+				outdated: version < 51
 			}
 		}
 		else if(userAgent.indexOf('MSIE') !== -1){
