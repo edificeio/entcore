@@ -1,5 +1,5 @@
 {
-    "message.new.console": "Bienvenue sur la version ALPHA de la nouvelle console d'administration. Toutes les fonctionnalités ne sont pas encore présentes. <br/>Pour revenir à la version stable de la console d'administration, veuillez cliquer ici : ",
+    "message.new.console": "Bienvenue sur la version ALPHA de la nouvelle console d'administration. Toutes les fonctionnalités ne sont pas encore présentes. Pour revenir à la version stable de la console d'administration, veuillez cliquer ici : ",
     "admin.title": "Console d'administration",
     "search.structure": "Rechercher un établissement",
     "search.user": "Rechercher un utilisateur",
