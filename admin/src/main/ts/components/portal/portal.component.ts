@@ -39,8 +39,8 @@ export class Portal implements OnInit, OnDestroy {
         private route: ActivatedRoute) {}
 
     ngOnInit() {
+        this.session = this.route.snapshot.data['session']
         this.structures = globalStore.structures.asTree()
-        SessionModel.getSession().then((session) => { this.session = session })
 
         this.structureSubscriber = this.route.children[0].params.subscribe(params => {
             let structureId = params['structureId']

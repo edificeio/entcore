@@ -44,11 +44,11 @@ export class UsersRoot implements OnInit, OnDestroy {
         private ns: NotifyService){}
 
     // Subscriptions
-    private structureSubscriber : Subscription
+    private dataSubscriber : Subscription
     private routerSubscriber : Subscription
 
     ngOnInit(): void {
-        this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
+        this.dataSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure'] && data['userlist']) {
                 let structure: StructureModel = data['structure']
                 this.usersStore.structure = structure
@@ -63,7 +63,7 @@ export class UsersRoot implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
-        this.structureSubscriber.unsubscribe()
+        this.dataSubscriber.unsubscribe()
         this.routerSubscriber.unsubscribe()
     }
 
