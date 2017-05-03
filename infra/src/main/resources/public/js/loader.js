@@ -118,7 +118,7 @@ var findVersion = function(){
 		return {
 			browser: 'Chrome',
 			version: version,
-			outdated: version < 55
+			outdated: version < 39
 		}
 	}
 	else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
@@ -126,7 +126,7 @@ var findVersion = function(){
 		return {
 			browser: 'Safari',
 			version: version,
-			outdated: version < 10
+			outdated: version < 7
 		}
 	}
 	else if(userAgent.indexOf('Firefox') !== -1){
@@ -134,7 +134,7 @@ var findVersion = function(){
 		return {
 			browser: 'Firefox',
 			version: version,
-			outdated: version < 53
+			outdated: version < 34
 		}
 	}
 	else if(userAgent.indexOf('MSIE') !== -1){
@@ -142,7 +142,7 @@ var findVersion = function(){
 		return {
 			browser: 'MSIE',
 			version: version,
-			outdated: version < 11
+			outdated: version < 10
 		}
 	}
 	else if(userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1){
@@ -150,7 +150,7 @@ var findVersion = function(){
 		return {
 			browser: 'MSIE',
 			version: version,
-			outdated: version < 11
+			outdated: version < 10
 		}
 	}
 }
