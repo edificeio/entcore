@@ -72,7 +72,7 @@ public class TimelineController extends BaseController {
 	private TimelineMailerService mailerService;
 	private Map<String, String> registeredNotifications;
 	private ConcurrentMap<String, String> eventsI18n;
-	private HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
+	private HashMap<String, JsonObject> lazyEventsI18n;
 	private Set<String> antiFlood;
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
@@ -689,5 +689,9 @@ public class TimelineController extends BaseController {
 
 	public void setEventsI18n(ConcurrentMap<String, String> eventsI18n) {
 		this.eventsI18n = eventsI18n;
+	}
+
+	public void setLazyEventsI18n(HashMap<String, JsonObject> lazyEventsI18n) {
+		this.lazyEventsI18n = lazyEventsI18n;
 	}
 }

@@ -24,6 +24,7 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 
 import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -37,6 +38,7 @@ import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
 import org.vertx.java.core.impl.VertxInternal;
+import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.spi.cluster.ClusterManager;
 
 public class Timeline extends BaseServer {
@@ -57,6 +59,7 @@ public class Timeline extends BaseServer {
 			registeredNotifications = vertx.sharedData().getMap("notificationsMap");
 		}
 		final ConcurrentMap<String, String> eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
+		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final TimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
 
@@ -64,12 +67,14 @@ public class Timeline extends BaseServer {
 		mailerService.setConfigService(configService);
 		mailerService.setRegisteredNotifications(registeredNotifications);
 		mailerService.setEventsI18n(eventsI18n);
+		mailerService.setLazyEventsI18n(lazyEventsI18n);
 
 		final TimelineController timelineController = new TimelineController();
 		timelineController.setConfigService(configService);
 		timelineController.setMailerService(mailerService);
 		timelineController.setRegisteredNotifications(registeredNotifications);
 		timelineController.setEventsI18n(eventsI18n);
+		timelineController.setLazyEventsI18n(lazyEventsI18n);
 
 		addController(new FlashMsgController());
 
