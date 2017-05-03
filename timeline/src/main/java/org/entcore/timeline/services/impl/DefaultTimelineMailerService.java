@@ -62,7 +62,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	private Map<String, String> registeredNotifications;
 	private TimelineConfigService configService;
 	private ConcurrentMap<String, String> eventsI18n;
-	private HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
+	private HashMap<String, JsonObject> lazyEventsI18n;
 	private final EmailSender emailSender;
 	private final int USERS_LIMIT;
 	private final MongoDb mongo = MongoDb.getInstance();
@@ -878,5 +878,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 	public void setEventsI18n(ConcurrentMap<String, String> eventsI18n) {
 		this.eventsI18n = eventsI18n;
+	}
+
+	public void setLazyEventsI18n(HashMap<String, JsonObject> lazyEventsI18n) {
+		this.lazyEventsI18n = lazyEventsI18n;
 	}
 }
