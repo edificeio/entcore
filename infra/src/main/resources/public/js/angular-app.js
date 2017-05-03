@@ -5549,7 +5549,7 @@ module.directive('pulsar', function($compile){
             }
             //if wokflow console false quit quickstart
 
-            let pulsarInfos = scope.$eval(attributes.pulsar);
+            var pulsarInfos = scope.$eval(attributes.pulsar);
             //contenu des attrs
 
             if(!model.me.hasWorkflow(pulsarInfos.workflow)){
@@ -5566,9 +5566,9 @@ module.directive('pulsar', function($compile){
             scope.pulsarInfos = pulsarInfos;
             scope.pulsarInfos.steps = [];
 
-            let pulsars = $('[pulsar]');
+            var pulsars = $('[pulsar]');
             pulsars.each(function(index, element){
-                let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
+                var infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
                 infos.el = element;
                 scope.pulsarInfos.steps.push(infos);
             });
@@ -5579,20 +5579,20 @@ module.directive('pulsar', function($compile){
                 console.error('Invalid pulsar object. Should look like pulsar="{ index: 0, i18n: \'my.key\', position: \'top bottom\'}"')
             }
 
-            let pulsarButton;
-            let pulsarElement;
+            var pulsarButton;
+            var pulsarElement;
             // content box
 
-            let pulsarSize = 40;
-            let pulsarMarge = 5;
-            let pulsarLayerMarge = 10;
+            var pulsarSize = 40;
+            var pulsarMarge = 5;
+            var pulsarLayerMarge = 10;
 
 
-            let paintPulsar = function(){
+            var paintPulsar = function(){
                 if(!pulsarInfos.position){
                     pulsarInfos.position = 'center center';
                 }
-                let xPosition = 'center';
+                var xPosition = 'center';
                 if(pulsarInfos.position.indexOf('left') !== -1){
                     xPosition = 'left';
                 }
@@ -5600,7 +5600,7 @@ module.directive('pulsar', function($compile){
                     xPosition = 'right';
                 }
 
-                let yPosition = 'center';
+                var yPosition = 'center';
                 if(pulsarInfos.position.indexOf('top') !== -1){
                     yPosition = 'top';
                 }
@@ -5618,10 +5618,10 @@ module.directive('pulsar', function($compile){
 
                 pulsarButton.data('active', true);
 
-                let firstCycle = true;
-                let placePulsar = function(){
-                    let deltaX = 0;
-                    let deltaY = 0;
+                var firstCycle = true;
+                var placePulsar = function(){
+                    var deltaX = 0;
+                    var deltaY = 0;
 
                     if(pulsarInfos.delta){
                         pulsarInfos.delta = lang.translate(pulsarInfos.delta)
@@ -5631,13 +5631,13 @@ module.directive('pulsar', function($compile){
                     }
 
 
-                    let xPositions = {
+                    var xPositions = {
                         left: element.offset().left - (pulsarSize + pulsarMarge),
                         right: element.offset().left + element.width() + pulsarMarge,
                         center: element.offset().left + (element.width() / 2) - pulsarSize / 2
                     };
 
-                    let yPositions = {
+                    var yPositions = {
                         top: element.offset().top,
                         bottom: element.offset().top + element.height() + pulsarMarge,
                         center: element.offset().top + (element.height() / 2) - pulsarSize / 2
@@ -5654,8 +5654,8 @@ module.directive('pulsar', function($compile){
 
                     if(pulsarElement && pulsarElement.find('.arrow').length){
 
-                        let left = xPositions[xPosition] - pulsarElement.children('.content').width() - pulsarSize / 2
-                        let top = yPositions[yPosition] - pulsarLayerMarge ;
+                        var left = xPositions[xPosition] - pulsarElement.children('.content').width() - pulsarSize / 2
+                        var top = yPositions[yPosition] - pulsarLayerMarge ;
 
                     // place pulsarElement // element
 
@@ -5808,7 +5808,7 @@ module.directive('pulsar', function($compile){
 
                     pulsars.each(function(index, element){
                         //on recup les infos de chaque pulsar
-                        let infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
+                        var infos = angular.element(element).scope().$eval($(element).attr('pulsar'));
                         infos.el = element;
                         scope.pulsarInfos.steps.push(infos);
                     });
@@ -5858,7 +5858,7 @@ module.directive('pulsar', function($compile){
                 $('.pulsar-layer').remove();
                 $('body').off('scroll touchmove mousewheel');
                 $('body').css('pointer-events', '');
-                let firstCycle = true;
+                var firstCycle = true;
                 pulsarButton.data('active', false);
             }
 
@@ -5871,7 +5871,7 @@ module.directive('pulsar', function($compile){
                 $('.pulsar-layer').fadeOut(0 , function(){ $('.pulsar-layer').remove() });
                 $('body').off('scroll touchmove mousewheel');
                 $('body').css('pointer-events', '');
-                let firstCycle = true;
+                var firstCycle = true;
                 pulsarButton.data('active', false);
 
             };
@@ -5907,15 +5907,15 @@ module.directive('pulsar', function($compile){
             scope.next = function(){
 
                 undraw();
-                let index = quickstart.nextAppStep();
+                var index = quickstart.nextAppStep();
                 if(_.findWhere(scope.pulsarInfos.steps, { index: index}) === undefined){
                     if(_.find(scope.pulsarInfos.steps, function(item){ return item.index > index}) !== undefined){
                         scope.next();
                     }
                     return;
                 }
-                for(let i = 0; i < scope.pulsarInfos.steps.length; i++){
-                    let item = scope.pulsarInfos.steps[i];
+                for(var i = 0; i < scope.pulsarInfos.steps.length; i++){
+                    var item = scope.pulsarInfos.steps[i];
                     if(item.index === index){
                         if($(item.el).data('skip-pulsar')){
                             scope.next();
@@ -5928,15 +5928,15 @@ module.directive('pulsar', function($compile){
 
             scope.previous = function(){
                 undraw();
-                let index = quickstart.previousAppStep();
+                var index = quickstart.previousAppStep();
                 if(_.findWhere(scope.pulsarInfos.steps, { index: index}) === undefined){
                     if(_.find(scope.pulsarInfos.steps, function(item){ return item.index < index}) !== undefined){
                         scope.previous();
                     }
                     return;
                 }
-                for(let i = 0; i < scope.pulsarInfos.steps.length; i++){
-                    let item = scope.pulsarInfos.steps[i];
+                for(var i = 0; i < scope.pulsarInfos.steps.length; i++){
+                    var item = scope.pulsarInfos.steps[i];
                     if(item.index === index){
                         if($(item.el).data('skip-pulsar')){
                             scope.previous();
