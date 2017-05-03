@@ -33,8 +33,19 @@ public interface TimetableService {
 
 	void listCourses(String structureId, long lastDate, Handler<Either<String,JsonArray>> handler);
 
+	/**
+	 * Get the list course for teacher between two dates
+	 *
+	 * @param structureId The structure ID
+	 * @param teacherId The teacher ID
+	 * @param begin From the begin date
+	 * @param end To the begin date
+	 * @param handler
+	 */
+	void listCoursesForTeacher(String structureId, String teacherId, String begin, String end, Handler<Either<String,JsonArray>> handler);
+
 	void listSubjects(String structureId, boolean teachers, boolean classes, boolean groups,
-			Handler<Either<String, JsonArray>> handler);
+					  Handler<Either<String, JsonArray>> handler);
 
 	void initStructure(String structureId, JsonObject conf, Handler<Either<String,JsonObject>> handler);
 
@@ -43,6 +54,6 @@ public interface TimetableService {
 	void updateClassesMapping(String structureId, JsonObject mapping, Handler<Either<String,JsonObject>> handler);
 
 	void importTimetable(String structureId, String path, String domain, String acceptLanguage,
-			Handler<Either<JsonObject,JsonObject>> handler);
+						 Handler<Either<JsonObject,JsonObject>> handler);
 
 }

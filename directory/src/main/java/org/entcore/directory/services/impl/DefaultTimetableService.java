@@ -46,12 +46,9 @@ public class DefaultTimetableService implements TimetableService {
 		this.eb = eb;
 	}
 
-	@Override
-	public void listCourses(String structureId, long lastDate, Handler<Either<String, JsonArray>> handler) {
-		if (Utils.validationParamsNull(handler, structureId)) return;
-		final JsonObject query = new JsonObject().putString("structureId", structureId);
-		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
-		final JsonObject keys = new JsonObject()
+
+	private JsonObject createKeysCourses(){
+		return new JsonObject()
 				.putNumber("_id", 1)
 				.putNumber("structureId", 1)
 				.putNumber("subjectId", 1)
@@ -66,6 +63,14 @@ public class DefaultTimetableService implements TimetableService {
 				.putNumber("endDate", 1)
 				.putNumber("subjectId", 1)
 				.putNumber("roomLabels", 1);
+	}
+
+	@Override
+	public void listCourses(String structureId, long lastDate, Handler<Either<String, JsonArray>> handler) {
+		if (Utils.validationParamsNull(handler, structureId)) return;
+		final JsonObject query = new JsonObject().putString("structureId", structureId);
+		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
+		final JsonObject keys = this.createKeysCourses();
 		if (lastDate > 0) {
 			query.putArray("$or", new JsonArray()
 					.addObject(new JsonObject().putObject("modified", new JsonObject().putNumber("$gte", lastDate)))
@@ -78,9 +83,41 @@ public class DefaultTimetableService implements TimetableService {
 		MongoDb.getInstance().find(COURSES, query, sort, keys, validResultsHandler(handler));
 	}
 
+
+
+
+	@Override
+	public void listCoursesForTeacher(String structureId, String teacherId, String begin, String end, Handler<Either<String,JsonArray>> handler){
+		if (Utils.validationParamsNull(handler, structureId)) return;
+		final JsonObject query = new JsonObject();
+
+		query.putString("structureId", structureId);
+
+		if (teacherId != null){
+			query.putString("teacherIds", teacherId);
+		}
+
+
+		JsonObject betweenStart = new JsonObject();
+		betweenStart.putString("$gte",begin);
+		betweenStart.putString("$lte",end);
+
+		JsonObject betweenEnd = new JsonObject();
+		betweenEnd.putString("$gte",begin);
+		betweenEnd.putString("$lte",end);
+
+		query.putArray("$or", new JsonArray()
+				.addObject(new JsonObject().putObject("startDate" ,betweenStart))
+				.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+
+		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
+
+		MongoDb.getInstance().find(COURSES, query, sort, createKeysCourses(), validResultsHandler(handler));
+	}
+
 	@Override
 	public void listSubjects(String structureId, boolean teachers, boolean classes, boolean groups,
-			Handler<Either<String, JsonArray>> handler) {
+							 Handler<Either<String, JsonArray>> handler) {
 		if (Utils.validationParamsNull(handler, structureId)) return;
 		final JsonObject params = new JsonObject().putString("id", structureId);
 		StringBuilder query = new StringBuilder();
@@ -112,8 +149,8 @@ public class DefaultTimetableService implements TimetableService {
 	public void classesMapping(String structureId, final Handler<Either<String, JsonObject>> handler) {
 		final String query =
 				"MATCH (s:Structure {id:{id}})<-[:MAPPING]-(cm:ClassesMapping) " +
-				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
-				"return cm.mapping as mapping, cm.unknownClasses as unknownClasses, collect(c.name) as classNames ";
+						"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
+						"return cm.mapping as mapping, cm.unknownClasses as unknownClasses, collect(c.name) as classNames ";
 		final JsonObject params = new JsonObject().putString("id", structureId);
 		neo4j.execute(query, params, validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
@@ -134,7 +171,7 @@ public class DefaultTimetableService implements TimetableService {
 
 	@Override
 	public void updateClassesMapping(final String structureId, final JsonObject mapping,
-			final Handler<Either<String, JsonObject>> handler) {
+									 final Handler<Either<String, JsonObject>> handler) {
 
 		classesMapping(structureId, new Handler<Either<String, JsonObject>>() {
 			@Override
@@ -169,45 +206,45 @@ public class DefaultTimetableService implements TimetableService {
 		final String query = "MATCH (s:Structure {id:{id}}) RETURN s.UAI as UAI, s.timetable as timetable";
 		neo4j.execute(query, new JsonObject().putString("id", structureId),
 				validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
-				final JsonArray errors = new JsonArray();
-				final JsonObject ge = new JsonObject().putArray("error.global", errors);
-				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")) &&
-						TIMETABLE_TYPES.contains(event.right().getValue().getString("timetable"))) {
-					if (!("EDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.xml")) &&
-							!("UDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.zip"))) {
-						errors.addString(I18n.getInstance().translate("invalid.import.format", domain, acceptLanguage));
-						handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
-						return;
-					}
-					JsonObject action = new JsonObject().putString("action", "manual-" +
-							event.right().getValue().getString("timetable").toLowerCase())
-							.putString("path", path)
-							.putString("UAI", event.right().getValue().getString("UAI"))
-							.putString("language", acceptLanguage);
-					eb.send(Directory.FEEDER, action, new Handler<Message<JsonObject>>() {
-						@Override
-						public void handle(Message<JsonObject> event) {
-							if ("ok".equals(event.body().getString("status"))) {
-								JsonObject r = event.body().getObject("result", new JsonObject());
-								if (r.getObject("errors", new JsonObject()).size() > 0) {
-									handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
-								} else {
-									handler.handle(new Either.Right<JsonObject, JsonObject>(r.getObject("ignored")));
-								}
-							} else {
-								errors.addString(event.body().getString("message", ""));
+					@Override
+					public void handle(Either<String, JsonObject> event) {
+						final JsonArray errors = new JsonArray();
+						final JsonObject ge = new JsonObject().putArray("error.global", errors);
+						if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")) &&
+								TIMETABLE_TYPES.contains(event.right().getValue().getString("timetable"))) {
+							if (!("EDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.xml")) &&
+									!("UDT".equals(event.right().getValue().getString("timetable")) && !path.endsWith("\\.zip"))) {
+								errors.addString(I18n.getInstance().translate("invalid.import.format", domain, acceptLanguage));
 								handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
+								return;
 							}
+							JsonObject action = new JsonObject().putString("action", "manual-" +
+									event.right().getValue().getString("timetable").toLowerCase())
+									.putString("path", path)
+									.putString("UAI", event.right().getValue().getString("UAI"))
+									.putString("language", acceptLanguage);
+							eb.send(Directory.FEEDER, action, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if ("ok".equals(event.body().getString("status"))) {
+										JsonObject r = event.body().getObject("result", new JsonObject());
+										if (r.getObject("errors", new JsonObject()).size() > 0) {
+											handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
+										} else {
+											handler.handle(new Either.Right<JsonObject, JsonObject>(r.getObject("ignored")));
+										}
+									} else {
+										errors.addString(event.body().getString("message", ""));
+										handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
+									}
+								}
+							});
+						} else {
+							errors.addString(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
+							handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
 						}
-					});
-				} else {
-					errors.addString(I18n.getInstance().translate("invalid.structure", domain, acceptLanguage));
-					handler.handle(new Either.Left<JsonObject, JsonObject>(ge));
-				}
-			}
-		}));
+					}
+				}));
 	}
 
 }
