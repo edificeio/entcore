@@ -1041,7 +1041,7 @@ var quickstart = {
 		}
 		this.loading = true;
 		http().get('/userbook/preference/quickstart').done(function(pref){
-			let preferences;
+			var preferences;
 			if(pref.preference){
 				try{
 					preferences = JSON.parse(pref.preference);
@@ -1066,8 +1066,8 @@ var quickstart = {
 			if(preferences.assistant !== -1){
 				http().get(skin.basePath + 'template/assistant/steps.json').done(function(steps){
 					this.steps = steps;
-					let nbSteps = this.steps[this.types[model.me.type]];
-					for(let i = 0; i < nbSteps; i++){
+					var nbSteps = this.steps[this.types[model.me.type]];
+					for(var i = 0; i < nbSteps; i++){
 						this.mySteps.push({
 							index: i,
 							path: this.assistantStep(i)
@@ -1960,7 +1960,7 @@ function bootstrap(func) {
 			}
 			model.me.bookmarkedApps = JSON.parse(data.preference) || [];
 			var upToDate = true;
-			let remove = [];
+			var remove = [];
 			model.me.bookmarkedApps.forEach(function(app, index){
 				var foundApp = _.findWhere(model.me.apps, { name: app.name });
 				var updateApp = true;
