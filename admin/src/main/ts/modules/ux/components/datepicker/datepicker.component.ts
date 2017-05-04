@@ -4,9 +4,9 @@ import { NgModel } from '@angular/forms';
 
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
+// access ngmodel
 const NOOP = () => {
 };
-
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
     useExisting: forwardRef(() => Datepicker),

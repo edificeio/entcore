@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
@@ -340,6 +341,28 @@ public class DefaultSchoolService implements SchoolService {
 		String query = filter + condition + optional + withStr + returnStr + sort;
 
 		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+	
+	@Override
+	public void listSources(String structureId, Handler<Either<String, JsonArray>> result) {
+		String query = 
+			"MATCH (u:User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE s.id = {structureId} " + 
+			"RETURN collect(distinct u.source) as sources";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(result));
+	}
+	
+	@Override
+	public void listAafFunctions(String structureId, Handler<Either<String, JsonArray>> result) {
+		String query = 
+			"MATCH (u:User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE s.id = {structureId} " + 
+			"RETURN collect(DISTINCT EXTRACT(function IN u.functions | last(split(function, \"$\")))) as aafFunctions";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(result));
 	}
 
 	@Override

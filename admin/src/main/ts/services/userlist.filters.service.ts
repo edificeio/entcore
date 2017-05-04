@@ -205,11 +205,11 @@ export class UserlistFiltersService {
     //     this.matieresFilter.comboModel = matieres
     // }
 
-    setFunctionalGroupsFilter(fgroups: string[]) {
+    setFunctionalGroups(fgroups: string[]) {
         this.functionalGroupsFilter.comboModel = fgroups
     }
 
-    setManualGroupsFilter(mgroups: string[]) {
+    setManualGroups(mgroups: string[]) {
         this.manualGroupsFilter.comboModel = mgroups
     }
 

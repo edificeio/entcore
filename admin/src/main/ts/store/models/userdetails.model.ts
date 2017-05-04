@@ -1,4 +1,5 @@
 import { Model } from 'toolkit'
+import { Group } from '../../store'
 
 export class UserDetailsModel extends Model<UserDetailsModel> {
 
@@ -32,6 +33,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     functionalGroups?: Array<string>
+    manualGroups?: Group[]
     administrativeStructures?: Array<string>
     deleteDate?: number
 
@@ -69,6 +71,18 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     removeChild(child) {
         return this.http.delete(`/directory/user/${child.id}/related/${this.id}`).then(() => {
             this.children = this.children.filter(c => c.id !== child.id)
+        })
+    }
+
+    addManualGroup(mgroup: Group) {
+        return this.http.post(`/directory/user/group/${this.id}/${mgroup.id}`, {}).then(() => {
+            this.manualGroups.push(mgroup)
+        })
+    }
+
+    removeManualGroup(mgroup: Group) {
+        return this.http.delete(`/directory/user/group/${this.id}/${mgroup.id}`).then(() => {
+            this.manualGroups = this.manualGroups.filter(g => mgroup.id !== g.id)
         })
     }
 

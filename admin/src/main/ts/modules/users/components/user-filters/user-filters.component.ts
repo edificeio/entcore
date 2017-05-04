@@ -1,9 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 import { BundlesService } from 'sijil'
 import { StructureModel } from '../../../../store'
 import { UserlistFiltersService } from '../../../../services'
 import { Subscription } from 'rxjs/Subscription'
-import { ActivatedRoute, Data } from '@angular/router'
 import { UsersStore } from '../../store'
 
 @Component({
@@ -46,7 +45,6 @@ export class UserFilters implements OnInit, OnDestroy {
     constructor(
         private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
-        private route: ActivatedRoute,
         private usersStore: UsersStore,
         private listFilters: UserlistFiltersService){}
 

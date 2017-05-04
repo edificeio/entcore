@@ -117,6 +117,8 @@
     "delete.this.structure": "Supprimer l'établissement",
     "add.class": "Ajouter une classe",
     "delete.this.class": "Supprimer la classe",
+    "add.group": "Ajouter un groupe",
+    "delete.this.group": "Supprimer le groupe",
     "user.has.duplicates": "Utilisateur en doublon",
     "merge": "Fusionner",
     "separate": "Dissocier",

@@ -45,7 +45,5 @@
         <ul><li *ngFor="let fg of user?.userDetails?.functionalGroups">{{ fg.name }}</li></ul>
     </panel-section>
 
-    <panel-section section-title="users.details.section.manual.groups" [folded]="true">
-        <ul><li *ngFor="let g of user?.userDetails?.groups">{{ g }}</li></ul>
-    </panel-section>
+    <user-manualgroups-section [user]="user" [structure]="structure"></user-manualgroups-section>
 </div>

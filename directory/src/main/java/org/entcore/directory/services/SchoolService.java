@@ -58,4 +58,7 @@ public interface SchoolService {
 
 	void getMetrics(String structureId, Handler<Either<String, JsonObject>> results);
 
+	void listSources(String structureId, Handler<Either<String, JsonArray>> result);
+	
+	void listAafFunctions(String structureId, Handler<Either<String, JsonArray>> result);
 }

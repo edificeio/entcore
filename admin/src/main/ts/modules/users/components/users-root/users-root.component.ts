@@ -1,7 +1,6 @@
 import { StructureModel, UserModel } from '../../../../store'
 import { routing } from '../../../../routing/routing.utils'
-import { LoadingService, NotifyService } from '../../../../services'
-import { UserlistFiltersService } from '../../../../services/userlist.filters.service'
+import { UserlistFiltersService, LoadingService, NotifyService, ProfilesService } from '../../../../services'
 import { UsersStore } from '../../store'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router'
@@ -38,7 +37,7 @@ export class UsersRoot implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         public usersStore: UsersStore,
-        private filtersService: UserlistFiltersService,
+        private listFilters: UserlistFiltersService,
         private ls: LoadingService,
         private ns: NotifyService){}
 
@@ -86,84 +85,19 @@ export class UsersRoot implements OnInit, OnDestroy {
         this.router.navigate([view], { relativeTo: this.route })
     }
 
-    private initFilters(structure) {
-        this.filtersService.resetFilters()
-        this.filtersService.setClasses(structure.classes)
-
-        if (structure.users && structure.users.data) {
-            let profiles = []
-            let sources = []
-            let functions = []
-            // FIXME : when user model updated
-            // let matieres = []
-            let functionalGroups = []
-            let manualGroups = []
-
-            const usersLength = structure.users.data.length
-            for (let i = 0; i < usersLength; i++) {
-                let u: UserModel = structure.users.data[i]
-
-                if (profiles.indexOf(u.type) < 0) {
-                    profiles.push(u.type)
-                }
-                if (sources.indexOf(u.source) < 0) {
-                    sources.push(u.source)
-                }
-                if(u.aafFunctions) {
-                    if (u.type === 'Personnel' || u.type === 'Teacher') {
-                        const aafLength = u.aafFunctions.length
-                        for (let i = 0; i < aafLength; i++) {
-                            let f = u.aafFunctions[i]
-                            if (functions.indexOf(f) < 0) {
-                                functions.push(f)
-                            }
-
-                            // FIXME : when user model updated
-                            // switch (u.type) {
-                            //     case 'Personnel':
-                            //         if (functions.indexOf(f) < 0) {
-                            //             functions.push(f)
-                            //         }
-                            //         break;
-                            //     case 'Teacher':
-                            //         if (matieres.indexOf(f) < 0) {
-                            //             matieres.push(f)
-                            //         }
-                            //     default:
-                            //         break;
-                            // }
-                        }
-                    }
-                }
-
-                if (u.functionalGroups) {
-                    const fgLength = u.functionalGroups.length
-                    for (let i = 0; i < fgLength; i++) {
-                        let fg = u.functionalGroups[i];
-                        if (functionalGroups.indexOf(fg) < 0) {
-                            functionalGroups.push(fg)
-                        }
-                    }
-                }
-
-                if (u.manualGroups) {
-                    const gLength = u.manualGroups.length
-                    for (let i = 0; i < gLength; i++) {
-                        let fg = u.manualGroups[i];
-                        if (manualGroups.indexOf(fg) < 0) {
-                            manualGroups.push(fg)
-                        }
-                    }
-                }
-            }
-
-            this.filtersService.setProfiles(profiles)
-            this.filtersService.setSources(sources)
-            this.filtersService.setFunctions(functions)
-            // FIXME : when user model updated
-            // this.filtersService.setMatieres(matieres)
-            this.filtersService.setFunctionalGroupsFilter(functionalGroups)
-            this.filtersService.setManualGroupsFilter(manualGroups)
-        }
+    private initFilters(structure: StructureModel) {
+        this.listFilters.resetFilters()
+        
+        this.listFilters.setClasses(structure.classes)
+        this.listFilters.setSources(structure.sources)
+        this.listFilters.setFunctions(structure.aafFunctions)
+        
+        ProfilesService.getProfiles().then(p => this.listFilters.setProfiles(p))
+        
+        this.listFilters.setFunctionalGroups(
+            structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name))
+        this.listFilters.setManualGroups(
+            structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name))
     }
+    
 }
