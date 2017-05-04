@@ -31,6 +31,8 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.TimetableService;
 import org.joda.time.DateTime;
 import org.vertx.java.core.AsyncResult;
@@ -77,9 +79,37 @@ public class TimetableController extends BaseController {
 		timetableService.listCourses(structureId, lastDate, arrayResponseHandler(request));
 	}
 
+
+	@Get("/timetable/courses/teacher/:structureId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void listCoursesForTeacher(final HttpServerRequest request) {
+
+		final String structureId = request.params().get("structureId");
+		final String teacherId = request.params().get("teacherId");
+		final String beginDate = request.params().get("begin");
+		final String endDate = request.params().get("end");
+
+		//grab connected user to control structure
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							if (user.getStructures().contains(structureId)){
+								timetableService.listCoursesForTeacher(structureId, teacherId, beginDate,endDate, arrayResponseHandler(request));
+							}else{
+								badRequest(request, "diary.invalid.structure.right");
+							}
+						} else {
+							badRequest(request, "diary.invalid.login");
+						}
+					}
+				}
+		);
+
+	}
+
 	@Get("/timetable/subjects/:structureId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void listSubjects(HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final boolean teachers = request.params().contains("teachers");
