@@ -5528,6 +5528,7 @@ module.directive('assistant', function(){
                 scope.show.assistant = false;
                 $('.pulsar-button').removeClass('hidden');
                 clearTimeout(token);
+                quickstart.seeAssistantLater();
             };
 
             scope.closeAssistant = function(){
