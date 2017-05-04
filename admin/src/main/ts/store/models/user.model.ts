@@ -1,7 +1,7 @@
 import { Model } from 'toolkit'
 import { UserDetailsModel } from './userdetails.model'
 import { globalStore } from '..'
-import { Group } from '../../store'
+import { GroupModel } from './group.model'
 
 export class UserModel extends Model<UserModel> {
 
@@ -76,28 +76,28 @@ export class UserModel extends Model<UserModel> {
         })
     }
 
-    addManualGroup(g: Group) {
+    addManualGroup(g: GroupModel) {
         return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
             this.manualGroups.push(g.name)
             this.userDetails.manualGroups.push(g)
         })
     }
 
-    removeManualGroup(g: Group) {
+    removeManualGroup(g: GroupModel) {
         return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
             this.manualGroups = this.manualGroups.filter(mg => mg === g.name)
             this.userDetails.manualGroups = this.userDetails.manualGroups.filter(mg => g.id !== mg.id)
         })
     }
 
-    addFunctionalGroup(g: Group) {
+    addFunctionalGroup(g: GroupModel) {
         return this.http.post(`/directory/user/group/${this.id}/${g.id}`, {}).then(() => {
             this.functionalGroups.push(g.name)
             this.userDetails.functionalGroups.push(g)
         })
     }
 
-    removeFunctionalGroup(g: Group) {
+    removeFunctionalGroup(g: GroupModel) {
         return this.http.delete(`/directory/user/group/${this.id}/${g.id}`).then(() => {
             this.functionalGroups = this.functionalGroups.filter(fg => fg === g.name)
             this.userDetails.functionalGroups = this.userDetails.functionalGroups.filter(fg => g.id !== fg.id)

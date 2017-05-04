@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core'
 import { AbstractSection } from '../abstract.section'
 import { LoadingService } from '../../../../../../services'
 
-import { Group } from '../../../../../../store'
+import { GroupModel } from '../../../../../../store'
 
 @Component({
     selector: 'user-manualgroups-section',
@@ -44,7 +44,7 @@ import { Group } from '../../../../../../store'
 })
 export class UserManualGroupsSection extends AbstractSection implements OnInit {
 
-    private listGroupModel: Group[] = []
+    private listGroupModel: GroupModel[] = []
 
     private _inputFilter = ""
     set inputFilter(filter: string) {

@@ -1,5 +1,5 @@
 import { Model } from 'toolkit'
-import { Group } from '../../store'
+import { GroupModel } from '../../store/models'
 
 export class UserDetailsModel extends Model<UserDetailsModel> {
 
@@ -32,8 +32,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     functions?: Array<[string, Array<string>]>
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
-    functionalGroups?: Group[]
-    manualGroups?: Group[]
+    functionalGroups?: GroupModel[]
+    manualGroups?: GroupModel[]
     administrativeStructures?: Array<string>
     deleteDate?: number
 

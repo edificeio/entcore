@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectorRef } from '@angular/core'
-import { Group, GroupUser } from '../../../../store'
+import { GroupModel, GroupUser } from '../../../../store'
 import { ActivatedRoute, Router } from '@angular/router'
 import { BundlesService } from 'sijil'
 import { UserListService } from '../../../../services'
@@ -49,7 +49,7 @@ export class GroupUsersList {
             private userListService: UserListService){}
 
     // Model
-    @Input() selectedGroup : Group
+    @Input() selectedGroup : GroupModel
 
     //protected isSelected = (user: GroupUser) => this.selectedUser === user
     protected selectUser(user: GroupUser) {

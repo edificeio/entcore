@@ -46,7 +46,7 @@ export class StructureModel extends Model<StructureModel> {
 
     syncGroups(force?: boolean) {
         if (this.groups.data.length < 1 || force === true) {
-            return this.groups.sync().then(groups => this.groups.data = groups.data)
+            return this.groups.sync().then(() => Promise.resolve(this.groups))
         }
         return Promise.resolve()
     }

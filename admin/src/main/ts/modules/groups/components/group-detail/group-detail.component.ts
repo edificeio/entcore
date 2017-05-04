@@ -16,7 +16,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
         </div>
     `
 })
-export class GroupDetailComponent implements OnInit, OnDestroy {
+export class GroupDetail implements OnInit, OnDestroy {
 
     private groupSubscriber : Subscription
 

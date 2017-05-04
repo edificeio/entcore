@@ -1,12 +1,12 @@
 import { Collection } from 'toolkit'
-import { Group } from '..'
+import { GroupModel } from '..'
 
-export class GroupCollection extends Collection<Group> {
+export class GroupCollection extends Collection<GroupModel> {
 
     constructor(){
         super({
             sync: '/directory/group/admin/list?structureId=:structureId'
-        }, Group)
+        }, GroupModel)
     }
 
     structureId: string

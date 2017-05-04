@@ -1,4 +1,4 @@
-import { globalStore } from '../../../store'
+import { globalStore, GroupModel } from '../../../store'
 import { LoadingService } from '../../../services'
 import { routing } from '../../../routing/routing.utils'
 import { ActivatedRoute, ActivatedRouteSnapshot, Resolve, Router, RouterStateSnapshot } from '@angular/router'
@@ -20,7 +20,7 @@ export class GroupResolve implements Resolve<void> {
             return
         }
 
-        return this.ls.perform('groups-content', <Promise<void>>targetGroup.syncUsers()
+        return this.ls.perform('groups-content', targetGroup.syncUsers()
             .catch(err => {
                 console.error(err)
                 this.router.navigate(["/admin", structure._id, "groups", groupType])

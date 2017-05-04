@@ -1,10 +1,10 @@
-import { AbstractStore, StructureModel, Group } from '../../../store'
+import { AbstractStore, StructureModel, GroupModel } from '../../../store'
 
 export class GroupsStore extends AbstractStore {
 
     constructor(){ super(['structure', 'group']) }
 
     structure: StructureModel
-    group: Group
+    group: GroupModel
 
 }

@@ -1,5 +1,5 @@
 import { Subscription } from 'rxjs/Subscription'
-import { Group } from '../../../../store/mappings'
+import { GroupModel } from '../../../../store/models'
 import { ActivatedRoute, Router } from '@angular/router'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
 import { GroupsStore } from '../../store'
@@ -67,15 +67,15 @@ export class GroupsTypeView implements OnInit, OnDestroy {
 
     // List component  properties
     private groupInputFilter : string
-    private isSelected = (group: Group) => {
+    private isSelected = (group: GroupModel) => {
         return this.groupsStore.group === group
     }
-    private filterByInput = (group: Group) => {
+    private filterByInput = (group: GroupModel) => {
         if(!this.groupInputFilter) return true
         return group.name.toLowerCase()
             .indexOf(this.groupInputFilter.toLowerCase()) >= 0
     }
-    private display = (group: Group) => { return group.name }
+    private display = (group: GroupModel) => { return group.name }
 
     // Routing
     private rootRoute = () => {
@@ -85,7 +85,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
     private closePanel() {
         this.router.navigateByUrl(this.rootRoute())
     }
-    private routeToGroup(g:Group) {
+    private routeToGroup(g:GroupModel) {
         this.router.navigate([g.id], { relativeTo: this.route })
     }
 }

@@ -173,8 +173,8 @@ ul {
         display: inline-block;
         padding: 1em 2em;
         font-size: 1em;
-        background-color: white;
-        color: #888;
+        background-color: $accent-light;
+        color: white;
         transition: all 0.25s;
         border: none;
         margin: 0px;
@@ -186,8 +186,8 @@ ul {
         }
 
         &:hover {
-            background-color: $accent-light;
-            color: #888;
+            background-color: $accent;
+            color: white;
         }
 
         &.active {
@@ -765,7 +765,7 @@ list-component {
     }
 }
 
-/* User root */
+/* Users root */
 users-root {
     div.flex-header {
         display: flex;
@@ -838,6 +838,28 @@ group-users-list list-component {
     }
 }
 
+/* Groups root */
+groups-root {
+    div.flex-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+
+        button {
+            background-color: $accent;
+            color: white;
+            padding: 10px 10px;
+
+            &:hover {
+                background-color: $accent-dark;
+            }
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}
 
 /* User detail */
 user-detail {
@@ -971,6 +993,33 @@ user-create {
 
     .fa {
         font-size: $fontawesome-size;
+    }
+}
+
+group-create {
+    panel-section {
+        button {
+            padding: 10px 10px;
+            margin-top: 20px;
+            min-width: 100px;
+            font-size: 1.2em;
+            text-align: center;
+
+            &:not([disabled]) {
+                background-color: $accent;
+                color: white;
+            }
+
+            &:not([disabled]):hover {
+                background-color: $accent-dark;
+            }
+        }
+    }
+
+    .panel-section-header {
+        background: none;
+        border-bottom: none;
+        padding: 0 !important;
     }
 }
 

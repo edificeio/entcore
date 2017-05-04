@@ -1,7 +1,7 @@
 import { LoadingService } from '../../../../services'
 import { GroupsStore } from '../../store'
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
-import { ActivatedRoute, Data, Router } from '@angular/router'
+import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { routing } from '../../../../routing/routing.utils'
 
@@ -10,15 +10,20 @@ import { routing } from '../../../../routing/routing.utils'
     template: `
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
+                (click)="setSelectedType(tab.view)"
                 [routerLink]="tab.view"
                 routerLinkActive="active">
                 {{ tab.label | translate }}
             </button>
         </div>
-        <h1>
-            <i class="fa fa-users"></i>
-            <s5l>groups</s5l>
-        </h1>
+
+        <div class="flex-header">
+            <h1><i class="fa fa-users"></i><s5l>groups</s5l></h1>
+            <button (click)="openCreationView()"
+                [class.hidden]="hideCreateGroupButton()">
+                <s5l>create.group</s5l>
+            </button>
+        </div>
 
         <router-outlet></router-outlet>
     `,
@@ -36,6 +41,9 @@ export class GroupsRoot implements OnInit, OnDestroy {
         { label: "functional.groups", view: "functional" }
     ]
 
+    private selectedType: string
+
+    private routerSubscriber : Subscription
     private error: Error
 
     constructor(
@@ -53,15 +61,32 @@ export class GroupsRoot implements OnInit, OnDestroy {
                 this.cdRef.markForCheck()
             }
         })
+
+        this.routerSubscriber = this.router.events.subscribe(e => {
+            if(e instanceof NavigationEnd)
+                this.cdRef.markForCheck()
+        })
     }
 
     ngOnDestroy(): void {
         this.structureSubscriber.unsubscribe()
+        this.routerSubscriber.unsubscribe()
     }
-
 
     onError(error: Error){
         console.error(error)
         this.error = error
+    }
+
+    setSelectedType(t) {
+        this.selectedType = t
+    }
+
+    openCreationView() {
+        this.router.navigate([this.selectedType, 'create'], { relativeTo: this.route })
+    }
+
+    private hideCreateGroupButton() {
+        return this.selectedType !== 'manual' 
     }
 }

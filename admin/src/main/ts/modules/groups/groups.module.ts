@@ -8,7 +8,7 @@ import { SijilModule } from 'sijil'
 import { UxModule } from '..'
 import { routes } from './routing/routes'
 //import { declarations, providers } from './module.properties'
-import { GroupDetailComponent, GroupsRoot, GroupsTypeView, GroupUsersList } from './components'
+import { GroupDetail, GroupsRoot, GroupsTypeView, GroupUsersList, GroupCreate } from './components'
 import { GroupResolve, GroupsResolve } from './routing'
 import { GroupsStore } from './store'
 
@@ -22,10 +22,11 @@ import { GroupsStore } from './store'
         RouterModule.forChild(routes)
     ],
     declarations: [
-        GroupDetailComponent,
+        GroupDetail,
         GroupUsersList,
         GroupsRoot,
-        GroupsTypeView
+        GroupsTypeView,
+        GroupCreate
     ],
     providers: [
         GroupsStore,
