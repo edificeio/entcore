@@ -113,7 +113,7 @@ var routes = {
 
 var userAgent = navigator.userAgent;
 var findVersion = function(){
-	if(userAgent.indexOf('Chrome') !== -1){
+	if(userAgent.indexOf('Chrome') !== -1 && userAgent.indexOf('Edge') === -1){
 		version = parseInt(userAgent.split('Chrome/')[1].split('.')[0]);
 		return {
 			browser: 'Chrome',
@@ -137,15 +137,15 @@ var findVersion = function(){
 			outdated: version < 34
 		}
 	}
-	else if(userAgent.indexOf('MSIE') !== -1){
-		version = parseInt(userAgent.split('MSIE ')[1].split(';')[0]);
+	else if(userAgent.indexOf('Edge') !== -1){
+		version = parseInt(userAgent.split('Edge/')[1]);
 		return {
 			browser: 'MSIE',
 			version: version,
 			outdated: version < 10
 		}
 	}
-	else if(userAgent.indexOf('MSIE') === -1 && userAgent.indexOf('Trident') !== -1){
+	else if(userAgent.indexOf('.NET CLR') === -1 && userAgent.indexOf('Trident') !== -1){
 		version = parseInt(userAgent.split('rv:')[1].split('.')[0]);
 		return {
 			browser: 'MSIE',
