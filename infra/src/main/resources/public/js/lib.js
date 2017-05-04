@@ -1025,6 +1025,10 @@ var quickstart = {
 
 		this.save();
 	},
+	seeAssistantLater(){
+		this.state.assistantTimer = moment().format('MM/DD/YYYY HH:mm');
+		this.save();
+	},
 	loaded: false,
 	awaiters: [],
 	load: function(cb){
@@ -1063,7 +1067,14 @@ var quickstart = {
 
 			this.state = preferences;
 
-			if(preferences.assistant !== -1){
+			if(
+				preferences.assistant !== -1 && !(
+					preferences.assistantTimer 
+					&& moment(preferences.assistantTimer).year() === moment().year() 
+					&& moment(preferences.assistantTimer).dayOfYear() === moment().dayOfYear() 
+					&& moment(preferences.assistantTimer).hour() === moment().hour()
+				)
+			){
 				http().get(skin.basePath + 'template/assistant/steps.json').done(function(steps){
 					this.steps = steps;
 					var nbSteps = this.steps[this.types[model.me.type]];
