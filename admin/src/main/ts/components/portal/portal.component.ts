@@ -34,7 +34,7 @@ export class Portal implements OnInit, OnDestroy {
 
     constructor(
         private cdRef: ChangeDetectorRef,
-        private router: Router,
+        public router: Router,
         private location: Location,
         private route: ActivatedRoute) {}
 
