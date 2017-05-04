@@ -461,7 +461,7 @@ window.RTE = (function () {
 
 			this.isCursor = function () {
 				let sel = window.getSelection();
-				if(sel.rangeCount > 0){
+				if(sel.rangeCount > 0 && this.instance.editZone.find(sel.getRangeAt(0).startContainer).length > 0){
 					this.rangeCount = sel.rangeCount;
 					this.range = sel.getRangeAt(0);
 				}
