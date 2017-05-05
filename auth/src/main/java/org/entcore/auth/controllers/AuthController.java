@@ -843,20 +843,26 @@ public class AuthController extends BaseController {
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	@IgnoreCsrf
 	public void sendResetPassword(final HttpServerRequest request) {
-		String login = request.formAttributes().get("login");
-		String email = request.formAttributes().get("email");
-		if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
-			badRequest(request);
-			return;
-		}
-		userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
 			@Override
-			public void handle(Boolean sent) {
-				if (Boolean.TRUE.equals(sent)) {
-					renderJson(request, new JsonObject());
-				} else {
+			public void handle() {
+				String login = request.formAttributes().get("login");
+				String email = request.formAttributes().get("email");
+				if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
 					badRequest(request);
+					return;
 				}
+				userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean sent) {
+						if (Boolean.TRUE.equals(sent)) {
+							renderJson(request, new JsonObject());
+						} else {
+							badRequest(request);
+						}
+					}
+				});
 			}
 		});
 	}

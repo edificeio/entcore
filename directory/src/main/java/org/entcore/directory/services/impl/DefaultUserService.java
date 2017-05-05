@@ -532,9 +532,13 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH (n:Group)<-[:IN]-(u:User) " +
 				"WHERE n.id = {groupId} " + condition +
-				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"OPTIONAL MATCH (n)-[:DEPENDS*0..1]->(:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"OPTIONAL MATCH (u)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH (pg)-[:HAS_PROFILE]->(pro:Profile) " +
 				"RETURN distinct u.id as id, u.login as login," +
-				" u.displayName as username, u.firstName as firstName, u.lastName as lastName, profile.name as type " +
+				"u.displayName as username, u.firstName as firstName, u.lastName as lastName, profile.name as type," +
+				"CASE WHEN s IS NULL THEN [] ELSE COLLECT(DISTINCT {id: s.id, name: s.name}) END as structures," +
+				"CASE WHEN pro IS NULL THEN NULL ELSE HEAD(COLLECT(DISTINCT pro.name)) END as profile " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.putString("groupId", groupId);

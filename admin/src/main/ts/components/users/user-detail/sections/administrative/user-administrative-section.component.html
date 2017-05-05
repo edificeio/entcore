@@ -1,0 +1,46 @@
+<panel-section section-title="users.details.section.administrative">
+    <form #administrativeForm="ngForm">
+        <form-field label="firstName">
+            <input type="text" [(ngModel)]="details.firstName" name="firstName" required #firstNameInput="ngModel">
+            <form-errors [control]="firstNameInput"></form-errors>
+        </form-field>
+        <form-field label="lastName">
+            <input type="text" [(ngModel)]="details.lastName" name="lastName" required #lastNameInput="ngModel">
+            <form-errors [control]="lastNameInput"></form-errors>
+        </form-field>
+        <form-field label="displayName">
+            <input type="text" [(ngModel)]="details.displayName" name="displayName" required #displayNameInput="ngModel">
+            <form-errors [control]="displayNameInput"></form-errors>
+        </form-field>
+        <form-field label="birthDate">
+            <input type="date" [(ngModel)]="details.birthDate" name="birthDate" [max]="now" #birthDateInput="ngModel">
+            <form-errors [control]="birthDateInput"></form-errors>
+        </form-field>
+        <form-field label="address">
+            <input type="text" [(ngModel)]="details.address" name="address">
+        </form-field>
+        <form-field label="zipCode">
+            <input type="text" [(ngModel)]="details.zipCode" name="zipCode">
+        </form-field>
+        <form-field label="city">
+            <input type="text" [(ngModel)]="details.city" name="city">
+        </form-field>
+        <form-field label="email">
+            <input type="email" [(ngModel)]="details.email" name="email" #emailInput="ngModel" [pattern]="emailPattern">
+            <form-errors [control]="emailInput"></form-errors>
+        </form-field>
+        <form-field label="homePhone">
+            <input type="tel" [(ngModel)]="details.homePhone" name="homePhone">
+        </form-field>
+        <form-field label="mobile">
+            <input type="tel" [(ngModel)]="details.mobile" name="mobile">
+        </form-field>
+    </form>
+    <div>
+        <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || ls.isLoading('user.update', 1)"
+            (click)="wrap(details.update, 'user.update')" class="relative">
+                <spinner-cube class="button-spinner" waitingFor="user.update"></spinner-cube>
+                <s5l>save.modifications</s5l>
+            </button>
+    </div>
+</panel-section>

@@ -366,6 +366,7 @@ public class PortalController extends BaseController {
 		renderJson(request, themes);
 	}
 
+	/*
 	@Get("/admin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
@@ -373,5 +374,6 @@ public class PortalController extends BaseController {
 		redirectPermanent(request, "/directory/admin-console");
 		adminConsoleEventStore.createAndStoreEvent(PortalEvent.ACCESS.name(), request);
 	}
+	*/
 
 }
