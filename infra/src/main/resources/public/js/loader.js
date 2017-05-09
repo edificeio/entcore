@@ -145,7 +145,7 @@ var findVersion = function(){
 			outdated: version < 10
 		}
 	}
-	else if(userAgent.indexOf('.NET CLR') === -1 && userAgent.indexOf('Trident') !== -1){
+	else if(userAgent.indexOf('.NET CLR') !== -1 && userAgent.indexOf('Trident') !== -1){
 		version = parseInt(userAgent.split('rv:')[1].split('.')[0]);
 		return {
 			browser: 'MSIE',
