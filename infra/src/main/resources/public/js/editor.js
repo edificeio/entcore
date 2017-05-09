@@ -1791,8 +1791,15 @@ window.RTE = (function () {
 									)
 								),
 								function(fontFace){
+									var fontName = fontFace.style.cssText.split('font-family:')[1].split(';')[0].trim();
+									if(fontName.startsWith('"')){
+										fontName = fontName.substring(1);
+									}
+									if(fontName.endsWith('"')){
+										fontName = fontName.substring(0, fontName.length - 1);
+									}
 									return {
-										fontFamily: fontFace.style.cssText.split('font-family:')[1].split(';')[0]
+										fontFamily: fontName
 									}
 								}
 							);
