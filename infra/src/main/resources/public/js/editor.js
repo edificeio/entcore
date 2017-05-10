@@ -3419,8 +3419,8 @@ window.RTE = (function () {
 
                             if (element.find(e.target).length === 0 && !$(e.target).hasClass('sp-choose') && element.hasClass('focus')) {
                                 element.children('editor-toolbar').removeClass('show');
+								element.removeClass('focus');
                                 element.trigger('editor-blur');
-                                element.removeClass('focus');
 								editorInstance.trigger('change');
                                 $('body').css({ overflow: 'auto' });
                                 element.parent().data('lock', false);
