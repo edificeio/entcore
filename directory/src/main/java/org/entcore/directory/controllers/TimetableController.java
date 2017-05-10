@@ -19,11 +19,14 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -31,16 +34,20 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.utils.StringUtils;
+import org.entcore.directory.security.UserInStructure;
 import org.entcore.directory.services.TimetableService;
 import org.joda.time.DateTime;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -77,15 +84,46 @@ public class TimetableController extends BaseController {
 		timetableService.listCourses(structureId, lastDate, arrayResponseHandler(request));
 	}
 
-	@Get("/timetable/subjects/:structureId")
+	@Get("/timetable/courses/:structureId/:begin/:end")
+	@ApiDoc("Get courses for a structure between two dates by optional teacher id.")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@ResourceFilter(UserInStructure.class)
+	public void listCoursesBetweenTwoDates(final HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		final String teacherId = request.params().get("teacherId");
+		final String beginDate = request.params().get("begin");
+		final String endDate = request.params().get("end");
+
+		if (beginDate!=null && endDate != null &&
+				beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+			timetableService.listCoursesBetweenTwoDates(structureId, teacherId, beginDate, endDate, arrayResponseHandler(request));
+		} else {
+			badRequest(request, "timetable.invalid.dates");
+		}
+	}
+
+	@Get("/timetable/subjects/:structureId")
+	@ApiDoc("Get subject list of the structure by optional teacher identifiers and with the ability to display associated groups and classes.")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(UserInStructure.class)
 	public void listSubjects(HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
-		final boolean teachers = request.params().contains("teachers");
+		final List<String> teachers = request.params().getAll("teacherId");
 		final boolean classes = request.params().contains("classes");
 		final boolean groups = request.params().contains("groups");
+
 		timetableService.listSubjects(structureId, teachers, classes, groups, arrayResponseHandler(request));
+	}
+
+	@Get("/timetable/subjects/:structureId/group")
+	@ApiDoc("Get subject list of the structure by external group id.")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(UserInStructure.class)
+	public void listSubjectsByGroup(HttpServerRequest request) {
+		final String structureId = request.params().get("structureId");
+		final String externalGroupId = request.params().get("externalGroupId");
+
+		timetableService.listSubjectsByGroup(structureId, externalGroupId, arrayResponseHandler(request));
 	}
 
 	@Put("/timetable/init/:structureId")
@@ -159,6 +197,73 @@ public class TimetableController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@BusAddress("timetable")
+	@SuppressWarnings("unchecked")
+	public void getTimetable(final Message<JsonObject> message){
+		final String action = message.body().getString("action");
+
+		if (action == null) {
+			log.warn("[@BusAddress](timetable) Invalid action.");
+			message.reply(new JsonObject().putString("status", "error")
+					.putString("message", "Invalid action."));
+			return;
+		}
+
+		final String structureId = message.body().getString("structureId");
+
+		switch(action){
+			case "get.course":
+				final String teacherId = message.body().getString("teacherId");
+				final String beginDate = message.body().getString("begin");
+				final String endDate = message.body().getString("end");
+
+				if (beginDate!=null && endDate != null &&
+						beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+
+					timetableService.listCoursesBetweenTwoDates(structureId, teacherId, beginDate, endDate, getBusResultHandler(message));
+				} else {
+					message.reply(new JsonObject()
+							.putString("status", "error")
+							.putString("message", "timetable.invalid.dates"));
+				}
+				break;
+			case "get.subjects":
+				final List<String> teachers = message.body().getArray("teacherIds", new JsonArray()).toList();
+				final String externalGroupId = message.body().getString("externalGroupId");
+				final boolean classes = message.body().getBoolean("classes", false);
+				final boolean groups = message.body().getBoolean("groups", false);
+
+				if (StringUtils.isEmpty(externalGroupId)) {
+					timetableService.listSubjects(structureId, teachers, classes, groups, getBusResultHandler(message));
+				} else {
+					timetableService.listSubjectsByGroup(structureId, externalGroupId, getBusResultHandler(message));
+				}
+
+				break;
+			default:
+				message.reply(new JsonObject().putString("status", "error")
+						.putString("message", "Invalid action."));
+				break;
+		}
+	}
+
+	private Handler<Either<String, JsonArray>> getBusResultHandler(final Message<JsonObject> message) {
+		return new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> result) {
+                if (result.isRight()) {
+                    message.reply(new JsonObject()
+                            .putString("status", "ok")
+                            .putArray("results", result.right().getValue()));
+                } else {
+                    message.reply(new JsonObject()
+                            .putString("status", "error")
+                            .putString("message", result.left().getValue()));
+                }
+            }
+        };
 	}
 
 	public void setTimetableService(TimetableService timetableService) {
