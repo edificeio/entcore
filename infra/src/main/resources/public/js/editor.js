@@ -4000,6 +4000,7 @@ window.RTE = (function () {
 								            extensions: ["AMSmath.js", "AMSsymbols.js", "noErrors.js", "noUndefined.js"]
 								        }
 								    });
+									$('.MathJax_CHTML_Display').remove();
 					            	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
 								}
 							});
