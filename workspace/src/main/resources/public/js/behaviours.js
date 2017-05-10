@@ -222,7 +222,12 @@ Behaviours.register('workspace', {
 						this.openFolder(document);
 					}
 					else{
-						window.location = '/workspace/document/' + document._id;
+						if(this.visibility === 'public'){
+							window.location = '/workspace/pub/document/' + document._id;
+						}
+						else{
+							window.location = '/workspace/document/' + document._id;
+						}
 					}
 				},
 				addDocument: function(document){
