@@ -24,6 +24,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.TimetableService;
 import org.vertx.java.core.Handler;
@@ -31,6 +32,8 @@ import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.util.List;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.mongodb.MongoDbResult.validResultsHandler;
@@ -41,6 +44,12 @@ public class DefaultTimetableService implements TimetableService {
 	private static final String COURSES = "courses";
 	private final EventBus eb;
 	private final Neo4j neo4j = Neo4j.getInstance();
+	private static final JsonObject KEYS = new JsonObject().putNumber("_id", 1).putNumber("structureId", 1).putNumber("subjectId", 1)
+			.putNumber("roomLabels", 1).putNumber("equipmentLabels", 1).putNumber("teacherIds", 1).putNumber("personnelIds", 1)
+			.putNumber("classes", 1).putNumber("groups", 1).putNumber("dayOfWeek", 1).putNumber("startDate", 1).putNumber("endDate", 1)
+			.putNumber("subjectId", 1).putNumber("roomLabels", 1);
+	private static final String START_DATE_PATTERN = "T00:00Z";
+	private static final String END_DATE_PATTERN = "T23.59Z";
 
 	public DefaultTimetableService(EventBus eb) {
 		this.eb = eb;
@@ -51,21 +60,7 @@ public class DefaultTimetableService implements TimetableService {
 		if (Utils.validationParamsNull(handler, structureId)) return;
 		final JsonObject query = new JsonObject().putString("structureId", structureId);
 		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
-		final JsonObject keys = new JsonObject()
-				.putNumber("_id", 1)
-				.putNumber("structureId", 1)
-				.putNumber("subjectId", 1)
-				.putNumber("roomLabels", 1)
-				.putNumber("equipmentLabels", 1)
-				.putNumber("teacherIds", 1)
-				.putNumber("personnelIds", 1)
-				.putNumber("classes", 1)
-				.putNumber("groups", 1)
-				.putNumber("dayOfWeek", 1)
-				.putNumber("startDate", 1)
-				.putNumber("endDate", 1)
-				.putNumber("subjectId", 1)
-				.putNumber("roomLabels", 1);
+		final JsonObject keys = KEYS.copy();
 		if (lastDate > 0) {
 			query.putArray("$or", new JsonArray()
 					.addObject(new JsonObject().putObject("modified", new JsonObject().putNumber("$gte", lastDate)))
@@ -79,25 +74,73 @@ public class DefaultTimetableService implements TimetableService {
 	}
 
 	@Override
-	public void listSubjects(String structureId, boolean teachers, boolean classes, boolean groups,
-			Handler<Either<String, JsonArray>> handler) {
+	public void listCoursesBetweenTwoDates(String structureId, String teacherId, String begin, String end, Handler<Either<String,JsonArray>> handler){
+		if (Utils.validationParamsNull(handler, structureId, begin, end)) return;
+		final JsonObject query = new JsonObject();
+
+		query.putString("structureId", structureId);
+
+		if (teacherId != null){
+			query.putString("teacherIds", teacherId);
+		}
+
+		final String startDate = begin + START_DATE_PATTERN;
+		final String endDate = end + END_DATE_PATTERN;
+
+		JsonObject betweenStart = new JsonObject();
+		betweenStart.putString("$gte",startDate);
+		betweenStart.putString("$lte",endDate);
+
+		JsonObject betweenEnd = new JsonObject();
+		betweenEnd.putString("$gte",startDate);
+		betweenEnd.putString("$lte",endDate);
+
+		query.putArray("$or", new JsonArray()
+				.addObject(new JsonObject().putObject("startDate" ,betweenStart))
+				.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+
+		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
+
+		MongoDb.getInstance().find(COURSES, query, sort, KEYS, validResultsHandler(handler));
+	}
+
+	@Override
+	public void listSubjects(String structureId, List<String> teachers, boolean classes, boolean groups,
+	                         Handler<Either<String, JsonArray>> handler) {
 		if (Utils.validationParamsNull(handler, structureId)) return;
+		listSubjects(structureId, teachers, null, classes, groups, handler);
+	}
+
+	@Override
+	public void listSubjectsByGroup(String structureId, String externalGroupId,
+	                         Handler<Either<String, JsonArray>> handler) {
+		if (Utils.validationParamsNull(handler, structureId, externalGroupId)) return;
+		listSubjects(structureId, null, externalGroupId, true, true, handler);
+	}
+
+	private void listSubjects(String structureId, List<String> teachers, String externalGroupId, boolean classes, boolean groups,
+	                          Handler<Either<String, JsonArray>> handler) {
 		final JsonObject params = new JsonObject().putString("id", structureId);
 		StringBuilder query = new StringBuilder();
-		query.append("MATCH (:Structure {id:{id}})<-[:SUBJECT]-(sub:Subject)");
-		if (teachers) {
-			query.append("<-[r:TEACHES]-(u:User)");
+		query.append("MATCH (:Structure {id:{id}})<-[:SUBJECT]-(sub:Subject)<-[r:TEACHES]-(u:User)");
+		query.append(" WHERE 1=1");
+		if (teachers != null && !teachers.isEmpty()) {
+			params.putArray("teacherIds", new JsonArray(teachers));
+			query.append(" AND u.id IN  {teacherIds}");
 		}
-		query.append(" RETURN sub.id as subjectId, sub.code as subjectCode, sub.label as subjectLabel");
-		if (teachers) {
-			query.append(", u.id as teacherId");
-			if (classes) {
-				query.append(", r.classes as classes");
-			}
-			if (groups) {
-				query.append(", r.groups as groups");
-			}
+		if (!StringUtils.isEmpty(externalGroupId)) {
+			params.putString("externalGroupId", externalGroupId);
+			query.append(" AND ({externalGroupId} IN r.classes OR {externalGroupId} IN r.groups)");
 		}
+		query.append(" RETURN sub.id as subjectId, sub.code as subjectCode, sub.label as subjectLabel, u.id as teacherId");
+
+		if (classes) {
+			query.append(", r.classes as classes");
+		}
+		if (groups) {
+			query.append(", r.groups as groups");
+		}
+
 		neo4j.execute(query.toString(), params, validResultHandler(handler));
 	}
 
