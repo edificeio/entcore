@@ -45,7 +45,6 @@ import static org.vertx.testtools.VertxAssert.*;
 import static org.vertx.testtools.VertxAssert.assertEquals;
 
 public class CommunicationTest extends TestVerticle {
-	public static final String NEO4J_PERSISTOR = "wse.neo4j.persistor";
 	public static final String ENTCORE_FEEDER = "entcore.feeder";
 	public static final String ENTCORE_COMMUNICATION = "wse.communication";
 	public static final String ENTCORE_COMMUNICATION_USERS = "wse.communication.users";
@@ -67,46 +66,32 @@ public class CommunicationTest extends TestVerticle {
 		final String moduleName = System.getProperty("vertx.modulename");
 		final String version = moduleName.substring(moduleName.lastIndexOf('~') + 1);
 		final String p = CommunicationTest.class.getClassLoader().getResource("be1d-test").getPath();
-		JsonObject neo4jConfig = new JsonObject()
-				.putString("address", NEO4J_PERSISTOR)
-				.putString("datastore-path", neo4jTmpFolder.getRoot().getAbsolutePath())
-				.putObject("neo4j", new JsonObject()
-						.putString("node_keys_indexable", "externalId")
-						.putString("node_auto_indexing", "true"));
-		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.3-SNAPSHOT", neo4jConfig, 1,
-				new AsyncResultHandler<String>() {
-					@Override
-					public void handle(AsyncResult<String> event) {
-						JsonObject config = new JsonObject()
-								.putString("neo4j-address", NEO4J_PERSISTOR)
-								.putString("feeder", "BE1D")
-								.putString("import-files", p);
-						container.deployModule("org.entcore~feeder~" + version, config, 1,
-								new AsyncResultHandler<String>() {
-									public void handle(AsyncResult<String> ar) {
-										if (ar.succeeded()) {
-											eb = vertx.eventBus();
-											neo4j = Neo4j.getInstance();
-											neo4j.init(eb, NEO4J_PERSISTOR);
-											neo4jDeploymentId = ar.result();
-											neo4j.execute("CREATE (n:DeleteGroup {externalId :'DeleteGroup'})",
-													(JsonObject) null, new Handler<Message<JsonObject>>() {
-														@Override
-														public void handle(Message<JsonObject> event) {
-															try {
-																loadCommunicationModule();
-															} catch (IOException e) {
-																e.printStackTrace();
-															}
-														}
-													});
-										} else {
-											ar.cause().printStackTrace();
-										}
-									}
-								});
-					}
-				});
+			JsonObject config = new JsonObject()
+					.putString("feeder", "BE1D")
+					.putString("import-files", p);
+			container.deployModule("org.entcore~feeder~" + version, config, 1,
+					new AsyncResultHandler<String>() {
+						public void handle(AsyncResult<String> ar) {
+							if (ar.succeeded()) {
+								eb = vertx.eventBus();
+								neo4j = Neo4j.getInstance();
+								neo4jDeploymentId = ar.result();
+								neo4j.execute("CREATE (n:DeleteGroup {externalId :'DeleteGroup'})",
+										(JsonObject) null, new Handler<Message<JsonObject>>() {
+											@Override
+											public void handle(Message<JsonObject> event) {
+												try {
+													loadCommunicationModule();
+												} catch (IOException e) {
+													e.printStackTrace();
+												}
+											}
+										});
+							} else {
+								ar.cause().printStackTrace();
+							}
+						}
+					});
 	}
 
 	private void loadCommunicationModule() throws IOException {
