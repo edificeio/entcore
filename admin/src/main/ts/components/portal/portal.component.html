@@ -23,7 +23,7 @@
         <i class="fa fa-users"
             *ngIf="currentStructure"
             [tooltip]="'groups' | translate"
-            [routerLink]="'/admin/' + currentStructure?.id + '/groups'"
+            [routerLink]="'/admin/' + currentStructure?.id + '/groups/manual'"
             [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)"></i>
         <i class="fa fa-user" aria-hidden="true"
             *ngIf="currentStructure"

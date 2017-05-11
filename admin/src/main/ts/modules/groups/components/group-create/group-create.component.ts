@@ -1,4 +1,4 @@
-import { Component } from '@angular/core'
+import { Component, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
 import { GroupModel } from '../../../../store/models'
 import { GroupsStore } from '../../store'
@@ -23,7 +23,8 @@ import { LoadingService, NotifyService } from '../../../../services'
                 </button>
             </form>
         </panel-section>
-    `
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupCreate {
 
@@ -41,6 +42,7 @@ export class GroupCreate {
         this.ls.perform('portal-content', this.newGroup.create()
             .then(res => {
                 this.newGroup.id = res.data.id
+                this.newGroup.type = 'ManualGroup'
                 this.groupsStore.structure.groups.data.push(this.newGroup)
 
                 this.ns.success({

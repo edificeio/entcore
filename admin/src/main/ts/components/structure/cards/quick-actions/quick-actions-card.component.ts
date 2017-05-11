@@ -15,7 +15,7 @@ import { StructureModel } from '../../../../store'
                 <s5l>create.user</s5l>
                 <i class="fa fa-user-plus"></i>
             </button>
-            <button routerLink="groups">
+            <button routerLink="groups/manual/create">
                 <s5l>create.group</s5l>
                 <i class="fa fa-users"></i>
             </button>

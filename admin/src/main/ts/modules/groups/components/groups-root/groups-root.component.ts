@@ -10,7 +10,8 @@ import { routing } from '../../../../routing/routing.utils'
     template: `
         <div class="flex-header">
             <h1><i class="fa fa-users"></i><s5l>groups</s5l></h1>
-            <button (click)="openCreationView()">
+            <button [routerLink]="['manual', 'create']" 
+                [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
                 <s5l>create.group</s5l>
             </button>
         </div>
@@ -72,9 +73,5 @@ export class GroupsRoot implements OnInit, OnDestroy {
     onError(error: Error){
         console.error(error)
         this.error = error
-    }
-
-    openCreationView() {
-        this.router.navigate(['manual', 'create'], { relativeTo: this.route })
     }
 }
