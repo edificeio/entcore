@@ -27,6 +27,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Scanner;
 import java.util.TreeSet;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public final class JsonUtil {
 
 	private JsonUtil() {}
@@ -41,6 +43,10 @@ public final class JsonUtil {
 	}
 
 	public static Object convert(String value, String type) {
+		return convert(value, type, null);
+	}
+
+	public static Object convert(String value, String type, String prefix) {
 		if (type == null) {
 			return value;
 		}
@@ -66,7 +72,7 @@ public final class JsonUtil {
 		} catch (RuntimeException e) {
 			res = value;
 		}
-		return res;
+		return isNotEmpty(prefix) ? prefix + res : res;
 	}
 
 	public static class None{}

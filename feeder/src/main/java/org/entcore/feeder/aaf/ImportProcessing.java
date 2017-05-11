@@ -32,4 +32,6 @@ public interface ImportProcessing {
 
 	void process(JsonObject object);
 
+	String getAcademyPrefix();
+
 }

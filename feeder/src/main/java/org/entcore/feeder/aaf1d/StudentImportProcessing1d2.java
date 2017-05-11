@@ -35,7 +35,8 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		importer.markMissingUsers(new Handler<Void>() {
+		initAcademyPrefix(path);
+		importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
 			@Override
 			public void handle(Void event) {
 				parse(handler, null);
