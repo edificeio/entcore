@@ -1,8 +1,10 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core'
+import { ActivatedRoute, Data, Router } from '@angular/router'
 import { BundlesService } from 'sijil'
 import { UserlistFiltersService } from '../../../../services'
 import { Subscription } from 'rxjs/Subscription'
 import { UsersStore } from '../../store'
+import { routing } from '../../../../routing/routing.utils'
 
 @Component({
     selector: 'user-filters',
@@ -39,15 +41,29 @@ import { UsersStore } from '../../store'
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserFilters {
+export class UserFilters implements OnInit {
+
+    private structureSubscriber : Subscription
 
     constructor(
         private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
+        private router: Router,
+        private route: ActivatedRoute,
         private usersStore: UsersStore,
-        private listFilters: UserlistFiltersService){}
+        private listFilters: UserlistFiltersService){
+            console.log(listFilters)
+        }
 
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }
+
+    ngOnInit() {
+        this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
+            if(data['structure']) {
+                this.cdRef.markForCheck()
+            }
+        })
+    }
 
     private orderer(a){
         return a
@@ -57,4 +73,5 @@ export class UserFilters {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
     }
+    
 }
