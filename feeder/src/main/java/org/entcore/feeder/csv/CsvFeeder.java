@@ -344,7 +344,7 @@ public class CsvFeeder implements Feed {
 								}
 							}
 							String eId = structure.getExternalId() + '$' + cc[0];
-							structure.createClassIfAbsent(eId, v);
+							structure.createClassIfAbsent(eId, cc[0]);
 							final String[] classId = new String[3];
 							classId[0] = structure.getExternalId();
 							classId[1] = eId;
