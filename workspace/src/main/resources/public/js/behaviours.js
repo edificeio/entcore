@@ -179,11 +179,18 @@ Behaviours.register('workspace', {
 						}
 					};
 					this.source.title = 'Documents';
+					if(!this.source.documents){
+						this.source.documents = [];
+					}
 					this.cursor = {
 						currentFolder: this.source,
 						parentFolders: [],
 						selection: []
 					};
+					this.cursor.currentFolder.documents = _.map(this.cursor.currentFolder.documents, function(item){
+						delete item.selected;
+						return item;
+					});
 					this.folder = this.source;
 				},
 				isFolder: function(document){
@@ -215,6 +222,10 @@ Behaviours.register('workspace', {
 					}
 
 					this.cursor.currentFolder = folder;
+					this.cursor.currentFolder.documents = _.map(this.cursor.currentFolder.documents, function(item){
+						delete item.selected;
+						return item;
+					});
 					this.cursor.selection = [];
 				},
 				openDocument: function(document){
@@ -295,9 +306,6 @@ Behaviours.register('workspace', {
 					});
 				},
 				documentIcon: function(doc){
-					if(!doc.metadata){
-						return '/img/icons/folder-large.png';
-					}
                     if (doc.metadata['content-type'].indexOf('image') !== -1) {
                         if (this.snipletResource.visibility === 'PUBLIC') {
                             return '/workspace/pub/document/' + doc._id + '?thumbnail=150x150';
@@ -305,7 +313,7 @@ Behaviours.register('workspace', {
                         else {
                             return '/workspace/document/' + doc._id + '?thumbnail=150x150';
                         }
-						
+
 					}
 					else{
 						return '/img/icons/unknown-large.png';

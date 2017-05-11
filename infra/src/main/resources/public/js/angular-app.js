@@ -5233,6 +5233,8 @@ module.directive('explorer', function() {
 
             function select() {
                 scope.ngModel = !scope.ngModel;
+                scope.$apply('ngModel');
+
                 if (scope.ngModel) {
                     element.addClass('selected')
                 } else {
@@ -5244,14 +5246,21 @@ module.directive('explorer', function() {
                 if (scope.ngChange) {
                     scope.ngChange();
                 }
-                scope.$apply('ngModel');
+                scope.$apply();
             }
 
             $('body').on('click', function(e) {
                 if ($(e.target).parents('explorer, .toggle, .lightbox').length === 0 && e.target.nodeName !== "EXPLORER") {
                     scope.ngModel = false;
-                    element.removeClass('selected');
                     scope.$apply('ngModel');
+
+                    if (scope.ngChange) {
+                        scope.ngChange();
+                    }
+
+                    scope.$apply();
+                    element.removeClass('selected');
+
                 }
             })
 

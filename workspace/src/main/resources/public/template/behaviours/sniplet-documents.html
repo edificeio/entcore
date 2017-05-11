@@ -74,30 +74,44 @@
 
 <article class="list icons-view">
 	<header>&nbsp;</header>
-	<div ng-repeat="document in cursor.currentFolder.documents track by $index" class="element"
-		 ng-class="{ selected: document.selected }" dragdrop="dropTo(document, $originalEvent)" dragstart="drag(document, $originalEvent)">
-		<a ng-click="openDocument(document)" class="img container cell">
-			<div class="twelve cell">
-				<div class="clip absolute">
-					<img skin-src="[[documentIcon(document)]]" alt="thumbnail" />
+	<div ng-repeat="document in cursor.currentFolder.documents track by $index"
+		class="element" ng-class="{ selected: document.selected }"
+		dragdrop="dropTo(document, $originalEvent)"
+		dragstart="drag(document, $originalEvent)">
+
+		<explorer ng-model="document.selected"
+			on-open="openDocument(document)"
+			ng-change="updateSelection()">
+
+			<a class="img container cell">
+				<div class="twelve cell">
+					<div class="clip absolute">
+						<i ng-if="!document.metadata" class="folder-large"></i>
+						<img ng-if="document.metadata" skin-src="[[documentIcon(document)]]" alt="thumbnail" />
+					</div>
 				</div>
-			</div>
-		</a>
-        <resource-right name="update" resource="snipletResource">
-            <input type="checkbox" ng-model="document.selected" ng-change="updateSelection()" />
-        </resource-right>
-        <legend>
-            <a ng-click="openDocument(document)">
-                [[document.title]]
-            </a>
-            <a ng-click="openDocument(document)"><strong>[[document.owner.name]]</strong></a>
-        </legend>
-</div>
+			</a>
+	        <legend>
+	            <a>
+	               <span>[[document.title]]</span>
+	            </a>
+	            <a><strong>[[document.owner.name]]</strong></a>
+	        </legend>
+		</explorer>
+	</div>
 </article>
 
 <section class="toggle-buttons" ng-class="{ hide: cursor.selection.length === 0 }">
 	<div class="toggle">
-		<button ng-click="displaySniplet.moveDocuments = true"><i18n>move</i18n></button>
-		<button ng-click="displaySniplet.confirmRemove = true"><i18n>remove</i18n></button>
+		<button ng-if="cursor.selection.length === 1"
+		ng-click="openDocument(cursor.selection[0])" class="cell">
+			<i18n>workspace.open</i18n>
+		</button>
+		<resource-right name="update" resource="snipletResource">
+			<button ng-click="displaySniplet.moveDocuments = true"><i18n>move</i18n></button>
+		</resource-right>
+		<resource-right name="update" resource="snipletResource">
+			<button ng-click="displaySniplet.confirmRemove = true"><i18n>remove</i18n></button>
+		</resource-right>
 	</div>
 </section>
