@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core'
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router'
 
 import { StructureModel, globalStore } from '../store'
-import { LoadingService } from '../services'
+import { LoadingService, ProfilesService } from '../services'
 
 @Injectable()
 export class StructureResolve implements Resolve<StructureModel> {
@@ -25,6 +25,7 @@ export class StructureResolve implements Resolve<StructureModel> {
         structure.syncGroups()
         structure.syncSources()
         structure.syncAafFunctions()
+        ProfilesService.getProfiles().then(p => structure.profiles = p)
         return Promise.resolve(structure)
     }
 }

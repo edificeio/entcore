@@ -32,6 +32,7 @@ export class UserCreate implements OnInit, OnDestroy {
         private userListService: UserListService) {}
 
     ngOnInit(): void {
+        this.usersStore.user = null
         this.newUser.classes = this.noClasses
         this.newUser.type = 'Personnel'
         let {id, name} = this.usersStore.structure

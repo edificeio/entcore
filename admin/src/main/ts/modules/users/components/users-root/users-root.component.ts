@@ -11,7 +11,7 @@ import { Subscription } from 'rxjs/Subscription'
     template: `
         <div class="flex-header">
             <h1><i class="fa fa-user"></i><s5l>users.title</s5l></h1>
-            <button (click)="openCreationView()"
+            <button [routerLink]="['create']"
                 [class.hidden]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)">
                 <s5l>create.user</s5l>
             </button>
@@ -53,6 +53,7 @@ export class UsersRoot implements OnInit, OnDestroy {
                 let structure: StructureModel = data['structure']
                 this.usersStore.structure = structure
                 this.initFilters(structure)
+                this.cdRef.detectChanges()
             }
         })
 
@@ -78,10 +79,6 @@ export class UsersRoot implements OnInit, OnDestroy {
         this.router.navigate([user.id], {relativeTo: this.route })
     }
 
-    openCreationView() {
-        this.router.navigate(['create'], { relativeTo: this.route })
-    }
-
     openCompanionView(view) {
         this.router.navigate([view], { relativeTo: this.route })
     }
@@ -92,9 +89,7 @@ export class UsersRoot implements OnInit, OnDestroy {
         this.listFilters.setClasses(structure.classes)
         this.listFilters.setSources(structure.sources)
         this.listFilters.setFunctions(structure.aafFunctions)
-        
-        ProfilesService.getProfiles().then(p => this.listFilters.setProfiles(p))
-        
+        this.listFilters.setProfiles(structure.profiles.map(p => p.name))
         this.listFilters.setFunctionalGroups(
             structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name))
         this.listFilters.setManualGroups(
