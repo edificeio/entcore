@@ -1,5 +1,5 @@
 {
-	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
 	"ENTEtablissementUAI" : { "attribute" : "oldUAI", "type" : "string" },
 	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
@@ -13,8 +13,8 @@
 	"l" : { "attribute" : "city", "type" : "string" },
 	"telephoneNumber" : { "attribute" : "phone", "type" : "string" },
 	"facsimileTelephoneNumber" : { "attribute" : "fax", "type" : "string" },
-	"ENTEtablissementStructRattachFctl" : { "attribute" : "functionalAttachment", "type" : "array-string" },
-	"ENTEtablissementBassin" : { "attribute" : "area", "type" : "string" },
+	"ENTEtablissementStructRattachFctl" : { "attribute" : "functionalAttachment", "type" : "array-string", "prefix" : true },
+	"ENTEtablissementBassin" : { "attribute" : "area", "type" : "string", "prefix" : true },
 	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
 	"ENTStructureClasses" : { "attribute" : "classes", "type" : "array-string" },
 	"ENTStructureGroupes" : { "attribute" : "groups", "type" : "array-string" },

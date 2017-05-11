@@ -1,5 +1,5 @@
 {
-	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
 	"ENTPersonNom" : { "attribute" : "lastName", "type" : "string" },
 	"ENTPersonPrenom" : { "attribute" : "firstName", "type" : "string" },
@@ -8,8 +8,8 @@
 	"ENTPersonCivilite" : { "attribute" : "title", "type" : "string" },
 	"categoriePersonne" : { "attribute" : "category", "type" : "string" },
 	"ENTPersonMail" : { "attribute" : "email", "type" : "string" },
-	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string" },
-	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string" },
+	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string", "prefix" : true },
+	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"ENTEnsFonctionDir" : { "attribute" : "deprecated", "type" : "array-string" },
 	"ENTEnsSpecialites" : { "attribute" : "deprecated", "type" : "array-string" }
 }
