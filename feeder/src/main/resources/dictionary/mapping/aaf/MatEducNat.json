@@ -1,5 +1,5 @@
 {
-	"ENTMatJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTMatJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTLibelleMatiere" : { "attribute" : "name", "type" : "string" },
 	"categorieMatiere" : { "attribute" : "category", "type" : "string" }
 }

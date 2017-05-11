@@ -1,5 +1,5 @@
 {
-	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
 	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
 	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
@@ -14,7 +14,7 @@
 	"ENTStructureFax" : { "attribute" : "fax", "type" : "string" },
 	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
 	"ENTEcoleSecteur" : { "attribute" : "sector", "type" : "string" },
-	"ENTEcoleCirconscription" : { "attribute" : "district", "type" : "string" },
+	"ENTEcoleCirconscription" : { "attribute" : "district", "type" : "string", "prefix" : true },
 	"ENTEcoleCommune" : { "attribute" : "town", "type" : "string" },
 	"ENTEcoleRPI" : { "attribute" : "rpi", "type" : "string" },
 	"ENTStructureEmail" : { "attribute" : "email", "type" : "string" },

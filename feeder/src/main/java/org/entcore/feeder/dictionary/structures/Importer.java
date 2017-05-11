@@ -752,22 +752,37 @@ public class Importer {
 		markMissingUsers(null, handler);
 	}
 
+	public void markMissingUsers(String structureExternalId, String prefix, Handler<Void> handler) {
+		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, prefix, handler);
+	}
+
 	public void markMissingUsers(String structureExternalId, final Handler<Void> handler) {
-		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, handler);
+		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, null, handler);
 	}
 
 	public static void markMissingUsers(String structureExternalId, String currentSource,
 			final Set<String> userImportedExternalId, final TransactionHelper transactionHelper,
 			final Handler<Void> handler) {
+		markMissingUsers(structureExternalId, currentSource, userImportedExternalId, transactionHelper, null, handler);
+	}
+
+	public static void markMissingUsers(String structureExternalId, String currentSource,
+			final Set<String> userImportedExternalId, final TransactionHelper transactionHelper, String prefix,
+			final Handler<Void> handler) {
 		String query;
 		JsonObject params = new JsonObject().putString("currentSource", currentSource);
+		String filter = "";
+		if (isNotEmpty(prefix)) {
+			filter = "AND u.externalId STARTS WITH {prefix} ";
+			params.putString("prefix", prefix);
+		}
 		if (structureExternalId != null) {
 			query = "MATCH (:Structure {externalId : {externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE u.source = {currentSource} " +
+					"WHERE u.source = {currentSource} " + filter +
 					"RETURN u.externalId as externalId";
 			params.putString("externalId", structureExternalId);
 		} else {
-			query = "MATCH (u:User) WHERE u.source = {currentSource} RETURN u.externalId as externalId";
+			query = "MATCH (u:User) WHERE u.source = {currentSource} " + filter + "RETURN u.externalId as externalId";
 		}
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override

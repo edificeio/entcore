@@ -25,6 +25,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
@@ -45,6 +46,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected final String path;
 	protected final Vertx vertx;
 	protected final Importer importer = Importer.getInstance();
+	private String academyPrefix;
 	private static final String[][] OTHER_UNESCAPE = {{"&quot;", "\""}};
 	public static final CharSequenceTranslator UNESCAPE_AAF =
 			new AggregateTranslator(
@@ -61,6 +63,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	}
 
 	protected void parse(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
+		initAcademyPrefix(path);
 		final String [] files = vertx.fileSystem()
 				.readDirSync(path, getFileRegex());
 		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
@@ -165,5 +168,34 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 
 	protected abstract String getFileRegex();
 
+	protected void initAcademyPrefix(String file) {
+		if (academyPrefix != null) return;
+		if (file != null && file.contains(File.separator) && vertx.fileSystem()
+				.existsSync(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON)) {
+			if (file.endsWith(File.separator)) {
+				file = file.substring(0, file.length() - 1);
+			}
+			try {
+				JsonArray importDirectories = new JsonArray(vertx.fileSystem()
+						.readFileSync(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON).toString());
+				final String[] a = file.split(File.separator);
+				final String dirName = a[a.length - 1];
+				if (a.length > 1 && importDirectories.contains(dirName)) {
+					academyPrefix =  dirName + "-";
+				} else {
+					academyPrefix = "";
+				}
+			} catch (RuntimeException e) {
+				log.error("Invalid import directories files.", e);
+				academyPrefix = "";
+			}
+		} else {
+			academyPrefix = "";
+		}
+	}
+
+	public String getAcademyPrefix() {
+		return academyPrefix;
+	}
 
 }

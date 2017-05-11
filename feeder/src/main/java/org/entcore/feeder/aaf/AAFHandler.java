@@ -26,6 +26,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.utils.AAFUtil.convertDate;
 
 public final class AAFHandler extends DefaultHandler {
@@ -94,6 +95,7 @@ public final class AAFHandler extends DefaultHandler {
 		}
 		String type = j.getString("type");
 		String attribute = j.getString("attribute");
+		final boolean prefix = j.getBoolean("prefix", false);
 		if ("birthDate".equals(attribute) && !s.isEmpty()) {
 			s = convertDate(s);
 		}
@@ -104,10 +106,10 @@ public final class AAFHandler extends DefaultHandler {
 				currentStructure.putArray(attribute, a);
 			}
 			if (!s.isEmpty()) {
-				a.add(JsonUtil.convert(s, type));
+				a.add(JsonUtil.convert(s, type, (prefix ? processing.getAcademyPrefix() : null)));
 			}
 		} else {
-			Object v = JsonUtil.convert(s, type);
+			Object v = JsonUtil.convert(s, type, (prefix ? processing.getAcademyPrefix() : null));
 			if (!(v instanceof JsonUtil.None)) {
 				currentStructure.putValue(attribute, v);
 			}
@@ -116,7 +118,8 @@ public final class AAFHandler extends DefaultHandler {
 
 	private void addExternalId(String s) throws SAXException {
 		if (currentStructure != null) {
-			currentStructure.putString("externalId", s);
+			currentStructure.putString("externalId",
+					(isNotEmpty(processing.getAcademyPrefix()) ? processing.getAcademyPrefix() + s : s));
 		} else {
 			throw new SAXException("Id is found but structure isn't defined.");
 		}

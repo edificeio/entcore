@@ -1,7 +1,7 @@
 {
-	"ENTMefJointure" : { "attribute" : "joinKey", "type" : "array-string" },
+	"ENTMefJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTLibelleMef" : { "attribute" : "name", "type" : "string" },
-	"ENTMEFRattach" : { "attribute" : "attachment", "type" : "string" },
+	"ENTMEFRattach" : { "attribute" : "attachment", "type" : "string", "prefix" : true },
 	"ENTMEFSTAT11" : { "attribute" : "stat", "type" : "string" },
 	"categorieMef" : { "attribute" : "category", "type" : "string" }
 }

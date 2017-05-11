@@ -46,7 +46,8 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 		if (importer.isFirstImport()) {
 			parse(handler, new StudentImportProcessing2(path, vertx));
 		} else {
-			importer.markMissingUsers(new Handler<Void>() {
+			initAcademyPrefix(path);
+			importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
 				@Override
 				public void handle(Void event) {
 					parse(handler, new StudentImportProcessing2(path, vertx));
