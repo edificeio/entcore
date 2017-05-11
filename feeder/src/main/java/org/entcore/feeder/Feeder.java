@@ -86,8 +86,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		TransactionManager.getInstance().setNeo4j(neo4j);
 		EventStoreFactory.getFactory().setVertx(vertx);
 		defaultFeed = container.config().getString("feeder", "AAF");
-		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF"),
-				container.config().getBoolean("aafNeo4jPlugin", false)));
+		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
 		feeds.put("BE1D", new Be1dFeeder(vertx, getFilesDirectory("BE1D")));
 		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));

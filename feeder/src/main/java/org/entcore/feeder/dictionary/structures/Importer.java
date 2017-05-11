@@ -35,6 +35,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class Importer {
 
 	private static final Logger log = LoggerFactory.getLogger(Importer.class);
@@ -636,36 +638,54 @@ public class Importer {
 	}
 
 	public void linkRelativeToStructure(String profileExternalId) {
+		linkRelativeToStructure(profileExternalId, null);
+	}
+
+	public void linkRelativeToStructure(String profileExternalId, String prefix) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
+		String filter = "";
+		if (isNotEmpty(prefix)) {
+			filter = "AND u.externalId STARTS WITH {prefix} ";
+			j.putString("prefix", prefix);
+		}
 		String query =
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Structure)<-[:DEPENDS]-(rcg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
+				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " + filter +
 				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 	}
 
 	public void linkRelativeToClass(String profileExternalId) {
+		linkRelativeToClass(profileExternalId, null);
+	}
+
+	public void linkRelativeToClass(String profileExternalId, String prefix) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
+		String filter = "";
+		if (isNotEmpty(prefix)) {
+			filter = "AND u.externalId STARTS WITH {prefix} ";
+			j.putString("prefix", prefix);
+		}
 		String query =
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Class)<-[:DEPENDS]-(rcg:ProfileGroup)" +
 				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " +
+				"WHERE p.externalId = {profileExternalId} AND NOT((u)-[:IN]->(rcg)) " + filter +
 				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 		String query2 =
 				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 				"WITH u, COLLECT(distinct c.id) as cIds " +
 				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
-				"WHERE NOT(c.id IN cIds) " +
+				"WHERE NOT(c.id IN cIds) " + filter +
 				"DELETE r";
 		transactionHelper.add(query2, j);
 		String query3 =
 				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"WITH u, COLLECT(distinct s.id) as sIds " +
 				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
-				"WHERE NOT(s.id IN sIds) " +
+				"WHERE NOT(s.id IN sIds) " + filter +
 				"DELETE r";
 		transactionHelper.add(query3, j);
 	}
