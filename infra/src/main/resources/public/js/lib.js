@@ -1025,7 +1025,7 @@ var quickstart = {
 
 		this.save();
 	},
-	seeAssistantLater(){
+	seeAssistantLater: function(){
 		this.state.assistantTimer = moment().format('MM/DD/YYYY HH:mm');
 		this.save();
 	},
