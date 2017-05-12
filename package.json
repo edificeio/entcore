@@ -97,7 +97,6 @@
     "sass-loader": "^6.0.2",
     "source-map-loader": "^0.2.0",
     "ts-loader": "^2.0.2",
-    "typescript": "^2.2.0",
     "uglify-js": "github:mishoo/UglifyJS2#harmony",
     "uglifyjs": "^2.4.10",
     "uglifyjs-webpack-plugin": "^0.3.0",
