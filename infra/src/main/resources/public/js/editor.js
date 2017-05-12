@@ -1767,7 +1767,7 @@ window.RTE = (function () {
 					template:
 					'<select-list display="font" display-as="fontFamily" placeholder="editor.font.placeholder" tooltip="editor.option.font">' +
 					'<opt ng-repeat="font in fonts" ng-click="setFontFamily(font)" ' +
-                    'value="font" style="font-family: [[font.fontFamily]]">[[font.fontFamily]]</opt>' +
+                    'value="font" ng-style="{ \'font-family\': font.fontFamily }">[[font.fontFamily]]</opt>' +
 					'</select-list>',
 					link: function(scope, element, attributes){
 
@@ -1840,7 +1840,7 @@ window.RTE = (function () {
 				return {
 					template: '<select-list placeholder="size" display="font.fontSize.size" tooltip="editor.option.fontSize">' +
 					'<opt ng-repeat="fontSize in font.fontSizes" ng-click="setSize(fontSize)" ' +
-                        'style="font-size: [[fontSize.size]]px; line-height: [[fontSize.size]]px">' +
+                        'ng-style="{ \'font-size\': fontSize.size + \'px\', \'line-height\': fontSize.size + \'px\'}">' +
                             '[[fontSize.size]]' +
                         '</opt>' +
 					'</select-list>',
