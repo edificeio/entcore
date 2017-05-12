@@ -64,6 +64,15 @@
       }
     },
     {
+      "name": "org.entcore~admin~2.0-SNAPSHOT",
+      "config": {
+        "host" : "http://localhost:8089",
+        "app-name" : "Admin",
+        "app-address" : "http://localhost:8089/admin",
+        "app-icon" : "admin-large"
+      }
+    },
+    {
       "name": "org.entcore~session~2.0-SNAPSHOT"
     },
     {
@@ -227,6 +236,10 @@
           {
             "location": "/archive",
             "proxy_pass": "http://localhost:8024"
+          },
+          {
+            "location": "/admin",
+            "proxy_pass": "http://localhost:8089"
           }
         ]
       }
