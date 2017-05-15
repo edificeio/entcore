@@ -278,7 +278,17 @@ public class User {
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
-				"RETURN u.id as id, u.externalId as externalId, u.displayName as displayName, HEAD(u.profiles) as type ";
+				"OPTIONAL MATCH (fgroup:FunctionalGroup) " +
+				"WHERE fgroup.externalId IN u.groups " +
+				"OPTIONAL MATCH (c:Class) " +
+				"WHERE c.externalId IN u.classes " +
+				"OPTIONAL MATCH (s:Structure) " +
+				"WHERE s.externalId IN u.structures " +
+				"RETURN u.id as id, u.firstName, u.lastName, u.externalId as externalId, u.displayName as displayName, " +
+				"HEAD(u.profiles) as type, " +
+				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
+				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
+				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds";
 		transactionHelper.add(query, params);
 		query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
