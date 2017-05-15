@@ -273,8 +273,8 @@ public class User {
 		transaction.add(query, params);
 	}
 
-    public static void delete(long delay, TransactionHelper transactionHelper) {
-        JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+	public static void delete(long delay, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
         String query =
                 "MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
                         "WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
@@ -289,15 +289,15 @@ public class User {
                         "CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
                         "CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
                         "CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds";
-        transactionHelper.add(query, params);
-        query =
-                "MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-                        "WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
-                        "OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
-                        "OPTIONAL MATCH u-[r]-() " +
-                        "DELETE u,b,r,rb ";
-        transactionHelper.add(query, params);
-    }
+		transactionHelper.add(query, params);
+		query =
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH u-[r]-() " +
+				"DELETE u,b,r,rb ";
+		transactionHelper.add(query, params);
+	}
 
 	public static void addFunction(String userId, String functionCode, JsonArray s,
 			TransactionHelper transactionHelper) {
