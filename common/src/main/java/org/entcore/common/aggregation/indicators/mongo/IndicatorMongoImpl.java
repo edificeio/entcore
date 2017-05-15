@@ -25,7 +25,6 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_TYPE;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
@@ -113,7 +112,8 @@ public class IndicatorMongoImpl extends Indicator{
 		//Synchronization handler
 		final AtomicInteger countDown = new AtomicInteger(results.size());
 		Handler<Message<JsonObject>> synchroHandler = new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> message) {
+			@Override
+            public void handle(Message<JsonObject> message) {
 				if (!"ok".equals(message.body().getString("status"))){
 					String groupstr = group == null ? "Global" : group.toString();
 					log.error("[Aggregation][Error]{"+writtenIndicatorKey+"} ("+ groupstr +") writeStats : "+message.body().toString());
@@ -128,7 +128,7 @@ public class IndicatorMongoImpl extends Indicator{
 		//For each aggregated result
 		for(Object obj: results){
 			JsonObject result = (JsonObject) obj;
-
+			
 			if(group == null){
 				//When not using groups, set groupedBy specifically to not exists
 				criteriaQuery
@@ -147,7 +147,6 @@ public class IndicatorMongoImpl extends Indicator{
 					g = g.getParent();
 				}
 			}
-
 			//Perform write action
 			writeAction(criteriaQuery, result.getInteger("count"), synchroHandler);
 		}
@@ -218,15 +217,38 @@ public class IndicatorMongoImpl extends Indicator{
 
 		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(filteringQuery)));
 		addUnwindPipeline(pipeline, group);
-		JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
-			.putObject("_id", getGroupByObject(new JsonObject(), group))
-			.putObject("count", new JsonObject().putNumber("$sum", 1)));
+		JsonObject groupBy = new JsonObject();
+		JsonObject groupByActiv = new JsonObject();
+		//Customize query when Indicator is ACTIVATION, in order to have a distinct count per userId (to correct a bug in the events collection that can have duplicate entries for only one account)
+		if (writtenIndicatorKey.equals("ACTIVATION")){
+		    if(null == group){
+		        groupBy.putObject("$group", new JsonObject()
+	            .putObject("_id", new JsonObject().putString("userId", "$userId"))
+	            .putObject("userCount", new JsonObject().putNumber("$min", 1)));
+		        groupByActiv.putObject("$group", new JsonObject()
+                .putObject("_id", new JsonObject())
+                .putObject("count", new JsonObject().putString("$sum", "$userCount")));
+		    } else {
+		        groupBy.putObject("$group", new JsonObject()
+                .putObject("_id", new JsonObject().putString("structures", "$structures").putString("profil", "$profil").putString("userId", "$userId"))
+                .putObject("userCount", new JsonObject().putNumber("$min", 1)));
+		        groupByActiv.putObject("$group", new JsonObject()
+                .putObject("_id", new JsonObject().putString("structures", "$_id.structures").putString("profil", "$_id.profil"))
+                .putObject("count", new JsonObject().putString("$sum", "$userCount")));
+		    }
+		} else {
+    		groupBy.putObject("$group", new JsonObject()
+    			.putObject("_id", getGroupByObject(new JsonObject(), group))
+    			.putObject("count", new JsonObject().putNumber("$sum", 1)));
+		}
 		pipeline.addObject(groupBy);
+		if (writtenIndicatorKey.equals("ACTIVATION")){
+		    pipeline.addObject(groupByActiv);
+		}
 
 		//Customize the request if needed
 		customizeGroupBy(groupBy);
 		customizePipeline(pipeline);
-
 		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
@@ -259,7 +281,8 @@ public class IndicatorMongoImpl extends Indicator{
 	 * </ul>
 	 * @param callBack : Handler called when processing is over.
 	 */
-	public void aggregate(final Handler<JsonObject> callBack){
+	@Override
+    public void aggregate(final Handler<JsonObject> callBack){
 		final Date start = new Date();
 
 		//Filtering by trace type + custom filters.
@@ -274,7 +297,8 @@ public class IndicatorMongoImpl extends Indicator{
 		}
 
 		final Handler<JsonObject> finalHandler = new Handler<JsonObject>(){
-			public void handle(JsonObject event) {
+			@Override
+            public void handle(JsonObject event) {
 				if(totalCalls.decrementAndGet() == 0){
 					final Date end = new Date();
 					log.info("[Aggregation]{"+writtenIndicatorKey+"} Took ["+(end.getTime() - start.getTime())+"] ms");
@@ -285,7 +309,7 @@ public class IndicatorMongoImpl extends Indicator{
 
 		//Count the total number of traces
 		executeAggregationQuery(null, finalHandler);
-
+		
 		//Process for each registered group
 		for(IndicatorGroup group : groups){
 			executeAggregationQuery(group, finalHandler);
