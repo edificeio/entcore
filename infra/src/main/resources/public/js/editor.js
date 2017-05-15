@@ -3152,6 +3152,12 @@ window.RTE = (function () {
                                     $('editor-toolbar').find(':focus').length === 0
                                 ) {
                                     editZone.html($compile(ngModel(scope))(scope));
+									editZone.find('i18n').each(function(index, item){
+										var parent = $(item).parent()[0];
+										var newEl = $('<span></span>').html($(item).html());
+										parent.insertBefore(newEl[0], item);
+										item.remove();
+									});
                                 }
                                 if(newValue !== htmlZone.val() && !htmlZone.is(':focus')){
                                     if(window.html_beautify){
