@@ -23,6 +23,7 @@ import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -266,6 +267,7 @@ public class TimelineHelper {
 		ConcurrentMap<String, String> eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
 		for (Map.Entry<String, JsonObject> e: i18ns.entrySet()) {
 			String json = e.getValue().encode();
+			if (StringUtils.isEmpty(json) || "{}".equals(StringUtils.stripSpaces(json))) continue;
 			String j = json.substring(1, json.length() - 1) + ",";
 			String resJson = j;
 			String oldJson = eventsI18n.putIfAbsent(e.getKey(), j);
