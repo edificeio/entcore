@@ -1,4 +1,4 @@
-import { Model } from 'toolkit'
+import { Model } from 'entcore-toolkit'
 import { UserDetailsModel } from './userdetails.model'
 import { globalStore } from '..'
 import { GroupModel } from './group.model'

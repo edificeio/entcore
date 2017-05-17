@@ -1,4 +1,4 @@
-import { Model } from 'toolkit'
+import { Model } from 'entcore-toolkit'
 
 export type GroupUser = {
     id: string,

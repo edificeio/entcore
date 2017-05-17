@@ -1,4 +1,4 @@
-import { Model } from 'toolkit'
+import { Model } from 'entcore-toolkit'
 import { GroupModel } from '../../store/models'
 
 export class UserDetailsModel extends Model<UserDetailsModel> {

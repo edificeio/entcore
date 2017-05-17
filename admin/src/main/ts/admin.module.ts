@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router'
 import { FormsModule } from '@angular/forms'
 
 import { SijilModule } from 'sijil'
-import { InfraComponentsModule, LabelsService } from 'infra-components/dist'
+import { InfraComponentsModule, LabelsService } from 'infra-components'
 import { UxModule } from './modules'
 
 import { AdminRoot, Portal, Home, StructureCard, StructureHome, ImportsExportsCard, QuickActionsCard, UserSearchCard } from './components'

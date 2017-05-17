@@ -1,5 +1,5 @@
 import { StructureModel } from '..'
-import { Collection } from 'toolkit'
+import { Collection } from 'entcore-toolkit'
 import { UserCollection } from './user.collection'
 
 export class StructureCollection extends Collection<StructureModel>{

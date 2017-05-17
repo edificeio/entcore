@@ -1,5 +1,5 @@
 import { SijilModule } from 'sijil'
-import { InfraComponentsModule } from 'infra-components/dist'
+import { InfraComponentsModule } from 'infra-components'
 import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'

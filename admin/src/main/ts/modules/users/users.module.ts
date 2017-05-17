@@ -1,4 +1,4 @@
-import { InfraComponentsModule } from 'infra-components/dist'
+import { InfraComponentsModule } from 'infra-components'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'

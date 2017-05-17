@@ -14,13 +14,13 @@ import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/merge'
 
 // Infra Components
-import 'infra-components/dist'
+import 'infra-components'
 
 // Sijil.js
 import 'sijil'
 
-// Toolkit
-import 'toolkit'
+// Entcore Toolkit
+import 'entcore-toolkit'
 
 //Jquery
 import 'jquery'
