@@ -25,6 +25,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Renders;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.DecodeException;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
@@ -56,8 +57,13 @@ public final class TimelineLambda {
 				if (!lazyEventsI18n.containsKey(language)) {
 					String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
 					i18n = i18n != null ? i18n : "}";
-					timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-					lazyEventsI18n.put(language, timelineI18n);
+					try {
+						timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+						lazyEventsI18n.put(language, timelineI18n);
+					} catch (DecodeException de) {
+						timelineI18n = new JsonObject();
+						log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+					}
 				} else {
 					timelineI18n = lazyEventsI18n.get(language);
 				}
