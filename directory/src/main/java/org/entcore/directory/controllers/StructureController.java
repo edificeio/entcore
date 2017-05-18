@@ -30,6 +30,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.AdmlOfStructure;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Ent;
@@ -425,6 +427,7 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/:structureId/metrics")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructure.class)
 	public void metrics(final HttpServerRequest request){
 		structureService.getMetrics(request.params().get("structureId"), defaultResponseHandler(request));
 	}
