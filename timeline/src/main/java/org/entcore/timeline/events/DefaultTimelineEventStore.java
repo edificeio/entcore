@@ -133,7 +133,6 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				@Override
 				public void handle(Message<JsonObject> message) {
 					result.handle(message.body());
-					markEventsAsRead(message, recipient);
 				}
 			});
 		} else {
