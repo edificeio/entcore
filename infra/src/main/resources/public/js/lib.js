@@ -1533,7 +1533,7 @@ var calendar = {
         model.calendar = cal;
     },
 	getHours: function(scheduleItem, day){
-		var startTime = 7;
+		var startTime = new Number(model.calendar.startOfDay);
 		var endTime = 20;
 
 		if(scheduleItem.beginning.dayOfYear() === day.index){
@@ -1592,6 +1592,17 @@ var calendar = {
 		}
 		this.week = data.week;
 		this.year = data.year;
+		
+	    // allow change default start of day
+		if(data.startOfDay && $.isNumeric(data.startOfDay)){
+			calendar.startOfDay = new Number(data.startOfDay);
+		}
+
+		// allow change default day height
+		if(data.dayHeight && $.isNumeric(data.dayHeight)){
+			calendar.dayHeight = new Number(data.dayHeight);
+		}
+
 
 	    // change of year in moment is buggy (last/first week is on the wrong year)
         // weird syntax is a workaround

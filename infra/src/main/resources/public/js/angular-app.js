@@ -735,7 +735,11 @@ module.directive('calendar', function($compile) {
         restrict: 'E',
         scope: true,
         templateUrl: '/' + infraPrefix + '/public/template/calendar.html',
-        controller: function($scope, $timeout) {
+        controller: function($scope, $timeout, $attrs) {
+
+            // allow changing default start of day and day height
+            model.calendar  = new calendar.Calendar({ week: moment().week(), startOfDay: $attrs.startOfDay, dayHeight: $attrs.dayHeight});
+
             var refreshCalendar = function() {
                 model.calendar.clearScheduleItems();
                 $scope.items = _.where(_.map($scope.items, function(item) {
@@ -778,17 +782,21 @@ module.directive('calendar', function($compile) {
                     if (moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7) {
                         model.calendar = new calendar.Calendar({
                             week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() + 1
-                        });
+                            year: moment(model.calendar.dayForWeek).year() + 1,
+                            startOfDay: $attrs.startOfDay,
+                            dayHeight: $attrs.dayHeight
                     } else if (moment(model.calendar.dayForWeek).week() === 53 && moment(model.calendar.dayForWeek).dayOfYear() < 7) {
                         model.calendar = new calendar.Calendar({
                             week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() - 1
-                        });
+                            year: moment(model.calendar.dayForWeek).year() - 1,
+                            startOfDay: $attrs.startOfDay,
+                            dayHeight: $attrs.dayHeight
                     } else {
                         model.calendar = new calendar.Calendar({
                             week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year()
+                            year: moment(model.calendar.dayForWeek).year(),
+                            startOfDay: $attrs.startOfDay,
+                            dayHeight: $attrs.dayHeight
                         });
                     }
                     model.trigger('calendar.date-change');
@@ -800,7 +808,9 @@ module.directive('calendar', function($compile) {
                     calendar.endOfDay--;
                     model.calendar = new calendar.Calendar({
                         week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
+                        year: moment(model.calendar.dayForWeek).year(),
+                        startOfDay: $attrs.startOfDay,
+                        dayHeight: $attrs.dayHeight
                     });
                     refreshCalendar();
                 };
@@ -810,7 +820,9 @@ module.directive('calendar', function($compile) {
                     calendar.endOfDay++;
                     model.calendar = new calendar.Calendar({
                         week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
+                        year: moment(model.calendar.dayForWeek).year(),
+                        startOfDay: $attrs.startOfDay,
+                        dayHeight: $attrs.dayHeight
                     });
                     refreshCalendar();
                 };
