@@ -24,11 +24,13 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.infra.services.EventStoreService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.voidResponseHandler;
@@ -36,6 +38,11 @@ import static org.entcore.common.http.response.DefaultResponseHandler.voidRespon
 public class EventStoreController extends BaseController {
 
 	private EventStoreService eventStoreService;
+	private JsonArray userBlackList;
+
+	public EventStoreController (JsonObject eventConfig) {
+        this.userBlackList = eventConfig.getArray("user-blacklist", new JsonArray());
+	}
 
 	@Post("/event/store")
 	@SecuredAction("event.store")
@@ -43,7 +50,11 @@ public class EventStoreController extends BaseController {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				eventStoreService.store(event, voidResponseHandler(request));
+			    if (!authorizedUser(event)) {
+                    Renders.ok(request);
+                } else {
+                    eventStoreService.store(event, voidResponseHandler(request));
+                }
 			}
 		});
 	}
@@ -60,21 +71,34 @@ public class EventStoreController extends BaseController {
 
 	@BusAddress("event.store")
 	public void eventStore(final Message<JsonObject> message) {
-		eventStoreService.store(message.body(), new Handler<Either<String, Void>>() {
-			@Override
-			public void handle(Either<String, Void> event) {
-				if (event.isRight()) {
-					message.reply(new JsonObject().putString("status", "ok"));
-				} else {
-					message.reply(new JsonObject().putString("status", "error")
-							.putString("message", event.left().getValue()));
+		if (!authorizedUser(message.body())) {
+			message.reply(new JsonObject().putString("status", "ok"));
+		} else {
+			eventStoreService.store(message.body(), new Handler<Either<String, Void>>() {
+				@Override
+				public void handle(Either<String, Void> event) {
+					if (event.isRight()) {
+						message.reply(new JsonObject().putString("status", "ok"));
+					} else {
+						message.reply(new JsonObject().putString("status", "error")
+								.putString("message", event.left().getValue()));
+					}
 				}
-			}
-		});
+			});
+		}
+	}
+
+	@BusAddress("event.blacklist")
+	public void getBlacklist(final Message<Void> message) {
+		message.reply(this.userBlackList);
 	}
 
 	public void setEventStoreService(EventStoreService eventStoreService) {
 		this.eventStoreService = eventStoreService;
+	}
+
+	private boolean authorizedUser (JsonObject event) {
+		return !this.userBlackList.contains(event.getString("userId"));
 	}
 
 }

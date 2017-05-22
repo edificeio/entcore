@@ -23,7 +23,6 @@ import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
-
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
@@ -130,8 +129,9 @@ public class Starter extends BaseServer {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
+		JsonObject eventConfig = config.getObject("eventConfig", new JsonObject());
 		EventStoreService eventStoreService = new MongoDbEventStore();
-		EventStoreController eventStoreController = new EventStoreController();
+		EventStoreController eventStoreController = new EventStoreController(eventConfig);
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
 		addController(new MonitoringController());
