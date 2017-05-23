@@ -148,6 +148,10 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			@Override
 			public void handle(String path) {
 				if (path != null) {
+					if (ids.length == 0) {
+						handler.handle(true);
+						return;
+					}
 					storage.writeToFileSystem(ids, path, alias, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
