@@ -77,6 +77,8 @@ public class TimelineController extends BaseController {
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
 	private TimelineHelper timelineHelper;
+	private JsonArray eventTypes; // cache to improve perfs
+	private boolean refreshTypesCache;
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -85,6 +87,7 @@ public class TimelineController extends BaseController {
 		timelineHelper = new TimelineHelper(vertx, eb, container);
 		antiFlood = new TTLSet<>(container.config().getLong("antiFloodDelay", 3000l),
 				vertx, container.config().getLong("antiFloodClear", 3600 * 1000l));
+		refreshTypesCache = container.config().getBoolean("refreshTypesCache", false);
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -233,13 +236,18 @@ public class TimelineController extends BaseController {
 	@Get("/types")
 	@SecuredAction(value = "timeline.auth", type = ActionType.AUTHENTICATED)
 	public void listTypes(final HttpServerRequest request) {
-		store.listTypes(new Handler<JsonArray>() {
+		if (eventTypes != null) {
+			renderJson(request, eventTypes);
+		} else {
+			store.listTypes(new Handler<JsonArray>() {
 
-			@Override
-			public void handle(JsonArray res) {
-				renderJson(request, res);
-			}
-		});
+				@Override
+				public void handle(JsonArray res) {
+					renderJson(request, res);
+					eventTypes = res;
+				}
+			});
+		}
 	}
 
 	@Post("/publish")
@@ -611,6 +619,9 @@ public class TimelineController extends BaseController {
 						handler.handle(result);
 					}
 				});
+				if (refreshTypesCache && eventTypes != null && !eventTypes.contains(json.getString("type"))) {
+					eventTypes = null;
+				}
 			} else {
 				message.reply(new JsonObject().putString("status", "error")
 						.putString("message", "flood"));
