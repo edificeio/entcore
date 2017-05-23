@@ -9,7 +9,7 @@
     "legacy-indexes" : [{ "for" : "node", "name" : "node_auto_index", "type" : "fulltext" }]
   },
   "app-registry": {
-    "name": "org.entcore~app-registry~1.27.1",
+    "name": "org.entcore~app-registry~1.28-SNAPSHOT",
     "config": {
 		"main":"org.entcore.registry.AppRegistry",
 		"auto-redeploy": false,
@@ -37,7 +37,7 @@
   }],
   "one-modules": [
     {
-      "name": "org.entcore~auth~1.27.1",
+      "name": "org.entcore~auth~1.28-SNAPSHOT",
       "config": {
         "authenticationServer": {
           "loginURL": "http://localhost:8090/auth/login",
@@ -49,13 +49,13 @@
       }
     },
     {
-      "name": "org.entcore~directory~1.27.1",
+      "name": "org.entcore~directory~1.28-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090"
       }
     },
     {
-      "name": "org.entcore~workspace~1.27.1",
+      "name": "org.entcore~workspace~1.28-SNAPSHOT",
       "config": {
         "host": "http://localhost:8090",
         "userbook-host": "http://localhost:8090",
@@ -64,13 +64,13 @@
       }
     },
     {
-      "name": "org.entcore~session~1.27.1"
+      "name": "org.entcore~session~1.28-SNAPSHOT"
     },
     {
-      "name": "org.entcore~communication~1.27.1"
+      "name": "org.entcore~communication~1.28-SNAPSHOT"
     },
     {
-      "name": "org.entcore~portal~1.27.1",
+      "name": "org.entcore~portal~1.28-SNAPSHOT",
       "config": {
         "urls": {
           "timeline": "http://localhost:8090/timeline",
@@ -102,7 +102,7 @@
       }
     },
     {
-      "name": "org.entcore~conversation~1.27.1",
+      "name": "org.entcore~conversation~1.28-SNAPSHOT",
       "config": {
         "sql": true,
         "db-schema": "conversation",
@@ -113,22 +113,22 @@
       }
     },
 	{
-	  "name": "org.entcore~feeder~1.27.1",
+	  "name": "org.entcore~feeder~1.28-SNAPSHOT",
 	  "config": {
 	  }
     },
     {
-	  "name": "org.entcore~archive~1.27.1",
+	  "name": "org.entcore~archive~1.28-SNAPSHOT",
 	  "config": {
 	  }
     },
 	{
-	  "name": "org.entcore~cas~1.27.1",
+	  "name": "org.entcore~cas~1.28-SNAPSHOT",
 	  "config": {
 	  }
 	},
     {
-      "name":"org.entcore~timeline~1.27.1",
+      "name":"org.entcore~timeline~1.28-SNAPSHOT",
       "config": {
       }
     }
