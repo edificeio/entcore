@@ -7,6 +7,7 @@ $main: rgb(42, 156, 200);
 // $main-light: rgb(99, 218, 247);
 // $main-dark: darken($main, 5%);
 $main-light: lighten($main, 15%);
+$main-lighter: lighten($main, 40%);
 $main-dark: darken($main, 10%);
 
 $accent: rgb(255, 131, 82);
@@ -61,7 +62,7 @@ button {
         margin-left: 10px;
     }
 
-    &:not(:disabled) { 
+    &:not(:disabled) {
         cursor: pointer;
         color: $accent;
     }
@@ -395,11 +396,13 @@ a.old-console {
     padding-left: 20px;
 }
 
-/* Light boxes */
+/* Light box component */
 light-box {
     div[content] {
-        border-radius: 10px;
+        border-radius: 3px;
         box-shadow: 0px 0px 5px white;
+        max-height: 90% !important;
+        overflow: auto !important;
     }
 
     &.inner-list {
@@ -433,136 +436,7 @@ body > div.tooltip.shown {
     opacity: 1;
 }
 
-/* Portal */
-ux-portal {
-    > header {
-        color: white;
-        position: fixed !important;
-        z-index: 9;
-        background-color: $main;
-        padding: 15px;
-        box-sizing: border-box;
-        height: 50px;
-        box-shadow: 0px 0px 2px black;
-        padding-right: 0px;
-
-        span {
-            font-size: 1.5em;
-        }
-    }
-
-    side-panel {
-        > div {
-            left: -400px !important;
-            width: 400px !important;
-            top: 50px !important;
-            height: calc(100% - 50px);
-            border-right: 2px solid #AAA;
-            box-sizing: border-box;
-        }
-
-        input[type="search"] {
-            border-bottom: 1px solid white;
-            color: white;
-
-            &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4); }
-            &::placeholder{ color:rgba(250,250,250,0.4); }
-            &:-ms-input-placeholder{ color:rgba(250,250,250,0.4); }
-            &::-moz-placeholder { color:rgba(250,250,250,0.4); }
-        }
-    }
-
-    div[header-left] > * {
-        margin-right: 20px;
-    }
-    div[header-right] > * {
-        margin-left: 20px;
-    }
-    div[header-left], div[header-right] {
-        a {
-            color: white;
-            // &:visited, &:active { color: initial; }
-        }
-        i {
-            font-size: 1.5em;
-            cursor: pointer;
-            padding: 13px 10px;
-            transition: color 0.25s, background-color 0.25s;
-
-            &:hover {
-                color: $accent;
-            }
-
-            &.active {
-                background-color: $main-light;
-                color: $accent;
-            }
-        }
-        span.link {
-            cursor: pointer;
-        }
-    }
-    div[section] {
-        position: relative;
-        left: 0px;
-        top: 50px;
-    }
-    div[section] div.portal-body {
-        padding: 0px 5%;
-    }
-
-    div[section] div.welcome-message {
-        background-color: rgba(crimson, 0.5);
-        color: white;
-        padding: 10px 5%;
-
-        a.old-console {
-            background-color: rgba(crimson, 0.7);
-            padding: 13px 0px;
-
-            &:hover {
-                background-color: $accent;
-            }
-
-            i {
-                font-size: 1.5em;
-                padding: 10px 10px;
-            }
-        }
-    }
-}
-
-/* Admin Home */
-admin-home {
-    h3 {
-        font-weight: normal;
-
-        i {
-            padding: 10px;
-            background-color: $main;
-            color: white;
-        }
-    }
-}
-
-/* Home Cards */
-quick-actions-card {
-    background-color: white;
-}
-
-user-search-card {
-    background-color: white;
-}
-
-structure-card {
-    background-color: white;
-}
-
-imports-exports-card {
-    background-color: white;
-}
-
-/* Side panel */
+/* Side panel component */
 
 side-panel {
     > div { background-color: $main; }
@@ -572,7 +446,7 @@ side-panel {
     }
 }
 
-/* Item tree */
+/* Item tree component */
 item-tree {
 
     ul {
@@ -744,7 +618,7 @@ div.panel-message {
 
 /*** Lists ***/
 
-/* Generic lists */
+/* Generic lists component */
 list-component {
     li {
         &:hover {
@@ -758,29 +632,6 @@ list-component {
 
         &.disabled {
             color: #CCC;
-        }
-    }
-}
-
-/* Users root */
-users-root {
-    div.flex-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-
-        button {
-            background-color: $accent;
-            color: white;
-            padding: 10px 10px;
-
-            &:hover {
-                background-color: $accent-dark;
-            }
-
-            &.hidden {
-                display: none;
-            }
         }
     }
 }
@@ -815,28 +666,139 @@ user-list {
     }
 }
 
-/* Group users list */
-group-users-list list-component {
-    div.toolbar {
-        border-bottom: 1px solid #ccc;
+/* Portal component */
+ux-portal {
+    > header {
+        color: white;
+        position: fixed !important;
+        z-index: 9;
+        background-color: $main;
         padding: 15px;
-        margin-bottom: 10px;
+        box-sizing: border-box;
+        height: 50px;
+        box-shadow: 0px 0px 2px black;
+        padding-right: 0px;
 
-        i { @extend .action; }
-
-        .toolbar-right {
-            font-size: 1.2em;
-            float: right;
+        span {
+            font-size: 1.5em;
         }
     }
 
-    ul > li:first-child{
-        border-top: none !important;
+    side-panel {
+        > div {
+            left: -400px !important;
+            width: 400px !important;
+            top: 50px !important;
+            height: calc(100% - 50px);
+            border-right: 2px solid #AAA;
+            box-sizing: border-box;
+        }
+
+        input[type="search"] {
+            border-bottom: 1px solid white;
+            color: white;
+
+            &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4); }
+            &::placeholder{ color:rgba(250,250,250,0.4); }
+            &:-ms-input-placeholder{ color:rgba(250,250,250,0.4); }
+            &::-moz-placeholder { color:rgba(250,250,250,0.4); }
+        }
+    }
+
+    div[header-left] > * {
+        margin-right: 20px;
+    }
+    div[header-right] > * {
+        margin-left: 20px;
+    }
+    div[header-left], div[header-right] {
+        a {
+            color: white;
+            // &:visited, &:active { color: initial; }
+        }
+        i {
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 13px 10px;
+            transition: color 0.25s, background-color 0.25s;
+
+            &:hover {
+                color: $accent;
+            }
+
+            &.active {
+                background-color: $main-light;
+                color: $accent;
+            }
+        }
+        span.link {
+            cursor: pointer;
+        }
+    }
+    div[section] {
+        position: relative;
+        left: 0px;
+        top: 50px;
+    }
+    div[section] div.portal-body {
+        padding: 0px 5%;
+    }
+
+    div[section] div.welcome-message {
+        background-color: rgba(crimson, 0.5);
+        color: white;
+        padding: 10px 5%;
+
+        a.old-console {
+            background-color: rgba(crimson, 0.7);
+            padding: 13px 0px;
+
+            &:hover {
+                background-color: $accent;
+            }
+
+            i {
+                font-size: 1.5em;
+                padding: 10px 10px;
+            }
+        }
     }
 }
 
-/* Groups root */
-groups-root {
+/*** Admin console components ***/
+
+/* Admin Home component */
+admin-home {
+    h3 {
+        font-weight: normal;
+
+        i {
+            padding: 10px;
+            background-color: $main;
+            color: white;
+        }
+    }
+}
+
+/* Home Cards components */
+quick-actions-card {
+    background-color: white;
+}
+
+user-search-card {
+    background-color: white;
+}
+
+structure-card {
+    background-color: white;
+}
+
+imports-exports-card {
+    background-color: white;
+}
+
+/* Users component */
+users-root {
     div.flex-header {
         display: flex;
         justify-content: space-between;
@@ -858,7 +820,6 @@ groups-root {
     }
 }
 
-/* User detail */
 user-detail {
     .panel-header {
         button {
@@ -893,14 +854,12 @@ user-detail {
     }
 }
 
-/* User Filters */
 user-filters {
     .fa {
         font-size: $fontawesome-size;
     }
 }
 
-/* User create */
 user-create {
     panel-section {
         form {
@@ -918,15 +877,15 @@ user-create {
                 flex: 1;
 
                 margin-right: 50px;
-                
+
                 ul {
-                    overflow-y: scroll; 
+                    overflow-y: scroll;
                     height: 150px;
 
                     li {
                         cursor: pointer;
                         transition: background-color 0.25s;
-                        
+
                         &:hover {
                             background: $user-li-hover;
                         }
@@ -935,7 +894,7 @@ user-create {
             }
             div.children-list {
                 flex: 2;
-                
+
                 h3 {
                     line-height: 40px;
                     margin-top: 5px;
@@ -993,6 +952,48 @@ user-create {
     }
 }
 
+/* Groups components */
+groups-root {
+    div.flex-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+
+        button {
+            background-color: $accent;
+            color: white;
+            padding: 10px 10px;
+
+            &:hover {
+                background-color: $accent-dark;
+            }
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}
+
+group-users-list list-component {
+    div.toolbar {
+        border-bottom: 1px solid #ccc;
+        padding: 15px;
+        margin-bottom: 10px;
+
+        i { @extend .action; }
+
+        .toolbar-right {
+            font-size: 1.2em;
+            float: right;
+        }
+    }
+
+    ul > li:first-child{
+        border-top: none !important;
+    }
+}
+
 group-create {
     panel-section {
         button {
@@ -1020,7 +1021,145 @@ group-create {
     }
 }
 
-/* Multi-combo */
+group-manage-users {
+    h2 {
+        font-size: 1.6em;
+        font-weight: normal;
+        color: $main-dark;
+        padding: 10px 15px;
+    }
+
+    .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        div.user-toolbar {
+            > i { @extend .action; }
+
+            .toolbar-right {
+                font-size: 1.2em;
+                float: right;
+            }
+
+            button {
+                &.select-all {
+                    padding: 5px 5px;
+                    margin: 5px 0 5px 40px;
+                }
+
+                &.deselect-all {
+                    padding: 5px 5px;
+                    margin: 5px 0;
+                }
+            }
+        }
+
+        group-input-users {
+            align-self: baseline;
+
+            & > div {
+                padding: 0 20px;
+            }
+
+            div.button-add {
+                position: absolute;
+                top: 50%;
+                left: 45%;
+
+                button {
+                    text-align: center;
+                    border-radius: 25px;
+                    width: 50px;
+                    height: 50px;
+                    padding: 0px 0px;
+                    font-size: 1.5em;
+
+                    &:not(:disabled) {
+                        background-color: $accent;
+                        color: #fff;
+
+                        &:hover {
+                            background-color: $accent-dark;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        group-output-users {
+            align-self: baseline;
+
+            .header {
+                font-size: 1.3em;
+                color: $main;
+            }
+
+            & > div {
+                padding: 0 20px 0 130px;
+            }
+
+            div.user-toolbar {
+                > i { @extend .action;}
+
+                .toolbar-right {
+                    font-size: 1.2em;
+                    float: right;
+                }
+
+                button {
+                    padding: 5px 5px;
+                    margin: 5px 0;
+
+                    &.select-all {
+                        margin-left: 40px;
+
+                    }
+                }
+            }
+
+            div.button-remove {
+                position: absolute;
+                top: 50%;
+                right: 45%;
+
+                button {
+                    text-align: center;
+                    border-radius: 25px;
+                    width: 50px;
+                    height: 50px;
+                    padding: 0px 0px;
+                    font-size: 1.5em;
+
+                    &:not(:disabled) {
+                        background-color: $main;
+                        color: #fff;
+
+                        &:hover {
+                            background-color: $main-dark;
+                        }
+                    }
+
+                }
+            }
+
+            list-component li {
+                &:hover {
+                    background-color: $main-lighter;
+                }
+
+                &.selected {
+                    background-color: $main;
+                    color: white;
+                }
+            }
+
+        }
+    }
+}
+
+/* Multi-combo component */
 multi-combo {
     >button {
         min-width: 200px !important;
@@ -1050,7 +1189,7 @@ multi-combo {
     >div {
         padding: 0px 10px;
         margin-top: -2px;
-        
+
         &:not(.hidden) {
             border: 1px solid #ddd !important;
         }
@@ -1172,11 +1311,11 @@ multi-combo {
     }
 }
 
-/* Datepicker */
+/* Datepicker component */
 div.flatpickr {
     a {
         cursor: pointer;
-        
+
         i:hover {
             color: $accent;
         }

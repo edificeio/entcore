@@ -942,6 +942,19 @@ public class ManualFeeder extends BusModBase {
 			}
 		});
 	}
+	
+	public void addGroupUsers(Message<JsonObject> message) {
+		final String groupId = getMandatoryString("groupId", message);
+		final JsonArray userIds = message.body().getArray("userIds");
+		
+		if (userIds == null || groupId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				Group.addUsers(groupId, userIds, tx);
+			}
+		});
+	}
 
 	public void structureAttachment(Message<JsonObject> message) {
 		final String structureId = getMandatoryString("structureId", message);

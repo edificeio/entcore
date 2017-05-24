@@ -36,5 +36,6 @@ public interface GroupService {
 	void deleteManual(String groupId, Handler<Either<String, JsonObject>> result);
 
 	void list(String structureId, String type, boolean subGroups, Handler<Either<String, JsonArray>> results);
-
+	
+	void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
 }

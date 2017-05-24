@@ -7,8 +7,15 @@ import { NgModule } from '@angular/core'
 import { SijilModule } from 'sijil'
 import { UxModule } from '..'
 import { routes } from './routing/routes'
-//import { declarations, providers } from './module.properties'
-import { GroupDetail, GroupsRoot, GroupsTypeView, GroupUsersList, GroupCreate } from './components'
+import {
+    GroupsRoot,
+    GroupDetail,
+    GroupManageUsers,
+    GroupInputUsers,
+    GroupOutputUsers,
+    GroupUsersList,
+    GroupsTypeView,
+    GroupCreate } from './components'
 import { GroupResolve, GroupsResolve } from './routing'
 import { GroupsStore } from './store'
 
@@ -22,9 +29,12 @@ import { GroupsStore } from './store'
         RouterModule.forChild(routes)
     ],
     declarations: [
-        GroupDetail,
-        GroupUsersList,
         GroupsRoot,
+        GroupDetail,
+        GroupManageUsers,
+        GroupInputUsers,
+        GroupOutputUsers,
+        GroupUsersList,
         GroupsTypeView,
         GroupCreate
     ],

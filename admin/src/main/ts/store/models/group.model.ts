@@ -1,15 +1,5 @@
 import { Model } from 'entcore-toolkit'
-
-export type GroupUser = {
-    id: string,
-    firstName: string,
-    lastName: string,
-    type: string,
-    profile: string,
-    login: string,
-    username: string,
-    structures: {id: string, name: string}[]
-}
+import { UserModel } from './user.model'
 
 export class GroupModel extends Model<GroupModel> {
 
@@ -19,19 +9,23 @@ export class GroupModel extends Model<GroupModel> {
     type?: string
     classes?: {id: string, name: string}[]
     structureId?: string
-    users: GroupUser[]
+    users: UserModel[]
 
     constructor() {
         super({
             create: '/directory/group'
         })
-        this.users = new Array<GroupUser>()
+        this.users = new Array<UserModel>()
     }
 
     syncUsers() {
-        return this.http.get(`/directory/user/group/${this.id}`).then(res => {
+        return this.http.get(`/directory/user/admin/list?groupId=${this.id}`).then(res => {
             this.users = res.data
         })
+    }
+
+    addUsers(users: UserModel[]) {
+        return this.http.post(`/directory/group/${this.id}/users`, {"userIds": users.map(u => u.id)})
     }
 
     toJSON() {

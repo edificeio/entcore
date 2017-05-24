@@ -25,6 +25,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -38,6 +39,12 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+
+import java.util.List;
+
+import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 
 public class GroupController extends BaseController {
 
@@ -103,6 +110,36 @@ public class GroupController extends BaseController {
 		}
 	}
 
+	@Post("/group/:groupId/users")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void addUsers(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			bodyToJson(request, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject body) {
+					final JsonArray userIds = body.getArray("userIds");
+					groupService.addUsers(groupId, userIds, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> res) {
+							if (res.isRight()) {
+								JsonObject j = new JsonObject()
+										.putString("action", "setCommunicationRules")
+										.putString("groupId", groupId);
+								eb.send("wse.communication", j);
+								ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+								renderJson(request, res.right().getValue());
+							} else {
+								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+							}
+						}
+					});
+				}
+			});
+		}
+	}
+	
 	public void setGroupService(GroupService groupService) {
 		this.groupService = groupService;
 	}

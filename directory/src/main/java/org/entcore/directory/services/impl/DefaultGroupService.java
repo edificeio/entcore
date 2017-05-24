@@ -129,5 +129,14 @@ public class DefaultGroupService implements GroupService {
 				"RETURN g.id as id, g.name as name, g.displayName as displayName ";
 		neo.execute(query, params, validResultHandler(results));
 	}
+	
+	@Override
+	public void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-group-users")
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
 
 }
