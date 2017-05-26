@@ -240,7 +240,12 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	@Override
 	public void translateTimeline(JsonArray i18nKeys, String domain, String language, Handler<JsonArray> handler) {
 		String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		JsonObject timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+		final JsonObject timelineI18n;
+		if (i18n == null) {
+			timelineI18n = new JsonObject();
+		} else {
+			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+		}
 		timelineI18n.mergeIn(I18n.getInstance().load(language, domain));
 		JsonArray translations = new JsonArray();
 		for(Object keyObj : i18nKeys){
@@ -672,7 +677,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 		@Override
 	public void getNotificationsDefaults(final Handler<JsonArray> handler) {
-		configService.list(new Handler<Either<String,JsonArray>>() {
+		configService.list(new Handler<Either<String, JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isLeft()) {
 					handler.handle(null);
@@ -683,7 +688,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					for (String key : registeredNotifications.keySet()) {
 						JsonObject notif = new JsonObject(registeredNotifications.get(key));
 						notif.putString("key", key);
-						for(Object notifConfigObj: config){
+						for (Object notifConfigObj : config) {
 							JsonObject notifConfig = (JsonObject) notifConfigObj;
 							if (notifConfig.getString("key", "").equals(key)) {
 								notif.putString("defaultFrequency",
@@ -716,7 +721,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.putString("additionalCollectFields", ", language: uac.language")
 				.putArray("userIds", userIds), new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
-				if(!"error".equals(event.body().getString("status"))){
+				if (!"error".equals(event.body().getString("status"))) {
 					handler.handle(event.body().getArray("results"));
 				} else {
 					handler.handle(null);
@@ -785,7 +790,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				if("error".equals(event.body().getString("status", "error"))){
+				if ("error".equals(event.body().getString("status", "error"))) {
 					handler.handle(new JsonArray());
 				} else {
 					JsonArray r = event.body().getObject("result", new JsonObject()).getArray("result");
