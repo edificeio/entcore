@@ -109,17 +109,35 @@ public class SecurityHookRender implements HookProcess {
 			handler.handle(null);
 			return;
 		}
-		final String token = UUID.randomUUID().toString();
+
+		String token = null;
+		final String xsrfToken;
 		final String userId = session.getString("userId");
-		UserUtils.addSessionAttribute(eb, userId, "xsrf-token", token, new Handler<Boolean>() {
-			@Override
-			public void handle(Boolean s) {
-				if (Boolean.TRUE.equals(s)) {
-					CookieHelper.set("XSRF-TOKEN", token, request);
-				}
-				handler.handle(null);
+		if (session.getObject("cache") != null) {
+			token = session.getObject("cache").getString("xsrf-token");
+			if (token == null) { // TODO remove when support session cache persistence
+				String t = CookieHelper.get("XSRF-TOKEN", request);
+				xsrfToken = ((t != null) ? t : UUID.randomUUID().toString());
+			} else {
+				xsrfToken = token;
 			}
-		});
+		} else {
+			xsrfToken = UUID.randomUUID().toString();
+		}
+
+		if (token == null) {
+			UserUtils.addSessionAttribute(eb, userId, "xsrf-token", xsrfToken, new Handler<Boolean>() {
+				@Override
+				public void handle(Boolean s) {
+					if (Boolean.TRUE.equals(s)) {
+						CookieHelper.set("XSRF-TOKEN", xsrfToken, request);
+					}
+					handler.handle(null);
+				}
+			});
+		} else {
+			handler.handle(null);
+		}
 	}
 
 }
