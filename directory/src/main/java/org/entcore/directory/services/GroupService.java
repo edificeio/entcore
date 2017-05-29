@@ -38,4 +38,6 @@ public interface GroupService {
 	void list(String structureId, String type, boolean subGroups, Handler<Either<String, JsonArray>> results);
 	
 	void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
+	
+	void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
 }

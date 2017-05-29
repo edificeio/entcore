@@ -138,5 +138,14 @@ public class DefaultGroupService implements GroupService {
 				.putArray("userIds", userIds);
 		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
+	
+	@Override
+	public void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-group-users")
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
 
 }

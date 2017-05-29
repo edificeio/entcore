@@ -110,7 +110,7 @@ public class GroupController extends BaseController {
 		}
 	}
 
-	@Post("/group/:groupId/users")
+	@Put("/group/:groupId/users/add")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void addUsers(final HttpServerRequest request) {
@@ -144,4 +144,19 @@ public class GroupController extends BaseController {
 		this.groupService = groupService;
 	}
 
+	@Put("/group/:groupId/users/delete")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void removeUsers(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			bodyToJson(request, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject body) {
+					final JsonArray userIds = body.getArray("userIds");
+					groupService.removeUsers(groupId, userIds, defaultResponseHandler(request));
+				}
+			});
+		}
+	}
 }
