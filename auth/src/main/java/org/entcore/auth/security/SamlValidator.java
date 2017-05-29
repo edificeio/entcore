@@ -258,7 +258,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		String lr = SamlUtils.marshallLogoutRequest(logoutRequest);
 
 		return sloUri + "?SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(lr), "UTF-8") +
-				"&RelayState=NULL";
+				"&RelayState=" + config.getString("saml-slo-relayState", "NULL");
 	}
 
 	private String getAuthnRequestUri(String idp) {

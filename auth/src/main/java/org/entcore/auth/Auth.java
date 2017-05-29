@@ -78,7 +78,8 @@ public class Auth extends BaseServer {
 							JsonObject conf = new JsonObject()
 									.putString("saml-metadata-folder", samlMetadataFolder)
 									.putString("saml-private-key", config.getString("saml-private-key"))
-									.putString("saml-issuer", config.getString("saml-issuer"));
+									.putString("saml-issuer", config.getString("saml-issuer"))
+									.putString("saml-slo-relayState", config.getString("saml-slo-relayState", "NULL"));
 							container.deployWorkerVerticle(SamlValidator.class.getName(), conf);
 							samlController.setEventStore(eventStore);
 							samlController.setUserAuthAccount(userAuthAccount);
