@@ -25,6 +25,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
@@ -61,7 +62,6 @@ public abstract class BaseServer extends Server {
 	private RepositoryHandler repositoryHandler;
 	private SearchingHandler searchingHandler;
 	private String schema;
-	private boolean oauthClientGrant = false;
 	private String contentSecurityPolicy;
 
 	@Override
@@ -70,6 +70,8 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start();
+
+		initFilters();
 
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 
@@ -95,7 +97,7 @@ public abstract class BaseServer extends Server {
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
-			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider, oauthClientGrant));
+			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
 		}
 		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
 		vertx.eventBus().registerLocalHandler("search.searching", this.searchingHandler);
@@ -105,6 +107,12 @@ public abstract class BaseServer extends Server {
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
+	}
+
+	protected void initFilters() {
+		clearFilters();
+		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
+				getEventBus(vertx), getPathPrefix(config)), new BasicFilter()));
 	}
 
 	@Override
@@ -285,7 +293,4 @@ public abstract class BaseServer extends Server {
 		return schema;
 	}
 
-	public void setOauthClientGrant(boolean oauthClientGrant) {
-		this.oauthClientGrant = oauthClientGrant;
-	}
 }

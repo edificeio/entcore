@@ -50,8 +50,6 @@ public class Auth extends BaseServer {
 	@Override
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
-		clearFilters();
-		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
 		super.start();
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, container.logger())));
 

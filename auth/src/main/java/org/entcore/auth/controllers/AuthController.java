@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -107,7 +108,6 @@ public class AuthController extends BaseController {
 	private ProtectedResource protectedResource;
 	private UserAuthAccount userAuthAccount;
 	private static final Tracer trace = TracerFactory.getTracer("auth");
-	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
@@ -115,6 +115,7 @@ public class AuthController extends BaseController {
 	private Pattern passwordPattern;
 	private String smsProvider;
 	private boolean slo;
+	private List<String> internalAddress;
 
 
 	@Override
@@ -153,6 +154,7 @@ public class AuthController extends BaseController {
 		} else {
 			invalidEmails = new HashMap<>();
 		}
+		internalAddress = container.config().getArray("internalAddress", new JsonArray().add("localhost").add("127.0.0.1")).toList();
 	}
 
 	@Get("/oauth2/auth")
@@ -163,7 +165,7 @@ public class AuthController extends BaseController {
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
-			if (scope != null && (scope.contains(USERINFO_SCOPE) || scope.contains("openid"))) {
+			if (isNotEmpty(scope)) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				data.validateClientById(clientId, new Handler<Boolean>() {
 
@@ -482,6 +484,31 @@ public class AuthController extends BaseController {
 					} else {
 						info = adapter.getInfo(infos, null);
 					}
+					renderJson(request, info);
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("/internal/userinfo")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void internalUserInfo(final HttpServerRequest request) {
+		if (!(request instanceof SecureHttpServerRequest) || !internalAddress.contains(getIp(request))) {
+			forbidden(request);
+			return;
+		}
+		UserUtils.getSessionByUserId(eb, ((SecureHttpServerRequest)request).getAttribute("remote_user"), new org.vertx.java.core.Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject infos) {
+				if (infos != null) {
+					JsonObject info;
+					UserInfoAdapter adapter = ResponseAdapterFactory.getUserInfoAdapter(request);
+					SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
+					String clientId = sr.getAttribute("client_id");
+					info = adapter.getInfo(infos, clientId);
 					renderJson(request, info);
 				} else {
 					unauthorized(request);

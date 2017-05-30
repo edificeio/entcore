@@ -45,9 +45,6 @@ public class Timeline extends BaseServer {
 
 	@Override
 	public void start() {
-		clearFilters();
-		setOauthClientGrant(true);
-		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(getEventBus(vertx))));
 		super.start();
 
 		final Map<String, String> registeredNotifications;
