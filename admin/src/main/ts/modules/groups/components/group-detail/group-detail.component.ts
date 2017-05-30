@@ -20,7 +20,7 @@ import { GroupsStore } from '../../store'
                 </group-manage-users>
             </light-box>
 
-            <group-users-list [selectedGroup]="groupsStore.group">
+            <group-users-list [users]="groupsStore.group?.users">
                 <strong class="badge">
                     {{ groupsStore.group?.users?.length }}
                     {{ 'members' | translate:{ count: groupsStore.group?.users?.length } | lowercase }}

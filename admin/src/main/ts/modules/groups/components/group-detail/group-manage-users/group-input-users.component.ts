@@ -1,17 +1,19 @@
 import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, DoCheck,  EventEmitter } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { UserListService } from '../../../../../services'
+import { UserListService, LoadingService, NotifyService } from '../../../../../services'
 import { GroupsStore } from '../../../store'
 import { UserModel } from '../../../../../store/models'
 
 @Component({
     selector: 'group-input-users',
     template: `
-        <div class="input-users">
+        <div class="structure-choice">
             <select>
                 <option>Test</option>
             </select>
+        </div>
 
+        <div class="flex-row-wrap">
             <list-component
                 [model]="model"
                 [filters]="filterUsers"
@@ -52,10 +54,10 @@ import { UserModel } from '../../../../../store/models'
                 </div>
             </list-component>
 
-            <div class="button-add">
-                <button (click)="addUsers()"
-                    [disabled]="selectedUsers.length === 0">+</button>
-            </div>
+            <button (click)="addUsers()"
+                [disabled]="selectedUsers.length === 0"
+                class="add"
+                [title]="'group.manage.users.button.add' | translate">+</button>
         </div>
     `,
     providers: [ UserListService ],
@@ -68,6 +70,8 @@ export class GroupInputUsers implements DoCheck {
 
     constructor(private groupsStore: GroupsStore,
         private userLS: UserListService,
+        private ls: LoadingService,
+        private ns: NotifyService,
         private cdRef: ChangeDetectorRef){}
 
     ngDoCheck(): void {
@@ -101,10 +105,17 @@ export class GroupInputUsers implements DoCheck {
     }
 
     private addUsers(): void {
-        this.groupsStore.group.addUsers(this.selectedUsers).then(() => {
-            this.groupsStore.group.users = this.groupsStore.group.users.concat(this.selectedUsers)
-            this.selectedUsers = []
-            this.cdRef.markForCheck()
-        })
+        this.ls.perform('group-manage-users',
+            this.groupsStore.group.addUsers(this.selectedUsers)
+                .then(() => {
+                    this.groupsStore.group.users = this.groupsStore.group.users.concat(this.selectedUsers)
+                    this.selectedUsers = []
+                    this.ns.success('notify.group.manage.users.added.content')
+                    this.cdRef.markForCheck()
+                })
+                .catch((err) => {
+                    this.ns.error('notify.group.manage.users.added.error.content', 'notify.group.manage.users.added.error.title', err)
+                })
+        )
     }
 }

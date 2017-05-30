@@ -8,7 +8,7 @@ import { UserListService } from '../../../../../services'
     selector: 'group-users-list',
     template: `
         <list-component
-            [model]="selectedGroup?.users"
+            [model]="users"
             [inputFilter]="userLS.filterByInput"
             [sort]="userLS.sorts"
             searchPlaceholder="search.user"
@@ -50,7 +50,7 @@ export class GroupUsersList {
             private userLS: UserListService){}
 
     // Model
-    @Input() selectedGroup : GroupModel
+    @Input() users : GroupModel
 
     protected selectUser(user: UserModel) {
         if(user.structures.length > 0){

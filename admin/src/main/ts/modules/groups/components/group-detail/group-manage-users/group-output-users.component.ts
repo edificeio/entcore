@@ -1,16 +1,21 @@
 import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter } from '@angular/core'
 
 import { GroupsStore } from '../../../store'
-import { UserListService } from '../../../../../services'
+import { UserListService, LoadingService, NotifyService } from '../../../../../services'
 import { UserModel } from '../../../../../store/models'
 
 @Component({
     selector: 'group-output-users',
     template: `
-        <div>
-            <div class="header">
-                <s5l>group.manage.users.added</s5l>
-            </div>
+        <div class="header">
+            <s5l>group.manage.users.added</s5l>
+        </div>
+
+        <div class="flex-row-wrap">
+            <button (click)="removeUsers()"
+                [disabled]="selectedUsers.length === 0"
+                class="remove"
+                [title]="'group.manage.users.button.remove' | translate">-</button>
 
             <list-component
                 [model]="model"
@@ -51,14 +56,10 @@ import { UserModel } from '../../../../../store/models'
 
                 </div>
             </list-component>
-
-            <div class="button-remove">
-                <button (click)="removeUsers()"
-                    [disabled]="selectedUsers.length === 0" >-</button>
-            </div>
-        </div>`,
-     providers: [ UserListService ],
-     changeDetection: ChangeDetectionStrategy.OnPush
+        </div>
+    `,
+    providers: [ UserListService ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupOutputUsers {
     @Input() model: UserModel[] = []
@@ -67,7 +68,9 @@ export class GroupOutputUsers {
 
     constructor(private groupsStore: GroupsStore,
         private cdRef: ChangeDetectorRef,
-        private userLS: UserListService){}
+        private userLS: UserListService,
+        private ls: LoadingService,
+        private ns: NotifyService){}
 
     private selectUser(u): void {
         if (this.selectedUsers.indexOf(u) === -1) {
@@ -90,8 +93,19 @@ export class GroupOutputUsers {
     }
 
     private removeUsers(): void {
-        this.groupsStore.group.users = this.groupsStore.group.users.filter(
-            gu => this.selectedUsers.indexOf(gu) === -1)
-        this.selectedUsers = []
+        this.ls.perform('group-manage-users',
+            this.groupsStore.group.removeUsers(this.selectedUsers)
+                .then(() => {
+                    this.groupsStore.group.users = this.groupsStore.group.users.filter(gu =>
+                        this.selectedUsers.indexOf(gu) === -1
+                    )
+                    this.selectedUsers = []
+                    this.ns.success('notify.group.manage.users.removed.content')
+                    this.cdRef.markForCheck()
+                })
+                .catch((err) => {
+                    this.ns.error('notify.group.manage.users.removed.error.content', 'notify.group.manage.users.removed.error.title', err)
+                })
+        )
     }
 }

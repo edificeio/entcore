@@ -25,7 +25,11 @@ export class GroupModel extends Model<GroupModel> {
     }
 
     addUsers(users: UserModel[]) {
-        return this.http.post(`/directory/group/${this.id}/users`, {"userIds": users.map(u => u.id)})
+        return this.http.put(`/directory/group/${this.id}/users/add`, {"userIds": users.map(u => u.id)})
+    }
+
+    removeUsers(users: UserModel[]) {
+        return this.http.put(`/directory/group/${this.id}/users/delete`, {"userIds": users.map(u => u.id)})
     }
 
     toJSON() {

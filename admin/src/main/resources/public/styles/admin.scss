@@ -1026,13 +1026,22 @@ group-manage-users {
         font-size: 1.6em;
         font-weight: normal;
         color: $main-dark;
-        padding: 10px 15px;
+        padding: 10px 0;
     }
 
-    .container {
+    div.container {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
+        align-items: baseline;
+
+        & > * {
+            flex: 1 50%;
+            padding: 0 20px;
+        }
+
+        div.flex-row-wrap {
+            display: flex;
+            flex-flow: row wrap;
+        }
 
         div.user-toolbar {
             > i { @extend .action; }
@@ -1045,7 +1054,7 @@ group-manage-users {
             button {
                 &.select-all {
                     padding: 5px 5px;
-                    margin: 5px 0 5px 40px;
+                    margin: 5px 0 5px 5px;
                 }
 
                 &.deselect-all {
@@ -1056,105 +1065,79 @@ group-manage-users {
         }
 
         group-input-users {
-            align-self: baseline;
-
-            & > div {
-                padding: 0 20px;
+            div.structure-choice {
+                flex: 1 100%;
             }
 
-            div.button-add {
-                position: absolute;
-                top: 50%;
-                left: 45%;
+            button.add {
+                align-self: center;
+                text-align: center;
+                border-radius: 25px;
+                width: 50px;
+                height: 50px;
+                padding: 0px 0px;
+                margin-left: 5px;
+                font-size: 1.5em;
 
-                button {
-                    text-align: center;
-                    border-radius: 25px;
-                    width: 50px;
-                    height: 50px;
-                    padding: 0px 0px;
-                    font-size: 1.5em;
+                &:not(:disabled) {
+                    background-color: $accent;
+                    color: #fff;
 
-                    &:not(:disabled) {
-                        background-color: $accent;
-                        color: #fff;
-
-                        &:hover {
-                            background-color: $accent-dark;
-                        }
+                    &:hover {
+                        background-color: $accent-dark;
                     }
-
                 }
+            }
+
+            list-component {
+                min-height: 600px;
+                flex: 1;
             }
         }
 
         group-output-users {
-            align-self: baseline;
-
             .header {
+                flex: 1 100%;
+
                 font-size: 1.3em;
                 color: $main;
             }
 
-            & > div {
-                padding: 0 20px 0 130px;
-            }
+            button.remove {
+                align-self: center;
+                text-align: center;
+                border-radius: 25px;
+                width: 50px;
+                height: 50px;
+                padding: 0px 0px;
+                margin-right: 5px;
+                font-size: 1.5em;
 
-            div.user-toolbar {
-                > i { @extend .action;}
-
-                .toolbar-right {
-                    font-size: 1.2em;
-                    float: right;
-                }
-
-                button {
-                    padding: 5px 5px;
-                    margin: 5px 0;
-
-                    &.select-all {
-                        margin-left: 40px;
-
-                    }
-                }
-            }
-
-            div.button-remove {
-                position: absolute;
-                top: 50%;
-                right: 45%;
-
-                button {
-                    text-align: center;
-                    border-radius: 25px;
-                    width: 50px;
-                    height: 50px;
-                    padding: 0px 0px;
-                    font-size: 1.5em;
-
-                    &:not(:disabled) {
-                        background-color: $main;
-                        color: #fff;
-
-                        &:hover {
-                            background-color: $main-dark;
-                        }
-                    }
-
-                }
-            }
-
-            list-component li {
-                &:hover {
-                    background-color: $main-lighter;
-                }
-
-                &.selected {
+                &:not(:disabled) {
                     background-color: $main;
-                    color: white;
+                    color: #fff;
+
+                    &:hover {
+                        background-color: $main-dark;
+                    }
                 }
             }
 
+            list-component {
+                min-height: 600px;
+                flex: 1;
+
+                li {
+                    &:hover {
+                        background-color: $main-lighter;
+                    }
+
+                    &.selected {
+                        background-color: $main;
+                        color: white;
+                    }
+                }
+            }
         }
     }
 }

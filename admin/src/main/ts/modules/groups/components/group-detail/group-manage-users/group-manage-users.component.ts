@@ -7,17 +7,17 @@ import { GroupsStore } from '../../../store'
 @Component({
     selector: 'group-manage-users',
     template: `
+        <spinner-cube class="component-spinner" waitingFor="group-manage-users"></spinner-cube>
+
         <div class="padded">
             <h2>
                 <span><s5l>group.manage.users</s5l></span>
             </h2>
 
             <div class="container">
-                <group-input-users [model]="structureUsers">
-                </group-input-users>
+                <group-input-users [model]="structureUsers"></group-input-users>
 
-                <group-output-users [model]="groupsStore.group.users">
-                </group-output-users>
+                <group-output-users [model]="groupsStore.group.users"></group-output-users>
             </div>
         </div>
     `,
