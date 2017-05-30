@@ -85,11 +85,6 @@ export class UserList implements OnInit, OnDestroy {
     @Input() selectedUser: UserModel
     @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>()
 
-    private selectUser(user: UserModel) {
-        this.selectedUser = user
-        this.onselect.emit(user)
-    }
-
     private setStyles = (user: UserModel) => {
         return {
             selected: this.isSelected(user),

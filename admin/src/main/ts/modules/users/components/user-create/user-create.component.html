@@ -34,7 +34,7 @@
             <div class="search">
                 <search-input
                     [delay]="300"
-                    [attr.placeholder]="'create.user.search.children' | translate"
+                    [attr.placeholder]="'search' | translate"
                     (onChange)="userListService.inputFilter = $event"></search-input>
 
                 <div class="list-wrapper" *ngIf="userListService.inputFilter?.length > 0">

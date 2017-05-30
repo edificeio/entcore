@@ -51,9 +51,7 @@ export class UserFilters implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private usersStore: UsersStore,
-        private listFilters: UserlistFiltersService){
-            console.log(listFilters)
-        }
+        private listFilters: UserlistFiltersService){}
 
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }
 

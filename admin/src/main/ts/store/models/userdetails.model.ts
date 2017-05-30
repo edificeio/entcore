@@ -27,7 +27,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     address: string
     homePhone: string
     mobile?: string
-    profiles?: Array<string>
     type?: Array<string>
     functions?: Array<[string, Array<string>]>
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
