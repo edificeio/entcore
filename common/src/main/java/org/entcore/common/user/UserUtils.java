@@ -314,6 +314,14 @@ public class UserUtils {
 		});
 	}
 
+	public static void getSessionByUserId(EventBus eb, final String userId, final Handler<JsonObject> handler) {
+		JsonObject findSession = new JsonObject()
+				.putString("action", "findByUserId")
+				.putString("userId", userId)
+				.putBoolean("allowDisconnectedUser", true);
+		findSession(eb, null, findSession, handler);
+	}
+
 	public static void getSession(EventBus eb, final String sessionId,  final Handler<JsonObject> handler) {
 		JsonObject findSession = new JsonObject()
 				.putString("action", "find")

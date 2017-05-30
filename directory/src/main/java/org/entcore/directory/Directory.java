@@ -42,12 +42,14 @@ public class Directory extends BaseServer {
 	public static final String FEEDER = "entcore.feeder";
 
 	@Override
+	protected void initFilters() {
+		super.initFilters();
+		addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
+	}
+
+	@Override
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
-		clearFilters();
-		setOauthClientGrant(true);
-		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
-		addFilter(new UserbookCsrfFilter(eb, securedUriBinding));
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
