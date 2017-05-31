@@ -2,14 +2,14 @@ import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, D
 import { ActivatedRoute } from '@angular/router'
 import { UserListService, LoadingService, NotifyService } from '../../../../../services'
 import { GroupsStore } from '../../../store'
-import { UserModel } from '../../../../../store/models'
+import { UserModel, StructureModel, globalStore } from '../../../../../store'
 
 @Component({
     selector: 'group-input-users',
     template: `
         <div class="structure-choice">
-            <select>
-                <option>Test</option>
+            <select [ngModel]="structure" (ngModelChange)="refreshUsers($event)" name="structure">
+                <option *ngFor="let s of structures | orderBy: ['+name']" [ngValue]="s">{{ s.name }}</option>
             </select>
         </div>
 
@@ -68,11 +68,17 @@ export class GroupInputUsers implements DoCheck {
 
     private selectedUsers: UserModel[] = []
 
+    private structure: StructureModel
+    private structures: StructureModel[] = []
+
     constructor(private groupsStore: GroupsStore,
         private userLS: UserListService,
         private ls: LoadingService,
         private ns: NotifyService,
-        private cdRef: ChangeDetectorRef){}
+        private cdRef: ChangeDetectorRef) {
+        this.structure = this.groupsStore.structure
+        this.structures = globalStore.structures.data
+    }
 
     ngDoCheck(): void {
         this.cdRef.markForCheck()
@@ -102,6 +108,22 @@ export class GroupInputUsers implements DoCheck {
 
     private deselectAll(): void {
         this.selectedUsers = []
+    }
+
+    private refreshUsers(s: StructureModel): void {
+        this.ls.perform('group-manage-users',
+            s.users.sync()
+                .then(() => {
+                    this.model = s.users.data
+                    this.cdRef.detectChanges()
+                })
+                .catch((err) => {
+                    this.ns.error(
+                        {key: 'notify.structure.syncusers.error.content', parameters: {'structure': s.name}}
+                        , 'notify.structure.syncusers.error.title'
+                        , err)
+                })
+        )
     }
 
     private addUsers(): void {

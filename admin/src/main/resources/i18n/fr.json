@@ -170,6 +170,8 @@
     "notify.group.manage.users.removed.content": "Utilisateur(s) retiré(s) avec succès.",
     "notify.group.manage.users.removed.error.content": "Le ou les utilisateurs sélectionnés n'ont pas pu être retirés du groupe.",
     "notify.group.manage.users.removed.error.title": "Erreur lors du retrait d'utilisateur(s) du groupe.",
+    "notify.structure.syncusers.error.title": "Erreur lors de la récupération des utilisateurs.",
+    "notify.structure.syncusers.error.content": "Les utilisateurs de la structure {{structure}} n'ont pas pu être récupérés.",
     "datepicker.open": "Ouvrir le calendrier",
     "datepicker.delete": "Supprimer la date"
 }
