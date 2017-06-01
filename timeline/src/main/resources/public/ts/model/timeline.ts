@@ -1,42 +1,57 @@
-function Notification() {
-	this.isUnread = function() {
-		return _.find(this.recipients, function(recipient){
-			return recipient.userId === model.me.userId;
-		}) !== undefined;
-	}
+import { http, BaseModel, model as entcoreModel, skin, notify } from 'entcore';
+import { _ } from 'entcore/libs/underscore/underscore';
 
-	this.reported = this.reporters && this.reporters.length > 0
+interface TimelineModel extends BaseModel{
+	notifications: any;
+	notificationTypes: any;
+	preferences: any;
+	registeredNotifications: any;
 }
-Notification.prototype.delete = function() {
+
+const model = entcoreModel as TimelineModel;
+
+export let Timeline = {
+	Notification: function(){
+		this.isUnread = function() {
+			return _.find(this.recipients, function(recipient){
+				return recipient.userId === model.me.userId;
+			}) !== undefined;
+		}
+
+		this.reported = this.reporters && this.reporters.length > 0
+	},
+	NotificationType: function(){
+		this.apply = function(){
+			model.notifications.all = [];
+			model.notifications.lastPage = false;
+			model.notifications.page = 0;
+			if(model.notificationTypes.selection().length > 0){
+				model.notificationTypes.noFilter = false;
+			}
+			model.notifications.sync();
+		}
+	},
+	Skin: function(){
+		this.setForUser = function(){
+			http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + this._id);
+		}
+	},
+	Preferences: function(){},
+	RegisteredNotification: function(){},
+	FlashMessage: function(){}
+};
+
+Timeline.Notification.prototype.delete = function() {
 	return http().delete('/timeline/' + this._id)
 }
-Notification.prototype.discard = function() {
+Timeline.Notification.prototype.discard = function() {
 	return http().put('/timeline/' + this._id)
 }
-Notification.prototype.report = function() {
+Timeline.Notification.prototype.report = function() {
 	return http().put('/timeline/' + this._id + '/report')
 }
 
-function NotificationType(){
-	this.apply = function(){
-		model.notifications.all = [];
-        model.notifications.lastPage = false;
-		model.notifications.page = 0;
-		if(model.notificationTypes.selection().length > 0){
-			model.notificationTypes.noFilter = false;
-		}
-		model.notifications.sync();
-	}
-}
-
-function Skin(data){
-	this.setForUser = function(){
-		http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + this._id);
-	}
-}
-
-function Preferences(){}
-Preferences.prototype.get = function(cb){
+Timeline.Preferences.prototype.get = function(cb){
     return http().get('/userbook/preference/timeline').done(function(data){
         try {
 			this.prefs = JSON.parse(data.preference)
@@ -48,19 +63,16 @@ Preferences.prototype.get = function(cb){
     }.bind(this))
 }
 
-function RegisteredNotification(){}
-
-function FlashMessage(){}
-FlashMessage.prototype.markAsRead = function(){
+Timeline.FlashMessage.prototype.markAsRead = function(){
     return http().put("/timeline/flashmsg/" + this.id + "/markasread")
 }
 
-model.build = function (){
-	this.makeModels([Notification, NotificationType, Widget, Skin, RegisteredNotification, FlashMessage]);
+export const build = function (){
+	this.makeModels(Timeline);
 
-    this.preferences = new Preferences()
+    this.preferences = new Timeline.Preferences()
 
-	this.collection(Notification, {
+	this.collection(Timeline.Notification, {
 		page: 0,
 		lastPage: false,
 		loading: false,
@@ -85,13 +97,16 @@ model.build = function (){
 			}
 
 			var params = {
+                page: this.page,
 				type: _.map(types, function(type){
 					return type.data;
-				})
+				}),
+                mine: 1
 			};
-			params.page = that.page;
-			if(this.mine)
-				params.mine = 1
+
+			if(!this.mine){
+				delete params.mine;
+			}
 
 			if(paginate)
 				that.loading = true;
@@ -116,7 +131,7 @@ model.build = function (){
 		}
 	});
 
-	this.collection(NotificationType, {
+	this.collection(Timeline.NotificationType, {
 		mine: model.notificationTypes && model.notificationTypes.mine,
 		sync: function(){
 			http().get('/timeline/types').done(function(data){
@@ -135,7 +150,8 @@ model.build = function (){
                             })
                         })
                         return access
-                    })
+                    });
+					model.notifications.lastPage = false;
 
 					if(that.mine) {
 						that.forEach(function(t){ t.selected = true })
@@ -162,7 +178,7 @@ model.build = function (){
 		noFilter: false
 	});
 
-	this.collection(Skin, {
+	this.collection(Timeline.Skin, {
 		sync: function(){
 			skin.listThemes(function(themes){
 				this.load(themes);
@@ -170,7 +186,7 @@ model.build = function (){
 		}
 	});
 
-    this.collection(RegisteredNotification, {
+    this.collection(Timeline.RegisteredNotification, {
         get: function(cb){
             http().get('/timeline/registeredNotifications').done(function(data){
                 this.load(data)
@@ -180,7 +196,7 @@ model.build = function (){
         }
     });
 
-    this.collection(FlashMessage, {
+    this.collection(Timeline.FlashMessage, {
         sync: "/timeline/flashmsg/listuser"
     })
 };

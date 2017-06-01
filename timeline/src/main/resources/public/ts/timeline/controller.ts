@@ -1,4 +1,10 @@
-function MainController($rootScope, $scope, template, lang, model){
+import { ng, template, idiom as lang, ui, http, currentLanguage } from 'entcore';
+import * as timelineControllers from './controller';
+import { $ } from 'entcore/libs/jquery/jquery';
+import { _ } from 'entcore/libs/underscore/underscore';
+import { moment } from 'entcore/libs/moment/moment';
+
+export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
 	$scope.closePanel = function(){
 		$rootScope.$broadcast('close-panel');
 	};
@@ -13,11 +19,9 @@ function MainController($rootScope, $scope, template, lang, model){
 
 	$scope.template = template;
 	$scope.lang = lang;
-}
+}]);
 
-function Timeline($scope, date, model, lang){
-
-
+export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($scope, model) => {
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
@@ -88,7 +92,7 @@ function Timeline($scope, date, model, lang){
 	});
 
 	$scope.formatDate = function(dateString){
-		return date.calendar(dateString);
+		return moment(dateString).calendar();
 	};
 
 	$scope.removeFilter = function(){
@@ -122,9 +126,9 @@ function Timeline($scope, date, model, lang){
 
 	$scope.display = {};
 
-}
+}]);
 
-function Personalization($rootScope, $scope, model, ui){
+export let personalizationController = ng.controller('Personalization', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
 	$scope.skins = model.skins;
 	$scope.widgets = model.widgets;
 
@@ -180,13 +184,13 @@ function Personalization($rootScope, $scope, model, ui){
 	$rootScope.$on('close-panel', function(e){
 		$scope.showPanel = false;
 	})
-}
+}]);
 
-function Notifications($scope, model, lang){
+export let notificationsController = ng.controller('Notifications', ['$scope', 'model', ($scope, model) => {
 
-}
+}]);
 
-function FlashMessages($scope, model, lang) {
+export let flashMessagesController = ng.controller('FlashMessages', ['$scope', 'model', ($scope, model) => {
 	$scope.currentLanguage = currentLanguage
     $scope.messages = model.flashMessages
 
@@ -196,4 +200,4 @@ function FlashMessages($scope, model, lang) {
             $scope.messages.one('sync', $scope.$apply)
         })
     }
-}
+}]);

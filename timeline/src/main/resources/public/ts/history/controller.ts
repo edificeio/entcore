@@ -1,7 +1,8 @@
-model.notifications 	= { mine: true }
-model.notificationTypes = { mine: true }
+import { ui, http, idiom as lang, ng } from 'entcore';
+import { $ } from 'entcore/libs/jquery/jquery';
+import { moment } from 'entcore/libs/moment/moment';
 
-function HistoryController($scope, date, model, lang){
+export let historyController = ng.controller('HistoryController', ['$scope', 'model', function HistoryController($scope, model){
 	$scope.notifications = [];
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
@@ -48,7 +49,7 @@ function HistoryController($scope, date, model, lang){
 	});
 
 	$scope.formatDate = function(dateString){
-		return date.calendar(dateString);
+		return moment(dateString).calendar();
 	};
 
 	$scope.removeFilter = function(){
@@ -87,4 +88,4 @@ function HistoryController($scope, date, model, lang){
 
 	$scope.display = {};
 
-}
+}]);

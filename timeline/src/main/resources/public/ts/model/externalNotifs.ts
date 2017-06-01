@@ -1,32 +1,40 @@
-function Preference(){
-}
-function Config(){
-}
-function AppAction(){
-}
-function UserInfos(){
+import { idiom as lang, http, model as entcoreModel, BaseModel } from 'entcore';
+import { _ } from 'entcore/libs/underscore/underscore';
+
+interface ExternalNotifsModel extends BaseModel{
+	userinfos: any;
+    preference: any;
+    applis: any;
 }
 
-UserInfos.prototype.getinfo = function(callback){
+export const model = entcoreModel as ExternalNotifsModel;
+
+export let ExternalNotifs = {
+    Preference: function(){},
+    Config: function(){},
+    AppAction: function(){},
+    UserInfos: function(){},
+    Appli: function(data){
+        this.collection(ExternalNotifs.AppAction)
+        this.appActions.load(data.appActions)
+
+        this.appActions.each(function(appAction){
+            appAction.orderName = lang.translate(appAction.key.toLowerCase())
+        });
+    }
+}
+
+ExternalNotifs.UserInfos.prototype.getinfo = function(callback){
     http().get('/userbook/api/person').done(function(data){
         this.updateData(data.result['0'])
     }.bind(this))
 }
 
-UserInfos.prototype.putinfo = function(){
+ExternalNotifs.UserInfos.prototype.putinfo = function(){
     http().putJson('/directory/user/' + this.id, {email: this.email});
 }
 
-function Appli(data){
-    this.collection(AppAction)
-    this.appActions.load(data.appActions)
-
-    this.appActions.each(function(appAction){
-        appAction.orderName = lang.translate(appAction.key.toLowerCase())
-    })
-}
-
-Preference.prototype.getinfo = function(callback){
+ExternalNotifs.Preference.prototype.getinfo = function(callback){
     http().get('/userbook/preference/timeline').done(function(data){
         try {
             this.preference = JSON.parse(data.preference);
@@ -39,20 +47,20 @@ Preference.prototype.getinfo = function(callback){
     }.bind(this))
 }
 
-Preference.prototype.putinfo = function(){
+ExternalNotifs.Preference.prototype.putinfo = function(){
     var json = this.preference
     http().putJson('/userbook/preference/timeline', json).done(function(){
-        window.location = "/userbook/mon-compte";
+        window.location.href = "/userbook/mon-compte";
     })
 }
 
-model.build = function(){
-	this.makeModels([Preference, Config, Appli, AppAction, UserInfos]);
-    this.preference = new Preference();
-    this.userinfos = new UserInfos();
+export const build = function(){
+	this.makeModels(ExternalNotifs);
+    this.preference = new ExternalNotifs.Preference();
+    this.userinfos = new ExternalNotifs.UserInfos();
     model.userinfos.getinfo()
 
-    this.collection(Appli, {
+    this.collection(ExternalNotifs.Appli, {
         list: function(){
             http().get('/timeline/notifications-defaults').done(function(data){
 

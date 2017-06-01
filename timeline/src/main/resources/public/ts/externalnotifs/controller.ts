@@ -1,4 +1,6 @@
-function MainController($rootScope, $scope, template, lang, model){
+import { ng, template, idiom as lang } from 'entcore';
+
+export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
 
 	template.open('notifspanel', 'notifspanel');
 
@@ -56,4 +58,4 @@ function MainController($rootScope, $scope, template, lang, model){
 		model.preference.putinfo();
 	}
 
-}
+}]);
