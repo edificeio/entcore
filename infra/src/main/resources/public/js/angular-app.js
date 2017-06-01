@@ -4678,8 +4678,8 @@ module.directive('help', function() {
                 helpContent.find('script').remove();
                 element.find('div.content').html(helpContent.html());
                 element.find('a').on('click', function(e) {
-                    element.find('.app-content-section').slideUp();
-                    $('#' + $(e.target).attr('href').split('#')[1]).slideDown();
+                    element.find('.sect1').slideUp();
+                    $('#' + $(e.target).attr('href').split('#')[1]).parent().slideDown();
                 });
                 element.find('a').first().click();
                 scope.display.read = true;
