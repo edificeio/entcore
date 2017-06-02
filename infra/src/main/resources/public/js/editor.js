@@ -3039,22 +3039,25 @@ window.RTE = (function () {
 			            if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
 			                element.find('code').hide();
 			            }
-			            $('body').append(
-                            $('<link />')
-                                .attr('rel', 'stylesheet')
-                                .attr('type', 'text/css')
-                                .attr('href', '/infra/public/js/prism/prism.css')
-                       );
+			            if($('.prism-css').length === 0){
+							$('body').append(
+								$('<link />')
+									.attr('rel', 'stylesheet')
+									.attr('type', 'text/css')
+									.attr('class', 'prism-css')
+									.attr('href', '/infra/public/js/prism/prism.css')
+							);
 
-			            loader.openFile({
-			                url: '/infra/public/js/prism/prism.js',
-			                callback: function () {
+							loader.openFile({
+								url: '/infra/public/js/prism/prism.js',
+								callback: function () {
 
-			                },
-			                error: function () {
+								},
+								error: function () {
 
-			                }
-			            });
+								}
+							});
+						}
 
 			            element.find('.close-focus').on('click', function(){
 			                element.removeClass('focus');
