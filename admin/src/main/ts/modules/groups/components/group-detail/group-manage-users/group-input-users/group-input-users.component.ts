@@ -1,22 +1,27 @@
-import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, DoCheck,  EventEmitter } from '@angular/core'
+import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef
+    , OnInit, EventEmitter } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
-import { UserListService, LoadingService, NotifyService } from '../../../../../services'
-import { GroupsStore } from '../../../store'
-import { UserModel, StructureModel, globalStore } from '../../../../../store'
+import { Subscription } from 'rxjs/Subscription'
+import { UserListService, UserlistFiltersService, LoadingService
+    , NotifyService } from '../../../../../../services'
+import { GroupsStore } from '../../../../store'
+import { UserModel, StructureModel, globalStore } from '../../../../../../store'
 
 @Component({
     selector: 'group-input-users',
     template: `
-        <div class="structure-choice">
-            <select [ngModel]="structure" (ngModelChange)="refreshUsers($event)" name="structure">
+        <div class="filters">
+            <select [ngModel]="structure" (ngModelChange)="structureChange($event)" name="structure">
                 <option *ngFor="let s of structures | orderBy: ['+name']" [ngValue]="s">{{ s.name }}</option>
             </select>
-        </div>
+            <group-input-filters-users [structure]="structure">
+            </group-input-filters-users>
+        </div>  
 
         <div class="flex-row-wrap">
             <list-component
                 [model]="model"
-                [filters]="filterUsers"
+                [filters]="listFilters.getFormattedFilters()"
                 [inputFilter]="userLS.filterByInput"
                 [sort]="userLS.sorts"
                 [display]="userLS.display"
@@ -63,8 +68,10 @@ import { UserModel, StructureModel, globalStore } from '../../../../../store'
     providers: [ UserListService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GroupInputUsers implements DoCheck {
+export class GroupInputUsers implements OnInit {
     @Input() model: UserModel[] = []
+
+    private filtersUpdatesSubscriber: Subscription
 
     private selectedUsers: UserModel[] = []
 
@@ -75,13 +82,20 @@ export class GroupInputUsers implements DoCheck {
         private userLS: UserListService,
         private ls: LoadingService,
         private ns: NotifyService,
-        private cdRef: ChangeDetectorRef) {
+        private cdRef: ChangeDetectorRef,
+        private listFilters: UserlistFiltersService) {}
+
+    ngOnInit(): void {
         this.structure = this.groupsStore.structure
         this.structures = globalStore.structures.data
+
+        this.filtersUpdatesSubscriber = this.listFilters.updateSubject.subscribe(() => {
+            this.cdRef.markForCheck()
+        })
     }
 
-    ngDoCheck(): void {
-        this.cdRef.markForCheck()
+    ngOnDestroy(): void {
+        this.filtersUpdatesSubscriber.unsubscribe()
     }
 
     private selectUser(u: UserModel): void {
@@ -92,38 +106,41 @@ export class GroupInputUsers implements DoCheck {
         }
     }
 
-    private filterUsers = (u: {id: string, name: string}) => {
-        return !this.groupsStore.group.users.find(ug => ug.id === u.id)
-    }
-
     private setUserListStyles = (user: UserModel) => {
         return { selected: this.selectedUsers.indexOf(user) > -1 }
     }
 
     private selectAll(): void {
-        this.selectedUsers = this.model.filter(u => {
-            return this.groupsStore.group.users.map(gu => gu.id).indexOf(u.id) === -1
-        })
+        this.selectedUsers = this.model.filter(u => this.groupsStore.group.users.map(gu => gu.id).indexOf(u.id) === -1)
     }
 
     private deselectAll(): void {
         this.selectedUsers = []
     }
 
-    private refreshUsers(s: StructureModel): void {
-        this.ls.perform('group-manage-users',
-            s.users.sync()
-                .then(() => {
-                    this.model = s.users.data
-                    this.cdRef.detectChanges()
-                })
-                .catch((err) => {
-                    this.ns.error(
-                        {key: 'notify.structure.syncusers.error.content', parameters: {'structure': s.name}}
-                        , 'notify.structure.syncusers.error.title'
-                        , err)
-                })
-        )
+    private structureChange(s: StructureModel): void {
+        let selectedStructure: StructureModel = globalStore.structures.data.find(globalS => globalS.id === s.id)
+
+        if (selectedStructure.users && selectedStructure.users.data 
+            && selectedStructure.users.data.length < 1) {
+            this.ls.perform('group-manage-users',
+                selectedStructure.users.sync()
+                    .then(() => {
+                        this.model = selectedStructure.users.data.filter(
+                            u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1)
+                        this.cdRef.detectChanges()
+                    })
+                    .catch((err) => {
+                        this.ns.error(
+                            {key: 'notify.structure.syncusers.error.content'
+                            , parameters: {'structure': s.name}}
+                            , 'notify.structure.syncusers.error.title'
+                            , err)
+                    })
+            )
+        }
+
+        this.structure = s
     }
 
     private addUsers(): void {
@@ -131,12 +148,14 @@ export class GroupInputUsers implements DoCheck {
             this.groupsStore.group.addUsers(this.selectedUsers)
                 .then(() => {
                     this.groupsStore.group.users = this.groupsStore.group.users.concat(this.selectedUsers)
+                    this.model = this.model.filter(u => this.selectedUsers.indexOf(u) === -1)
                     this.selectedUsers = []
                     this.ns.success('notify.group.manage.users.added.content')
                     this.cdRef.markForCheck()
                 })
                 .catch((err) => {
-                    this.ns.error('notify.group.manage.users.added.error.content', 'notify.group.manage.users.added.error.title', err)
+                    this.ns.error('notify.group.manage.users.added.error.content'
+                        , 'notify.group.manage.users.added.error.title', err)
                 })
         )
     }

@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, ChangeDetectionStrategy
+    , ChangeDetectorRef } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { UserModel } from '../../../../../store/models'
@@ -15,16 +16,16 @@ import { GroupsStore } from '../../../store'
             </h2>
 
             <div class="container">
-                <group-input-users [model]="structureUsers"></group-input-users>
+                <group-input-users [model]="inputUsers"></group-input-users>
 
-                <group-output-users [model]="groupsStore.group.users"></group-output-users>
+                <group-output-users [model]="groupsStore.group.users" (onDelete)="populateInputUsers()"></group-output-users>
             </div>
         </div>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupManageUsers implements OnInit {
-    private structureUsers: UserModel[] = []
+    private inputUsers: UserModel[] = []
     private groupSubscriber : Subscription
 
     constructor(private cdRef: ChangeDetectorRef,
@@ -32,15 +33,31 @@ export class GroupManageUsers implements OnInit {
         private route: ActivatedRoute){}
 
     ngOnInit(): void {
-        this.groupsStore.structure.users.sync().then(() => {
-            this.structureUsers = this.groupsStore.structure.users.data
-            this.cdRef.detectChanges()
-        })
+        if (this.groupsStore.structure.users.data 
+            && this.groupsStore.structure.users.data.length < 1) {
+            this.groupsStore.structure.users.sync().then(() => {
+                this.populateInputUsers()
+            })
+        } else {
+            this.populateInputUsers()
+        }
 
         this.groupSubscriber = this.route.params.subscribe(params => {
             if(params["groupId"]) {
-                this.cdRef.detectChanges()
+                this.populateInputUsers()
             }
         })
+    }
+
+    private populateInputUsers(): void {
+        this.inputUsers = this.filterUsers(this.groupsStore.structure.users.data
+            , this.groupsStore.group.users)
+    }
+
+    /**
+    * @returns UserModel[] from structure users minus group users
+    */
+    private filterUsers(sUsers: UserModel[], gUsers: UserModel[]): UserModel[] {
+        return sUsers.filter(u => gUsers.map(x => x.id).indexOf(u.id) === -1)
     }
 }

@@ -12,12 +12,14 @@ import {
     GroupDetail,
     GroupManageUsers,
     GroupInputUsers,
+    GroupInputFiltersUsers,
     GroupOutputUsers,
     GroupUsersList,
     GroupsTypeView,
     GroupCreate } from './components'
 import { GroupResolve, GroupsResolve } from './routing'
 import { GroupsStore } from './store'
+import { UserlistFiltersService } from '../../services'
 
 @NgModule({
     imports: [
@@ -33,6 +35,7 @@ import { GroupsStore } from './store'
         GroupDetail,
         GroupManageUsers,
         GroupInputUsers,
+        GroupInputFiltersUsers,
         GroupOutputUsers,
         GroupUsersList,
         GroupsTypeView,
@@ -41,7 +44,8 @@ import { GroupsStore } from './store'
     providers: [
         GroupsStore,
         GroupResolve,
-        GroupsResolve
+        GroupsResolve,
+        UserlistFiltersService
     ],
     exports: [
         RouterModule

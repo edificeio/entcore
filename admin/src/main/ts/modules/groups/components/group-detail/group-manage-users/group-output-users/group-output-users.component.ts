@@ -1,8 +1,8 @@
 import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter } from '@angular/core'
 
-import { GroupsStore } from '../../../store'
-import { UserListService, LoadingService, NotifyService } from '../../../../../services'
-import { UserModel } from '../../../../../store/models'
+import { GroupsStore } from '../../../../store'
+import { UserListService, LoadingService, NotifyService } from '../../../../../../services'
+import { UserModel } from '../../../../../../store/models'
 
 @Component({
     selector: 'group-output-users',
@@ -63,6 +63,7 @@ import { UserModel } from '../../../../../store/models'
 })
 export class GroupOutputUsers {
     @Input() model: UserModel[] = []
+    @Output() onDelete: EventEmitter<any> = new EventEmitter()
 
     private selectedUsers: UserModel[] = []
 
@@ -96,9 +97,9 @@ export class GroupOutputUsers {
         this.ls.perform('group-manage-users',
             this.groupsStore.group.removeUsers(this.selectedUsers)
                 .then(() => {
-                    this.groupsStore.group.users = this.groupsStore.group.users.filter(gu =>
-                        this.selectedUsers.indexOf(gu) === -1
-                    )
+                    this.groupsStore.group.users = this.groupsStore.group.users
+                        .filter(gu => this.selectedUsers.indexOf(gu) === -1)
+                    this.onDelete.emit()
                     this.selectedUsers = []
                     this.ns.success('notify.group.manage.users.removed.content')
                     this.cdRef.markForCheck()
