@@ -1,9 +1,8 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core'
-import { ActivatedRoute, Data, Router } from '@angular/router'
+import { ActivatedRoute, Data } from '@angular/router'
 import { BundlesService } from 'sijil'
 import { UserlistFiltersService } from '../../../../services'
 import { Subscription } from 'rxjs/Subscription'
-import { UsersStore } from '../../store'
 import { routing } from '../../../../routing/routing.utils'
 
 @Component({
@@ -48,9 +47,7 @@ export class UserFilters implements OnInit {
     constructor(
         private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
-        private router: Router,
         private route: ActivatedRoute,
-        private usersStore: UsersStore,
         private listFilters: UserlistFiltersService){}
 
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }
@@ -71,5 +68,5 @@ export class UserFilters implements OnInit {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
     }
-    
+
 }

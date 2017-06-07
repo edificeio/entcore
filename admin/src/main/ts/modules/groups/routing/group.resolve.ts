@@ -19,11 +19,13 @@ export class GroupResolve implements Resolve<void> {
             this.router.navigate(["/admin", structure._id, "groups", groupType])
             return
         }
-
-        return this.ls.perform('groups-content', targetGroup.syncUsers()
-            .catch(err => {
-                console.error(err)
-                this.router.navigate(["/admin", structure._id, "groups", groupType])
-            }))
+        if (targetGroup.users && targetGroup.users.length < 1) {
+            return this.ls.perform('groups-content', targetGroup.syncUsers()
+                .catch(err => {
+                    console.error(err)
+                    this.router.navigate(["/admin", structure._id, "groups", groupType])
+                }))
+        }
+        return
     }
 }

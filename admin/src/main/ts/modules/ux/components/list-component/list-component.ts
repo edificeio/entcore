@@ -3,7 +3,23 @@ import { Component, Input, Output, ChangeDetectionStrategy,
 
 @Component({
     selector: 'list-component',
-    templateUrl: './list-component.html',
+    template: `
+        <search-input [attr.placeholder]="searchPlaceholder | translate" (onChange)="inputChange.emit($event)"></search-input>
+        <div class="toolbar">
+            <ng-content select="[toolbar]"></ng-content>
+        </div>
+        <div class="list-wrapper">
+            <ul>
+                <li *ngFor="let item of model | filter: filters | filter: inputFilter | orderBy: sort | slice: 0:limit"
+                    (click)="onSelect.emit(item)"
+                    [class.selected]="isSelected(item)"
+                    [class.disabled]="isDisabled(item)"
+                    [ngClass]="ngClass(item)">
+                    {{ display(item) }}
+                </li>
+            </ul>
+        </div>
+    `,
     styles: [`
         ul {
             margin: 0;

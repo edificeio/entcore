@@ -37,9 +37,8 @@ export class StructureModel extends Model<StructureModel> {
 
     syncClasses(force?: boolean) {
         if (this.classes.length < 1 || force === true) {
-            return this.http.get('/directory/class/admin/list', {
-                params: { structureId: this.id }
-            }).then(res => this.classes = res.data)
+            return this.http.get('/directory/class/admin/list', { params: { structureId: this.id }})
+                .then(res => this.classes = res.data)
         }
         return Promise.resolve()
     }
