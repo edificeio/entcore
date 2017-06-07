@@ -131,18 +131,20 @@ export class UserModel extends Model<UserModel> {
     }
 
     createNewUser(structureId) {
-        let payload = new window['URLSearchParams']()
+        let userPayload = new window['URLSearchParams']()
 
-        payload.append('firstName', this.firstName)
-        payload.append('lastName', this.lastName)
-        payload.append('type', this.type)
+        userPayload.append('firstName', this.firstName)
+        userPayload.append('lastName', this.lastName)
+        userPayload.append('type', this.type)
         if (this.classes && this.classes.length > 0) {
-            payload.append('classId', this.classes[0].id)
+            userPayload.append('classId', this.classes[0].id)
         }
-        payload.append('structureId', structureId)
-        payload.append('birthDate', this.userDetails.birthDate)
-        this.userDetails.children.forEach(child => payload.append('childrenIds', child.id))
+        userPayload.append('structureId', structureId)
+        userPayload.append('birthDate', this.userDetails.birthDate)
+        this.userDetails.children.forEach(child => userPayload.append('childrenIds', child.id))
 
-        return this.create(payload, {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}})
+        return this.http.post('/directory/api/user'
+            , userPayload
+            , {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}})
     }
 }
