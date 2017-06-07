@@ -21,6 +21,7 @@ package org.entcore.feeder.utils;
 
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.neo4j.Neo4j;
+import org.joda.time.DateTime;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -38,6 +39,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Validator {
 
@@ -206,6 +209,10 @@ public class Validator {
 		if (generatedAttributes != null) {
 			object.mergeIn(generatedAttributes);
 		}
+		JsonObject g = generate.getObject("modified");
+		if (g != null) {
+			nowDate("modified", object);
+		}
 		return (object.size() > 0) ? null : "Empty object.";
 	}
 
@@ -245,6 +252,9 @@ public class Validator {
 				case "activationCode" :
 					activationCodeGenerator(attr, object, getParameter(object, j));
 					break;
+				case "nowDate" :
+					nowDate(attr, object);
+					break;
 				default:
 			}
 		}
@@ -269,6 +279,10 @@ public class Validator {
 			v = object.getString((String) args.get(0));
 		}
 		return v;
+	}
+
+	private void nowDate(String attr, JsonObject object) {
+		object.putString(attr, DateTime.now().toString());
 	}
 
 	private void activationCodeGenerator(String attr, JsonObject object, String password) {

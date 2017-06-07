@@ -84,7 +84,7 @@ public class Structure {
 				"MATCH (s:Structure { externalId : {externalId}}) " +
 				"WITH s " +
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
-				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId");
+				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId", "created");
 		getTransaction().add(query, struct);
 		this.struct = struct;
 	}

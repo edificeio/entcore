@@ -106,7 +106,9 @@
 		}
 	},
 	"generate" : {
-		"id" : {"generator":"uuid4", "args":[]}
+		"id" : {"generator":"uuid4", "args":[]},
+		"created" : { "generator" : "nowDate", "args":[]},
+		"modified" : { "generator" : "nowDate", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
 	"modifiable" : ["name"]

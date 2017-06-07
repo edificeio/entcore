@@ -100,7 +100,9 @@
 		"id" : {"generator":"uuid4", "args":[]},
 		"login" : {"generator":"login", "args":["firstName", "lastName"]},
 		"displayName" : {"generator":"displayName", "args":["firstName", "lastName"]},
-		"activationCode" : {"generator":"activationCode", "args":["password"]}
+		"activationCode" : {"generator":"activationCode", "args":["password"]},
+		"created" : { "generator" : "nowDate", "args":[]},
+		"modified" : { "generator" : "nowDate", "args":[]}
 	},
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
