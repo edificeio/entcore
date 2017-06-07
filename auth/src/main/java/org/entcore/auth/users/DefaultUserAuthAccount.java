@@ -28,6 +28,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.common.email.EmailFactory;
+import org.joda.time.DateTime;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -442,11 +443,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void storeDomain(String id, String domain, String scheme, final Handler<Boolean> handler) {
-		String query = "MATCH (u:User {id: {id}}) SET u.lastDomain = {domain}, u.lastScheme = {scheme} return count(*) = 1 as exists";
+		String query =
+				"MATCH (u:User {id: {id}}) " +
+				"SET u.lastDomain = {domain}, u.lastScheme = {scheme}, u.lastLogin = {now} " +
+				"return count(*) = 1 as exists";
 		JsonObject params = new JsonObject()
 			.putString("id", id)
 			.putString("domain", domain)
-			.putString("scheme", scheme);
+			.putString("scheme", scheme)
+			.putString("now", DateTime.now().toString());
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
