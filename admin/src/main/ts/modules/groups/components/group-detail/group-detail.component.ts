@@ -11,7 +11,7 @@ import { GroupsStore } from '../../store'
         </div>
 
         <div class="padded">
-            <button (click)="showAddUsersLightBox = true">
+            <button (click)="showAddUsersLightBox = true" *ngIf="groupsStore.group?.type === 'ManualGroup'">
                 <s5l>group.details.add.users</s5l>
             </button>
 
