@@ -239,7 +239,7 @@ function ActivationController($scope, template){
 	$scope.lang = lang;
 	$scope.template.open('main', 'activation-form');
 	$scope.user = {};
-	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$");
+	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$");
 
 	$scope.welcome = {
 

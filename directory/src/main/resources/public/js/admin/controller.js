@@ -157,7 +157,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	template.open('userDetails', 'admin-user-details')
     $scope.structures = model.structures.structures
     $scope.lang = lang
-	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")
+	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$")
     $scope.loadingWrapper = httpWrapper.wrap
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
