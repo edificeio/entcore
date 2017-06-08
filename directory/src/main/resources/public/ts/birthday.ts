@@ -14,6 +14,10 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+import { model, http, idiom as lang } from 'entcore';
+import { moment } from 'entcore/libs/moment/moment';
+import { _ } from 'entcore/libs/underscore/underscore';
+
 (function(){
 	var Birthday = model.widgets.findWidget('birthday');
 	Birthday.classes = [];

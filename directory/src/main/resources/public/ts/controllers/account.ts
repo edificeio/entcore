@@ -14,39 +14,29 @@
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-routes.define(function($routeProvider){
-	$routeProvider
-		.when('/edit-user/:id', {
-			action: 'editUser'
-		})
-		.when('/edit-user-infos/:id', {
-			action: 'editUserInfos'
-		})
-		.when('/edit-me', {
-			action: 'editMe'
-		})
-		.otherwise({
-			redirectTo: 'edit-me'
-		});
-});
 
-function MyAccount($scope, lang, date, notify, route){
+import { ng, idiom as lang, notify, model, Behaviours, http } from 'entcore';
+import { moment } from 'entcore/libs/moment/moment';
+import { directory } from '../model';
+import { _ } from 'entcore/libs/underscore/underscore';
+
+export const accountController = ng.controller('MyAccount', ['$scope', 'route', ($scope, route) => {
 	route({
 		editUserInfos: function(params){
-			model.account = new User({ id: params.id, edit: { infos: true } });
+			directory.account = new directory.User({ id: params.id, edit: { infos: true } });
 			init();
 			$scope.openView('user-edit', 'user');
 		},
 		editUser: function(params){
-			model.account = new User({ id: params.id, edit: { userbook: true, infos: true } });
+			directory.account = new directory.User({ id: params.id, edit: { userbook: true, infos: true } });
 			init();
 			$scope.openView('user-edit', 'user');
 			$scope.openView('userbook-edit', 'userbook');
 		},
 		editMe: function(params){
-			model.account = new User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
+			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
 			if(model.me.type !== 'ELEVE'){
-				model.account.edit.infos = true;
+				directory.account.edit.infos = true;
 				$scope.openView('user-edit', 'user');
 			}
 			else{
@@ -64,12 +54,12 @@ function MyAccount($scope, lang, date, notify, route){
 
 	function init(){
 		$scope.me = model.me;
-		model.account.on('change', function(){
+		directory.account.on('change', function(){
 			$scope.$apply();
 		});
 
-		model.account.load();
-		$scope.account = model.account;
+		directory.account.load();
+		$scope.account = directory.account;
 	}
 
 	$scope.display = {};
@@ -86,7 +76,7 @@ function MyAccount($scope, lang, date, notify, route){
 		return $scope.viewsContainers[name] === viewsPath + view + '.html';
 	};
 
-	$scope.moods = User.prototype.moods;
+	$scope.moods = directory.User.prototype.moods;
 
 	$scope.availableMoods = _.reject($scope.moods, function(mood){
 		return mood.id === 'default';
@@ -96,7 +86,7 @@ function MyAccount($scope, lang, date, notify, route){
 
 	$scope.birthDate = function(birthDate){
 		if(birthDate){
-			return date.format(birthDate, 'D MMMM YYYY');
+			return moment(birthDate).format('D MMMM YYYY');
 		}
 		return '';
 	};
@@ -106,7 +96,7 @@ function MyAccount($scope, lang, date, notify, route){
 	};
 
 	$scope.saveChanges = function(){
-		model.account.saveChanges();
+		directory.account.saveChanges();
 	};
 
 	$scope.openPasswordDialog = function(){
@@ -124,7 +114,7 @@ function MyAccount($scope, lang, date, notify, route){
 	}
 
 	$scope.saveInfos = function(){
-		model.account.saveInfos();
+		directory.account.saveInfos();
 	};
 
 	$scope.resetPassword = function(url){
@@ -148,7 +138,7 @@ function MyAccount($scope, lang, date, notify, route){
 	};
 
 	$scope.saveUserbookProperty = function(prop){
-		model.account.saveUserbookProperty(prop);
+		directory.account.saveUserbookProperty(prop);
 	};
 
 	$scope.changeVisibility = function(hobby){
@@ -173,12 +163,12 @@ function MyAccount($scope, lang, date, notify, route){
 	};
 
 	$scope.resetAvatar = function(){
-		model.account.picture = '';
-		model.account.saveChanges();
+		directory.account.picture = '';
+		directory.account.saveChanges();
 	};
 
 	$scope.updateAvatar = function(){
-		model.account.uploadAvatar();
+		directory.account.uploadAvatar();
 	}
 
 	$scope.longDate = function(dateString){
@@ -228,11 +218,11 @@ function MyAccount($scope, lang, date, notify, route){
 	}
 
 	$scope.generateMergeKey = function() {
-		model.account.generateMergeKey();
+		directory.account.generateMergeKey();
 	};
 
 	$scope.mergeByKeys = function(account) {
-		model.account.mergeByKeys([account.mergeByKey], function() {
+		directory.account.mergeByKeys([account.mergeByKey], function() {
 			delete account.mergeByKey;
 			$scope.$apply();
 		});
@@ -242,4 +232,4 @@ function MyAccount($scope, lang, date, notify, route){
 		$scope.passwordRegex = data.passwordRegex;
 	})
 
-}
+}]);

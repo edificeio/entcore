@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <!--
  ~	Copyright © WebServices pour l'Éducation, 2014
  ~
@@ -19,21 +18,16 @@
  ~
  -->
 
-<html ng-controller="DirectoryController">
-	<head>
-		<title>[[lang.translate('userBook.' + title + '.title')]]</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-		<script type="text/javascript">
-			var appPrefix = 'directory';
-		</script>
-		<script type="text/javascript" src="/directory/public/dist/entcore/ng-app-07b15a9d15.js" id="context"></script>
-		<script type="text/javascript" src="/directory/public/dist/application-4bea81c345.js"></script>
-	</head>
-	<script type="text/ng-template" id="empty"></script>
-	<body bottom-scroll="increaseSearchSize()" class="account">
-	<portal>
-		<div class="row" ng-include="template.containers.page"></div>
-	</portal>
+<html>
+	<head></head>
+	<body>
+		{{#i18n}}email.hi{{/i18n}}<br /><br />
+		{{#i18n}}email.user.created.info{{/i18n}}<br /><br />
+		{{#i18n}}email.activation.uri{{/i18n}}<br />
+		{{activationUri}}<br /><br />
+		{{#i18n}}email.login{{/i18n}}: {{login}} {{#i18n}}email.activation.infos{{/i18n}}<br /><br />
+		{{#i18n}}email.regards{{/i18n}}<br /><br />
+		{{#i18n}}email.signature{{/i18n}}<br /><br />
+		<img src="{{host}}/current/assets/img/illustrations/logo.png" height="50px" style="margin-left: -10px;" />
 	</body>
 </html>

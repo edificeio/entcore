@@ -42,3 +42,6 @@ conversation/src/main/resources/public/temp
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
+directory/src/main/resources/view/*
+directory/src/main/resources/public/js
+directory/src/main/resources/public/temp
