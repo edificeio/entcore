@@ -19,8 +19,7 @@
 
 package org.entcore.feeder.csv;
 
-import au.com.bytecode.opencsv.CSV;
-import au.com.bytecode.opencsv.CSVReadProc;
+import com.opencsv.CSVReader;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
 import org.entcore.feeder.dictionary.structures.Structure;
@@ -39,8 +38,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
-import static org.entcore.feeder.be1d.Be1dFeeder.frenchDatePatter;
-import static org.entcore.feeder.be1d.Be1dFeeder.generateUserExternalId;
+import static org.entcore.feeder.csv.CsvFeeder.frenchDatePatter;
+import static org.entcore.feeder.csv.CsvFeeder.generateUserExternalId;
+import static org.entcore.feeder.csv.CsvFeeder.relativeStudentMapping;
+import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends Report implements ImportValidator {
 
@@ -139,25 +140,22 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(0)
-				.charset(charset)
-				.create();
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
-		csvParser.read(path, new CSVReadProc() {
-			@Override
-			public void procRow(int i, String... strings) {
+		try {
+			CSVReader csvParser = getCsvReader(path, charset);
+
+			String[] strings;
+			int i = 0;
+			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
 					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {
 						int j = 0;
-						for (String c: columns) {
+						for (String c : columns) {
 							if ("externalId".equals(c)) {
 								filterExternalId.set(j);
 							}
@@ -179,8 +177,14 @@ public class CsvValidator extends Report implements ImportValidator {
 						findUsers(path, profile, columns, eii, charset, handler);
 					}
 				}
+				i++;
 			}
-		});
+		} catch (Exception e) {
+			addError(profile, "csv.exception");
+			log.error("csv.exception", e);
+			handler.handle(result);
+			return;
+		}
 		if (filterExternalId.get() >= 0) {
 			filterExternalIdExists(externalIds, new Handler<JsonArray>() {
 				@Override
@@ -260,15 +264,11 @@ public class CsvValidator extends Report implements ImportValidator {
 					handler.handle(result);
 					return;
 				}
-				CSV csvParser = CSV
-						.ignoreLeadingWhiteSpace()
-						.separator(';')
-						.skipLines(1)
-						.charset(charset)
-						.create();
-				csvParser.read(path, new CSVReadProc() {
-					@Override
-					public void procRow(int i, String... strings) {
+				try {
+					CSVReader csvParser = getCsvReader(path, charset, 1);
+					String[] strings;
+					int i = 0;
+					while ((strings = csvParser.readNext()) != null) {
 						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
 						user.putArray("structures", new JsonArray().add(structure.getExternalId()));
@@ -434,18 +434,12 @@ public class CsvValidator extends Report implements ImportValidator {
 									.putString("translatedProfile", translate(profile))
 									.putString("classesStr", classesStr));
 						}
+						i++;
 					}
-
-					private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
-						if (mapping.trim().isEmpty()) return;
-						try {
-							linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-						} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-							log.error(e.getMessage(), e);
-						}
-					}
-
-				});
+				} catch (Exception e) {
+					addError(profile, "csv.exception");
+					log.error("csv.exception", e);
+				}
 				handler.handle(result);
 			}
 		});

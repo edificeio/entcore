@@ -19,11 +19,8 @@
 
 package org.entcore.feeder.csv;
 
-import au.com.bytecode.opencsv.CSV;
-import au.com.bytecode.opencsv.CSVReadProc;
-import au.com.bytecode.opencsv.CSVWriteProc;
-import au.com.bytecode.opencsv.CSVWriter;
-import org.entcore.feeder.be1d.Be1dValidator;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
@@ -35,12 +32,15 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
+
+import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class MappingFinder {
 
@@ -88,69 +88,63 @@ public class MappingFinder {
 			return;
 		}
 
-		final CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-//				.skipLines(1)
-				.charset(charset)
-				.create();
-
 		try {
-			csvParser.read(path, new CSVReadProc() {
-
-				@Override
-				public void procRow(int rowIdx, final String... values) {
-					final List<String> line = new LinkedList<>(Arrays.asList(values));
-					if (additionalColumn) {
-						line.add(0, "");
-					}
-					lines.add(line.toArray(new String[line.size()]));
-					if (rowIdx == 0) {
-						if (additionalColumn) {
-							lines.get(0)[externalIdIdx] = "externalId";
-						}
-						return;
-					}
-
-					final JsonObject params = new JsonObject();
-					if (!additionalColumn && values[externalIdIdx] != null && !values[externalIdIdx].isEmpty()) {
-						tx.add(NOP_QUERY, params.putString("externalId", values[externalIdIdx]));
-					} else {
-						params.putString("id", structureId).putString("profile", profile);
-						try {
-							int i = 0;
-							for (String c : columns) {
-								switch (c) {
-									case "lastName":
-										params.putString("lastName", lower(values[i]));
-										break;
-									case "firstName":
-										params.putString("firstName", lower(values[i]));
-										break;
-									case "birthDate":
-										if ("Student".equals(profile)) {
-											Matcher m;
-
-											if (values[i] != null &&
-													(m = Be1dValidator.frenchDatePatter.matcher(values[i])).find()) {
-												params.putString("birthDate", m.group(3) + "-" + m.group(2) + "-" + m.group(1));
-											} else {
-												params.putString("birthDate", values[i]);
-											}
-										}
-										break;
-								}
-								i++;
-							}
-						} catch (Exception e) {
-							errors.add(new JsonObject().putString("key", "parse.line.error").putArray("params",
-									new JsonArray().addString(Integer.toString(rowIdx))));
-						}
-
-						tx.add(query, params);
-					}
+			CSVReader csvReader = getCsvReader(path, charset);
+			String[] values;
+			int rowIdx = 0;
+			while ((values = csvReader.readNext()) != null) {
+				final List<String> line = new LinkedList<>(Arrays.asList(values));
+				if (additionalColumn) {
+					line.add(0, "");
 				}
-			});
+				lines.add(line.toArray(new String[line.size()]));
+				if (rowIdx == 0) {
+					if (additionalColumn) {
+						lines.get(0)[externalIdIdx] = "externalId";
+					}
+					rowIdx++;
+					continue;
+				}
+
+				final JsonObject params = new JsonObject();
+				if (!additionalColumn && values[externalIdIdx] != null && !values[externalIdIdx].isEmpty()) {
+					tx.add(NOP_QUERY, params.putString("externalId", values[externalIdIdx]));
+				} else {
+					params.putString("id", structureId).putString("profile", profile);
+					try {
+						int i = 0;
+						for (String c : columns) {
+							switch (c) {
+								case "lastName":
+									params.putString("lastName", lower(values[i]));
+									break;
+								case "firstName":
+									params.putString("firstName", lower(values[i]));
+									break;
+								case "birthDate":
+									if ("Student".equals(profile)) {
+										Matcher m;
+
+										if (values[i] != null &&
+												(m = CsvFeeder.frenchDatePatter.matcher(values[i])).find()) {
+											params.putString("birthDate", m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+										} else {
+											params.putString("birthDate", values[i]);
+										}
+									}
+									break;
+							}
+							i++;
+						}
+					} catch (Exception e) {
+						errors.add(new JsonObject().putString("key", "parse.line.error").putArray("params",
+								new JsonArray().addString(Integer.toString(rowIdx))));
+					}
+
+					tx.add(query, params);
+				}
+				rowIdx++;
+			}
 		} catch (Exception e) {
 			addError(errors, "error.read.file", path);
 			handler.handle(errors);
@@ -168,20 +162,16 @@ public class MappingFinder {
 						}
 					}
 					vertx.fileSystem().deleteSync(path);
-					csvParser.write(path, new CSVWriteProc() {
-						@Override
-						public void process(CSVWriter out) {
-							out.writeAll(lines);
-							try {
-								out.flush();
-								out.close();
-							} catch (IOException e) {
-								log.error("Error writing file.", e);
-								addError(errors, "error.write.file", path);
-							}
-							handler.handle(errors);
-						}
-					});
+
+					try {
+						CSVWriter writer = new CSVWriter(new FileWriter(path), ';');
+						writer.writeAll(lines);
+						writer.close();
+					} catch (IOException e) {
+						log.error("Error writing file.", e);
+						addError(errors, "error.write.file", path);
+					}
+					handler.handle(errors);
 				} else {
 					addError(errors, "error.find.ids");
 					handler.handle(errors);

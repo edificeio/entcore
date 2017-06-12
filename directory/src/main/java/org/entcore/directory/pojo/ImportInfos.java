@@ -43,9 +43,7 @@ public class ImportInfos {
 
 	private String UAI;
 	private String structureName;
-	private static final List<String> be1dFiles =
-			Arrays.asList("CSVExtraction-eleves.csv", "CSVExtraction-enseignants.csv", "CSVExtraction-responsables.csv");
-	enum ImportType {  CSV, BE1D }
+	enum ImportType { CSV }
 	private ImportType type;
 	private boolean preDelete = false;
 	private boolean transition = false;
@@ -133,26 +131,6 @@ public class ImportInfos {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.id"));
 		} else if (isEmpty(structureName)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.name"));
-		} else if (ImportType.BE1D == type) {
-			final FileSystem fs = vertx.fileSystem();
-			fs.readDir(path, ".*\\.csv$", new Handler<AsyncResult<String[]>>() {
-				@Override
-				public void handle(AsyncResult<String[]> list) {
-					if (list.succeeded()) {
-						final List<String> l = new LinkedList<>();
-						for (String f: list.result()) {
-							l.add(f.substring(path.length() + 1));
-						}
-						if (l.containsAll(be1dFiles)) {
-							moveFiles(list.result(), fs, handler);
-						} else {
-							handler.handle(new DefaultAsyncResult<>("missing.be1d.files"));
-						}
-					} else {
-						handler.handle(new DefaultAsyncResult<String>(list.cause()));
-					}
-				}
-			});
 		} else if (ImportType.CSV == type) {
 			final FileSystem fs = vertx.fileSystem();
 			fs.readDir(path, new Handler<AsyncResult<String[]>>() {

@@ -26,8 +26,6 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
-import org.entcore.feeder.be1d.Be1dFeeder;
-import org.entcore.feeder.be1d.Be1dValidator;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.csv.CsvImportsLauncher;
 import org.entcore.feeder.csv.CsvValidator;
@@ -88,7 +86,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		defaultFeed = container.config().getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
-		feeds.put("BE1D", new Be1dFeeder(vertx, getFilesDirectory("BE1D")));
 		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
@@ -259,10 +256,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-create-tenant" : manual.createOrUpdateTenant(message);
 				break;
-			case "manual-csv-class-student" : manual.csvClassStudent(message);
-				break;
-			case "manual-csv-class-relative" : manual.csvClassRelative(message);
-				break;
+//			case "manual-csv-class-student" : manual.csvClassStudent(message);
+//				break;
+//			case "manual-csv-class-relative" : manual.csvClassRelative(message);
+//				break;
 			case "manual-structure-attachment" : manual.structureAttachment(message);
 				break;
 			case "manual-structure-detachment" : manual.structureDetachment(message);
@@ -325,10 +322,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				v = new CsvValidator(vertx, acceptLanguage,
 						container.config().getObject("csvMappings", new JsonObject()));
 				break;
-			case "BE1D":
-				v = new Be1dValidator(vertx, container.config().getString("uai-separator", "_"),
-						acceptLanguage);
-				break;
 			case "AAF":
 			case "AAF1D":
 				final Report report = new Report(acceptLanguage);
@@ -364,7 +357,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								for (Object o : res) {
 									if (!(o instanceof JsonObject)) continue;
 									JsonObject j = (JsonObject) o;
-									String filename = j.getString("profile"); // TODO manage BE1D
+									String filename = j.getString("profile");
 									r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
 											.putString("translatedProfile", r.translate(j.getString("profile"))));
 								}
