@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.utils;
 
+import com.opencsv.CSVReader;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -97,6 +98,16 @@ public class CSVUtil {
 			}
 		}
 		return "ISO-8859-1";
+	}
+
+	public static CSVReader getCsvReader(String file, String charset)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		return getCsvReader(file, charset, 0);
+	}
+
+	public static CSVReader getCsvReader(String file, String charset, int skipLines)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		return new CSVReader(new InputStreamReader(new FileInputStream(file), charset), ';', '"', skipLines);
 	}
 
 }

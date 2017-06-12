@@ -19,8 +19,7 @@
 
 package org.entcore.feeder.csv;
 
-import au.com.bytecode.opencsv.CSV;
-import au.com.bytecode.opencsv.CSVReadProc;
+import com.opencsv.CSVReader;
 import org.entcore.feeder.Feed;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
@@ -42,14 +41,15 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static org.entcore.feeder.be1d.Be1dFeeder.generateUserExternalId;
-import static org.entcore.feeder.be1d.Be1dFeeder.frenchDatePatter;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
+import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvFeeder implements Feed {
 
+	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Logger log = LoggerFactory.getLogger(CsvFeeder.class);
 	public static final long DEFAULT_STUDENT_SEED = 0l;
 	private final ColumnsMapper columnsMapper;
@@ -179,40 +179,39 @@ public class CsvFeeder implements Feed {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
-		final CSVReadProc proc = new CSVReadProc() {
-			@Override
-			public void procRow(int i, String... strings) {
-				if (i == 0) {
-					columnsMapper.getColumsNames(strings, columns, handler);
-					if (columns.isEmpty()) {
-						handler.handle(new ResultMessage().error("invalid.columns"));
-						return;
-					}
-					for (int j = 0; j < columns.size(); j++) {
-						if ("externalId".equals(columns.get(j))) {
-							externalIdIdx.set(j);
-							break;
-						}
-					}
-				} else if (externalIdIdx.get() >= 0) {
-					externalIds.add(strings[externalIdIdx.get()]);
-				}
-			}
-		};
 		final AtomicInteger count = new AtomicInteger(files.length);
 		for (final String file: files) {
 			CSVUtil.getCharset(vertx, file, new Handler<String>() {
 				@Override
 				public void handle(String charset) {
-					CSV csvParser = CSV
-							.ignoreLeadingWhiteSpace()
-							.separator(';')
-							.skipLines(0)
-							.charset(charset)
-							.create();
-					csvParser.read(file, proc);
-					if (count.decrementAndGet() == 0) {
-						queryNotModifiableIds(handler, externalIds);
+					try {
+						CSVReader csvReader = getCsvReader(file, charset);
+						String[] strings;
+						int i = 0;
+						while ((strings = csvReader.readNext()) != null) {
+							if (i == 0) {
+								columnsMapper.getColumsNames(strings, columns, handler);
+								if (columns.isEmpty()) {
+									handler.handle(new ResultMessage().error("invalid.columns"));
+									return;
+								}
+								for (int j = 0; j < columns.size(); j++) {
+									if ("externalId".equals(columns.get(j))) {
+										externalIdIdx.set(j);
+										break;
+									}
+								}
+							} else if (externalIdIdx.get() >= 0) {
+								externalIds.add(strings[externalIdIdx.get()]);
+							}
+							i++;
+						}
+						if (count.decrementAndGet() == 0) {
+							queryNotModifiableIds(handler, externalIds);
+						}
+					} catch (Exception e) {
+						handler.handle(new ResultMessage().error("csv.exception"));
+						log.error("csv.exception", e);
 					}
 				}
 			});
@@ -265,16 +264,12 @@ public class CsvFeeder implements Feed {
 //			return;
 //		}
 
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(0)
-				.charset(charset)
-				.create();
-		final List<String> columns = new ArrayList<>();
-		csvParser.read(file, new CSVReadProc() {
-			@Override
-			public void procRow(int i, String... strings) {
+		try {
+			CSVReader csvParser = getCsvReader(file, charset);
+			final List<String> columns = new ArrayList<>();
+			String[] strings;
+			int i = 0;
+			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
 					columnsMapper.getColumsNames(strings, columns, handler);
 				} else if (!columns.isEmpty()) {
@@ -336,7 +331,7 @@ public class CsvFeeder implements Feed {
 								}
 						}
 						if ("classes".equals(c)) {
-							String [] cc = v.split("\\$");
+							String[] cc = v.split("\\$");
 							if (cc.length == 2 && !cc[1].matches("[0-9]+")) {
 								final String fosEId = importer.getFieldOfStudy().get(cc[1]);
 								if (fosEId != null) {
@@ -435,27 +430,22 @@ public class CsvFeeder implements Feed {
 							break;
 					}
 				}
+				i++;
 			}
 
-			private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
-				if (mapping.trim().isEmpty()) return;
-				try {
-					linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-				} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-					log.error(e.getMessage(), e);
-				}
+			switch (profile) {
+				case "Teacher":
+					importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
+					break;
+				case "Relative":
+					importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
+					importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
+					importer.addRelativeProperties(getSource());
+					break;
 			}
-
-		});
-		switch (profile) {
-			case "Teacher":
-				importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
-				break;
-			case "Relative":
-				importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
-				importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
-				importer.addRelativeProperties(getSource());
-				break;
+		} catch (Exception e) {
+			handler.handle(new ResultMessage().error("csv.exception"));
+			log.error("csv.exception", e);
 		}
 //		importer.markMissingUsers(structure.getExternalId(), new Handler<Void>() {
 //			@Override
@@ -464,6 +454,31 @@ public class CsvFeeder implements Feed {
 //			}
 //		});
 	//	importer.persist(handler);
+	}
+
+	static void relativeStudentMapping(JsonArray linkStudents, String mapping) {
+		if (mapping.trim().isEmpty()) return;
+		try {
+			linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	public static void generateUserExternalId(JsonObject props, String c, Structure structure, long seed) {
+		String externalId = props.getString("externalId");
+		if (externalId != null && !externalId.trim().isEmpty()) {
+			return;
+		}
+		String mapping = structure.getExternalId()+props.getString("surname", "")+
+				props.getString("lastName", "")+props.getString("firstName", "")+
+				props.getString("email","")+props.getString("title","")+
+				props.getString("homePhone","")+props.getString("mobile","")+c+seed;
+		try {
+			props.putString("externalId", Hash.sha1(mapping.getBytes("UTF-8")));
+		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 }

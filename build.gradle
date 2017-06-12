@@ -168,7 +168,7 @@ project(':feeder') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
-    compile "net.sf.opencsv:opencsv:$opencsvVersion"
+    compile "com.opencsv:opencsv:$opencsvVersion"
     compile "com.googlecode.juniversalchardet:juniversalchardet:$juniversalchardetVersion"
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
   }

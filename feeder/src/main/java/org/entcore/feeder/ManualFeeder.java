@@ -19,14 +19,12 @@
 
 package org.entcore.feeder;
 
-import au.com.bytecode.opencsv.CSV;
-import au.com.bytecode.opencsv.CSVReadProc;
+import com.opencsv.CSVReader;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.user.UserInfos;
-import org.entcore.feeder.be1d.Be1dFeeder;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
@@ -38,19 +36,25 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.entcore.feeder.utils.FeederHelper.detectCharset;
 
 public class ManualFeeder extends BusModBase {
 
+	public static final String [] studentHeader = new String[] { "lastName", "surname", "firstName",
+			"birthDate", "gender", "address", "zipCode", "city", "country", "#skip#", "#skip#",
+			"#skip#", "#skip#", "sector", "level", "classes", "#break#" };
+	public static final String [] relativeHeader = new String[] { "title", "surname", "lastName", "firstName",
+			"address", "zipCode", "city", "country", "email", "homePhone", "workPhone", "mobile" };
+	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Validator structureValidator = new Validator("dictionary/schema/Structure.json");
 	private static final Validator classValidator = new Validator("dictionary/schema/Class.json");
 	public static final Map<String, Validator> profiles;
@@ -542,13 +546,7 @@ public class ManualFeeder extends BusModBase {
 						sendError(message, "invalid.class.id");
 						return;
 					}
-					String charset = detectCharset(csv);
-					CSV csvParser = CSV
-							.ignoreLeadingWhiteSpace()
-							.separator(';')
-							.skipLines(1)
-							.charset(charset)
-							.create();
+
 					final StatementsBuilder statementsBuilder = new StatementsBuilder();
 					final JsonObject params = new JsonObject().putString("classId", classId);
 					final String query =
@@ -559,25 +557,30 @@ public class ManualFeeder extends BusModBase {
 							"RETURN DISTINCT u.id as id";
 					final Validator v = profiles.get("Student");
 					final JsonArray errors = new JsonArray();
-					csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
 
-						@Override
-						public void procRow(int rowIdx, String... values) {
+					try {
+						String charset = detectCharset(csv);
+						CSVReader csvReader = new CSVReader(new InputStreamReader(
+								new ByteArrayInputStream(csv.getBytes()), charset), ';', '"', 1);
+						String[] values;
+						int rowIdx = 0;
+						while ((values = csvReader.readNext()) != null) {
 							int i = 0;
 							JsonObject props = new JsonObject();
-							while (i < values.length && !"#break#".equals(Be1dFeeder.studentHeader[i])) {
-								if ("birthDate".equals(Be1dFeeder.studentHeader[i]) && values[i] != null) {
+							props.putArray("profiles", new JsonArray().add("Student"));
+							while (i < values.length && !"#break#".equals(studentHeader[i])) {
+								if ("birthDate".equals(studentHeader[i]) && values[i] != null) {
 									Matcher m;
 									if (values[i] != null &&
-											(m = Be1dFeeder.frenchDatePatter.matcher(values[i])).find()) {
-										props.putString(Be1dFeeder.studentHeader[i],
+											(m = frenchDatePatter.matcher(values[i])).find()) {
+										props.putString(studentHeader[i],
 												m.group(3) + "-" + m.group(2) + "-" + m.group(1));
 									} else {
-										props.putString(Be1dFeeder.studentHeader[i], values[i].trim());
+										props.putString(studentHeader[i], values[i].trim());
 									}
-								} else if (!"#skip#".equals(Be1dFeeder.studentHeader[i])) {
+								} else if (!"#skip#".equals(studentHeader[i])) {
 									if (values[i] != null && !values[i].trim().isEmpty()) {
-										props.putString(Be1dFeeder.studentHeader[i], values[i].trim());
+										props.putString(studentHeader[i], values[i].trim());
 									}
 								}
 								i++;
@@ -596,7 +599,10 @@ public class ManualFeeder extends BusModBase {
 							props.putString("source", "CLASS_PARAM");
 							statementsBuilder.add(query, params.copy().putObject("props", props));
 						}
-					});
+					} catch (Exception e) {
+						logger.error("csv.exception", e);
+						sendError(message, "csv.exception");
+					}
 					if (errors.size() == 0) {
 						neo4j.executeTransaction(statementsBuilder.build(), null, true,
 								new Handler<Message<JsonObject>>() {
@@ -638,13 +644,7 @@ public class ManualFeeder extends BusModBase {
 						sendError(message, "invalid.class.id");
 						return;
 					}
-					String charset = detectCharset(csv);
-					CSV csvParser = CSV
-							.ignoreLeadingWhiteSpace()
-							.separator(';')
-							.skipLines(1)
-							.charset(charset)
-							.create();
+
 
 					final StatementsBuilder statementsBuilder = new StatementsBuilder();
 					final JsonObject params = new JsonObject().putString("classId", classId);
@@ -660,16 +660,20 @@ public class ManualFeeder extends BusModBase {
 							"RETURN DISTINCT u.id as id";
 					final Validator v = profiles.get("Relative");
 					final JsonArray errors = new JsonArray();
-					csvParser.readAndClose(new StringReader(csv), new CSVReadProc() {
-
-						@Override
-						public void procRow(int rowIdx, String... values) {
+					try {
+						String charset = detectCharset(csv);
+						CSVReader csvReader = new CSVReader(new InputStreamReader(
+								new ByteArrayInputStream(csv.getBytes()), charset), ';', '"', 1);
+						String[] values;
+						int rowIdx = 0;
+						while ((values = csvReader.readNext()) != null) {
 							int i = 0;
 							JsonObject props = new JsonObject();
-							while (i < Be1dFeeder.relativeHeader.length) {
-								if (!"#skip#".equals(Be1dFeeder.relativeHeader[i])) {
+							props.putArray("profiles", new JsonArray().add("Relative"));
+							while (i < relativeHeader.length) {
+								if (!"#skip#".equals(relativeHeader[i])) {
 									if (values[i] != null && !values[i].trim().isEmpty()) {
-										props.putString(Be1dFeeder.relativeHeader[i], values[i].trim());
+										props.putString(relativeHeader[i], values[i].trim());
 									}
 								}
 								i++;
@@ -700,7 +704,10 @@ public class ManualFeeder extends BusModBase {
 							statementsBuilder.add(query, params.copy()
 									.putObject("props", props).putArray("linkStudents", linkStudents));
 						}
-					});
+					} catch (Exception e) {
+						logger.error("csv.exception", e);
+						sendError(message, "csv.exception");
+					}
 					if (errors.size() == 0) {
 						neo4j.executeTransaction(statementsBuilder.build(), null, true,
 								new Handler<Message<JsonObject>>() {
@@ -724,7 +731,7 @@ public class ManualFeeder extends BusModBase {
 				props.getString("homePhone","")+props.getString("mobile","")+c;
 		try {
 			props.putString("externalId", Hash.sha1(mapping.getBytes("UTF-8")));
-		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+		} catch (NoSuchAlgorithmException |UnsupportedEncodingException e) {
 			logger.error(e.getMessage(), e);
 		}
 	}
