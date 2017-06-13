@@ -1,0 +1,1 @@
+CREATE INDEX ON :Backup(structureIds);

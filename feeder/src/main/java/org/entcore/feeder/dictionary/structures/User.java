@@ -277,6 +277,12 @@ public class User {
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
 				"SET b.RELATED_INCOMING = ids ";
 		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}})-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure), " +
+				" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+				"WITH b, COLLECT(s.id) as sIds " +
+				"SET b.structureIds = sIds";
+		transaction.add(query, params);
 	}
 
 	public static void preDelete(String userId, TransactionHelper transaction) {

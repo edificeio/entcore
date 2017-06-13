@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
 import { AbstractControl, NgForm } from '@angular/forms'
 import { LoadingService, NotifyService } from '../../../../services'
-import { UserModel, StructureModel, UserDetailsModel } from '../../../../store'
+import { UserModel, StructureModel, UserDetailsModel, globalStore } from '../../../../store'
 import { Subscription } from 'rxjs/Subscription'
 import { ActivatedRoute, Data, Router } from '@angular/router'
 import { UsersStore } from '../../store'
@@ -12,6 +12,24 @@ import { UsersStore } from '../../store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserDetail implements OnInit, OnDestroy{
+
+    private userSubscriber: Subscription
+    private dataSubscriber: Subscription
+
+    private forceDuplicates : boolean
+    
+    private _user : UserModel
+    private details : UserDetailsModel
+    private structure: StructureModel = this.usersStore.structure
+    set user(user: UserModel) {
+        this._user = user
+        this.details = user.userDetails
+        if(this.codeInput)
+            this.codeInput.reset()
+        if(this.administrativeForm)
+            this.administrativeForm.reset()
+    }
+    get user(){ return this._user }
 
     constructor(private ls: LoadingService,
         private ns: NotifyService,
@@ -46,23 +64,6 @@ export class UserDetail implements OnInit, OnDestroy{
         this.dataSubscriber.unsubscribe()
     }
 
-    // Subscription
-    private userSubscriber: Subscription
-    private dataSubscriber: Subscription
-
-    set user(user: UserModel) {
-        this._user = user
-        this.details = user.userDetails
-        if(this.codeInput)
-            this.codeInput.reset()
-        if(this.administrativeForm)
-            this.administrativeForm.reset()
-    }
-    get user(){ return this._user }
-    private _user : UserModel
-    private details : UserDetailsModel
-    private structure: StructureModel = this.usersStore.structure
-
     private isContextAdml() {
         return this.details && this.details.functions &&
             this.details.functions[0][0] &&
@@ -73,7 +74,6 @@ export class UserDetail implements OnInit, OnDestroy{
         return this.user.duplicates && this.user.duplicates.length > 0
     }
 
-    private forceDuplicates : boolean
     private openDuplicates() {
         this.forceDuplicates = null
         setTimeout(() => {
@@ -87,6 +87,7 @@ export class UserDetail implements OnInit, OnDestroy{
         this.ls.perform('user.block', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
+                this.updateBlockedInRelatedStructuresUserlist()
 
                 this.ns.success(
                     { key: 'notify.user.toggleblock.content', 
@@ -101,5 +102,84 @@ export class UserDetail implements OnInit, OnDestroy{
                     parameters: { blocked: !this.user.blocked }}, 
                     err)
             })
+    }
+
+    private isRemovable() {
+        return (this.user.disappearanceDate || (this.user.source !== 'AAF' && this.user.source !== "AAF1D")
+            && !this.user.deleteDate)
+    }
+
+    private removeUser() {
+        this.ls.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
+            .then(() => {
+                this.user.deleteDate = Date.now()
+                this.updateDeleteDateInRelatedStructuresUserlist()
+                this.cdRef.markForCheck()
+                
+                this.ns.success(
+                    { key: 'notify.user.remove.content',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    { key: 'notify.user.remove.title',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}})
+            })
+            .catch(err => {
+                this.ns.error(
+                    { key: 'notify.user.remove.error.content',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    { key: 'notify.user.remove.error.title',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    err)
+            })
+    }
+
+    private restoreUser() {
+        this.ls.perform('portal-content', this.user.restore())
+            .then(() => {
+                this.user.deleteDate = null
+                this.updateDeleteDateInRelatedStructuresUserlist()
+
+                this.ns.success(
+                    { key: 'notify.user.restore.content',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    { key: 'notify.user.restore.title',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}}
+                )
+            })
+            .catch(err => {
+                this.ns.error(
+                    { key: 'notify.user.restore.error.content',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    { key: 'notify.user.restore.error.title',
+                    parameters: { user: this.details.firstName + ' ' + this.details.lastName}},
+                    err)
+            })
+    }
+
+    private updateDeleteDateInRelatedStructuresUserlist() {
+        this.user.structures.forEach(us => {
+            if (us.id !== this.usersStore.structure.id) {
+                let s = globalStore.structures.data.find(gs => gs.id === us.id)
+                if (s.users && s.users.data && s.users.data.length > 0) {
+                    let u = s.users.data.find(u => u.id === this.user.id)
+                    if (u) {
+                        u.deleteDate = this.user.deleteDate
+                    }
+                }
+            }
+        })
+    }
+
+    private updateBlockedInRelatedStructuresUserlist() {
+        this.user.structures.forEach(us => {
+            if (us.id !== this.usersStore.structure.id) {
+                let s = globalStore.structures.data.find(gs => gs.id === us.id)
+                if (s.users && s.users.data && s.users.data.length > 0) {
+                    let u = s.users.data.find(u => u.id === this.user.id)
+                    if (u) {
+                        u.blocked = this.user.blocked
+                    }
+                }
+            }
+        })
     }
 }

@@ -34,7 +34,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     functionalGroups?: GroupModel[]
     manualGroups?: GroupModel[]
     administrativeStructures?: Array<string>
-    deleteDate?: number
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {

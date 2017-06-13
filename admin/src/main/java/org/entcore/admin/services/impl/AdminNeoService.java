@@ -53,7 +53,18 @@ public class AdminNeoService implements AdminService {
 			"CASE WHEN duplicate IS NULL THEN [] " +
 			"ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
 			"COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +
-			"ORDER BY lastName, firstName";
+			"ORDER BY lastName, firstName " +
+			"UNION " +
+			"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+			"WHERE {structureId} IN b.structureIds " +
+			"MATCH (s: Structure) " +
+			"WHERE s.id IN b.structureIds " +
+			"WITH u, b, s " +
+			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, " +
+			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.blocked as blocked, " +
+			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as duplicates, " +
+			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
+			"ORDER BY lastName, firstName ";
 
 		JsonObject params = new JsonObject().putString("structureId", structureId);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));

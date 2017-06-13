@@ -663,6 +663,18 @@ user-list {
             float: right;
             font-size: 1.3em;
         }
+        &.deleted::after {
+            content: "\f057";
+            font-family: fontAwesome;
+            float: right;
+            font-size: 1.3em;
+        }
+        &.disappeared::after {
+            content: "\f251";
+            font-family: fontAwesome;
+            float: right;
+            font-size: 1.3em;
+        }
     }
 }
 

@@ -89,7 +89,9 @@ export class UserList implements OnInit, OnDestroy {
         return {
             selected: this.isSelected(user),
             blocked: user.blocked,
-            duplicates: user.duplicates && user.duplicates.length > 0
+            duplicates: user.duplicates && user.duplicates.length > 0,
+            deleted: user.deleteDate,
+            disappeared: user.disappearanceDate
         }
     }
 

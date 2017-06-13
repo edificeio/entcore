@@ -7,7 +7,8 @@ export class UserModel extends Model<UserModel> {
 
     constructor() {
         super({
-            create: '/directory/api/user'
+            create: '/directory/api/user',
+            delete: '/directory/user'
         })
         this.userDetails = new UserDetailsModel()
     }
@@ -32,6 +33,8 @@ export class UserModel extends Model<UserModel> {
     structures: { id: string, name: string }[]
     classes: { id: string, name: string}[]
     duplicates: { id: string, firstName: string, lastName: string, code: string, structures: string[] }[]
+    deleteDate?: number
+    disappearanceDate?: number
 
     userDetails: UserDetailsModel
 
@@ -146,5 +149,10 @@ export class UserModel extends Model<UserModel> {
         return this.http.post('/directory/api/user'
             , userPayload
             , {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}})
+    }
+
+    restore() {
+        return this.http.put('/directory/restore/user', null, {params: {'userId': this.id}})
+            .then(() => this.deleteDate = null)
     }
 }

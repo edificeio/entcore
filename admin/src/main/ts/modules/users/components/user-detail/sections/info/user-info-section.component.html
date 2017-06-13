@@ -19,7 +19,7 @@
     <form-field label="source">
         <span>{{ details.source }}</span>
     </form-field>
-    <form-field label="administration">
+    <form-field label="administration" *ngIf="!user.deleteDate">
         <button *ngIf="!details.functions || !details.functions[0] || !details.functions[0][0]" 
             (click)="addAdml()" 
             class="thin input-line">

@@ -21,24 +21,34 @@
     </div>
 
     <div class="panel-header-content">
+        <spinner-cube class="button-spinner" waitingFor="user.restore"></spinner-cube>
+        
+        
         <div class="left">
             <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
-            <div>
+            <div *ngIf="!user.deleteDate">
                 <button (click)="toggleUserBlock()" [disabled]="ls.isLoading('user.block', 1)" class="relative">
                     <spinner-cube class="button-spinner" waitingFor="user.block"></spinner-cube>
                     <s5l [s5l-params]="[details.blocked]">toggle.account</s5l>
                     <i class="fa fa-ban"></i>
                 </button>
             </div>
-            <div>
-                <button>
+            <div *ngIf="isRemovable()">
+                <button (click)="removeUser()">
+                    <spinner-cube class="button-spinner" waitingFor="user.remove"></spinner-cube>
                     <s5l>delete.account</s5l>
                     <i class="fa fa-trash"></i>
                 </button>
             </div>
+            <div *ngIf="user.deleteDate">
+                <button (click)="restoreUser()">
+                    <s5l>restore.account</s5l>
+                    <i class="fa fa-upload"></i>
+                </button>
+            </div>
         </div>
 
-        <div class="right">
+        <div class="right" *ngIf="!user.deleteDate">
             <div>
                 <button class="big">
                     <s5l>users.details.button.comm.rules</s5l>
@@ -58,25 +68,34 @@
 
 <div>
 
-    <user-info-section [user]="user" [structure]="structure"></user-info-section>
+    <user-info-section [user]="user" [structure]="structure">
+    </user-info-section>
 
-    <user-administrative-section [user]="user" [structure]="structure"></user-administrative-section>
+    <user-administrative-section [user]="user" [structure]="structure">
+    </user-administrative-section>
     
-    <user-duplicates-section [user]="user" [structure]="structure" [open]="forceDuplicates"></user-duplicates-section>
+    <user-duplicates-section [user]="user" [structure]="structure" [open]="forceDuplicates">
+    </user-duplicates-section>
     
-    <user-relatives-section [user]="user" [structure]="structure"></user-relatives-section>
+    <user-relatives-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-relatives-section>
     
-    <user-children-section [user]="user" [structure]="structure"></user-children-section>
+    <user-children-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-children-section>
     
-    <panel-section section-title="users.details.section.functions" [folded]="true">
+    <panel-section section-title="users.details.section.functions" [folded]="true" *ngIf="!user.deleteDate">
         <ul><li *ngFor="let f of user?.aafFunctions">{{ f }}</li></ul>
     </panel-section>
 
-    <user-structures-section [user]="user" [structure]="structure"></user-structures-section>
+    <user-structures-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-structures-section>
     
-    <user-classes-section [user]="user" [structure]="structure"></user-classes-section>
+    <user-classes-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-classes-section>
 
-    <user-functionalgroups-section [user]="user" [structure]="structure"></user-functionalgroups-section>
+    <user-functionalgroups-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-functionalgroups-section>
 
-    <user-manualgroups-section [user]="user" [structure]="structure"></user-manualgroups-section>
+    <user-manualgroups-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    </user-manualgroups-section>
 </div>
