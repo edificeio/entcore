@@ -180,7 +180,7 @@ window.RTE = (function () {
 			this.nextRanges = [];
 
 			this.applyNextRanges = function(){
-				let selection = window.getSelection();
+				var selection = window.getSelection();
 				selection.removeAllRanges();
 				if(selection.rangeCount > 1){
 					this.nextRanges.forEach(function(range){
@@ -460,7 +460,7 @@ window.RTE = (function () {
 			};
 
 			this.isCursor = function () {
-				let sel = window.getSelection();
+				var sel = window.getSelection();
 				if(sel.rangeCount > 0 && this.instance.editZone.find(sel.getRangeAt(0).startContainer).length > 0){
 					this.rangeCount = sel.rangeCount;
 					this.range = sel.getRangeAt(0);
@@ -471,19 +471,19 @@ window.RTE = (function () {
 				this.range.startOffset === this.range.endOffset;
 			}
 
-			let wrapTextOnNode = function(el, node, last){
+			var wrapTextOnNode = function(el, node, last){
 				if(!node){
 					node = this.range.commonAncestorContainer;
 				}
 				if(node.nodeType === 3){
-					let start = 0;
+					var start = 0;
 					if(node === this.range.startContainer){
 						start = this.range.startOffset;
 					}
-					let textNode = document.createTextNode(node.textContent.substring(start));
+					var textNode = document.createTextNode(node.textContent.substring(start));
 					if(node === this.range.endContainer){
 						textNode = document.createTextNode(node.textContent.substring(start, this.range.endOffset));
-						let nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
+						var nextText = document.createTextNode(node.textContent.substring(this.range.endOffset));
 						node.parentNode.insertBefore(nextText, node.nextSibling);
 					}
 					el.append(textNode);
@@ -491,18 +491,18 @@ window.RTE = (function () {
 					node.textContent = node.textContent.substring(0, start);
 				}
 
-				let foundFirst = false;
+				var foundFirst = false;
 				if(last){
 					foundFirst = true;
 				}
-				let nodes = [];
-				for(let i = 0; i < node.childNodes.length; i++){
-					let child = node.childNodes[i];
+				var nodes = [];
+				for(var i = 0; i < node.childNodes.length; i++){
+					var child = node.childNodes[i];
 					nodes.push(child);
 				}
 
-				for(let i = 0; i < nodes.length; i++){
-					let child = nodes[i];
+				for(var i = 0; i < nodes.length; i++){
+					var child = nodes[i];
 					
 					if(child === this.range.startContainer){
 						foundFirst = true;
@@ -510,21 +510,21 @@ window.RTE = (function () {
 							el.append(child);
 						}
 						if(child.nodeType === 1){
-							let last = child.childNodes.length;
+							var last = child.childNodes.length;
 							if(this.range.startContainer === this.range.endContainer){
 								last = this.range.endOffset;
 							}
 
-							for(let i = this.range.startOffset; i < last; i++){
+							for(var i = this.range.startOffset; i < last; i++){
 								el.append(child.childNodes[i]);
 							}
 						}
 						else{
-							let textNode;
+							var textNode;
 							if(this.range.startContainer === this.range.endContainer){
 								textNode = document.createTextNode(child.textContent.substring(this.range.startOffset, this.range.endOffset));
 								
-								let nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
+								var nextText = document.createTextNode(child.textContent.substring(this.range.endOffset));
 								child.parentNode.insertBefore(nextText, child.nextSibling);
 								child.textContent = child.textContent.substring(0, this.range.startOffset);
 							}
@@ -539,7 +539,7 @@ window.RTE = (function () {
 					}
 
 					if(child.contains(this.range.startContainer)){
-						let container = document.createElement(child.nodeName);
+						var container = document.createElement(child.nodeName);
 						$(container).attr('style', $(child).attr('style'));
 						el.append(container);
 						wrapTextOnNode(container, child);
@@ -553,13 +553,13 @@ window.RTE = (function () {
 
 					if(child === this.range.endContainer){
 						if(child.nodeType === 1){
-							let last = this.range.endOffset;
-							for(let i = this.range.startOffset; i < last; i++){
+							var last = this.range.endOffset;
+							for(var i = this.range.startOffset; i < last; i++){
 								el.append(child.childNodes[i]);
 							}
 						}
 						else{
-							let textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
+							var textNode = document.createTextNode(child.textContent.substring(0, this.range.endOffset));
 							child.textContent = child.textContent.substring(this.range.endOffset);
 
 							el.append(textNode);
@@ -569,7 +569,7 @@ window.RTE = (function () {
 					}
 
 					if(child.contains(this.range.endContainer)){
-						let container = document.createElement(child.nodeName);
+						var container = document.createElement(child.nodeName);
 						$(container).attr('style', $(child).attr('style'));
 						el.append(container);
 						wrapTextOnNode(container, child, true);
@@ -592,9 +592,9 @@ window.RTE = (function () {
 					this.range.startContainer === this.range.endContainer &&
 					this.range.startContainer.nodeType === 1
 				){
-					let container = this.range.startContainer;
+					var container = this.range.startContainer;
 					if(this.instance.editZone[0] === this.range.startContainer){
-						let newEl = document.createElement('div');
+						var newEl = document.createElement('div');
 						
 						while (this.instance.editZone[0].childNodes.length) {
 							$(newEl).append(this.instance.editZone[0].childNodes[0]);
@@ -671,7 +671,7 @@ window.RTE = (function () {
 			}
 
 			function applyCSSBetween(range, nodeStart, nodeEnd, css, keepRangeStart, startOffset) {
-				let startSet = false;
+				var startSet = false;
 			    if (startOffset === undefined) {
 			        startOffset = range.startOffset;
 			    }
@@ -679,7 +679,7 @@ window.RTE = (function () {
 			    var i = startOffset;
 			    do {
 			        if (sibling.nodeType === 1) {
-						let r;
+						var r;
 						if(!keepRangeStart && !startSet){
 							r = document.createRange();
 							r.setStart(sibling, 0);
@@ -699,7 +699,7 @@ window.RTE = (function () {
 			                el.html(sibling.textContent.substring(startOffset, range.endOffset));
 			                if (el.html().length > 0) {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
-			                    let afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
+			                    var afterText = document.createTextNode(sibling.textContent.substring(range.endOffset));
 			                    sibling.parentNode.insertBefore(afterText, el[0].nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 								that.moveRanges(range, sibling, -(el.text().length), afterText);
@@ -725,7 +725,7 @@ window.RTE = (function () {
 			                    sibling.parentNode.insertBefore(el[0], sibling);
 			                    sibling.textContent = sibling.textContent.substring(range.endOffset);
 								that.moveRanges(range, sibling, -(el.text().length + range.startOffset));
-			                    let r = that.nextRanges[that.nextRanges.length - 1];
+			                    var r = that.nextRanges[that.nextRanges.length - 1];
 			                    r.setEnd(el[0], 1);
 			                }
 			            }
@@ -735,14 +735,14 @@ window.RTE = (function () {
 			                    sibling.parentNode.insertBefore(el[0], sibling.nextSibling);
 			                    sibling.textContent = sibling.textContent.substring(0, startOffset);
 			                    if (!keepRangeStart && !startSet) {
-			                        let r = document.createRange();
+			                        var r = document.createRange();
 			                        r.setStart(el[0], 0);
 									r.setEnd(el[0], 1);
 			                        that.nextRanges.push(r);
 									startSet = true;
 			                    }
 								else{
-									let r = that.nextRanges[that.nextRanges.length - 1];
+									var r = that.nextRanges[that.nextRanges.length - 1];
 									r.setEnd(el[0], 1);
 								}
 			                }
@@ -928,7 +928,7 @@ window.RTE = (function () {
 			}
 
 			this.moveRanges = function(mover, container, offset, newContainer){
-				let selection = window.getSelection();
+				var selection = window.getSelection();
 				this.ranges.forEach(function(range){
 					if(range === mover){
 						return;
@@ -950,19 +950,19 @@ window.RTE = (function () {
 
 			this.css = function(params){
 				if(typeof params === 'object'){
-					let selection = window.getSelection();
+					var selection = window.getSelection();
 					if(!this.instance.editZone.html()){
 						this.instance.editZone.html('<div>&#8203;</div>');
 					}
 					if(!this.instance.editZone.is(':focus')){
 						this.instance.editZone[0].focus();
-						let range = selection.getRangeAt(0);
+						var range = selection.getRangeAt(0);
 						this.range = range;
 						this.rangeCount = 1;
 					}
 					this.ranges = [];
-					for(let i = 0; i < selection.rangeCount; i++){
-						let range = selection.getRangeAt(i);
+					for(var i = 0; i < selection.rangeCount; i++){
+						var range = selection.getRangeAt(i);
 						this.ranges.push({
 							startContainer: range.startContainer,
 							endContainer: range.endContainer,
@@ -982,9 +982,9 @@ window.RTE = (function () {
 					//cleanup
 					that.editZone.find('span').each(function(index, item){
 						if(item.childNodes.length > 1){
-							let child = item.firstChild;
+							var child = item.firstChild;
 							while(child !== null){
-								let nextChild = child.nextSibling;
+								var nextChild = child.nextSibling;
 								if(child.nodeType === 3 && child.textContent === ""){
 									child.remove();
 								}
@@ -992,14 +992,14 @@ window.RTE = (function () {
 							}
 						}
 						if(item.childNodes.length === 1 && item.childNodes[0].nodeType === 1 && item.childNodes[0].nodeName === 'SPAN'){
-							for(let i = 0; i < item.childNodes[0].style.length; i++){
-								let prop = item.childNodes[0].style[i];
+							for(var i = 0; i < item.childNodes[0].style.length; i++){
+								var prop = item.childNodes[0].style[i];
 								$(item).css(prop, $(item.childNodes[0]).css(prop));
 							}
-							let sel = window.getSelection();
-							let newRanges = [];
-							for(let i = 0; i < sel.rangeCount; i++){
-								let range = {
+							var sel = window.getSelection();
+							var newRanges = [];
+							for(var i = 0; i < sel.rangeCount; i++){
+								var range = {
 									startContainer: sel.getRangeAt(i).startContainer,
 									endContainer: sel.getRangeAt(i).endContainer,
 									startOffset: sel.getRangeAt(i).startOffset,
@@ -1028,18 +1028,18 @@ window.RTE = (function () {
 
 							sel.removeAllRanges();
 							newRanges.forEach(function(rangeDef){
-								let range = document.createRange();
+								var range = document.createRange();
 								range.setStart(rangeDef.startContainer, rangeDef.startOffset);
 								range.setEnd(rangeDef.endContainer, rangeDef.endOffset);
 								sel.addRange(range);
 							});
 						}
 						if(item.nextSibling && item.nextSibling.nodeType === 1 && item.nextSibling.nodeName === 'SPAN'){
-							let sameStyle = true;
-							for(let i = 0; i < item.nextSibling.style.length; i++){
+							var sameStyle = true;
+							for(var i = 0; i < item.nextSibling.style.length; i++){
 								sameStyle = sameStyle && $(item).css(item.nextSibling.style[i]) === $(item.nextSibling).css(item.nextSibling.style[i]);
 							}
-							for(let i = 0; i < item.style.length; i++){
+							for(var i = 0; i < item.style.length; i++){
 								sameStyle = sameStyle && $(item.nextSibling).css(item.style[i]) === $(item).css(item.style[i]);
 							}
 							if(sameStyle){
@@ -2137,7 +2137,7 @@ window.RTE = (function () {
 
 						    html += '<div><br></div><div><br></div></div>';
 						    instance.selection.replaceHTML(html);
-							let image = instance.editZone
+							var image = instance.editZone
 								.find('.latest-image')
 								.removeClass('latest-image');
 							instance.selection.selectNode(image[0]);
@@ -3304,7 +3304,7 @@ window.RTE = (function () {
 
                             scope.$apply(function(){
                                 scope.$eval(attributes.ngChange);
-								let content = editZone.html();
+								var content = editZone.html();
 								$(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             });
@@ -3370,14 +3370,14 @@ window.RTE = (function () {
                             if (!scope.$$phase) {
                                 scope.$apply(function () {
                                     scope.$eval(attributes.ngChange);
-                                    let content = editZone.html();
+                                    var content = editZone.html();
 									$(content).find('mathjax').html('');
 									ngModel.assign(scope, content);
                                 });
                             }
                             else {
                                 scope.$eval(attributes.ngChange);
-                                let content = editZone.html();
+                                var content = editZone.html();
 								$(content).find('mathjax').html('');
                                 ngModel.assign(scope, content);
                             }
@@ -3606,7 +3606,7 @@ window.RTE = (function () {
                                 while (nodeCursor !== blockContainer) {
                                     var cursorClone;
                                     if (nodeCursor.nodeType === 1) {
-										let nodeName = nodeCursor.nodeName.toLowerCase();
+										var nodeName = nodeCursor.nodeName.toLowerCase();
 										if(nodeName === 'a'){
 											nodeName = 'span';
 										}
@@ -3952,7 +3952,7 @@ window.RTE = (function () {
 						        });
 						    }
 
-							if(popover.offset().left + popover.width() > $(window).width()){
+							if(parseInt(popover.offset().left + popover.width()) > $(window).width()){
 								popover.addClass('right');
 							}
 							if(popover.offset().left < 0){

@@ -829,6 +829,11 @@ module.directive('calendar', function($compile) {
         },
         link: function(scope, element, attributes) {
             var allowCreate;
+
+            if (attributes.itemTooltipTemplate) {
+                scope.itemTooltipTemplate = attributes.itemTooltipTemplate;
+            }
+
             scope.display = {};
             scope.display.readonly = false;
             attributes.$observe('createTemplate', function() {
@@ -2561,30 +2566,40 @@ module.directive('tooltip', function($compile) {
                 return;
             }
             var tip;
-            element.on('mouseover', function() {
-                if (!attributes.tooltip || attributes.tooltip === 'undefined') {
-                    return;
-                }
-                tip = $('<div />')
-                    .addClass('tooltip')
-                    .html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
-                    .appendTo('body');
-                scope.$apply();
+            element.on('mouseenter', function() {
+                if (attributes.tooltipTemplate) {
+                    var tplPath = template.containers[attributes.tooltipTemplate]
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div ng-include=\'\"' + tplPath + '\"\'></div>')(scope))
+                        .appendTo('body');
+                    scope.$apply();
 
-                var top = parseInt(element.offset().top + element.height());
-                var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
-                if (top < 5) {
-                    top = 5;
+                    tip.css('position', 'absolute');
+                    tip.css('top', element.position().top - 100);
+                    tip.css('left', parseInt(element.offset().left - tip.width() - 10))
+                } else {
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
+                        .appendTo('body');
+                    scope.$apply();
+
+                    var top = parseInt(element.offset().top + element.height());
+                    var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
+                    if (top < 5) {
+                        top = 5;
+                    }
+                    if (left < 5) {
+                        left = 5;
+                    }
+                    tip.offset({
+                        top: top,
+                        left: left
+                    });
                 }
-                if (left < 5) {
-                    left = 5;
-                }
-                tip.offset({
-                    top: top,
-                    left: left
-                });
                 tip.fadeIn();
-                element.one('mouseout', function() {
+                element.on('mouseleave', function() {
                     tip.fadeOut(200, function() {
                         $(this).remove();
                     })
@@ -3733,7 +3748,7 @@ module.directive('progressBar', function($compile) {
     }
 });
 
-module.directive('datePicker', function($compile) {
+module.directive('datePicker', function($compile, $timeout) {
     return {
         scope: {
             minDate: '=',
@@ -3771,9 +3786,11 @@ module.directive('datePicker', function($compile) {
                     element.val(moment(minDate).format('DD/MM/YYYY'));
                 }
 
-                scope.$apply('ngModel');
-                scope.$parent.$eval(scope.ngChange);
-                scope.$parent.$apply();
+                $timeout(function() {
+                    scope.$apply('ngModel');
+                    scope.$parent.$eval(scope.ngChange);
+                    scope.$parent.$apply();
+                });
             }
 
             loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function() {
