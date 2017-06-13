@@ -13,11 +13,14 @@
 	<div class="days">
 		<button class="previous-timeslots" ng-click="previousTimeslots()" ng-disabled="calendar.timeSlots.first().beginning === 0"></button>
 		<div ng-repeat="day in calendar.days.all" class="day">
-			<legend translate content="[[day.name]]"></legend>
+			<legend>
+        <div translate content="[[day.name]]"></div>
+        <div>[[ moment(calendar.firstDay).add($index,'days').format('DD/MM') ]]</div>
+      </legend>
 			<div class="hidden-schedule-items before" ng-if="day.scheduleItems.beforeCalendar() > 0">
 				+ [[day.scheduleItems.beforeCalendar()]]
 			</div>
-			
+
 			<div ng-if="display.readonly" class="timeslots">
 				<div ng-repeat="timeslot in day.timeSlots.all" class="timeslot"></div>
 			</div>
