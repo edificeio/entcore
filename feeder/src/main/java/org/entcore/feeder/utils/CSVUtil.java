@@ -20,6 +20,7 @@
 package org.entcore.feeder.utils;
 
 import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -108,6 +109,14 @@ public class CSVUtil {
 	public static CSVReader getCsvReader(String file, String charset, int skipLines)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		return new CSVReader(new InputStreamReader(new FileInputStream(file), charset), ';', '"', skipLines);
+	}
+
+	public static CSVWriter getCsvWriter(String file, String charset) throws IOException {
+		FileOutputStream fos = new FileOutputStream(file);
+		if ("UTF-8".equals(charset)) {
+			fos.write(UTF8_BOM.getBytes());
+		}
+		return new CSVWriter(new OutputStreamWriter(fos, charset), ';');
 	}
 
 }

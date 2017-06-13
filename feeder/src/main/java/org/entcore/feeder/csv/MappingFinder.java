@@ -32,7 +32,6 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +40,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
+import static org.entcore.feeder.utils.CSVUtil.getCsvWriter;
+import static org.entcore.feeder.utils.Validator.sanitize;
 
 public class MappingFinder {
 
@@ -58,7 +59,7 @@ public class MappingFinder {
 	}
 
 	public void findExternalIds(final String structureId, final String path, final String profile, final List<String> columns,
-			final int eII, String charset, final Handler<JsonArray> handler) {
+			final int eII, final String charset, final Handler<JsonArray> handler) {
 		final boolean additionalColumn;
 		final int externalIdIdx;
 		if (eII >= 0) {
@@ -75,7 +76,7 @@ public class MappingFinder {
 		}
 		final String query =
 				"MATCH (s:Structure {externalId : {id}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-				"WHERE lower(u.firstName) = {firstName} AND lower(u.lastName) = {lastName} AND head(u.profiles) = {profile} " +
+				"WHERE u.firstNameSearchField = {firstName} AND u.lastNameSearchField = {lastName} AND head(u.profiles) = {profile} " +
 				filter +
 				"RETURN DISTINCT u.externalId as externalId";
 		final List<String[]> lines = new ArrayList<>();
@@ -116,10 +117,10 @@ public class MappingFinder {
 						for (String c : columns) {
 							switch (c) {
 								case "lastName":
-									params.putString("lastName", lower(values[i]));
+									params.putString("lastName", sanitize(values[i]));
 									break;
 								case "firstName":
-									params.putString("firstName", lower(values[i]));
+									params.putString("firstName", sanitize(values[i]));
 									break;
 								case "birthDate":
 									if ("Student".equals(profile)) {
@@ -164,7 +165,7 @@ public class MappingFinder {
 					vertx.fileSystem().deleteSync(path);
 
 					try {
-						CSVWriter writer = new CSVWriter(new FileWriter(path), ';');
+						CSVWriter writer = getCsvWriter(path, charset);
 						writer.writeAll(lines);
 						writer.close();
 					} catch (IOException e) {
