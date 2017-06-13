@@ -437,5 +437,11 @@
     "wizard.files.details.option3" : "Si vous souhaitez importer des utilisateurs à partir de fichiers constitués à la main ou issus d’un autre logiciel que la base élèves premier degré, vous devez suivre les consignes suivantes :<br /><ul><li>Un fichier doit être constitué pour chaque profil d’utilisateurs (enseignants, élèves, parents).</li><li>Les modèles de fichiers sont disponibles via les liens suivants :</li><ul><li>Modèle fichier enseignants</li><li>Modèle fichier élèves</li><li>Modèle fichier parents</li></ul><li>Les fichiers doivent être enregistrés au format .csv (séparateur point virgule).</li><li>Les champs obligatoires sont ceux commençant par une majuscule, les autres sont facultatifs.</li><li>Chaque fichier commence par une colonne externalID. Elle permet de gérer les modifications de comptes directement dans le fichier CSV. Cette colonne correspond à la ligne \"identifiant externe\" sur la fiche de l'utilisateur dans la console d'administration de l'ENT.</li><li>Il est conseillé de renseigner le champ externalID lors du premier import. Vous pouvez utiliser les identifiants externes de votre choix, par exemple sur le modèle “RNE_enseignant_1”, “RNE_enseignant_2”...</li><li>Le champ externalID permet de reconnaître un utilisateur entre deux imports successifs et de mettre à jour ses informations personnelles.</li><li>Le fichier des élèves doit obligatoirement être chargé avant le fichier des parents. Pour que les parents soit rattachés aux bons élèves, il faut indiquer l’identifiant correspondant à(aux) enfant(s) dans le fichier des parents.</li></ul>",
     "directory.params.tab": "Paramétrages",
     "directory.params.title" : "Bloquer la connexion",
-    "directory.params.validate": "Valider"
+    "directory.params.validate": "Valider",
+    "directory.slot.bad.request.invalid.hours": "L'heure de début ne peut pas être supérieure à l'heure de fin",
+    "directory.slot.bad.request.format.hours.invalid": "Le format de l'heure est invalide",
+    "directory.slot.bad.request.invalid.structure": "Une référence de structure doit être spécifiée",
+    "directory.slot.bad.request.profile.already.exists": "Un profil de ce nom existe déjà pour cette structure",
+    "directory.slot.bad.request.slot.name.already.exists": "Un créneau de ce nom existe déjà pour ce profil",
+    "directory.slot.bad.request.slot.overlap": "Un créneau existe déjà sur cette plage horaire"
 }

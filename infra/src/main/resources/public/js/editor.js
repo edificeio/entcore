@@ -3975,7 +3975,7 @@ window.RTE = (function () {
 						        });
 						    }
 
-							if(popover.offset().left + popover.width() > $(window).width()){
+							if(parseInt(popover.offset().left + popover.width()) > $(window).width()){
 								popover.addClass('right');
 							}
 							if(popover.offset().left < 0){

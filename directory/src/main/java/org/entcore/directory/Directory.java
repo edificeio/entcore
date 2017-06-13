@@ -25,6 +25,7 @@ import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.BasicFilter;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
@@ -40,6 +41,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 public class Directory extends BaseServer {
 
 	public static final String FEEDER = "entcore.feeder";
+	public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
 	@Override
 	protected void initFilters() {
@@ -51,6 +53,7 @@ public class Directory extends BaseServer {
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
 		super.start();
+		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
@@ -75,6 +78,7 @@ public class Directory extends BaseServer {
 		directoryController.setSchoolService(schoolService);
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
+		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
 		addController(directoryController);
 		directoryController.createSuperAdmin();
 
@@ -121,6 +125,12 @@ public class Directory extends BaseServer {
 		TimetableController timetableController = new TimetableController();
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
+
+		SlotProfileController slotProfileController = new SlotProfileController(SLOTPROFILE_COLLECTION);
+		slotProfileController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
+		addController(slotProfileController);
+
+		addController(new CalendarController());
 
 		vertx.eventBus().registerLocalHandler("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));

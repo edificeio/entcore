@@ -1629,39 +1629,45 @@ var calendar = {
 		if(!data.year){
 			data.year = moment().year();
 		}
-		this.week = data.week;
-		this.year = data.year;
 
-	    // change of year in moment is buggy (last/first week is on the wrong year)
-        // weird syntax is a workaround
-        this.dayForWeek = moment(
-            this.year +
-            "-W" + (this.week < 10 ? "0" + this.week : this.week) +
-            "-1")
+		this.increment = 'week';
+		this.firstDay = moment().year(data.year).week(data.week).day(1);
+
+		// change of year in moment is buggy (last/first week is on the wrong year)
+		// weird syntax is a workaround
+		// this.dayForWeek = moment(
+		//	 this.year + '-W' + (this.week < 10 ? '0' + this.week : this.week) + '-1'
+		// );
 
 		var that = this;
 
 		this.collection(calendar.Day, {
-			sync: function(){
-				function dayOfYear(dayOfWeek){
-					var week = that.dayForWeek.week();
-					var year = that.dayForWeek.year();
-					if(dayOfWeek === 0){
-                        return moment(that.dayForWeek).day(dayOfWeek).add(1, 'w').dayOfYear()
-					}
-					return moment(that.dayForWeek).day(dayOfWeek).dayOfYear()
+			sync: function() {
+				var fd = moment(that.firstDay);
+				var days = [];
+
+				var cur = moment(fd).lang('en');
+
+				while (
+					cur.isSame(fd.clone().startOf('day'), 'day') ||
+					(
+						cur.isAfter(fd.clone().startOf(that.increment)) &&
+						cur.isBefore(fd.clone().endOf(that.increment))
+					)
+				) {
+					days.push({
+						name: cur.format('dddd').toLowerCase(),
+						date: cur.clone(),
+						index: cur.dayOfYear(),
+					});
+					cur.add(1, 'day');
 				}
-
-				that.days.load([{ name: 'monday', index:  dayOfYear(1) },
-					{ name: 'tuesday', index: dayOfYear(2) },
-					{ name: 'wednesday', index: dayOfYear(3) },
-					{ name: 'thursday', index: dayOfYear(4) },
-					{ name: 'friday', index: dayOfYear(5) },
-					{ name: 'saturday', index: dayOfYear(6) },
-					{ name: 'sunday', index: dayOfYear(0) }]);
-
-				that.firstDay = moment(that.dayForWeek).day(1)
-			}
+				that.collection(calendar.TimeSlot);
+				for (var i = calendar.startOfDay; i < calendar.endOfDay; i++) {
+					that.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i + 1 }));
+				}
+				that.days.load(days);
+			},
 		});
 
 		this.days.sync();
@@ -1680,31 +1686,63 @@ var calendar = {
 	}
 };
 
-calendar.Calendar.prototype.addScheduleItems = function(items){
+calendar.Calendar.prototype.addScheduleItems = function(items) {
 	var schedule = this;
-	items = _.filter(items, function (item) {
-	    return moment(item.end).year() >= schedule.firstDay.year()
-	});
-	_.filter(items, function (item) {
-	    return moment(item.end).month() >= schedule.firstDay.month() || moment(item.end).year() > schedule.firstDay.year()
-	});
-	items.forEach(function(item){
-		var startDay = moment(item.beginning);
-		var endDay = moment(item.end);
+	items
+		.filter(function(item) {
+			return moment(item.end).isSame(schedule.firstDay, schedule.increment);
+		})
+		.forEach(function(item) {
+			var startDay = moment(item.beginning);
+			var endDay = moment(item.end);
 
-		var refDay = moment(schedule.firstDay)
-		schedule.days.forEach(function(day){
-			if(startDay.isBefore(moment(refDay).endOf('day')) && endDay.isAfter(moment(refDay).startOf('day')))
-				day.scheduleItems.push(item);
-			refDay.add('day', 1);
+			var refDay = moment(schedule.firstDay);
+			schedule.days.forEach(function(day) {
+				if (
+					startDay.isBefore(refDay.clone().endOf('day')) &&
+					endDay.isAfter(refDay.clone().startOf('day'))
+				)
+					day.scheduleItems.push(item);
+				refDay.add('day', 1);
+			});
 		});
-	});
+};
+
+calendar.Calendar.prototype.setIncrement = function(incr) {
+	if (['day', 'week', 'month'].indexOf(incr) === -1) {
+		throw new Error(
+			"Invalid argument: increment must be 'day', 'week' or 'month'"
+		);
+	}
+
+	this.increment = incr;
+	this.setDate(this.firstDay);
+
+	return this.firstDay;
 };
 
 calendar.Calendar.prototype.setDate = function(momentDate){
-	this.dayForWeek = momentDate;
+	this.firstDay = moment(momentDate).startOf(this.increment);
 	this.days.sync();
 	this.trigger('date-change');
+};
+
+calendar.Calendar.prototype.next = function() {
+	// pluralize to match MomentJS API
+	var incr = this.increment + 's';
+
+	var newDate = moment(this.firstDay).add(1, incr);
+	this.setDate(newDate);
+	return newDate;
+};
+
+calendar.Calendar.prototype.previous = function() {
+	// pluralize to match MomentJS API
+	var incr = this.increment + 's';
+
+	var newDate = moment(this.firstDay).subtract(1, incr);
+	this.setDate(newDate);
+	return newDate;
 };
 
 calendar.Calendar.prototype.clearScheduleItems = function(){
