@@ -280,7 +280,9 @@ public class CsvFeeder implements Feed {
 					for (int j = 0; j < strings.length; j++) {
 						final String c = columns.get(j);
 						final String v = strings[j].trim();
-						if (v.isEmpty()) continue;
+						//if (v.isEmpty()) continue;
+						if ((v.isEmpty() && !"childUsername".equals(c)) ||
+								(v.isEmpty() && "childUsername".equals(c) && strings[j+1].trim().isEmpty())) continue;
 						switch (validator.getType(c)) {
 							case "string":
 								if ("birthDate".equals(c)) {
@@ -393,6 +395,36 @@ public class CsvFeeder implements Feed {
 									} else {
 										linkStudents.add(o);
 									}
+								} else if ("childUsername".equals(attr)) {
+									Object childUsername = user.getValue(attr);
+									Object childLastName = user.getValue("childLastName");
+									Object childFirstName = user.getValue("childFirstName");
+									Object childClasses = user.getValue("childClasses");
+									if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
+											childFirstName instanceof JsonArray && childClasses instanceof JsonArray &&
+											((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
+											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
+										for (int j = 0; j < ((JsonArray) childUsername).size(); j++) {
+											String mapping = structure.getExternalId() +
+													((JsonArray) childUsername).<String>get(j).trim() +
+													((JsonArray) childLastName).<String>get(j).trim() +
+													((JsonArray) childFirstName).<String>get(j).trim() +
+													((JsonArray) childClasses).<String>get(j).trim() +
+													CsvFeeder.DEFAULT_STUDENT_SEED;
+											relativeStudentMapping(linkStudents, mapping);
+										}
+									} else if (childUsername instanceof String && childLastName instanceof String &&
+											childFirstName instanceof String && childClasses instanceof String) {
+										String mapping = structure.getExternalId() +
+												childLastName.toString().trim() +
+												childFirstName.toString().trim() +
+												childClasses.toString().trim() +
+												CsvFeeder.DEFAULT_STUDENT_SEED;
+										relativeStudentMapping(linkStudents, mapping);
+									} else {
+										handler.handle(new ResultMessage().error("invalid.child.mapping"));
+										return;
+									}
 								} else if ("childLastName".equals(attr)) {
 									Object childLastName = user.getValue(attr);
 									Object childFirstName = user.getValue("childFirstName");
@@ -403,20 +435,18 @@ public class CsvFeeder implements Feed {
 											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
 										for (int j = 0; j < ((JsonArray) childLastName).size(); j++) {
 											String mapping = structure.getExternalId() +
-													((JsonArray) childLastName).<String>get(i).trim() +
-													((JsonArray) childFirstName).<String>get(i).trim() +
-													((JsonArray) childClasses).<String>get(i).trim() + DEFAULT_STUDENT_SEED;
+													((JsonArray) childLastName).<String>get(j).trim() +
+													((JsonArray) childFirstName).<String>get(j).trim() +
+													((JsonArray) childClasses).<String>get(j).trim() + DEFAULT_STUDENT_SEED;
 											relativeStudentMapping(linkStudents, mapping);
 										}
 									} else if (childLastName instanceof String && childFirstName instanceof String &&
 											childClasses instanceof String) {
-										if (childLastName != null && childFirstName != null && childClasses != null) {
 											String mapping = structure.getExternalId() +
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
 													childClasses.toString().trim() + DEFAULT_STUDENT_SEED;
 											relativeStudentMapping(linkStudents, mapping);
-										}
 									} else {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
 										return;
