@@ -255,6 +255,9 @@ public class Validator {
 				case "nowDate" :
 					nowDate(attr, object);
 					break;
+				case "sanitize" :
+					sanitizeGenerator(attr, object, getParameter(object, j));
+					break;
 				default:
 			}
 		}
@@ -283,6 +286,20 @@ public class Validator {
 
 	private void nowDate(String attr, JsonObject object) {
 		object.putString(attr, DateTime.now().toString());
+	}
+
+	private void sanitizeGenerator(String attr, JsonObject object, String field) {
+		if (isNotEmpty(field)) {
+			object.putString(attr, sanitize(field));
+		}
+	}
+
+	public static String sanitize(String field) {
+		return removeAccents(field)
+				.replaceAll("\\s+", "")
+				.replaceAll("\\-","")
+				.replaceAll("'","")
+				.toLowerCase();
 	}
 
 	private void activationCodeGenerator(String attr, JsonObject object, String password) {

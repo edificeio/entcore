@@ -138,7 +138,9 @@
 		"displayName" : {"generator":"displayName", "args":["firstName", "lastName"]},
 		"activationCode" : {"generator":"activationCode", "args":["password"]},
 		"created" : { "generator" : "nowDate", "args":[]},
-		"modified" : { "generator" : "nowDate", "args":[]}
+		"modified" : { "generator" : "nowDate", "args":[]},
+		"firstNameSearchField" : { "generator" : "sanitize", "args" : ["firstName"]},
+		"lastNameSearchField" : { "generator" : "sanitize", "args" : ["lastName"]}
 	},
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
