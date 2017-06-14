@@ -284,7 +284,7 @@ public class User {
 				"WHERE c.externalId IN u.classes " +
 				"OPTIONAL MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.structures " +
-				"RETURN u.id as id, u.firstName, u.lastName, u.externalId as externalId, u.displayName as displayName, " +
+				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, u.externalId as externalId, u.displayName as displayName, " +
 				"HEAD(u.profiles) as type, " +
 				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
 				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
