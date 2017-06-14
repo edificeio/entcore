@@ -432,7 +432,7 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results) {
+	public void listByUAI(List<String> UAI, JsonArray expectedTypes, boolean isExportFull, JsonArray fields, Handler<Either<String, JsonArray>> results) {
 		if (UAI == null || UAI.isEmpty()) {
 			results.handle(new Either.Left<String, JsonArray>("missing.uai"));
 			return;
@@ -448,9 +448,40 @@ public class DefaultUserService implements UserService {
 		if (fields == null || fields.size() == 0) {
 			fields = new JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
 		}
+
+		//user's fields for Full Export
+		if(isExportFull){
+			fields.add("email");
+			fields.add("emailAcademy");
+			fields.add("mobile");
+			fields.add("deleteDate");
+			fields.add("functions");
+			fields.add("displayName");
+		}
+
+		// Init params and filter for all type of queries
+		String  filter =  "WHERE s.UAI IN {uai} ";
+
+		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
+
 		StringBuilder query = new StringBuilder();
-		query.append("MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User)")
-				.append("WHERE s.UAI IN {uai} RETURN DISTINCT ");
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(cpg:ProfileGroup)");
+
+		// filter by types if needed OR full export
+		if( isExportFull || (expectedTypes != null && expectedTypes.size() > 0)) {
+			query.append("-[:HAS_PROFILE]->(p:Profile)");
+		}
+		// filter by types if needed
+		if (expectedTypes != null && expectedTypes.size() > 0) {
+
+			filter += "AND p.name IN {expectedTypes} ";
+			params.putArray("expectedTypes", expectedTypes);
+		}
+
+		query.append(", cpg<-[:IN]-(u:User) ")
+				.append(filter)
+				.append("RETURN DISTINCT ");
+
 		for (Object field : fields) {
 			if ("type".equals(field) || "profile".equals(field)) {
 				query.append(" HEAD(u.profiles)");
@@ -460,7 +491,13 @@ public class DefaultUserService implements UserService {
 			query.append(" as ").append(field).append(",");
 		}
 		query.deleteCharAt(query.length() - 1);
-		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
+
+		//Full Export : profiles and Structure
+		if(isExportFull){
+			query.append(", p.name as profiles");
+			query.append(", s.externalId as structures");
+		}
+
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
