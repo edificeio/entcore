@@ -450,15 +450,28 @@ public class UserController extends BaseController {
 		userService.listDuplicates(new JsonArray(structures.toArray()), inherit, arrayResponseHandler(request));
 	}
 
+
 	@Get("/user/structures/list")
 	@ResourceFilter(AdmlOfStructuresByUAI.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listUserInStructuresByUAI(final HttpServerRequest request) {
 		final String format = request.params().get("format");
 		final List<String> structures = request.params().getAll("uai");
+
 		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+
+		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
+
+		boolean isExportFull = false;
+		String isExportFullParameter = request.params().get("full");
+		if(null != isExportFullParameter
+				&& !isExportFullParameter.isEmpty()
+				&& "true".equals(isExportFullParameter)){
+			isExportFull = true;
+		}
+
 		if ("XML".equalsIgnoreCase(format)) {
-			userService.listByUAI(structures, fields, new Handler<Either<String, JsonArray>>() {
+			userService.listByUAI(structures, types, isExportFull, fields, new Handler<Either<String, JsonArray>>() {
 				@Override
 				public void handle(Either<String, JsonArray> event) {
 					if (event.isRight()) {
@@ -485,7 +498,7 @@ public class UserController extends BaseController {
 				}
 			});
 		} else {
-			userService.listByUAI(structures, fields, arrayResponseHandler(request));
+			userService.listByUAI(structures, types, isExportFull, fields, arrayResponseHandler(request));
 		}
 	}
 
