@@ -3354,7 +3354,7 @@ window.RTE = (function () {
                             }
 
                             editZone.find('img').each(function(index, item){
-                               if($(item).attr('src').startsWith('data:')){
+                               if($(item).attr('src') && $(item).attr('src').startsWith('data:')){
                                    var split = $(item).attr('src').split('data:')[1].split(',');
                                    var blob = b64toBlob(split[1], split[0].split(';')[0]);
 								   blob.name = 'image';
