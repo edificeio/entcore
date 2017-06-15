@@ -18,6 +18,11 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+window.entcore.$ = $;
+window.entcore.moment = moment;
+window.entcore.angular = angular;
+window.entcore._ = _;
+
 function Http(){
 	this.statusCallbacks = {};
 }
