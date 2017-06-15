@@ -19,14 +19,18 @@
 
 package org.entcore.directory.controllers;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.json.DecodeException;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.DefaultFunctions;
@@ -61,6 +65,22 @@ public class ImportController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void view(HttpServerRequest request) {
 		renderView(request);
+	}
+
+	@Post("/wizard/column/mapping")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void columnsMapping(final HttpServerRequest request) {
+		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+			@Override
+			public void handle(AsyncResult<ImportInfos> event) {
+				if (event.succeeded()) {
+					importService.columnsMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+				} else {
+					badRequest(request, event.cause().getMessage());
+				}
+			}
+		});
 	}
 
 	@Post("/wizard/validate")
@@ -99,6 +119,16 @@ public class ImportController extends BaseController {
 				importInfos.setLanguage(I18n.acceptLanguage(request));
 				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
 					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
+				}
+				if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
+					try {
+						importInfos.setColumnsMapping(new JsonObject(request.formAttributes().get("columnsMapping")));
+					} catch (DecodeException e) {
+						handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.columns.mapping", e)));
+						deleteImportPath(vertx, path);
+						deleteImportPath(vertx, path);
+						return;
+					}
 				}
 				try {
 					importInfos.setFeeder(request.formAttributes().get("type"));

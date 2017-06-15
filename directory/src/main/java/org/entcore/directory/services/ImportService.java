@@ -31,4 +31,6 @@ public interface ImportService {
 
 	void doImport(ImportInfos result, Handler<Either<JsonObject, JsonObject>> eitherHandler);
 
+	void columnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
+
 }
