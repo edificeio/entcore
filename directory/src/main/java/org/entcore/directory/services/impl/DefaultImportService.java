@@ -113,4 +113,33 @@ public class DefaultImportService implements ImportService {
 		}
 	}
 
+	@Override
+	public void columnsMapping(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
+		try {
+			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
+					.put("action", "columnsMapping");
+			eb.send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					if ("ok".equals(event.body().getString("status"))) {
+						JsonObject r = event.body();
+						r.remove("status");
+						if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
+							handler.handle(new Either.Left<JsonObject, JsonObject>(r));
+						} else {
+							handler.handle(new Either.Right<JsonObject, JsonObject>(r));
+						}
+					} else {
+						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().put("global",
+								new JsonArray().add(event.body().getString("message", "")))));
+					}
+				}
+			}));
+		} catch (JsonProcessingException e) {
+			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
+					.put("global", new JsonArray().add("unexpected.error"))));
+			log.error(e.getMessage(), e);
+		}
+	}
+
 }

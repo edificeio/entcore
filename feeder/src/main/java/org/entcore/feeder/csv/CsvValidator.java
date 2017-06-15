@@ -48,9 +48,10 @@ import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends Report implements ImportValidator {
 
+	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
-	private final ColumnsMapper columnsMapper;
+	private final ProfileColumnsMapper columnsMapper;
 	private final MappingFinder mappingFinder;
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
@@ -68,16 +69,25 @@ public class CsvValidator extends Report implements ImportValidator {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject additionnalsMappings) {
+	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject customMapping) {
 		super(acceptLanguage);
-		this.columnsMapper = new ColumnsMapper(additionnalsMappings);
+		setMappings(customMapping);
+		this.columnsMapper = new ProfileColumnsMapper(customMapping);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
 		defaultStudentSeed = new Random().nextLong();
 	}
 
+	public void columnsMapping(final String p, final Handler<JsonObject> handler) {
+		process(p, CsvValidationProcessType.COLUMN_MAPPING, handler);
+	}
+
 	@Override
 	public void validate(final String p, final Handler<JsonObject> handler) {
+		process(p, CsvValidationProcessType.VALIDATE, handler);
+	}
+
+	private void process(final String p, final CsvValidationProcessType processType, final Handler<JsonObject>  handler) {
 		vertx.fileSystem().readDir(p, new Handler<AsyncResult<List<String>>>() {
 			@Override
 			public void handle(AsyncResult<List<String>> event) {
@@ -106,7 +116,7 @@ public class CsvValidator extends Report implements ImportValidator {
 										@Override
 										public void handle(Void v) {
 											final String file = importFiles.get(j);
-											log.info("Validating file : " + file);
+											log.info(processType.name() + " file : " + file);
 											findUsersEnabled = true;
 											final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
 											CSVUtil.getCharset(vertx, file, new Handler<String>(){
@@ -115,12 +125,20 @@ public class CsvValidator extends Report implements ImportValidator {
 												public void handle(String charset) {
 													if (profiles.containsKey(profile)) {
 														log.info("Charset : " + charset);
-														checkFile(file, profile, charset, new Handler<JsonObject>() {
+														Handler<JsonObject> h = new Handler<JsonObject>() {
 															@Override
 															public void handle(JsonObject event) {
 																handlers[j + 1].handle(null);
 															}
-														});
+														};
+														switch (processType) {
+															case VALIDATE:
+																checkFile(file, profile, charset, h);
+																break;
+															case COLUMN_MAPPING:
+																checkColumnsMapping(file, profile, charset, h);
+																break;
+														}
 													} else {
 														addError("unknown.profile");
 														handler.handle(result);
@@ -145,6 +163,22 @@ public class CsvValidator extends Report implements ImportValidator {
 		});
 	}
 
+	private void checkColumnsMapping(String path, String profile, String charset, Handler<JsonObject> handler) {
+		try {
+			CSVReader csvParser = getCsvReader(path, charset);
+
+			String[] strings;
+			if ((strings = csvParser.readNext()) != null) {
+				addMapping(profile, columnsMapper.getColumsMapping(profile, strings));
+			}
+		} catch (Exception e) {
+			addError(profile, "csv.exception");
+			log.error("csv.exception", e);
+		} finally {
+			handler.handle(result);
+		}
+	}
+
 	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
@@ -156,7 +190,7 @@ public class CsvValidator extends Report implements ImportValidator {
 			int i = 0;
 			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns, profile);
+					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {
@@ -634,6 +668,10 @@ public class CsvValidator extends Report implements ImportValidator {
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
+	}
+
+	public ProfileColumnsMapper getColumnsMapper() {
+		return columnsMapper;
 	}
 
 }

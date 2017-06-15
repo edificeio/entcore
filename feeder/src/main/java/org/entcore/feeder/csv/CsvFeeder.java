@@ -1,20 +1,20 @@
 /*
- * Copyright © "Open Digital Education", 2015
+ * Copyright © WebServices pour l'Éducation, 2015
  *
- * This program is published by "Open Digital Education".
- * You must indicate the name of the software and the company in any production /contribution
- * using the software and indicate on the home page of the software industry in question,
- * "powered by Open Digital Education" with a reference to the website: https://opendigitaleducation.com/.
+ * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
- * This program is free software, licensed under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation, version 3 of the License.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation (version 3 of the License).
  *
- * You can redistribute this application and/or modify it since you respect the terms of the GNU Affero General Public License.
- * If you modify the source code and then use this modified source code in your creation, you must make available the source code of your modifications.
+ * For the sake of explanation, any module that communicate over native
+ * Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ * license and could be license under its own terms. This is merely considered
+ * normal use of ENT Core, and does not fall under the heading of "covered work".
  *
- * You should have received a copy of the GNU Affero General Public License along with the software.
- * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
-
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
 package org.entcore.feeder.csv;
@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
@@ -53,13 +54,13 @@ public class CsvFeeder implements Feed {
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Logger log = LoggerFactory.getLogger(CsvFeeder.class);
 	private long defaultStudentSeed = 0l;
-	private final ColumnsMapper columnsMapper;
+	private final ProfileColumnsMapper columnsMapper;
 	private final Vertx vertx;
 	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
 
-	public CsvFeeder(Vertx vertx, JsonObject additionnalsMappings) {
+	public CsvFeeder(Vertx vertx) {
 		this.vertx = vertx;
-		this.columnsMapper = new ColumnsMapper(additionnalsMappings);
+		this.columnsMapper = new ProfileColumnsMapper();
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class CsvFeeder implements Feed {
 						@Override
 						public void handle(final AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
-								checkNotModifiableExternalId(event.result(), path, new Handler<Message<JsonObject>>() {
+								checkNotModifiableExternalId(event.result(), new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> m) {
 										if ("ok".equals(m.body().getString("status"))) {
@@ -190,7 +191,7 @@ public class CsvFeeder implements Feed {
 		return "CSV";
 	}
 
-	private void checkNotModifiableExternalId(List<String> files, final String path, final Handler<Message<JsonObject>> handler) {
+	private void checkNotModifiableExternalId(List<String> files, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
@@ -200,13 +201,13 @@ public class CsvFeeder implements Feed {
 				@Override
 				public void handle(String charset) {
 					try {
+						final String profile = file.substring(file.lastIndexOf(File.separator) + 1).replaceFirst(".csv", "");
 						CSVReader csvReader = getCsvReader(file, charset);
 						String[] strings;
 						int i = 0;
 						while ((strings = csvReader.readNext()) != null) {
 							if (i == 0) {
-								final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
-								columnsMapper.getColumsNames(strings, columns, profile, handler);
+								columnsMapper.getColumsNames(profile, strings, columns, handler);
 								if (columns.isEmpty()) {
 									handler.handle(new ResultMessage().error("invalid.columns"));
 									return;
@@ -289,7 +290,7 @@ public class CsvFeeder implements Feed {
 			int i = 0;
 			csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					columnsMapper.getColumsNames(strings, columns, profile, handler);
+					columnsMapper.getColumsNames(profile, strings, columns, handler);
 					nbColumns = columns.size();
 				} else if (!columns.isEmpty()) {
 					if (emptyLine(strings)) {
@@ -303,7 +304,6 @@ public class CsvFeeder implements Feed {
 					user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
 					user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
-					List<String[]> groups = new ArrayList<>();
 
 					// Class Admin
 					if (isNotEmpty(structure.getOverrideClass())) {
@@ -340,7 +340,7 @@ public class CsvFeeder implements Feed {
 									a = new fr.wseduc.webutils.collections.JsonArray();
 									user.put(c, a);
 								}
-								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) || "groups".equals(c)) &&
+								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
 										!v.startsWith(structure.getExternalId() + "$")) {
 									a.add(structure.getExternalId() + "$" + v);
 								} else {
@@ -370,7 +370,7 @@ public class CsvFeeder implements Feed {
 									user.put(c, v2);
 								}
 						}
-						if ("classes".equals(c) || "groups".equals(c)) {
+						if ("classes".equals(c)) {
 							String[] cc = v.split("\\$");
 							if (cc.length == 2 && !cc[1].matches("[0-9]+")) {
 								final String fosEId = importer.getFieldOfStudy().get(cc[1]);
@@ -379,17 +379,12 @@ public class CsvFeeder implements Feed {
 								}
 							}
 							String eId = structure.getExternalId() + '$' + cc[0];
+							structure.createClassIfAbsent(eId, cc[0]);
 							final String[] classId = new String[3];
 							classId[0] = structure.getExternalId();
 							classId[1] = eId;
 							classId[2] = (cc.length == 2) ? cc[1] : "";
-							if ("classes".equals(c)) {
-								structure.createClassIfAbsent(eId, cc[0]);
-								classes.add(classId);
-							} else {
-								structure.createFunctionalGroupIfAbsent(eId, cc[0]);
-								groups.add(classId);
-							}
+							classes.add(classId);
 						}
 					}
 					String ca;
@@ -418,16 +413,16 @@ public class CsvFeeder implements Feed {
 						case "Teacher":
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
-									groups.toArray(new String[classes.size()][3]), true, true);
+									null, true, true);
 							break;
 						case "Personnel":
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
-									groups.toArray(new String[classes.size()][3]), true, true);
+									null, true, true);
 							break;
 						case "Student":
 							importer.createOrUpdateStudent(user, STUDENT_PROFILE_EXTERNAL_ID, null, null,
-									classes.toArray(new String[classes.size()][2]), groups.toArray(new String[classes.size()][3]), null, true, true);
+									classes.toArray(new String[classes.size()][2]), null, null, true, true);
 							break;
 						case "Relative":
 							if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||

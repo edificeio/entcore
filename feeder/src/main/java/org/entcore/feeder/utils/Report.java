@@ -43,11 +43,18 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 public class Report {
 
 	public static final Logger log = LoggerFactory.getLogger(Report.class);
 	public static final String FILES = "files";
 	public static final String PROFILES = "profiles";
+	private static final String MAPPINGS = "mappings";
 	public final JsonObject result;
 	private final I18n i18n = I18n.getInstance();
 	public final String acceptLanguage;
@@ -358,6 +365,26 @@ public class Report {
 					}
 				});
 			}
+		}
+	}
+
+	public void addMapping(String profile, JsonObject mappping) {
+		JsonObject mappings = result.getJsonObject(MAPPINGS);
+		if (mappings == null) {
+			mappings = new JsonObject();
+			result.put(MAPPINGS, mappings);
+		}
+		mappings.put(profile, mappping);
+	}
+
+	public JsonObject getMappings() {
+		return result.getJsonObject(MAPPINGS);
+	}
+
+	public void setMappings(JsonObject mappings) {
+		if (mappings != null && mappings.size() > 0) {
+			result.put(MAPPINGS, mappings);
+
 		}
 	}
 
