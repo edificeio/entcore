@@ -41,10 +41,15 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
-    sendResetPassword(email: string) {
+    sendResetPassword(dest: {type:  string, value: string}) {
         let payload = new window['URLSearchParams']()
         payload.append('login', this.login)
-        payload.append('email', email);
+        if (dest.type === 'email') {
+            payload.append('email', dest.value)
+        } else if (dest.type === 'mobile') {
+            payload.append('mobile', dest.value)
+        }
+
         return this.http.post('/auth/sendResetPassword', payload)
     }
 

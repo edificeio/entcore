@@ -53,11 +53,6 @@ button {
     transition: background 0.25s, color 0.25s;
     line-height: 1.5em;
 
-    &.thin {
-        padding-top: 0px;
-        padding-bottom: 0px;
-    }
-
     &.input-inline {
         margin-left: 10px;
     }
@@ -65,6 +60,12 @@ button {
     &:not(:disabled) {
         cursor: pointer;
         color: $accent;
+    }
+
+    &[disabled] {
+        i {
+            color: grey;
+        }
     }
 
     &:hover:not(:disabled) {
@@ -601,10 +602,6 @@ div.panel-message {
 /* Forms */
 .form-field {
     margin: 15px 0px;
-
-    button.thin.input-line {
-        flex: 0 0 auto;
-    }
 }
 
 .form-row {
@@ -869,6 +866,41 @@ user-detail {
 user-filters {
     .fa {
         font-size: $fontawesome-size;
+    }
+}
+
+user-info-section {
+    panel-section {
+        form-field {
+            button.noflex {
+                flex: none !important;
+            }
+
+            div.sendPassword {
+                display: flex; 
+                flex-flow: row wrap;
+                padding-bottom: 5px;
+
+                & > input {
+                    flex: 0 1 300px;
+                    margin-right: 5px;
+                }
+
+                button {
+                    width: 100px;
+
+                    &.mobile {
+                        display: flex;
+                        align-items: center;
+                        padding: 2px 10px;
+
+                        i.fa-mobile {
+                            font-size: 2.5em
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

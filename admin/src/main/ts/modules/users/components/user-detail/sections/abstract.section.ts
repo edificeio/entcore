@@ -8,9 +8,9 @@ export abstract class AbstractSection {
 
     get user(){ return this._user }
     set user(u: UserModel){
-        this.onUserChange()
         this._user = u
         this.details = u.userDetails
+        this.onUserChange()
     }
     protected _user : UserModel
     protected details: UserDetailsModel
