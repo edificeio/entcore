@@ -46,12 +46,11 @@ import static org.entcore.feeder.csv.CsvFeeder.*;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
-public class CsvValidator extends Report implements ImportValidator {
+public class CsvValidator extends CsvReport implements ImportValidator {
 
 	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
-	private final ProfileColumnsMapper columnsMapper;
 	private final MappingFinder mappingFinder;
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
@@ -70,9 +69,8 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject customMapping) {
-		super(acceptLanguage);
+		super(vertx, new JsonObject());
 		setMappings(customMapping);
-		this.columnsMapper = new ProfileColumnsMapper(customMapping);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
 		defaultStudentSeed = new Random().nextLong();
@@ -83,8 +81,43 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	@Override
+	public void validate(final Handler<JsonObject> handler) {
+		exportFiles(new Handler<AsyncResult<String>>() {
+			@Override
+			public void handle(AsyncResult<String> event) {
+				if (event.succeeded()) {
+					validate(event.result(), handler);
+				} else {
+					addError(event.cause().getMessage());
+					handler.handle(result);
+				}
+			}
+		});
+	}
+
+	@Override
 	public void validate(final String p, final Handler<JsonObject> handler) {
 		process(p, CsvValidationProcessType.VALIDATE, handler);
+	}
+
+	@Override
+	public boolean isValid() {
+		return !containsErrors();
+	}
+
+	@Override
+	public void exportIfValid(final Handler<JsonObject> handler) {
+		if (isValid()) {
+			exportFiles(new Handler<AsyncResult<String>>() {
+				@Override
+				public void handle(AsyncResult<String> event) {
+					if (event.failed()) {
+						addError(event.cause().getMessage());
+					}
+					handler.handle(result);
+				}
+			});
+		}
 	}
 
 	private void process(final String p, final CsvValidationProcessType processType, final Handler<JsonObject>  handler) {
@@ -190,6 +223,7 @@ public class CsvValidator extends Report implements ImportValidator {
 			int i = 0;
 			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
+					addHeader(profile, new JsonArray(Arrays.asList(strings)));
 					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
@@ -306,6 +340,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					return;
 				}
 				final JsonObject checkChildExists = new JsonObject();
+//				setStructureExternalIdIfAbsent(structure.getExternalId());
 				try {
 					CSVReader csvParser = getCsvReader(path, charset, 1);
 					final int nbColumns = columns.size();
@@ -325,6 +360,7 @@ public class CsvValidator extends Report implements ImportValidator {
 //						}
 						final JsonArray classesNames = new fr.wseduc.webutils.collections.JsonArray();
 						JsonObject user = new JsonObject();
+						JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
 						user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
 						user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
 						List<String[]> classes = new ArrayList<>();
@@ -428,7 +464,6 @@ public class CsvValidator extends Report implements ImportValidator {
 						switch (profile) {
 							case "Relative":
 								boolean checkChildMapping = true;
-								JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
 								if ("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) {
 									break csvParserWhile;
 								}
@@ -570,7 +605,7 @@ public class CsvValidator extends Report implements ImportValidator {
 								}
 								break;
 						}
-						String error = validator.validate(user, acceptLanguage);
+						String error = validator.validate(user, acceptLanguage, true);
 						if (error != null) {
 							log.warn(error);
 							addErrorByFile(profile, "validator.errorWithLine", "" + (i+1), error); // Note that 'error' is already translated
@@ -581,7 +616,10 @@ public class CsvValidator extends Report implements ImportValidator {
 							}
 							addUser(profile, user.put("state", translate(state.name()))
 									.put("translatedProfile", translate(profile))
-									.put("classesStr", classesStr));
+									.put("classesStr", classesStr)
+									.put("childExternalId", linkStudents)
+									.put("line", i + 1)
+							);
 						}
 						i++;
 					}

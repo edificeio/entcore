@@ -71,7 +71,9 @@ public class Report {
 		final JsonObject errors = new JsonObject();
 		final JsonObject files = new JsonObject();
 		JsonObject ignored = new JsonObject();
-		result = new JsonObject().put("errors", errors).put("files", files).put("ignored", ignored);
+		result = new JsonObject().put("_id", UUID.randomUUID().toString()).put("created", MongoDb.now())
+				.put("errors", errors).put(FILES, files).put("ignored", ignored)
+				.put("source", getSource());
 	}
 
 	public Report addError(String error) {
@@ -129,10 +131,10 @@ public class Report {
 	}
 
 	public void addUser(String file, JsonObject props) {
-		JsonArray f = result.getJsonObject("files").getJsonArray(file);
+		JsonArray f = result.getJsonObject(FILES).getJsonArray(file);
 		if (f == null) {
 			f = new fr.wseduc.webutils.collections.JsonArray();
-			result.getJsonObject("files").put(file, f);
+			result.getJsonObject(FILES).put(file, f);
 		}
 		f.add(props);
 	}
@@ -169,8 +171,8 @@ public class Report {
 
 	public JsonArray getUsersExternalId() {
 		final JsonArray res = new fr.wseduc.webutils.collections.JsonArray();
-		for (String f : result.getJsonObject("files").fieldNames()) {
-			JsonArray a = result.getJsonObject("files").getJsonArray(f);
+		for (String f : result.getJsonObject(FILES).fieldNames()) {
+			JsonArray a = result.getJsonObject(FILES).getJsonArray(f);
 			if (a != null) {
 				for (Object o : a) {
 					if (!(o instanceof JsonObject))
@@ -386,6 +388,10 @@ public class Report {
 			result.put(MAPPINGS, mappings);
 
 		}
+	}
+
+	public String getSource() {
+		return "REPORT";
 	}
 
 }

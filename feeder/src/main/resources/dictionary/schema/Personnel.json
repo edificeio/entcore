@@ -130,6 +130,10 @@
 		"isTeacher" : {
 			"type" : "boolean"
 		},
+		"title" : {
+		  "type": "string",
+		  "validator":"notEmpty"
+		},
 		"IDPN" : {
 			"type" : "string",
 			"validator" : "notEmpty"

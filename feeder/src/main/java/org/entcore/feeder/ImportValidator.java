@@ -24,6 +24,12 @@ import io.vertx.core.json.JsonObject;
 
 public interface ImportValidator {
 
+	void validate(Handler<JsonObject> handler);
+
 	void validate(String path, Handler<JsonObject> handler);
+
+	boolean isValid();
+
+	void exportIfValid(Handler<JsonObject> handler);
 
 }

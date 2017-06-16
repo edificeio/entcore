@@ -29,8 +29,18 @@ public interface ImportService {
 
 	void validate(ImportInfos importInfos, Handler<Either<JsonObject, JsonObject>> handler);
 
+	void validate(String id, Handler<Either<JsonObject, JsonObject>> handler);
+
 	void doImport(ImportInfos result, Handler<Either<JsonObject, JsonObject>> eitherHandler);
 
+	void doImport(String importId, Handler<Either<JsonObject, JsonObject>> eitherHandler);
+
 	void columnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
+
+	void addLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
+
+	void updateLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
+
+	void deleteLine(String importId, String profile, Integer line, Handler<Either<String,JsonObject>> handler);
 
 }
