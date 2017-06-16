@@ -27,6 +27,8 @@ import fr.wseduc.webutils.Either;
 
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
+
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
 import org.joda.time.DateTime;
 import org.vertx.java.core.Handler;
@@ -421,7 +423,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetCode(final HttpServerRequest request, final String login, final String email,
+	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
@@ -437,11 +439,21 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
 						1 == ((JsonObject) event.body().getArray("result").get(0)).getInteger("nb")) {
-					sendResetPasswordMail(request, email, code, new Handler<Either<String, JsonObject>>() {
-						public void handle(Either<String, JsonObject> event) {
-							handler.handle(event.isRight());
-						}
-					});
+					if ("email".equals(dest.getType())) {
+						sendResetPasswordMail(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> event) {
+								handler.handle(event.isRight());
+							}
+						});
+					} else if ("mobile".equals(dest.getType())) {
+						sendResetPasswordSms(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> event) {
+								handler.handle(event.isRight());
+							}
+						});
+					} else {
+						handler.handle(false);
+					}
 				} else {
 					handler.handle(false);
 				}

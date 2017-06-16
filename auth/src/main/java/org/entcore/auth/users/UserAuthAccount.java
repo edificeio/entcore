@@ -19,12 +19,13 @@
 
 package org.entcore.auth.users;
 
-import fr.wseduc.webutils.Either;
-
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import fr.wseduc.webutils.Either;
 
 public interface UserAuthAccount {
 
@@ -35,7 +36,7 @@ public interface UserAuthAccount {
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
 
-	void sendResetCode(HttpServerRequest request, String login, String email, Handler<Boolean> handler);
+	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest, Handler<Boolean> handler);
 
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 

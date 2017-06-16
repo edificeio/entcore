@@ -91,6 +91,7 @@ import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.users.UserAuthAccount;
 
 import fr.wseduc.webutils.request.CookieHelper;
@@ -849,11 +850,27 @@ public class AuthController extends BaseController {
 			public void handle() {
 				String login = request.formAttributes().get("login");
 				String email = request.formAttributes().get("email");
-				if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
-					badRequest(request);
+				String mobile = request.formAttributes().get("mobile");
+				SendPasswordDestination dest = null;
+				
+				if (login == null || login.trim().isEmpty()) {
+					badRequest(request, "login required");
+					return;
+				} 
+				if (StringValidation.isEmail(email)) {
+					dest = new SendPasswordDestination();
+					dest.setType("email");
+					dest.setValue(email);
+				} else if (StringValidation.isPhone(mobile)) {
+					dest = new SendPasswordDestination();
+					dest.setType("mobile");
+					dest.setValue(mobile);
+				} else {
+					badRequest(request, "valid email or valid mobile required");
 					return;
 				}
-				userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
+				
+				userAuthAccount.sendResetCode(request, login, dest, new org.vertx.java.core.Handler<Boolean>() {
 					@Override
 					public void handle(Boolean sent) {
 						if (Boolean.TRUE.equals(sent)) {
