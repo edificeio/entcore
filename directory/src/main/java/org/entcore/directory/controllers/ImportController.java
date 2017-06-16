@@ -19,7 +19,6 @@
 
 package org.entcore.directory.controllers;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -51,6 +50,8 @@ import java.io.File;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.reportResponseHandler;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
@@ -99,6 +100,15 @@ public class ImportController extends BaseController {
 		});
 	}
 
+	@Put("/wizard/validate/:id")
+	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void validateWithId(final HttpServerRequest request) {
+		String importId = request.params().get("id");
+		importService.validate(importId, reportResponseHandler(vertx,
+				config.getString("wizard-path", "/tmp") + File.separator + importId, request));
+	}
+
 	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
@@ -122,7 +132,7 @@ public class ImportController extends BaseController {
 				}
 				if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
 					try {
-						importInfos.setColumnsMapping(new JsonObject(request.formAttributes().get("columnsMapping")));
+						importInfos.setMappings(new JsonObject(request.formAttributes().get("columnsMapping")));
 					} catch (DecodeException e) {
 						handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.columns.mapping", e)));
 						deleteImportPath(vertx, path);
@@ -259,6 +269,57 @@ public class ImportController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Put("/wizard/import/:id")
+	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void launchImport(final HttpServerRequest request) {
+		String importId = request.params().get("id");
+		importService.doImport(importId, reportResponseHandler(vertx,
+				config.getString("wizard-path", "/tmp") + File.separator + importId, request));
+	}
+
+	@Post("/wizard/update/:id/:profile")
+	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void createLine(final HttpServerRequest request) {
+		final String importId = request.params().get("id");
+		final String profile = request.params().get("profile");
+		bodyToJson(request, new Handler<JsonObject>() { // TODO add json validator
+			@Override
+			public void handle(JsonObject line) {
+				importService.addLine(importId, profile, line, notEmptyResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/wizard/update/:id/:profile")
+	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void updateLine(final HttpServerRequest request) {
+		final String importId = request.params().get("id");
+		final String profile = request.params().get("profile");
+		bodyToJson(request, new Handler<JsonObject>() { // TODO add json validator
+			@Override
+			public void handle(JsonObject line) {
+				importService.updateLine(importId, profile, line, notEmptyResponseHandler(request));
+			}
+		});
+	}
+
+	@Delete("/wizard/update/:id/:profile/:line")
+	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void deleteLine(final HttpServerRequest request) {
+		final String importId = request.params().get("id");
+		final String profile = request.params().get("profile");
+		try {
+			final Integer line = Integer.parseInt(request.params().get("line"));
+			importService.deleteLine(importId, profile, line, notEmptyResponseHandler(request));
+		} catch (NumberFormatException e) {
+			badRequest(request, "invalid.line");
+		}
 	}
 
 	public void setImportService(ImportService importService) {

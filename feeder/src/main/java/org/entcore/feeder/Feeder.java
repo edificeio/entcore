@@ -30,6 +30,7 @@ import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.csv.CsvImportsLauncher;
+import org.entcore.feeder.csv.CsvReport;
 import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
@@ -75,6 +77,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private EDTUtils edtUtils;
+	private ValidatorFactory validatorFactory;
 
 	@Override
 	public void start() {
@@ -201,6 +204,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 		I18n.getInstance().init(vertx);
+		validatorFactory = new ValidatorFactory(vertx);
 	}
 
 	private String getFilesDirectory(String feeder) {
@@ -287,9 +291,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "import" : launchImport(message);
 				break;
+			case "importWithId" : importWithId(message);
+				break;
 			case "export" : launchExport(message);
 				break;
 			case "validate" : launchImportValidation(message, null);
+				break;
+			case "validateWithId" : validateWithId(message);
 				break;
 			case "columnsMapping" : csvColumnMapping(message);
 				break;
@@ -334,6 +342,54 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		checkEventQueue();
 	}
 
+	private void importWithId(final Message<JsonObject> message) {
+		String importId = message.body().getString("id");
+		if (isEmpty(importId)) {
+			sendError(message, "missing.import.id");
+			return;
+		}
+		validatorFactory.validator(importId, new Handler<AsyncResult<ImportValidator>>() {
+			@Override
+			public void handle(AsyncResult<ImportValidator> event) {
+				if (event.succeeded()) {
+					event.result().exportIfValid(new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							// TODO check error
+							message.body().mergeIn(event);
+							launchImport(message);
+						}
+					});
+				} else {
+					sendError(message, event.cause().getMessage());
+				}
+			}
+		});
+	}
+
+	private void validateWithId(final Message<JsonObject> message) {
+		String importId = message.body().getString("id");
+		if (isEmpty(importId)) {
+			sendError(message, "missing.import.id");
+			return;
+		}
+		validatorFactory.validator(importId, new Handler<AsyncResult<ImportValidator>>() {
+			@Override
+			public void handle(final AsyncResult<ImportValidator> event) {
+				if (event.succeeded()) {
+					event.result().validate(new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event2) {
+							sendOK(message, new JsonObject().put("result", ((Report) event.result()).getResult()));
+						}
+					});
+				} else {
+					sendError(message, event.cause().getMessage());
+				}
+			}
+		});
+	}
+
 	private void csvColumnMapping(final Message<JsonObject> message) {
 		final String acceptLanguage = message.body().getString("language", "fr");
 		final CsvValidator v = new CsvValidator(vertx, acceptLanguage,
@@ -362,7 +418,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final ImportValidator v;
 		switch (source) {
 			case "CSV":
-				v = new CsvValidator(vertx, acceptLanguage, message.body().getJsonObject("columnsMapping"));
+				v = new CsvValidator(vertx, acceptLanguage, message.body());
 				break;
 			case "AAF":
 			case "AAF1D":
@@ -388,6 +444,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;
+				r.persist(new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+
+					}
+				});
 				if (preDelete && structureExternalId != null && !r.containsErrors()) {
 					final JsonArray externalIds = r.getUsersExternalId();
 					final JsonArray profiles = r.getResult().getJsonArray(Report.PROFILES);
@@ -560,10 +622,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void doImport(final Message<JsonObject> message, final Feed feed, final Handler<Report> h) {
-
 		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
-
-
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 
