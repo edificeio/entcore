@@ -25,6 +25,7 @@ import org.vertx.java.core.eventbus.EventBus;
 
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
@@ -43,7 +44,8 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 		return isNotEmpty(scope) &&
 				(prefixPattern.matcher(scope).find() ||
 						request.path().contains("/auth/internal/userinfo") ||
-						(scope.contains("userinfo") && request.path().contains("/auth/oauth2/userinfo")));
+						(scope.contains("userinfo") && request.path().contains("/auth/oauth2/userinfo")) ||
+						(isEmpty(request.getAttribute("remote_user")) && isNotEmpty(request.getAttribute("client_id"))));
 						//(scope.contains("openid") && request.path().contains())
 	}
 
