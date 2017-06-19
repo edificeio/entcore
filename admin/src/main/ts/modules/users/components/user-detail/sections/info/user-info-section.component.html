@@ -57,7 +57,7 @@
                 </button>
             </div>
 
-            <div class="sendPassword">
+            <div class="sendPassword" *ngIf="smsModule">
                 <input type="tel" [(ngModel)]="passwordResetMobile" name="passwordResetMobile" 
                     [attr.placeholder]="'send.reset.password.mobile.placeholder' | translate"
                     #passwordMobileInput="ngModel">

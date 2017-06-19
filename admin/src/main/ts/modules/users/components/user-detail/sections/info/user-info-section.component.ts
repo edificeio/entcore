@@ -1,7 +1,7 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, OnInit } from '@angular/core'
 import { NgModel } from '@angular/forms'
 import { AbstractSection } from '../abstract.section'
-import { LoadingService, NotifyService } from '../../../../../../services'
+import { LoadingService, NotifyService, PlateformeInfoService } from '../../../../../../services'
 
 @Component({
     selector: 'user-info-section',
@@ -12,6 +12,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
 
     private passwordResetMail
     private passwordResetMobile
+    private smsModule: boolean
 
     constructor(
         private ns: NotifyService,
@@ -23,6 +24,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     ngOnInit() {
         this.passwordResetMail = this.details.email
         this.passwordResetMobile = this.details.mobile
+        PlateformeInfoService.isSmsModule().then(res => this.smsModule = res)
     }
 
     protected onUserChange(){
