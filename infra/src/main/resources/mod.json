@@ -49,11 +49,7 @@
       }
     },
     {
-<<<<<<< HEAD
-      "name": "org.entcore~directory~1.27.2",
-=======
       "name": "org.entcore~directory~1.28-SNAPSHOT",
->>>>>>> 173cf7c... prepare next development iteration
       "config": {
         "host": "http://localhost:8090"
       }
