@@ -3178,7 +3178,9 @@ window.RTE = (function () {
 
                         $(window).on('resize', function () {
                             highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-							toolbarElement.css({ 'position': 'relative' });
+							if($(window).width() > ui.breakpoints.tablette){
+								toolbarElement.css({ 'position': 'relative' });
+							}
                         });
 
                         var previousScroll = 0;
