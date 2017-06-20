@@ -66,8 +66,13 @@
             </select>
         </form-field>
 
-        <button [disabled]="createForm.pristine || createForm.invalid" class="relative">
-            <s5l>create.user.submit</s5l>
-        </button>
+        <div class="action">
+            <button type="button" class="cancel" (click)="cancel()">
+                <s5l>create.user.cancel</s5l>
+            </button>
+            <button class="create" [disabled]="createForm.pristine || createForm.invalid">
+                <s5l>create.user.submit</s5l>
+            </button>
+        </div>
     </form>
 </panel-section>

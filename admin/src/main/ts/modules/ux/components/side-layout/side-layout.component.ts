@@ -9,7 +9,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core'
             </div>
             <div class="side-companion" *ngIf="showCompanion">
                 <ng-content select="[side-companion]"></ng-content>
-                <i class="fa fa-times action top-right" (click)="close.emit()"></i>
             </div>
         </div>
     `,

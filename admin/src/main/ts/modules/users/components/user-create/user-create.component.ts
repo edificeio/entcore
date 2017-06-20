@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core'
 import { ActivatedRoute, Data, Router } from '@angular/router'
+import { Location } from '@angular/common'
 
 import { Subscription } from 'rxjs/Subscription'
 
@@ -29,6 +30,7 @@ export class UserCreate implements OnInit, OnDestroy {
         private ls: LoadingService,
         private router: Router,
         private route: ActivatedRoute,
+        private location: Location,
         private userListService: UserListService) {}
 
     ngOnInit(): void {
@@ -84,5 +86,9 @@ export class UserCreate implements OnInit, OnDestroy {
     removeChild(child) {
         const index = this.newUser.userDetails.children.indexOf(child);
         this.newUser.userDetails.children.splice(index, 1)
+    }
+
+    cancel() {
+        this.location.back();
     }
 }

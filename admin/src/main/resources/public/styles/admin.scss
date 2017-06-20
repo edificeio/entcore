@@ -17,6 +17,7 @@ $accent-dark: darken($accent, 10%);
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: crimson;
 $button-bg: #f2f2f2;
+$button-bg-hover: darken($button-bg, 5%);
 $user-li-hover: #ffccb8;
 $user-profile-img-width: 200px;
 $fontawesome-size: 1.5em;
@@ -964,20 +965,35 @@ user-create {
                 }
             }
         }
-        button {
-            padding: 10px 10px;
-            margin-top: 20px;
-            min-width: 100px;
-            font-size: 1.2em;
-            text-align: center;
 
-            &:not([disabled]) {
-                background-color: $accent;
-                color: white;
-            }
+        div.action {
+            display: flex; 
+            justify-content: flex-end;
 
-            &:not([disabled]):hover {
-                background-color: $accent-dark;
+            button {
+                padding: 10px 10px;
+                margin: 20px 0 0 5px;
+                min-width: 100px;
+                font-size: 1.2em;
+                text-align: center;
+
+                &.create:not([disabled]) {
+                    background-color: $accent;
+                    color: white;
+                }
+
+                &.create:not([disabled]):hover {
+                    background-color: $accent-dark;
+                }
+
+                &.cancel {
+                    background-color: $button-bg;
+                    color: $accent;
+
+                    &:hover {
+                        background-color: $button-bg-hover;
+                    }
+                }
             }
         }
     }
@@ -1051,20 +1067,34 @@ group-users-list list-component {
 
 group-create {
     panel-section {
-        button {
-            padding: 10px 10px;
-            margin-top: 20px;
-            min-width: 100px;
-            font-size: 1.2em;
-            text-align: center;
+       div.action {
+            display: flex; 
+            justify-content: flex-end;
 
-            &:not([disabled]) {
-                background-color: $accent;
-                color: white;
-            }
+            button {
+                padding: 10px 10px;
+                margin: 20px 0 0 5px;
+                min-width: 100px;
+                font-size: 1.2em;
+                text-align: center;
 
-            &:not([disabled]):hover {
-                background-color: $accent-dark;
+                &.create:not([disabled]) {
+                    background-color: $accent;
+                    color: white;
+                }
+
+                &.create:not([disabled]):hover {
+                    background-color: $accent-dark;
+                }
+
+                &.cancel {
+                    background-color: $button-bg;
+                    color: $accent;
+
+                    &:hover {
+                        background-color: $button-bg-hover;
+                    }
+                }
             }
         }
     }

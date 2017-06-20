@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core'
 import { ActivatedRoute, Router } from '@angular/router'
+import { Location } from '@angular/common'
 import { GroupModel } from '../../../../store/models'
 import { GroupsStore } from '../../store'
 import { LoadingService, NotifyService } from '../../../../services'
@@ -18,9 +19,14 @@ import { LoadingService, NotifyService } from '../../../../services'
                     <form-errors [control]="nameInput"></form-errors>
                 </form-field>
 
-                <button [disabled]="createForm.pristine || createForm.invalid" class="relative">
-                    <s5l>create.group.submit</s5l>
-                </button>
+                <div class="action">
+                    <button type="button" class="cancel" (click)="cancel()">
+                        <s5l>create.group.cancel</s5l>
+                    </button>
+                    <button class="create" [disabled]="createForm.pristine || createForm.invalid">
+                        <s5l>create.group.submit</s5l>
+                    </button>
+                </div>
             </form>
         </panel-section>
     `,
@@ -34,7 +40,8 @@ export class GroupCreate {
         private ns: NotifyService,
         private ls: LoadingService,
         private router: Router,
-        private route: ActivatedRoute) {}
+        private route: ActivatedRoute,
+        private location: Location) {}
 
     createNewGroup() {
         this.newGroup.structureId = this.groupsStore.structure.id
@@ -58,5 +65,9 @@ export class GroupCreate {
                     }, 'notify.group.create.error.title', err)
             })
         )
+    }
+
+    cancel() {
+        this.location.back();
     }
 }
