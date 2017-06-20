@@ -3185,13 +3185,6 @@ window.RTE = (function () {
                             }
                         );
 
-                        $(window).on('resize', function () {
-                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-							if($(window).width() > ui.breakpoints.tablette){
-								toolbarElement.css({ 'position': 'relative' });
-							}
-                        });
-
                         var previousScroll = 0;
                         function sticky() {
 							if(element.parents('.editor-media').length > 0){
@@ -3238,6 +3231,19 @@ window.RTE = (function () {
 						if(ui.breakpoints.tablette <= $(window).width()){
 							var placeEditorToolbar = requestAnimationFrame(sticky);
 						}
+
+						$(window).on('resize', function () {
+                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+							if($(window).width() > ui.breakpoints.tablette){
+								toolbarElement.css({ 'position': 'relative' });
+								cancelAnimationFrame(sticky);
+								var placeEditorToolbar = requestAnimationFrame(sticky);
+							}
+							else{
+								cancelAnimationFrame(sticky);
+							}
+							placeToolbar();
+                        });
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
@@ -3404,6 +3410,9 @@ window.RTE = (function () {
                                 });
                                 element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                             }
+							else if($(window).width() < ui.breakpoints.tablette){
+								element.css({ 'padding-top': '' });
+							}
                         }
 
                         element.parents().on('resizing', placeToolbar)
