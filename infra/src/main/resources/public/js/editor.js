@@ -689,8 +689,18 @@ window.RTE = (function () {
 						else{
 							r = that.nextRanges[that.nextRanges.length - 1];
 						}
-						r.setEnd(sibling, 1);
+						r.setEnd(sibling, sibling.childNodes.length);
 			            $(sibling).css(css);
+						$(sibling).find('*').each(function(index, item){
+							for(var i = 0; i < item.style.length; i++){
+								for(var prop in css){
+									item.style.removeProperty(prop);
+								}
+							}
+						});
+						if($(sibling).find(range.endContainer).length){
+							break;
+						}
 			        }
 			        else {
 			            var el = $('<span></span>')
@@ -765,7 +775,6 @@ window.RTE = (function () {
 			    } while (
                     sibling && sibling !== nodeEnd
                     && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-                    && !$(sibling).find(range.endContainer).length
                 );
 			}
 
