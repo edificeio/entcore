@@ -159,6 +159,19 @@ public class DefaultImportService implements ImportService {
 	}
 
 	@Override
+	public void classesMapping(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
+		try {
+			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
+					.put("action", "classesMapping");
+			sendCommand(handler, action);
+		} catch (JsonProcessingException e) {
+			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
+					.put("global", new JsonArray().add("unexpected.error"))));
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	@Override
 	public void addLine(String importId, String profile, JsonObject line, Handler<Either<String, JsonObject>> handler) {
 		final JsonObject query = new JsonObject().put("_id", importId);
 		final JsonObject update = new JsonObject().put("$push", new JsonObject().put("files." + profile, line));

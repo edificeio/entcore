@@ -301,6 +301,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "columnsMapping" : csvColumnMapping(message);
 				break;
+			case "classesMapping" : csvClassesMapping(message);
+				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(message);
 				break;
@@ -340,6 +342,22 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				sendError(message, "invalid.action");
 		}
 		checkEventQueue();
+	}
+
+	private void csvClassesMapping(final Message<JsonObject> message) {
+		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body());
+		String path = message.body().getString("path");
+		v.classesMapping(path, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				if (!v.containsErrors()) {
+					sendOK(message, new JsonObject()
+							.put("classesMapping", v.getClassesMappings()));
+				} else {
+					sendError(message, "classes.mapping.error");
+				}
+			}
+		});
 	}
 
 	private void importWithId(final Message<JsonObject> message) {
@@ -444,12 +462,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;
-				r.persist(new Handler<Message<JsonObject>>() {
+				final Handler<Message<JsonObject>> persistHandler = new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 
 					}
-				});
+				};
 				if (preDelete && structureExternalId != null && !r.containsErrors()) {
 					final JsonArray externalIds = r.getUsersExternalId();
 					final JsonArray profiles = r.getResult().getJsonArray(Report.PROFILES);
@@ -475,6 +493,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							} else {
 								sendOK(message, new JsonObject().put("result", r.getResult()));
 							}
+							r.persist(persistHandler);
 						}
 					});
 				} else {
@@ -483,6 +502,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					} else {
 						sendOK(message, new JsonObject().put("result", r.getResult()));
 					}
+					r.persist(persistHandler);
 				}
 			}
 		});

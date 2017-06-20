@@ -48,12 +48,13 @@ import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends CsvReport implements ImportValidator {
 
-	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING }
+	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING, CLASSES_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
 	private final MappingFinder mappingFinder;
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
+	private final Map<String, Set<String>> profilesClassesMapping = new HashMap<>();
 	public static final Map<String, Validator> profiles;
 	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
 	private final long defaultStudentSeed;
@@ -78,6 +79,76 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	public void columnsMapping(final String p, final Handler<JsonObject> handler) {
 		process(p, CsvValidationProcessType.COLUMN_MAPPING, handler);
+	}
+
+	public void classesMapping(final String p, final Handler<JsonObject> handler) {
+		process(p, CsvValidationProcessType.CLASSES_MAPPING, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				if (isNotEmpty(getStructureExternalId())) {
+					final String query =
+							"MATCH (s:Structure {externalId:{externalId}})<-[:BELONGS]-(c:Class) " +
+							"RETURN COLLECT(DISTINCT c.name) as classes";
+					final JsonObject params = new JsonObject().put("externalId", getStructureExternalId());
+					TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							final JsonArray r = event.body().getJsonArray("result");
+							if ("ok".equals(event.body().getString("status")) && r != null && r.size() > 0 && r.getJsonObject(0) != null) {
+								final JsonArray classes = r.getJsonObject(0).getJsonArray("classes");
+								mapClasses(classes);
+							} else {
+								addError("error.database.classes");
+								log.error(event.body().getString("message"));
+							}
+							handler.handle(result);
+						}
+					});
+				} else {
+					mapClasses(null);
+					handler.handle(result);
+				}
+			}
+		});
+	}
+
+	protected void mapClasses(JsonArray classes) {
+		JsonObject classesMapping = new JsonObject();
+		Set<String> stm = profilesClassesMapping.get("Student");
+		if (stm != null && stm.size() > 0) {
+			for (String profile : profiles.keySet()) {
+				if (!"Student".equals(profile)) {
+					Set<String> m = profilesClassesMapping.get(profile);
+					if (m == null || m.size() == 0) continue;
+					JsonObject jm = new JsonObject();
+					classesMapping.put(profile, jm);
+					for (String c: m) {
+						if (stm.contains(c)) {
+							jm.put(c, c);
+						} else {
+							jm.put(c, "");
+						}
+					}
+				}
+			}
+			JsonObject jm = new JsonObject();
+			classesMapping.put("Student", jm);
+			for (String s : stm) {
+				jm.put(s, "");
+			}
+		}
+		if (classes != null && classes.size() > 0) {
+			for (String attr : classesMapping.fieldNames()) {
+				JsonObject j = classesMapping.getJsonObject(attr);
+				for (String attr2 : j.fieldNames()) {
+					if (classes.contains(attr2)) {
+						j.put(attr2, attr2);
+					}
+				}
+			}
+			classesMapping.put("dbClasses", classes);
+		}
+		setClassesMapping(classesMapping);
 	}
 
 	@Override
@@ -171,6 +242,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 															case COLUMN_MAPPING:
 																checkColumnsMapping(file, profile, charset, h);
 																break;
+															case CLASSES_MAPPING:
+																checkClassesMapping(file, profile, charset, h);
+																break;
 														}
 													} else {
 														addError("unknown.profile");
@@ -194,6 +268,51 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				}
 			}
 		});
+	}
+
+	private void checkClassesMapping(String path, String profile, String charset, Handler<JsonObject> handler) {
+		try {
+			CSVReader csvParser = getCsvReader(path, charset);
+
+			String[] strings;
+			final List<String> columns = new ArrayList<>();
+			final List<Integer> classesIdx = new ArrayList<>();
+			final Set<String> mapping = new HashSet<>();
+			profilesClassesMapping.put(profile, mapping);
+			int i = 0;
+			while ((strings = csvParser.readNext()) != null) {
+				if (i == 0) {
+					JsonArray invalidColumns = columnsMapper.getColumsNames(profile, strings, columns);
+					if (invalidColumns.size() > 0 ) {
+						parseErrors("invalid.column", invalidColumns, profile, handler);
+						return;
+					} else if (!columns.contains("classes") && !columns.contains("childClasses")) {
+						handler.handle(result);
+						return;
+					} else {
+						int j = 0;
+						for (String column : columns) {
+							if ("classes".equals(column) || "childClasses".equals(column)) {
+								classesIdx.add(j);
+							}
+							j++;
+						}
+					}
+				} else {
+					for (Integer idx : classesIdx) {
+						if (isNotEmpty(strings[idx].trim())) {
+							mapping.add(strings[idx].trim());
+						}
+					}
+				}
+				i++;
+			}
+		} catch (Exception e) {
+			addError(profile, "csv.exception");
+			log.error("csv.exception", e);
+		} finally {
+			handler.handle(result);
+		}
 	}
 
 	private void checkColumnsMapping(String path, String profile, String charset, Handler<JsonObject> handler) {
@@ -342,6 +461,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 				final JsonObject checkChildExists = new JsonObject();
 //				setStructureExternalIdIfAbsent(structure.getExternalId());
 				try {
+					final JsonObject classMapping = getClassesMapping(profile);
 					CSVReader csvParser = getCsvReader(path, charset, 1);
 					final int nbColumns = columns.size();
 					String[] strings;
@@ -370,8 +490,16 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								return;
 							}
 							final String c = columns.get(j);
-							final String v = strings[j].trim();
+							final String v;
+							if ("classes".equals(c) && classMapping != null) {
+								v = getOrElse(classMapping.getString(strings[j].trim()), strings[j].trim(), false);
+							} else {
+								v = strings[j].trim();
+							}
+							//if ((v.isEmpty() && !"childUsername".equals(c)) ||
+							//		(v.isEmpty() && "childUsername".equals(c) && strings[j+1].trim().isEmpty())) continue;
 							if (v.isEmpty() && !c.startsWith("child")) continue;
+
 							switch (validator.getType(c)) {
 								case "string":
 									if ("birthDate".equals(c)) {

@@ -37,6 +37,8 @@ public interface ImportService {
 
 	void columnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
 
+	void classesMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
+
 	void addLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
 
 	void updateLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
