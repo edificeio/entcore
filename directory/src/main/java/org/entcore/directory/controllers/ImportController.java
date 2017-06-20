@@ -84,6 +84,22 @@ public class ImportController extends BaseController {
 		});
 	}
 
+	@Post("/wizard/classes/mapping")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void classesMapping(final HttpServerRequest request) {
+		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+			@Override
+			public void handle(AsyncResult<ImportInfos> event) {
+				if (event.succeeded()) {
+					importService.classesMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+				} else {
+					badRequest(request, event.cause().getMessage());
+				}
+			}
+		});
+	}
+
 	@Post("/wizard/validate")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -130,9 +146,16 @@ public class ImportController extends BaseController {
 				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
 					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
 				}
-				if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
+
+				if (isNotEmpty(request.formAttributes().get("columnsMapping")) ||
+						isNotEmpty(request.formAttributes().get("classesMapping"))) {
 					try {
-						importInfos.setMappings(new JsonObject(request.formAttributes().get("columnsMapping")));
+						if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
+							importInfos.setMappings(new JsonObject(request.formAttributes().get("columnsMapping")));
+						}
+						if (isNotEmpty(request.formAttributes().get("classesMapping"))) {
+							importInfos.setClassesMapping(new JsonObject(request.formAttributes().get("classesMapping")));
+						}
 					} catch (DecodeException e) {
 						handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.columns.mapping", e)));
 						deleteImportPath(vertx, path);

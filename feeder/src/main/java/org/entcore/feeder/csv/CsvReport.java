@@ -42,7 +42,9 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class CsvReport extends Report {
 
 	private static final String MAPPINGS = "mappings";
+	private static final String CLASSES_MAPPING = "classesMapping";
 	private static final String HEADERS = "headers";
+	public static final String KEYS_CLEANED = "keysCleaned";
 	private final Vertx vertx;
 	protected final ProfileColumnsMapper columnsMapper;
 
@@ -54,6 +56,9 @@ public class CsvReport extends Report {
 			importInfos.remove("id");
 		}
 		result.mergeIn(importInfos);
+		if (result.getBoolean(KEYS_CLEANED, false)) {
+			uncleanKeys();
+		}
 		this.vertx = vertx;
 		this.columnsMapper = new ProfileColumnsMapper(getMappings());
 	}
@@ -84,6 +89,24 @@ public class CsvReport extends Report {
 		if (mappings != null && mappings.size() > 0) {
 			result.put(MAPPINGS, mappings);
 		}
+	}
+
+	public void setClassesMapping(JsonObject mapping) {
+		if (mapping != null && mapping.size() > 0) {
+			result.put(CLASSES_MAPPING, mapping);
+		}
+	}
+
+	public JsonObject getClassesMapping(String profile) {
+		final JsonObject cm = result.getJsonObject(CLASSES_MAPPING);
+		if (cm != null) {
+			return cm.getJsonObject(profile);
+		}
+		return null;
+	}
+
+	public JsonObject getClassesMappings() {
+		return result.getJsonObject(CLASSES_MAPPING);
 	}
 
 	public void exportFiles(final Handler<AsyncResult<String>> handler) {
@@ -176,6 +199,26 @@ public class CsvReport extends Report {
 	@Override
 	public String getSource() {
 		return "CSV";
+	}
+
+	public String getStructureExternalId() {
+		return result.getString("structureExternalId");
+	}
+
+	@Override
+	protected void cleanKeys() {
+		int count = 0;
+		count += cleanAttributeKeys(getClassesMappings());
+		count += cleanAttributeKeys(getMappings());
+		if (count > 0) {
+			result.put(KEYS_CLEANED, true);
+		}
+	}
+
+	protected void uncleanKeys() {
+		uncleanAttributeKeys(getClassesMappings());
+		uncleanAttributeKeys(getMappings());
+		result.remove(KEYS_CLEANED);
 	}
 
 //	protected void setStructureExternalIdIfAbsent(String structureExternalId) {
