@@ -33,6 +33,8 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class CSVUtil {
 
 	public static final String UTF8_BOM = "\uFEFF";
@@ -117,6 +119,17 @@ public class CSVUtil {
 			fos.write(UTF8_BOM.getBytes());
 		}
 		return new CSVWriter(new OutputStreamWriter(fos, charset), ';');
+	}
+
+	public static boolean emptyLine(String [] line) {
+		if (line != null) {
+			for (String s : line) {
+				if (isNotEmpty(s)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 }

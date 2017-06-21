@@ -50,5 +50,6 @@
   "invalid.edt.key" : "La clé de cryptage EDT est invalide",
   "invalid.epj" : "Utilisateur sans identifiant : {0}",
   "not.found.users.not.empty" : "Utilisateurs non présents dans la base",
-  "missing.student" : "Élève manquant : {0}"
+  "missing.student" : "Élève manquant : {0}",
+  "bad.columns.number" : "Mauvais nombre de colonnes à la ligne {0}."
 }

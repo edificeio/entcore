@@ -39,6 +39,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 
+import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 import static org.entcore.feeder.utils.CSVUtil.getCsvWriter;
 import static org.entcore.feeder.utils.Validator.sanitize;
@@ -94,6 +95,10 @@ public class MappingFinder {
 			String[] values;
 			int rowIdx = 0;
 			while ((values = csvReader.readNext()) != null) {
+				if (emptyLine(values)) {
+					rowIdx++;
+					continue;
+				}
 				final List<String> line = new LinkedList<>(Arrays.asList(values));
 				if (additionalColumn) {
 					line.add(0, "");
