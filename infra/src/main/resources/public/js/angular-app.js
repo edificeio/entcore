@@ -1211,6 +1211,71 @@ module.directive('soundSelect', function($compile) {
     }
 });
 
+module.directive('timePickerCore', function($compile){
+	return {
+		scope: {
+			ngModel: '=',
+			ngBegin: '=',
+			ngEnd: '=',
+			ngLimit: '='
+		},
+		transclude: true,
+		replace: true,
+		restrict: 'E',
+		template: "<input type='text' />",
+		link: function($scope, $element, $attributes){
+			var hideFunction = function(e){
+				var timepicker = $element.data('timepicker');
+				if(!timepicker || $element[0] === e.target || $('.bootstrap-timepicker-widget').find(e.target).length !== 0){
+					return;
+				}
+				timepicker.hideWidget();
+			};
+			$('body').on('click', hideFunction);
+			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-timepicker.js', function(){
+				$element.timepicker({
+					showMeridian: false,
+					defaultTime: 'current',
+					minuteStep: 5,
+					// minHour: model.timeConfig.start_hour,
+					// maxHour: model.timeConfig.end_hour
+				});
+			});
+
+			$scope.$watch('ngModel', function(newVal){
+        
+				$element.val($scope.ngModel.format("HH:mm"));
+				if( ($scope.ngLimit !== undefined && !newVal.isSame($scope.ngLimit))
+						&& ( ($scope.ngBegin === true && newVal.isAfter($scope.ngLimit))
+								|| ($scope.ngEnd === true && newVal.isBefore($scope.ngLimit)) )
+				){
+					$scope.ngLimit = moment(newVal);
+				}
+			});
+
+			$element.on('change', function(){
+			    var time = $element.val().split(':');
+                var newVal = $scope.ngLimit ? moment($scope.ngLimit) : moment();
+                newVal.set('hour', time[0]);
+                newVal.set('minute', time[1]);
+
+				$scope.ngModel = newVal;
+				$scope.$apply('ngModel');
+				$scope.$parent.$eval($scope.ngChange);
+				$scope.$parent.$apply();
+			});
+
+			$element.on('focus', function() {
+				$element.timepicker('updateFromElementVal');
+			});
+
+			$element.on('$destroy', function(){
+				$element.timepicker('remove');
+			});
+		}
+	}
+});
+
 module.directive('mediaSelect', function($compile) {
     return {
         restrict: 'E',

@@ -125,7 +125,7 @@ public class DefaultTimetableService implements TimetableService {
 		query.append("MATCH (:Structure {id:{id}})<-[:SUBJECT]-(sub:Subject)<-[r:TEACHES]-(u:User)");
 		query.append(" WHERE 1=1");
 		if (teachers != null && !teachers.isEmpty()) {
-			params.putArray("teacherIds", new JsonArray(teachers));
+			params.putArray("teacherIds", new JsonArray(teachers.toArray()));
 			query.append(" AND u.id IN  {teacherIds}");
 		}
 		if (!StringUtils.isEmpty(externalGroupId)) {

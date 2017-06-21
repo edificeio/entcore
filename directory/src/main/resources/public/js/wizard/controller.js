@@ -54,7 +54,6 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 			}
 		}
 		wizard.validate(function(data) {
-			console.log(data);
 			if (data.error || data.errors) {
 				$scope.displayErrors(data);
 			} else {
