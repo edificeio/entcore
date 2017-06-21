@@ -32,6 +32,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -256,7 +257,7 @@ public class CsvValidator extends Report implements ImportValidator {
 
 	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
 		final Validator validator = profiles.get(profile);
-		getStructure(path, new Handler<Structure>() {
+		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<Structure>() {
 			@Override
 			public void handle(final Structure structure) {
 				if (structure == null) {
@@ -416,7 +417,7 @@ public class CsvValidator extends Report implements ImportValidator {
 											handler.handle(result);
 											return;
 										}
-									} else if ("childLastName".equals(attr)) {
+									} else if ("childLastName".equals(attr) && !user.getFieldNames().contains("childUsername")) {
 										Object childLastName = user.getValue(attr);
 										Object childFirstName = user.getValue("childFirstName");
 										Object childClasses = user.getValue("childClasses");
