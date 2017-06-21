@@ -329,8 +329,8 @@ public class Validator {
 			String firstName = in[0];
 			String lastName = in[1];
 			if (firstName != null && lastName != null) {
-				String login = (removeAccents(firstName).replaceAll("\\s+", "-").toLowerCase()
-						+ "." + removeAccents(lastName).replaceAll("\\s+", "-").toLowerCase())
+				String login = (removeAccents(firstName).replaceAll("\\s+", "").toLowerCase()
+						+ "." + removeAccents(lastName).replaceAll("\\s+", "").toLowerCase())
 						.replaceAll("'", "");
 				int i = 2;
 				String l = login + "";
