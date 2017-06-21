@@ -107,6 +107,10 @@ public class Report {
 		return result;
 	}
 
+	public void setUsersExternalId(JsonArray usersExternalIds) {
+		result.putArray("usersExternalIds", usersExternalIds);
+	}
+
 	public JsonArray getUsersExternalId() {
 		final JsonArray res = new JsonArray();
 		for (String f : result.getObject("files").getFieldNames()) {

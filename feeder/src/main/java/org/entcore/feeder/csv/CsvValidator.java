@@ -39,9 +39,9 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
-import static org.entcore.feeder.csv.CsvFeeder.frenchDatePatter;
-import static org.entcore.feeder.csv.CsvFeeder.generateUserExternalId;
-import static org.entcore.feeder.csv.CsvFeeder.relativeStudentMapping;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.feeder.csv.CsvFeeder.*;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends Report implements ImportValidator {
@@ -53,6 +53,8 @@ public class CsvValidator extends Report implements ImportValidator {
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
 	public static final Map<String, Validator> profiles;
+	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
+	private final long defaultStudentSeed;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -69,6 +71,7 @@ public class CsvValidator extends Report implements ImportValidator {
 		this.columnsMapper = new ColumnsMapper(additionnalsMappings);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
+		defaultStudentSeed = new Random().nextLong();
 	}
 
 	@Override
@@ -354,7 +357,7 @@ public class CsvValidator extends Report implements ImportValidator {
 							classesA = null;
 						}
 						if ("Student".equals(profile) && classesA != null && classesA.size() == 1) {
-							seed = CsvFeeder.DEFAULT_STUDENT_SEED;
+							seed = defaultStudentSeed;
 							ca = classesA.get(0);
 						} else {
 							ca = String.valueOf(i);
@@ -368,6 +371,7 @@ public class CsvValidator extends Report implements ImportValidator {
 						} else {
 							if (existExternalId.contains(externalId)) {
 								state = State.UPDATED;
+								studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), externalId);
 							} else {
 								state = State.NEW;
 							}
@@ -401,7 +405,7 @@ public class CsvValidator extends Report implements ImportValidator {
 														((JsonArray) childLastName).<String>get(j).trim() +
 														((JsonArray) childFirstName).<String>get(j).trim() +
 														((JsonArray) childClasses).<String>get(j).trim() +
-														CsvFeeder.DEFAULT_STUDENT_SEED;
+														defaultStudentSeed;
 												relativeStudentMapping(linkStudents, mapping);
 											}
 										} else if (childUsername instanceof String && childLastName instanceof String &&
@@ -410,7 +414,7 @@ public class CsvValidator extends Report implements ImportValidator {
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
 													childClasses.toString().trim() +
-													CsvFeeder.DEFAULT_STUDENT_SEED;
+													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										} else {
 											addError(profile, "invalid.child.mapping");
@@ -430,7 +434,7 @@ public class CsvValidator extends Report implements ImportValidator {
 														((JsonArray) childLastName).<String>get(j) +
 														((JsonArray) childFirstName).<String>get(j) +
 														((JsonArray) childClasses).<String>get(j) +
-														CsvFeeder.DEFAULT_STUDENT_SEED;
+														defaultStudentSeed;
 												relativeStudentMapping(linkStudents, mapping);
 											}
 										} else if (childLastName instanceof String && childFirstName instanceof String &&
@@ -439,7 +443,7 @@ public class CsvValidator extends Report implements ImportValidator {
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
 													childClasses.toString().trim() +
-													CsvFeeder.DEFAULT_STUDENT_SEED;
+													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										} else {
 											addError(profile, "invalid.child.mapping");
@@ -497,6 +501,16 @@ public class CsvValidator extends Report implements ImportValidator {
 				}
 			}
 		});
+	}
+
+	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
+		if (mapping.trim().isEmpty()) return;
+		try {
+			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
+			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 }
