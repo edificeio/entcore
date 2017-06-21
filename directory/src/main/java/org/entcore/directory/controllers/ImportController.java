@@ -141,6 +141,11 @@ public class ImportController extends BaseController {
 		request.uploadHandler(new Handler<HttpServerFileUpload>() {
 			@Override
 			public void handle(final HttpServerFileUpload upload) {
+				if (!upload.filename().toLowerCase().endsWith(".csv")) {
+					handler.handle(new DefaultAsyncResult<ImportInfos>(
+							new ImportException("invalid.file.extension")));
+					return;
+				}
 				final String filename = path + File.separator + upload.name();
 				upload.endHandler(new Handler<Void>() {
 					@Override

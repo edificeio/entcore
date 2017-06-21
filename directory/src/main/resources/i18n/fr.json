@@ -545,5 +545,6 @@
     "timetable.import.loading" : "Import en cours...",
     "attachmentId" : "Identifiant SIECLE",
     "default.import" : "Alimentation standard (AAF, CSV)",
-    "directory.metrics": "Métriques"
+    "directory.metrics": "Métriques",
+    "invalid.file.extension" : "Le format du fichier n’est pas valide. Votre fichier doit être au format CSV (séparateur point virgule)."
 }
