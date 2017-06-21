@@ -206,7 +206,7 @@ public class DefaultImportService implements ImportService {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
-					JsonObject r = event.body();
+					JsonObject r = event.body().getJsonObject("result", new JsonObject());
 					r.remove("status");
 					if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(r));

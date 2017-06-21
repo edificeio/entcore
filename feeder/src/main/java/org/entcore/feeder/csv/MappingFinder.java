@@ -97,6 +97,7 @@ public class MappingFinder {
 			int rowIdx = 0;
 			while ((values = csvReader.readNext()) != null) {
 				if (emptyLine(values)) {
+					rowIdx++;
 					continue;
 				}
 				if (values.length > nbColumns) {

@@ -421,7 +421,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 							.put("mappings", v.getMappings())
 							.put("availableFields", v.getColumnsMapper().availableFields()));
 				} else {
-					sendError(message, "column.mapping.error");
+//					sendError(message, "column.mapping.error");
+					sendOK(message, new JsonObject().put("result", v.getResult()));
 				}
 			}
 		});
