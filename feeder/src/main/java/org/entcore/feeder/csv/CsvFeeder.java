@@ -46,6 +46,7 @@ import java.util.regex.Pattern;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
+import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvFeeder implements Feed {
@@ -205,7 +206,7 @@ public class CsvFeeder implements Feed {
 										break;
 									}
 								}
-							} else if (externalIdIdx.get() >= 0) {
+							} else if (externalIdIdx.get() >= 0 && !emptyLine(strings)) {
 								externalIds.add(strings[externalIdIdx.get()]);
 							}
 							i++;
@@ -277,6 +278,10 @@ public class CsvFeeder implements Feed {
 				if (i == 0) {
 					columnsMapper.getColumsNames(strings, columns, handler);
 				} else if (!columns.isEmpty()) {
+					if (emptyLine(strings)) {
+						i++;
+						continue;
+					}
 					JsonObject user = new JsonObject();
 					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 					user.putArray("profiles", new JsonArray().add(profile));

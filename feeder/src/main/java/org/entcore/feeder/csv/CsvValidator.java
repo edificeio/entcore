@@ -42,6 +42,7 @@ import java.util.regex.Matcher;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.csv.CsvFeeder.*;
+import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends Report implements ImportValidator {
@@ -171,7 +172,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					} else {
 						validateFile(path, profile, columns, null, charset, handler);
 					}
-				} else if (filterExternalId.get() >= 0) {
+				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
 						externalIds.addString(strings[filterExternalId.get()]);
 					} else if (findUsersEnabled) { // TODO add check to empty lines
@@ -270,9 +271,18 @@ public class CsvValidator extends Report implements ImportValidator {
 				}
 				try {
 					CSVReader csvParser = getCsvReader(path, charset, 1);
+					final int nbColumns = columns.size();
 					String[] strings;
 					int i = 0;
 					while ((strings = csvParser.readNext()) != null) {
+						if (emptyLine(strings)) {
+							i++;
+							continue;
+						}
+						if (strings.length != nbColumns) {
+							addErrorByFile(profile, "bad.columns.number", "" + ++i);
+							continue;
+						}
 						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
 						user.putArray("structures", new JsonArray().add(structure.getExternalId()));
