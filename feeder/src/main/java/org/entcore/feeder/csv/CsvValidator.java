@@ -298,7 +298,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							j++;
 						}
 					}
-				} else {
+				} else if (!emptyLine(strings)) {
 					for (Integer idx : classesIdx) {
 						if (isNotEmpty(strings[idx].trim())) {
 							mapping.add(strings[idx].trim());
@@ -320,8 +320,16 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			CSVReader csvParser = getCsvReader(path, charset);
 
 			String[] strings;
-			if ((strings = csvParser.readNext()) != null) {
-				addMapping(profile, columnsMapper.getColumsMapping(profile, strings));
+			int columnsNumber = -1;
+			int i = 0;
+			while ((strings = csvParser.readNext()) != null) {
+				if (i == 0) {
+					addMapping(profile, columnsMapper.getColumsMapping(profile, strings));
+					columnsNumber = strings.length;
+				} else if (!emptyLine(strings) && columnsNumber != strings.length) {
+					addErrorByFile(profile, "bad.columns.number", "" + (i + 1));
+				}
+				i++;
 			}
 		} catch (Exception e) {
 			addError(profile, "csv.exception");
@@ -838,16 +846,6 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	public ProfileColumnsMapper getColumnsMapper() {
 		return columnsMapper;
-	}
-
-	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
-		if (mapping.trim().isEmpty()) return;
-		try {
-			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
-			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-			log.error(e.getMessage(), e);
-		}
 	}
 
 }
