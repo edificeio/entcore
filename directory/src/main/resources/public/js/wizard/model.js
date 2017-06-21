@@ -33,7 +33,6 @@ Wizard.prototype.import = function(callback) {
 }
 
 Wizard.prototype.toFormData = function() {
-    console.log(this);
     var formData = new FormData();
     for (var attr in this) {
         // TODO remove useless objects

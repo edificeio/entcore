@@ -25,12 +25,13 @@ import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.http.BasicFilter;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
-import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.security.DirectoryResourcesProvider;
+import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
 import org.vertx.java.core.Handler;
@@ -39,91 +40,104 @@ import org.vertx.java.core.http.HttpServerRequest;
 
 public class Directory extends BaseServer {
 
-	public static final String FEEDER = "entcore.feeder";
+    public static final String FEEDER = "entcore.feeder";
+    public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
-	@Override
-	protected void initFilters() {
-		super.initFilters();
-		addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
-	}
+    @Override
+    protected void initFilters() {
+        super.initFilters();
+        addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
+    }
 
-	@Override
-	public void start() {
-		final EventBus eb = getEventBus(vertx);
-		super.start();
-		setDefaultResourceFilter(new DirectoryResourcesProvider());
+    @Override
+    public void start() {
+        final EventBus eb = getEventBus(vertx);
+        clearFilters();
+        setOauthClientGrant(true);
+        addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
+        addFilter(new UserbookCsrfFilter(eb, securedUriBinding));
+        super.start();
+        MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
+        setDefaultResourceFilter(new DirectoryResourcesProvider());
 
-		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
-			@Override
-			public void handle(HttpServerRequest request) {
-				i18nMessages(request);
-			}
-		});
+        rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
+            @Override
+            public void handle(HttpServerRequest request) {
+                i18nMessages(request);
+            }
+        });
 
-		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
-		EmailSender emailSender = emailFactory.getSender();
-		UserService userService = new DefaultUserService(emailSender, eb);
-		UserBookService userBookService = new DefaultUserBookService();
-		TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
-		ClassService classService = new DefaultClassService(eb);
-		SchoolService schoolService = new DefaultSchoolService(eb);
-		GroupService groupService = new DefaultGroupService(eb);
-		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, container);
 
-		DirectoryController directoryController = new DirectoryController();
-		directoryController.setClassService(classService);
-		directoryController.setSchoolService(schoolService);
-		directoryController.setUserService(userService);
-		directoryController.setGroupService(groupService);
-		addController(directoryController);
-		directoryController.createSuperAdmin();
+        EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+        EmailSender emailSender = emailFactory.getSender();
+        UserService userService = new DefaultUserService(emailSender, eb);
+        UserBookService userBookService = new DefaultUserBookService();
+        TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
+        ClassService classService = new DefaultClassService(eb);
+        SchoolService schoolService = new DefaultSchoolService(eb);
+        GroupService groupService = new DefaultGroupService(eb);
+        ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, container);
 
-		UserBookController userBookController = new UserBookController();
-		userBookController.setSchoolService(schoolService);
-		userBookController.setConversationNotification(conversationNotification);
-		addController(userBookController);
+        DirectoryController directoryController = new DirectoryController();
+        directoryController.setClassService(classService);
+        directoryController.setSchoolService(schoolService);
+        directoryController.setUserService(userService);
+        directoryController.setGroupService(groupService);
+        addController(directoryController);
+        directoryController.createSuperAdmin();
 
-		StructureController structureController = new StructureController();
-		structureController.setStructureService(schoolService);
-		structureController.setNotifHelper(emailSender);
-		addController(structureController);
+        UserBookController userBookController = new UserBookController();
+        userBookController.setSchoolService(schoolService);
+        userBookController.setConversationNotification(conversationNotification);
+        addController(userBookController);
 
-		ClassController classController = new ClassController();
-		classController.setClassService(classService);
-		classController.setConversationNotification(conversationNotification);
-		classController.setSchoolService(schoolService);
-		classController.setUserService(userService);
-		addController(classController);
+        StructureController structureController = new StructureController();
+        structureController.setStructureService(schoolService);
+        structureController.setNotifHelper(emailSender);
+        addController(structureController);
 
-		UserController userController = new UserController();
-		userController.setNotification(timeline);
-		userController.setUserBookService(userBookService);
-		userController.setUserService(userService);
-		addController(userController);
+        ClassController classController = new ClassController();
+        classController.setClassService(classService);
+        classController.setConversationNotification(conversationNotification);
+        classController.setSchoolService(schoolService);
+        classController.setUserService(userService);
+        addController(classController);
 
-		ProfileController profileController = new ProfileController();
-		profileController.setProfileService(new DefaultProfileService(eb));
-		addController(profileController);
+        UserController userController = new UserController();
+        userController.setNotification(timeline);
+        userController.setUserBookService(userBookService);
+        userController.setUserService(userService);
+        addController(userController);
 
-		GroupController groupController = new GroupController();
-		groupController.setGroupService(groupService);
-		addController(groupController);
+        ProfileController profileController = new ProfileController();
+        profileController.setProfileService(new DefaultProfileService(eb));
+        addController(profileController);
 
-		TenantController tenantController = new TenantController();
-		tenantController.setTenantService(new DefaultTenantService(eb));
-		addController(tenantController);
+        GroupController groupController = new GroupController();
+        groupController.setGroupService(groupService);
+        addController(groupController);
 
-		ImportController importController = new ImportController();
-		importController.setImportService(new DefaultImportService(vertx, eb));
-		importController.setSchoolService(schoolService);
-		addController(importController);
+        TenantController tenantController = new TenantController();
+        tenantController.setTenantService(new DefaultTenantService(eb));
+        addController(tenantController);
 
-		TimetableController timetableController = new TimetableController();
-		timetableController.setTimetableService(new DefaultTimetableService(eb));
-		addController(timetableController);
+        ImportController importController = new ImportController();
+        importController.setImportService(new DefaultImportService(vertx, eb));
+        importController.setSchoolService(schoolService);
+        addController(importController);
 
-		vertx.eventBus().registerLocalHandler("user.repository",
-				new RepositoryHandler(new UserbookRepositoryEvents(), eb));
-	}
+        TimetableController timetableController = new TimetableController();
+        timetableController.setTimetableService(new DefaultTimetableService(eb));
+        addController(timetableController);
+
+        SlotProfileController slotProfileController = new SlotProfileController(SLOTPROFILE_COLLECTION);
+        slotProfileController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
+        addController(slotProfileController);
+
+        addController(new ComponentController());
+
+        vertx.eventBus().registerLocalHandler("user.repository",
+                new RepositoryHandler(new UserbookRepositoryEvents(), eb));
+    }
 
 }
