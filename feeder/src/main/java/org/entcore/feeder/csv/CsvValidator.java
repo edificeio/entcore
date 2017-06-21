@@ -840,4 +840,14 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		return columnsMapper;
 	}
 
+	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
+		if (mapping.trim().isEmpty()) return;
+		try {
+			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
+			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
 }

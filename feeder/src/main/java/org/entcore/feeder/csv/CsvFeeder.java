@@ -566,10 +566,7 @@ public class CsvFeeder implements Feed {
 		if (mapping.trim().isEmpty()) return;
 		try {
 			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
-			String childId = studentExternalIdMapping.get(hash);
-			if (childId != null) {
-				linkStudents.add(childId);
-			}
+			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -589,8 +586,8 @@ public class CsvFeeder implements Feed {
 	protected static String getHashMapping(JsonObject props, String c, Structure structure, long seed) {
 		String mapping = structure.getExternalId()+props.getString("surname", "")+
 				props.getString("lastName", "")+props.getString("firstName", "")+
-//				props.getString("email","")+props.getString("title","")+
-//				props.getString("homePhone","")+props.getString("mobile","")+
+				props.getString("email","")+props.getString("title","")+
+				props.getString("homePhone","")+props.getString("mobile","")+
 				c+seed;
 		try {
 			return Hash.sha1(mapping.getBytes("UTF-8"));
