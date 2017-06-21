@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
@@ -51,9 +52,10 @@ public class CsvFeeder implements Feed {
 
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Logger log = LoggerFactory.getLogger(CsvFeeder.class);
-	public static final long DEFAULT_STUDENT_SEED = 0l;
+	private long defaultStudentSeed = 0l;
 	private final ColumnsMapper columnsMapper;
 	private final Vertx vertx;
+	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
 
 	public CsvFeeder(Vertx vertx, JsonObject additionnalsMappings) {
 		this.vertx = vertx;
@@ -67,6 +69,8 @@ public class CsvFeeder implements Feed {
 
 	@Override
 	public void launch(final Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
+		studentExternalIdMapping.clear();
+		defaultStudentSeed = new Random().nextLong();
 		parse(importer, path, handler);
 	}
 
@@ -361,13 +365,16 @@ public class CsvFeeder implements Feed {
 						classesA = null;
 					}
 					if ("Student".equals(profile) && classesA != null && classesA.size() == 1) {
-						seed = DEFAULT_STUDENT_SEED;
+						seed = defaultStudentSeed;
 						ca = classesA.get(0);
 					} else {
 						ca = String.valueOf(i);
 						seed = System.currentTimeMillis();
 					}
 					generateUserExternalId(user, ca, structure, seed);
+					if ("Student".equals(profile)) {
+						studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), user.getString("externalId"));
+					}
 					switch (profile) {
 						case "Teacher":
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
@@ -410,7 +417,7 @@ public class CsvFeeder implements Feed {
 													((JsonArray) childLastName).<String>get(j).trim() +
 													((JsonArray) childFirstName).<String>get(j).trim() +
 													((JsonArray) childClasses).<String>get(j).trim() +
-													CsvFeeder.DEFAULT_STUDENT_SEED;
+													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										}
 									} else if (childUsername instanceof String && childLastName instanceof String &&
@@ -419,13 +426,13 @@ public class CsvFeeder implements Feed {
 												childLastName.toString().trim() +
 												childFirstName.toString().trim() +
 												childClasses.toString().trim() +
-												CsvFeeder.DEFAULT_STUDENT_SEED;
+												defaultStudentSeed;
 										relativeStudentMapping(linkStudents, mapping);
 									} else {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
 										return;
 									}
-								} else if ("childLastName".equals(attr)) {
+								} else if ("childLastName".equals(attr) && !user.getFieldNames().contains("childUsername")) {
 									Object childLastName = user.getValue(attr);
 									Object childFirstName = user.getValue("childFirstName");
 									Object childClasses = user.getValue("childClasses");
@@ -437,7 +444,7 @@ public class CsvFeeder implements Feed {
 											String mapping = structure.getExternalId() +
 													((JsonArray) childLastName).<String>get(j).trim() +
 													((JsonArray) childFirstName).<String>get(j).trim() +
-													((JsonArray) childClasses).<String>get(j).trim() + DEFAULT_STUDENT_SEED;
+													((JsonArray) childClasses).<String>get(j).trim() + defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										}
 									} else if (childLastName instanceof String && childFirstName instanceof String &&
@@ -445,7 +452,7 @@ public class CsvFeeder implements Feed {
 											String mapping = structure.getExternalId() +
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
-													childClasses.toString().trim() + DEFAULT_STUDENT_SEED;
+													childClasses.toString().trim() + defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 									} else {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
@@ -486,10 +493,11 @@ public class CsvFeeder implements Feed {
 	//	importer.persist(handler);
 	}
 
-	static void relativeStudentMapping(JsonArray linkStudents, String mapping) {
+	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
 		if (mapping.trim().isEmpty()) return;
 		try {
-			linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
+			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
+			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
@@ -500,15 +508,24 @@ public class CsvFeeder implements Feed {
 		if (externalId != null && !externalId.trim().isEmpty()) {
 			return;
 		}
+		String hash = getHashMapping(props, c, structure, seed);
+		if (hash != null) {
+			props.putString("externalId", hash);
+		}
+	}
+
+	protected static String getHashMapping(JsonObject props, String c, Structure structure, long seed) {
 		String mapping = structure.getExternalId()+props.getString("surname", "")+
 				props.getString("lastName", "")+props.getString("firstName", "")+
 				props.getString("email","")+props.getString("title","")+
-				props.getString("homePhone","")+props.getString("mobile","")+c+seed;
+				props.getString("homePhone","")+props.getString("mobile","")+
+				c+seed;
 		try {
-			props.putString("externalId", Hash.sha1(mapping.getBytes("UTF-8")));
-		} catch (NoSuchAlgorithmException|UnsupportedEncodingException e) {
+			return Hash.sha1(mapping.getBytes("UTF-8"));
+		} catch (NoSuchAlgorithmException |UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
+		return null;
 	}
 
 }
