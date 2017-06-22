@@ -51,5 +51,6 @@
   "invalid.epj" : "Utilisateur sans identifiant : {0}",
   "not.found.users.not.empty" : "Utilisateurs non présents dans la base",
   "missing.student" : "Élève manquant : {0}",
-  "bad.columns.number" : "Mauvais nombre de colonnes à la ligne {0}."
+  "bad.columns.number" : "Mauvais nombre de colonnes à la ligne {0}.",
+  "missing.student.soft" : "Ligne {0} : le parent {1} {2} référence un élève non retrouvé."
 }

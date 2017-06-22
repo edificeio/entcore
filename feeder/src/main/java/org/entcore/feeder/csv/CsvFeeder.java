@@ -43,7 +43,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
@@ -469,7 +468,7 @@ public class CsvFeeder implements Feed {
 									}
 								}
 							}
-							importer.createOrUpdateUser(user, linkStudents);
+							importer.createOrUpdateUser(user, linkStudents, true);
 							break;
 						case "Guest":
 							importer.createOrUpdateGuest(user, classes.toArray(new String[classes.size()][2]));
@@ -506,7 +505,10 @@ public class CsvFeeder implements Feed {
 		if (mapping.trim().isEmpty()) return;
 		try {
 			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
-			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
+			String childId = studentExternalIdMapping.get(hash);
+			if (childId != null) {
+				linkStudents.addString(childId);
+			}
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}

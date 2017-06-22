@@ -472,6 +472,10 @@ public class CsvValidator extends Report implements ImportValidator {
 										classesNames.addString(classesNamesMapping.get(o));
 									}
 								}
+								if (classesNames.size() == 0) {
+									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1),
+											user.getString("firstName"), user.getString("lastName"));
+								}
 								break;
 						}
 						String error = validator.validate(user, acceptLanguage);
