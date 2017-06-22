@@ -38,7 +38,11 @@
 				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
 				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
 			</th>
-			<th ng-if="currentTree.name !== 'trash'"></th>
+			<th ng-if="currentTree.name !== 'trash'">
+				<span translate content="comments"></span>
+				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
+				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
+			</th>
 			<th scope="col" class="date zero-mobile" ng-click="orderByField('created')">
 				<span translate content="modified"></span>
 				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
