@@ -1,6 +1,7 @@
 {
   "file.missing.in.directory" : "Le fichier {0} est manquant dans le dossier {1}.",
   "invalid.column" : "Nom de colonne \"{0}\" invalide. Veuillez vous référer aux fichiers fournis en exemple.",
+  "invalid.column.empty" : "Le format du fichier n’est pas valide. Certaines colonnes ne sont pas nommées.",
   "error.list.files" : "Erreur lors de la lecture des fichiers.",
   "null.object": "L'objet n'est pas défini.",
   "missing.type.validator" : "Le type {0} est inconnu.",

@@ -31,6 +31,8 @@ import java.util.*;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
+
 public class ProfileColumnsMapper {
 
 	private final Map<String, Map<String, Object>> profilesNamesMapping = new HashMap<>();
