@@ -14,7 +14,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
                 <i class="fa fa-arrow-up"></i>
                 <s5l>export.accounts</s5l>
             </button>
-            <button disabled title="En construction">
+            <button routerLink="imports-exports/import-csv">
                 <i class="fa fa-arrow-down"></i>
                 <s5l>import.users</s5l>
             </button>
