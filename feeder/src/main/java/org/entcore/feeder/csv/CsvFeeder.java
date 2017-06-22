@@ -566,7 +566,10 @@ public class CsvFeeder implements Feed {
 		if (mapping.trim().isEmpty()) return;
 		try {
 			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
-			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
+			String childId = studentExternalIdMapping.get(hash);
+			if (childId != null) {
+				linkStudents.addString(childId);
+			}
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
 		}
