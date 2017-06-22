@@ -83,6 +83,22 @@ public class Report {
 		log.error(error);
 	}
 
+	public void addSoftErrorByFile(String file, String key, String... errors) {
+		JsonObject softErrors = result.getObject("softErrors");
+		if (softErrors == null) {
+			softErrors = new JsonObject();
+			result.putObject("softErrors", softErrors);
+		}
+		JsonArray f = softErrors.getArray(file);
+		if (f == null) {
+			f = new JsonArray();
+			softErrors.putArray(file, f);
+		}
+		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
+		f.addString(error);
+		log.error(error);
+	}
+
 	public void addUser(String file, JsonObject props) {
 		JsonArray f = result.getObject("files").getArray(file);
 		if (f == null) {

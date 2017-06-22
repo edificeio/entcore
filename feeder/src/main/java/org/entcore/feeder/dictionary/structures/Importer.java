@@ -305,6 +305,10 @@ public class Importer {
 	}
 
 	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent) {
+		createOrUpdateUser(object, linkStudent, false);
+	}
+
+	public void createOrUpdateUser(JsonObject object, JsonArray linkStudent, boolean linkRelativeWithoutChild) {
 		final String error = userValidator.validate(object);
 		if (error != null) {
 			report.addIgnored("Relative", error, object);
@@ -334,6 +338,22 @@ public class Importer {
 						.putString("studentExternalIds",
 								"externalId:" + Joiner.on(" OR externalId:").join(linkStudent));
 				transactionHelper.add(query2, p);
+			} else if (linkRelativeWithoutChild) {
+				final String externalId = object.getString("externalId");
+				JsonArray structures = getMappingStructures(object.getArray("structures"));
+				if (externalId != null && structures != null && structures.size() > 0) {
+					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+							"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
+							"USING INDEX s:Structure(externalId) " +
+							"USING INDEX p:Profile(externalId) " +
+							"WHERE s.externalId IN {structuresAdmin} " +
+							"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
+							"MERGE u-[:IN]->g";
+					p.putArray("structuresAdmin", structures)
+							.putString("profileExternalId", DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
+					transactionHelper.add(q1, p);
+				}
 			}
 		}
 	}
