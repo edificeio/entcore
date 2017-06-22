@@ -274,8 +274,8 @@ public class CsvValidator extends Report implements ImportValidator {
 					CSVReader csvParser = getCsvReader(path, charset, 1);
 					final int nbColumns = columns.size();
 					String[] strings;
-					int i = 0;
-					while ((strings = csvParser.readNext()) != null) {
+					int i = 1;
+					csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 						if (emptyLine(strings)) {
 							i++;
 							continue;
@@ -390,6 +390,9 @@ public class CsvValidator extends Report implements ImportValidator {
 						switch (profile) {
 							case "Relative":
 								JsonArray linkStudents = new JsonArray();
+								if ("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) {
+									break csvParserWhile;
+								}
 								user.putArray("linkStudents", linkStudents);
 								for (String attr : user.getFieldNames()) {
 									if ("childExternalId".equals(attr)) {
