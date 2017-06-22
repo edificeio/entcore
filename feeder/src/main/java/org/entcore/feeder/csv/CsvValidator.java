@@ -260,6 +260,7 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
+		addProfile(profile);
 		final Validator validator = profiles.get(profile);
 		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<Structure>() {
 			@Override
