@@ -72,7 +72,7 @@
 			</td>
 			<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
 			<td ng-if="currentTree.name !== 'trash'">
-				<span class="badge" ng-if="folder.comments.length > 0" translate-attr="title" title="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
+				<span class="badge" ng-if="folder.comments.length > 0" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 			</td>
 			<td class="date small-font zero-mobile">[[shortDate(folder.created)]]</td>
 			<td class="zero-mobile"></td>
