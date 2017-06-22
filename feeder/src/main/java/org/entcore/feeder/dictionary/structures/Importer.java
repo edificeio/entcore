@@ -180,6 +180,7 @@ public class Importer {
 			report.addIgnored("Structure", error, struct);
 			log.warn(error);
 		} else {
+			struct.putString("source", currentSource);
 			final String externalId = struct.getString("externalId");
 			if (groups != null) {
 				for (Object gcMapping : groups) {
