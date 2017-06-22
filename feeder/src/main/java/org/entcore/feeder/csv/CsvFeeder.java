@@ -255,6 +255,7 @@ public class CsvFeeder implements Feed {
 
 	public void start(final String profile, final Structure structure, String file, String charset,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
+		importer.getReport().addProfile(profile);
 		importer.createOrUpdateProfile(STUDENT_PROFILE);
 		importer.createOrUpdateProfile(RELATIVE_PROFILE);
 		importer.createOrUpdateProfile(PERSONNEL_PROFILE);

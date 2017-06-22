@@ -127,22 +127,23 @@ public class User {
 		}
 
 		public void findMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
-				Handler<Message<JsonObject>> handler) {
+				JsonArray profiles, Handler<Message<JsonObject>> handler) {
 			final String query =
 					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE u.source = {source} AND NOT(u.externalId IN {existingUsers}) " +
+					"WHERE u.source = {source} AND HEAD(u.profiles) IN {profiles} AND NOT(u.externalId IN {existingUsers}) " +
 					"RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
 							"u.firstName as firstName, HEAD(u.profiles) as profile";
 			final JsonObject params = new JsonObject()
 					.putString("structureExternalId", structureExternalId)
 					.putString("source", source)
-					.putArray("existingUsers", existingUsers);
+					.putArray("existingUsers", existingUsers)
+					.putArray("profiles", profiles);
 			TransactionManager.getInstance().getNeo4j().execute(query, params, handler);
 		}
 
 		public void preDeleteMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
-				final Handler<Message<JsonObject>> handler) {
-			findMissingUsersInStructure(structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
+				JsonArray profiles, final Handler<Message<JsonObject>> handler) {
+			findMissingUsersInStructure(structureExternalId, source, existingUsers, profiles, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					final JsonArray res = event.body().getArray("result");
