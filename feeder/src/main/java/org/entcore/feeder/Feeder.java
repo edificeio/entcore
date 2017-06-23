@@ -372,9 +372,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 					event.result().exportIfValid(new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
-							// TODO check error
-							message.body().mergeIn(event);
-							launchImport(message);
+							final JsonObject errors = event.getJsonObject("errors");
+							if (errors != null && errors.size() > 0) {
+								sendOK(message, new JsonObject().put("result", event));
+							} else {
+								message.body().mergeIn(event);
+								launchImport(message);
+							}
 						}
 					});
 				} else {
