@@ -44,7 +44,6 @@ public class CsvReport extends Report {
 	private static final String MAPPINGS = "mappings";
 	private static final String CLASSES_MAPPING = "classesMapping";
 	private static final String HEADERS = "headers";
-	public static final String KEYS_CLEANED = "keysCleaned";
 	private final Vertx vertx;
 	protected final ProfileColumnsMapper columnsMapper;
 
@@ -216,11 +215,22 @@ public class CsvReport extends Report {
 		}
 	}
 
+	@Override
+	protected boolean updateCleanKeys() {
+		return (cleanAttributeKeys(result.getJsonObject("errors")) + cleanAttributeKeys(result.getJsonObject("softErrors"))) > 0;
+	}
+
 	protected void uncleanKeys() {
 		uncleanAttributeKeys(getClassesMappings());
 		uncleanAttributeKeys(getMappings());
 		uncleanAttributeKeys(result.getJsonObject("errors"));
 		result.remove(KEYS_CLEANED);
+	}
+
+	protected void clearBeforeValidation() {
+		result.put("errors", new JsonObject())
+				.put(FILES, new JsonObject())
+				.put("softErrors", new JsonObject());
 	}
 
 //	protected void setStructureExternalIdIfAbsent(String structureExternalId) {
