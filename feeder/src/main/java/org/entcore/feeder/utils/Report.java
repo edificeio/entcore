@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -393,13 +394,20 @@ public class Report {
 		int count = 0;
 		if (attribute != null) {
 			for (String attr : attribute.fieldNames()) {
-				JsonObject j = attribute.getJsonObject(attr);
-				if (j != null) {
-					for (String attr2 : j.copy().fieldNames()) {
-						if (attr2.contains(".")) {
-							count++;
-							j.put(attr2.replaceAll("\\.", "_|_"), (String) j.remove(attr2));
+				Object j = attribute.getValue(attr);
+				if (j != null){
+					if (j instanceof JsonObject) {
+						JsonObject jo = (JsonObject)j;
+						for (String attr2 : jo.copy().fieldNames()) {
+							if (attr2.contains(".")) {
+								count++;
+								jo.put(attr2.replaceAll("\\.", "_|_"), (String) jo.remove(attr2));
+							}
 						}
+					} else if (j instanceof JsonArray && attr.contains(".")) {
+						attribute.put(attr.replaceAll("\\.", "_|_"), (JsonArray) j);
+						attribute.remove(attr);
+						count++;
 					}
 				}
 			}
@@ -410,12 +418,18 @@ public class Report {
 	protected void uncleanAttributeKeys(JsonObject attribute) {
 		if (attribute != null) {
 			for (String attr : attribute.fieldNames()) {
-				JsonObject j = attribute.getJsonObject(attr);
+				Object j = attribute.getValue(attr);
 				if (j != null) {
-					for (String attr2 : j.copy().fieldNames()) {
-						if (attr2.contains("_|_")) {
-							j.put(attr2.replaceAll("_\\|_", "."), (String) j.remove(attr2));
+					if (j instanceof JsonObject) {
+						JsonObject jo = (JsonObject)j;
+						for (String attr2 : jo.copy().fieldNames()) {
+							if (attr2.contains("_|_")) {
+								jo.put(attr2.replaceAll("_\\|_", "."), (String) jo.remove(attr2));
+							}
 						}
+					} else if (j instanceof JsonArray && attr.contains("_|_")) {
+						attribute.put(attr.replaceAll("_\\|_", "."), (JsonArray) j);
+						attribute.remove(attr);
 					}
 				}
 			}
