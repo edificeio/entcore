@@ -56,6 +56,7 @@ public class Report {
 	public static final String FILES = "files";
 	public static final String PROFILES = "profiles";
 	private static final String MAPPINGS = "mappings";
+	public static final String KEYS_CLEANED = "keysCleaned";
 	public final JsonObject result;
 	private final I18n i18n = I18n.getInstance();
 	public final String acceptLanguage;
@@ -197,8 +198,19 @@ public class Report {
 		MongoDb.getInstance().save("imports", this.getResult(), handler);
 	}
 
-	protected void cleanKeys() {
+	public void updateErrors(Handler<Message<JsonObject>> handler) {
+		boolean cleaned = updateCleanKeys();
+		JsonObject modif = new JsonObject()
+				.put("errors", result.getJsonObject("errors"))
+				.put("softErrors", result.getJsonObject("softErrors"));
+		if (cleaned) {
+			modif.put(KEYS_CLEANED, true);
+		}
+		MongoDb.getInstance().update("imports", new JsonObject().put("_id", result.getString("_id")),
+				new JsonObject().put("$set", modif), handler);
 	}
+
+	protected void cleanKeys() {}
 
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
@@ -389,6 +401,8 @@ public class Report {
 			result.put(MAPPINGS, mappings);
 		}
 	}
+
+	protected boolean updateCleanKeys() { return false; }
 
 	protected int cleanAttributeKeys(JsonObject attribute) {
 		int count = 0;

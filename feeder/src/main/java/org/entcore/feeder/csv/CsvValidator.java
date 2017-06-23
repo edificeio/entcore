@@ -157,7 +157,21 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()) {
-					validate(event.result(), handler);
+					clearBeforeValidation();
+					validate(event.result(), new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							updateErrors(new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if (!"ok".equals(event.body().getString("status"))) {
+										addError(event.body().getString("message"));
+									}
+									handler.handle(result);
+								}
+							});
+						}
+					});
 				} else {
 					addError(event.cause().getMessage());
 					handler.handle(result);
