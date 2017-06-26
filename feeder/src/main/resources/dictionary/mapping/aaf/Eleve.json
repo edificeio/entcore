@@ -10,7 +10,7 @@
 	"ENTElevePersRelEleve" : { "attribute" : "relative", "type" : "array-string", "prefix" : true },
 	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string", "prefix" : true },
 	"ENTEleveRegime" : { "attribute" : "accommodation", "type" : "string" },
-	"ENTEleveMEF" : { "attribute" : "module", "type" : "string", "prefix" : true },
+	"ENTEleveMEF" : { "attribute" : "module", "type" : "string" },
 	"ENTEleveLibelleMEF" : { "attribute" : "moduleName", "type" : "string" },
 	"ENTEleveClasses" : { "attribute" : "classes", "type" : "array-string", "prefix" : true },
 	"ENTEleveGroupes" : { "attribute" : "groups", "type" : "array-string", "prefix" : true },

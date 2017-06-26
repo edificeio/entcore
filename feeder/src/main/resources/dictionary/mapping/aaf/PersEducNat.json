@@ -9,7 +9,7 @@
 	"mail" : { "attribute" : "email", "type" : "string" },
 	"ENTPersonStructRattach" : { "attribute" : "structures", "type" : "array-string", "prefix" : true },
 	"ENTAuxEnsCategoDiscipline" : { "attribute" : "classCategories", "type" : "array-string" },
-	"ENTAuxEnsMEF" : { "attribute" : "modules", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsMEF" : { "attribute" : "modules", "type" : "array-string" },
 	"ENTAuxEnsMatiereEnseignEtab" : { "attribute" : "subjectTaught", "type" : "array-string", "prefix" : true },
 	"ENTAuxEnsClasses" : { "attribute" : "oldclasses", "type" : "array-string", "prefix" : true },
 	"ENTAuxEnsGroupes" : { "attribute" : "oldgroups", "type" : "array-string", "prefix" : true },
