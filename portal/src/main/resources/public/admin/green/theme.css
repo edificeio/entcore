@@ -1511,7 +1511,7 @@ div.legend-square.teal {
   background-color: teal;
 }
 div.legend-square.green {
-  background-color: mediumseagreen;
+  background-color: green;
 }
 div.legend-square.yellow {
   background-color: yellow;
@@ -2255,19 +2255,6 @@ article.flashmsg-edit .outlined {
 article.flashmsg-edit editor editor-toolbar {
   min-height: 70px;
 }
-div.flex-box-container {
-  display: flex;
-  flex-wrap: wrap;
-}
-div.flex-box-container > div {
-  margin: 10px;
-  border: 1px solid #444;
-  border-radius: 10px;
-  padding: 5px 10px;
-}
-.horizontal-margin {
-  margin: 0px 10px;
-}
 div.notification {
   position: relative;
 }
@@ -2287,4 +2274,17 @@ div.notification .notification-reports {
   padding-top: 10px;
   margin-top: 10px;
   border-top: 1px solid #319171;
+}
+div.flex-box-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+div.flex-box-container > div {
+  margin: 10px;
+  border: 1px solid #444;
+  border-radius: 10px;
+  padding: 5px 10px;
+}
+.horizontal-margin {
+  margin: 0px 10px;
 }
