@@ -1,0 +1,74 @@
+recorder{
+    input[type=text]{
+        margin: 0;
+    }
+	display: block;
+	padding: 5px;
+	.metadata{
+		float: left;
+		width: 100%;
+		padding: 3px;
+		box-sizing: border-box;
+		input[type=text]{
+			width: 100%;
+			box-sizing: border-box;
+		}
+		::-webkit-input-placeholder { /* WebKit browsers */
+			color: #fff;
+		}
+		:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+			color: #fff;
+			opacity:  1;
+		}
+		:-ms-input-placeholder { /* Internet Explorer 10+ */
+			color: #fff;
+		}
+	}
+	.controls{
+		width: 100%;
+		height: 60px;
+		i{
+			margin: 10px 3px 3px;
+		}
+		.play{
+			@include icon(glyphicons_173_play, 20px);
+		}
+		.record{
+			@include icon(glyphicons_169_record, 20px);
+		}
+		.pause{
+			@include icon(glyphicons_174_pause, 20px);
+		}
+		.save{
+			@include icon(glyphicons_443_floppy_disk, 20px);
+		}
+		.remove{
+			@include icon(glyphicons_207_remove_2_accent, 20px);
+		}
+	}
+	.view{
+		height: 40px;
+	}
+	.elapsed-time{
+		float: right;
+		padding-top: 10px;
+	}
+	.status{
+		width: 100%;
+		height: 30px;
+		padding: 3px;
+		box-sizing: border-box;
+		float: left;
+
+		.status{
+			float: left;
+		}
+	}
+	.controls{
+		padding: 2px;
+		box-sizing: border-box;
+		i:first-child{
+			margin-left: 0;
+		}
+	}
+}

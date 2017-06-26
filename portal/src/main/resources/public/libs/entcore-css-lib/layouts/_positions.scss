@@ -1,0 +1,54 @@
+
+.flex-row{
+	display: flex;
+	position: relative;
+
+// .flex-[foo] classes deprecated, use .align-[foo] classes instead
+
+	&.flex-start, &.align-start{
+		align-items: flex-start;
+	}
+	&.flex-center, &.align-center{
+		align-items: center;
+	}
+	&.flex-end, &.align-end{
+		align-items: flex-end;
+	}
+
+	&.justify-start{
+		justify-content: flex-start;
+	}
+	&.justify-center{
+		justify-content: center;
+	}
+	&.justify-end{
+		justify-content: flex-end;
+	}
+}
+
+
+.fixed{
+	@include absolute;
+}
+
+
+.v-center-container{
+	display: table;
+	.v-center{
+		display: table-cell;
+		vertical-align: middle;
+		margin: 0;
+		img{
+			width: 100%;
+		}
+	}
+}
+
+.clear{
+  clear: both;
+}
+
+
+.bottom-locked{
+	@include bottom-locked;
+}

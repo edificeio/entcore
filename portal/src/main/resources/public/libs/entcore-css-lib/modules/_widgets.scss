@@ -1,0 +1,181 @@
+
+
+/// GLOBAL
+
+.widgets-friend{
+	margin-left: 276px;
+	@include run-transition(margin-left);
+}
+
+.widgets-friend.widgets-enemy{
+	margin-left: 15px;
+}
+
+.widgets{
+	width: 276px;
+	@include cell;
+	@include reduce-block(6px);
+	@include run-transition(width);
+	height: 1800px;
+	padding: 10px;
+	display: table-cell;
+
+}
+
+.widgets.hidden{
+	width: 0;
+}
+
+
+.widget-container{
+	width: 259px;
+}
+
+/// SPECIFIC
+
+
+.birthday{
+	@include widget-container(35px);
+	margin-bottom: 25px;
+	background-color: #eee;
+	h1{
+		margin: 0;
+		position: absolute;
+		top: 0;
+	}
+
+	nav.vertical{
+		padding: 0;
+
+		ul{
+			margin: 0;
+			width: 100%;
+			li{
+				padding: 0;
+				margin: 0;
+				a{
+					border: 0;
+					margin: 0;
+					padding-left: 5px;
+					.user{
+						display: inline-block;
+						width: 20%;
+						height: 100%;
+						line-height: 100%;
+						vertical-align: middle;
+						p{
+							margin: 0;
+						}
+					}
+					.date{
+						@include right-magnet;
+						display: inline-block;
+						vertical-align: middle;
+						h2, h4{
+							margin: 0;
+						}
+						h4{
+							font-size: 12px;
+							font-weight: normal;
+						}
+					}
+
+					img{
+						height: 35px;
+						width: 35px;
+						vertical-align: middle;
+						margin-right: 10px;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+.calendar.widget{
+	height: 160px;
+	@include widget-container(55px);
+
+	.content{
+		@include absolute;
+		height: 104px;
+	}
+
+	.day{
+		width:14.2%;
+		height: 17px;
+		text-align: center;
+		padding-top: 2px;
+		@include cell;
+	}
+
+	.current-month-header{
+		position: absolute;
+		width: 100%;
+		text-align: center;
+		top: 26px;
+		margin-top: 0px;
+		margin-bottom: 10px;
+	}
+}
+
+
+.mood-widget{
+	padding-top: 25px;
+	margin-bottom: 15px;
+	height: 45px;
+	width: 215px;
+
+	h1{
+		position: absolute;
+		left: 65px;
+		top: 16px;
+		white-space: nowrap;
+		color: transparent;
+	}
+
+	.icons-select{
+		.options-list{
+			top: 25px;
+			width: 210%;
+
+		}
+
+		.current {
+			span{
+				position: absolute;
+				top: 0px;
+				left: 65px;
+				height: 20px;
+				width: 128px;
+				text-align: left;
+				padding-left: 15px;
+				padding-top: 0px;
+				padding-bottom: 3px;
+			}
+		}
+
+
+	}
+}
+
+/// WIDGETS ?
+
+
+.calendar {
+	width: 256px;
+	height: 151px;
+}
+
+.last-mails-widget{
+	width: 256px;
+}
+
+.rss-flux{
+	i{
+		display: inline !important;
+		font-style: italic;
+	}
+}

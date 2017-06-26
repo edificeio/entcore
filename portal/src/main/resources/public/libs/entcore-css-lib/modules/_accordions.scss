@@ -1,0 +1,70 @@
+
+.accordions{
+	.accordion{
+		margin: 0;
+		padding: 0;
+		h2{
+			margin-bottom: 0;
+			padding: 4px;
+			padding-left: 10px;
+			padding-right: 10px;
+			@include vertical-gradient(#383838, #333);
+			border: 1px solid #555;
+			border-bottom: 0;
+			font-size: 20px;
+			color: #666;
+		}
+		.toggle{
+			max-height: 0px;
+			overflow: hidden;
+			padding: 0px;
+			border: 0;
+			background: #333;
+			transition: max-height 250ms ease;
+			@include grid-cell-width(12);
+			@include cell;
+			.content{
+				padding: 10px;
+				@include row;
+
+				h3{
+					font-weight: normal;
+					font-size: 16px;
+					color: #666;
+				}
+			}
+		}
+	}
+
+	.accordion.opened{
+		h2{
+			border: 1px solid #555;
+			border-bottom: 0;
+			color: #ccc;
+		}
+		.toggle{
+			max-height: 350px;
+			padding: 10px;
+			overflow: hidden;
+			border: 1px solid #555;
+			border-top: 0;
+			border-radius: 0;
+			.content{
+				padding: 10px;
+			}
+		}
+	}
+	.accordion:last-child{
+		h2{
+			border-bottom: 1px solid #555;
+		}
+	}
+	.accordion:last-child.opened{
+		.toggle{
+			@include border-radius-bottom();
+		}
+		h2{
+			border-radius: 0;
+		}
+	}
+}

@@ -1,0 +1,67 @@
+
+
+.drawing-zone{
+	overflow: hidden;
+	box-sizing: border-box;
+	height: 300px;
+	position: relative;
+
+	article{
+		border: none;
+		background: transparent;
+		overflow: hidden;
+	}
+
+	article.media{
+		border: 1px dashed #666;
+		min-width: 30px;
+		min-height: 30px;
+
+		i.close{
+			position: absolute;
+			right: 7px;
+			top: 5px;
+			z-index: 202;
+		}
+		audio{
+			width: 93%;
+			margin-right: 35px;
+			min-width: 250px;
+			position: relative;
+			top: 0%;
+			left: 0%;
+			margin-left: 0;
+			margin-top: 0;
+		}
+		img, div{
+			border-radius: 5px;
+			max-width: none;
+			display: block;
+			.element{
+			    display: inline-block;
+			}
+		}
+
+		> div{
+			width: 100%;
+			height: 100%;
+		}
+	}
+	article.media, article{
+		.image-container{
+			display: flex;
+			align-items: center;
+			height: 100%;
+			width: 100%;
+			img{
+				width: 100%;
+				height: auto;
+				max-height: none;
+			}
+		}
+		p, h1, h2, h3, h4, h5, h6{
+			padding: 5px;
+		}
+	}
+
+}

@@ -1,0 +1,77 @@
+select-list{
+	position: relative;
+	font-size: 14px;
+	z-index: 12;
+    &.button {
+        .selected-value{
+            border: none;
+			box-shadow: 1px 1px 2px rgba(0,0,0,0.35);
+            background: #efefef;
+            padding: 5px;
+            padding-right: 25px;
+            padding-left: 15px;
+            border-radius: 2px;
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: -1px;
+        }
+        .options{
+            top: -11px;
+        }
+    }
+
+	.options{
+		position: absolute;
+		background-color: $white;
+		opacity: 1;
+		@include run-transition(all);
+		overflow: hidden;
+		top: 0;
+		left: 0;
+		min-width: 105%;
+		box-sizing: border-box;
+		box-shadow: 1px 1px 8px rgba(0,0,0,0.4);
+		opt{
+			padding: 2px;
+            padding-left: 10px;
+            padding-right: 10px;
+			display: block;
+            white-space: nowrap;
+            i{
+                line-height: 20px;
+                font-size: 22px;
+            }
+		}
+	}
+	.options.hidden{
+		height: 0 !important;
+		opacity: 0;
+		padding: 0 10px;
+        pointer-events: none !important;
+	}
+	.selected-value{
+		border-bottom: 1px solid #ddd;
+		min-width: 100px;
+		min-height: 24px;
+		pointer-events: all;
+		line-height: 28px;
+		display: inline-block;
+		vertical-align: middle;
+		padding-right: 15px;
+        cursor: pointer;
+        &::after{
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+			border-top: 6px solid #888;
+            content: " ";
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            margin-top: -1px;
+        }
+	}
+}

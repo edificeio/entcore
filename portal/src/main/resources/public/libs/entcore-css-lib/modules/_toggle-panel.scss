@@ -1,0 +1,64 @@
+
+.toggle-panel{
+	background: $medium-grey;
+	h1,h2{
+		margin-left: 5px;
+	}
+	.toggle{
+		width: 300px;
+		padding: 20px;
+		.row{
+			min-height: 0;
+		}
+		ul{
+			margin: 0;
+			padding: 0;
+			li{
+				list-style-type: none;
+				margin-left: 5px;
+			}
+		}
+	}
+	width: 300px;
+	position: absolute;
+	top: 2px;
+	right: -15px;
+	overflow: hidden;
+	@include run-transition(width);
+	z-index: 5;
+}
+
+.toggle-panel.hide{
+	overflow: hidden;
+	width: 0;
+	@include run-transition(width);
+}
+
+ul.icons-tabs{
+	margin: 0;
+	padding: 0;
+	position: absolute;
+	top: 0;
+	right: -53px;
+	width: 45px;
+	height: 45px;
+	display: table;
+
+	li{
+		background: $medium-grey;
+		border: 2px solid $white;
+		padding: 0;
+		margin: 0;
+		list-style-type: none;
+		width: 100%;
+		display: table-cell;
+		vertical-align: middle;
+		cursor: pointer;
+
+		i{
+			margin-left: auto;
+			margin-right: auto;
+			float: none;
+		}
+	}
+}

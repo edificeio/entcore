@@ -1,0 +1,37 @@
+
+.side-tabs{
+	z-index: 2;
+	border-right: none;
+	background: #eee;
+	width: 180px;
+	margin-top: 10px;
+	ul{
+		margin: 0;
+		padding: 0;
+		li{
+			list-style-type: none;
+			padding: 7px;
+			padding-left: 17px;
+			background: #ddd;
+		}
+		li.selected{
+			background: #eee;
+			border: 1px solid #ccc;
+			border-right: none;
+			border-left-width: 5px;
+			box-sizing: content-box;
+			margin-left: -5px;
+		}
+	}
+
+}
+
+
+.side-tabs-content{
+	border-radius: 0;
+	z-index: 1;
+	border: 1px solid #ccc;
+	margin-left: -1px;
+	border-top-width: 11px;
+	border-bottom-width: 11px;
+}

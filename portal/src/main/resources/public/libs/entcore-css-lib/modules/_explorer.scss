@@ -1,0 +1,15 @@
+.explorer{
+	position: relative;
+	cursor: pointer;
+}
+
+@media screen and (max-width: $tablette) {
+	body {
+		explorer{
+			display: block;
+			user-select: none;
+			-webkit-user-select: none;
+			//-webkit-touch-callout: none;
+		}
+	}
+}

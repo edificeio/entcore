@@ -1,0 +1,41 @@
+
+
+.cke_float.cke_chrome{
+	box-shadow: none;
+	z-index: 7000 !important;
+	.cke_inner{
+		background: #F6F6F6;
+		box-shadow: none !important;
+		border: 1px solid #ccc;
+
+		.cke_top{
+			background: none;
+			border: none;
+			box-shadow: none;
+			border-bottom: none;
+			.cke_toolgroup{
+				box-shadow: none;
+			}
+			span{
+				border: none;
+				background: none;
+			}
+			.cke_combo_arrow{
+				border-left: 3px solid transparent;
+				border-right: 3px solid transparent;
+				border-top: 3px solid #474747;
+			}
+			.cke_combo_button{
+				background: #fff;
+				border: 1px solid #ddd;
+			}
+			.cke_button_on{
+				background: #ddd;
+				box-shadow: inset 1px 1px 2px #999;
+			}
+		}
+	}
+}
+a.cke_smile img {
+	width: 40px;
+}

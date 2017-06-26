@@ -1,0 +1,47 @@
+
+.flip-right, .flip-left{
+	width: 80px;
+	height: 80px;
+	z-index: 15;
+	background: #fff;
+	border-radius: 40px;
+	position: absolute;
+	top: 40%;
+	opacity: 0.5;
+	@include run-transition(opacity);
+}
+
+.flip-right:hover, .flip-left:hover{
+	opacity: 1;
+	@include run-transition(opacity);
+}
+
+.flip-right{
+	right: -30px;
+	.right-arrow{
+		width: 0;
+		height: 0;
+		border: 25px solid transparent;
+		border-left: 0;
+		color: black;
+		border-left: 30px solid;
+		top: 15px;
+		left: 32px;
+		position: absolute;
+	}
+}
+
+.flip-left{
+	left: -30px;
+	.left-arrow{
+		width: 0;
+		height: 0;
+		border: 25px solid transparent;
+		border-left: 0;
+		color: black;
+		border-right: 30px solid;
+		top: 15px;
+		left: 15px;
+		position: absolute;
+	}
+}

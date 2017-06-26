@@ -24,7 +24,6 @@ mods
 **/dist
 **/ts/entcore
 **/template/entcore
-**/entcore-css-lib
 data
 developer.id
 *.mod.json

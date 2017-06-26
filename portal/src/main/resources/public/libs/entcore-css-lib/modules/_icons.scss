@@ -1,0 +1,130 @@
+
+
+
+
+i{
+	font-style: normal;
+}
+
+h1{
+	i{
+		vertical-align: middle !important;
+		float: none !important;
+		display: inline-block !important;
+	}
+}
+
+p{
+	i{
+		display: inline-block !important;
+		height: 25px !important;
+		width: 25px !important;
+		float: none !important;
+	}
+}
+
+i.show-details{
+	float:right !important;
+	margin: 1px;
+}
+
+i.show-icons{
+	float: right !important;
+	margin: 1px;
+}
+
+i.show-list{
+	float: right !important;
+	margin: 1px;
+}
+
+i.home{
+	@include icon(glyphicons_020_home, 20px);
+	background-size: contain;
+	display: inline-block;
+	vertical-align: middle;
+	float: none;
+	margin-top: -3px;
+	margin-right: 5px;
+}
+
+i.attachment{
+	@include icon(glyphicons_062_paperclip, 20px);
+	background-size: contain;
+}
+
+i.liquid{
+	max-width: 100% !important;
+	height: auto;
+	background-size: 100% auto;
+}
+
+
+i.drag-anchor{
+	@include icon(glyphicons_186_move, 15px);
+	background-size: contain;
+	float: none;
+	display: inline-block;
+}
+
+i.fullscreen{
+	@include icon(glyphicons_215_resize_full, 25px);
+}
+
+i.leave-fullscreen{
+	@include icon(glyphicons_214_resize_small, 25px);
+}
+
+i.previous{
+	@include icon(glyphicons_210_left_arrow, 25px);
+}
+
+i.next{
+	@include icon(glyphicons_211_right_arrow, 25px);
+}
+
+i.download{
+	@include icon(glyphicons_181_download_alt, 25px);
+}
+
+i.remove{
+	@include icon(glyphicons_207_remove_2, 20px);
+}
+
+i.shared{
+	@include icon(shared, 15px);
+	background-position: center;
+	background-size: contain;
+	display: block;
+	position: absolute;
+	bottom: -2px;
+	right: -3px;
+}
+
+i.important::after{
+	content: "!";
+	font-size: 85px;
+	font-family: serif;
+	line-height: 100px;
+	width: 100px;
+	text-align: center;
+	display: block;
+	height: 100px;
+	position: relative;
+}
+
+
+.left-arrow.disabled, .right-arrow.disabled{
+	color: $medium-grey;
+}
+
+
+//FLAGS
+
+$flags: fr, en, pt, es, it, de;
+
+@for $i from 1 through length($flags) {
+	.flag-#{nth($flags, $i)}{
+		background-image: url(../../img/icons/flags/#{nth($flags, $i)}.svg);
+	}
+}

@@ -1,0 +1,44 @@
+assistant{
+    z-index: 100001 !important;
+    position: relative;
+
+    .close-lightbox{
+        display: none;
+    }
+    .ignore{
+        position: absolute;
+        top: -30px;
+        right: -20px;
+        font-size: 13px;
+    }
+    lightbox{
+        .content{
+            border: 20px solid blue;
+        }
+    }
+}
+
+@media screen and (max-width: $tablette) {
+    body {
+        assistant{
+            section.lightbox>div.content{
+                top: 30px;
+                width: calc(100% - 40px);
+                height: auto;
+                min-height: auto;
+                overflow: hidden;
+                padding: 50px 0 10px !important;
+                /* margin: 0 20px; */
+
+                .ignore{
+                    right: 15px;
+                    top: -35px;
+                }
+                button.cancel.zero{
+                    display: block;
+                }
+
+            }
+        }
+    }
+}

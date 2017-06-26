@@ -1,0 +1,125 @@
+
+.embedded-viewer{
+	padding: 5px;
+	box-sizing: border-box;
+	width: 100%;
+	position: relative;
+	img{
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+	}
+    video{
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+    }
+	i{
+		margin-left: 3px;
+		margin-right: 3px;
+	}
+	.file{
+		margin-top: 30px;
+	}
+	.default-viewer{
+		padding: 30px;
+		button{
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+	}
+}
+
+
+.embedded-viewer.fullscreen{
+	position: fixed;
+	z-index: 10010;
+	left: 0;
+	top: 0;
+	height: 40px;
+}
+
+.fullscreen-viewer{
+	position: absolute;
+	z-index: 10000;
+	width: 100%;
+	background: rgba(0,0,0,0.7);
+	top: 40px;
+	left: 0;
+	min-height: 100%;
+	.render{
+		margin-left: auto;
+		margin-right: auto;
+		display: block;
+		max-width: 100%;
+	}
+}
+
+pdf-viewer{
+	display: block;
+	width: 100%;
+	position: relative;
+	margin-top: 30px;
+	.file-controls, .pagination{
+		position: absolute;
+		top: -30px;
+	}
+	.file-controls{
+		right: 65px;
+	}
+	.pagination{
+		right: 5px;
+	}
+}
+
+
+.editor-view{
+	.viewer{
+		.media{
+			opacity: 0.3;
+			cursor: inherit;
+		}
+		.drawing-grid.editor{
+			.media{
+				opacity: 1;
+			}
+		}
+		.media.sub-grid{
+			opacity: 1;
+		}
+		video{
+			width: 100%;
+		}
+	}
+}
+
+.viewer{
+	box-sizing: content-box;
+	width: 100%;
+	margin-left: -80px;
+	padding-left: 80px;
+	.viewer{
+		margin-left: 0;
+	}
+	.media{
+		outline: none;
+		cursor: default;
+	}
+	.drawing-grid.editor{
+		.media{
+			border: 1px dotted black;
+		}
+	}
+	nav.vertical{
+		padding: 0;
+	}
+}
+
+
+.drawing-grid{
+	.viewer{
+		padding-left: 0;
+	}
+}

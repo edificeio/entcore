@@ -1,0 +1,60 @@
+
+.icons-select{
+	position: relative;
+	margin-top: 15px;
+	z-index: 5;
+	background: #eee;
+
+	.options-list{
+		position: absolute;
+		width: 175%;
+		top: 49px;
+		box-sizing: border-box;
+		background: #eee;
+		height: 0;
+		overflow: hidden;
+		@include run-transition(height);
+		max-width: none;
+	}
+	.options-list.icons-view{
+		padding: 0;
+	}
+	.options-list.toggle-visible{
+		height: 260px;
+	}
+
+	.option i{
+		background-size: 100% auto;
+		margin-left: auto;
+		margin-right: auto;
+		float: none !important;
+	}
+
+	.option, .current{
+		cursor: pointer;
+	}
+
+	.option{
+		text-align: center;
+	}
+
+	span{
+		display: block;
+		line-height: 26px;
+	}
+
+	.current{
+		padding: 5px;
+		padding-left: 20px;
+		i{
+			vertical-align: middle;
+			max-height: 100%;
+			background-size: auto 100%;
+		}
+		span{
+			clear: none;
+			padding-top: 10px;
+			width: auto;
+		}
+	}
+}

@@ -1,0 +1,175 @@
+carousel{
+	.images{
+		width: 100%;
+		position: relative;
+		height: 0;
+		padding-bottom: 45%;
+		.image{
+			position: absolute;
+			left: 0;
+			top: 0;
+			@include run-transition(all);
+			text-align: center;
+			display: none;
+			padding: 8px;
+			border: 1px solid #ddd;
+			background: #fff;
+			box-sizing: border-box;
+			.image-container{
+				height: 100%;
+				width: 100%;
+				overflow: hidden;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+		}
+	}
+	nav{
+		ul{
+			padding: 0;
+			margin-top: 10px;
+			text-align: center;
+			li{
+				display: inline-block;
+			}
+			li::after{
+				content: "\2022";
+				font-size: 80px;
+			}
+		}
+	}
+}
+
+carousel.squares{
+	nav{
+		ul{
+			li::after{
+				content: "\2024";
+			}
+		}
+	}
+}
+
+carousel.triangles{
+	nav{
+		ul{
+			li::after{
+				content: "\2023";
+			}
+		}
+	}
+}
+
+carousel.slide{
+	.image.previous{
+		display: block;
+		width: 30%;
+		height: 150px;
+		margin-left: 0;
+		top: (326px - 150px) / 2;
+		.image-container{
+			line-height: 132px;
+		}
+		&::before{
+			content: " ";
+			position: absolute;
+			display: block;
+			background: rgba(255, 255, 255, 0.6);
+			height: 100px;
+			width: 100px;
+			border-radius: 50px;
+			top: 20px;
+			left: -25px;
+			@include run-transition(background);
+		}
+		&:hover::before{
+			background: #fff;
+		}
+		&::after{
+			width: 0;
+			height: 0;
+			border-top: 25px solid transparent;
+			border-bottom: 25px solid transparent;
+			border-right: 35px solid black;
+			content: " ";
+			display: block;
+			position: absolute;
+			top: 45px;
+			left: 0px;
+		}
+	}
+	.image.next{
+		display: block;
+		width: 30%;
+		height: 150px;
+		margin-left: 70%;
+		top: (326px - 150px) / 2;
+		.image-container{
+			line-height: 132px;
+		}
+		&::before{
+			content: " ";
+			position: absolute;
+			top: 20px;
+			right: -25px;
+			display: block;
+			background: rgba(255, 255, 255, 0.6);
+			height: 100px;
+			width: 100px;
+			border-radius: 50px;
+			@include run-transition(background);
+		}
+		&:hover::before{
+			background: #fff;
+		}
+		&::after{
+			width: 0;
+			height: 0;
+			border-top: 25px solid transparent;
+			border-bottom: 25px solid transparent;
+			border-left: 35px solid black;
+			content: " ";
+			display: block;
+			position: absolute;
+			top: 45px;
+			right: 0px;
+		}
+	}
+	.image.current{
+		display: block;
+		height: 100%;
+		width: 70%;
+		margin-left: 15%;
+		z-index: 200 !important;
+		.image-container{
+			line-height: 308px;
+		}
+	}
+}
+
+carousel.fade{
+	.image{
+		width: 100%;
+		height: 100%;
+		opacity: 0;
+		display: block;
+	}
+	.image.current{
+		opacity: 1;
+	}
+}
+
+carousel.triplets{
+	.image{
+		display: block;
+		width: 30%;
+		height: 100%;
+	}
+	.image.current{
+		margin-left: 33%;
+	}
+	.image.next{
+		margin-left: 66%;
+	}
+}

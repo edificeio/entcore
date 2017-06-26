@@ -1,0 +1,40 @@
+
+.patchwork{
+	.navigation .items{
+		padding-right: 35px;
+		.row{
+			border: 1px solid #ddd;
+			margin-bottom: 10px;
+			@include run-transition(background);
+			> .cell{
+				height: 110px;
+			}
+			article{
+				margin-bottom: 0;
+				.bottom-locked{
+					bottom: 8px;
+				}
+			}
+			img{
+				height: 110px;
+				width: 110px;
+				margin-right: 10px;
+			}
+			.buttons{
+				@include bottom-locked();
+			}
+		}
+	}
+
+	.navigation{
+		@include grid-cell-width(3);
+		@include cell;
+	}
+	.content{
+		@include grid-cell-width(9);
+		@include right-magnet;
+		overflow: hidden;
+		padding: 0;
+		position: relative;
+	}
+}

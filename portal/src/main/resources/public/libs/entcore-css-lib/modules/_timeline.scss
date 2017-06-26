@@ -1,0 +1,70 @@
+.timeline {
+	position: relative;
+
+	&::before {
+		content: ' ';
+		position: absolute;
+		top: 0;
+		width: 5px;
+		height: 100%;
+		left: 12.3%;
+	}
+	.event-row {
+		margin-top: 25px;
+
+		.date-field, .event {
+			height: 54px;
+			@include grid-cell-width(1);
+		}
+		.date-field {
+			text-align: center;
+			line-height: 54px;
+
+			.label {
+				vertical-align: middle;
+			    line-height: normal;
+			    display: inline-block;
+			    text-align: left;
+			}
+		}
+		.event {
+			.round {
+			    position: absolute;
+			    left: 50%;
+			    margin-left: -10px;
+			    top: 50%;
+			    margin-top: -10px;
+			}
+		}
+
+		.event-description {
+			max-height: 54px;
+			overflow: hidden;
+
+			.mobile-label {
+				display: none;
+			}
+		}
+	}
+}
+
+@media screen and (max-width: $tablette) {
+	.timeline {
+		&::before {
+			left: 3.8%;
+		}
+		.event-row {
+			.date-field{
+				display: none;				
+			}
+
+			.event-description {
+    			max-height: 74px;
+				
+				.mobile-label {
+					display: block;
+				}
+			}
+		}
+	}
+}

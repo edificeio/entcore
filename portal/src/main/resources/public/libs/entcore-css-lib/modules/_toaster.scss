@@ -1,0 +1,18 @@
+.toggle-buttons{
+    .toggle-buttons-label{
+        position: absolute;
+        top: -15px;
+        padding: 0 15px 0 5px;
+        border-top-right-radius: 20px;
+        border-bottom-right-radius: 20px;
+        i{
+            padding: 0 5px;
+            &:before{
+                font-size: 13px;
+            }
+        }
+        em{
+            font-size: 11px;
+        }
+    }
+}

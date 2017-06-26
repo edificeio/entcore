@@ -1,0 +1,43 @@
+
+
+body article.editor-media{
+    overflow: visible !important;
+    editor[inline]{
+		padding-top: 0 !important;
+
+        > div{
+            height: 100%;
+            overflow: hidden;
+        }
+        > popover{
+            display: none
+        }
+        editor-toolbar{
+            border-right-width: 1px !important;
+            .option.subscript{
+                display: none;
+            }
+            .option.superscript{
+                display: none;
+            }
+            .option.templates{
+                display: none;
+            }
+            .option.image{
+                display: none;
+            }
+            .option.sound{
+                display: none;
+            }
+            .option.embed{
+                display: none;
+            }
+        }
+        margin: 0 !important;
+        height: 100%;
+        [contenteditable]{
+            min-height: 0 !important;
+            border: none !important;
+        }
+    }
+}

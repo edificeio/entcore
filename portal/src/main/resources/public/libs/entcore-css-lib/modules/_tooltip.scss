@@ -1,0 +1,25 @@
+
+.tooltip{
+	position: absolute;
+	z-index: 999990;
+	display: none;
+	.content{
+		padding: 5px 10px;
+		background: #ccc;
+		color: #000;
+		border-radius: 3px;
+		box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.3);
+		font-size: 12px;
+		position: relative;
+	}
+	.arrow{
+		width: 0;
+		margin-left: auto;
+		margin-right: auto;
+		border: 8px solid transparent;
+		border-top: 0;
+		color: #ccc;
+		border-bottom: 10px solid;
+	}
+
+}
