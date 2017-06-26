@@ -1855,7 +1855,7 @@ var recorder = (function(){
                 		console.log(event.data);
 						closeWs();
 						notify.info(event.data);
-                	} else if (event.data && event.data === "ok" && recorder.status === 'encoding') {
+                	} else if (event.data && event.data === "ok") {
                 		closeWs();
                 		notify.info("recorder.saved");
                 	}
