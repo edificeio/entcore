@@ -2,17 +2,22 @@
 	<div class="panel activation">
 		<h1 translate content="auth.forgot.header"></h1>
 		<p class="warning" ng-if="error" translate content="[[error]]"></p>
-		<form method="post" name="forgotForm" ng-submit="forgot()">
+		<form method="post" name="forgotForm" ng-submit="forgot('mail')">
 			<p>
 				<label translate ng-if="user.mode === 'password'" content="auth.email"></label>
 				<label translate ng-if="user.mode === 'id'" content="auth.mail"></label>
+				<label translate ng-if="user.mode === 'checkFirstName'" content="auth.info.firstName"></label>
+				<label translate ng-if="user.mode === 'checkStructure'" content="auth.info.structure"></label>
 				<input type="text" name="login" ng-if="user.mode === 'password'" ng-model="user.login" required/>
 				<input type="email" name="mail" ng-if="user.mode === 'id'" ng-model="user.mail" required/>
+				<input type="text" name="firstName" ng-if="user.mode === 'checkFirstName'" ng-model="user.firstName" required/>
+				<select ng-if="user.mode === 'checkStructure'" ng-options="structure.structureId as structure.structureName for structure in structures | orderBy: 'name'" ng-model="user.structureId" required></select>
 			</p>
 
 			<a href="/auth/forgot#/id" ng-if="user.mode === 'password'" translate content="missing.id"></a>
 			<a href="/auth/forgot#/password" ng-if="user.mode === 'id'" translate content="missing.password"></a>
 			<a href="/auth/login" class="right cell" translate content="auth.cancel"></a>
+
 			<input type="submit" translate attr="value" value="auth.forgot.send" ng-disabled="forgotForm.$invalid"/>
 
 			<div class="clear"></div>

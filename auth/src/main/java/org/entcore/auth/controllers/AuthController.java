@@ -694,26 +694,43 @@ public class AuthController extends BaseController {
 			public void handle(JsonObject data) {
 				final String mail = data.getString("mail");
 				final String service = data.getString("service");
-				if(mail == null || mail.trim().isEmpty()){
+				final String firstName = data.getString("firstName");
+				final String structure = data.getString("structureId");
+				if (mail == null || mail.trim().isEmpty()) {
 					badRequest(request);
 					return;
 				}
-
-				userAuthAccount.findByMail(mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+				userAuthAccount.findByMailAndFirstNameAndStructure(mail, firstName, structure, new org.vertx.java.core.Handler<Either<String, JsonArray>>() {
 					@Override
-					public void handle(Either<String, JsonObject> result) {
+					public void handle(Either<String, JsonArray> event) {
 						//No user with that email, or more than one found.
-						if(result.isLeft()){
-							badRequest(request, result.left().getValue());
+						if(event.isLeft()){
+							badRequest(request, event.left().getValue());
 							return;
 						}
-						if(result.right().getValue().size() == 0){
+						JsonArray results = event.right().getValue();
+						if (results.size() == 0) {
 							badRequest(request, "no.match");
 							return;
 						}
-
-						final String id = result.right().getValue().getString("login", "");
-						final String mobile = result.right().getValue().getString("mobile", "");
+						JsonArray structures = new JsonArray();
+						if(results.size() > 1) {
+							for (Object ob : results) {
+								JsonObject j = (JsonObject) ob;
+								j.removeField("login");
+								j.removeField("mobile");
+								if (!structures.toString().contains(j.getString("structureId")))
+									structures.add(j);
+							}
+							if (firstName != null && structures.size() == 1)
+								badRequest(request, "non.unique.result");
+							else
+								renderJson(request, new JsonObject().putArray("structures", structures));
+							return;
+						}
+						JsonObject match = results.get(0);
+						final String id = match.getString("login", "");
+						final String mobile = match.getString("mobile", "");
 
 						//Force mail
 						if("mail".equals(service)){

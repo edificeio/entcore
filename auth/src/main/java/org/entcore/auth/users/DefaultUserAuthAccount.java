@@ -194,6 +194,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
+	public void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler) {
+		boolean setFirstname = firstName != null && !firstName.trim().isEmpty();
+		boolean setStructure = structure != null && !structure.trim().isEmpty();
+
+		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.email = {mail} " +
+				(setFirstname ? " AND u.firstName =~ {firstName}" : "") +
+				(setStructure ? " AND s.id = {structure}" : "") +
+				" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
+		JsonObject params = new JsonObject().putString("mail", email);
+		if(setFirstname)
+			params.putString("firstName", "(?i)"+firstName);
+		if(setStructure)
+			params.putString("structure", structure);
+		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
+	}
+
+	@Override
 	public void findByLogin(final String login, final String resetCode, final Handler<Either<String,JsonObject>> handler) {
 		boolean setResetCode = resetCode != null && !resetCode.trim().isEmpty();
 

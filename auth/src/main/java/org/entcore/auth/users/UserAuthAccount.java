@@ -23,6 +23,7 @@ import fr.wseduc.webutils.Either;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public interface UserAuthAccount {
@@ -45,6 +46,8 @@ public interface UserAuthAccount {
 			Handler<Boolean> handler);
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
+
+	void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler);
 
 	void findByLogin(String login, String resetCode, Handler<Either<String, JsonObject>> handler);
 
