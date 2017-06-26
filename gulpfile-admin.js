@@ -22,7 +22,7 @@ gulp.task('sass', ['copy-csslib'], () => {
 });
 
 gulp.task('build', ['sass'], () => {
-    return gulp.src('./portal/src/main/resources/public/admin/**/theme.less')
-        .pipe(less())
-        .pipe(gulp.dest('./portal/src/main/resources/public/admin'));
+    //return gulp.src('./portal/src/main/resources/public/admin/**/theme.less')
+    //    .pipe(less())
+    //    .pipe(gulp.dest('./portal/src/main/resources/public/admin'));
 });
