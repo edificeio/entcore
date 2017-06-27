@@ -21,10 +21,14 @@ import { GroupModel } from '../../../../../../store'
                         [filters]="filterGroups"
                         searchPlaceholder="search.group"
                         sort="name"
-                        [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
                         (onSelect)="ls.perform($event.id, user.addFunctionalGroup($event), 0)">
+                        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+                        </ng-template>
                     </list-component>
                 </div>
             </light-box>
@@ -75,10 +79,6 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
     
     private disableGroup = (g) => {
         return this.ls.isLoading(g.id)
-    }
-
-    private display(g: {id: string, name: string}) {
-        return g.name
     }
 
     protected onUserChange() {}

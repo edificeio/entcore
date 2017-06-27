@@ -1,11 +1,12 @@
 import { UserModel } from '../store'
-import { Injectable } from '@angular/core'
+import { Injectable, ElementRef, Renderer } from '@angular/core'
 import { BundlesService } from 'sijil'
 
 @Injectable()
 export class UserListService {
 
-    constructor(private bundlesService: BundlesService){}
+    constructor(private renderer: Renderer,
+        private bundlesService: BundlesService){}
 
     // Sorts
     sortsMap = {
@@ -53,11 +54,6 @@ export class UserListService {
             .indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
-    // Display
-    display = (user: UserModel): string => {
-        return `${ user.lastName.toUpperCase() } ${user.firstName} - ${this.bundlesService.translate(user.type)}`
-    }
-
     // Limit
     DEFAULT_INCREMENT: number = 100
     limit = this.DEFAULT_INCREMENT
@@ -70,5 +66,22 @@ export class UserListService {
         } else {
             this.limit = this.limit + this.DEFAULT_INCREMENT
         }
+    }
+
+    // Scroll
+    private ticking = false
+    listScroll = (event, list, cdRef) => {
+        let divElem = event.target
+
+        if (!this.ticking) {
+            window.requestAnimationFrame(() => {
+                 if ((divElem.offsetHeight + divElem.scrollTop) >= divElem.scrollHeight) {
+                    this.addPage(list.length)
+                    cdRef.markForCheck()
+                }
+                this.ticking = false;
+            });
+        }
+        this.ticking = true;
     }
 }

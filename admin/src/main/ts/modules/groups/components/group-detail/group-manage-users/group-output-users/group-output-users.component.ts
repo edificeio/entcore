@@ -21,7 +21,6 @@ import { UserModel } from '../../../../../../store/models'
                 [model]="model"
                 [sort]="userLS.sorts"
                 [inputFilter]="userLS.filterByInput"
-                [display]="userLS.display"
                 [ngClass]="setUserListStyles"
                 (inputChange)="userLS.inputFilter = $event"
                 (onSelect)="selectUser($event)">
@@ -44,7 +43,7 @@ import { UserModel } from '../../../../../../store/models'
                         [tooltip]="'sort.profile' | translate" position="top"
                         (click)="userLS.changeSorts('profile')"></i>
 
-                    <button class="select-all" (click)="selectAll()" *ngIf="!maxSelected"
+                    <button class="select-all" (click)="selectAll()"
                         [title]="'select.all' | translate">
                         <s5l>select.all</s5l>
                     </button>
@@ -53,8 +52,14 @@ import { UserModel } from '../../../../../../store/models'
                         [title]="'deselect.all' | translate">
                         <s5l>deselect.all</s5l>
                     </button>
-
                 </div>
+
+                <ng-template let-item>
+                    <span class="display-name">
+                        {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+                    </span>
+                    <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+                </ng-template>
             </list-component>
         </div>
     `,

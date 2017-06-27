@@ -23,10 +23,14 @@ import { globalStore, StructureCollection, UserModel } from '../../../../../../s
                         [filters]="filterStructures"
                         searchPlaceholder="search.structure"
                         sort="name"
-                        [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableStructure"
                         (onSelect)="ls.perform($event.id, user?.addStructure($event.id), 0)">
+                        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+                        </ng-template>
                     </list-component>
                 </div>
             </light-box>
@@ -45,7 +49,8 @@ import { globalStore, StructureCollection, UserModel } from '../../../../../../s
             </ul>
         </panel-section>
     `,
-    inputs: ['user', 'structure']
+    inputs: ['user', 'structure'],
+    providers: [UserListService]
 })
 export class UserStructuresSection extends AbstractSection {
 
@@ -84,11 +89,6 @@ export class UserStructuresSection extends AbstractSection {
     }
     private filterStructures = (s: {id: string, name: string}) => {
         return !this.user.structures.find(struct => s.id === struct.id)
-    }
-
-    // Display
-    private display = (s: {id: string, name: string}): string => {
-        return s.name
     }
 
     //Routing

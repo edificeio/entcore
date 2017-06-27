@@ -1,6 +1,5 @@
 import { Component, Input, Output, OnInit, EventEmitter,
     ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
-
 import { UserModel } from '../../../../store'
 import { UserListService, UserlistFiltersService } from '../../../../services'
 import { OnDestroy } from '@angular/core'
@@ -12,35 +11,49 @@ import { Subscription } from 'rxjs/Subscription'
     <list-component
         [model]="userlist"
         [filters]="listFilters.getFormattedFilters()"
-        [inputFilter]="userListService.filterByInput"
-        [sort]="userListService.sorts"
-        [limit]="userListService.limit"
+        [inputFilter]="userLS.filterByInput"
+        [sort]="userLS.sorts"
         searchPlaceholder="search.user"
         [ngClass]="setStyles"
-        [display]="userListService.display"
-        (inputChange)="userListService.inputFilter = $event"
+        [limit]="userLS.limit"
+        [listScroll]="userLS.listScroll"
+        (inputChange)="userLS.inputFilter = $event"
         (onSelect)="selectedUser = $event; onselect.emit($event)">
         <div toolbar class="user-toolbar">
              <i class="fa" aria-hidden="true"
                 [ngClass]="{
-                    'fa-sort-alpha-asc': userListService.sortsMap.alphabetical.sort === '+',
-                    'fa-sort-alpha-desc': userListService.sortsMap.alphabetical.sort === '-',
-                    'selected': userListService.sortsMap.alphabetical.selected
+                    'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
+                    'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
+                    'selected': userLS.sortsMap.alphabetical.selected
                 }"
                 [tooltip]="'sort.alphabetical' | translate" position="top"
-                (click)="userListService.changeSorts('alphabetical')"></i>
+                (click)="userLS.changeSorts('alphabetical')"></i>
             <i class="fa" aria-hidden="true"
                 [ngClass]="{
-                    'fa-sort-amount-asc': userListService.sortsMap.profile.sort === '+',
-                    'fa-sort-amount-desc': userListService.sortsMap.profile.sort === '-',
-                    'selected': userListService.sortsMap.profile.selected
+                    'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
+                    'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
+                    'selected': userLS.sortsMap.profile.selected
                 }"
                 [tooltip]="'sort.profile' | translate" position="top"
-                (click)="userListService.changeSorts('profile')"></i>
+                (click)="userLS.changeSorts('profile')"></i>
             <i class="fa fa-filter toolbar-right" aria-hidden="true"
                 [tooltip]="'filters' | translate" position="top"
                 (click)="companionChange.emit('filter')"></i>
         </div>
+
+        <ng-template let-item>
+            <span class="display-name">
+                {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+            </span>
+            <span class="icons">
+                <i class="fa fa-power-off" *ngIf="item?.code && item?.code?.length > 0"></i>
+                <i class="fa fa-ban" *ngIf="item?.blocked"></i>
+                <i class="fa fa-unlink" *ngIf="item?.duplicates && item?.duplicates?.length > 0"></i>
+                <i class="fa fa-times-circle" *ngIf="item?.deleteDate"></i>
+                <i class="fa fa-hourglass-start" *ngIf="item?.disappearanceDate"></i>
+            </span>
+            <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+        </ng-template>
     </list-component>
     `,
     styles: [`
@@ -52,27 +65,11 @@ import { Subscription } from 'rxjs/Subscription'
             cursor: pointer;
         }
     `],
-    host: {
-        '(document:scroll)': 'onDocumentScroll($event)',
-    },
+
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [ UserListService ]
 })
 export class UserList implements OnInit, OnDestroy {
-
-    constructor(private cdRef: ChangeDetectorRef,
-        public userListService: UserListService,
-        private listFilters: UserlistFiltersService){}
-
-    ngOnInit() {
-        this.filtersUpdatesSubscriber = this.listFilters.updateSubject.subscribe(() => {
-            this.cdRef.markForCheck()
-        })
-    }
-
-    ngOnDestroy() {
-        this.filtersUpdatesSubscriber.unsubscribe()
-    }
 
     private filtersUpdatesSubscriber: Subscription
 
@@ -85,34 +82,23 @@ export class UserList implements OnInit, OnDestroy {
     @Input() selectedUser: UserModel
     @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>()
 
+    constructor(private cdRef: ChangeDetectorRef,
+        public userLS: UserListService,
+        private listFilters: UserlistFiltersService){}
+
+    ngOnInit() {
+        this.filtersUpdatesSubscriber = this.listFilters.updateSubject.subscribe(() => {
+            this.cdRef.markForCheck()
+        })
+    }
+
+    ngOnDestroy() {
+        this.filtersUpdatesSubscriber.unsubscribe()
+    }
+
     private setStyles = (user: UserModel) => {
         return {
-            selected: this.isSelected(user),
-            blocked: user.blocked,
-            duplicates: user.duplicates && user.duplicates.length > 0,
-            deleted: user.deleteDate,
-            disappeared: user.disappearanceDate
+            selected: this.selectedUser && user && this.selectedUser.id === user.id
         }
     }
-
-    private isSelected = (user: UserModel) => {
-        return this.selectedUser && user &&
-            this.selectedUser.id === user.id
-    }
-
-    // Scroll
-    private ticking = false;
-    private onDocumentScroll(event) {
-        if (!this.ticking) {
-            window.requestAnimationFrame(() => {
-                 if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
-                    this.userListService.addPage(this.userlist.length)
-                    this.cdRef.markForCheck()
-                }
-                this.ticking = false;
-            });
-        }
-        this.ticking = true;
-    }
-
 }

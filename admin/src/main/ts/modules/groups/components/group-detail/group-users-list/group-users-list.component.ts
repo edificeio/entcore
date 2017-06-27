@@ -12,7 +12,6 @@ import { UserListService } from '../../../../../services'
             [inputFilter]="userLS.filterByInput"
             [sort]="userLS.sorts"
             searchPlaceholder="search.user"
-            [display]="display"
             (inputChange)="userLS.inputFilter = $event"
             (onSelect)="selectUser($event)">
             <div toolbar>
@@ -34,6 +33,23 @@ import { UserListService } from '../../../../../services'
                     (click)="userLS.changeSorts('profile')"></i>
                 <ng-content></ng-content>
             </div>
+
+            <ng-template let-item>
+                <span class="display-name">{{item?.lastName.toUpperCase()}} {{item?.firstName}}</span>
+                <span class="icons">
+                    <i class="fa fa-power-off" *ngIf="item?.code && item?.code?.length > 0"></i>
+                    <i class="fa fa-ban" *ngIf="item?.blocked"></i>
+                    <i class="fa fa-unlink" *ngIf="item?.duplicates && item?.duplicates?.length > 0"></i>
+                    <i class="fa fa-times-circle" *ngIf="item?.deleteDate"></i>
+                    <i class="fa fa-hourglass-start" *ngIf="item?.disappearanceDate"></i>
+                </span>
+                <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
+                <span class="structures">
+                    <ul>
+                        <li *ngFor="let s of item?.structures">{{ s.name }}</li>
+                    </ul>
+                </span>
+            </ng-template>
         </list-component>
     ` ,
     styles: [``],
@@ -57,18 +73,4 @@ export class GroupUsersList {
             this.router.navigate(['admin', user.structures[0].id, 'users', user.id])
         }
     }
-
-    protected display = (user: UserModel) => {
-        let result : string = `${user.lastName} ${user.firstName} - ${this.bundles.translate(user.type)}`
-        if(user.structures.length === 1) {
-            result += " - " + user.structures[0].name
-        } else if (user.structures.length > 1) {
-            result += " - " + this.bundles.translate('structure.or.more', {
-                head: user.structures[0].name,
-                rest: user.structures.length - 1
-            })
-        }
-        return result
-    }
-
 }

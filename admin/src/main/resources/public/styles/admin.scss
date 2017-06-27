@@ -544,6 +544,8 @@ spinner-cube.button-spinner {
     .side-companion {
         @extend .card;
 
+        margin-bottom: 60px;
+
         div[side-companion] {
             background-color: white;
         }
@@ -634,6 +636,61 @@ list-component {
     }
 }
 
+user-list, group-users-list, group-input-users, group-output-users {
+    li {
+        transition: background-color 0.25s, color 0.25s;
+        position: relative;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        span.display-name {
+            flex: 1;
+            padding-right: 5px;
+        }
+
+        i {
+            &.profile {
+                font-size: 1em;
+                font-style: normal;
+                border-radius: 3px;
+                padding: 5px;
+                min-width: 80px;
+                text-align: center;
+                
+                &.student {
+                    background-color: rgba(0, 0, 0, 0.2);
+                }
+                &.teacher {
+                    background-color: rgba(250, 0, 0, 0.2);
+                }
+                &.relative {
+                    background-color: rgba(255, 165, 0, 0.2);
+                }
+                &.personnel {
+                    background-color: rgba(0, 128, 128, 0.2);
+                }
+                &.invite {
+                    background-color: rgba(30, 144, 255, 0.2);
+                }
+            }
+
+            &.fa {
+                font-size: 1.3em;
+                padding-right: 5px;
+
+                &.fa-power-off {
+                    color: #aaa;
+                }
+                &.fa-times-circle {
+                    color: crimson;
+                }
+            }
+        }
+    }
+}
+
 /* User list */
 user-list {
     .user-toolbar {
@@ -644,35 +701,9 @@ user-list {
             float: right;
         }
     }
-
-    li {
-        transition: background-color 0.25s, color 0.25s;
-        position: relative;
-
-        &.blocked::after {
-            content: "\f05e";
-            font-family: fontAwesome;
-            float: right;
-            font-size: 1.3em;
-        }
-        &.duplicates::after {
-            content: "\f0c0";
-            font-family: fontAwesome;
-            float: right;
-            font-size: 1.3em;
-        }
-        &.deleted::after {
-            content: "\f057";
-            font-family: fontAwesome;
-            float: right;
-            font-size: 1.3em;
-        }
-        &.disappeared::after {
-            content: "\f251";
-            font-family: fontAwesome;
-            float: right;
-            font-size: 1.3em;
-        }
+    .list-wrapper {
+        max-height: 70%;
+        overflow-y: auto;
     }
 }
 
@@ -1035,6 +1066,17 @@ groups-root {
     }
 }
 
+groups-type-view {
+    div.side-card {
+        list-component {
+            .list-wrapper {
+                max-height: 60%;
+                overflow-y: auto;
+            }
+        }
+    }
+}
+
 group-detail {
     light-box {
         section {
@@ -1050,7 +1092,6 @@ group-users-list list-component {
     div.toolbar {
         border-bottom: 1px solid #ccc;
         padding: 15px;
-        margin-bottom: 10px;
 
         i { @extend .action; }
 
@@ -1060,8 +1101,25 @@ group-users-list list-component {
         }
     }
 
-    ul > li:first-child{
-        border-top: none !important;
+    ul {
+        & > li:first-child{
+            border-top: none !important;
+        }
+    }
+
+    span.structures {
+        ul {
+            border: 1px solid #DDD;
+            border-radius: 3px;
+            padding: 5px 5px;
+            margin: 0 5px;
+            background-color: rgba(240, 240, 240, 0.6);
+            min-width: 160px;
+
+            li:hover {
+                background-color: transparent;
+            }
+        }
     }
 }
 

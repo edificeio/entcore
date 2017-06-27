@@ -1,5 +1,6 @@
 import { Component, Input, Output, ChangeDetectionStrategy,
-    ChangeDetectorRef, EventEmitter, AfterViewInit } from '@angular/core'
+    ChangeDetectorRef, EventEmitter, AfterViewInit,
+    TemplateRef, ContentChild } from '@angular/core'
 
 @Component({
     selector: 'list-component',
@@ -8,14 +9,15 @@ import { Component, Input, Output, ChangeDetectionStrategy,
         <div class="toolbar">
             <ng-content select="[toolbar]"></ng-content>
         </div>
-        <div class="list-wrapper">
+        <div class="list-wrapper" (scroll)="listScroll($event, model, cdRef)">
             <ul>
                 <li *ngFor="let item of model | filter: filters | filter: inputFilter | orderBy: sort | slice: 0:limit"
                     (click)="onSelect.emit(item)"
                     [class.selected]="isSelected(item)"
                     [class.disabled]="isDisabled(item)"
                     [ngClass]="ngClass(item)">
-                    {{ display(item) }}
+                    <ng-template [ngTemplateOutlet]="templateRef" [ngOutletContext]="{$implicit: item}">
+                    </ng-template>
                 </li>
             </ul>
         </div>
@@ -57,9 +59,10 @@ export class ListComponent implements AfterViewInit {
     @Input() isDisabled = () => false
     @Input() ngClass = () => ({})
 
-    @Input() display = (item) => { return item }
+    @Input() listScroll = (event, list, cdRef) => {}
 
     @Output("inputChange") inputChange: EventEmitter<string> = new EventEmitter<string>()
     @Output("onSelect") onSelect: EventEmitter<{}> = new EventEmitter()
 
+    @ContentChild(TemplateRef) templateRef:TemplateRef<any>;
 }

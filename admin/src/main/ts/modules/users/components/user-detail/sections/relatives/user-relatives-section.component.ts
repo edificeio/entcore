@@ -22,10 +22,14 @@ import { UserModel } from '../../../../../../store'
                         [filters]="filterRelatives"
                         searchPlaceholder="search.user"
                         [sort]="userListService.sorts"
-                        [display]="userListService.display"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableRelative"
                         (onSelect)="ls.perform($event.id, details?.addRelative($event), 0)">
+                        <ng-template let-item>
+                            <span class="display-name">
+                                {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+                            </span>
+                        </ng-template>
                     </list-component>
                 </div>
             </light-box>

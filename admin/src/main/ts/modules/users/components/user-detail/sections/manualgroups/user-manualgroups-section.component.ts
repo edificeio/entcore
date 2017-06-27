@@ -21,10 +21,14 @@ import { GroupModel } from '../../../../../../store'
                         [filters]="filterGroups"
                         searchPlaceholder="search.group"
                         sort="name"
-                        [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
                         (onSelect)="ls.perform($event.id, user.addManualGroup($event), 0)">
+                        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+                        </ng-template>
                     </list-component>
                 </div>
             </light-box>
@@ -75,10 +79,6 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
     
     private disableGroup = (mg) => {
         return this.ls.isLoading(mg.id)
-    }
-
-    private display(mg: {id: string, name: string}) {
-        return mg.name
     }
 
     protected onUserChange() {}

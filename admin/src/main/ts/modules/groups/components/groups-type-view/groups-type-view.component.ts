@@ -17,9 +17,11 @@ import { LoadingService } from '../../../../services'
                     sort="name"
                     searchPlaceholder="search.group"
                     [isSelected]="isSelected"
-                    [display]="display"
                     (inputChange)="groupInputFilter = $event"
                     (onSelect)="routeToGroup($event)">
+                    <ng-template let-item>
+                        {{ item.name }}
+                    </ng-template>
                 </list-component>
             </div>
             <div side-companion>
@@ -83,7 +85,6 @@ export class GroupsTypeView implements OnInit, OnDestroy {
         return group.name.toLowerCase()
             .indexOf(this.groupInputFilter.toLowerCase()) >= 0
     }
-    private display = (group: GroupModel) => { return group.name }
 
     // Routing
     showCompanion(): boolean {

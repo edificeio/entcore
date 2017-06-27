@@ -19,10 +19,14 @@ import { LoadingService } from '../../../../../../services'
                         [filters]="filterClasses"
                         searchPlaceholder="search.class"
                         sort="name"
-                        [display]="display"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableClass"
                         (onSelect)="ls.perform($event.id, user.addClass($event), 0)">
+                        <ng-template let-item>
+                            <span class="display-name">
+                                {{ item?.name }}
+                            </span>
+                        </ng-template>
                     </list-component>
                 </div>
             </light-box>
@@ -65,10 +69,6 @@ export class UserClassesSection extends AbstractSection {
     
     private disableClass = (c) => {
         return this.ls.isLoading(c.id)
-    }
-
-    private display(c: {id: string, name: string}) {
-        return c.name
     }
 
     protected onUserChange() {}
