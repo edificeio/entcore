@@ -637,54 +637,56 @@ list-component {
 }
 
 user-list, group-users-list, group-input-users, group-output-users {
-    li {
-        transition: background-color 0.25s, color 0.25s;
-        position: relative;
+    list-component {
+        li {
+            transition: background-color 0.25s, color 0.25s;
+            position: relative;
 
-        display: flex;
-        justify-content: center;
-        align-items: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
 
-        span.display-name {
-            flex: 1;
-            padding-right: 5px;
-        }
-
-        i {
-            &.profile {
-                font-size: 1em;
-                font-style: normal;
-                border-radius: 3px;
-                padding: 5px;
-                min-width: 80px;
-                text-align: center;
-                
-                &.Student {
-                    background-color: rgba(0, 0, 0, 0.2);
-                }
-                &.Teacher {
-                    background-color: rgba(250, 0, 0, 0.2);
-                }
-                &.Relative {
-                    background-color: rgba(255, 165, 0, 0.2);
-                }
-                &.Personnel {
-                    background-color: rgba(0, 128, 128, 0.2);
-                }
-                &.Guest {
-                    background-color: rgba(30, 144, 255, 0.2);
-                }
+            span.display-name {
+                flex: 1;
+                padding-right: 5px;
             }
 
-            &.fa {
-                font-size: 1.3em;
-                padding-right: 5px;
-
-                &.fa-power-off {
-                    color: #aaa;
+            i {
+                &.profile {
+                    font-size: 1em;
+                    font-style: normal;
+                    border-radius: 3px;
+                    padding: 5px;
+                    min-width: 80px;
+                    text-align: center;
+                    
+                    &.Student {
+                        background-color: rgba(0, 0, 0, 0.2);
+                    }
+                    &.Teacher {
+                        background-color: rgba(250, 0, 0, 0.2);
+                    }
+                    &.Relative {
+                        background-color: rgba(255, 165, 0, 0.2);
+                    }
+                    &.Personnel {
+                        background-color: rgba(0, 128, 128, 0.2);
+                    }
+                    &.Guest {
+                        background-color: rgba(30, 144, 255, 0.2);
+                    }
                 }
-                &.fa-times-circle {
-                    color: crimson;
+
+                &.fa {
+                    font-size: 1.3em;
+                    padding-right: 5px;
+
+                    &.fa-power-off {
+                        color: #aaa;
+                    }
+                    &.fa-times-circle {
+                        color: crimson;
+                    }
                 }
             }
         }
