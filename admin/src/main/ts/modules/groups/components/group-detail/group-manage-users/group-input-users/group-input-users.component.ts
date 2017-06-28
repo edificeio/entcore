@@ -26,7 +26,8 @@ import { UserModel, StructureModel, globalStore } from '../../../../../../store'
                 [sort]="userLS.sorts"
                 [ngClass]="setUserListStyles"
                 (inputChange)="userLS.inputFilter = $event"
-                (onSelect)="selectUser($event)">
+                (onSelect)="selectUser($event)"
+                (listChange)="storedElements = $event">
                 <div toolbar class="user-toolbar">
                     <i class="fa" aria-hidden="true"
                         [ngClass]="{
@@ -79,6 +80,11 @@ export class GroupInputUsers implements OnInit {
 
     private filtersUpdatesSubscriber: Subscription
 
+    // list elements stored by store pipe in list-component 
+    // (takes filters in consideration)
+    private storedElements: UserModel[] = []
+    
+    // Users selected by enduser
     private selectedUsers: UserModel[] = []
 
     private structure: StructureModel
@@ -117,7 +123,7 @@ export class GroupInputUsers implements OnInit {
     }
 
     private selectAll(): void {
-        this.selectedUsers = this.model.filter(u => this.groupsStore.group.users.map(gu => gu.id).indexOf(u.id) === -1)
+        this.selectedUsers = this.storedElements
     }
 
     private deselectAll(): void {
@@ -126,15 +132,16 @@ export class GroupInputUsers implements OnInit {
 
     private structureChange(s: StructureModel): void {
         let selectedStructure: StructureModel = globalStore.structures.data.find(globalS => globalS.id === s.id)
+        this.structure = selectedStructure
 
         if (selectedStructure.users && selectedStructure.users.data 
             && selectedStructure.users.data.length < 1) {
             this.ls.perform('group-manage-users',
                 selectedStructure.users.sync()
                     .then(() => {
-                        this.model = selectedStructure.users.data.filter(
-                            u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1)
-                        this.cdRef.detectChanges()
+                        this.model = selectedStructure.users.data
+                            .filter(u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1)
+                        this.cdRef.markForCheck()
                     })
                     .catch((err) => {
                         this.ns.error(
@@ -144,9 +151,11 @@ export class GroupInputUsers implements OnInit {
                             , err)
                     })
             )
+        } else {
+            this.model = selectedStructure.users.data
+                .filter(u => this.groupsStore.group.users.map(x => x.id).indexOf(u.id) === -1)
+            this.cdRef.markForCheck()
         }
-
-        this.structure = s
     }
 
     private addUsers(): void {

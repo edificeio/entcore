@@ -23,7 +23,8 @@ import { UserModel } from '../../../../../../store/models'
                 [inputFilter]="userLS.filterByInput"
                 [ngClass]="setUserListStyles"
                 (inputChange)="userLS.inputFilter = $event"
-                (onSelect)="selectUser($event)">
+                (onSelect)="selectUser($event)"
+                (listChange)="storedElements = $event">
                 <div toolbar class="user-toolbar">
                     <i class="fa" aria-hidden="true"
                         [ngClass]="{
@@ -70,6 +71,11 @@ export class GroupOutputUsers {
     @Input() model: UserModel[] = []
     @Output() onDelete: EventEmitter<any> = new EventEmitter()
 
+    // list elements stored by store pipe in list-component 
+    // (takes filters in consideration)
+    private storedElements: UserModel[] = []
+
+    // Users selected by enduser
     private selectedUsers: UserModel[] = []
 
     constructor(private groupsStore: GroupsStore,
@@ -91,7 +97,7 @@ export class GroupOutputUsers {
     }
 
     private selectAll(): void {
-        this.selectedUsers = this.groupsStore.group.users
+        this.selectedUsers = this.storedElements
     }
 
     private deselectAll(): void {
