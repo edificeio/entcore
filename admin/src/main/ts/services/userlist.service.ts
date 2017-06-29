@@ -50,8 +50,8 @@ export class UserListService {
     }
     filterByInput = (user: UserModel) => {
         if(!this.inputFilter) return true
-        return `${user.lastName} ${user.firstName}`.toLowerCase()
-            .indexOf(this.inputFilter.toLowerCase()) >= 0
+        return `${user.displayName}`.toLowerCase()
+            .indexOf(this.inputFilter.trim().toLowerCase()) >= 0
     }
 
     // Limit
