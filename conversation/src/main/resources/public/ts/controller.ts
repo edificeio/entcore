@@ -23,12 +23,13 @@ export let conversationController = ng.controller('ConversationController', [
             writeMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
-                if (this.findWhere({ id: params.userId })) {
+                if (Conversation.instance.users.all.find(u => u.id === params.userId )) {
                     template.open('page', 'folders');
                     let user = new User(params.userId)
                     await user.findData();
                     template.open('main', 'mail-actions/write-mail');
                     $scope.addUser(user);
+                    $scope.$apply();
                 }
                 else {
                     template.open('page', 'errors/e401')
