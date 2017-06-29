@@ -74,7 +74,7 @@ public class DefaultTimetableService implements TimetableService {
 	}
 
 	@Override
-	public void listCoursesBetweenTwoDates(String structureId, String teacherId, String begin, String end, Handler<Either<String,JsonArray>> handler){
+	public void listCoursesBetweenTwoDates(String structureId, String teacherId, String group, String begin, String end, Handler<Either<String,JsonArray>> handler){
 		if (Utils.validationParamsNull(handler, structureId, begin, end)) return;
 		final JsonObject query = new JsonObject();
 
@@ -95,9 +95,22 @@ public class DefaultTimetableService implements TimetableService {
 		betweenEnd.putString("$gte",startDate);
 		betweenEnd.putString("$lte",endDate);
 
-		query.putArray("$or", new JsonArray()
-				.addObject(new JsonObject().putObject("startDate" ,betweenStart))
-				.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+		if (group != null) {
+			JsonObject dateOperand =  new JsonObject()
+					.putArray("$or", new JsonArray()
+							.addObject(new JsonObject().putObject("startDate" ,betweenStart))
+							.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+
+			JsonObject groupOperand = new JsonObject()
+					.putArray("$or", new JsonArray()
+							.addObject(new JsonObject().putString("classes", group))
+							.addObject(new JsonObject().putString("groups", group)));
+			query.putArray("$and", new JsonArray().addObject(dateOperand).add(groupOperand));
+		} else {
+			query.putArray("$or", new JsonArray()
+					.addObject(new JsonObject().putObject("startDate" ,betweenStart))
+					.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+		}
 
 		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
 
@@ -122,17 +135,23 @@ public class DefaultTimetableService implements TimetableService {
 	                          Handler<Either<String, JsonArray>> handler) {
 		final JsonObject params = new JsonObject().putString("id", structureId);
 		StringBuilder query = new StringBuilder();
-		query.append("MATCH (:Structure {id:{id}})<-[:SUBJECT]-(sub:Subject)<-[r:TEACHES]-(u:User)");
-		query.append(" WHERE 1=1");
+		query.append("MATCH (:Structure {id:{id}})<-[:SUBJECT]-(sub:Subject)");
+		StringBuilder whereClause = new StringBuilder().append(" WHERE 1=1");
 		if (teachers != null && !teachers.isEmpty()) {
+			query.append("<-[r:TEACHES]-(u:User)");
 			params.putArray("teacherIds", new JsonArray(teachers));
-			query.append(" AND u.id IN  {teacherIds}");
+			whereClause.append(" AND u.id IN  {teacherIds}");
 		}
 		if (!StringUtils.isEmpty(externalGroupId)) {
 			params.putString("externalGroupId", externalGroupId);
-			query.append(" AND ({externalGroupId} IN r.classes OR {externalGroupId} IN r.groups)");
+			whereClause.append(" AND ({externalGroupId} IN r.classes OR {externalGroupId} IN r.groups)");
 		}
-		query.append(" RETURN sub.id as subjectId, sub.code as subjectCode, sub.label as subjectLabel, u.id as teacherId");
+		query.append(whereClause.toString());
+		query.append(" RETURN sub.id as subjectId, sub.code as subjectCode, sub.label as subjectLabel");
+
+		if (teachers != null && !teachers.isEmpty()) {
+			query.append(", u.id as teacherId");
+		}
 
 		if (classes) {
 			query.append(", r.classes as classes");
