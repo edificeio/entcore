@@ -57,7 +57,8 @@ public class Starter extends BaseServer {
 
 	private String node;
 	private boolean cluster;
-	public final static Map<String,String> MAP_APP_VERSION = new HashMap<>();
+	private ConcurrentSharedMap<String, String> versionMap;
+	private ConcurrentSharedMap<String, String> deploymentsIdMap;
 
 	@Override
 	public void start() {
@@ -67,6 +68,8 @@ public class Starter extends BaseServer {
 			}
 			super.start();
 			final ConcurrentSharedMap<Object, Object> serverMap = vertx.sharedData().getMap("server");
+			deploymentsIdMap = vertx.sharedData().getMap("deploymentsId");
+			versionMap = vertx.sharedData().getMap("versions");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 			CookieHelper.getInstance().init((String) vertx
 					.sharedData().getMap("server").get("signKey"), log);
@@ -253,16 +256,17 @@ public class Starter extends BaseServer {
 				conf, module.getInteger("instances", 1), handler);
 	}
 
-	private void addAppVersion(final JsonObject module) {
+	private void addAppVersion(final JsonObject module, final String deploymentId) {
 		final List<String> lNameVersion = StringUtils.split(module.getString("name", ""), "~");
 		if (lNameVersion != null && lNameVersion.size() == 3) {
-			MAP_APP_VERSION.put(lNameVersion.get(0) + "." + lNameVersion.get(1), lNameVersion.get(2));
+			versionMap.put(lNameVersion.get(0) + "." + lNameVersion.get(1), lNameVersion.get(2));
+			deploymentsIdMap.put(lNameVersion.get(0) + "." + lNameVersion.get(1), deploymentId);
 		}
 	}
 
 	private void deployModules(JsonArray modules, boolean internal) {
 		for (Object o : modules) {
-			JsonObject module = (JsonObject) o;
+			final JsonObject module = (JsonObject) o;
 			if (module.getString("name") == null) {
 				continue;
 			}
@@ -276,9 +280,15 @@ public class Starter extends BaseServer {
 				}
 			}
 			conf = conf.mergeIn(module.getObject("config", new JsonObject()));
-			addAppVersion(module);
 			container.deployModule(module.getString("name"),
-					conf, module.getInteger("instances", 1));
+					conf, module.getInteger("instances", 1), new Handler<AsyncResult<String>>() {
+						@Override
+						public void handle(AsyncResult<String> event) {
+							if (event.succeeded()) {
+								addAppVersion(module, event.result());
+							}
+						}
+					});
 		}
 	}
 
