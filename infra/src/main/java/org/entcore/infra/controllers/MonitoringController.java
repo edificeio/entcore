@@ -37,6 +37,7 @@ import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 import org.vertx.java.platform.Container;
 
 import java.util.Map;
@@ -92,7 +93,8 @@ public class MonitoringController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void checkVersions(final HttpServerRequest request) {
 		final JsonArray versions = new JsonArray();
-		for (Map.Entry<String,String> entry : Starter.MAP_APP_VERSION.entrySet()) {
+		ConcurrentSharedMap<String, String> versionMap = vertx.sharedData().getMap("versions");
+		for (Map.Entry<String,String> entry : versionMap.entrySet()) {
 			versions.addObject(new JsonObject().putString(entry.getKey(), entry.getValue()));
 		}
 		Renders.renderJson(request, versions);
