@@ -41,8 +41,6 @@ public class Admin extends BaseServer {
 						if (res != null && res.succeeded()) {
 							if ("ok".equals(res.result().body().getString("status"))) {
 								plateformeInfoController.setSmsModule(true);
-							} else {
-								plateformeInfoController.setSmsModule(false);
 							}
 						}
 						addController(plateformeInfoController);
