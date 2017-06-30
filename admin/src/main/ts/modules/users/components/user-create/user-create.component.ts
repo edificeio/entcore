@@ -91,4 +91,11 @@ export class UserCreate implements OnInit, OnDestroy {
     cancel() {
         this.location.back();
     }
+
+    trim(input:string) {
+        if (input && input.length > 0) {
+            return input.trim()
+        }
+        return input
+    }
 }

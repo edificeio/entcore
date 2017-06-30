@@ -5,16 +5,22 @@
 <panel-section class="thin">
     <form #createForm="ngForm" (ngSubmit)="createNewUser()">
         <form-field label="firstName">
-            <input type="text" [(ngModel)]="newUser.firstName" name="firstName" required #firstNameInput="ngModel">
+            <input type="text" [(ngModel)]="newUser.firstName" name="firstName" 
+                required pattern=".*\S+.*" #firstNameInput="ngModel"
+                (blur)="newUser.firstName = trim(newUser.firstName)">
             <form-errors [control]="firstNameInput"></form-errors>
         </form-field>
         <form-field label="lastName">
-            <input type="text" [(ngModel)]="newUser.lastName" name="lastName" required #lastNameInput="ngModel">
+            <input type="text" [(ngModel)]="newUser.lastName" name="lastName" 
+                required pattern=".*\S+.*" #lastNameInput="ngModel"
+                (blur)="newUser.lastName = trim(newUser.lastName)">
             <form-errors [control]="lastNameInput"></form-errors>
         </form-field>
 
         <form-field label="birthDate">
-            <date-picker [(ngModel)]="newUser.userDetails.birthDate" name="birthDate" minDate="1900-01-01" maxDate="today" #birthDateInput="ngModel">
+            <date-picker [(ngModel)]="newUser.userDetails.birthDate" 
+                name="birthDate" minDate="1900-01-01" maxDate="today" 
+                #birthDateInput="ngModel">
             </date-picker>
             <form-errors [control]="birthDateInput"></form-errors>
         </form-field>
@@ -35,9 +41,11 @@
                 <search-input
                     [delay]="300"
                     [attr.placeholder]="'search' | translate"
-                    (onChange)="userListService.inputFilter = $event"></search-input>
+                    (onChange)="userListService.inputFilter = $event">
+                </search-input>
 
-                <div class="list-wrapper" *ngIf="userListService.inputFilter?.length > 0">
+                <div class="list-wrapper" 
+                    *ngIf="userListService.inputFilter?.length > 0">
                     <ul>
                         <li *ngFor="let child of usersStore.structure.users.data | filter: {type: 'Student'} | filter: userListService.filterByInput"
                             (click)="addChild(child)">
@@ -50,10 +58,13 @@
                 <h3><s5l>create.user.selectedchildren</s5l></h3>
                 <ul>
                     <li *ngFor="let child of newUser.userDetails.children">
-                        <span>{{ child.lastName | uppercase }} {{ child.firstName }}</span>
+                        <span>
+                            {{ child.lastName | uppercase }} {{ child.firstName }}
+                        </span>
                         <i  class="fa fa-times action" 
                             (click)="removeChild(child)"
-                            [tooltip]="'create.user.deselect.child' | translate"></i>
+                            [tooltip]="'create.user.deselect.child' | translate">
+                        </i>
                     </li>
                 </ul>
             </div>
@@ -61,8 +72,11 @@
 
         <form-field label="create.user.classe">
             <select [(ngModel)]="newUser.classes" name="classes">
-                <option [ngValue]="noClasses"><s5l>create.user.sansclasse</s5l></option>
-                <option *ngFor="let classe of usersStore.structure.classes" [ngValue]="[classe]">{{classe.name}}</option>
+                <option [ngValue]="noClasses">
+                    <s5l>create.user.sansclasse</s5l>
+                </option>
+                <option *ngFor="let classe of usersStore.structure.classes" 
+                    [ngValue]="[classe]">{{classe.name}}</option>
             </select>
         </form-field>
 
@@ -70,7 +84,8 @@
             <button type="button" class="cancel" (click)="cancel()">
                 <s5l>create.user.cancel</s5l>
             </button>
-            <button class="create" [disabled]="createForm.pristine || createForm.invalid">
+            <button class="create" 
+                [disabled]="createForm.pristine || createForm.invalid">
                 <s5l>create.user.submit</s5l>
             </button>
         </div>

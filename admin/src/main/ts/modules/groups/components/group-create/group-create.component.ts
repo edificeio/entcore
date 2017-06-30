@@ -15,7 +15,9 @@ import { LoadingService, NotifyService } from '../../../../services'
         <panel-section class="thin">
             <form #createForm="ngForm" (ngSubmit)="createNewGroup()">
                 <form-field label="create.group.name">
-                    <input type="text" [(ngModel)]="newGroup.name" name="name" required #nameInput="ngModel">
+                    <input type="text" [(ngModel)]="newGroup.name" name="name"
+                        required pattern=".*\\S+.*" #nameInput="ngModel"
+                        (blur)="newGroup.name = trim(newGroup.name)">
                     <form-errors [control]="nameInput"></form-errors>
                 </form-field>
 
@@ -23,7 +25,8 @@ import { LoadingService, NotifyService } from '../../../../services'
                     <button type="button" class="cancel" (click)="cancel()">
                         <s5l>create.group.cancel</s5l>
                     </button>
-                    <button class="create" [disabled]="createForm.pristine || createForm.invalid">
+                    <button class="create" 
+                        [disabled]="createForm.pristine || createForm.invalid">
                         <s5l>create.group.submit</s5l>
                     </button>
                 </div>
@@ -57,7 +60,8 @@ export class GroupCreate {
                         parameters: { group: this.newGroup.name }
                     } , 'notify.group.create.title')
 
-                this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
+                this.router.navigate(['..', res.data.id], 
+                    {relativeTo: this.route, replaceUrl: false})
             }).catch(err => {
                 this.ns.error({
                         key: 'notify.group.create.error.content',
@@ -69,5 +73,12 @@ export class GroupCreate {
 
     cancel() {
         this.location.back();
+    }
+
+    trim(input:string) {
+        if (input && input.length > 0) {
+            return input.trim()
+        }
+        return input
     }
 }

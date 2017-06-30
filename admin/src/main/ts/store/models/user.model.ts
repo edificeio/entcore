@@ -136,8 +136,8 @@ export class UserModel extends Model<UserModel> {
     createNewUser(structureId) {
         let userPayload = new window['URLSearchParams']()
 
-        userPayload.append('firstName', this.firstName)
-        userPayload.append('lastName', this.lastName)
+        userPayload.append('firstName', this.firstName.trim())
+        userPayload.append('lastName', this.lastName.trim())
         userPayload.append('type', this.type)
         if (this.classes && this.classes.length > 0) {
             userPayload.append('classId', this.classes[0].id)
