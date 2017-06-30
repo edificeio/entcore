@@ -23,7 +23,9 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -63,6 +65,7 @@ public abstract class BaseServer extends Server {
 	private SearchingHandler searchingHandler;
 	private String schema;
 	private String contentSecurityPolicy;
+	private AccessLogger accessLogger;
 
 	@Override
 	public void start() {
@@ -71,6 +74,7 @@ public abstract class BaseServer extends Server {
 		}
 		super.start();
 
+		accessLogger = new EntAccessLogger(getEventBus(vertx));
 		initFilters();
 
 		String node = (String) vertx.sharedData().getMap("server").get("node");
@@ -111,12 +115,14 @@ public abstract class BaseServer extends Server {
 
 	protected void initFilters() {
 		clearFilters();
+		addFilter(new AccessLoggerFilter(accessLogger));
 		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
 				getEventBus(vertx), getPathPrefix(config)), new BasicFilter()));
 	}
 
 	@Override
 	protected Server addController(BaseController controller) {
+		controller.setAccessLogger(accessLogger);
 		super.addController(controller);
 		if (config.getString("override-theme") != null) {
 			controller.addHookRenderProcess(new OverrideThemeHookRender(config.getString("override-theme")));

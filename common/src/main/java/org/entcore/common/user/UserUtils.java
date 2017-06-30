@@ -263,6 +263,11 @@ public class UserUtils {
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {
+		getSession(eb, request, false, handler);
+	}
+
+	public static void getSession(EventBus eb, final HttpServerRequest request, boolean paused,
+								  final Handler<JsonObject> handler) {
 		if (request instanceof SecureHttpServerRequest &&
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
@@ -277,7 +282,9 @@ public class UserUtils {
 				handler.handle(null);
 				return;
 			} else {
-				request.pause();
+				if (!paused) {
+					request.pause();
+				}
 				JsonObject findSession = new JsonObject();
 				if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
 					findSession.putString("action", "find")
@@ -287,19 +294,24 @@ public class UserUtils {
 							.putString("userId", remoteUserId)
 							.putBoolean("allowDisconnectedUser", true);
 				}
-				findSession(eb, request, findSession, handler);
+				findSession(eb, request, findSession, paused, handler);
 			}
 		}
 	}
 
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession,
+									final Handler<JsonObject> handler) {
+		findSession(eb, request, findSession, false, handler);
+	}
+
+	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession, final boolean paused,
 			final Handler<JsonObject> handler) {
 		eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonObject session = message.body().getObject("session");
-				if (request != null) {
+				if (request != null && !paused) {
 					request.resume();
 				}
 				if ("ok".equals(message.body().getString("status")) && session != null) {
