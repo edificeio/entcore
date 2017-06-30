@@ -751,27 +751,26 @@ ux-portal {
     div[header-left] > * {
         margin-right: 20px;
     }
-    div[header-right] > * {
-        margin-left: 20px;
-    }
+
     div[header-left], div[header-right] {
         a {
             color: white;
-            // &:visited, &:active { color: initial; }
         }
         i {
             font-size: 1.5em;
             cursor: pointer;
-            padding: 13px 10px;
+            padding: 13px 20px;
             transition: color 0.25s, background-color 0.25s;
+            min-width: 20px;
+            text-align: center;
 
             &:hover {
-                color: $accent;
+                background-color: $main-light;
+                color: white;
             }
 
             &.active {
-                background-color: $main-light;
-                color: $accent;
+                background-color: $accent;
             }
         }
         span.link {
