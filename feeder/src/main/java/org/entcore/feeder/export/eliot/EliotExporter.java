@@ -45,6 +45,7 @@ public class EliotExporter implements Exporter {
 
 	public static final String WEBDAV_ADDRESS = "webdav";
 	private static final Logger log = LoggerFactory.getLogger(EliotExporter.class);
+	public static final String ELIOT = "ELIOT";
 	private final String exportBasePath;
 	private final String exportDestination;
 	private final Vertx vertx;
@@ -70,7 +71,7 @@ public class EliotExporter implements Exporter {
 			@Override
 			public void apply(TransactionHelper value) {
 				Tenant.list(new JsonArray().add("name"), null, null, value);
-				Structure.list(new JsonArray().add("academy"), null, null, value);
+				Structure.list(ELIOT, new JsonArray().add("academy"), null, null, value);
 			}
 
 			@Override
@@ -121,7 +122,7 @@ public class EliotExporter implements Exporter {
 
 	@Override
 	public String getName() {
-		return "ELIOT";
+		return ELIOT;
 	}
 
 	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {

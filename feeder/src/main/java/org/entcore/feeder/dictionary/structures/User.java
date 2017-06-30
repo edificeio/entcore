@@ -35,6 +35,8 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.HashSet;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class User {
 
 	public static class DeleteTask implements Handler<Long> {
@@ -378,31 +380,48 @@ public class User {
 		transactionHelper.add(query, params);
 	}
 
-	public static void count(JsonArray profiles, TransactionHelper transactionHelper) {
+	public static void count(String exportType, JsonArray profiles, TransactionHelper transactionHelper) {
 		String query;
 		JsonObject params = new JsonObject();
 		if (profiles != null && profiles.size() > 0) {
-			query = "MATCH (u:User) " +
+			query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 					"WHERE HEAD(u.profiles) IN {profiles} ";
 			params.putArray("profiles", profiles);
+			if (isNotEmpty(exportType)) {
+				query += "AND ";
+			}
 		} else {
-			query = "MATCH (u:User) ";
+			query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) ";
+			if (isNotEmpty(exportType)) {
+				query += "WHERE ";
+			}
+		}
+		if (isNotEmpty(exportType)) {
+			query += "HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
 		}
 		query += "RETURN count(distinct u) as nb";
 		transactionHelper.add(query, params);
 	}
 
-	public static void list(JsonArray profiles, JsonArray attributes, Integer skip, Integer limit,
+	public static void list(String exportType, JsonArray profiles, JsonArray attributes, Integer skip, Integer limit,
 			TransactionHelper transactionHelper) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
+		String filter = "";
+		if (isNotEmpty(exportType)) {
+			filter = "AND HAS(s0.exports) AND {exportType} IN s0.exports ";
+			params.putString("exportType", exportType);
+		}
 		if (profiles != null && profiles.size() > 0) {
-			query.append("MATCH (u:User) WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) " +
+			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) " +
+					"WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) ").append(filter).append(
 					"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) " +
-					"WITH u, COLLECT(s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
+					"WITH u, COLLECT(DISTINCT s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
 			params.putArray("profiles", profiles);
 		} else {
-			query.append("MATCH (u:User) WHERE NOT(HAS(u.deleteDate)) ");
+			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) WHERE NOT(HAS(u.deleteDate)) ")
+					.append(filter);
 		}
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
@@ -429,17 +448,25 @@ public class User {
 		transactionHelper.add(query.toString(), params);
 	}
 
-	public static void listByFunctions(JsonArray functions, TransactionHelper transactionHelper) {
+	public static void listByFunctions(String exportType, JsonArray functions, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.putArray("functions", functions);
+		String filter;
+		if(isNotEmpty(exportType)) {
+			filter = "-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"WHERE f.externalId IN {functions} AND HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
+		} else {
+			filter = " WHERE f.externalId IN {functions} ";
+		}
 		String query =
-				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u " +
-				"WHERE f.externalId IN {functions} " +
+				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u" +
+				filter +
 				"WITH DISTINCT u.externalId as externalId, rf.scope as scope, f " +
 				"MATCH (s:Structure) " +
 				"WHERE s.id in scope " +
 				"WITH externalId, COLLECT(distinct s.externalId) as structs, f " +
 				"RETURN externalId, COLLECT(distinct [f.externalId, structs]) as functions ";
-		JsonObject params = new JsonObject()
-				.putArray("functions", functions);
 		transactionHelper.add(query, params);
 	}
 

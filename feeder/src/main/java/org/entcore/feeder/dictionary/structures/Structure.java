@@ -32,6 +32,8 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class Structure {
 
 	private static final Logger log = LoggerFactory.getLogger(Structure.class);
@@ -263,15 +265,24 @@ public class Structure {
 		tx.add(query, params);
 	}
 
-	public static void count(TransactionHelper transactionHelper) {
+	public static void count(String exportType, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject();
-		String query = "MATCH (s:Structure) RETURN count(distinct s) as nb";
+		String query = "MATCH (s:Structure) ";
+		if (isNotEmpty(exportType)) {
+			query += "WHERE HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
+		}
+		query += "RETURN count(distinct s) as nb";
 		transactionHelper.add(query, params);
 	}
 
-	public static void list(JsonArray attributes, Integer skip, Integer limit, TransactionHelper transactionHelper) {
+	public static void list(String exportType, JsonArray attributes, Integer skip, Integer limit, TransactionHelper transactionHelper) {
 		StringBuilder query = new StringBuilder("MATCH (s:Structure) ");
 		JsonObject params = new JsonObject();
+		if (isNotEmpty(exportType)) {
+			query.append("WHERE HAS(s.exports) AND {exportType} IN s.exports ");
+			params.putString("exportType", exportType);
+		}
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
 			for (Object attribute : attributes) {
