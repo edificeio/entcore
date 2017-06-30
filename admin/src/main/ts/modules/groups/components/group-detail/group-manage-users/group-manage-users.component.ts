@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy
-    , ChangeDetectorRef } from '@angular/core'
+    , ChangeDetectorRef, Output, EventEmitter } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { UserModel } from '../../../../../store/models'
@@ -13,7 +13,9 @@ import { GroupsStore } from '../../../store'
         <div class="padded">
             <h2>
                 <span><s5l>group.manage.users</s5l></span>
+                <i class="fa fa-times action top-right" (click)="close.emit()"></i>
             </h2>
+
 
             <div class="container">
                 <group-input-users [model]="inputUsers"></group-input-users>
@@ -27,6 +29,8 @@ import { GroupsStore } from '../../../store'
 export class GroupManageUsers implements OnInit {
     private inputUsers: UserModel[] = []
     private groupSubscriber : Subscription
+
+    @Output() close : EventEmitter<void> = new EventEmitter<void>()
 
     constructor(private cdRef: ChangeDetectorRef,
         private groupsStore: GroupsStore,

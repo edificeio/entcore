@@ -290,7 +290,7 @@ button.leaf-button {
 
 i.top-right {
     position: absolute;
-    top: 1em;
+    top: 0em;
     right: 1em;
 }
 
@@ -1166,6 +1166,10 @@ group-create {
 }
 
 group-manage-users {
+    div.padded {
+        position: relative;
+    }
+
     h2 {
         font-size: 1.6em;
         font-weight: normal;

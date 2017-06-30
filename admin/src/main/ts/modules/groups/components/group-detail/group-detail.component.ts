@@ -16,8 +16,7 @@ import { GroupsStore } from '../../store'
             </button>
 
             <light-box class="inner-list" [show]="showAddUsersLightBox" (onClose)="showAddUsersLightBox = false">
-                <group-manage-users>
-                </group-manage-users>
+                <group-manage-users (close)="showAddUsersLightBox = false"></group-manage-users>
             </light-box>
 
             <group-users-list [users]="groupsStore.group?.users">
