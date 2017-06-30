@@ -24,7 +24,10 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     ngOnInit() {
         this.passwordResetMail = this.details.email
         this.passwordResetMobile = this.details.mobile
-        PlateformeInfoService.isSmsModule().then(res => this.smsModule = res)
+        PlateformeInfoService.isSmsModule().then(res => {
+            this.smsModule = res
+            this.cdRef.markForCheck()
+        })
     }
 
     protected onUserChange(){
