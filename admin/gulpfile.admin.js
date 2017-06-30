@@ -1,4 +1,4 @@
-const gulp = require('gulp')
+const gulp = require('../gulpfile-loader')('adminV2');
 const webpackstream = require('webpack-stream')
 const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
@@ -23,7 +23,7 @@ const buildTs = function(prodMode) {
         .pipe(gulp.dest('./admin/src/main/resources/public'))
 }
 
-gulp.task('admin2:clean', function() {
+gulp.task('clean', function() {
     return del([
         './admin/src/main/resources/public/js/*',
         './admin/src/main/resources/public/templates/*',
@@ -33,39 +33,36 @@ gulp.task('admin2:clean', function() {
         './admin/src/main/resources/view/*'])
 })
 
-gulp.task('admin2:ts-dev', function() {
+gulp.task('ts-dev', function() {
     return buildTs(false)
 })
 
-gulp.task('admin2:ts', function() {
+gulp.task('ts', ['clean'], function() {
     return buildTs(true)
 })
 
-gulp.task('admin2:sass', function() {
+gulp.task('sass', function() {
     return gulp.src('./admin/src/main/resources/public/styles/admin.scss')
         .pipe(sass())
         .pipe(gulp.dest('./admin/src/main/resources/public/styles'))
 })
 
-gulp.task('admin2:build-dev', ['admin2:ts-dev', 'admin2:copy-flatpickr-css'], function(){
+gulp.task('build-dev', ['ts-dev', 'copy-flatpickr-css'], function(){})
 
-})
-gulp.task('admin2:build', ['admin2:ts', 'admin2:copy-flatpickr-css'], function(){
+gulp.task('build', ['ts', 'copy-flatpickr-css'], function(){})
 
-})
-
-gulp.task('admin2:copymod', function() {
+gulp.task('copymod', function() {
     return gulp.src(basePath + '/resources/**/*')
         .pipe(changed(target))
         .pipe(gulp.dest(target))
 })
 
-gulp.task('admin2:watch', function() {
-    gulp.watch(basePath + '/resources/**/*', ['admin2:copymod'])
-    //gulp.watch(basePath + '/ts/**/*.ts', ['admin2:ts'])
+gulp.task('watch', function() {
+    gulp.watch(basePath + '/resources/**/*', ['copymod'])
+    //gulp.watch(basePath + '/ts/**/*.ts', ['ts'])
 })
 
-gulp.task('admin2:dev-server', function() {
+gulp.task('dev-server', function() {
     const conf = devConf
     for(entry in conf.entry) {
         conf.entry[entry] = [`webpack-dev-server/client?http://localhost:${devServConf.port}/`, conf.entry[entry]]
@@ -77,7 +74,7 @@ gulp.task('admin2:dev-server', function() {
     })
 })
 
-gulp.task('admin2:copy-flatpickr-css', function() {
+gulp.task('copy-flatpickr-css', function() {
     return gulp.src('./node_modules/flatpickr/dist/themes/confetti.css')
         .pipe(rename('flatpickr-confetti.css'))
         .pipe(gulp.dest(basePath + '/resources/public/styles'))
