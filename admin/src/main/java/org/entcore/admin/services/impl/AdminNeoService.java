@@ -19,8 +19,7 @@ public class AdminNeoService implements AdminService {
 			"WHERE s.id = {id} " +
 			"AND u.displayName =~ {inputRegExp} " +
 			"RETURN distinct u.id as id, u.firstName as firstName, u.lastName as lastName " +
-			"ORDER BY u.lastName " +
-			"LIMIT 5";
+			"ORDER BY u.lastName";
 		String inputRegExp = "(?i).*" + input.trim() + ".*";
 		JsonObject params = new JsonObject()
 				.putString("id", structureId)

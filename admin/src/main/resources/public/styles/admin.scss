@@ -263,21 +263,26 @@ button.leaf-button {
             margin: 10px 0px;
         }
 
-        .card-list ul {
-            padding: 0px;
-            li {
-                border-bottom: 1px solid #CCC;
-                transition: background 0.25s;
+        .card-list {
+            max-height: 160px;
+            overflow-y: auto;
 
-                a {
-                    padding: 5px;
-                    display: block;
-                }
+            ul {
+                margin-top: 0px;
+                padding: 0px;
 
-                &:hover {
-                    background-color: $accent;
-                    color: white;
-                    a { color: white; }
+                li {
+                    border-bottom: 1px solid #CCC;
+                    transition: background 0.25s;
+
+                    a {
+                        padding: 5px;
+                        display: block;
+                    }
+
+                    &:hover {
+                        background-color: $accent-light;
+                    }
                 }
             }
         }

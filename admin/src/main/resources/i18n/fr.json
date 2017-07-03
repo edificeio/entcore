@@ -116,7 +116,7 @@
     "list.results.no.items": "Aucun élément",
     "list.results.no.users": "Aucun utilisateur",
     "list.results.no.groups": "Aucun groupe",
-    "users.quick.search.intro": "Tapez quelques lettres dans le champ ci-dessus pour trouver les utilisateurs (maximum 5) qui ont un nom ou un prénom correspondant",
+    "users.quick.search.intro": "Tapez quelques lettres dans le champ ci-dessus pour trouver les utilisateurs qui ont un nom ou un prénom correspondant",
     "user.root.error": "Erreur",
     "user.root.error.text": "Une erreur est survenue durant votre dernière action.",
     "reports": "Signalements",
