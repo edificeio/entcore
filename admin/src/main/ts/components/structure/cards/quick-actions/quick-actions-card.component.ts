@@ -19,11 +19,11 @@ import { StructureModel } from '../../../../store'
                 <s5l>create.group</s5l>
                 <i class="fa fa-users"></i>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <s5l>manage.duplicates</s5l>
                 <i class="fa fa-user-times"></i>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <s5l>manage.reports</s5l>
                 <i class="fa fa-exclamation-circle"></i>
             </button>

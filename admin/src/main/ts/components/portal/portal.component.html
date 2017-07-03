@@ -16,10 +16,12 @@
         </a>
         <i class="fa fa-exclamation-triangle"
             *ngIf="currentStructure"
-            [tooltip]="'reports' | translate"></i>
+            title="En construction"
+            disabled></i>
         <i class="fa fa-th"
             *ngIf="currentStructure"
-            [tooltip]="'applications' | translate"></i>
+            title="En construction"
+            disabled></i>
         <i class="fa fa-users"
             *ngIf="currentStructure"
             [tooltip]="'groups' | translate"

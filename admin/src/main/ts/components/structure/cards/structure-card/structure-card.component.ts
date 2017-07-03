@@ -11,15 +11,15 @@ import { StructureModel } from '../../../../store'
             </span>
         </div>
         <div class="card-body">
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-plug"></i>
                 <s5l>manage.connectors</s5l>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-window-maximize"></i>
                 <s5l>manage.widgets</s5l>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-th"></i>
                 <s5l>manage.applications</s5l>
             </button>

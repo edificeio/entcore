@@ -23,7 +23,6 @@
     <div class="panel-header-content">
         <spinner-cube class="button-spinner" waitingFor="user.restore"></spinner-cube>
         
-        
         <div class="left">
             <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
             <div *ngIf="!user.deleteDate">
@@ -50,14 +49,14 @@
 
         <div class="right" *ngIf="!user.deleteDate">
             <div>
-                <button class="big">
+                <button class="big" disabled title="En construction">
                     <s5l>users.details.button.comm.rules</s5l>
                     <i class="fa fa-podcast"></i>
                 </button>
             </div>
 
             <div>
-                <button class="big">
+                <button class="big" disabled title="En construction">
                     <s5l>users.details.button.app.rights</s5l>
                     <i class="fa fa-th"></i>
                 </button>

@@ -11,15 +11,15 @@ import { StructureModel } from '../../../../store'
             </span>
         </div>
         <div class="card-body">
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-arrow-up"></i>
                 <s5l>export.accounts</s5l>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-arrow-down"></i>
                 <s5l>import.users</s5l>
             </button>
-            <button>
+            <button disabled title="En construction">
                 <i class="fa fa-files-o"></i>
                 <s5l>massmail.accounts</s5l>
             </button>

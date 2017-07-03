@@ -16,6 +16,7 @@ $accent-dark: darken($accent, 10%);
 
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: crimson;
+$contrast-hover: darken($contrast, 5%);
 $button-bg: #f2f2f2;
 $button-bg-hover: darken($button-bg, 5%);
 $user-li-hover: #ffccb8;
@@ -201,7 +202,7 @@ ul {
     box-shadow: 1px 1px 5px #AAA;
 }
 
-button.leaf-button {
+button.card-button {
     padding: 10px 20px;
     font-size: 1.1em;
 
@@ -257,10 +258,19 @@ button.leaf-button {
         padding: 25px 5%;
 
         button {
-            @extend .leaf-button;
+            @extend .card-button;
             display: block;
             width: 100%;
             margin: 10px 0px;
+
+            &[disabled]:hover {
+                background-color: $button-bg;
+                cursor: not-allowed;
+                
+                i {
+                    color: black;
+                }
+            }
         }
 
         .card-list {
@@ -387,11 +397,8 @@ a.old-console {
     color: white !important;
     transition: all 0.25s;
 
-    &:hover{
-        background-color: $accent;
-    }
-    i:hover {
-        color: black !important;
+    i:hover{
+        background-color: $contrast-hover !important;
     }
 }
 
@@ -586,10 +593,10 @@ div.panel-message {
     button.goto-duplicate {
         padding: 1px 5px;
         width: auto;
-        color: crimson;
+        color: $contrast;
 
         &:hover {
-            background-color: lighten(crimson, 10%);
+            background-color: lighten($contrast, 10%);
             color: white;
         }
     }
@@ -700,7 +707,7 @@ user-list, group-users-list, group-input-users, group-output-users {
                         color: #aaa;
                     }
                     &.fa-times-circle {
-                        color: crimson;
+                        color: $contrast;
                     }
                 }
             }
@@ -779,9 +786,13 @@ ux-portal {
             min-width: 20px;
             text-align: center;
 
-            &:hover {
+            &:not([disabled]):hover {
                 background-color: $main-light;
                 color: white;
+            }
+            &[disabled]:hover {
+                background-color: #666;
+                cursor: not-allowed;
             }
 
             &.active {
@@ -802,19 +813,16 @@ ux-portal {
     }
 
     div[section] div.welcome-message {
-        background-color: rgba(crimson, 0.5);
+        background-color: rgba($contrast, 0.5);
         color: white;
         padding: 10px 5%;
 
         a.old-console {
-            background-color: rgba(crimson, 0.7);
+            background-color: rgba($contrast, 0.7);
             padding: 13px 0px;
 
-            &:hover {
-                background-color: $accent;
-            }
-
             i {
+                background-color: rgba($contrast, 1);
                 font-size: 1.5em;
                 padding: 10px 10px;
             }
@@ -901,6 +909,14 @@ user-detail {
 
                 i {
                     color: white;
+                }
+
+                &[disabled] {
+                    background-color: rgba(180, 180, 180, 0.9);
+
+                    &:hover {
+                        cursor: not-allowed;
+                    }
                 }
             }
         }
