@@ -16,6 +16,7 @@ import { LoadingService } from '../../../../services'
                     [inputFilter]="filterByInput"
                     sort="name"
                     searchPlaceholder="search.group"
+                    noResultsLabel="list.results.no.groups"
                     [isSelected]="isSelected"
                     (inputChange)="groupInputFilter = $event"
                     (onSelect)="routeToGroup($event)">

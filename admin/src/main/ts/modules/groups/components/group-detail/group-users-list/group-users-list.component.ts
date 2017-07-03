@@ -13,7 +13,8 @@ import { UserListService } from '../../../../../services'
             [sort]="userLS.sorts"
             searchPlaceholder="search.user"
             (inputChange)="userLS.inputFilter = $event"
-            (onSelect)="selectUser($event)">
+            (onSelect)="selectUser($event)"
+            noResultsLabel="list.results.no.users">
             <div toolbar>
                 <i class="fa" aria-hidden="true"
                 [ngClass]="{

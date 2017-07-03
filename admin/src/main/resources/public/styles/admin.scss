@@ -417,8 +417,8 @@ light-box {
 
         list-component {
             ul {
-                max-height: 50vh;
-                overflow-y: scroll;
+                max-height: 46vh;
+                overflow-y: auto;
             }
         }
     }
@@ -632,6 +632,16 @@ list-component {
 
         &.disabled {
             color: #CCC;
+        }
+        
+        &.no-results {
+            text-align: center;
+            font-style: italic;
+
+            &:hover {
+                cursor: default !important;
+                background-color: inherit !important;
+            }
         }
     }
 }
@@ -1189,28 +1199,41 @@ group-manage-users {
         div.flex-row-wrap {
             display: flex;
             flex-flow: row wrap;
-        }
+            align-items: center;
+            
+            list-component {
+                min-height: 60vh;
+                max-height: 60vh;
+                flex: 1;
 
-        div.user-toolbar {
-            > i { @extend .action; }
-
-            .toolbar-right {
-                font-size: 1.2em;
-                float: right;
-            }
-
-            button {
-                &.select-all {
-                    padding: 5px 5px;
-                    margin: 5px 0 5px 5px;
+                div.list-wrapper {
+                    border: 1px solid #ccc;
+                    box-shadow: 1px 1px 10px #ccc;
                 }
 
-                &.deselect-all {
-                    padding: 5px 5px;
-                    margin: 5px 0;
+                div.user-toolbar {
+                    > i { @extend .action; }
+
+                    .toolbar-right {
+                        font-size: 1.2em;
+                        float: right;
+                    }
+
+                    button {
+                        &.select-all {
+                            padding: 5px 5px;
+                            margin: 5px 0 5px 5px;
+                        }
+
+                        &.deselect-all {
+                            padding: 5px 5px;
+                            margin: 5px 0;
+                        }
+                    }
                 }
             }
         }
+
 
         group-input-users {
             div.filters {
@@ -1219,7 +1242,6 @@ group-manage-users {
             }
 
             button.add {
-                align-self: center;
                 text-align: center;
                 border-radius: 25px;
                 width: 50px;
@@ -1236,11 +1258,6 @@ group-manage-users {
                         background-color: $accent-dark;
                     }
                 }
-            }
-
-            list-component {
-                min-height: 600px;
-                flex: 1;
             }
 
             group-input-filters-users {
@@ -1277,7 +1294,6 @@ group-manage-users {
             }
 
             button.remove {
-                align-self: center;
                 text-align: center;
                 border-radius: 25px;
                 width: 50px;
@@ -1297,9 +1313,6 @@ group-manage-users {
             }
 
             list-component {
-                min-height: 600px;
-                flex: 1;
-
                 li {
                     &:hover {
                         background-color: $main-lighter;

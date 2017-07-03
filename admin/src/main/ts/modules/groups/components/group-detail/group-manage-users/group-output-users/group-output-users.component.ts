@@ -24,7 +24,8 @@ import { UserModel } from '../../../../../../store/models'
                 [ngClass]="setUserListStyles"
                 (inputChange)="userLS.inputFilter = $event"
                 (onSelect)="selectUser($event)"
-                (listChange)="storedElements = $event">
+                (listChange)="storedElements = $event"
+                noResultsLabel="list.results.no.users">
                 <div toolbar class="user-toolbar">
                     <i class="fa" aria-hidden="true"
                         [ngClass]="{

@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs/Subscription'
         [inputFilter]="userLS.filterByInput"
         [sort]="userLS.sorts"
         searchPlaceholder="search.user"
+        noResultsLabel="list.results.no.users"
         [ngClass]="setStyles"
         [limit]="userLS.limit"
         [listScroll]="userLS.listScroll"

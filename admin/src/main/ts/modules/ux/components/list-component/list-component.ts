@@ -21,6 +21,9 @@ import { Subject } from 'rxjs/Subject'
                     </ng-template>
                 </li>
             </ul>
+            <ul *ngIf="storedElements && storedElements.length === 0">
+                <li class="no-results">{{ noResultsLabel | translate }}</li>
+            </ul>
         </div>
     `,
     styles: [`
@@ -65,6 +68,8 @@ export class ListComponent implements AfterViewInit {
     @Input() ngClass = () => ({})
 
     @Input() listScroll = (event, list, cdRef) => {}
+
+    @Input() noResultsLabel = "list.results.no.items"
 
     @Output("inputChange") inputChange: EventEmitter<string> = new EventEmitter<string>()
     @Output("onSelect") onSelect: EventEmitter<{}> = new EventEmitter()
