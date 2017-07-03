@@ -243,7 +243,7 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE]-() " +
-				"SET u.deleteDate = timestamp() " +
+				"SET u.deleteDate = timestamp(), u.IDPN = null " +
 				"DELETE r " +
 				"CREATE UNIQUE dg<-[:IN]-u";
 		transaction.add(query, params);
