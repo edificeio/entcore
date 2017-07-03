@@ -51,15 +51,17 @@ gulp.task('build-dev', ['ts-dev', 'copy-flatpickr-css'], function(){})
 
 gulp.task('build', ['ts', 'copy-flatpickr-css'], function(){})
 
-gulp.task('copymod', function() {
+const copymod = function() {
+    console.log('Call to copymod')
     return gulp.src(basePath + '/resources/**/*')
         .pipe(changed(target))
         .pipe(gulp.dest(target))
-})
+}
+
+gulp.task('copymod', copymod)
 
 gulp.task('watch', function() {
-    gulp.watch(basePath + '/resources/**/*', ['copymod'])
-    //gulp.watch(basePath + '/ts/**/*.ts', ['ts'])
+    gulp.watch(basePath + '/resources/**/*', copymod)
 })
 
 gulp.task('dev-server', function() {
