@@ -60,9 +60,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-			"WHERE head(u.profiles) = {profile} AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
+			"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
 			"SET u.IDPN = {IDPN} " +
-			"RETURN DISTINCT u.id as id, u.IDPN as IDPN, head(u.profiles) as profile";
+			"RETURN DISTINCT u.id as id, u.IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
 			"MATCH (u:User {attachmentId : {idSconet}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
 			"MERGE u-[r:IN]->fg " +
