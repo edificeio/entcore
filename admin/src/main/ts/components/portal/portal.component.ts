@@ -46,6 +46,7 @@ export class Portal implements OnInit, OnDestroy {
             let structureId = params['structureId']
             if(structureId) {
                 this.currentStructure = globalStore.structures.data.find(s => s.id === structureId)
+                this.cdRef.markForCheck()
             }
         })
     }
