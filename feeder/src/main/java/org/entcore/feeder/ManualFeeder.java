@@ -295,24 +295,48 @@ public class ManualFeeder extends BusModBase {
 
 	private void removeUserFromStructure(final Message<JsonObject> message,
 			String userId, String structureId) {
-		JsonObject params = new JsonObject()
-				.putString("structureId", structureId)
-				.putString("userId", userId);
-		String query =
-				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
-				"(pg:ProfileGroup)-[:DEPENDS]->(s:Structure { id : {structureId}}), " +
-				"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-				"CREATE UNIQUE dpg<-[:IN]-u " +
-				"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
-				"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
-				"DELETE r " +
-				"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
-			}
-		});
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+			JsonObject params = new JsonObject()
+					.putString("structureId", structureId)
+					.putString("userId", userId);
+			final String query =
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
+							"(pg:ProfileGroup)-[:DEPENDS]->(s:Structure { id : {structureId}}), " +
+							"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+							"CREATE UNIQUE dpg<-[:IN]-u " +
+							"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
+							"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
+							"DELETE r " +
+							"RETURN DISTINCT u.id as id";
+			final String removeFunctions =
+					"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->() " +
+							"WHERE {structureId} IN r.scope " +
+							"SET r.scope = FILTER(sId IN r.scope WHERE sId <> {structureId}) " +
+							"WITH r " +
+							"WHERE LENGTH(r.scope) = 0 " +
+							"DELETE r";
+			final String removeFunctionGroups =
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure { id : {structureId}})" +
+							"DELETE r";
+			tx.add(query, params);
+			tx.add(removeFunctions, params);
+			tx.add(removeFunctionGroups, params);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().putArray("result", results.<JsonArray>get(0)));
+					} else {
+						message.reply(event.body());
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when remove user from structure", e);
+			sendError(message, "transaction.error");
+		}
 	}
 
 	private void createUserInClass(final Message<JsonObject> message,
