@@ -904,22 +904,29 @@ user-detail {
 
             .right {
                 flex: 1;
+                flex-flow: row wrap;
                 text-align: center;
+                display: flex;
+                justify-content: center;
             }
 
             button.big {
-                background-color: $main-light;
-                color: white;
-                padding: 30px;
-                width: 90%;
+                // background-color: $main-light;
+                // color: white;
+                flex: 0 1 90%;
+                align-items: center;
+                justify-content: space-between;
+                display: flex;
                 font-size: 0.7em;
+                margin: 5px;
+                padding: 20px;
 
                 i {
-                    color: white;
+                    // color: white;
                 }
 
                 &[disabled] {
-                    background-color: rgba(180, 180, 180, 0.9);
+                    // background-color: #666;
 
                     &:hover {
                         cursor: not-allowed;
