@@ -453,7 +453,10 @@ body > div.tooltip.shown {
 /* Side panel component */
 
 side-panel {
-    > div { background-color: $main; }
+    > div { 
+        background-color: $main; 
+        overflow-y: auto !important;
+    }
 
     > div > item-tree > ul {
         padding-left: 0px;
