@@ -412,6 +412,7 @@ directory.User.prototype.loadFederatedAddress = function(){
 	if(model.me.federated){
 		http().get('/directory/conf/public').done(function(conf){
 			this.federatedAddress = conf.federatedAddress[directory.account.federatedIDP];
+			this.disabledFederatedAdress = conf.disabledFederatedAdress;
 			this.trigger('change');
 		}.bind(this))
 	}

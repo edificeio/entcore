@@ -46,8 +46,8 @@
 					<i18n>userBook.profile.password</i18n>
 				</div>
 				<em class="seven cell">
-					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
-					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
+					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress))" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="(me.federated && !account.disabledFederatedAdress)" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
 				</em>
 			</div>
 

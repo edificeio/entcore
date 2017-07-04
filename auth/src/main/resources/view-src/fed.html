@@ -1,0 +1,64 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script language="JavaScript">
+            function disableSubmit(form) {
+                if (form.redirect.disabled == false) {
+                    form.redirect.disabled = true;
+                    document.getElementById('redirect_text').style.visibility="hidden";
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            function autoSubmit(form) {
+                if (form.redirect.disabled == false) {
+                    form.submit();
+                    hideButton(form);
+                    disableSubmit(form);
+                }
+            }
+            function hideButton(form) {
+                if (form.show_button.value == 'false') {
+                    form.redirect.style.visibility="hidden";
+                    document.getElementById('redirect_text').style.visibility="hidden";
+                }
+            }
+        </script>
+    </head>
+    <body onLoad="autoSubmit(document.forms[0])">
+        <p align="center"><font face="sans-serif,Arial,Helvetica,Geneva" size="5">{{#i18n}}fed.form.user.wait{{/i18n}}</font></p>
+        <p align="center" id="redirect_text"><font face="sans-serif,Arial,Helvetica,Geneva" size="3">{{#i18n}}fed.form.user.redirect{{/i18n}}</font></p>
+        <p align="center">
+            <form method="POST" action="{{Destination}}" onSubmit="return disableSubmit(this)">
+                <input type="hidden" name="SAMLResponse" value="{{SAMLResponse}}">
+                <input type="hidden" name="RelayState" value="{{RelayState}}">
+                <!-- The following "div" tag is required to counter a Firefox alignment defect -->
+                <div style="text-align : center;">
+                    <input type="submit" name="redirect" value='Redirect'>
+                </div>
+                <input type="hidden" name="show_button" value='true'>
+            </form>
+        </p>
+    </body>
+</html>

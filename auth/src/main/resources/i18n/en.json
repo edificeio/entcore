@@ -52,5 +52,8 @@
     "missing.password": "Missing password",
     "reset.error": "Reset error",
     "federated.users.title" : "Choisissez le compte pour vous connecter : ",
-    "connect.federated.user" : "Se connecter"
+    "connect.federated.user" : "Se connecter",
+    "fed.form.user.wait" : "Veuillez patienter, vous allez être redirigé vers l'application demandée.",
+    "fed.form.user.redirect" : "Si vous n'êtes pas automatiquement redirigé, vous pouvez cliquer sur le bouton ci-dessous.",
+    "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifants ENT ou contactez votre administrateur."
 }
