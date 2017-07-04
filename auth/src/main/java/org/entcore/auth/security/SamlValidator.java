@@ -19,8 +19,13 @@
 
 package org.entcore.auth.security;
 
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.ZLib;
+import org.entcore.auth.services.SamlVectorService;
+import org.entcore.auth.services.impl.FrEduVecteurService;
+import org.entcore.common.neo4j.Neo4j;
 import org.joda.time.DateTime;
+import org.joda.time.ReadableDuration;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.common.SAMLObject;
 import org.opensaml.common.SAMLVersion;
@@ -28,10 +33,7 @@ import org.opensaml.common.xml.SAMLConstants;
 import org.opensaml.saml2.core.*;
 import org.opensaml.saml2.core.impl.*;
 import org.opensaml.saml2.encryption.Decrypter;
-import org.opensaml.saml2.metadata.EntityDescriptor;
-import org.opensaml.saml2.metadata.IDPSSODescriptor;
-import org.opensaml.saml2.metadata.SingleLogoutService;
-import org.opensaml.saml2.metadata.SingleSignOnService;
+import org.opensaml.saml2.metadata.*;
 import org.opensaml.saml2.metadata.provider.FilesystemMetadataProvider;
 import org.opensaml.saml2.metadata.provider.MetadataProviderException;
 import org.opensaml.security.MetadataCredentialResolver;
@@ -42,6 +44,8 @@ import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.encryption.InlineEncryptedKeyResolver;
 import org.opensaml.xml.io.MarshallingException;
 import org.opensaml.xml.parse.BasicParserPool;
+import org.opensaml.xml.schema.XSString;
+import org.opensaml.xml.schema.impl.XSStringBuilder;
 import org.opensaml.xml.security.CriteriaSet;
 import org.opensaml.xml.security.credential.UsageType;
 import org.opensaml.xml.security.criteria.EntityIDCriteria;
@@ -50,42 +54,66 @@ import org.opensaml.xml.security.keyinfo.KeyInfoCredentialResolver;
 import org.opensaml.xml.security.keyinfo.StaticKeyInfoCredentialResolver;
 import org.opensaml.xml.security.x509.BasicX509Credential;
 import org.opensaml.xml.signature.Signature;
+import org.opensaml.xml.signature.SignatureConstants;
 import org.opensaml.xml.signature.SignatureTrustEngine;
+import org.opensaml.xml.signature.Signer;
 import org.opensaml.xml.signature.impl.ExplicitKeySignatureTrustEngine;
+import org.opensaml.xml.signature.impl.SignatureBuilder;
+import org.opensaml.xml.util.XMLHelper;
 import org.opensaml.xml.validation.ValidationException;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
+import org.w3c.dom.Element;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
+import static fr.wseduc.webutils.Server.getEventBus;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class SamlValidator extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private final Map<String, SignatureTrustEngine> signatureTrustEngineMap = new HashMap<>();
 	private final Map<String, EntityDescriptor> entityDescriptorMap = new HashMap<>();
+	private SPSSODescriptor spSSODescriptor;
 	private RSAPrivateKey privateKey;
 	private String issuer;
+	private SamlVectorService samlVectorService;
+	private Neo4j neo4j;
+
+	private void debug (String message) {
+		if (logger.isDebugEnabled()) {
+			logger.debug(message);
+		}
+	}
+
 
 	@Override
 	public void start() {
+		final EventBus eb = getEventBus(vertx);
 		super.start();
+
+		String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+		if (neo4jConfig != null) {
+			neo4j = Neo4j.getInstance();
+			neo4j.init(vertx, new JsonObject(neo4jConfig));
+		}
+
 		try {
 			DefaultBootstrap.bootstrap();
 			String path = config.getString("saml-metadata-folder");
@@ -98,6 +126,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				logger.error("Empty issuer");
 				return;
 			}
+
 			for (String f : vertx.fileSystem().readDirSync(path)) {
 				loadSignatureTrustEngine(f);
 			}
@@ -109,6 +138,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	}
 
 	private void loadPrivateKey(String path) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		logger.info("loadPrivateKey : " + path);
 		if (path != null && !path.trim().isEmpty() && vertx.fileSystem().existsSync(path)) {
 			byte[] encodedPrivateKey = vertx.fileSystem().readFileSync(path).getBytes();
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
@@ -121,7 +151,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		final String action = message.body().getString("action", "");
 		final String response = message.body().getString("response");
 		final String idp = message.body().getString("IDP");
-		if (!"generate-slo-request".equals(action) && !"generate-authn-request".equals(action) &&
+		if (!"generate-slo-request".equals(action) &&
+				!"generate-authn-request".equals(action) &&
+				!"generate-saml-response".equals(action) &&
 				(response == null || response.trim().isEmpty())) {
 			sendError(message, "invalid.response");
 			return;
@@ -137,6 +169,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					} else {
 						sendOK(message, generateAuthnRequest(idp, sp, acs, sign));
 					}
+					break;
+				case "generate-saml-response" :
+					String serviceProvider = message.body().getString("SP");
+					String userId = message.body().getString("userId");
+					String nameid = message.body().getString("nameid");
+					spSSODescriptor = getSSODescriptor(serviceProvider);
+					generateSAMLResponse(serviceProvider, userId, nameid, message);
 					break;
 				case "validate-signature":
 					sendOK(message, new JsonObject().putBoolean("valid", validateSignature(response)));
@@ -164,6 +203,446 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		} catch (Exception e) {
 			sendError(message, e.getMessage(), e);
 		}
+	}
+
+
+	/**
+	 * Build SAMLResponse and convert it in base64
+	 *
+	 * @param serviceProvider serviceProvider name qualifier
+	 * @param userId neo4j userID
+	 * @param nameId ameId value
+	 * @param message message
+	 *
+	 *
+	 * @throws SignatureException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws UnsupportedEncodingException
+	 * @throws MarshallingException
+	 */
+	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId, final Message<JsonObject> message)
+			throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
+		logger.info("start generating SAMLResponse");
+		logger.info("SP : " + serviceProvider);
+
+		final String entngIdpNameQualifier = config.getString("saml-entng-idp-nq");
+		if(entngIdpNameQualifier == null) {
+			String error = "entngIdpNameQualifier can not be null. You must specify it in auth configuration (saml-entng-idp-nq properties)";
+			logger.error(error);
+			JsonObject jsonObject = new JsonObject().putString("error", error);
+			sendOK(message, jsonObject);
+		}
+		logger.info("entngIdpNameQualifier : " + entngIdpNameQualifier);
+
+		// -- get spSSODescriptor from serviceProvider id --
+		if(spSSODescriptor == null) {
+			String error = "error SSODescriptor not found for serviceProvider : " + serviceProvider;
+			logger.error(error);
+			JsonObject jsonObject = new JsonObject().putString("error", error);
+			sendOK(message, jsonObject);
+		}
+
+		// --- TAG Issuer ---
+		final Issuer idpIssuer = createIssuer(entngIdpNameQualifier);
+
+		// --- TAG Status ---
+		final Status status = createStatus();
+
+		final AssertionConsumerService assertionConsumerService = spSSODescriptor.getDefaultAssertionConsumerService();
+		if(assertionConsumerService == null) {
+			String error = "error : AssertionConsumerService not found";
+			logger.error(error);
+			sendError(message, error);
+		}
+
+		// --- TAG AttributeStatement ---
+		createVectors(userId, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> event) {
+				if(event.isRight()) {
+					HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+
+					JsonArray vectors = event.right().getValue();
+					if(vectors == null || vectors.size() == 0) {
+						String error = "error bulding vectors for user " + userId;
+						logger.error(error);
+						sendError(message, error);
+					}else {
+						String vectorType = ((JsonObject) vectors.get(0)).getFieldNames().iterator().next();
+						List<String> vectorsValue = new ArrayList<>();
+						for (Object vector : vectors) {
+							vectorsValue.add(((JsonObject) vector).getString(vectorType));
+						}
+						attributes.put(vectorType, vectorsValue);
+					}
+
+					AttributeStatement attributeStatement = createAttributeStatement(attributes);
+
+					// --- TAG Assertion ---
+					Assertion assertion = null;
+					try {
+						assertion = generateAssertion(entngIdpNameQualifier, serviceProvider,
+                                nameId, assertionConsumerService.getLocation(), userId);
+					} catch (Exception e) {
+						logger.error(e.getMessage(), e);
+						sendError(message, e.getMessage(), e);
+					}
+
+					if(assertion == null) {
+						String error = "error building assertion";
+						logger.error(error);
+						sendError(message, error);
+					}
+					assertion.getAttributeStatements().add(attributeStatement);
+
+					// -- attribute Destination (acs) --
+					String destination = assertionConsumerService.getLocation();
+
+					// --- Build response --
+					Response response = createResponse(new DateTime(), idpIssuer, status, assertion, destination);
+
+					Signature signature = null;
+					try {
+						signature = createSignature();
+					} catch (Throwable e) {
+						logger.error(e.getMessage(), e);
+						sendError(message, e.getMessage());
+					}
+					//response.setSignature(signature);
+					assertion.setSignature(signature);
+
+					ResponseMarshaller marshaller = new ResponseMarshaller();
+					Element element = null;
+					try {
+						element = marshaller.marshall(response);
+					} catch (MarshallingException e) {
+						logger.error(e.getMessage(), e);
+						sendError(message, e.getMessage(), e);
+					}
+
+					if (signature != null) {
+						try {
+							Signer.signObject(signature);
+						} catch (org.opensaml.xml.signature.SignatureException e) {
+							logger.error(e.getMessage(), e);
+							sendError(message, e.getMessage(), e);
+						}
+					}
+
+
+					StringWriter rspWrt = new StringWriter();
+					XMLHelper.writeNode(element, rspWrt);
+
+					debug("response : "+ rspWrt.toString());
+					JsonObject jsonObject = new JsonObject();
+
+					String base64Response = Base64.encodeBytes(rspWrt.toString().getBytes(), Base64.DONT_BREAK_LINES);
+					debug("base64Response : "+ base64Response);
+					jsonObject.putString("SAMLResponse64",base64Response);
+
+					jsonObject.putString("destination",destination);
+
+					sendOK(message, jsonObject);
+				} else {
+					String error = "error bulding vectors for user " + userId + " :";
+					logger.error(error);
+					logger.error(event.left().getValue());
+					sendError(message, error);
+				}
+			}
+		});
+	}
+
+	/**
+	 * Create Success status
+	 *
+	 * @return the status
+	 */
+	private Status createStatus() {
+		StatusCodeBuilder statusCodeBuilder = new StatusCodeBuilder();
+		StatusCode statusCode = statusCodeBuilder.buildObject();
+		statusCode.setValue(StatusCode.SUCCESS_URI);
+
+		StatusBuilder statusBuilder = new StatusBuilder();
+		Status status = statusBuilder.buildObject();
+		status.setStatusCode(statusCode);
+
+		return status;
+	}
+
+	/**
+	 * Create signature using private key and public cert specified in file conf
+	 * @return the signature
+	 * @throws Throwable
+	 */
+	private Signature createSignature() throws Throwable {
+		SignatureBuilder builder = new SignatureBuilder();
+		Signature signature = builder.buildObject();
+
+		// create public key (cert) portion of credential
+		String publicKeyPath = config.getString("saml-public-key");
+		FileInputStream inStream = new FileInputStream(publicKeyPath);
+		CertificateFactory cf = CertificateFactory.getInstance("X.509");
+		X509Certificate cer = (X509Certificate)cf.generateCertificate(inStream);
+		inStream.close();
+
+
+		// create credential and initialize
+		BasicX509Credential credential = new BasicX509Credential();
+		credential.setEntityCertificate(cer);
+		//credential.setPublicKey(cer.getPublicKey());
+		credential.setPrivateKey(privateKey);
+
+		signature.setSigningCredential(credential);
+		signature.setSignatureAlgorithm(SignatureConstants.ALGO_ID_SIGNATURE_RSA_SHA1);
+		signature.setCanonicalizationAlgorithm(SignatureConstants.ALGO_ID_C14N_EXCL_OMIT_COMMENTS);
+
+		return signature;
+	}
+
+	/**
+	 * Build the java response
+	 * @param issueDate date of generation
+	 * @param issuer issuer (must be the same as the nameid->namequalifier)
+	 * @param status the status
+	 * @param assertion the assertion
+	 * @param destination the acs location
+	 * @return the java Response
+	 */
+	private Response createResponse(final DateTime issueDate, Issuer issuer, Status status, Assertion assertion, String destination) {
+		ResponseBuilder responseBuilder = new ResponseBuilder();
+		Response response = responseBuilder.buildObject();
+		// ID must not be a number
+		response.setID("ENT_"+UUID.randomUUID().toString());
+		response.setIssueInstant(issueDate);
+		response.setVersion(SAMLVersion.VERSION_20);
+		response.setIssuer(issuer);
+		response.setStatus(status);
+		response.setDestination(destination);
+		response.getAssertions().add(assertion);
+		return response;
+	}
+
+
+	/**
+	 * Build the java assertion
+	 *
+	 * @param idp identity provider name qualifier
+	 * @param serviceProvider service provider name qualifier
+	 * @param nameId nameId value
+	 * @param recipient recipient of the assertion (SP Assertion Consumer Service)
+	 * @param userId user id neo4j
+	 * @return the java assertion
+	 *
+	 * @throws UnsupportedEncodingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 */
+	private Assertion generateAssertion(String idp, String serviceProvider, String nameId,
+										String recipient, String userId)
+			throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+		debug("start generating assertion");
+		debug("IDP : " + idp);
+		debug("SP : " + serviceProvider);
+
+		// Init assertion
+		AssertionBuilder assertionBuilder = new AssertionBuilder();
+
+		// --- TAG Assertion ---
+		final Assertion assertion = assertionBuilder.buildObject();
+		// attribut ID
+		// ID must not be a number
+		assertion.setID("ENT_"+UUID.randomUUID().toString());
+		debug("Assertion ID : " + assertion.getID());
+
+		// attribut IssueInstant
+		DateTime authenticationTime = new DateTime();
+		assertion.setIssueInstant(authenticationTime);
+		debug("IssueInstant : " + assertion.getIssueInstant());
+
+		// --- TAG Issuer ---
+		Issuer issuer = createIssuer(idp);
+		assertion.setIssuer(issuer);
+
+		// --- TAG Subject ---
+		Subject subject = createSubject(nameId, 5, idp, serviceProvider, recipient);
+		assertion.setSubject(subject);
+
+		// --- TAG Conditions ---
+		ConditionsBuilder conditionsBuilder = new ConditionsBuilder();
+		Conditions conditions = conditionsBuilder.buildObject();
+		conditions.setNotBefore(authenticationTime);
+		DateTime notOnOrAfter = new DateTime();
+		notOnOrAfter = notOnOrAfter.plusDays(1);
+		conditions.setNotOnOrAfter(notOnOrAfter);
+
+		AudienceRestriction audienceRestriction = new AudienceRestrictionBuilder().buildObject();
+		Audience issuerAudience = new AudienceBuilder().buildObject();
+		issuerAudience.setAudienceURI(serviceProvider);
+		audienceRestriction.getAudiences().add(issuerAudience);
+
+		conditions.getAudienceRestrictions().add(audienceRestriction);
+		assertion.setConditions(conditions);
+
+		// --- TAG AuthnStatement ---
+		AuthnStatement authnStatement = createAuthnStatement(authenticationTime);
+		authnStatement.setSessionIndex(assertion.getID());
+		assertion.getAuthnStatements().add(authnStatement);
+
+		return  assertion;
+	}
+
+
+	/**
+	 * Build vector(s) representating user according to this profile
+	 *
+	 * @param userId userId neo4j
+	 * @param handler handler containing results
+	 */
+	private void createVectors(String userId, final Handler<Either<String, JsonArray>> handler) {
+		debug("create user Vector(s)");
+		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+
+		// browse supported type vector by the service provider
+		for (AttributeConsumingService attributeConsumingService : spSSODescriptor.getAttributeConsumingServices()) {
+			for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
+				String vectorName = requestedAttribute.getName();
+				if(vectorName.equals("FrEduVecteur")) {
+					samlVectorService = new FrEduVecteurService(neo4j);
+					samlVectorService.getVectors(userId, handler);
+
+				} else if(vectorName.equals("mail")) {
+					String error = "vector "+vectorName+" not implemented yet";
+					logger.error(error);
+					handler.handle(new Either.Left<String, JsonArray>(error));
+				} else {
+					String error = "vector "+vectorName+" not supported for user " + userId;
+					logger.error(error);
+					handler.handle(new Either.Left<String, JsonArray>(error));
+				}
+			}
+		}
+	}
+
+	/**
+	 * Build attribute statement with specified vectors.
+	 *
+	 * @param attributes attributes containing vectors
+	 *
+	 * @return the attributeStatement
+	 */
+	private AttributeStatement createAttributeStatement(HashMap<String, List<String>> attributes) {
+		// create authenticationstatement object
+		AttributeStatementBuilder attributeStatementBuilder = new AttributeStatementBuilder();
+		AttributeStatement attributeStatement = attributeStatementBuilder.buildObject();
+
+		AttributeBuilder attributeBuilder = new AttributeBuilder();
+		if (attributes != null) {
+			for (Map.Entry<String, List<String>> entry : attributes.entrySet()) {
+				Attribute attribute = attributeBuilder.buildObject();
+				attribute.setName(entry.getKey());
+                attribute.setFriendlyName(entry.getKey());
+                attribute.setNameFormat("urn:oasis:names:tc:SAML:2.0:attrname-format:basic");
+
+				for (String value : entry.getValue()) {
+					XSStringBuilder stringBuilder = new XSStringBuilder();
+					XSString attributeValue = stringBuilder.buildObject(AttributeValue.DEFAULT_ELEMENT_NAME, XSString.TYPE_NAME);
+					attributeValue.setValue(value);
+					attribute.getAttributeValues().add(attributeValue);
+				}
+
+				attributeStatement.getAttributes().add(attribute);
+			}
+		}
+
+		return attributeStatement;
+	}
+
+	/**
+	 * Returns SPSSODescriptor according to service provider name qualifier
+	 * @param serviceProvider service provider name qualifier
+	 * @return the SPSSODescriptor if exists null otherwise
+	 *
+	 */
+	private SPSSODescriptor getSSODescriptor (String serviceProvider) {
+		EntityDescriptor entityDescriptor = entityDescriptorMap.get(serviceProvider);
+
+		if(entityDescriptor == null) {
+			return null;
+		}
+
+		SPSSODescriptor spSSODescriptor = entityDescriptor.getSPSSODescriptor(SAMLConstants.SAML20P_NS);
+		return spSSODescriptor;
+	}
+
+	private AuthnStatement createAuthnStatement(final DateTime issueDate) {
+		debug("createAuthnStatement with issueDate : " + issueDate);
+		// create authcontextclassref object
+		AuthnContextClassRefBuilder classRefBuilder = new AuthnContextClassRefBuilder();
+		AuthnContextClassRef classRef = classRefBuilder.buildObject();
+		classRef.setAuthnContextClassRef("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
+
+		// create authcontext object
+		AuthnContextBuilder authContextBuilder = new AuthnContextBuilder();
+		AuthnContext authnContext = authContextBuilder.buildObject();
+		authnContext.setAuthnContextClassRef(classRef);
+
+		// create authenticationstatement object
+		AuthnStatementBuilder authStatementBuilder = new AuthnStatementBuilder();
+		AuthnStatement authnStatement = authStatementBuilder.buildObject();
+		authnStatement.setAuthnInstant(issueDate);
+		authnStatement.setAuthnContext(authnContext);
+
+		return authnStatement;
+	}
+
+	private Issuer createIssuer(final String issuerName) {
+		debug("createIssuer : " + issuerName);
+		// create Issuer object
+		IssuerBuilder issuerBuilder = new IssuerBuilder();
+		Issuer issuer = issuerBuilder.buildObject();
+		issuer.setValue(issuerName);
+		return issuer;
+	}
+
+	private Subject createSubject(String nameIdValue, Integer samlAssertionDays,
+								  String idpNameQualifier, String spNameQualifier,
+								  String recipient) {
+		debug("createSubject for nameid : " + nameIdValue);
+		debug("idpNameQualifier : " + idpNameQualifier);
+		debug("spNameQualifier : " + spNameQualifier);
+
+		DateTime currentDate = new DateTime();
+		if (samlAssertionDays != null)
+			currentDate = currentDate.plusDays(samlAssertionDays);
+
+		// create name element
+		NameIDBuilder nameIdBuilder = new NameIDBuilder();
+		NameID nameId = nameIdBuilder.buildObject();
+		nameId.setValue(nameIdValue);
+		nameId.setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:transient");
+		nameId.setNameQualifier(idpNameQualifier);
+		nameId.setSPNameQualifier(spNameQualifier);
+
+		SubjectConfirmationDataBuilder dataBuilder = new SubjectConfirmationDataBuilder();
+		SubjectConfirmationData subjectConfirmationData = dataBuilder.buildObject();
+		subjectConfirmationData.setNotOnOrAfter(currentDate);
+		subjectConfirmationData.setRecipient(recipient);
+
+		SubjectConfirmationBuilder subjectConfirmationBuilder = new SubjectConfirmationBuilder();
+		SubjectConfirmation subjectConfirmation = subjectConfirmationBuilder.buildObject();
+		subjectConfirmation.setMethod("urn:oasis:names:tc:SAML:2.0:cm:bearer");
+		subjectConfirmation.setSubjectConfirmationData(subjectConfirmationData);
+
+		// create subject element
+		SubjectBuilder subjectBuilder = new SubjectBuilder();
+		Subject subject = subjectBuilder.buildObject();
+		subject.setNameID(nameId);
+		subject.getSubjectConfirmations().add(subjectConfirmation);
+
+		return subject;
 	}
 
 	private JsonObject generateSimpleSPEntityIDRequest(String idp, String sp) {
@@ -324,10 +803,12 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					signature = a.getSignature();
 				}
 			} else {
+				logger.error("Assertions not founds.");
 				throw new ValidationException("Assertions not founds.");
 			}
 		}
 		if (signature == null) {
+			logger.error("Signature not found.");
 			throw new ValidationException("Signature not found.");
 		}
 		profileValidator.validate(signature);
@@ -357,7 +838,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	}
 
 	private SignatureTrustEngine getSignatureTrustEngine(Response response) {
-		return signatureTrustEngineMap.get(SamlUtils.getIssuer(response));
+		// IDP Arena urn:fi:ac-paris:ent:1.0
+		// IDP Aten  urn:fi:ac-paris:ts:1.0
+		String issuer = SamlUtils.getIssuer(response);
+		debug("getSignatureTrustEngine from issuer : " + issuer);
+		return signatureTrustEngineMap.get(issuer);
 	}
 
 	private String decryptAssertion(String response) throws Exception {

@@ -19,16 +19,23 @@
 
 package org.entcore.auth.controllers;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.security.SamlUtils;
+import org.entcore.auth.services.FederationService;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
+import org.entcore.auth.services.impl.FederationServiceImpl;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
@@ -36,13 +43,16 @@ import org.opensaml.saml2.core.Response;
 import org.opensaml.xml.ConfigurationException;
 import org.opensaml.xml.io.MarshallingException;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.json.impl.Base64;
+import org.vertx.java.platform.Container;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -50,6 +60,9 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -57,12 +70,46 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class SamlController extends AbstractFederateController {
 
 	private SamlServiceProviderFactory spFactory;
+	private FederationService federationService;
 	private JsonObject samlWayfParams;
 	private JsonObject samlWayfMustacheFormat;
 	private String ignoreCallBackPattern;
+	private boolean softSlo;
+	private boolean federatedAuthenticateError = false;
+
+	// regex used to find namequalifier in session nameid (Mongo)
+	private String NAME_QUALIFIER_REGEXP = ".*\\sNameQualifier=\"([^\"]*)\".*";
+	private final Pattern NAME_QUALIFIER_PATTERN = Pattern.compile(NAME_QUALIFIER_REGEXP);
+
+	private static final String SESSIONS_COLLECTION = "sessions";
+
+	@Override
+	public void init(Vertx vertx, Container container, RouteMatcher rm,
+					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, container, rm, securedActions);
+
+		// load soft-slo property : true = normal slo, false = redirect instead of slo
+		softSlo = container.config().getBoolean("soft-slo", false);
+
+		federatedAuthenticateError = container.config().getBoolean("federated-authenticate-error", false);
+
+		// load nameQualifierRegex (in-case mongoDb NameId format change)
+		String nameQualifierRegex = container.config().getString("nameQualifierRegex");
+		if(nameQualifierRegex != null && !nameQualifierRegex.trim().isEmpty()) {
+			if (log.isDebugEnabled()) {
+				log.debug("Using nameQualifierRegex specified : " + nameQualifierRegex);
+			}
+			this.NAME_QUALIFIER_REGEXP = nameQualifierRegex;
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Using default nameQualifierRegex : " + NAME_QUALIFIER_REGEXP);
+			}
+		}
+	}
 
 	public SamlController() throws ConfigurationException {
 		DefaultBootstrap.bootstrap();
+		this.federationService = new FederationServiceImpl();
 	}
 
 	@Get("/saml/wayf")
@@ -145,6 +192,103 @@ public class SamlController extends AbstractFederateController {
 		});
 	}
 
+	/**
+	 * Generate base64 SAMLResponse to the service provider specified.
+	 * Then HTML auto-submit FORM is created with the samlResponse and render the page.
+	 *
+	 * Finally if user is recognnized and authenticated ine th SP side, he will access to the service.
+	 *
+	 * @param request
+	 */
+	@Get("/saml/sso/:providerId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public  void sso (final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				final String serviceProviderId = request.params().get("providerId");
+
+				if (serviceProviderId == null || serviceProviderId.trim().isEmpty()) {
+					forbidden(request, "invalid.provider");
+					return;
+				}
+
+				// Get connected user sessionId
+				final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+
+				// Send to the bus to generate the SAMLResponse
+				JsonObject event = new JsonObject()
+						.putString("action", "generate-saml-response")
+						.putString("SP", serviceProviderId)
+						.putString("userId", user.getUserId())
+						.putString("nameid", sessionId);
+				vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+
+						// Get base64 SAMLResponse generated
+						String samlResponse = event.body().getString("SAMLResponse64");
+						if (log.isDebugEnabled()) {
+							log.debug("base64 samlResponse get from controller : " + samlResponse);
+						}
+
+						// Assertion Consumer Service location
+						String destination = event.body().getString("destination");
+
+
+						// If generation succeed, an HTML auto-submit FORM is created
+						String error = event.body().getString("error");
+						if (isNotEmpty(samlResponse) && isNotEmpty(destination) && (error == null || error.isEmpty())) {
+							renderSamlResponse(user,samlResponse,serviceProviderId,destination,request);
+						} else {
+							// Else redirect to the login page
+							redirect(request, "");
+						}
+
+					}
+				});
+			}
+		});
+	}
+
+	/**
+	 * Generate HTML auto-submit FORM with samlResponse and render the page
+	 * @param samlResponse64 base64 SAMLResponse
+	 * @param destination the recipient (SP acs)
+	 */
+	private void renderSamlResponse(UserInfos user,String samlResponse64,String providerId, String destination,HttpServerRequest request) {
+		JsonObject paramsFED = new JsonObject();
+		paramsFED.putString("SAMLResponse",samlResponse64);
+		JsonObject relayStateMap = container.config().getObject("relay-state");
+		if(relayStateMap != null) {
+			String relayState = relayStateMap.getString(providerId);
+			if(relayState != null) {
+				paramsFED.putString("RelayState",relayState);
+			} else {
+				log.error("Error loading relay-state for providerId : " + providerId);
+			}
+		} else {
+			log.error("Error loading relay-state properties.");
+		}
+		paramsFED.putString("Destination",destination);
+		renderView(request, paramsFED, "fed.html", null);
+	}
+
+
+	private void loginResult(final HttpServerRequest request, String error) {
+		if(federatedAuthenticateError) {
+			final JsonObject context = new JsonObject();
+			if (error != null && !error.trim().isEmpty()) {
+				context.putObject("error", new JsonObject()
+						.putString("message", I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
+			}
+			context.putBoolean("notLoggedIn", true);
+			renderView(request, context, "login.html", null);
+		}else{
+			redirect(request, LOGIN_PAGE);
+		}
+	}
+
 	@Post("/saml/acs")
 	public void acs(final HttpServerRequest request) {
 		validateResponseAndGetAssertion(request, new Handler<Assertion>() {
@@ -153,39 +297,95 @@ public class SamlController extends AbstractFederateController {
 				SamlServiceProvider sp = spFactory.serviceProvider(assertion);
 				sp.execute(assertion, new Handler<Either<String, JsonElement>>() {
 					@Override
-					public void handle(Either<String, JsonElement> event) {
+					public void handle(final Either<String, JsonElement> event) {
 						if (event.isLeft()) {
-							redirect(request, LOGIN_PAGE);
+							loginResult(request, "fed.auth.error.user.not.found");
 						} else {
-							final String nameId = getNameId(assertion);
+							final String nameIdFromAssertion = getNameId(assertion);
 							final String sessionIndex = getSessionId(assertion);
 							if (log.isDebugEnabled()) {
-								log.debug("NameID : " + nameId);
+								log.debug("NameID : " + nameIdFromAssertion);
 								log.debug("SessionIndex : " + sessionIndex);
 							}
-							if (nameId == null || sessionIndex == null || nameId.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
+							if (nameIdFromAssertion == null || sessionIndex == null || nameIdFromAssertion.trim().isEmpty() || sessionIndex.trim().isEmpty()) {
 								redirect(request, LOGIN_PAGE);
 								return;
 							}
-							if (event.right().getValue() != null && event.right().getValue().isObject()) {
-								final JsonObject res = event.right().getValue().asObject();
-								authenticate(res, sessionIndex, nameId, request);
-							} else if (event.right().getValue() != null && event.right().getValue().isArray() && isNotEmpty(signKey)) {
-								try {
-									JsonObject params = getUsersWithSignatures(event.right().getValue().asArray(), sessionIndex, nameId);
-									renderView(request, params, "selectFederatedUser.html", null);
-								} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
-									log.error("Error signing federated users.", e);
-									redirect(request, LOGIN_PAGE);
+
+							// if user is already authenticated in the ENT through the ENT login page, we do not authenticate him again
+							// because this will store the "nameid"
+
+							// ALGORITHM RULE :
+							// if user has "nameId" : it means user connected first with a federated idp
+							// else he connected to the ENT through the ENT login page
+							// this way we know if we need to disonnect/redirect the user to the federated login/home page OR
+							// if we only disconnect him to the ENT (no nameid)
+							final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+
+//							final JsonObject query = new JsonObject().putString("_id", sessionId);
+//							mongo.findOne(SESSIONS_COLLECTION, query, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+							federationService.getMongoDbSession(sessionId, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> eventMongo) {
+									JsonObject res = eventMongo.body().getObject("result");
+									String userId;
+									if ("ok".equals(eventMongo.body().getString("status")) && res != null &&
+											(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
+
+										String nameID = res.getString("NameID");
+
+										String userIdAssertion = null;
+										if (event.right().getValue() != null && event.right().getValue().isObject()) {
+											userIdAssertion = event.right().getValue().asObject().getString("id");
+										}
+
+										// no NameID and same userId : user already connected through IDP ENT
+										if((nameID == null || nameID.trim().isEmpty())
+												&& userIdAssertion != null && userIdAssertion.equals(userId)) {
+											redirect(request, "/");
+										} else {
+											endAcs(request, event, sessionIndex, nameIdFromAssertion);
+										}
+									} else {
+										endAcs(request, event, sessionIndex, nameIdFromAssertion);
+									}
 								}
-							} else {
-								redirect(request, LOGIN_PAGE);
-							}
+							});
 						}
 					}
 				});
 			}
 		});
+	}
+
+	/**
+	 * End of acs method : authenticate user if not already connectd through IDP ENT
+	 *
+	 * @param request request from "/acs" method
+	 * @param event event from SamlServiceProvider.execute(...)
+	 * @param sessionIndex sessionIndex get from acs assertion
+	 * @param nameId nameID get from acs assertion
+	 */
+	private void endAcs(final HttpServerRequest request, Either<String, JsonElement> event,
+						final String sessionIndex, final String nameId) {
+		if (event.right().getValue() != null && event.right().getValue().isObject()) {
+			final JsonObject res = event.right().getValue().asObject();
+			if(res.size()== 0) {
+				loginResult(request, "fed.auth.error.user.not.found");
+			} else {
+				authenticate(res, sessionIndex, nameId, request);
+			}
+		} else if (event.right().getValue() != null && event.right().getValue().isArray() && isNotEmpty(signKey)) {
+			try {
+				JsonObject params = getUsersWithSignatures(event.right().getValue().asArray(), sessionIndex, nameId);
+				renderView(request, params, "selectFederatedUser.html", null);
+			} catch (NoSuchAlgorithmException | InvalidKeyException | UnsupportedEncodingException e) {
+				log.error("Error signing federated users.", e);
+				redirect(request, LOGIN_PAGE);
+			}
+		} else {
+			redirect(request, LOGIN_PAGE);
+		}
 	}
 
 	protected String getNameId(Assertion assertion) {
@@ -212,25 +412,52 @@ public class SamlController extends AbstractFederateController {
 		if (log.isDebugEnabled()) {
 			log.debug("Session metadata : " + event.encodePrettily());
 		}
-		vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if (log.isDebugEnabled()) {
-					log.debug("slo request : " + event.body().encodePrettily());
-				}
-				String slo = event.body().getString("slo");
-				try {
-					if (c != null && !c.isEmpty()) {
-						slo = c + URLEncoder.encode(slo, "UTF-8");
+
+		String nameID = event.getString("NameID");
+		if(nameID != null && !nameID.isEmpty()) {
+			if(softSlo) {
+				Matcher academyMatcher = NAME_QUALIFIER_PATTERN.matcher(nameID);
+				if (academyMatcher.find()) {
+					String nameQualifier = academyMatcher.group(1);
+					JsonObject confSoftSlo = container.config().getObject("soft-slo-redirect");
+					if(confSoftSlo != null) {
+						String redirectIDP = confSoftSlo.getString(nameQualifier);
+						if(redirectIDP != null) {
+							redirect(request, redirectIDP, "");
+						} else {
+							log.error("Error loading soft-slo-redirect for IDP : " + nameQualifier);
+							redirect(request, LOGIN_PAGE);
+						}
 					} else {
-						slo = URLEncoder.encode(slo, "UTF-8");
+						log.error("Error loading soft-slo-redirect properties.");
+						redirect(request, LOGIN_PAGE);
 					}
-				} catch (UnsupportedEncodingException e) {
-					log.error(e.getMessage(), e);
 				}
-				AuthController.logoutCallback(request, slo, container, eb);
+			} else {
+				// normal slo
+				vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if (log.isDebugEnabled()) {
+							log.debug("slo request : " + event.body().encodePrettily());
+						}
+						String slo = event.body().getString("slo");
+						try {
+							if (c != null && !c.isEmpty()) {
+								slo = c + URLEncoder.encode(slo, "UTF-8");
+							} else {
+								slo = URLEncoder.encode(slo, "UTF-8");
+							}
+						} catch (UnsupportedEncodingException e) {
+							log.error(e.getMessage(), e);
+						}
+						AuthController.logoutCallback(request, slo, container, eb);
+					}
+				});
 			}
-		});
+		} else {
+			AuthController.logoutCallback(request, null, container, eb);
+		}
 	}
 
 	@Post("/saml/selectUser")
@@ -340,7 +567,9 @@ public class SamlController extends AbstractFederateController {
 	}
 
 	private void getSamlResponse(final HttpServerRequest request, final Handler<String> handler) {
-		log.debug("getSamlResponse");
+		if (log.isDebugEnabled()) {
+			log.debug("getSamlResponse");
+		}
 		request.expectMultiPart(true);
 		request.endHandler(new VoidHandler() {
 			@Override
@@ -354,7 +583,7 @@ public class SamlController extends AbstractFederateController {
 					}
 				}
 				String samlResponse = request.formAttributes().get("SAMLResponse");
-				log.debug(samlResponse);
+				log.debug("samlResponse=" +samlResponse);
 				if (samlResponse != null && !samlResponse.trim().isEmpty()) {
 					handler.handle(new String(Base64.decode(samlResponse)));
 				} else {
@@ -375,5 +604,7 @@ public class SamlController extends AbstractFederateController {
 	public void setIgnoreCallBackPattern(String ignoreCallBackPattern) {
 		this.ignoreCallBackPattern = ignoreCallBackPattern;
 	}
-
+	public void setFederationService(FederationService federationService) {
+		this.federationService = federationService;
+	}
 }
