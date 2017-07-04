@@ -80,8 +80,10 @@ export class Trash extends SystemFolder {
     }
 
     async removeSelection(){
-        await this.removeMails();
-        await this.mails.removeSelection();
+        if(this.mails.selection.selected.length > 0) {
+            await this.removeMails();
+            await this.mails.removeSelection();
+        }
         for(let folder of this.userFolders.selected){
             await folder.delete();
         }
