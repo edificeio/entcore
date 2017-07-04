@@ -797,6 +797,10 @@ ux-portal {
 
             &.active {
                 background-color: $accent;
+
+                &:hover {
+                    background-color: $accent;
+                }
             }
         }
         span.link {
