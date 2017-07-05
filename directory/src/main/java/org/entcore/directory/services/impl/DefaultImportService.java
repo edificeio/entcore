@@ -40,6 +40,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class DefaultImportService implements ImportService {
 
@@ -72,6 +73,9 @@ public class DefaultImportService implements ImportService {
 							JsonObject f = r.getJsonObject("files");
 							if(r.getJsonObject("softErrors") != null) {
 								f.put("softErrors", r.getJsonObject("softErrors"));
+							}
+							if (isNotEmpty(r.getString("_id"))) {
+								f.putString("importId", r.getString("_id"));
 							}
 							handler.handle(new Either.Right<JsonObject, JsonObject>(f));
 						}
