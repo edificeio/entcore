@@ -11,12 +11,13 @@ import { GroupsStore } from '../../store'
         </div>
 
         <div class="padded">
-            <button (click)="showAddUsersLightBox = true" *ngIf="groupsStore.group?.type === 'ManualGroup'">
+            <button (click)="showLightBox()" 
+                *ngIf="groupsStore.group?.type === 'ManualGroup'">
                 <s5l>group.details.add.users</s5l>
             </button>
 
-            <light-box class="inner-list" [show]="showAddUsersLightBox" (onClose)="showAddUsersLightBox = false">
-                <group-manage-users (close)="showAddUsersLightBox = false"></group-manage-users>
+            <light-box class="inner-list" [show]="showAddUsersLightBox" (onClose)="closeLightBox()">
+                <group-manage-users (close)="closeLightBox()"></group-manage-users>
             </light-box>
 
             <group-users-list [users]="groupsStore.group?.users">
@@ -30,6 +31,8 @@ import { GroupsStore } from '../../store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupDetail implements OnInit, OnDestroy {
+
+    private showAddUsersLightBox: boolean = false
 
     private groupSubscriber : Subscription
 
@@ -49,5 +52,15 @@ export class GroupDetail implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.groupSubscriber.unsubscribe()
+    }
+
+    private showLightBox() {
+        this.showAddUsersLightBox = true
+        document.body.style.overflowY = 'hidden'
+    }
+
+    private closeLightBox() {
+        this.showAddUsersLightBox = false
+        document.body.style.overflowY = 'auto'
     }
 }
