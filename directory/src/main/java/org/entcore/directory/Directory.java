@@ -83,6 +83,7 @@ public class Directory extends BaseServer {
         directoryController.setSchoolService(schoolService);
         directoryController.setUserService(userService);
         directoryController.setGroupService(groupService);
+        directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
         addController(directoryController);
         directoryController.createSuperAdmin();
 
