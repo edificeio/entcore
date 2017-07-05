@@ -64,7 +64,10 @@ export class Users {
         }
         var found = _.filter(
                 this.all.filter(function (user) {
-                    return _.findWhere(include, { id: user.id }) === undefined
+                    var includeUser = _.findWhere(include, { id: user.id });
+                    if(includeUser !== undefined)
+                        includeUser.profile = user.profile;
+                    return includeUser === undefined;
                 })
                 .concat(include), function (user) {
                     var testDisplayName = '', testNameReversed = '';
