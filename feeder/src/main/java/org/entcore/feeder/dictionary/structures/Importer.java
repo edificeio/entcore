@@ -809,7 +809,6 @@ public class Importer {
 				"WITH u " +
 				"MATCH (g:Group), u-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE g.id IN b.IN_OUTGOING " +
-				"CREATE UNIQUE u-[:IN]->g " +
 				"DELETE r, r2, b";
 		transactionHelper.add(query, new JsonObject().putString("source", currentSource));
 	}
