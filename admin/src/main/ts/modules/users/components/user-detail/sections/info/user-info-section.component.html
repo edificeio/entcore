@@ -52,7 +52,7 @@
                     #passwordMailInput="ngModel" [pattern]="emailPattern">
                 <button (click)="sendResetPasswordMail(passwordResetMail)" 
                     [disabled]="!passwordResetMail || passwordMailInput.errors">
-                    <s5l>send.reset.password.button</s5l>
+                    <span><s5l>send.reset.password.button</s5l></span>
                     <i class="fa fa-envelope"></i>
                 </button>
             </div>
@@ -64,7 +64,7 @@
                 <button class="mobile"
                     (click)="sendResetPasswordMobile(passwordResetMobile)" 
                     [disabled]="!passwordResetMobile || passwordMobileInput.errors ">
-                    <s5l>send.reset.password.button</s5l>
+                    <span><s5l>send.reset.password.button</s5l></span>
                     <i class="fa fa-mobile"></i>
                 </button>
             </div>
