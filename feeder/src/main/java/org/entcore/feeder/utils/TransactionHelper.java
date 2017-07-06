@@ -122,17 +122,25 @@ public class TransactionHelper {
 				}
 				waitingQuery = false;
 				if (commit) {
-					commit(commitHandler);
+					commit(commitHandler, false);
 				} else if (flush) {
-					flush(flushHandler);
+					flush(flushHandler, false);
 				}
 			}
 		});
 	}
 
 	public void commit(Handler<Message<JsonObject>> handler) {
+		commit(handler, true);
+	}
+
+	public void commit(Handler<Message<JsonObject>> handler, boolean th) {
 		if (error != null) {
-			throw new IllegalStateException(error.body().getString("message"));
+			if (!th && handler != null) {
+				handler.handle(error);
+			} else {
+				throw new IllegalStateException(error.body().getString("message"));
+			}
 		}
 		if (waitingQuery) {
 			commit = true;
@@ -161,8 +169,16 @@ public class TransactionHelper {
 	}
 
 	public void flush(Handler<Message<JsonObject>> handler) {
+		flush(handler, true);
+	}
+
+	public void flush(Handler<Message<JsonObject>> handler, boolean th) {
 		if (error != null) {
-			throw new IllegalStateException(error.body().getString("message"));
+			if (!th && handler != null) {
+				handler.handle(error);
+			} else {
+				throw new IllegalStateException(error.body().getString("message"));
+			}
 		}
 		if (waitingQuery) {
 			flush = true;
