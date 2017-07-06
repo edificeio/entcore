@@ -61,8 +61,11 @@ public class DefaultImportService implements ImportService {
 						if (r.getObject("errors", new JsonObject()).size() > 0) {
 							handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
 						} else {
-							handler.handle(new Either.Right<JsonObject, JsonObject>(r.getObject("files")
-									.putObject("softErrors", r.getObject("softErrors"))));
+							JsonObject f = r.getObject("files");
+							if(r.getObject("softErrors") != null) {
+								f.putObject("softErrors", r.getObject("softErrors"));
+							}
+							handler.handle(new Either.Right<JsonObject, JsonObject>(f));
 						}
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
