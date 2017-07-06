@@ -76,6 +76,14 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 		$('div.notification').on('swipe-right', function(event) {
 	        $(event.delegateTarget).find('.notification-actions').removeClass('opened')
 	    })
+		$('div.opener').on('click', function (event) {
+			event.stopPropagation();
+			$(event.delegateTarget).parent().toggleClass('opened')
+		});
+		$('body').on('click', function (event) {
+			event.stopPropagation();
+			$('.notification-actions').removeClass('opened')
+		});
 	}
 
 	model.on('notifications.change, notificationTypes.change', function(e){
