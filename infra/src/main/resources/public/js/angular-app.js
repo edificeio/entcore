@@ -6367,7 +6367,7 @@ function Share($rootScope, $scope, ui, _, lang) {
         var addedIndex = $scope.found.indexOf(item);
         $scope.found.splice(addedIndex, 1);
 
-        var defaultActions = []
+        var defaultActions = [];
         $scope.actions.forEach(function(action) {
             var actionId = action.displayName.split('.')[1];
             if (actionsConfiguration[actionId].default) {
