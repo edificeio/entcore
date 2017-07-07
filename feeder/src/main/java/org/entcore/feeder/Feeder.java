@@ -42,6 +42,7 @@ import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -560,7 +561,16 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								}
 								report.setUsersExternalId(new JsonArray(importer.getUserImportedExternalId().toArray()));
 								h.handle(report);
-								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+								final long endTime = System.currentTimeMillis();
+								report.setEndTime(endTime);
+								report.setStartTime(start);
+								report.countDiff(new VoidHandler() {
+									@Override
+									protected void handle() {
+										report.emailReport(vertx, container);
+									}
+								});
+								logger.info("Elapsed time " + (endTime - start) + " ms.");
 								importer.clear();
 								checkEventQueue();
 							}

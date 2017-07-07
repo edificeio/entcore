@@ -82,6 +82,7 @@ public class Importer {
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
+		this.report.setSource(source);
 		this.transactionHelper = new TransactionHelper(neo4j, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
