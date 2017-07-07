@@ -474,7 +474,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					String query =
 							"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
-									"RETURN count(*) = 1 as exists ";
+									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
 							.putString("teacherId", user.getUserId());
