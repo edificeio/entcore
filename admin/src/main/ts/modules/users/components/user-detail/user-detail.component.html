@@ -1,48 +1,69 @@
-<spinner-cube class="component-spinner" waitingFor="users-content"></spinner-cube>
-
 <div class="panel-header">
-    <span>{{ user.lastName | uppercase }} {{ user.firstName }}</span><span class="user-class" *ngIf="user.type === 'Student' && user.classes[0]"> - {{ user.classes[0].name }}</span>
-    
+    <div>
+        <span class="user-displayname">{{ user.lastName | uppercase }} {{ user.firstName }}</span>
+        <span *ngIf="user.type === 'Student' && user.classes[0]" class="user-class"> - {{ user.classes[0].name }}</span>
+    </div>
+
+    <div class="panel-header-sub">
+        <span *ngIf="isContextAdml()" class="user-admin"><s5l>ADMIN_LOCAL</s5l> <i class="fa fa-cog"></i></span>
+        <span class="user-inactive" *ngIf="user.code && user.code.length > 0"> <s5l>user.inactive</s5l> <i class='fa fa-lock'></i></span>
+    </div>
+
     <div class="panel-message" *ngIf="details?.blocked">
         <i class="fa fa-ban"></i>
         <s5l>user.blocked</s5l>
-    </div>
-    <div class="panel-message" *ngIf="isContextAdml()">
-        <i class="fa fa-cog"></i>
-        <s5l>adml.current.structure</s5l>
-    </div>
-    <div class="panel-message" *ngIf="hasDuplicates()">
-        <i class="fa fa-users"></i>
-        <s5l>user.has.duplicates</s5l>
-        <button class="goto-duplicate" anchor="user-duplicates-section" (click)="openDuplicates()">
-            <i class="fa fa-compress"></i>
-            <s5l>manage.duplicates</s5l>
+
+        <button class="action" (click)="toggleUserBlock()" 
+            [disabled]="ls.isLoading('portal-content', 1)">
+            <s5l>unblock</s5l>
+            <i class="fa fa-check"></i>
         </button>
     </div>
 
+    <div class="panel-message" *ngIf="hasDuplicates()">
+        <i class="fonticon duplicates"></i>
+        <s5l>user.has.duplicates</s5l>
+
+        <button class="action" anchor="user-duplicates-section" 
+            (click)="openDuplicates()">
+            <s5l>manage.duplicates</s5l>
+            <i class="fa fa-compress"></i>
+        </button>
+    </div>
+
+    <div class="panel-message" *ngIf="user?.deleteDate">
+        <i class="fa fa-times-circle"></i>
+        <s5l>user.predeleted</s5l>
+
+        <button class="action" (click)="restoreUser()" 
+            [disabled]="ls.isLoading('portal-content', 1)">
+            <s5l>restore</s5l>
+            <i class="fa fa-upload"></i>
+        </button>
+    </div>
+
+    <div class="panel-message yellow" *ngIf="user?.disappearanceDate">
+        <i class="fonticon waiting-predelete"></i>
+        <s5l>user.predeleted.waiting</s5l>
+    </div>
+
     <div class="panel-header-content">
-        <spinner-cube class="button-spinner" waitingFor="user.restore"></spinner-cube>
-        
         <div class="left">
             <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
-            <div *ngIf="!user.deleteDate">
-                <button (click)="toggleUserBlock()" [disabled]="ls.isLoading('user.block', 1)" class="relative">
-                    <spinner-cube class="button-spinner" waitingFor="user.block"></spinner-cube>
+            <div>
+                <button (click)="toggleUserBlock()" 
+                    [disabled]="ls.isLoading('portal-content', 1)" 
+                    class="relative"
+                    *ngIf="!details.blocked || details.blocked === false">
                     <s5l [s5l-params]="[details.blocked]">toggle.account</s5l>
                     <i class="fa fa-ban"></i>
                 </button>
             </div>
             <div *ngIf="isRemovable()">
-                <button (click)="removeUser()">
-                    <spinner-cube class="button-spinner" waitingFor="user.remove"></spinner-cube>
-                    <s5l>delete.account</s5l>
-                    <i class="fa fa-trash"></i>
-                </button>
-            </div>
-            <div *ngIf="user.deleteDate">
-                <button (click)="restoreUser()">
-                    <s5l>restore.account</s5l>
-                    <i class="fa fa-upload"></i>
+                <button (click)="removeUser()" 
+                    [disabled]="ls.isLoading('portal-content', 1)">
+                    <s5l>predelete.account</s5l>
+                    <i class="fa fa-times-circle"></i>
                 </button>
             </div>
         </div>
@@ -69,28 +90,36 @@
     <user-administrative-section [user]="user" [structure]="structure">
     </user-administrative-section>
     
-    <user-duplicates-section [user]="user" [structure]="structure" [open]="forceDuplicates">
+    <user-duplicates-section [user]="user" [structure]="structure" 
+        [open]="forceDuplicates">
     </user-duplicates-section>
     
-    <user-relatives-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-relatives-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-relatives-section>
     
-    <user-children-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-children-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-children-section>
     
-    <panel-section section-title="users.details.section.functions" [folded]="true" *ngIf="!user.deleteDate">
+    <panel-section section-title="users.details.section.functions" 
+        [folded]="true" *ngIf="!user.deleteDate">
         <ul><li *ngFor="let f of user?.aafFunctions">{{ f }}</li></ul>
     </panel-section>
 
-    <user-structures-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-structures-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-structures-section>
     
-    <user-classes-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-classes-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-classes-section>
 
-    <user-functionalgroups-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-functionalgroups-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-functionalgroups-section>
 
-    <user-manualgroups-section [user]="user" [structure]="structure" *ngIf="!user.deleteDate">
+    <user-manualgroups-section [user]="user" [structure]="structure" 
+        *ngIf="!user.deleteDate">
     </user-manualgroups-section>
 </div>

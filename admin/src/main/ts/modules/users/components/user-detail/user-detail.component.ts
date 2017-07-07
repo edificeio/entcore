@@ -84,7 +84,7 @@ export class UserDetail implements OnInit, OnDestroy{
     }
 
     private toggleUserBlock() {
-        this.ls.perform('user.block', this.details.toggleBlock())
+        this.ls.perform('portal-content', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
                 this.updateBlockedInRelatedStructuresUserlist()

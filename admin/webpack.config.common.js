@@ -27,6 +27,10 @@ module.exports = {
                     use: ['css-loader', 'sass-loader'],
                     allChunks: true
                 })
+            },
+            {
+                test: /\.woff$/,
+                use: 'file-loader?emitFile=false&name=[name].[ext]&publicPath=./'
             }
         ]
     },

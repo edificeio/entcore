@@ -6,7 +6,8 @@ import * as $ from 'jquery'
 
 /* Default options */
 
-$.noty.defaults.theme = 'defaultTheme'
+// $.noty.defaults.theme = 'defaultTheme'
+$.noty.defaults.theme = 'relax'
 $.noty.defaults.timeout = 2500
 $.noty.defaults.progressBar = true
 $.noty.defaults.closeWith = ['button']

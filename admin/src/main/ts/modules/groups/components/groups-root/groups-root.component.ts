@@ -13,6 +13,7 @@ import { routing } from '../../../../routing/routing.utils'
             <button [routerLink]="['manual', 'create']" 
                 [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
                 <s5l>create.group</s5l>
+                <i class="fonticon group_add"></i>
             </button>
         </div>
         

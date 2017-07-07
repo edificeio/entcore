@@ -47,11 +47,11 @@ import { Subscription } from 'rxjs/Subscription'
                 {{item?.lastName.toUpperCase()}} {{item?.firstName}}
             </span>
             <span class="icons">
-                <i class="fa fa-power-off" *ngIf="item?.code && item?.code?.length > 0"></i>
+                <i class="fa fa-lock" *ngIf="item?.code && item?.code?.length > 0"></i>
                 <i class="fa fa-ban" *ngIf="item?.blocked"></i>
-                <i class="fa fa-unlink" *ngIf="item?.duplicates && item?.duplicates?.length > 0"></i>
+                <i class="fonticon duplicates" *ngIf="item?.duplicates && item?.duplicates?.length > 0"></i>
                 <i class="fa fa-times-circle" *ngIf="item?.deleteDate"></i>
-                <i class="fa fa-hourglass-start" *ngIf="item?.disappearanceDate"></i>
+                <i class="fonticon waiting-predelete" *ngIf="item?.disappearanceDate"></i>
             </span>
             <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
         </ng-template>

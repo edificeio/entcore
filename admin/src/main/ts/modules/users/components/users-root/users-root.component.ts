@@ -1,10 +1,11 @@
-import { StructureModel, UserModel } from '../../../../store'
-import { routing } from '../../../../routing/routing.utils'
-import { UserlistFiltersService, LoadingService, NotifyService, ProfilesService } from '../../../../services'
-import { UsersStore } from '../../store'
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, 
+    OnInit } from '@angular/core'
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
+import { StructureModel, UserModel } from '../../../../store'
+import { routing } from '../../../../routing/routing.utils'
+import { UserlistFiltersService, LoadingService, NotifyService } from '../../../../services'
+import { UsersStore } from '../../store'
 
 @Component({
     selector: 'users-root',
@@ -14,6 +15,7 @@ import { Subscription } from 'rxjs/Subscription'
             <button [routerLink]="['create']"
                 [class.hidden]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)">
                 <s5l>create.user</s5l>
+                <i class="fa fa-user-plus"></i>
             </button>
         </div>
         <side-layout (closeCompanion)="closeCompanion()"
@@ -76,7 +78,7 @@ export class UsersRoot implements OnInit, OnDestroy {
 
     openUserDetail(user) {
         this.usersStore.user = user
-        this.router.navigate([user.id], {relativeTo: this.route })
+        this.ls.perform('portal-content', this.router.navigate([user.id], {relativeTo: this.route }))
     }
 
     openCompanionView(view) {

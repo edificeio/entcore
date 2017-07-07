@@ -1,5 +1,26 @@
-/* Font */
+/* Google Font */
 @import url('https://fonts.googleapis.com/css?family=Oxygen');
+
+/* Generic Icons */
+@font-face {
+    font-family: 'generic-icons';
+    src: url('generic-icons-1.0.0.woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@mixin fonticon {
+    font-family: "generic-icons";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    font-weight: normal;
+    font-style: normal;
+}
+
+i.fonticon {
+    @include fonticon;
+}
 
 /* Variables */
 // $main: rgb(0, 200, 248);
@@ -15,8 +36,11 @@ $accent-light: lighten($accent, 20%);
 $accent-dark: darken($accent, 10%);
 
 $nuance: rgba(255, 255, 255, 0.9);
-$contrast: crimson;
+$contrast: indianred;
 $contrast-hover: darken($contrast, 5%);
+$validate: mediumseagreen;
+$validate-hover: darkgreen;
+
 $button-bg: #f2f2f2;
 $button-bg-hover: darken($button-bg, 5%);
 $user-li-hover: #ffccb8;
@@ -583,24 +607,66 @@ spinner-cube.button-spinner {
 
 /* Panel message */
 div.panel-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     background-color: $contrast;
     padding: 5px 5px;
     color: white;
     border-top: 1px solid white;
     border-bottom: 1px solid white;
     font-size: 0.7em;
-    margin: 20px 0;
+    margin-top: 10px;
     line-height: 20px;
-    text-align: center;
 
-    button.goto-duplicate {
-        padding: 1px 5px;
-        width: auto;
+    i {
+        padding-right: 5px;
+        font-size: 1.1em;
+
+        &.duplicates {
+            font-size: 1.5em;
+            color: #fff;
+
+            &::before {
+                content: '\e7fb';
+            }
+        }
+    }
+
+    button.action {
+        display: flex;
+        align-items: center;
+        padding: 5px 5px;
+        margin-left: 10px;
         color: $contrast;
+        transition: none;
 
         &:hover {
-            background-color: lighten($contrast, 10%);
-            color: white;
+            background-color: #f2f2f2;
+            color: $accent;
+
+            i {
+                color: $accent;
+            }
+        }
+
+        i {
+            color: $contrast;
+        }
+    }
+
+    &.yellow {
+        background-color: rgba(255, 165, 0, 0.2);
+        padding: 10px 0 !important;
+        color: #666;
+
+        i.waiting-predelete {
+            font-size: 1.5em;
+
+            &::before {
+                content: '\e92b';
+            }
         }
     }
 }
@@ -664,9 +730,7 @@ list-component {
 user-list, group-users-list, group-input-users, group-output-users {
     list-component {
         li {
-            transition: background-color 0.25s, color 0.25s;
             position: relative;
-
             display: flex;
             justify-content: center;
             align-items: center;
@@ -706,12 +770,38 @@ user-list, group-users-list, group-input-users, group-output-users {
                     font-size: 1.3em;
                     padding-right: 5px;
 
-                    &.fa-power-off {
+                    &.fa-lock {
                         color: #aaa;
                     }
-                    &.fa-times-circle {
+                    &.fa-times-circle, &.fa-ban {
                         color: $contrast;
                     }
+                }
+
+                &.duplicates {
+                    padding-right: 5px;
+                    font-size: 1.8em;
+                    color: $accent;
+
+                    &::before {
+                        content: '\e7fb';
+                    }
+                }
+
+                &.waiting-predelete {
+                    padding-right: 5px;
+                    font-size: 1.5em;
+                    color: $contrast;
+
+                    &::before {
+                        content: '\e92b';
+                    }
+                }
+            }
+
+            &.selected {
+                i.duplicates {
+                    color: $accent-light;
                 }
             }
         }
@@ -729,7 +819,7 @@ user-list {
         }
     }
     .list-wrapper {
-        max-height: 70%;
+        max-height: 55vh;
         overflow-y: auto;
     }
 }
@@ -820,7 +910,7 @@ ux-portal {
     }
 
     div[section] div.welcome-message {
-        background-color: rgba($contrast, 0.5);
+        background-color: lighten($contrast, 10%);
         color: white;
         padding: 10px 5%;
 
@@ -830,8 +920,8 @@ ux-portal {
 
             i {
                 background-color: rgba($contrast, 1);
-                font-size: 1.5em;
-                padding: 10px 10px;
+                font-size: 1em;
+                padding: 5px 10px;
             }
         }
     }
@@ -845,7 +935,7 @@ admin-home {
         font-weight: normal;
 
         i {
-            padding: 10px;
+            padding: 5px;
             background-color: $main;
             color: white;
         }
@@ -880,6 +970,8 @@ users-root {
             background-color: $accent;
             color: white;
             padding: 10px 10px;
+            display: flex;
+            align-items: center;
 
             &:hover {
                 background-color: $accent-dark;
@@ -888,19 +980,60 @@ users-root {
             &.hidden {
                 display: none;
             }
+
+            i {
+                color: #fff;
+                font-size: 1.5em;
+            }
         }
     }
 }
 
 user-detail {
     .panel-header {
-        button {
-            width: $user-profile-img-width;
+        div.panel-header-sub {
+            padding-top: 0px !important;
+            font-size: 0.7em;
+
+            & > span {    
+                i {
+                    font-size: 0.9em;
+                }
+                
+                &.user-admin {
+                    color: $accent;
+                }
+
+                &.user-inactive {
+                    color: darkgrey;
+                }
+            }
+
         }
 
         .panel-header-content {
             display: flex;
             align-items: center;
+
+            .left {
+                button {
+                    width: $user-profile-img-width;
+
+                    &:hover {
+                        i.fa-check, i.fa-upload {
+                            color: $validate-hover;
+                        }
+                    }
+                }
+
+                i.fa-ban, i.fa-times-circle {
+                    color: $contrast;
+                }
+
+                i.fa-check, i.fa-upload {
+                    color: $validate;
+                }
+            }
 
             .right {
                 flex: 1;
@@ -1105,6 +1238,8 @@ groups-root {
             background-color: $accent;
             color: white;
             padding: 10px 10px;
+            display: flex;
+            align-items: center;
 
             &:hover {
                 background-color: $accent-dark;
@@ -1112,6 +1247,15 @@ groups-root {
 
             &.hidden {
                 display: none;
+            }
+
+            i.group_add {
+                color: #fff;
+                font-size: 2.5em;
+
+                &:before {
+                    content: '\e91d';
+                }
             }
         }
     }
@@ -1121,7 +1265,7 @@ groups-type-view {
     div.side-card {
         list-component {
             .list-wrapper {
-                max-height: 60%;
+                max-height: 40vh;
                 overflow-y: auto;
             }
         }
@@ -1139,36 +1283,38 @@ group-detail {
     }
 }
 
-group-users-list list-component {
-    div.toolbar {
-        border-bottom: 1px solid #ccc;
-        padding: 15px;
+group-users-list {
+    list-component {
+        div.toolbar {
+            border-bottom: 1px solid #ccc;
+            padding: 15px;
 
-        i { @extend .action; }
+            i { @extend .action; }
 
-        .toolbar-right {
-            font-size: 1.2em;
-            float: right;
+            .toolbar-right {
+                font-size: 1.2em;
+                float: right;
+            }
         }
-    }
 
-    ul {
-        & > li:first-child{
-            border-top: none !important;
-        }
-    }
-
-    span.structures {
         ul {
-            border: 1px solid #DDD;
-            border-radius: 3px;
-            padding: 5px 5px;
-            margin: 0 5px;
-            background-color: rgba(240, 240, 240, 0.6);
-            min-width: 160px;
+            & > li:first-child{
+                border-top: none !important;
+            }
+        }
 
-            li:hover {
-                background-color: transparent;
+        span.structures {
+            ul {
+                border: 1px solid #DDD;
+                border-radius: 3px;
+                padding: 5px 5px;
+                margin: 0 5px;
+                background-color: rgba(240, 240, 240, 0.6);
+                min-width: 160px;
+
+                li:hover {
+                    background-color: transparent;
+                }
             }
         }
     }
@@ -1245,11 +1391,6 @@ group-manage-users {
                 min-height: 60vh;
                 max-height: 60vh;
                 flex: 1;
-
-                div.list-wrapper {
-                    border: 1px solid #ccc;
-                    box-shadow: 1px 1px 10px #ccc;
-                }
 
                 div.user-toolbar {
                     > i { @extend .action; }

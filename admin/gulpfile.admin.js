@@ -30,6 +30,7 @@ gulp.task('clean', function() {
         './admin/src/main/resources/public/styles/admin.css',
         './admin/src/main/resources/public/styles/admin.css.map',
         './admin/src/main/resources/public/styles/flatpickr-confetti.css',
+        './admin/src/main/resources/public/styles/generic-icons-1.0.0.woff',
         './admin/src/main/resources/view/*'])
 })
 
@@ -47,9 +48,9 @@ gulp.task('sass', function() {
         .pipe(gulp.dest('./admin/src/main/resources/public/styles'))
 })
 
-gulp.task('build-dev', ['ts-dev', 'copy-flatpickr-css'], function(){})
+gulp.task('build-dev', ['ts-dev', 'copy-resources'], function(){})
 
-gulp.task('build', ['ts', 'copy-flatpickr-css'], function(){})
+gulp.task('build', ['ts', 'copy-resources'], function(){})
 
 const copymod = function() {
     console.log('Call to copymod')
@@ -81,3 +82,11 @@ gulp.task('copy-flatpickr-css', function() {
         .pipe(rename('flatpickr-confetti.css'))
         .pipe(gulp.dest(basePath + '/resources/public/styles'))
 })
+
+gulp.task('copy-entcore-generic-icons', function() {
+    return gulp.src('./node_modules/entcore-generic-icons/fonts/generic-icons.woff')
+        .pipe(rename('generic-icons-1.0.0.woff'))
+        .pipe(gulp.dest(basePath  + '/resources/public/styles'))
+})
+
+gulp.task('copy-resources', ['copy-flatpickr-css', 'copy-entcore-generic-icons'])

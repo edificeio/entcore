@@ -16,7 +16,7 @@ export class UserResolve implements Resolve<UserModel | Error> {
             structure.users.data.find(u => u.id === route.params['userId'])
 
         if(user) {
-             return this.ls.perform('users-content', user.userDetails.sync()
+             return this.ls.perform('portal-content', user.userDetails.sync()
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
                 }).then(() => {
