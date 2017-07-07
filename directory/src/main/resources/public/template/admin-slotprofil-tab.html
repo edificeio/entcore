@@ -46,7 +46,7 @@
         <hr class="separator cell">
         <div class="twelve cell">
             <strong class="four cell padding-top-5">[[lang.translate("slotProfil.title")]]</strong>
-            <input class="four cell padding-top-5" type="text" ng-model="createdSlotProfile.name"/>
+            <input class="four cell padding-top-5" type="text" ng-model="createdSlotProfile.name" required/>
         </div>
     </div>
 
@@ -64,7 +64,7 @@
         </div>
         <div ng-if="profileUpdate" class="row">
             <strong class="four cell padding-top-5">[[lang.translate("slotProfil.title")]]</strong>
-            <input class="four cell padding-top-5" type="text" ng-model="profileUpdate.name"/>
+            <input class="four cell padding-top-5" type="text" ng-model="profileUpdate.name" required/>
             <div style="text-align:center" class = "padding-top-5">
                 <button ng-click="updateSlotProfileSave(profileUpdate)" ng-disabled="!profileUpdate.name" class="text-flow"> [[lang.translate("slotProfil.save")]] </button>
                 <button ng-click="updateSlotProfileCancel()" class="text-flow"> [[lang.translate("slotProfil.cancel")]] </button>

@@ -19,6 +19,6 @@
 		{"name": "history", "url": "/history/admin"},
 		{"name": "appRegistry", "url": "/appregistry/admin"},
 		{"name": "communication", "url": "/communication/admin"},
-		{"name": "component", "url": "/directory/component"}
+		{"name": "calendar", "url": "/directory/calendar"}
 	]
 }

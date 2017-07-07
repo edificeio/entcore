@@ -49,6 +49,7 @@ import java.util.*;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
+import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
@@ -460,10 +461,10 @@ public class DirectoryController extends BaseController {
 				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
 				break;
 			case "getUser" :
-				userService.get(userId, BusResponseHandler.busResponseHandler(message));
+				userService.get(userId, busResponseHandler(message));
 				break;
 			case "getUserInfos" :
-				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
+				userService.getInfos(userId, busResponseHandler(message));
 				break;
 			case "list-users":
 				JsonArray userIds = message.body().getArray("userIds", new JsonArray());
@@ -488,6 +489,10 @@ public class DirectoryController extends BaseController {
 			case "list-slotprofiles" :
 				String structId = message.body().getString("structureId");
 				slotProfileService.listSlotProfilesByStructure(structId, busArrayHandler(message));
+				break;
+			case "list-slots" :
+				String slotProfileId = message.body().getString("slotProfileId");
+				slotProfileService.listSlots(slotProfileId, busResponseHandler(message));
 				break;
 		default:
 			message.reply(new JsonObject()

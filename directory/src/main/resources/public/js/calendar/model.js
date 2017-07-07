@@ -12,15 +12,6 @@ var hookCheck = function(hook){
     }
 }
 
-Structure.prototype.getMetrics = function(cb){
-    var structure = this
-    http().get("structure/"+structure.id+"/metrics").done(function(data){
-        structure.metrics = data.metrics
-        if(typeof cb === "function")
-            cb();
-    })
-}
-
 Component.prototype.slotprofiles = function(id, callback) {
     var that = this
     http().get("/directory/slotprofiles/schools/" + id)
@@ -117,54 +108,6 @@ Component.prototype.updateSlot = function(slotprofileId, slot, callback) {
         notify.error(error.error);
     });
 };
-
-Structure.prototype.init = function(callback) {
-    http().putJson("/directory/timetable/init/" + this.id, { "type" : this.timetable })
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        }
-    }).e400(function(e){
-        var error = JSON.parse(e.responseText);
-        notify.error(error.error);
-    });
-};
-
-Structure.prototype.updateClassesMapping = function(cm, callback) {
-    http().putJson("/directory/timetable/classes/" + this.id, cm)
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        } else {
-            notify.info('directory.params.success');
-        }
-    }).e400(function(e){
-        var error = JSON.parse(e.responseText);
-        if(typeof callback === 'function') {
-            callback(error);
-        } else {
-            notify.error(error.error);
-        }
-    });
-};
-
-Structure.prototype.import = function(formData, callback) {
-    http().postFile("/directory/timetable/import/" + this.id, formData)
-    .done(function(data) {
-        if(typeof callback === 'function') {
-            callback(data);
-        } else {
-            notify.info('directory.params.success');
-        }
-    }).e400(function(e){
-        var error = JSON.parse(e.responseText);
-        if(typeof callback === 'function') {
-            callback(error);
-        } else {
-            notify.error(error.error);
-        }
-    });
-}
 
 model.build = function(){
     this.makeModels([Structure])

@@ -1,4 +1,4 @@
-function ComponentController($scope, model, template, lang, $rootScope) {
+function CalendarController($scope, model, template, lang, $rootScope) {
 		$scope.template = template;
 		$scope.lang = lang;
 		$scope.identity = angular.identity;
@@ -24,7 +24,7 @@ function ComponentController($scope, model, template, lang, $rootScope) {
     $scope.leafMenu = [
         {
             name: "slotprofilTab",
-            text: lang.translate("directory.componentOps"),
+            text: lang.translate("directory.calendarOps"),
             templateName: 'admin-slotprofil-tab',
             onClick: function(){
                 $scope.scrollOpts.reset()
@@ -33,10 +33,9 @@ function ComponentController($scope, model, template, lang, $rootScope) {
             },
             onStructureClick: function(structure){
                 $scope.structure = structure
-                structure.getMetrics(function(){
+                $scope.component.slotprofiles(structure.id, function(){
                     $scope.$apply();
                 });
-                $scope.component.slotprofiles(structure.id);
                 $scope.selectedStructureSlotProfile = structure;
             }
         }
