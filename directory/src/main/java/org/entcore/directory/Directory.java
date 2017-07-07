@@ -135,7 +135,7 @@ public class Directory extends BaseServer {
         slotProfileController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
         addController(slotProfileController);
 
-        addController(new ComponentController());
+        addController(new CalendarController());
 
         vertx.eventBus().registerLocalHandler("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(), eb));

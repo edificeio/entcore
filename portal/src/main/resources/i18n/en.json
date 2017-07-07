@@ -4,7 +4,7 @@
     "admin.communication": "Communication rules",
     "admin.component": "Component",
     "admin.directory": "Directory",
-    "admin.component": "Components",
+    "admin.calendar": "Calendar",
     "admin.keyring" : "Trousseau",
     "admin.wizard" : "Import des comptes",
     "admin.header": "Administration console",

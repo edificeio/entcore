@@ -8,14 +8,9 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.vertx.java.core.http.HttpServerRequest;
 
-/**
- * Created by Enzo on 21/06/2017.
- */
-public class ComponentController extends BaseController {
+public class CalendarController extends BaseController {
 
-    //private ComponentService componentService;
-
-    @Get("/component")
+    @Get("/calendar")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
     public void timetable(HttpServerRequest request) {
