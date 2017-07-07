@@ -1,0 +1,48 @@
+<html>
+<head></head>
+<body>
+{{#i18n}}email.hi{{/i18n}}<br />
+<br />
+{{#i18n}}report.start{{/i18n}} : {{startTime}}<br />
+<br />
+{{#i18n}}report.end{{/i18n}} : {{endTime}}<br />
+<br />
+{{#i18n}}report.source{{/i18n}} : {{source}}<br />
+<br />
+{{#i18n}}report.created{{/i18n}} : {{userCount.created}} <br />
+{{#i18n}}report.modified{{/i18n}} : {{userCount.modified}} <br />
+{{#i18n}}report.disappearance{{/i18n}} : {{userCount.disappearance}} <br />
+<br />
+{{#i18n}}report.loadedFiles{{/i18n}} : <br />
+{{#loadedFiles}}
+	- {{.}}<br  />
+{{/loadedFiles}}
+<br />
+{{#i18n}}report.Teacher.ignored{{/i18n}} : <br />
+{{#ignored.Teacher}}
+	- {{reason}} : {{object.externalId}}, {{object.lastName}}, {{object.firstName}}.<br />
+{{/ignored.Teacher}}
+<br />
+{{#i18n}}report.Personnel.ignored{{/i18n}} : <br />
+{{#ignored.Personnel}}
+- {{reason}} : {{object.externalId}}, {{object.lastName}}, {{object.firstName}}.<br />
+{{/ignored.Personnel}}
+<br />
+{{#i18n}}report.Student.ignored{{/i18n}} : <br />
+{{#ignored.Student}}
+- {{reason}} : {{object.externalId}}, {{object.lastName}}, {{object.firstName}}, {{object.birthDate}}.<br />
+{{/ignored.Student}}
+<br />
+{{#i18n}}report.Relative.ignored{{/i18n}} : <br />
+{{#ignored.Relative}}
+- {{reason}} : {{object.externalId}}, {{object.lastName}}, {{object.firstName}}.<br />
+{{/ignored.Relative}}
+<br />
+{{#i18n}}report.errors{{/i18n}} : <br />
+{{#errors.error\.global}}
+	- {{.}}
+{{/errors.error\.global}}
+<br />
+{{#i18n}}email.signature{{/i18n}}<br />
+</body>
+</html>
