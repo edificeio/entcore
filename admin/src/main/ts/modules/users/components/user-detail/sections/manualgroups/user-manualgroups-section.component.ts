@@ -74,7 +74,10 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
     }
 
     private filterGroups = (mg: {id: string, name: string}) => {
-        return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id)
+        if (this.details.manualGroups) {
+            return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id)
+        }
+        return true
     }
     
     private disableGroup = (mg) => {

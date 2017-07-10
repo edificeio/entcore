@@ -74,7 +74,10 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
     }
 
     private filterGroups = (g: {id: string, name: string}) => {
-        return !this.details.functionalGroups.find(fg => g.id === fg.id)
+        if (this.details.functionalGroups) {
+            return !this.details.functionalGroups.find(fg => g.id === fg.id)
+        }
+        return true;
     }
     
     private disableGroup = (g) => {
