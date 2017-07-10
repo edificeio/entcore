@@ -36,9 +36,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../../../s
             </light-box>
             <ul class="actions-list">
                 <li *ngFor="let structure of user.visibleStructures()">
-                    <a class="action" [routerLink]="['/admin', structure.id, 'users', user.id]">
-                        {{ structure.name }}
-                    </a>
+                    <span>{{ structure.name }}</span>
                     <i  class="fa fa-times action" (click)="ls.perform(structure.id, user?.removeStructure(structure.id), 0)"
                         [tooltip]="'delete.this.structure' | translate"
                         [ngClass]="{ disabled: ls.isLoading(structure.id)}"></i>
