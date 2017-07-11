@@ -37,7 +37,7 @@
 
 			<div class="row" ng-if="currentUser.type && currentUser.type.length">
 				<div class="four cell reduce-block-four" translate content="userBook.profile.type"></div>
-				<em class="eight cell reduce-block-four" translate content="[[ currentUser.type[0] ]]"></em>
+				<em class="eight cell reduce-block-four" translate content="directory.[[getType(currentUser.type).toLowerCase()]]"></em>
 			</div>
 
 			<div class="row" ng-if="currentUser.email">

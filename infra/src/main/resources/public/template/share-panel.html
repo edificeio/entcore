@@ -47,7 +47,7 @@
 			<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
 				<em ng-click="addEdit(item)" class="row">
 					<span class="cell reduce-block-two">[[item.name]][[item.lastName]] [[item.firstName]]</span>
-					<em class="low-importance cell">[[translate(item.profile)]] </em>
+					<em class="low-importance cell">[[translate(item.profile.toLowerCase())]] </em>
 					<em class="low-importance cell"> [[item.login]]</em>
 					<div class="row"></div>
 				</em>
