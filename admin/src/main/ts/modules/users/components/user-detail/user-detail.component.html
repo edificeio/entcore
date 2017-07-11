@@ -1,6 +1,6 @@
 <div class="panel-header">
     <div>
-        <span class="user-displayname">{{ user.lastName | uppercase }} {{ user.firstName }}</span>
+        <span class="user-displayname">{{ details.lastName | uppercase }} {{ details.firstName }}</span>
         <span *ngIf="user.type === 'Student' && user.classes[0]" class="user-class"> - {{ user.classes[0].name }}</span>
     </div>
 
