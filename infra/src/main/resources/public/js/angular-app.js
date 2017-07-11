@@ -758,9 +758,15 @@ module.directive('calendar', function($compile) {
 
                 $scope.createItem = function(day, timeslot) {
                     $scope.newItem = {};
-                    var year = model.calendar.year;
+                    var year = model.calendar.firstDay.year() || (day.date && day.date.year());
                     if (day.index < model.calendar.firstDay.dayOfYear()) {
                         year++;
+                    }
+                    if (!timeslot) {
+                        timeslot = {
+                            start: calendar.startOfDay,
+                            end: calendar.endOfDay
+                        }
                     }
                     $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
                     $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
@@ -773,48 +779,33 @@ module.directive('calendar', function($compile) {
                     $scope.onCreateClose();
                 };
 
-                $scope.updateCalendarWeek = function() {
-                    //annoying new year workaround
-                    if (moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7) {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() + 1
-                        });
-                    } else if (moment(model.calendar.dayForWeek).week() === 53 && moment(model.calendar.dayForWeek).dayOfYear() < 7) {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() - 1
-                        });
-                    } else {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year()
-                        });
-                    }
-                    model.trigger('calendar.date-change');
-                    refreshCalendar();
+                $scope.updateCalendarDate = function() {
+                    model.calendar.setDate(model.calendar.firstDay);
                 };
 
                 $scope.previousTimeslots = function() {
                     calendar.startOfDay--;
                     calendar.endOfDay--;
-                    model.calendar = new calendar.Calendar({
-                        week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
-                    });
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
 
                 $scope.nextTimeslots = function() {
                     calendar.startOfDay++;
                     calendar.endOfDay++;
-                    model.calendar = new calendar.Calendar({
-                        week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
-                    });
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
+
+                $scope.openMorePopup = function(items) {
+                    $scope.morePopupItems = items;
+                    $scope.display.moreItems = true;
+                };
             };
+
+            $scope.getMonthDayOffset = function(day) {
+                return (day.date.day() || 7) - 1; // sunday is 0, so set it to 7
+            }
 
             calendar.setCalendar = function(cal) {
                 model.calendar = cal;
@@ -826,6 +817,11 @@ module.directive('calendar', function($compile) {
                 $scope.$watchCollection('items', refreshCalendar);
             }, 0);
             $scope.refreshCalendar = refreshCalendar;
+
+            $scope.$watch('display.mode', function() {
+                model.calendar.setIncrement($scope.display.mode);
+                refreshCalendar();
+            });
         },
         link: function(scope, element, attributes) {
             var allowCreate;
@@ -834,8 +830,12 @@ module.directive('calendar', function($compile) {
                 scope.itemTooltipTemplate = attributes.itemTooltipTemplate;
             }
 
-            scope.display = {};
-            scope.display.readonly = false;
+            scope.display = {
+                readonly: false,
+                mode: 'week',
+                enableModes: attributes.enableDisplayModes === 'true',
+            }
+
             attributes.$observe('createTemplate', function() {
                 if (attributes.createTemplate) {
                     template.open('schedule-create-template', attributes.createTemplate);
@@ -843,6 +843,12 @@ module.directive('calendar', function($compile) {
                 }
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
+                }
+                if (attributes.displayMonthTemplate) {
+                    template.open('schedule-display-month-template', attributes.displayMonthTemplate);
+                }
+                if (attributes.moreItemsTemplate) {
+                    template.open('schedule-more-items-template', attributes.moreItemsTemplate);
                 }
             });
             attributes.$observe('readonly', function(){
@@ -887,13 +893,12 @@ module.directive('scheduleItem', function($compile) {
         link: function(scope, element, attributes) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
-            var dayWidth = parentSchedule.find('.day').width();
             if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || !scope.item.myRights.process || moment().diff(moment(scope.item.end_date)) > 0) {
                 scheduleItemEl.removeAttr('resizable');
                 scheduleItemEl.removeAttr('draggable');
                 scheduleItemEl.unbind('mouseover');
                 scheduleItemEl.unbind('click');
-                scheduleItemEl.data('lock', true)
+                scheduleItemEl.data('lock', true);
             }
 
             var getTimeFromBoundaries = function() {
@@ -907,8 +912,8 @@ module.directive('scheduleItem', function($compile) {
                 endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
                 endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
-                startTime.year(model.calendar.year);
-                endTime.year(model.calendar.year);
+                startTime.year(model.calendar.firstDay.year());
+                endTime.year(model.calendar.firstDay.year());
 
                 var days = element.parents('.schedule').find('.day');
                 var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
@@ -916,17 +921,15 @@ module.directive('scheduleItem', function($compile) {
                 days.each(function(index, item) {
                     var itemLeft = $(item).offset().left;
                     if (itemLeft < center && itemLeft + dayWidth > center) {
-                        var day = index + 1;
-                        var week = model.calendar.week;
-                        endTime.week(week);
-                        startTime.week(week);
-                        if (day === 7) {
-                            day = 0;
-                            endTime.week(week + 1);
-                            startTime.week(week + 1);
-                        }
-                        endTime.day(day);
-                        startTime.day(day);
+                        var dayDate = model.calendar.firstDay.clone().add(index, 'days');
+
+                        endTime.year(dayDate.year());
+                        endTime.month(dayDate.month());
+                        endTime.date(dayDate.date());
+
+                        startTime.year(dayDate.year());
+                        startTime.month(dayDate.month());
+                        startTime.date(dayDate.date()) ;
                     }
                 });
 
@@ -965,6 +968,7 @@ module.directive('scheduleItem', function($compile) {
             });
 
             var placeItem = function() {
+                var dayWidth = parentSchedule.find('.day').width();
                 var cellWidth = element.parent().width() / 12;
                 var startDay = scope.item.beginning.dayOfYear();
                 var endDay = scope.item.end.dayOfYear();
@@ -2588,17 +2592,24 @@ module.directive('tooltip', function($compile) {
                     scope.$apply();
 
                     tip.css('position', 'absolute');
-                    tip.css('top', tgtElement.offset().top);
 
+                    var top  = tgtElement.offset().top;
                     var left = parseInt(tgtElement.offset().left - tip.width() - 5);
 
                     if (restrictToElement) {
                         if (left < restrictToElement.offset().left) {
                             left = parseInt(tgtElement.offset().left + tgtElement.width() + 5);
                         }
+
+                        // now, is it too far right ?
+                        if (left + tgtElement.width() > restrictToElement.offset().left + restrictToElement.width()) {
+                            left = restrictToElement.offset().left + 5;
+                            top += 30;
+                        }
                     }
 
                     tip.css('left', left);
+                    tip.css('top', top);
                 } else {
                     tip = $('<div />')
                         .addClass('tooltip')
@@ -5422,7 +5433,6 @@ module.directive('multiCombo', function() {
             scope.maxSelected = parseInt(scope.maxSelected)
             if (!isNaN(scope.maxSelected) && scope.maxSelected < 1) {
                 throw '[<multi-combo> directive] Error: max-selected must be an integer greater than 0.'
-                return
             }
 
             /* Visibility mouse click event */
