@@ -70,7 +70,7 @@ function startWebpack(isLocal) {
 function updateRefs() {
     var streams = [];
     apps.forEach(a => {
-        var str = gulp.src('./' + a + '/src/main/resources/view-src/**/*.html')
+        var str = gulp.src('./' + a + '/src/main/resources/view-src/**/*.+(html|txt|json)')
             .pipe(revReplace({manifest: gulp.src('./' + a + '/rev-manifest.json') }))
             .pipe(gulp.dest('./' + a + '/src/main/resources/view'));
         streams.push(str);
