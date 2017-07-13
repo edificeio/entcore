@@ -13,9 +13,9 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 
 	$scope.lang = lang;
 
-	lang.addBundle('/timeline/i18nNotifications', function(){
+	/*lang.addBundle('/timeline/i18nNotifications', function(){
 		$scope.$apply();
-	});
+	});*/
 
 	$scope.saveChanges = function(userinfos){
 		userinfos.putinfo()
