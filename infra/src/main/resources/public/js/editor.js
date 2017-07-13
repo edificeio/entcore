@@ -3186,6 +3186,7 @@ window.RTE = (function () {
                         );
 
                         var previousScroll = 0;
+						$(document).on( 'scroll',_.throttle(sticky,10));
                         function sticky() {
 							if(element.parents('.editor-media').length > 0){
 								return;
@@ -3225,7 +3226,6 @@ window.RTE = (function () {
 
                             previousScroll = (window.scrollY || window.pageYOffset);
 
-                            var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
 
 						if(ui.breakpoints.tablette <= $(window).width()){
