@@ -3187,7 +3187,7 @@ window.RTE = (function () {
 
                         var previousScroll = 0;
                         function sticky() {
-							if(element.parents('.editor-media').length > 0){
+							if(element.parents('.editor-media').length > 0 || element.parents('body').length === 0){
 								return;
 							}
 							
