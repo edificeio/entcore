@@ -2568,6 +2568,12 @@ module.directive('tooltip', function($compile) {
                 if (!tgtElement) return;
             }
 
+            var restrictToElement;
+            if (attributes.tooltipRestrictSelector) {
+                restrictToElement = tgtElement.parents(attributes.tooltipRestrictSelector);
+                if (restrictToElement.length !== 1) restrictToElement = undefined;
+            }
+
             if(ui.breakpoints.tablette >= $(window).width()){
                 return;
             }
@@ -2583,7 +2589,16 @@ module.directive('tooltip', function($compile) {
 
                     tip.css('position', 'absolute');
                     tip.css('top', tgtElement.offset().top);
-                    tip.css('left', parseInt(tgtElement.offset().left - tip.width() - 5))
+
+                    var left = parseInt(tgtElement.offset().left - tip.width() - 5);
+
+                    if (restrictToElement) {
+                        if (left < restrictToElement.offset().left) {
+                            left = parseInt(tgtElement.offset().left + tgtElement.width() + 5);
+                        }
+                    }
+
+                    tip.css('left', left);
                 } else {
                     tip = $('<div />')
                         .addClass('tooltip')
