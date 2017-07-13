@@ -3225,7 +3225,6 @@ window.RTE = (function () {
 
                             previousScroll = (window.scrollY || window.pageYOffset);
 
-                            var placeEditorToolbar = requestAnimationFrame(sticky);
                         }
 
 						if(ui.breakpoints.tablette <= $(window).width()){
