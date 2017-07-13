@@ -1248,7 +1248,7 @@ module.directive('timePickerCore', function($compile){
 			});
 
 			$scope.$watch('ngModel', function(newVal){
-        
+
 				$element.val($scope.ngModel.format("HH:mm"));
 				if( ($scope.ngLimit !== undefined && !newVal.isSame($scope.ngLimit))
 						&& ( ($scope.ngBegin === true && newVal.isAfter($scope.ngLimit))
@@ -2562,11 +2562,17 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+            var tgtElement = element;
+            if (attributes.tooltipTargetSelector) {
+                tgtElement = element.find(attributes.tooltipTargetSelector);
+                if (!tgtElement) return;
+            }
+
             if(ui.breakpoints.tablette >= $(window).width()){
                 return;
             }
             var tip;
-            element.on('mouseenter', function() {
+            tgtElement.on('mouseenter', function() {
                 if (attributes.tooltipTemplate) {
                     var tplPath = template.containers[attributes.tooltipTemplate]
                     tip = $('<div />')
@@ -2576,8 +2582,8 @@ module.directive('tooltip', function($compile) {
                     scope.$apply();
 
                     tip.css('position', 'absolute');
-                    tip.css('top', element.position().top - 100);
-                    tip.css('left', parseInt(element.offset().left - tip.width() - 10))
+                    tip.css('top', tgtElement.offset().top);
+                    tip.css('left', parseInt(tgtElement.offset().left - tip.width() - 5))
                 } else {
                     tip = $('<div />')
                         .addClass('tooltip')
@@ -2585,8 +2591,8 @@ module.directive('tooltip', function($compile) {
                         .appendTo('body');
                     scope.$apply();
 
-                    var top = parseInt(element.offset().top + element.height());
-                    var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
+                    var top = parseInt(tgtElement.offset().top + tgtElement.height());
+                    var left = parseInt(tgtElement.offset().left + tgtElement.width() / 2 - tip.width() / 2);
                     if (top < 5) {
                         top = 5;
                     }
@@ -2599,7 +2605,7 @@ module.directive('tooltip', function($compile) {
                     });
                 }
                 tip.fadeIn();
-                element.on('mouseleave', function() {
+                tgtElement.on('mouseleave', function() {
                     tip.fadeOut(200, function() {
                         $(this).remove();
                     })
@@ -2611,7 +2617,7 @@ module.directive('tooltip', function($compile) {
                     tip.remove();
                 }
 
-                element.off();
+                tgtElement.off();
             });
 
         }
