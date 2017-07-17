@@ -71,6 +71,12 @@ public class CsvFeeder implements Feed {
 	public void launch(final Importer importer, final String path, final Handler<Message<JsonObject>> handler) throws Exception {
 		studentExternalIdMapping.clear();
 		defaultStudentSeed = new Random().nextLong();
+		importer.createOrUpdateProfile(STUDENT_PROFILE);
+		importer.createOrUpdateProfile(RELATIVE_PROFILE);
+		importer.createOrUpdateProfile(PERSONNEL_PROFILE);
+		importer.createOrUpdateProfile(TEACHER_PROFILE);
+		importer.createOrUpdateProfile(GUEST_PROFILE);
+		DefaultFunctions.createOrUpdateFunctions(importer);
 		parse(importer, path, handler);
 	}
 
