@@ -96,7 +96,7 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request,
 			JsonObject customAttributes) {
-		if (!userBlacklist.contains(user.getUserId())) {
+		if (user == null || !userBlacklist.contains(user.getUserId())) {
 			storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
 				@Override
 				public void handle(Either<String, Void> event) {
