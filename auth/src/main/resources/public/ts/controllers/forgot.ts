@@ -41,11 +41,15 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 		$scope.user = {}
 	}
 
-	$scope.forgot = function(){
+	$scope.forgot = function(service){
 		if($scope.user.mode === 'password'){
-			$scope.forgotPassword($scope.user.login, 'mail')
-		} else {
-			$scope.forgotId($scope.user.mail, 'mail')
+			$scope.forgotPassword($scope.user.login, service)
+		}else if($scope.user.mode === 'checkFirstName') {
+			$scope.forgotId($scope.user.mail, $scope.user.firstName, null, service)
+		}else if($scope.user.mode === 'checkStructure') {
+			$scope.forgotId($scope.user.mail, $scope.user.firstName, $scope.user.structureId, service)
+		}else{
+			$scope.forgotId($scope.user.mail,null, null, service)
 		}
 	};
 
@@ -77,20 +81,32 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			})
 	}
 
-	$scope.forgotId = function(mail, service){
-		http().postJson('/auth/forgot-id', {mail: mail, service: service})
-			.done(function(data){
-				notify.info("auth.notify."+service+".sent")
-				if(data.mobile){
-					$scope.user.channels = {
-						mobile: data.mobile
+	$scope.forgotId = function(mail, firstName, structureId, service){
+		http().postJson('/auth/forgot-id', {mail: mail, firstName: firstName, structureId: structureId, service: service})
+            .done(function(data){
+				if(data.structures){
+					$scope.structures = data.structures;
+					if(firstName === null){
+						$scope.user.mode = 'checkFirstName';
+					}else if(structureId === null){
+						$scope.user.mode = 'checkStructure'
+					}else{
+						$scope.user.mode = 'notFound';
+						$scope.error = 'auth.notify.non.unique.result.mail';
 					}
-				} else {
-					$scope.user.channels = {}
+				}else {
+					notify.info("auth.notify." + service + ".sent")
+					if (data.mobile) {
+						$scope.user.channels = {
+							mobile: data.mobile
+						}
+					} else {
+						$scope.user.channels = {}
+					}
 				}
 				$scope.$apply()
 			})
-			.e400(function(data){
+            .e400(function(data){
 				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.mail'
 				$scope.$apply()
 			})
