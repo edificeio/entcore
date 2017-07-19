@@ -68,3 +68,7 @@ admin/src/main/resources/public/styles/admin.css.map
 admin/src/main/resources/public/styles/flatpickr-confetti.css
 admin/src/main/resources/public/styles/generic-icons-1.0.0.woff
 archive/src/main/resources/view/*
+directory/src/main/resources/view/*
+portal/src/main/resources/view/*
+timeline/src/main/resources/view/*
+workspace/src/main/resources/view/*
