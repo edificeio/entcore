@@ -70,7 +70,9 @@
                         <input-password type="password" ng-model="user.password" name="password" id="password" tabindex=2></input-password>
                     </p>
                     <p>
-                        <input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
+						<label>
+							<input type="checkbox" ng-model="user.rememberMe" name="rememberMe" id="rememberMe" value="true">&nbsp;&nbsp;<small translate content="auth.remember.me"></small>
+						</label>
                     </p>
                     <input type="hidden" name="callBack" ng-value="callBack" />
                     <div class="row">
