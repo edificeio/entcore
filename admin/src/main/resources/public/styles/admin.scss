@@ -1044,8 +1044,6 @@ user-detail {
             }
 
             button.big {
-                // background-color: $main-light;
-                // color: white;
                 flex: 0 1 90%;
                 align-items: center;
                 justify-content: space-between;
@@ -1054,13 +1052,7 @@ user-detail {
                 margin: 5px;
                 padding: 20px;
 
-                i {
-                    // color: white;
-                }
-
                 &[disabled] {
-                    // background-color: #666;
-
                     &:hover {
                         cursor: not-allowed;
                     }

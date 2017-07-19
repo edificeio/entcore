@@ -1,7 +1,9 @@
-import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
+import { Component, Input, Output, ViewChild, ChangeDetectorRef, 
+    ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
 import { AbstractControl, NgForm } from '@angular/forms'
 import { LoadingService, NotifyService } from '../../../../services'
-import { UserModel, StructureModel, UserDetailsModel, globalStore } from '../../../../store'
+import { UserModel, StructureModel, UserDetailsModel, 
+    globalStore } from '../../../../store'
 import { Subscription } from 'rxjs/Subscription'
 import { ActivatedRoute, Data, Router } from '@angular/router'
 import { UsersStore } from '../../store'
@@ -87,7 +89,7 @@ export class UserDetail implements OnInit, OnDestroy{
         this.ls.perform('portal-content', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
-                this.updateBlockedInRelatedStructuresUserlist()
+                this.updateBlockedInStructures()
 
                 this.ns.success(
                     { key: 'notify.user.toggleblock.content', 
@@ -113,7 +115,7 @@ export class UserDetail implements OnInit, OnDestroy{
         this.ls.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
             .then(() => {
                 this.user.deleteDate = Date.now()
-                this.updateDeleteDateInRelatedStructuresUserlist()
+                this.updateDeletedInStructures()
                 this.cdRef.markForCheck()
                 
                 this.ns.success(
@@ -136,7 +138,7 @@ export class UserDetail implements OnInit, OnDestroy{
         this.ls.perform('portal-content', this.user.restore())
             .then(() => {
                 this.user.deleteDate = null
-                this.updateDeleteDateInRelatedStructuresUserlist()
+                this.updateDeletedInStructures()
 
                 this.ns.success(
                     { key: 'notify.user.restore.content',
@@ -155,7 +157,7 @@ export class UserDetail implements OnInit, OnDestroy{
             })
     }
 
-    private updateDeleteDateInRelatedStructuresUserlist() {
+    private updateDeletedInStructures() {
         this.user.structures.forEach(us => {
             if (us.id !== this.usersStore.structure.id) {
                 let s = globalStore.structures.data.find(gs => gs.id === us.id)
@@ -169,7 +171,7 @@ export class UserDetail implements OnInit, OnDestroy{
         })
     }
 
-    private updateBlockedInRelatedStructuresUserlist() {
+    private updateBlockedInStructures() {
         this.user.structures.forEach(us => {
             if (us.id !== this.usersStore.structure.id) {
                 let s = globalStore.structures.data.find(gs => gs.id === us.id)
