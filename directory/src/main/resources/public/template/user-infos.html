@@ -15,7 +15,7 @@
  ~ This program is distributed in the hope that it will be useful,
  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- ~ infos
+ ~ user-infos
  -->
 
 
@@ -113,10 +113,12 @@
 <div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
 	<article>
         <h1 translate key="userBook.interests"></h1>
-		<div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
-			<div class="two cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
-			<em class="ten cell reduce-block-six user-content">[[hobby.values]]</em>
+
+        <div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
+			<div class="four-mobile three cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
+			<em class="six-mobile nine cell reduce-block-six user-content horizontal-spacing">[[hobby.values]]</em>
 		</div>
+
 		<div class="row"></div>
 	</article>
 </div>
