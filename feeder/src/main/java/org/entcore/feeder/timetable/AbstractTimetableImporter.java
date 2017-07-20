@@ -203,7 +203,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							try {
 								final JsonObject cmn = cm.get(0);
 								log.info(cmn.encode());
-								if (cmn.containsField("mapping")) {
+								if (isNotEmpty(cmn.getString("mapping"))) {
 									classesMapping = new JsonObject(cmn.getString("mapping"));
 									log.info("classMapping : " + classesMapping.encodePrettily());
 								} else {
