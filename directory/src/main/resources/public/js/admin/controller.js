@@ -1159,21 +1159,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			translatedProfile: '',
 			classesStr: ''
 		},
-		userToString: function(u){
-			var result = ""
-			var stringProperties = ["lastName", "firstName", "profile", "login", "activationCode", "email"]
-			var arrayProperties = ["classes"]
-			var i
-			for(i = 0; i < stringProperties.length; i++){
-				if(i > 0)
-					result += ";"
-				result += u[stringProperties[i]]
-			}
-			for(i = 0; i < arrayProperties.length; i++){
-				result += ";" + u[arrayProperties[i]].join(',')
-			}
-			return result
-		},
+        userToString: function(u){
+            return u["lastName"] +";"+ u["firstName"] +";"+lang.translate(u["profile"])+";"+u["login"]+";"+u["activationCode"]+";"+(u["email"] === null ? "" : u["email"])+ ";" + u["classes"].join(',');
+        },
 		exportCSV: function(){
 			var csvHeader = ""
 			var bom = "\ufeff"
