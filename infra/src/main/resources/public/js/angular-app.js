@@ -4673,7 +4673,11 @@ module.directive('help', function() {
             var setHtml = function(content) {
                 helpContent = $('<div>' + content + '</div>');
                 helpContent.find('img').each(function(index, item) {
-                    $(item).attr('src', scope.helpPath + $(item).attr('src'));
+                    //Hack until imgs will be all in the 'assets' folder
+                    if ($(item).attr('src').includes("/assets/"))
+                        $(item).attr('src', scope.helpPath + "../.." + $(item).attr('src'));
+                    else
+                        $(item).attr('src', scope.helpPath + $(item).attr('src'));
                 });
                 helpContent.find('script').remove();
                 element.find('div.content').html(helpContent.html());
