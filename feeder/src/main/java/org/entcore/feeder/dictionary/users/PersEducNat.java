@@ -21,7 +21,6 @@ package org.entcore.feeder.dictionary.users;
 
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.timetable.edt.EDTImporter;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
@@ -86,17 +85,12 @@ public class PersEducNat extends AbstractUser {
 					String query;
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
 					if (structures.size() == 1) {
-						query = "MATCH (s:Structure), (u:User) " +
-								"USING INDEX s:Structure(externalId) " +
-								"USING INDEX u:User(externalId) " +
-								"WHERE s.externalId = {structureAdmin} AND u.externalId = {userExternalId} " +
+						query = "MATCH (s:Structure {externalId : {structureAdmin}}), (u:User {externalId : {userExternalId}}) " +
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
 						p.putString("structureAdmin", (String) structures.get(0));
 					} else {
-						query = "MATCH (s:Structure), (u:User) " +
-								"USING INDEX s:Structure(externalId) " +
-								"USING INDEX u:User(externalId) " +
-								"WHERE s.externalId IN {structuresAdmin} AND u.externalId = {userExternalId} " +
+						query = "MATCH (s:Structure), (u:User {externalId : {userExternalId}}) " +
+								"WHERE s.externalId IN {structuresAdmin} " +
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
 						p.putArray("structuresAdmin", structures);
 					}
@@ -107,20 +101,15 @@ public class PersEducNat extends AbstractUser {
 					structuresByFunctions = getMappingStructures(structuresByFunctions);
 					JsonObject p = new JsonObject().putString("userExternalId", externalId);
 					if (structuresByFunctions.size() == 1) {
-						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
-								"USING INDEX s:Structure(externalId) " +
-								"USING INDEX p:Profile(externalId) " +
-								"WHERE s.externalId = {structureAdmin} AND NOT(HAS(u.mergedWith)) " +
-								"AND p.externalId = {profileExternalId} " +
+						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
+								"(u:User { externalId : {userExternalId}}) " +
+								"WHERE NOT(HAS(u.mergedWith)) " +
 								"MERGE u-[:IN]->g";
 						p.putString("structureAdmin", (String) structuresByFunctions.get(0))
 								.putString("profileExternalId", profileExternalId);
 					} else {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
-								"USING INDEX s:Structure(externalId) " +
-								"USING INDEX p:Profile(externalId) " +
+								"(u:User { externalId : {userExternalId}}) " +
 								"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
 								"AND p.externalId = {profileExternalId} " +
 								"MERGE u-[:IN]->g ";
@@ -144,21 +133,6 @@ public class PersEducNat extends AbstractUser {
 					final JsonObject fcm = new JsonObject();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
-							String query =
-									"MATCH (s:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g:ProfileGroup)" +
-											"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-											"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
-											"USING INDEX s:Structure(externalId) " +
-											"USING INDEX p:Profile(externalId) " +
-											"WHERE s.externalId = {structure} AND c.externalId = {class} " +
-											"AND NOT(HAS(u.mergedWith)) AND p.externalId = {profileExternalId} " +
-											"MERGE u-[:IN]->g";
-							JsonObject p = new JsonObject()
-									.putString("userExternalId", externalId)
-									.putString("profileExternalId", profileExternalId)
-									.putString("structure", structClass[0])
-									.putString("class", structClass[1]);
-							transactionHelper.add(query, p);
 							classes.add(structClass[1]);
 							if (structClass.length > 2 && isNotEmpty(structClass[2])) {
 								JsonArray fClasses = fcm.getArray(structClass[2]);
@@ -170,6 +144,17 @@ public class PersEducNat extends AbstractUser {
 							}
 						}
 					}
+					String query =
+							"MATCH (c:Class)<-[:DEPENDS]-(g:ProfileGroup)" +
+							"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
+							"(u:User { externalId : {userExternalId}}) " +
+							"WHERE c.externalId IN {classes} AND NOT(HAS(u.mergedWith)) " +
+							"MERGE u-[:IN]->g";
+					JsonObject p0 = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putString("profileExternalId", profileExternalId)
+							.putArray("classes", classes);
+					transactionHelper.add(query, p0);
 					String q =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
 									"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
@@ -193,19 +178,6 @@ public class PersEducNat extends AbstractUser {
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {
-							String query =
-									"MATCH (s:Structure)" +
-											"<-[:DEPENDS]-(g:FunctionalGroup), " +
-											"(u:User) " +
-											"USING INDEX s:Structure(externalId) " +
-											"USING INDEX u:User(externalId) " +
-											"WHERE s.externalId = {structure} AND g.externalId = {group} AND u.externalId = {userExternalId} " +
-											"MERGE u-[:IN]->g";
-							JsonObject p = new JsonObject()
-									.putString("userExternalId", externalId)
-									.putString("structure", structGroup[0])
-									.putString("group", structGroup[1]);
-							transactionHelper.add(query, p);
 							groups.add(structGroup[1]);
 							if (structGroup.length > 2 && isNotEmpty(structGroup[2])) {
 								JsonArray fGroups = fgm.getArray(structGroup[2]);
@@ -217,6 +189,14 @@ public class PersEducNat extends AbstractUser {
 							}
 						}
 					}
+					String query =
+							"MATCH (g:FunctionalGroup), (u:User {externalId : {userExternalId}}) " +
+							"WHERE g.externalId IN {groups} " +
+							"MERGE u-[:IN]->g";
+					JsonObject p = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putArray("groups", groups);
+					transactionHelper.add(query, p);
 				}
 				if (externalId != null) {
 					final String qdfg =
