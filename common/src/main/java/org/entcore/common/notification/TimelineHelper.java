@@ -102,8 +102,8 @@ public class TimelineHelper {
 		if (subResource != null && !subResource.trim().isEmpty()) {
 			event.putString("sub-resource", subResource);
 		}
-		if (disableAntiFlood) {
-			event.putBoolean("disableAntiFlood", disableAntiFlood);
+		if (disableAntiFlood || params.getBoolean("disableAntiFlood", false)) {
+			event.putBoolean("disableAntiFlood", true);
 		}
 		Long date = params.getLong("timeline-publish-date");
 		if (date != null) {
