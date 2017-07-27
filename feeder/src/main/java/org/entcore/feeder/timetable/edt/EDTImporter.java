@@ -61,12 +61,18 @@ public class EDTImporter extends AbstractTimetableImporter {
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 			"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
-			"SET u.IDPN = {IDPN} " +
-			"RETURN DISTINCT u.id as id, u.IDPN as IDPN, {profile} as profile";
+			"WITH COLLECT(DISTINCT u) as user " +
+			"WHERE LENGTH(user) = 1 " +
+			"SET HEAD(user).IDPN = {IDPN} " +
+			"RETURN DISTINCT HEAD(user).id as id, HEAD(user).IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
 			"MATCH (u:User {attachmentId : {idSconet}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
+	private static final String CLEAN_IDPN =
+			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"WHERE HAS(u.IDPN) AND HEAD(u.profiles) IN ['Relative','Guest', 'Student'] " +
+			"SET u.IDPN = null";
 	private final String mode;
 	public static final String IDENT = "Ident";
 	public static final String IDPN = "IDPN";
@@ -106,6 +112,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 				if (event.succeeded()) {
 					try {
 						txXDT.setAutoSend(false);
+						txXDT.add(CLEAN_IDPN, new JsonObject().putString("UAI", UAI));
 						parse(content, true);
 						if (txXDT.isEmpty()) {
 							parse(content, false);
@@ -334,6 +341,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 										if (notFoundPersEducNat.isEmpty()) {
 											handler.handle(new DefaultAsyncResult<>((Void) null));
 										} else {
+											for (Map.Entry<String, JsonObject> e: notFoundPersEducNat.entrySet()) {
+												log.info(e.getKey() + " : " + e.getValue().encode());
+											}
 											handler.handle(new DefaultAsyncResult<Void>(new ValidationException("not.found.users.not.empty")));
 										}
 									} else {

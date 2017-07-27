@@ -67,7 +67,9 @@ public class PersEducNat extends AbstractUser {
 				sb.append("ON CREATE SET u.id = {id}, u.login = {login}, u.activationCode = {activationCode}, ");
 				sb.append("u.displayName = {displayName}, u.created = {created} ");
 				sb.append("WITH u ");
-				sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
+				if (!EDTImporter.EDT.equals(currentSource)) {
+					sb.append("WHERE u.checksum IS NULL OR u.checksum <> {checksum} ");
+				}
 				sb.append("SET ").append(Neo4jUtils.nodeSetPropertiesFromJson("u", object,
 						"id", "externalId", "login", "activationCode", "displayName", "email", "created"));
 				if (EDTImporter.EDT.equals(currentSource)) {
