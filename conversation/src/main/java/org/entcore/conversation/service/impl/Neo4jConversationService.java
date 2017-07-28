@@ -85,30 +85,29 @@ public class Neo4jConversationService {
 	}
 
 	public void findInactives(final JsonObject message, long size, final Handler<JsonObject> handler){
-		final JsonArray to = message.getArray("to", new JsonArray());
-		final JsonArray cc = message.getArray("cc", new JsonArray());
+		Set<Object> dest = new HashSet<>();
+		dest.addAll(message.getArray("to", new JsonArray()).toList());
+		dest.addAll(message.getArray("cc", new JsonArray()).toList());
 
-		JsonObject params = new JsonObject()
-			.putArray("to", to)
-			.putArray("cc", cc);
+		JsonObject params = new JsonObject().putArray("dest", new JsonArray(dest.toArray()));
 
 		String returnClause = "";
 		if(size > 0){
 			returnClause =
 				"RETURN " +
 				"[t IN targets WHERE t.quotaLeft IS NULL OR t.quotaLeft < {attachmentsSize} | t.users.displayName] as undelivered, " +
-				"[t IN targets WHERE t.quotaLeft IS NOT NULL AND t.quotaLeft >= {attachmentsSize} | t.users.id] as userTargets";
+				"[t IN targets WHERE t.quotaLeft IS NOT NULL AND t.quotaLeft >= {attachmentsSize} | t.users.id] as userTargets ";
 			params.putNumber("attachmentsSize", size);
 		} else {
 			returnClause =
 				"RETURN " +
 				"[t IN targets WHERE t.users.activationCode IS NOT NULL | t.users.displayName] as inactives, " +
-				"EXTRACT(t IN targets | t.users.id) as userTargets";
+				"EXTRACT(t IN targets | t.users.id) as userTargets ";
 		}
 
 		String query =
 			"MATCH (v:Visible)<-[:IN*0..1]-(u:User) " +
-			"WHERE (v.id IN {to} OR v.id IN {cc} ) " +
+			"WHERE v.id IN {dest} " +
 			"OPTIONAL MATCH (u)-[:USERBOOK]->(ub:UserBook) " +
 			"WITH COLLECT(DISTINCT {users: u, quotaLeft: (ub.quota - ub.storage)}) as targets " +
 			returnClause;
