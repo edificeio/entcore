@@ -239,14 +239,14 @@ public class Report {
 							result.putString("startTime", new DateTime(startTime).toString());
 							result.putString("endTime", new DateTime(endTime).toString());
 							result.putArray("loadedFiles", new JsonArray(loadedFiles.toArray()));
-							persist(new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> event) {
-									if (!"ok".equals(event.body().getString("status"))) {
-										log.error("Error persist report : " + event.body().getString("message"));
-									}
-								}
-							});
+//							persist(new Handler<Message<JsonObject>>() {
+//								@Override
+//								public void handle(Message<JsonObject> event) {
+//									if (!"ok".equals(event.body().getString("status"))) {
+//										log.error("Error persist report : " + event.body().getString("message"));
+//									}
+//								}
+//							});
 						} catch (RuntimeException e) {
 							log.error("Error parsing count diff response.", e);
 						}
