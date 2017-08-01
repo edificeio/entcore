@@ -17,6 +17,7 @@
 	position: relative;
 }
 
+
 @mixin text-border($b-color: $white){
 	text-shadow: 2px 0 0 $b-color,
 	-2px 0 0 $b-color,
@@ -104,76 +105,71 @@
 ////////    GRAPHIKS
 
 
-@mixin border-radius($radius: 5px) {
-  -webkit-border-radius: $radius;
-  -moz-border-radius: $radius;
-  -ms-border-radius: $radius;
-  -o-border-radius: $radius;
-  border-radius: $radius;
+@mixin font-gradient($from, $to, $dir) {
+  background: -webkit-linear-gradient($dir, $from, $to);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
 }
 
+
+@mixin hr-border-gradient($to, $from, $width) {
+	border-left: $width solid $to;
+	border-right: $width solid $from;
+	background-image:
+	// both needed for top & bottom
+	linear-gradient(to left, $from, $to),
+	linear-gradient(to left, $from, $to);
+
+	// 100% left & right, $width px top & bottom
+	background-size: 100% $width;
+	background-position: 0 100%, 0 0;
+	background-repeat: no-repeat;
+	background-clip: border-box;
+}
+
+@mixin vr-border-gradient($to, $from, $width) {
+	border-top: $width solid $to;
+	border-bottom: $width solid $from;
+	background-image:
+	// both needed for top & bottom
+	linear-gradient(to top, $from, $to),
+	linear-gradient(to top, $from, $to);
+
+	// 100% left & right, $width px top & bottom
+	background-size: $width 100%;
+	background-position: 0 0, 100% 0;
+	background-repeat: no-repeat;
+	background-clip: border-box;
+}
+
+
 @mixin border-radius-bottom($radius: 5px) {
-  -webkit-border-bottom-left-radius: $radius;
-  -webkit-border-bottom-right-radius: $radius;
-  -moz-border-bottom-left-radius: $radius;
-  -moz-border-bottom-right-radius: $radius;
-  -ms-border-bottom-left-radius: $radius;
-  -ms-border-bottom-right-radius: $radius;
-  -o-border-bottom-left-radius: $radius;
-  -o-border-bottom-right-radius: $radius;
   border-bottom-left-radius: $radius;
   border-bottom-right-radius: $radius;
 }
 
 @mixin border-radius-top($radius: 5px) {
-  -webkit-border-top-left-radius: $radius;
-  -webkit-border-top-right-radius: $radius;
-  -moz-border-top-left-radius: $radius;
-  -moz-border-top-right-radius: $radius;
-  -ms-border-top-left-radius: $radius;
-  -ms-border-top-right-radius: $radius;
-  -o-border-top-left-radius: $radius;
-  -o-border-top-right-radius: $radius;
   border-top-left-radius: $radius;
   border-top-right-radius: $radius;
 }
 
 @mixin border-radius-left($radius: 5px) {
-  -webkit-border-top-left-radius: $radius;
-  -webkit-border-bottom-left-radius: $radius;
-  -moz-border-top-left-radius: $radius;
-  -moz-border-bottom-left-radius: $radius;
-  -ms-border-top-left-radius: $radius;
-  -ms-border-bottom-left-radius: $radius;
-  -o-border-top-left-radius: $radius;
-  -o-border-bottom-left-radius: $radius;
   border-top-left-radius: $radius;
   border-bottom-left-radius: $radius;
 }
 
 @mixin border-radius-right($radius: 5px) {
-  -webkit-border-top-right-radius: $radius;
-  -webkit-border-bottom-right-radius: $radius;
-  -moz-border-top-right-radius: $radius;
-  -moz-border-bottom-right-radius: $radius;
-  -ms-border-top-right-radius: $radius;
-  -ms-border-bottom-right-radius: $radius;
-  -o-border-top-right-radius: $radius;
-  -o-border-bottom-right-radius: $radius;
   border-top-right-radius: $radius;
   border-bottom-right-radius: $radius;
 }
 
 @mixin vertical-gradient($top-color: blue, $bottom-color: white) {
-	background: -webkit-linear-gradient($top-color, $bottom-color);
-	background: -moz-linear-gradient($top-color, $bottom-color);
-	background: -o-linear-gradient($top-color, $bottom-color);
 	background:  linear-gradient($top-color, $bottom-color);
 }
 
 
 @mixin icon($icon-name: icon, $icon-size: 40px, $icons-extension: ".png") {
-  $icons-root: "../img/icons/";
+  $icons-root: "../../img/icons/";
 
   height: $icon-size;
   width: $icon-size;
@@ -196,18 +192,57 @@
 
 
 @mixin run-transition($property: color, $speed: 250ms, $timing: ease) {
-  -o-transition: $property $speed $timing;
-  -moz-transition: $property $speed $timing;
-  -webkit-transition: $property $speed $timing;
   transition: $property $speed $timing;
 }
 
 @mixin invert-colors($amount: 100%){
-	-webkit-filter: invert($amount);
-	-moz-filter: invert($amount);
-	-ms-filter: invert($amount);
 	filter: invert($amount);
 }
+
+
+
+////////    ANIMATIONS
+
+
+@keyframes pulsate {
+    0% {
+        transform: scale(0.1, 0.1);
+        opacity: 0.0;
+    }
+    50% {
+        opacity: 1.0;
+    }
+    100% {
+        transform: scale(1.2, 1.2);
+        opacity: 0;
+    }
+}
+
+
+@keyframes fade-in{
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+}
+
+@keyframes bounce-pop-out {
+  0% {
+    transform: scale(0);
+  }
+  50%{
+      transform: scale(1.1);
+  }
+  90%{
+      transform: scale(0.9);
+  }
+  100% {
+      transform: scale(1);
+  }
+}
+
 
 @keyframes shockwave-animation{
     from {
@@ -364,6 +399,59 @@
 	border-width: ($size*0.6) 0 ($size*0.6) $size;
 	border-color: transparent transparent transparent $color;
 }
+@mixin triangle-left ($size: 50px, $color: $accent) {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: ($size*0.6) $size ($size*0.6) 0;
+	border-color: transparent $color transparent transparent;
+}
+@mixin triangle-top ($size: 50px, $color: $accent) {
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 0 ($size*0.6) $size ($size*0.6);
+	border-color: transparent transparent $color transparent;
+}
+
+///////
+
+@mixin syleRadio-WIP($bg-on: $accent, $border-on: $white, $bg-off: $medium-grey, $border-off: $white){
+
+    input[type='radio']:after {
+        width: 15px;
+        height: 15px;
+        border-radius: 15px;
+        top: -2px;
+        left: -1px;
+        position: relative;
+        background-color: #d1d3d1;
+        content: '';
+        display: inline-block;
+        visibility: visible;
+        border: 2px solid white;
+    }
+
+    input[type='radio']:checked:after {
+        width: 15px;
+        height: 15px;
+        border-radius: 15px;
+        top: -2px;
+        left: -1px;
+        position: relative;
+        background-color: #ffa500;
+        content: '';
+        display: inline-block;
+        visibility: visible;
+        border: 2px solid white;
+    }
+
+}
+
+
+
+
+
 
 //bootsrap-adapter
 @mixin buttonBackground($top: #eee, $bottom: #ccc) {

@@ -1,5 +1,6 @@
 @media screen and (max-width: $tablette) {
     body {
+
         .lightbox-window .tabs,
         .lightbox .content .tabs {
             margin: 0;
@@ -17,6 +18,8 @@
                 padding: 10px 5px;
             }
         }
+
+
         media-library {
             .media-library > h2 {
                 display: none;
@@ -54,6 +57,8 @@
             }
 
         }
+
+
         .widgets,
         .widgets-picker {
             display: none;
@@ -61,6 +66,8 @@
         .widgets-friend {
             margin-left: 0 !important;
         }
+
+
         .drop-down-filters {
             .wrapper {
                 i {
@@ -76,12 +83,18 @@
                 }
             }
         }
+
+
         .navbar .welcome-message {
             display: none;
         }
+
+
         .cards-list .card {
             max-width: 250px;
         }
+
+
         grid-cell.media {
             .media-wrapper,
             .text-wrapper h1,
@@ -95,6 +108,8 @@
                 width: 100% !important;
             }
         }
+
+
         .media.height-undefined,
         .media.height-zero {
             min-height: 0;
@@ -104,9 +119,15 @@
             margin-bottom: 10px;
         }
     }
+
+////
+
     * {
         -ms-scroll-chaining: none;
     }
+
+////
+
     body {
         width: 100%;
         min-height: 100%;
@@ -138,11 +159,16 @@
                 color: #FFF;
             }
         }
+
+
         side-panel + app-title {
             float: left;
             margin-top: 0;
             margin-left: auto;
         }
+
+
+
         table,
         ul.list-view {
             th,
@@ -155,6 +181,8 @@
                 max-width: 180px;
             }
         }
+
+
         .share {
             table thead th,
             table thead td {
@@ -171,9 +199,11 @@
                 text-overflow: ellipsis;
             }
         }
+
+
         section.lightbox {
             > div.content {
-                top: 30px;
+                top: 75px;
                 padding: 20px;
                 min-height: calc(100% - 60px);
                 width: 90%;
@@ -183,6 +213,8 @@
                 box-sizing: border-box;
             }
         }
+
+
         .icons-view .element {
             legend {
                 line-height: 18px;
@@ -194,6 +226,9 @@
                 }
             }
         }
+
+
+
         .icons-view.apps {
             .element {
                 width: 80px;
@@ -227,6 +262,8 @@
                 }
             }
         }
+
+
         .toggle-buttons {
             height: auto;
             .button,
@@ -235,6 +272,8 @@
                 font-size: 0.9em;
             }
         }
+
+
         .mobile-nav-opener {
             @include icon(glyphicons_113_justify, 50px);
             float: left;
@@ -243,6 +282,8 @@
                 display: inline-block;
             }
         }
+
+
         nav.vertical {
             ul {
                 li {
@@ -253,6 +294,8 @@
                 }
             }
         }
+
+
         nav.vertical[side-nav] {
             position: fixed;
             left: 0;
@@ -351,12 +394,14 @@
     article.solid form .right-magnet {
         margin: 10px;
     }
+
     section.main-col {
         nav.contextual-buttons {
             .action-buttons {
             }
         }
     }
+
 
 	.account{
 		.avatar{
@@ -381,8 +426,15 @@
         font-size: 15px;
         font-weight: bold;
     }
+
+
+    /// MICROBOX
+
     button.microbox {
         float: right;
+    }
+    .micro-left + button.microbox{
+        float: left;
     }
     .microbox-wrapper {
         position: fixed;
@@ -390,7 +442,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 10002;
+        z-index: 100000;
         box-sizing: border-box;
         background: rgba($white, 0.6);
     }
@@ -429,6 +481,9 @@
     button.microbox-close {
         float: right;
     }
+
+
+
     [subtitle] {
         display: block;
         background: silver;
@@ -465,18 +520,30 @@
         margin-top: 40px;
     }
 
+
+
     .check-tool i:hover{
-        background: darken($grayLighter, 7%);
+        background: darken($light-grey, 7%);
     }
     .check-tool i:active{
         background: $accent;
     }
 
-    explorer{
-        display: block;
-        user-select: none;
-        -webkit-user-select: none;
-        //-webkit-touch-callout: none;
+
+    //structure main-col / rows
+
+    .rigid-grid .option-row{
+        float: right;
+    }
+    .rigid-grid .main-col, .rigid-grid .option-row {
+        padding-left: 0;
     }
 
+    nav.subnavbar{
+        ul{
+            li{
+                margin: 0 0;
+            }
+        }
+    }
 }
