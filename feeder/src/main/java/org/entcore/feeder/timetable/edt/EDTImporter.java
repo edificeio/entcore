@@ -73,6 +73,12 @@ public class EDTImporter extends AbstractTimetableImporter {
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 			"WHERE HAS(u.IDPN) AND HEAD(u.profiles) IN ['Relative','Guest', 'Student'] " +
 			"SET u.IDPN = null";
+	private static final String CLEAN_IDPN_OTHER_STRUCTURE =
+			"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE u.IDPN  starts with {structureExternalId} " +
+			"WITH u, collect(s.externalId) as struct " +
+			"WHERE NOT({structureExternalId} IN struct) " +
+			"SET u.IDPN = null";
 	private final String mode;
 	public static final String IDENT = "Ident";
 	public static final String IDPN = "IDPN";
@@ -113,6 +119,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					try {
 						txXDT.setAutoSend(false);
 						txXDT.add(CLEAN_IDPN, new JsonObject().putString("UAI", UAI));
+						txXDT.add(CLEAN_IDPN_OTHER_STRUCTURE, new JsonObject().putString("structureExternalId", structureExternalId));
 						parse(content, true);
 						if (txXDT.isEmpty()) {
 							parse(content, false);
@@ -281,7 +288,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 	void addPersonnel(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		try {
-			final String idPronote = Md5.hash(currentEntity.getString("Nom") + currentEntity.getString("Prenom"));
+			final String idPronote =  structureExternalId + "$" + Md5.hash(currentEntity.getString("Nom") + currentEntity.getString("Prenom"));
 			findPersEducNat(currentEntity, idPronote, "Personnel");
 			userImportedPronoteId.add(idPronote);
 		} catch (NoSuchAlgorithmException e) {
