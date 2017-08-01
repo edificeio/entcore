@@ -159,8 +159,23 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								exported.set(true);
 								handler.handle(exported.get());
 							} else {
-								log.error("Write to fs : " + new JsonArray(ids).encode() + " - " + event.encode());
-								handler.handle(exported.get());
+								JsonArray errors = event.getArray("errors", new JsonArray());
+								boolean ignoreErrors = errors.size() > 0;
+								for (Object o : errors) {
+									if (!(o instanceof JsonObject)) continue;
+									if (((JsonObject) o).getString("message") == null ||
+											!((JsonObject) o).getString("message").contains("NoSuchFileException")) {
+										ignoreErrors = false;
+										break;
+									}
+								}
+								if (ignoreErrors) {
+									exported.set(true);
+									handler.handle(exported.get());
+								} else {
+									log.error("Write to fs : " + new JsonArray(ids).encode() + " - " + event.encode());
+									handler.handle(exported.get());
+								}
 							}
 						}
 					});
