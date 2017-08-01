@@ -1600,8 +1600,7 @@ public class WorkspaceService extends BaseController {
 								} else {
 									ownerNotif.putString("resourceUri", pathPrefix + "/workspace");
 								}
-
-								notification.notifyTimeline(request, notifyName, user, ownerList, id, ownerNotif);
+								notification.notifyTimeline(request, notifyName, user, ownerList, id, null, ownerNotif, true);
 							}
 
 						}
