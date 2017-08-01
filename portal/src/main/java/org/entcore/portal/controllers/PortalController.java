@@ -346,7 +346,6 @@ public class PortalController extends BaseController {
 	}
 
 	@Get("/resources-applications")
-	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void resourcesApplications(HttpServerRequest request){
 		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
 	}
