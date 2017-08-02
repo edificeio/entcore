@@ -888,7 +888,7 @@ module.directive('scheduleItem', function($compile) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
             var dayWidth = parentSchedule.find('.day').width();
-            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || scope.item.locked) {
+            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || !scope.item.myRights.process || moment().diff(moment(scope.item.end_date)) > 0) {
                 scheduleItemEl.removeAttr('resizable');
                 scheduleItemEl.removeAttr('draggable');
                 scheduleItemEl.unbind('mouseover');
@@ -3541,6 +3541,7 @@ module.directive('draggable', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+
             if (attributes.draggable == 'false' || attributes.native !== undefined) {
                 return;
             }
