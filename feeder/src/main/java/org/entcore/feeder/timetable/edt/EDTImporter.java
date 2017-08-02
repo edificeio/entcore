@@ -310,7 +310,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 						.putString("lastName", p.getString("lastName").toLowerCase())
 						.putString("firstName", p.getString("firstName").toLowerCase()));
 			} else {
-				report.addErrorWithParams("empty.required.user.attribute", p.encode());
+				report.addErrorWithParams("empty.required.user.attribute", p.encode().replaceAll("\\$", ""));
 			}
 		} catch (Exception e) {
 			report.addError(e.getMessage());
