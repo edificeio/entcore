@@ -45,8 +45,8 @@
 			</app-title>
 
 			<div class="twelve tabs vertical-spacing-twice heading-tabs">
-				<header class="horizontal-spacing-twice selected">
-					<a href="/userbook/mon-compte">
+				<header class="horizontal-spacing-twice" ng-class="{ selected: template.contains('account/main', 'account/default-view') }">
+					<a href="/userbook/mon-compte" ng-click="template.open('account/main', 'account/default-view')">
 						<span><i class="person"></i><i18n>panel.my.profile</i18n></span>
 					</a>
 				</header>
@@ -62,32 +62,14 @@
 						<span><i class="history"></i><i18n>panel.user.history</i18n></span>
 					</a>
 				</header>
+				<header class="horizontal-spacing-twice" ng-if="display.pickTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
+					<a ng-click="template.open('account/main', 'account/themes')">
+						<span><i class="desktop"></i><i18n>panel.user.pickTheme</i18n></span>
+					</a>
+				</header>
 			</div>
 
-
-			<!-- <div class="cell my-notifications" ng-if="me.userId === account.id && account.email.length"
-				workflow="directory.externalNotifications">
-				<div class="row">
-					<a class="button" tooltip="panel.notifications.desc" href="/timeline/preferencesView">
-						<i class="bell"></i>
-						<i18n>panel.notifications.set</i18n>
-					</a>
-				</div>
-			</div> -->
-
-
-			<div class="my-notifications" ng-if="me.userId === account.id && !account.email"
-				workflow="directory.externalNotifications">
-				<div class="row">
-					<a tooltip="panel.notifications.desc" ng-disabled="true" class="button disabled">
-						<i class="bell"></i>
-						<i18n>panel.notifications.activate</i18n>
-					</a>
-				</div>
-			</div>
-
-			<div class="row rigid-grid" ng-include="viewsContainers.user"></div>
-			<div class="row user-book" ng-include="viewsContainers.userbook"></div>
+			<container template="account/main"></container>
 		</portal>
 	</body>
 </html>

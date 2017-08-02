@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, idiom as lang, notify, model, Behaviours, http } from 'entcore';
+import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin } from 'entcore';
 import { moment } from 'entcore/libs/moment/moment';
 import { directory } from '../model';
 import { _ } from 'entcore/libs/underscore/underscore';
@@ -47,6 +47,35 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			$scope.openView('userbook-edit', 'userbook');
 		}
 	});
+
+	template.open('account/main', 'account/default-view');
+	$scope.template = template;
+
+	let conf = { overriding: [] };
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', '/assets/theme-conf.js');
+	xhr.onload = async () => {
+		eval(xhr.responseText.split('exports.')[1]);
+		$scope.themes = conf.overriding;
+		if($scope.themes.length > 1){
+			$scope.display.pickTheme = true;
+			http().get('/userbook/preference/theme').done(function(pref){
+				if(pref.preference){
+					$scope.account.themes[pref.preference] = true;
+				}
+				else{
+					$scope.account.themes[skin.skin] = true;
+					http().put('/userbook/preference/theme', skin.skin);
+				}
+			})
+			if(!$scope.account.themes){
+				$scope.account.themes = {};
+			}
+			
+			$scope.$apply();
+		}
+	};
+	xhr.send();
 
 	Behaviours.loadBehaviours('directory', function(){
 		model.me.workflow.load(['directory'])
@@ -89,6 +118,24 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			return moment(birthDate).format('D MMMM YYYY');
 		}
 		return '';
+	};
+
+	$scope.setThemePreferences = (themeName: string) => {
+		const addedThemes = [];
+			
+		for(let name in $scope.account.themes){
+			if($scope.account.themes[name]){
+				addedThemes.push(name);
+			}
+		}
+
+		if(addedThemes.length > 1){
+			const keptTheme = $scope.themes.find(t => t.parent === 'theme-open-ent').child;
+			http().put('/userbook/preference/theme', keptTheme);
+		}
+		else{
+			http().put('/userbook/preference/theme', addedThemes[0]);
+		}
 	};
 
 	$scope.translate = function(label){
