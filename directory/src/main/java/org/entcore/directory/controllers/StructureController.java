@@ -365,7 +365,7 @@ public class StructureController extends BaseController {
 
 									StringReader reader = new StringReader(result.result().toString("UTF-8"));
 									final JsonArray mailHeaders = new JsonArray().addObject(
-											new JsonObject().putString("name", "Content-Type").putString("value", "text/plain; charset=\"UTF-8\""));
+											new JsonObject().putString("name", "Content-Type").putString("value", "text/html; charset=\"UTF-8\""));
 
 									for(Object userObj : users){
 										final JsonObject user = (JsonObject) userObj;
