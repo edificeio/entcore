@@ -842,6 +842,9 @@ public class UserBookController extends BaseController {
 												if(cache.containsField("preferences")){
 													JsonObject prefs = cache.getObject("preferences");
 													prefs.putString(application, params.getString("conf"));
+													if ("theme".equals(application)) {
+														prefs.removeField(THEME_ATTRIBUTE + getHost(request));
+													}
 
 													UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", prefs, new Handler<Boolean>() {
 														public void handle(Boolean event) {
