@@ -95,7 +95,7 @@ public abstract class AbstractFederateController extends BaseController {
 	private void activateUser(final String activationCode, final String login, String email, String mobile,
 							  final String sessionIndex, final String nameId, final HttpServerRequest request) {
 		userAuthAccount.activateAccount(login, activationCode, UUID.randomUUID().toString(),
-				email, mobile, request, new Handler<Either<String, String>>() {
+				email, mobile, null, request, new Handler<Either<String, String>>() {
 			@Override
 			public void handle(Either<String, String> activated) {
 				if (activated.isRight() && activated.right().getValue() != null) {

@@ -580,6 +580,7 @@ public class AuthController extends BaseController {
 				final String activationCode = request.formAttributes().get("activationCode");
 				final String email = request.formAttributes().get("mail");
 				final String phone = request.formAttributes().get("phone");
+				final String theme = request.formAttributes().get("theme");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				if (container.config().getBoolean("cgu", true) &&
@@ -623,7 +624,7 @@ public class AuthController extends BaseController {
 					}
 					renderJson(request, error);
 				} else {
-					userAuthAccount.activateAccount(login, activationCode, password, email, phone, request,
+					userAuthAccount.activateAccount(login, activationCode, password, email, phone, theme, request,
 							new org.vertx.java.core.Handler<Either<String, String>>() {
 
 						@Override

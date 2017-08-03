@@ -46,6 +46,8 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	private final Neo neo;
@@ -77,7 +79,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
-			String email, String phone, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+			String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -110,6 +112,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 											.putString("Host", Renders.getHost(request))
 									)
 							);
+					if (isNotEmpty(theme)) {
+						jo.putString("theme", theme);
+					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
 					handler.handle(new Either.Right<String, String>(
 							res.body().getObject("result").getObject("0").getString("id")));
