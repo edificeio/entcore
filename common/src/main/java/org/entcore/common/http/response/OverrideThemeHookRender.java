@@ -20,20 +20,30 @@
 package org.entcore.common.http.response;
 
 import fr.wseduc.webutils.http.HookProcess;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
+
+import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 public class OverrideThemeHookRender implements HookProcess {
 
+	private final EventBus eb;
 	private final String theme;
 
-	public OverrideThemeHookRender(String theme) {
+	public OverrideThemeHookRender(EventBus eb, String theme) {
+		this.eb = eb;
 		this.theme = theme;
 	}
 
 	@Override
-	public void execute(HttpServerRequest request, VoidHandler handler) {
+	public void execute(final HttpServerRequest request, final VoidHandler handler) {
 		if (theme.isEmpty()) {
 			if (CookieHelper.get("theme", request) != null) {
 				CookieHelper.set("theme", "", 0l, request);
@@ -41,7 +51,16 @@ public class OverrideThemeHookRender implements HookProcess {
 		} else {
 			CookieHelper.set("theme", theme, request);
 		}
-		handler.handle(null);
+		// remove theme cache
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					UserUtils.removeSessionAttribute(eb, user.getUserId(), THEME_ATTRIBUTE + Renders.getHost(request), null);
+				}
+				handler.handle(null);
+			}
+		});
 	}
 
 }

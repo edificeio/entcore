@@ -845,9 +845,9 @@ public class UserBookController extends BaseController {
 													if ("theme".equals(application)) {
 														prefs.removeField(THEME_ATTRIBUTE + getHost(request));
 													}
-
 													UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", prefs, new Handler<Boolean>() {
 														public void handle(Boolean event) {
+															UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 															if(!event)
 																log.error("Could not add preferences attribute to session.");
 														}
