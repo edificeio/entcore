@@ -9,12 +9,13 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	$scope.welcome = {};
 	template.open('main', 'activation-form');
 
+	let currentTheme;
 	let conf = { overriding: [] };
 	const xhr = new XMLHttpRequest();
 	xhr.open('get', '/assets/theme-conf.js');
 	xhr.onload = () => {
 		eval(xhr.responseText.split('exports.')[1]);
-		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		currentTheme = conf.overriding.find(t => t.child === skin.skin);
 		if(currentTheme.group){
 			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
 		}
@@ -93,8 +94,8 @@ export let activationController = ng.controller('ActivationController', ['$scope
 
 	$scope.noThemePicked = () => !Object.keys($scope.user.themes).length;
 
-	$scope.activate = function(){
-		if($scope.themes.length > 1 && $scope.noThemePicked()){
+	$scope.activate = function(forceCurrentTheme: boolean){
+		if($scope.themes.length > 1 && $scope.noThemePicked() && !forceCurrentTheme){
 			template.open('main', 'activation-themes');
 			return;
 		}
@@ -102,15 +103,20 @@ export let activationController = ng.controller('ActivationController', ['$scope
 			$scope.user.theme = $scope.themes[0].child;
 		}
 
-		if(Object.keys($scope.user.themes).length > 1){
-			conf.overriding.forEach(o => {
-				if(o.parent === 'theme-open-ent' && $scope.user.themes[o.child]){
-					$scope.user.theme = o.child;
-				}
-			});
+		if(forceCurrentTheme){
+			$scope.user.theme = currentTheme.child;
 		}
-		else if(Object.keys($scope.user.themes).length > 0){
-			$scope.user.theme = Object.keys($scope.user.themes)[0];
+		else{
+			if(Object.keys($scope.user.themes).length > 1){
+				conf.overriding.forEach(o => {
+					if(o.parent === 'theme-open-ent' && $scope.user.themes[o.child]){
+						$scope.user.theme = o.child;
+					}
+				});
+			}
+			else if(Object.keys($scope.user.themes).length > 0){
+				$scope.user.theme = Object.keys($scope.user.themes)[0];
+			}
 		}
 
 		var emptyIfUndefined = function(item){

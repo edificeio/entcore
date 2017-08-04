@@ -472,6 +472,9 @@ public class UserBookController extends BaseController {
 	@SecuredAction("userbook.show.motto.mood")
 	public void userBookMottoMood(){}
 
+	@SecuredAction("userbook.switch.theme")
+	public void userBookSwitchTheme(){}
+
 	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
 		JsonObject params = new JsonObject();

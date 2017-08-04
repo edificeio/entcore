@@ -8,7 +8,8 @@ Behaviours.register('directory', {
 		workflow: {
 			externalNotifications: "org.entcore.timeline.controllers.TimelineController|mixinConfig",
 			historyView: "org.entcore.timeline.controllers.TimelineController|historyView",
-            showMoodMotto: "org.entcore.directory.controllers.UserBookController|userBookMottoMood",
+			showMoodMotto: "org.entcore.directory.controllers.UserBookController|userBookMottoMood",
+			switchTheme: "org.entcore.directory.controllers.UserBookController|userBookSwitchTheme",
             generateMergeKey: "org.entcore.directory.controllers.UserController|generateMergeKey",
             mergeByKey: "org.entcore.directory.controllers.UserController|mergeByKey"
 		}
