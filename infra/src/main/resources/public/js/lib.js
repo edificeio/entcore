@@ -1147,7 +1147,7 @@ var skin = (function(){
 		},
 		setTheme: function(theme){
 			ui.setStyle(theme.path);
-			http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + theme._id);
+			http().get('/userbook/api/edit-userbook-info?prop=theme-'+ skin + '&value=' + theme._id);
 		},
 		loadConnected: function(){
 			var rand = Math.random();

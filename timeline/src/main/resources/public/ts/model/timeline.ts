@@ -33,7 +33,7 @@ export let Timeline = {
 	},
 	Skin: function(){
 		this.setForUser = function(){
-			http().get('/userbook/api/edit-userbook-info?prop=theme&value=' + this._id);
+			http().get('/userbook/api/edit-userbook-info?prop=theme-' + this.path.slice(this.path.indexOf("themes/") + 7, this.path.indexOf('/skins')) + '&value=' + this._id);
 		}
 	},
 	Preferences: function(){},

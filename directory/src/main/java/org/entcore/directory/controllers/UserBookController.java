@@ -410,7 +410,7 @@ public class UserBookController extends BaseController {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					String prop = request.params().get("prop");
-					if ("theme".equals(prop) || "userPreferencesBirthdayClass".equals(prop)) {
+					if (prop != null && (prop.startsWith("theme") || "userPreferencesBirthdayClass".equals(prop))) {
 						String attr = prop.replaceAll("\\W+", "");
 						String neoRequest =
 								"MATCH (n:User)-[:USERBOOK]->(m:UserBook)" +
