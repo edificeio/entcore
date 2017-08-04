@@ -56,7 +56,13 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	xhr.open('get', '/assets/theme-conf.js');
 	xhr.onload = async () => {
 		eval(xhr.responseText.split('exports.')[1]);
-		$scope.themes = conf.overriding;
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		if(currentTheme.group){
+			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
+		}
+		else{
+			$scope.themes = conf.overriding;
+		}
 		if($scope.themes.length > 1){
 			$scope.display.pickTheme = true;
 			http().get('/userbook/preference/theme').done(function(pref){

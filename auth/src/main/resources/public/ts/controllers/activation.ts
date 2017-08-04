@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang, http } from 'entcore';
+import { ng, template, idiom as lang, http, skin } from 'entcore';
 
 export let activationController = ng.controller('ActivationController', ['$scope', ($scope) =>{
 	$scope.template = template;
@@ -14,7 +14,13 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	xhr.open('get', '/assets/theme-conf.js');
 	xhr.onload = () => {
 		eval(xhr.responseText.split('exports.')[1]);
-		$scope.themes = conf.overriding;
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		if(currentTheme.group){
+			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
+		}
+		else{
+			$scope.themes = conf.overriding;
+		}
 	};
 	xhr.send();
 
@@ -91,6 +97,9 @@ export let activationController = ng.controller('ActivationController', ['$scope
 		if($scope.themes.length > 1 && $scope.noThemePicked()){
 			template.open('main', 'activation-themes');
 			return;
+		}
+		if($scope.themes.length === 1 && conf.overriding.length > 1){
+			$scope.user.theme = $scope.themes[0].child;
 		}
 
 		if(Object.keys($scope.user.themes).length > 1){
