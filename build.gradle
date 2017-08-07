@@ -109,7 +109,7 @@ project(':auth') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-    compile "jp.eisbahn:oauth2-server:1.2-SNAPSHOT"
+    compile "jp.eisbahn:oauth2-server:1.2.0"
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
   }
