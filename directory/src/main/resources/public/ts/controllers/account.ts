@@ -73,6 +73,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 					$scope.account.themes[skin.skin] = true;
 					http().put('/userbook/preference/theme', skin.skin);
 				}
+				$scope.$apply();
 			})
 			if(!$scope.account.themes){
 				$scope.account.themes = {};
