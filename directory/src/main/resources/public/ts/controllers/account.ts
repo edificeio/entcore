@@ -81,7 +81,6 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			$scope.$apply();
 		}
 	}
-	loadThemeConf();
 	
 	const xhr = new XMLHttpRequest();
 	xhr.open('get', '/assets/theme-conf.js');
@@ -110,6 +109,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 		directory.account.load();
 		$scope.account = directory.account;
+		loadThemeConf();
 	}
 
 	$scope.display = {};
