@@ -55,6 +55,7 @@ ExternalNotifs.Preference.prototype.putinfo = function(){
 }
 
 export const build = function(){
+    model.me.workflow.load(['directory']);
 	this.makeModels(ExternalNotifs);
     this.preference = new ExternalNotifs.Preference();
     this.userinfos = new ExternalNotifs.UserInfos();

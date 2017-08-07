@@ -33,7 +33,13 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			$scope.openView('user-edit', 'user');
 			$scope.openView('userbook-edit', 'userbook');
 		},
+		themes: function(){
+			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
+			template.open('account/main', 'account/themes');
+			init();
+		},
 		editMe: function(params){
+			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
 			if(model.me.type !== 'ELEVE'){
 				directory.account.edit.infos = true;
@@ -48,23 +54,17 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		}
 	});
 
-	template.open('account/main', 'account/default-view');
 	$scope.template = template;
 
 	let conf = { overriding: [] };
-	const xhr = new XMLHttpRequest();
-	xhr.open('get', '/assets/theme-conf.js');
-	xhr.onload = async () => {
-		eval(xhr.responseText.split('exports.')[1]);
-		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
-		if(currentTheme.group){
-			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
-		}
-		else{
-			$scope.themes = conf.overriding;
-		}
+	const loadThemeConf = async function(){
+		await skin.listSkins();
+		conf = skin.themeConf;
+
+		$scope.themes = skin.skins;
+
 		if($scope.themes.length > 1){
-			$scope.display.pickTheme = true;
+			$scope.display.pickTheme = skin.pickSkin;
 			http().get('/userbook/preference/theme').done(function(pref){
 				if(pref.preference){
 					$scope.account.themes[pref.preference] = true;
@@ -80,6 +80,21 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			
 			$scope.$apply();
 		}
+	}
+	loadThemeConf();
+	
+	const xhr = new XMLHttpRequest();
+	xhr.open('get', '/assets/theme-conf.js');
+	xhr.onload = async () => {
+		eval(xhr.responseText.split('exports.')[1]);
+		const currentTheme = conf.overriding.find(t => t.child === skin.skin);
+		if(currentTheme.group){
+			$scope.themes = conf.overriding.filter(t => t.group === currentTheme.group);
+		}
+		else{
+			$scope.themes = conf.overriding;
+		}
+		
 	};
 	xhr.send();
 
@@ -89,7 +104,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	function init(){
 		$scope.me = model.me;
-		directory.account.on('change', function(){
+		directory.account.one('change', function(){
 			$scope.$apply();
 		});
 

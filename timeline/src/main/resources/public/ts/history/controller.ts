@@ -1,4 +1,4 @@
-import { ui, http, idiom as lang, ng } from 'entcore';
+import { ui, http, idiom as lang, ng, skin } from 'entcore';
 import { $ } from 'entcore/libs/jquery/jquery';
 import { moment } from 'entcore/libs/moment/moment';
 
@@ -8,7 +8,8 @@ export let historyController = ng.controller('HistoryController', ['$scope', 'mo
     $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
 	$scope.me = model.me;
-    $scope.filtered = {}
+	$scope.filtered = {};
+	$scope.display = {};
 
 	$scope.actions = {
 		delete: {
@@ -47,6 +48,13 @@ export let historyController = ng.controller('HistoryController', ['$scope', 'mo
 		$scope.notifications = model.notifications;
 		$scope.$apply('notifications');
 	});
+
+	const loadThemeConf = async function(){
+		await skin.listSkins();
+		$scope.display.pickTheme = skin.pickSkin;
+		$scope.$apply();
+	}
+	loadThemeConf();
 
 	$scope.formatDate = function(dateString){
 		return moment(dateString).calendar();

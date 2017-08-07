@@ -46,7 +46,7 @@
 
 			<div class="twelve tabs vertical-spacing-twice heading-tabs">
 				<header class="horizontal-spacing-twice" ng-class="{ selected: template.contains('account/main', 'account/default-view') }">
-					<a href="/userbook/mon-compte" ng-click="template.open('account/main', 'account/default-view')">
+					<a href="/userbook/mon-compte#/edit-me">
 						<span><i class="person"></i><i18n>panel.my.profile</i18n></span>
 					</a>
 				</header>
@@ -63,7 +63,7 @@
 					</a>
 				</header>
 				<header class="horizontal-spacing-twice" ng-if="display.pickTheme" workflow="directory.switchTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
-					<a ng-click="template.open('account/main', 'account/themes')">
+					<a href="/userbook/mon-compte#/themes">
 						<span><i class="desktop"></i><i18n>panel.user.pickTheme</i18n></span>
 					</a>
 				</header>

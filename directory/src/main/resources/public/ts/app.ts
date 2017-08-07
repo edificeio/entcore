@@ -16,6 +16,9 @@ routes.define(function($routeProvider){
             .when('/edit-me', {
                 action: 'editMe'
             })
+            .when('/themes', {
+                action: 'themes'
+            })
             .otherwise({
                 redirectTo: 'edit-me'
             });

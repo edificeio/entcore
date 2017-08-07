@@ -20,7 +20,7 @@
 			<div data-ng-controller="HistoryController">
 	            <div class="twelve tabs vertical-spacing-twice heading-tabs">
 	                <header class="horizontal-spacing-twice">
-	                    <a href="/userbook/mon-compte">
+	                    <a href="/userbook/mon-compte#/edit-me">
 							<span><i class="person"></i><i18n>panel.my.profile</i18n></span>
 						</a>
 	                </header>
@@ -33,7 +33,12 @@
 	                    <a href="/timeline/historyView">
 							<span><i class="history"></i><i18n>panel.user.history</i18n></span>
 						</a>
-	                </header>
+					</header>
+					<header class="horizontal-spacing-twice" ng-if="display.pickTheme" workflow="directory.switchTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
+						<a href="/userbook/mon-compte#/themes">
+							<span><i class="desktop"></i><i18n>panel.user.pickTheme</i18n></span>
+						</a>
+					</header>
 	            </div>
 
 

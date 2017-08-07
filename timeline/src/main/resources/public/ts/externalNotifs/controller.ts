@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang } from 'entcore';
+import { ng, template, idiom as lang, skin } from 'entcore';
 
 export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
 
@@ -10,12 +10,16 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
     $scope.applis = model.applis;
 	$scope.preference = model.preference;
 	$scope.userinfos = model.userinfos;
+	$scope.display = {};
 
 	$scope.lang = lang;
 
-	/*lang.addBundle('/timeline/i18nNotifications', function(){
+	const loadThemeConf = async function(){
+		await skin.listSkins();
+		$scope.display.pickTheme = skin.pickSkin;
 		$scope.$apply();
-	});*/
+	}
+	loadThemeConf();
 
 	$scope.saveChanges = function(userinfos){
 		userinfos.putinfo()

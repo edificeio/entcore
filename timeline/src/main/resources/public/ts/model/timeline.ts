@@ -68,6 +68,7 @@ Timeline.FlashMessage.prototype.markAsRead = function(){
 }
 
 export const build = function (){
+	model.me.workflow.load(['directory']);
 	this.makeModels(Timeline);
 
     this.preferences = new Timeline.Preferences()
