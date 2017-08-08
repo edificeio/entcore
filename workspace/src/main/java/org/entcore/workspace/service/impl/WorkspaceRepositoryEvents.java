@@ -164,7 +164,8 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								for (Object o : errors) {
 									if (!(o instanceof JsonObject)) continue;
 									if (((JsonObject) o).getString("message") == null ||
-											!((JsonObject) o).getString("message").contains("NoSuchFileException")) {
+											(!((JsonObject) o).getString("message").contains("NoSuchFileException") &&
+													!((JsonObject) o).getString("message").contains("FileAlreadyExistsException"))) {
 										ignoreErrors = false;
 										break;
 									}
