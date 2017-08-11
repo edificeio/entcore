@@ -23,11 +23,13 @@ import { _ } from 'entcore/libs/underscore/underscore';
 export const accountController = ng.controller('MyAccount', ['$scope', 'route', ($scope, route) => {
 	route({
 		editUserInfos: function(params){
+			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: params.id, edit: { infos: true } });
 			init();
 			$scope.openView('user-edit', 'user');
 		},
 		editUser: function(params){
+			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: params.id, edit: { userbook: true, infos: true } });
 			init();
 			$scope.openView('user-edit', 'user');
