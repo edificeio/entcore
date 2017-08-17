@@ -21,6 +21,10 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 	}
 	loadThemeConf();
 
+	lang.addBundle('/timeline/i18nNotifications', function(){
+		$scope.$apply();
+	});
+
 	$scope.saveChanges = function(userinfos){
 		userinfos.putinfo()
 	}
