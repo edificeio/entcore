@@ -12,7 +12,7 @@ module.exports = webpackMerge(commonConfig, {
     devtool: 'source-map',
 
     entry: {
-        'admin': path_prefix + '/ts/app.aot.ts',
+        'admin': path_prefix + '/ts/main.aot.ts',
         'vendor': path_prefix + '/ts/libs/vendor.aot.ts'
     },
 
@@ -50,7 +50,7 @@ module.exports = webpackMerge(commonConfig, {
         }),
         new ngtools.AotPlugin({
             tsConfigPath:   __dirname + '/src/main/ts/tsconfig.aot.json',
-            entryModule:    __dirname + '/src/main/ts/admin.module#AdminModule'
+            entryModule:    __dirname + '/src/main/ts/app/app.module#AppModule'
         })
     ]
 })

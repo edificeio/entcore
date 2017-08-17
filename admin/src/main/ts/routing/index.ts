@@ -1,5 +1,0 @@
-export * from './session.resolve'
-export * from './structures.resolve'
-export * from './structure.resolve'
-export * from './i18n.resolve'
-export * from './routing.utils'

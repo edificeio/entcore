@@ -1,1 +1,0 @@
-export { UxModule } from './ux/ux.module'

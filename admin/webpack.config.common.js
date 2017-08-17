@@ -6,7 +6,7 @@ const path_prefix = './admin/src/main'
 
 module.exports = {
     entry: {
-        'polyfills':    path_prefix + '/ts/libs/polyfills.ts',
+        'polyfills': path_prefix + '/ts/libs/polyfills.ts',
         // styles are required in polyfills as a workaround
         // see : https://github.com/webpack/webpack/issues/1967
         /* 'style': path_prefix + '/resources/public/styles/admin.scss' */

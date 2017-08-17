@@ -10,7 +10,7 @@
         "noImplicitAny": false
     },
     "exclude": [
-        "app.aot.ts"
+        "main.aot.ts"
     ],
     "compileOnSave": false
 }
