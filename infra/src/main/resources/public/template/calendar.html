@@ -1,8 +1,9 @@
-<div class="changeDisplayModeButtons" ng-if="display.enableModes" ng-style="{position: 'absolute', top: '-115px', zIndex: 9999}">
+<div class="changeDisplayModeButtons" ng-if="display.enableModes">
 	<button ng-click="display.mode = 'day'" ng-class="{cyan: display.mode === 'day'}" ><i18n>calendar.mode.day</i18n></button>
 	<button ng-click="display.mode = 'week'" ng-class="{cyan: display.mode === 'week'}" ><i18n>calendar.mode.week</i18n></button>
 	<button ng-click="display.mode = 'month'" ng-class="{cyan: display.mode === 'month'}" ><i18n>calendar.mode.month</i18n></button>
 </div>
+
 <div class="calendar-current-week">
 	<span ng-if="display.mode === 'day'">
 		[[calendar.firstDay.format('Do MMMM YYYY')]]
