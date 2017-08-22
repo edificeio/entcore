@@ -15,9 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { http, model, idiom as lang, Collection, notify, ui } from 'entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { moment } from 'entcore/libs/moment/moment';
+import { http, model, idiom as lang, Collection, notify, ui, _, moment } from 'entcore';
 
 export const directory = {
 	directory: undefined,

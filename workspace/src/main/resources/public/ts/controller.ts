@@ -17,9 +17,9 @@
 
 import { routes, ng, template, idiom as lang, http, notify } from 'entcore';
 import { workspace } from './model';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { $ } from 'entcore/libs/jquery/jquery';
-import { moment } from 'entcore/libs/moment/moment';
+import { _ } from 'entcore';
+import { $ } from 'entcore';
+import { moment } from 'entcore';
 
 routes.define(function($routeProvider) {
 	$routeProvider

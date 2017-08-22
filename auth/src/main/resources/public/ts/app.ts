@@ -1,4 +1,4 @@
-import { routes, ng } from 'entcore/entcore';
+import { routes, ng } from 'entcore';
 import { activationController } from './controllers/activation';
 import { forgotController } from './controllers/forgot';
 import { resetController } from './controllers/reset';

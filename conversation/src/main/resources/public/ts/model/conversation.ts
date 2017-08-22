@@ -15,9 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { idiom as lang, model, Model, notify, Collection } from 'entcore/entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { moment } from 'entcore/libs/moment/moment';
+import { idiom as lang, model, Model, notify, Collection, _, moment } from 'entcore';
 
 import { Folder, UserFolder, UserFolders, SystemFolder, SystemFolders } from './folder';
 import { User, Users } from './user';

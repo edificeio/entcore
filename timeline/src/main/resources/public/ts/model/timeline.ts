@@ -1,11 +1,12 @@
-import { http, BaseModel, model as entcoreModel, skin, notify } from 'entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+import { http, BaseModel, model as entcoreModel, skin, notify, _ } from 'entcore';
 
 interface TimelineModel extends BaseModel{
 	notifications: any;
 	notificationTypes: any;
 	preferences: any;
 	registeredNotifications: any;
+	me: any;
+	trigger: any;
 }
 
 const model = entcoreModel as TimelineModel;

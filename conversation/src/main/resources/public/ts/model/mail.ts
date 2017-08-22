@@ -1,7 +1,4 @@
-﻿import { model, notify, idiom as lang, toFormData } from 'entcore/entcore';
-import { moment } from 'entcore/libs/moment/moment';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { $ } from 'entcore/libs/jquery/jquery';
+﻿import { model, notify, idiom as lang, toFormData, moment, _, $ } from 'entcore';
 
 import { User } from './user';
 import { Conversation } from './conversation';

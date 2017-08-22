@@ -1,5 +1,4 @@
-﻿import { notify, toFormData } from 'entcore/entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+﻿import { notify, toFormData, _ } from 'entcore';
 import { Conversation, sorts } from './conversation';
 import { Mail, Mails } from './mail';
 import { quota } from './quota';

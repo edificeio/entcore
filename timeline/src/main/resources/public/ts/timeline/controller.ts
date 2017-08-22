@@ -1,8 +1,5 @@
-import { ng, template, idiom as lang, ui, http, currentLanguage } from 'entcore';
+import { ng, template, idiom as lang, ui, http, currentLanguage, $, _, moment } from 'entcore';
 import * as timelineControllers from './controller';
-import { $ } from 'entcore/libs/jquery/jquery';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { moment } from 'entcore/libs/moment/moment';
 
 export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
 	$scope.closePanel = function(){

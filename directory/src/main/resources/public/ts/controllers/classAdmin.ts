@@ -1,8 +1,5 @@
-import { ng, model, ui, notify } from 'entcore';
-import { moment } from 'entcore/libs/moment/moment';
-import { _ } from 'entcore/libs/underscore/underscore';
+import { ng, model, ui, notify, _, moment, $ } from 'entcore';
 import { directory } from '../model';
-import { $ } from 'entcore/libs/jquery/jquery';
 
 export const classAdminController = ng.controller('ClassAdminController', ['$scope', ($scope) => {
 	directory.network.sync();
