@@ -195,7 +195,7 @@
     "notify.user.sendResetPassword.mobile.error.title": "Erreur lors de l'envoi du SMS de réinitialisation de mot de passe",
     "notify.user.sendResetPassword.mobile.error.content": "Le SMS de réinitialisation de mot de passe de l'utilisateur {{user}} n'a pas pu être envoyé au {{mobile}}",
     "notify.group.create.title": "Création effectuée",
-    "notify.group.create.content": "Le group {{group}} a bien été créé.",
+    "notify.group.create.content": "Le groupe {{group}} a bien été créé.",
     "notify.group.create.error.title" : "Erreur lors de la création",
     "notify.group.create.error.content" : "Le groupe {{group}} n'a pas pu être créé.",
     "notify.group.manage.users.added.content": "Utilisateur(s) ajouté(s) avec succès.",
