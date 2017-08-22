@@ -1,5 +1,4 @@
-﻿import { idiom as lang } from 'entcore/entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+﻿import { idiom as lang, _ } from 'entcore';
 
 import { Mix, Selection, Selectable, Eventer } from 'entcore-toolkit';
 

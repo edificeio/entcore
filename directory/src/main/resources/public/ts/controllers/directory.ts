@@ -15,10 +15,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { template, idiom as lang, ng, ui, model } from 'entcore';
+import { template, idiom as lang, ng, ui, model, moment, $ } from 'entcore';
 import { directory } from '../model';
-import { moment } from 'entcore/libs/moment/moment';
-import { $ } from 'entcore/libs/jquery/jquery';
 
 export const directoryController = ng.controller('DirectoryController',['$scope', 'route', ($scope, route) => {
 	$scope.template = template;

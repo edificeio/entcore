@@ -18,6 +18,12 @@
 }
 
 [contenteditable], [bind-html]{
+    .image-container{
+        display: inline-block;
+        user-select: all;
+        border: none;
+        padding: 5px;
+    }
 	audio{
 		display: block;
         max-width: 100%;
@@ -82,7 +88,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    user-select: none;
+    user-: none;
 }
 
 .editor{
@@ -103,7 +109,7 @@ body editor{
 	float: left;
 	width: 100%;
 	margin: 10px auto 20px;
-    -webkit-user-select: auto;
+    -webkit-user-: auto;
 
 	> div{
 		position: relative;
@@ -124,7 +130,7 @@ body editor{
 	}
     &.focus.edit, &.focus.both, &.focus.html{
         editor-toolbar.inline{
-			select-list{
+			-list{
 				display: inline;
                 opacity: 1;
                 pointer-events: all !important;
@@ -134,7 +140,7 @@ body editor{
                 opacity: 1;
                 pointer-events: all !important;
 			}
-            .option, .option > select-list .selected-value, .option > i{
+            .option, .option > -list .ed-value, .option > i{
                 opacity: 1;
                 pointer-events: all !important;
             }
@@ -338,7 +344,7 @@ body editor{
             opacity: 0;
 			pointer-events: none !important;
 			@include run-transition(opacity);
-			select-list, popover, .option, .option > select-list .selected-value, .option > i{
+			-list, popover, .option, .option > -list .ed-value, .option > i{
 				display: inline-block;
                 opacity: 0;
                 pointer-events: none !important;
@@ -355,7 +361,7 @@ body editor{
 			display: inline-block;
 			padding: 6px 5px;
 
-			user-select: none;
+			user-: none;
 			position: relative;
 			@include run-transition(all);
 			height: 30px;
@@ -369,7 +375,7 @@ body editor{
 				background-size: 15px;
                 background-repeat: no-repeat;
                 background-position: center;
-				user-select: none;
+				user-: none;
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -405,7 +411,7 @@ body editor{
 		}
 		.option.font{
 			width: 140px;
-            select-list .selected-value{
+            -list .ed-value{
                 width: 115px;
             }
 			&:hover{
@@ -515,7 +521,7 @@ body editor{
 		height: 100%;
 		z-index: 100001 !important;
 
-        select-list{
+        -list{
             .options{
                 position: fixed;
                 min-width: 0;
@@ -595,10 +601,10 @@ body editor{
 			font-size: 22px;
 			height: 38px;
 			width: 44px;
-            -webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
+            -webkit-user-: none;
+			-moz-user-: none;
+			-ms-user-: none;
+			user-: none;
 			&::before{
 				content: "+";
 				display: block;
@@ -624,8 +630,8 @@ body editor{
 		}
 	}
 
-    .option > select-list{
-        .selected-value{
+    .option > -list{
+        .ed-value{
             border: none;
             color: transparent;
         }
@@ -641,8 +647,8 @@ body editor{
             position: relative;
             margin-bottom: 50px;
         }
-        select-list{
-            .selected-value{
+        -list{
+            .ed-value{
                 width: 100%;
                 box-sizing: border-box;
             }
@@ -682,7 +688,7 @@ body editor{
 //editor icons
 
 @mixin edit-icon(){
-	font-family: "editor";
+	font-family: "generic-icons";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -967,7 +973,7 @@ body editor {
 @media screen and (max-width: $tablette){
     body editor{
         editor-toolbar{
-            select-list .selected-value{
+            -list .ed-value{
                 width: 44px;
                 &::after{
                     height: 44px;
@@ -990,7 +996,7 @@ body editor {
 		}
 
             .option.font{
-                select-list .selected-value{
+                -list .ed-value{
                     @include editor-icon();
                     &::after{
                         content: '\e80b';
@@ -1000,7 +1006,7 @@ body editor {
             }
 
             .option.font-size{
-                select-list .selected-value{
+                -list .ed-value{
                     @include editor-icon();
                     &::after{
                         content: '\e819';
@@ -1010,7 +1016,7 @@ body editor {
             }
 
             .option.format{
-                select-list .selected-value{
+                -list .ed-value{
                     @include editor-icon();
                     &::after{
                         content: '\e81a';
@@ -1046,4 +1052,70 @@ body editor {
 		background-color: $light-grey;
 		cursor: pointer;
 	}
+}
+
+@keyframes slideIn{
+    0%{
+        transform: scaleY(0);
+    }
+    100%{
+        transform: scaleY(1);
+    }
+}
+
+.image-contextual-menu{
+    position: absolute;
+    background: #eee;
+    padding: 5px;
+    border-radius: 5px;
+    animation: slideIn 1 250ms;
+    transform-origin: top;
+    button, i{
+        user-select: none;
+        margin-bottom: 0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+    }
+    button{
+        padding-top: 9px;
+        padding-bottom: 9px;
+        padding-left: 13px;
+        background: transparent;
+        box-shadow: none;
+        border-right: 1px solid rgba(255,255,255, 0.3);
+        &:hover{
+            background: #fff;
+        }
+    }
+    i{
+        transition: 250ms ease;
+        line-height: 37px;
+        display: inline-block;
+        height: 38px;
+        box-sizing: border-box;
+        width: 35px;
+        text-align: center;
+        vertical-align: text-bottom;
+        border-radius: 3px;
+        &.large{
+            font-size: 30px;
+        }
+        &.medium{
+            font-size: 23px;
+        }
+        &.ed{
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2) inset;
+            &:hover{
+                box-shadow: none;
+            }
+        }
+    }
+
+    i.resize-image{
+        @include edit-icon();
+        &::before{
+            content: '\e929';
+        }
+    }
 }

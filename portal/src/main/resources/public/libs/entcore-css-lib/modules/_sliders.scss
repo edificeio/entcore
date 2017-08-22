@@ -24,6 +24,16 @@ slider, slider.drawing-zone{
 		margin-top: -26px;
 		z-index: 1;
 		cursor: pointer;
+		top: 0;
+	}
+	.label{
+		top: 24px;
+		margin-left: -42px;
+		width: 100px;
+		text-align: center;
+		font-size: 12px;
+		font-weight: bold;
+		color: #666;
 	}
 	.filled{
 		position: absolute;

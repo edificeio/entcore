@@ -1,9 +1,5 @@
-﻿import { ng, notify, idiom as lang, template, skin, workspace } from 'entcore/entcore';
-import { Mail, User, sorts, quota, Conversation, Trash, SystemFolder } from './model';
-
-import { $ } from 'entcore/libs/jquery/jquery';
-import { _ } from 'entcore/libs/underscore/underscore';
-import { UserFolder } from './model/folder';
+import { ng, notify, idiom as lang, template, skin, workspace, $, _ } from 'entcore';
+import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from './model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {

@@ -1,6 +1,4 @@
-import { ui, http, idiom as lang, ng, skin } from 'entcore';
-import { $ } from 'entcore/libs/jquery/jquery';
-import { moment } from 'entcore/libs/moment/moment';
+import { ui, http, idiom as lang, ng, skin, $, moment } from 'entcore';
 
 export let historyController = ng.controller('HistoryController', ['$scope', 'model', function HistoryController($scope, model){
 	$scope.notifications = [];

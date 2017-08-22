@@ -1,10 +1,10 @@
-import { idiom as lang, http, model as entcoreModel, BaseModel } from 'entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+import { idiom as lang, http, model as entcoreModel, BaseModel, _ } from 'entcore';
 
 interface ExternalNotifsModel extends BaseModel{
 	userinfos: any;
     preference: any;
     applis: any;
+    me: any;
 }
 
 export const model = entcoreModel as ExternalNotifsModel;
