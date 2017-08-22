@@ -1,5 +1,4 @@
-import { ng, template, idiom as lang, http } from 'entcore';
-import { $ } from 'entcore/libs/jquery/jquery';
+import { ng, template, idiom as lang, http, $ } from 'entcore';
 
 export let loginController = ng.controller('LoginController', ['$scope', ($scope) => {
 	$scope.template = template;

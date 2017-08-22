@@ -1,5 +1,4 @@
-﻿import { Behaviours, http, notify } from 'entcore/entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+﻿import { Behaviours, http, notify, _ } from 'entcore';
 
 Behaviours.register('conversation', {
     rights: {

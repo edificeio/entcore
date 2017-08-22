@@ -1,4 +1,4 @@
-﻿import { model, idiom as lang } from 'entcore/entcore';
+﻿import { model, idiom as lang } from 'entcore';
 
 import http from 'axios';
 

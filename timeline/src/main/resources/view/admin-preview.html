@@ -1,0 +1,58 @@
+<!doctype html>
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<html>
+<head>
+    <title>{{#i18n}}auth.title{{/i18n}}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <script>
+        function MainController($scope, $timeout) {
+            $scope.edited = parent.model.edited;
+            var updateContent = function () {
+                $timeout(updateContent, 1000);
+            }
+            updateContent();
+        }
+    </script>
+    <style>
+        body portal header {
+            pointer-events: none;
+        }
+        .flashmsg {
+            min-height: 20px;
+            margin-right: 0px !important;
+            background-color: gray;
+        }
+    </style>
+    <script type="text/javascript" src="/infra/public/js/loader.js" id="context"></script>
+</head>
+<body ng-controller="MainController">
+    <portal>
+        <div class="flashmsg"
+            ng-class="edited.message.color"
+            ng-style="{ 'background-color': edited.message.customColor }">
+            <i class="close-2x right-magnet"></i>
+            <div bind-html="edited.message.contents[edited.message.lang]"></div>
+        </div>
+    </portal>
+</body>
+</html>

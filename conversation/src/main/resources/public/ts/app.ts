@@ -1,4 +1,4 @@
-import { routes, ng } from 'entcore/entcore';
+import { routes, ng } from 'entcore';
 import { conversationController } from './controller';
 
 routes.define(function ($routeProvider) {
