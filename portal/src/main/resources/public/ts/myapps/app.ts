@@ -1,5 +1,5 @@
 import { ng, idiom as lang, model, http, template } from 'entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+import { _ } from 'entcore';
 
 const appController = ng.controller('ApplicationController', ['$scope', ($scope) => {
     template.open('main', 'applications');

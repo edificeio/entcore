@@ -15,10 +15,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin } from 'entcore';
-import { moment } from 'entcore/libs/moment/moment';
+import { ng, idiom as lang, notify, model, Behaviours, http, template, Me, skin, moment, _ } from 'entcore';
 import { directory } from '../model';
-import { _ } from 'entcore/libs/underscore/underscore';
 
 export const accountController = ng.controller('MyAccount', ['$scope', 'route', ($scope, route) => {
 	route({

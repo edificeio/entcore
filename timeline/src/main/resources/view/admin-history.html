@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<title>{{#i18n}}admin.timeline.history{{/i18n}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+		<script src="/timeline/public/js/admin/history/model.js" type="text/javascript"></script>
+		<script src="/timeline/public/js/admin/history/controller.js" type="text/javascript"></script>
+		<script type="text/ng-template" id="empty"></script>
+		<script type="text/ng-template" id="structure-tree">
+			<nav class="three cell recursive-list">
+				<input type="text" placeholder="[[lang.translate('search')]]" ng-model="structureFilteringInput" />
+				<ul ng-if="!structureFilteringInput">
+					<li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'" ng-click="viewStructure(struct); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+						[[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+						<span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+					</li>
+				</ul>
+				<ul ng-if="structureFilteringInput">
+					<li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'" ng-click="viewStructure(struct); selectOnly(struct, allStructures)" ng-class="{ selected: struct.selected }">
+						[[struct.name]]
+					</li>
+				</ul>
+			</nav>
+		</script>
+		<script type="text/ng-template" id="structure-tree-sub-levels">
+			<ul ng-if="struct.children">
+				<li ng-repeat="struct in levelStructures = struct.children | orderBy: 'name'" ng-click="$event.stopPropagation(); viewStructure(struct); selectOnly(struct, levelStructures)" ng-class="{ selected: struct.selected }">
+					[[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+					<span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+				</li>
+			</ul>
+		</script>
+	</head>
+
+	<body ng-controller="HistoryAdminController">
+		<top-notification
+			trigger="topNotification.show"
+			confirm="topNotification.confirm"
+			additional="topNotification.additional"
+			content="topNotification.message"
+			labels="topNotification.labels"></top-notification>
+		<admin-portal>
+            <h1 class="vertical-spacing-twice"><i18n>admin.timeline.history</i18n></h1>
+
+			<!-- Left side menu : structures -->
+			<div ng-include="'structure-tree'"></div>
+
+			<!-- Right side container -->
+			<article class="side-tabs-content nine cell" ng-if="structure">
+
+				<div class="twelve leaf-menu-container">
+	                <div class="leaf-menu" ng-class="{ selected: tabs.selected === 'pending' }">
+	                    <a ng-click="tabs.select('pending')">
+							<i18n>timeline.admin.tabs.pending</i18n>
+						</a>
+	                </div>
+					<div class="leaf-menu" ng-class="{ selected: tabs.selected === 'treated' }">
+	                    <a ng-click="tabs.select('treated')">
+							<i18n>timeline.admin.tabs.treated</i18n>
+						</a>
+	                </div>
+	            </div>
+
+				<div class="twelve">
+					<div class="notification" ng-repeat="notification in currentModel.all">
+						<article>
+							<div class="row">
+								<div class="avatar">
+									<i class="system-avatar" ng-if="!notification.sender"></i>
+									<img ng-src="/userbook/avatar/[[notification.sender]]?thumbnail=100x100" ng-if="notification.sender" />
+								</div>
+								<div class="content horizontal-spacing">
+									<p class="inline" bind-html="notification.message"></p>
+								</div>
+							</div>
+							<div class="notification-date">
+								<em class="low-importance right-magnet">[[ formatDate(notification.date.$date) ]]</em>
+							</div>
+							<div class="row notification-reports">
+								<div class="eight cell">
+									<i18n ng-if="notification.reporters.length > 1">timeline.admin.reported.since</i18n>
+									<i18n ng-if="notification.reporters.length < 2">timeline.admin.reported.on</i18n>
+									[[ formatDate(notification.reporters[notification.reporters.length - 1].date) ]]
+									<i18n>timeline.admin.by</i18n> :
+									<a href="/userbook/annuaire#[[reporter.userId]]" target="_blank" ng-repeat="reporter in notification.reporters">
+										[[ reporter.firstName + ' ' + reporter.lastName ]]
+									</a>
+									<div ng-if="notification.deleted">
+										<em><i18n>timeline.notification.is.deleted</i18n></em>
+									</div>
+								</div>
+								<div ng-if="notification.reportAction" class="eight cell">
+									<i18n>timeline.admin.treated.on</i18n>
+									[[ formatDate(notification.reportAction.date) ]]
+									<i18n>timeline.admin.by</i18n> :
+									<a href="/userbook/annuaire#[[notification.reportAction.userId]]" target="_blank">
+										[[ notification.reportAction.firstName + ' ' + notification.reportAction.lastName ]]
+									</a>
+								</div>
+								<button class="small right-magnet" ng-click="notifyTreatment(notification)" ng-if="tabs.selected === 'pending'">
+									<i18n>timeline.admin.treat</i18n>
+								</button>
+								<div class="right-magnet" ng-if="notification.reportAction">
+									<div>
+										<strong ng-style="{ color: notification.reportAction.action === 'DELETE' ? 'red' : 'green' }">
+											[[ lang.translate('timeline.admin.action.done.' + notification.reportAction.action) ]]
+										</strong>
+									</div>
+									<div>
+										<button class="small right-magnet" ng-click="notifyTreatment(notification)"
+											ng-if="notification.reportAction.action !== 'DELETE'">
+											<i18n>timeline.admin.treat</i18n>
+										</button>
+									</div>
+								</div>
+							</div>
+						</article>
+					</div>
+					<div class="row vertical-spacing-twice">
+						<button ng-if="currentModel.all.length > 0"
+							ng-click="currentModel.feed(structure.id)"
+							ng-disabled="currentModel.lastPage">
+								[[ lang.translate(currentModel.lastPage ? 'timeline.admin.no.more' : 'seemore') ]]
+						</button>
+					</div>
+				</div>
+
+			</article>
+		</admin-portal>
+    </body>
+
+</html>

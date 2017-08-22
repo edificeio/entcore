@@ -1,5 +1,4 @@
-import { Behaviours, http, idiom as lang } from 'entcore';
-import { _ } from 'entcore/libs/underscore/underscore';
+import { Behaviours, http, idiom as lang, _ } from 'entcore';
 
 console.log('directory behaviours loaded');
 

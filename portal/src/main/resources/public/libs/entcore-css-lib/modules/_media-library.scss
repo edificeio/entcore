@@ -12,4 +12,11 @@
 			}
 		}
 	}
+	image-compression{
+		display: block;
+		position: relative;
+		canvas{
+			max-width: 100%;
+		}
+	}
 }
