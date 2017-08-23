@@ -1,0 +1,11 @@
+<lightbox show="!template.isEmpty('lightbox')" on-close="template.close('lightbox')">
+    <container template="lightbox"></container>
+</lightbox>
+<lightbox show="display.share">
+    <container template="share"></container>
+</lightbox>
+<lightbox show="display.editImage">
+    <div ng-if="display.editImage && selectedDocuments().length === 1">
+        <image-editor document="/workspace/document/[[selectedDocuments()[0]._id]]"></image-editor>
+    </div>
+</lightbox>
