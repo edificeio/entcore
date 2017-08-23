@@ -21,22 +21,6 @@ import { _ } from 'entcore';
 import { $ } from 'entcore';
 import { moment } from 'entcore';
 
-routes.define(function($routeProvider) {
-	$routeProvider
-		.when('/folder/:folderId', {
-			action: 'viewFolder'
-		})
-		.when('/shared/folder/:folderId', {
-	  		action: 'viewSharedFolder'
-		})
-		.when('/shared', {
-		  	action: 'openShared'
-		})
-		.otherwise({
-		  	redirectTo: '/'
-		})
-});
-
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', 'model', 'route', ($scope, $rootScope, $timeout, model, route) => {
 
 	route({
@@ -89,6 +73,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 	$scope.template = template;
 	template.open('documents', 'icons');
+	template.open('lightboxes', 'lightboxes');
+	template.open('toaster', 'toaster');
 
 	$rootScope.$on('share-updated', function(event, changes){
 		if($scope.sharedDocuments)
