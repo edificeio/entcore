@@ -7,7 +7,7 @@ import { SpinnerService, ProfilesService } from '../core/services'
 @Injectable()
 export class StructureResolve implements Resolve<StructureModel> {
 
-    constructor(private ls: SpinnerService){}
+    constructor(private spinner: SpinnerService){}
 
     resolve(route: ActivatedRouteSnapshot): Promise<StructureModel> {
         let structure: StructureModel = globalStore.structures.data.find(s => s.id === route.params['structureId'])
@@ -17,7 +17,7 @@ export class StructureResolve implements Resolve<StructureModel> {
             })
         }
 
-        return this.ls.perform('portal', this.sync(structure))
+        return this.spinner.perform('portal', this.sync(structure))
     }
 
     private sync(structure: StructureModel): Promise<StructureModel> {

@@ -22,7 +22,7 @@ import { GroupModel } from '../../../../core/store/models'
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
-                        (onSelect)="ls.perform($event.id, user.addManualGroup($event), 0)">
+                        (onSelect)="spinner.perform($event.id, user.addManualGroup($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -35,9 +35,9 @@ import { GroupModel } from '../../../../core/store/models'
             <ul class="actions-list">
                 <li *ngFor="let mg of details?.manualGroups">
                     <span>{{ mg.name }}</span>
-                    <i  class="fa fa-times action" (click)="ls.perform(mg.id, user.removeManualGroup(mg), 0)"
+                    <i  class="fa fa-times action" (click)="spinner.perform(mg.id, user.removeManualGroup(mg), 0)"
                         [tooltip]="'delete.this.group' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(mg.id)}">
+                        [ngClass]="{ disabled: spinner.isLoading(mg.id)}">
                     </i>
                 </li>
             </ul>
@@ -57,7 +57,7 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
         return this._inputFilter
     }
 
-    constructor(protected ls: SpinnerService) {
+    constructor(protected spinner: SpinnerService) {
         super()
     }
 
@@ -80,7 +80,7 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
     }
     
     private disableGroup = (mg) => {
-        return this.ls.isLoading(mg.id)
+        return this.spinner.isLoading(mg.id)
     }
 
     protected onUserChange() {}

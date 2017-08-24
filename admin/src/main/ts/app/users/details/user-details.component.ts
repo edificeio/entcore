@@ -38,7 +38,7 @@ import { UsersStore } from '../users.store'
             <s5l>user.blocked</s5l>
 
             <button class="action" (click)="toggleUserBlock()" 
-                [disabled]="ls.isLoading('portal-content', 1)">
+                [disabled]="spinner.isLoading('portal-content', 1)">
                 <s5l>unblock</s5l>
                 <i class="fa fa-check"></i>
             </button>
@@ -60,7 +60,7 @@ import { UsersStore } from '../users.store'
             <s5l>user.predeleted</s5l>
 
             <button class="action" (click)="restoreUser()" 
-                [disabled]="ls.isLoading('portal-content', 1)">
+                [disabled]="spinner.isLoading('portal-content', 1)">
                 <s5l>restore</s5l>
                 <i class="fa fa-upload"></i>
             </button>
@@ -76,7 +76,7 @@ import { UsersStore } from '../users.store'
                 <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
                 <div>
                     <button (click)="toggleUserBlock()" 
-                        [disabled]="ls.isLoading('portal-content', 1)" 
+                        [disabled]="spinner.isLoading('portal-content', 1)" 
                         class="relative"
                         *ngIf="!details.blocked || details.blocked === false">
                         <s5l [s5l-params]="[details.blocked]">
@@ -87,7 +87,7 @@ import { UsersStore } from '../users.store'
                 </div>
                 <div *ngIf="isRemovable()">
                     <button (click)="removeUser()" 
-                        [disabled]="ls.isLoading('portal-content', 1)">
+                        [disabled]="spinner.isLoading('portal-content', 1)">
                         <s5l>predelete.account</s5l>
                         <i class="fa fa-times-circle"></i>
                     </button>
@@ -170,7 +170,7 @@ export class UserDetails implements OnInit, OnDestroy{
     }
     get user(){ return this._user }
 
-    constructor(private ls: SpinnerService,
+    constructor(private spinner: SpinnerService,
         private ns: NotifyService,
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
@@ -225,7 +225,7 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     private toggleUserBlock() {
-        this.ls.perform('portal-content', this.details.toggleBlock())
+        this.spinner.perform('portal-content', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
                 this.updateBlockedInStructures()
@@ -270,7 +270,7 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     private removeUser() {
-        this.ls.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
+        this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
             .then(() => {
                 this.user.deleteDate = Date.now()
                 this.updateDeletedInStructures()
@@ -309,7 +309,7 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     private restoreUser() {
-        this.ls.perform('portal-content', this.user.restore())
+        this.spinner.perform('portal-content', this.user.restore())
             .then(() => {
                 this.user.deleteDate = null
                 this.updateDeletedInStructures()

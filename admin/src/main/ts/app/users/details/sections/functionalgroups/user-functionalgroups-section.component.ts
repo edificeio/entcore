@@ -22,7 +22,7 @@ import { GroupModel } from '../../../../core/store/models'
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
-                        (onSelect)="ls.perform($event.id, user.addFunctionalGroup($event), 0)">
+                        (onSelect)="spinner.perform($event.id, user.addFunctionalGroup($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -35,9 +35,9 @@ import { GroupModel } from '../../../../core/store/models'
             <ul class="actions-list">
                 <li *ngFor="let g of details?.functionalGroups">
                     <span>{{ g.name }}</span>
-                    <i  class="fa fa-times action" (click)="ls.perform(g.id, user.removeFunctionalGroup(g), 0)"
+                    <i  class="fa fa-times action" (click)="spinner.perform(g.id, user.removeFunctionalGroup(g), 0)"
                         [tooltip]="'delete.this.group' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(g.id)}">
+                        [ngClass]="{ disabled: spinner.isLoading(g.id)}">
                     </i>
                 </li>
             </ul>
@@ -57,7 +57,7 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
         return this._inputFilter
     }
 
-    constructor(protected ls: SpinnerService) {
+    constructor(protected spinner: SpinnerService) {
         super()
     }
 
@@ -80,7 +80,7 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
     }
     
     private disableGroup = (g) => {
-        return this.ls.isLoading(g.id)
+        return this.spinner.isLoading(g.id)
     }
 
     protected onUserChange() {}

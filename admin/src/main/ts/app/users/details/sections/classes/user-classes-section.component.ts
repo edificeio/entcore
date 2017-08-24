@@ -22,7 +22,7 @@ import { SpinnerService } from '../../../../core/services'
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableClass"
-                        (onSelect)="ls.perform($event.id, user.addClass($event), 0)">
+                        (onSelect)="spinner.perform($event.id, user.addClass($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -36,9 +36,9 @@ import { SpinnerService } from '../../../../core/services'
                 <li *ngFor="let c of user?.classes">
                     <span>{{ c.name }}</span>
                     <i  class="fa fa-times action" 
-                        (click)="ls.perform(c.id, user.removeClass(c.id), 0)"
+                        (click)="spinner.perform(c.id, user.removeClass(c.id), 0)"
                         [tooltip]="'delete.this.class' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(c.id)}">
+                        [ngClass]="{ disabled: spinner.isLoading(c.id)}">
                     </i>
                 </li>
             </ul>
@@ -48,7 +48,7 @@ import { SpinnerService } from '../../../../core/services'
 })
 export class UserClassesSection extends AbstractSection {
     
-    constructor(protected ls: SpinnerService) {
+    constructor(protected spinner: SpinnerService) {
         super()
     }
 
@@ -70,7 +70,7 @@ export class UserClassesSection extends AbstractSection {
     }
     
     private disableClass = (c) => {
-        return this.ls.isLoading(c.id)
+        return this.spinner.isLoading(c.id)
     }
 
     protected onUserChange() {}

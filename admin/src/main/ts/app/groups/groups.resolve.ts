@@ -8,7 +8,7 @@ import { SpinnerService, routing } from '../core/services'
 @Injectable()
 export class GroupsResolve implements Resolve<GroupModel[]> {
 
-    constructor(private ls: SpinnerService) { }
+    constructor(private spinner: SpinnerService) { }
 
     resolve(route: ActivatedRouteSnapshot): Promise<GroupModel[]> {
         let currentStructure = globalStore.structures.data.find(
@@ -16,7 +16,7 @@ export class GroupsResolve implements Resolve<GroupModel[]> {
         if (currentStructure.groups.data.length > 0) {
             return Promise.resolve(currentStructure.groups.data)
         } else {
-            return this.ls.perform('portal-content', currentStructure.groups.sync()
+            return this.spinner.perform('portal-content', currentStructure.groups.sync()
                 .then(() => {
                     return currentStructure.groups.data
                 }).catch(e => {

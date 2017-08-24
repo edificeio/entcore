@@ -7,7 +7,7 @@ import { globalStore, GroupModel } from '../../core/store'
 @Injectable()
 export class GroupDetailsResolve implements Resolve<boolean> {
 
-    constructor(private ls: SpinnerService, private router: Router) { }
+    constructor(private spinner: SpinnerService, private router: Router) { }
 
     resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
         let structure = globalStore.structures.data.find(
@@ -20,7 +20,7 @@ export class GroupDetailsResolve implements Resolve<boolean> {
             return this.router.navigate(["/admin", structure._id, "groups", groupType])
         }
         if (targetGroup.users && targetGroup.users.length < 1) {
-            this.ls.perform('groups-content', targetGroup.syncUsers()
+            this.spinner.perform('groups-content', targetGroup.syncUsers()
                 .catch(err => {
                     console.error(err)
                     return this.router.navigate(["/admin", structure._id, "groups", groupType])

@@ -91,7 +91,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
 
     constructor(
         private ns: NotifyService,
-        protected ls: SpinnerService,
+        protected spinner: SpinnerService,
         protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -113,7 +113,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     private addAdml() {
-        this.ls.perform('portal-content', this.details.addAdml(this.structure.id))
+        this.spinner.perform('portal-content', this.details.addAdml(this.structure.id))
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.add.adml.content',
@@ -128,7 +128,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     private removeAdml() {
-        this.ls.perform('portal-content', this.details.removeAdml())
+        this.spinner.perform('portal-content', this.details.removeAdml())
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.remove.adml.content',
@@ -143,7 +143,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     private sendResetPasswordMail(email: string) {
-        this.ls.perform('portal-content', this.details.sendResetPassword({type: 'email', value: email}))
+        this.spinner.perform('portal-content', this.details.sendResetPassword({type: 'email', value: email}))
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.sendResetPassword.email.content',
@@ -165,7 +165,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     private sendResetPasswordMobile(mobile: string) {
-        this.ls.perform('portal-content', this.details.sendResetPassword({type: 'mobile', value: mobile}))
+        this.spinner.perform('portal-content', this.details.sendResetPassword({type: 'mobile', value: mobile}))
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.sendResetPassword.mobile.content',

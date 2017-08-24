@@ -83,7 +83,7 @@ export class GroupOutputUsers {
     constructor(private groupsStore: GroupsStore,
         private cdRef: ChangeDetectorRef,
         private userLS: UserListService,
-        private ls: SpinnerService,
+        private spinner: SpinnerService,
         private ns: NotifyService){}
 
     private selectUser(u): void {
@@ -107,7 +107,7 @@ export class GroupOutputUsers {
     }
 
     private removeUsers(): void {
-        this.ls.perform('group-manage-users',
+        this.spinner.perform('group-manage-users',
             this.groupsStore.group.removeUsers(this.selectedUsers)
                 .then(() => {
                     this.groupsStore.group.users = this.groupsStore.group.users

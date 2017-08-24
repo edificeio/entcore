@@ -1,13 +1,14 @@
 import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef,
     OnInit, OnDestroy } from '@angular/core'
-import { SpinnerService } from '../../../../core/services/spinner.service'
 import { Subscription } from 'rxjs/Subscription'
+    
+import { SpinnerService } from '../../../../core/services/spinner.service'
 
 @Component({
     selector: 'spinner-cube',
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
-    <div class="spinner-wrapper" *ngIf="ls.isLoading(loadingProp)">
+    <div class="spinner-wrapper" *ngIf="spinner.isLoading(loadingProp)">
         <div class="spinner-cube">
             <div class="sk-cube sk-cube1"></div>
             <div class="sk-cube sk-cube2"></div>
@@ -115,11 +116,11 @@ export class SpinnerComponent implements OnInit, OnDestroy {
     private subscription : Subscription
 
     constructor(
-        public ls: SpinnerService,
+        public spinner: SpinnerService,
         private cdRef: ChangeDetectorRef) {}
 
     ngOnInit() {
-        this.subscription = this.ls.trigger.subscribe(() => {
+        this.subscription = this.spinner.trigger.subscribe(() => {
             this.cdRef.markForCheck()
         })
     }

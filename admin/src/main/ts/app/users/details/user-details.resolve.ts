@@ -8,7 +8,7 @@ import { globalStore, UserModel } from '../../core/store'
 @Injectable()
 export class UserDetailsResolve implements Resolve<UserModel | Error> {
 
-    constructor(private ls: SpinnerService, private router: Router){}
+    constructor(private spinner: SpinnerService, private router: Router){}
 
     resolve(route: ActivatedRouteSnapshot): Promise<UserModel> {
         let structure = globalStore.structures.data.find(s => s.id === routing.getParam(route, 'structureId'))
@@ -16,7 +16,7 @@ export class UserDetailsResolve implements Resolve<UserModel | Error> {
             structure.users.data.find(u => u.id === route.params['userId'])
 
         if(user) {
-             return this.ls.perform('portal-content', user.userDetails.sync()
+             return this.spinner.perform('portal-content', user.userDetails.sync()
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
                 }).then(() => {

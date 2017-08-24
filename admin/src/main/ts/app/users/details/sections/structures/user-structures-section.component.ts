@@ -25,7 +25,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableStructure"
-                        (onSelect)="ls.perform($event.id, user?.addStructure($event.id), 0)">
+                        (onSelect)="spinner.perform($event.id, user?.addStructure($event.id), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -37,9 +37,9 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             <ul class="actions-list">
                 <li *ngFor="let structure of user.visibleStructures()">
                     <span>{{ structure.name }}</span>
-                    <i  class="fa fa-times action" (click)="ls.perform(structure.id, user?.removeStructure(structure.id), 0)"
+                    <i  class="fa fa-times action" (click)="spinner.perform(structure.id, user?.removeStructure(structure.id), 0)"
                         [tooltip]="'delete.this.structure' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(structure.id)}"></i>
+                        [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
                 </li>
                 <li *ngFor="let structure of user.invisibleStructures()">
                     <span>{{ structure.name }}</span>
@@ -54,7 +54,7 @@ export class UserStructuresSection extends AbstractSection {
 
     constructor(private userListService: UserListService,
             private router: Router,
-            protected ls: SpinnerService,
+            protected spinner: SpinnerService,
             protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -66,7 +66,7 @@ export class UserStructuresSection extends AbstractSection {
     protected onUserChange(){}
 
     private disableStructure = (s) => {
-        return this.ls.isLoading(s.id)
+        return this.spinner.isLoading(s.id)
     }
 
     private isVisibleStructure = (s) => {

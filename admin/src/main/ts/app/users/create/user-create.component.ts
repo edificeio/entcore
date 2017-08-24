@@ -118,7 +118,7 @@ export class UserCreate implements OnInit, OnDestroy {
     constructor(
         public usersStore: UsersStore,
         private ns: NotifyService,
-        private ls: SpinnerService,
+        private spinner: SpinnerService,
         private router: Router,
         private route: ActivatedRoute,
         private location: Location,
@@ -144,7 +144,7 @@ export class UserCreate implements OnInit, OnDestroy {
     }
 
     private createNewUser() {
-        this.ls.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
+        this.spinner.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
             .then(res => {
                 this.newUser.id = res.data.id
                 this.ns.success({

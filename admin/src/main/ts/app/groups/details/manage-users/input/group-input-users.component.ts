@@ -94,7 +94,7 @@ export class GroupInputUsers implements OnInit {
 
     constructor(private groupsStore: GroupsStore,
         private userLS: UserListService,
-        private ls: SpinnerService,
+        private spinner: SpinnerService,
         private ns: NotifyService,
         private cdRef: ChangeDetectorRef,
         private listFilters: UserlistFiltersService) {}
@@ -139,7 +139,7 @@ export class GroupInputUsers implements OnInit {
 
         if (selectedStructure.users && selectedStructure.users.data 
             && selectedStructure.users.data.length < 1) {
-            this.ls.perform('group-manage-users',
+            this.spinner.perform('group-manage-users',
                 selectedStructure.users.sync()
                     .then(() => {
                         this.model = selectedStructure.users.data
@@ -163,7 +163,7 @@ export class GroupInputUsers implements OnInit {
     }
 
     private addUsers(): void {
-        this.ls.perform('group-manage-users',
+        this.spinner.perform('group-manage-users',
             this.groupsStore.group.addUsers(this.selectedUsers)
                 .then(() => {
                     this.groupsStore.group.users = this.groupsStore.group.users.concat(this.selectedUsers)

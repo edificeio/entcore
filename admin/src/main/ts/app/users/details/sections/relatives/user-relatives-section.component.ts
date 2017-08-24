@@ -24,7 +24,7 @@ import { UserModel } from '../../../../core/store/models'
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableRelative"
-                        (onSelect)="ls.perform($event.id, details?.addRelative($event), 0)">
+                        (onSelect)="spinner.perform($event.id, details?.addRelative($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{item?.lastName.toUpperCase()}} {{item?.firstName}}
@@ -38,9 +38,9 @@ import { UserModel } from '../../../../core/store/models'
                     <a class="action" [routerLink]="['..', parent.id]">
                         {{ parent.lastName | uppercase }} {{ parent.firstName }}
                     </a>
-                    <i  class="fa fa-times action" (click)="ls.perform(parent.id, details?.removeRelative(parent), 0)"
+                    <i  class="fa fa-times action" (click)="spinner.perform(parent.id, details?.removeRelative(parent), 0)"
                         [tooltip]="'delete.this.relative' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(parent.id) }"></i>
+                        [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
                 </li>
             </ul>
         </panel-section>
@@ -52,7 +52,7 @@ export class UserRelativesSection extends AbstractSection {
 
     constructor(
             private userListService: UserListService,
-            protected ls: SpinnerService,
+            protected spinner: SpinnerService,
             protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -71,7 +71,7 @@ export class UserRelativesSection extends AbstractSection {
     }
 
     private disableRelative = (relative) => {
-        return this.ls.isLoading(relative.id)
+        return this.spinner.isLoading(relative.id)
     }
 
 }

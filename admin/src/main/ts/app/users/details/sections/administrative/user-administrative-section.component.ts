@@ -54,7 +54,7 @@ import { UsersStore } from '../../../users.store'
                 </form-field>
             </form>
             <div>
-                <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || ls.isLoading('user.update', 1)"
+                <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update', 1)"
                     (click)="updateDetails()" class="relative">
                         <spinner-cube class="button-spinner" waitingFor="user.update">
                         </spinner-cube>
@@ -71,7 +71,7 @@ export class UserAdministrativeSection extends AbstractSection {
     constructor(
         private usersStore: UsersStore,
         private ns: NotifyService,
-        protected ls: SpinnerService,
+        protected spinner: SpinnerService,
         protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -87,7 +87,7 @@ export class UserAdministrativeSection extends AbstractSection {
     }
 
     public updateDetails() {
-        this.ls.perform('user.update', this.details.update())
+        this.spinner.perform('user.update', this.details.update())
             .then(() => {
                 if (this.firstNameInput && this.firstNameInput.dirty) {
                     this.user.firstName = this.details.firstName

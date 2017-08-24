@@ -25,7 +25,7 @@ import { UserModel } from '../../../../core/store/models/user.model'
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableChild"
-                        (onSelect)="ls.perform($event.id, details?.addChild($event), 0)">
+                        (onSelect)="spinner.perform($event.id, details?.addChild($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{item?.lastName.toUpperCase()}} {{item?.firstName}}
@@ -39,9 +39,9 @@ import { UserModel } from '../../../../core/store/models/user.model'
                     <a class="action" [routerLink]="['..', child.id]">
                         {{ child.lastName | uppercase }} {{ child.firstName }}
                     </a>
-                    <i  class="fa fa-times action" (click)="ls.perform(child.id, details?.removeChild(child), 0)"
+                    <i  class="fa fa-times action" (click)="spinner.perform(child.id, details?.removeChild(child), 0)"
                         [tooltip]="'delete.this.child' | translate"
-                        [ngClass]="{ disabled: ls.isLoading(child.id)}"></i>
+                        [ngClass]="{ disabled: spinner.isLoading(child.id)}"></i>
                 </li>
             </ul>
         </panel-section>
@@ -53,7 +53,7 @@ export class UserChildrenSection extends AbstractSection {
 
     constructor(
             private userListService: UserListService,
-            protected ls: SpinnerService,
+            protected spinner: SpinnerService,
             protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -72,7 +72,7 @@ export class UserChildrenSection extends AbstractSection {
     }
 
     private disableChild = (child) => {
-        return this.ls.isLoading(child.id)
+        return this.spinner.isLoading(child.id)
     }
 
 }

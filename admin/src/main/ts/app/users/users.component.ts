@@ -43,7 +43,7 @@ export class UsersComponent implements OnInit, OnDestroy {
         private cdRef: ChangeDetectorRef,
         public usersStore: UsersStore,
         private listFilters: UserlistFiltersService,
-        private ls: SpinnerService,
+        private spinner: SpinnerService,
         private ns: NotifyService){}
 
     private dataSubscriber : Subscription
@@ -64,8 +64,6 @@ export class UsersComponent implements OnInit, OnDestroy {
             if(e instanceof NavigationEnd)
                 this.cdRef.markForCheck()
         })
-
-        console.log(this.usersStore.structure)
     }
 
     ngOnDestroy(): void {
@@ -81,7 +79,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
     openUserDetail(user) {
         this.usersStore.user = user
-        this.ls.perform('portal-content', this.router.navigate([user.id], {relativeTo: this.route }))
+        this.spinner.perform('portal-content', this.router.navigate([user.id], {relativeTo: this.route }))
     }
 
     openCompanionView(view) {

@@ -42,7 +42,7 @@ export class GroupCreate {
 
     constructor(private groupsStore: GroupsStore,
         private ns: NotifyService,
-        private ls: SpinnerService,
+        private spinner: SpinnerService,
         private router: Router,
         private route: ActivatedRoute,
         private location: Location) {}
@@ -50,7 +50,7 @@ export class GroupCreate {
     createNewGroup() {
         this.newGroup.structureId = this.groupsStore.structure.id
 
-        this.ls.perform('portal-content', this.newGroup.create()
+        this.spinner.perform('portal-content', this.newGroup.create()
             .then(res => {
                 this.newGroup.id = res.data.id
                 this.newGroup.type = 'ManualGroup'
