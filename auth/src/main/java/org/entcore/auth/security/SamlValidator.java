@@ -267,12 +267,15 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 		String lr = SamlUtils.marshallLogoutRequest(logoutRequest)
 				.replaceFirst("<\\?xml version=\"1.0\" encoding=\"UTF-8\"\\?>\n", "");
-		logger.info("lr : " + lr);
+
 		String queryString = "SAMLRequest=" + URLEncoder.encode(ZLib.deflateAndEncode(lr), "UTF-8") + "&RelayState=" + config.getString("saml-slo-relayState", "NULL");
 
-			queryString = sign(queryString);
+		queryString = sign(queryString);
 
-		logger.info("querystring : " + queryString);
+		if (logger.isDebugEnabled()) {
+			logger.debug("lr : " + lr);
+			logger.debug("querystring : " + queryString);
+		}
 
 		return sloUri + "?" + queryString;
 	}
