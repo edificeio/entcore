@@ -15,11 +15,12 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { routes, ng, template, idiom as lang, http, notify } from 'entcore';
+import { routes, ng, template, idiom as lang, http, notify, Document } from 'entcore';
 import { workspace } from './model';
 import { _ } from 'entcore';
 import { $ } from 'entcore';
 import { moment } from 'entcore';
+import { Mix } from 'entcore-toolkit';
 
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', 'model', 'route', ($scope, $rootScope, $timeout, model, route) => {
 
@@ -154,9 +155,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			return doc.metadata['content-type'] !== 'application/json' &&
 				(($scope.currentFolderTree.name !== 'trash' && doc.folder !== 'Trash') || ($scope.currentFolderTree.name === 'trash' && doc.folder === 'Trash'));
 		});
-		documents = documents.map(function(item){
-			item = new workspace.Document(item);
-			item.behaviours('workspace');
+		documents = documents.map((item) => {
+			item = Mix.castAs(Document, item) as Document;
+			item.rights.fromBehaviours();
 			return item;
 		});
 
