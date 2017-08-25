@@ -8,10 +8,10 @@ import { SijilModule } from 'sijil'
 import { UxModule } from '../shared/ux/ux.module'
 import { NavComponent } from './nav/nav.component'
 import { SpinnerService, SijilLabelsService, NotifyService } from './services'
-import { I18nResolve } from './resolvers/i18n.resolve'
-import { SessionResolve } from './resolvers/session.resolve'
-import { StructuresResolve } from './resolvers/structures.resolve'
-import { throwIfAlreadyLoaded } from './module-import-guard'
+import { I18nResolver } from './resolvers/i18n.resolver'
+import { SessionResolver } from './resolvers/session.resolver'
+import { StructuresResolver } from './resolvers/structures.resolver'
+import { throwIfAlreadyLoaded } from './module-import.guard'
 
 @NgModule({
     imports: [
@@ -27,9 +27,9 @@ import { throwIfAlreadyLoaded } from './module-import-guard'
     exports: [NavComponent],
     declarations: [NavComponent],
     providers: [
-        SessionResolve,
-        StructuresResolve,
-        I18nResolve,
+        SessionResolver,
+        StructuresResolver,
+        I18nResolver,
         SijilLabelsService,
         NotifyService,
         SpinnerService

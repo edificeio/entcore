@@ -5,10 +5,9 @@ import { NgModule } from '@angular/core'
 import { InfraComponentsModule } from 'infra-components'
 import { SijilModule } from 'sijil'
 
-import { CoreModule } from '../core/core.module'
 import { UxModule } from '../shared/ux/ux.module'
-import { routes } from './groups-routing.module'
-import { GroupsResolve } from './groups.resolve'
+import { routes } from './groups.routing'
+import { GroupsResolver } from './groups.resolver'
 import { GroupDetailsResolve } from './details/group-details.resolve'
 import { GroupsStore } from './groups.store'
 import { UserlistFiltersService } from '../core/services'
@@ -44,7 +43,7 @@ import { GroupsTypeView} from './type-view/groups-type-view.component'
         GroupsTypeView
     ],
     providers: [
-        GroupsResolve,
+        GroupsResolver,
         GroupDetailsResolve,
         GroupsStore,
         UserlistFiltersService

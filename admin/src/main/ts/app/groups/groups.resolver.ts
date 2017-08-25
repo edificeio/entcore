@@ -6,7 +6,7 @@ import { GroupModel } from '../core/store/models'
 import { SpinnerService, routing } from '../core/services'
 
 @Injectable()
-export class GroupsResolve implements Resolve<GroupModel[]> {
+export class GroupsResolver implements Resolve<GroupModel[]> {
 
     constructor(private spinner: SpinnerService) { }
 

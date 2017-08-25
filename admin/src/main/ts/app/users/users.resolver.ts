@@ -7,7 +7,7 @@ import { SpinnerService } from '../core/services'
 import { UsersStore } from './users.store'
 
 @Injectable()
-export class UsersResolve implements Resolve<UserModel[]> {
+export class UsersResolver implements Resolve<UserModel[]> {
 
     constructor(private spinner: SpinnerService){}
 

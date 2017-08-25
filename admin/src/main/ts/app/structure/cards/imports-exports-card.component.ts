@@ -1,5 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core'
-import { StructureModel } from '../../../core/store'
+import { Component, ChangeDetectionStrategy } from '@angular/core'
 
 @Component({
     selector: 'imports-exports-card',
@@ -28,5 +27,4 @@ import { StructureModel } from '../../../core/store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ImportsExportsCard {
-    @Input() structure: StructureModel
 }

@@ -4,7 +4,7 @@ import { Resolve } from '@angular/router'
 import { Session, SessionModel } from '../store'
 
 @Injectable()
-export class SessionResolve implements Resolve<Session> {
+export class SessionResolver implements Resolve<Session> {
 
     constructor(){}
 

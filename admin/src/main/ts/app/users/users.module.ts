@@ -5,11 +5,10 @@ import { NgModule } from '@angular/core'
 import { InfraComponentsModule } from 'infra-components'
 import { SijilModule } from 'sijil'
 
-import { CoreModule } from '../core/core.module'
 import { UxModule } from '../shared/ux/ux.module'
-import { routes } from './users-routing.module'
+import { routes } from './users.routing'
 import { UserDetailsResolve } from './details/user-details.resolve'
-import { UsersResolve } from './users.resolve'
+import { UsersResolver } from './users.resolver'
 import { UsersStore } from './users.store'
 import { UsersComponent } from './users.component'
 import { UserCreate } from './create/user-create.component'
@@ -55,7 +54,7 @@ import { UserlistFiltersService } from '../core/services'
     ],
     providers: [
         UserDetailsResolve,
-        UsersResolve,
+        UsersResolver,
         UserlistFiltersService
     ],
     exports: [

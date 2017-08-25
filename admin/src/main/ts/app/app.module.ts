@@ -7,7 +7,7 @@ import { CoreModule } from './core/core.module'
 import { AppComponent } from './app.component'
 import { AppHomeComponent } from './app-home.component'
 
-import { routes } from './app-routing.module'
+import { routes } from './app.routing'
 
 @NgModule({
     imports: [

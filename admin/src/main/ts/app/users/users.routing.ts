@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router'
 
-import { UsersResolve } from './users.resolve'
+import { UsersResolver } from './users.resolver'
 import { UserDetailsResolve } from './details/user-details.resolve'
 
 import { UsersComponent } from './users.component'
@@ -10,7 +10,7 @@ import { UserDetails } from './details/user-details.component';
 
 export let routes : Routes = [
     { 
-        path: '', component: UsersComponent, resolve: { userlist: UsersResolve },
+        path: '', component: UsersComponent, resolve: { UsersResolver },
         children: [
             { path: 'create', 	component: UserCreate },
             { path: 'filter', 	component: UserFilters },

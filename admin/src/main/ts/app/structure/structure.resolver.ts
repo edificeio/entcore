@@ -5,7 +5,7 @@ import { StructureModel, globalStore } from '../core/store'
 import { SpinnerService, ProfilesService } from '../core/services'
 
 @Injectable()
-export class StructureResolve implements Resolve<StructureModel> {
+export class StructureResolver implements Resolve<StructureModel> {
 
     constructor(private spinner: SpinnerService){}
 

@@ -8,11 +8,14 @@ import { SijilModule } from 'sijil'
 
 import { CoreModule } from "../core/core.module";
 import { UxModule } from '../shared/ux/ux.module'
-import { routes } from './structure-routing.module'
-import { StructureResolve } from './structure.resolve'
+import { routes } from './structure.routing'
+import { StructureResolver } from './structure.resolver'
 import { StructureComponent } from './structure.component'
-import { StructureHomeComponent } from './structure-home.component';
-import { StructureCard, ImportsExportsCard, QuickActionsCard, UserSearchCard } from './cards'
+import { StructureHomeComponent } from './structure-home.component'
+import { StructureCard } from './cards/structure-card.component'
+import { ImportsExportsCard } from './cards/imports-exports-card.component'
+import { QuickActionsCard } from './cards/quick-actions-card.component'
+import { UserSearchCard } from './cards/user-search-card.component'
 
 @NgModule({
     imports: [
@@ -32,7 +35,7 @@ import { StructureCard, ImportsExportsCard, QuickActionsCard, UserSearchCard } f
         UserSearchCard
     ],
     providers: [
-        StructureResolve
+        StructureResolver
     ],
     exports: [
         RouterModule

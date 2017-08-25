@@ -1,5 +1,5 @@
 import { Component, Input, AfterViewInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core'
-import { StructureModel } from '../../../core/store'
+import { StructureModel } from '../../core/store'
 
 @Component({
     selector: 'user-search-card',

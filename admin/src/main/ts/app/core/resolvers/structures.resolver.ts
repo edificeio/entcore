@@ -4,7 +4,7 @@ import { Resolve } from '@angular/router'
 import { globalStore } from '../store'
 
 @Injectable()
-export class StructuresResolve implements Resolve<void> {
+export class StructuresResolver implements Resolve<void> {
 
     resolve(): Promise<any> {
         return globalStore.structures.sync()

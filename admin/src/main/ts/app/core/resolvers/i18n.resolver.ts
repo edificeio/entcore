@@ -4,7 +4,7 @@ import { Resolve } from '@angular/router'
 import { BundlesService } from 'sijil'
 
 @Injectable()
-export class I18nResolve implements Resolve<void> {
+export class I18nResolver implements Resolve<void> {
 
     constructor(private bundles : BundlesService){}
 
