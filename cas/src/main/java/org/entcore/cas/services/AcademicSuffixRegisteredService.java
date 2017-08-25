@@ -87,7 +87,7 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 	@Override
 	protected void prepareUserCas20(User user, String userId, String service, JsonObject data, Document doc, List<Element> additionnalAttributes) {
 		user.setUser(data.getString(principalAttributeName));
-		log.info("conf : eip : " + externalIdPrefix + ", acp : " + academicConfPattern + ", map : " + ACADEMIC_SUFFIX.toString());
+		log.debug("conf : eip : " + externalIdPrefix + ", acp : " + academicConfPattern + ", map : " + ACADEMIC_SUFFIX.toString());
 
 		try {
 			// Define attribute : cas:user
