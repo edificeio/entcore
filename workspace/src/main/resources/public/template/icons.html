@@ -86,13 +86,13 @@
 				</a>
 				<a><strong>[[me.username]]</strong></a>
 			</legend>
-		</div><!--
-		--><div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		</div>
+		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<explorer ng-model="document.selected" on-open="viewFile(document)">
-				<a class="[[document.metadata.contentType]] container cell">
-					<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
+				<a class="[[document.metadata.role]] container cell">
+					<i class="[[document.metadata.role]]-large" ng-if="document.metadata.role !== 'img'">
 					</i>
-					<div ng-if="document.metadata.contentType === 'img'" class="twelve cell">
+					<div ng-if="document.metadata.role === 'img'" class="twelve cell">
 						<div class="clip">
 							<img ng-src="[[document.icon]]?thumbnail=120x120&v=[[document.version]]" alt="thumbnail" />
 						</div>

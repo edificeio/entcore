@@ -28,7 +28,6 @@
     "entcore": "^2.0.17",
     "entcore-toolkit": "^1.0.1",
     "gulp": "^3.9.1",
-    "gulp-bower": "0.0.13",
     "gulp-clean": "^0.3.2",
     "gulp-less": "^3.3.0",
     "gulp-rename": "^1.2.2",

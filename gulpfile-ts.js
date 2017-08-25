@@ -1,7 +1,6 @@
 var gulp = require('./gulpfile-loader')('ts');
 var ts = require('gulp-typescript');
 var webpack = require('webpack-stream');
-var bower = require('gulp-bower');
 var merge = require('merge2');
 var watch = require('gulp-watch');
 var rev = require('gulp-rev');

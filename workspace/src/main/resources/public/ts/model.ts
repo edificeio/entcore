@@ -18,73 +18,10 @@
 import { model, http } from 'entcore';
 
 export let workspace = {
-	Document: function (item){
-		var fileNameSplit = item.metadata.filename.split('.');
-		this.metadata.extension = '';
-		if(item.name.split('.').length > 1){
-			this.metadata.extension = fileNameSplit[fileNameSplit.length - 1];
-			this.name = item.name.split('.' + item.metadata.extension)[0];
-		}
-		this.owner = { userId: item.owner };
-
-		if(item.created){
-			this.created = item.created.split('.')[0] + ':' + item.created.split('.')[1].substring(0, 2);
-		}
-		else{
-			this.created = item.sent.split('.')[0] + ':' + item.sent.split('.')[1].substring(0, 2);
-		}
-
-		this.metadata.contentType = this.roleFromFileType(item.metadata['content-type']);
-		this.link = '/workspace/document/' + item._id;
-		if(this.metadata.contentType === 'img'){
-			this.icon = this.link;
-		}
-		this.version = Math.floor(Math.random() * 100);
-	},
 	Folder: function(data?){},
 	Tree: function(){},
 	Quota: function(){}
 }
-
-workspace.Document.prototype.roleFromFileType = function(fileType) {
-	var types = {
-		'doc': function (type) {
-			return type.indexOf('document') !== -1 && type.indexOf('wordprocessing') !== -1;
-		},
-		'xls': function (type) {
-			return (type.indexOf('document') !== -1 && type.indexOf('spreadsheet') !== -1) || (type.indexOf('ms-excel') !== -1);
-		},
-		'img': function (type) {
-			return type.indexOf('image') !== -1;
-		},
-		'pdf': function (type) {
-			return type.indexOf('pdf') !== -1 || type === 'application/x-download';
-		},
-		'ppt': function (type) {
-			return (type.indexOf('document') !== -1 && type.indexOf('presentation') !== -1) || type.indexOf('powerpoint') !== -1;
-		},
-		'video': function (type) {
-			return type.indexOf('video') !== -1;
-		},
-		'audio': function (type) {
-			return type.indexOf('audio') !== -1;
-		},
-		'zip': function (type) {
-			return type.indexOf('zip') !== -1 ||
-				type.indexOf('rar') !== -1 ||
-				type.indexOf('tar') !== -1 ||
-				type.indexOf('7z') !== -1;
-		}
-	};
-
-	for (var type in types) {
-		if (types[type](fileType)) {
-			return type;
-		}
-	}
-
-	return 'unknown';
-};
 
 workspace.Quota.prototype.sync = function(){
 	http().get('/workspace/quota/user/' + model.me.userId).done(function(data){
