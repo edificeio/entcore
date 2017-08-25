@@ -22,6 +22,7 @@ package org.entcore.cas;
 import fr.wseduc.cas.endpoint.CredentialResponse;
 import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
+import org.entcore.cas.http.VertxHttpClientFactory;
 import org.entcore.common.http.BaseServer;
 
 import fr.wseduc.cas.endpoint.CasValidator;
@@ -54,6 +55,7 @@ public class Cas extends BaseServer {
 		Credential credential = new Credential();
 		credential.setDataHandlerFactory(dataHandlerFactory);
 		credential.setCredentialResponse(credentialResponse);
+		credential.setHttpClientFactory(new VertxHttpClientFactory(vertx));
 		CredentialController credentialController = new CredentialController();
 		credentialController.setCredential(credential);
 		addController(credentialController);
