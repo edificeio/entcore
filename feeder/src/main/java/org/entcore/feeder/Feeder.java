@@ -419,14 +419,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		v.columnsMapping(path, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
+				JsonObject result = new JsonObject().put("result",
+						v.getResult().put("availableFields", v.getColumnsMapper().availableFields())
+				);
 				if (!v.containsErrors()) {
-					sendOK(message, new JsonObject()
-							.put("mappings", v.getMappings())
-							.put("availableFields", v.getColumnsMapper().availableFields()));
-				} else {
-//					sendError(message, "column.mapping.error");
-					sendOK(message, new JsonObject().put("result", v.getResult()));
+					result.getJsonObject("result").remove("errors");
 				}
+				sendOK(message, result);
 			}
 		});
 	}

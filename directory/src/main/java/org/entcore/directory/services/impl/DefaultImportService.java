@@ -75,7 +75,7 @@ public class DefaultImportService implements ImportService {
 								f.put("softErrors", r.getJsonObject("softErrors"));
 							}
 							if (isNotEmpty(r.getString("_id"))) {
-								f.putString("importId", r.getString("_id"));
+								f.put("importId", r.getString("_id"));
 							}
 							handler.handle(new Either.Right<JsonObject, JsonObject>(f));
 						}
