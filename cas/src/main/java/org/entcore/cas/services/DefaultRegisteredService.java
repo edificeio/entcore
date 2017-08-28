@@ -68,6 +68,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		for (Pattern pattern : patterns) {
 			Matcher matcher = pattern.matcher(serviceUri);
 			if (matcher.matches()) {
+				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + pattern.pattern());
 				return true;
 			}
 		}
