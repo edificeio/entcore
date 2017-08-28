@@ -139,6 +139,14 @@ public class DirectoryController extends BaseController {
 		request.response().end();
 	}
 
+	@Post("/reinitLogins")
+	@SecuredAction("directory.reinit.login")
+	@IgnoreCsrf
+	public void reinitLogins(HttpServerRequest request) {
+		eb.send("entcore.feeder", new JsonObject().putString("action", "reinit-logins"));
+		request.response().end();
+	}
+
 	@Get("/annuaire")
 	@SecuredAction(value = "directory.search.view", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {

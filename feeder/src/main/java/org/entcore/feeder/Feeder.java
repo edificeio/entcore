@@ -305,6 +305,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-udt":
 				UDTImporter.launchImport(vertx, message, postImport);
 				break;
+			case "reinit-logins" :
+				Validator.initLogin(neo4j, vertx);
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}

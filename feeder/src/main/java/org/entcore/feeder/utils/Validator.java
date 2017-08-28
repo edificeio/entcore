@@ -439,18 +439,18 @@ public class Validator {
 				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
 					JsonArray l = ((JsonObject) r.get(0)).getArray("logins");
 					if (l != null) {
+						final Set<Object> tmp = new HashSet<>(l.toList());
 						if (remove) {
-							Set<Object> tmp = new HashSet<>(l.toList());
 							for (Object key : logins.keySet()) {
 								if (!tmp.contains(key)) {
 									logins.remove(key);
+								} else {
+									tmp.remove(key);
 								}
 							}
-						} else {
-							for (Object o : l) {
-								if (!(o instanceof String)) continue;
-								logins.putIfAbsent(o, "");
-							}
+						}
+						for (Object o : tmp) {
+							logins.putIfAbsent(o, "");
 						}
 						log.info("Init delay : " + (System.currentTimeMillis() - startInit));
 					}
