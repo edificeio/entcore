@@ -17,11 +17,15 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 		if(!d.enabled){
 			$scope.welcome.hideContent = true;
 		}
-	    $scope.$apply();
+	    if(!$scope.$$phase){
+			$scope.$apply();
+		}
 	})
     .e404(function () {
         $scope.welcome.hideContent = true;
-        $scope.$apply();
+        if(!$scope.$$phase){
+			$scope.$apply();
+		}
     });
 
 	$scope.cookieEnabled = navigator.cookieEnabled;
@@ -87,7 +91,9 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 	http().get('/auth/context').done(function(data){
 		//$scope.callBack = data.callBack;
 		$scope.cgu = data.cgu;
-		$scope.$apply('cgu');
+		if(!$scope.$$phase){
+			$scope.$apply();
+		}
 	});
 
 	$scope.connect = function(){
@@ -111,7 +117,9 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 				if(data.error){
 					$scope.error = data.error.message;
 				}
-				$scope.$apply('error');
+				if(!$scope.$$phase){
+					$scope.$apply();
+				}
 			});
 	};
 
