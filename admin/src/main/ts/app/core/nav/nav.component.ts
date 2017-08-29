@@ -33,8 +33,9 @@ import { Subscription } from 'rxjs/Subscription'
                     disabled></i>
                 <i class="fa fa-th"
                     *ngIf="currentStructure"
-                    title="En construction"
-                    disabled></i>
+                    [tooltip]="'services' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)"></i>
                 <i class="fa fa-users"
                     *ngIf="currentStructure"
                     [tooltip]="'groups' | translate"

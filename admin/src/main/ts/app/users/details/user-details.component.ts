@@ -200,6 +200,8 @@ export class UserDetails implements OnInit, OnDestroy{
             }
         })
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
+            console.log('user component');
+            
             this.usersStore.user = data['user']
         })
     }

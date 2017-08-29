@@ -10,7 +10,8 @@ export let routes : Routes = [
 			{ path: '', component: StructureHomeComponent },
 			{ path: 'users', loadChildren: '../users/users.module#UsersModule' },
 			{ path: 'groups', 	loadChildren: '../groups/groups.module#GroupsModule' },
-			{ path: 'imports-exports', loadChildren: '../imports-exports/imports-exports.module#ImportsExportsModule' }
+			{ path: 'imports-exports', loadChildren: '../imports-exports/imports-exports.module#ImportsExportsModule' },
+			{ path: 'services', loadChildren: '../services/services.module#ServicesModule' }
 		]
 	}
 ]
