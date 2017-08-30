@@ -108,13 +108,13 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.variableMailAction = function (mail) {
-            var systemFolder = $scope.getSystemFolder(mail)
+            var systemFolder = mail.getSystemFolder();
             if (systemFolder === "DRAFT")
-                return $scope.editDraft(mail)
+                return $scope.editDraft(mail);
             else if (systemFolder === "OUTBOX")
-                return $scope.viewMail(mail)
+                return $scope.viewMail(mail);
             else
-                return $scope.readMail(mail)
+                return $scope.readMail(mail);
         }
 
         $scope.removeFromUserFolder = async (event, mail) => {
