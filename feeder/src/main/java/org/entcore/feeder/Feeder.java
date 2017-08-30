@@ -350,8 +350,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(JsonObject event) {
 				if (!v.containsErrors()) {
-					sendOK(message, new JsonObject()
-							.put("classesMapping", v.getClassesMappings()));
+					JsonObject result = new JsonObject().put("result", v.getResult());
+					result.getJsonObject("result").remove("errors");
+					sendOK(message, result);
 				} else {
 					sendError(message, "classes.mapping.error");
 				}
