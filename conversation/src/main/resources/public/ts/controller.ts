@@ -46,7 +46,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.state.newItem = new Mail();
         template.open('main', 'folders-templates/inbox');
         template.open('toaster', 'folders-templates/toaster');
-        $scope.formatFileType = workspace.Document.role;
+        $scope.formatFileType = Document.role;
 
         $scope.clearSearch = function () {
             $scope.users.found = [];
