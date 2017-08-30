@@ -8,16 +8,17 @@ export class SessionModel {
 
     public static getSession() : Promise<Session> {
         if(!SessionModel.session) {
-            return http.get('/auth/oauth2/userinfo').then((result) => {
-                SessionModel.session = result.data as Session
-                return SessionModel.session
-            }).catch(e => {
-                console.error(e)
-                return Promise.resolve({})
-            })
+            return http.get('/auth/oauth2/userinfo')
+                .then((result) => {
+                    SessionModel.session = result.data as Session
+                    return SessionModel.session
+                })
+                .catch(e => {
+                    console.error(e)
+                    return Promise.resolve(new Session())
+                })
         } else {
             return new Promise(res => res(SessionModel.session))
         }
     }
-
 }

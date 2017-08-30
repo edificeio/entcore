@@ -3,7 +3,9 @@ import { StructureCollection } from './collections'
 
 class GlobalStore extends AbstractStore {
 
-    constructor() { super('structures') }
+    constructor() {
+        super('structures')
+    }
 
     structures : StructureCollection = new StructureCollection()
 

@@ -51,7 +51,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.dataSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
-            console.log(data);
             if(data['structure']) {
                 let structure: StructureModel = data['structure']
                 this.usersStore.structure = structure

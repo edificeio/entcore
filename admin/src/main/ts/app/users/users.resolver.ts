@@ -20,7 +20,6 @@ export class UsersResolver implements Resolve<UserModel[]> {
         else {
             return this.spinner.perform('portal-content', currentStructure.users.sync()
                 .then(() => {
-                    console.log(currentStructure.users.data)
                     return currentStructure.users.data
                 }).catch(e => {
                     console.error(e)
