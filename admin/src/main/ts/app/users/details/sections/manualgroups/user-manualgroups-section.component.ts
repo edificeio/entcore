@@ -46,9 +46,14 @@ import { GroupModel } from '../../../../core/store/models'
     inputs: ['user', 'structure']
 })
 export class UserManualGroupsSection extends AbstractSection implements OnInit {
+    listGroupModel: GroupModel[] = []
+    showGroupLightbox: boolean = false
 
-    private listGroupModel: GroupModel[] = []
-
+    constructor(
+        public spinner: SpinnerService) {
+        super()
+    }
+    
     private _inputFilter = ""
     set inputFilter(filter: string) {
         this._inputFilter = filter
@@ -57,32 +62,27 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
         return this._inputFilter
     }
 
-    constructor(protected spinner: SpinnerService) {
-        super()
-    }
-
     ngOnInit() {
         if (this.structure.groups.data && this.structure.groups.data.length > 0) {
             this.listGroupModel = this.structure.groups.data.filter(g => g.type === 'ManualGroup')
         }
     }
 
-    private filterByInput = (mg: {id: string, name: string}) => {
+    filterByInput = (mg: {id: string, name: string}) => {
         if (!this.inputFilter) return true
         return `${mg.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
-    private filterGroups = (mg: {id: string, name: string}) => {
+    filterGroups = (mg: {id: string, name: string}) => {
         if (this.details.manualGroups) {
             return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id)
         }
         return true
     }
     
-    private disableGroup = (mg) => {
+    disableGroup = (mg) => {
         return this.spinner.isLoading(mg.id)
     }
 
     protected onUserChange() {}
-
 }

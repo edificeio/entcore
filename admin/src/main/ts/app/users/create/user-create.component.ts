@@ -110,8 +110,8 @@ import { SpinnerService, NotifyService, UserListService } from '../../core/servi
 })
 export class UserCreate implements OnInit, OnDestroy {
 
-    private newUser: UserModel = new UserModel()
-    private noClasses : Array<any> = []
+    newUser: UserModel = new UserModel()
+    noClasses : Array<any> = []
     private structureSubscriber : Subscription
     private searchChildrenTerm: string
     
@@ -143,7 +143,7 @@ export class UserCreate implements OnInit, OnDestroy {
         this.structureSubscriber.unsubscribe()
     }
 
-    private createNewUser() {
+    createNewUser() {
         this.spinner.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
             .then(res => {
                 this.newUser.id = res.data.id

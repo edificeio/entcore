@@ -75,18 +75,18 @@ export class GroupOutputUsers {
 
     // list elements stored by store pipe in list-component 
     // (takes filters in consideration)
-    private storedElements: UserModel[] = []
+    storedElements: UserModel[] = []
 
     // Users selected by enduser
-    private selectedUsers: UserModel[] = []
+    selectedUsers: UserModel[] = []
 
     constructor(private groupsStore: GroupsStore,
         private cdRef: ChangeDetectorRef,
-        private userLS: UserListService,
+        public userLS: UserListService,
         private spinner: SpinnerService,
         private ns: NotifyService){}
 
-    private selectUser(u): void {
+    selectUser(u): void {
         if (this.selectedUsers.indexOf(u) === -1) {
             this.selectedUsers.push(u)
         } else {
@@ -94,19 +94,19 @@ export class GroupOutputUsers {
         }
     }
 
-    private setUserListStyles = (user: UserModel) => {
+    setUserListStyles = (user: UserModel) => {
         return { selected: this.selectedUsers.indexOf(user) > -1 }
     }
 
-    private selectAll(): void {
+    selectAll(): void {
         this.selectedUsers = this.storedElements
     }
 
-    private deselectAll(): void {
+    deselectAll(): void {
         this.selectedUsers = []
     }
 
-    private removeUsers(): void {
+    removeUsers(): void {
         this.spinner.perform('group-manage-users',
             this.groupsStore.group.removeUsers(this.selectedUsers)
                 .then(() => {

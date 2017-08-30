@@ -10,7 +10,7 @@ import { UserDetails } from './details/user-details.component';
 
 export let routes : Routes = [
     { 
-        path: '', component: UsersComponent, resolve: { UsersResolver },
+        path: '', component: UsersComponent, resolve: { users: UsersResolver },
         children: [
             { path: 'create', 	component: UserCreate },
             { path: 'filter', 	component: UserFilters },

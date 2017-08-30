@@ -35,13 +35,16 @@ import { SpinnerService } from '../../core/services'
 })
 export class GroupsTypeView implements OnInit, OnDestroy {
 
-    private groupType : string
+    groupType : string
+
+    groupInputFilter : string
+
     private typeSubscriber : Subscription
     private dataSubscriber : Subscription
     private urlSubscriber: Subscription
 
     constructor(
-        private groupsStore: GroupsStore,
+        public groupsStore: GroupsStore,
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
@@ -71,24 +74,23 @@ export class GroupsTypeView implements OnInit, OnDestroy {
             this.cdRef.markForCheck()
         })
     }
+
     ngOnDestroy() {
         this.dataSubscriber.unsubscribe()
         this.typeSubscriber.unsubscribe()
         this.urlSubscriber.unsubscribe()
     }
 
-    // List component  properties
-    private groupInputFilter : string
-    private isSelected = (group: GroupModel) => {
+    isSelected = (group: GroupModel) => {
         return this.groupsStore.group === group
     }
-    private filterByInput = (group: GroupModel) => {
+
+    filterByInput = (group: GroupModel) => {
         if(!this.groupInputFilter) return true
         return group.name.toLowerCase()
             .indexOf(this.groupInputFilter.toLowerCase()) >= 0
     }
 
-    // Routing
     showCompanion(): boolean {
         const groupTypeRoute = '/admin/' + 
             (this.groupsStore.structure ? this.groupsStore.structure.id : '') + 
@@ -102,11 +104,12 @@ export class GroupsTypeView implements OnInit, OnDestroy {
         return res
     }
 
-    private closePanel() {
+    closePanel() {
         this.router.navigateByUrl('/admin/' + (this.groupsStore.structure ? this.groupsStore.structure.id : '') +
             '/groups/' + this.groupType)
     }
-    private routeToGroup(g:GroupModel) {
+
+    routeToGroup(g:GroupModel) {
         this.router.navigate([g.id], { relativeTo: this.route })
     }
 }

@@ -39,7 +39,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
+        public router: Router,
         private cdRef: ChangeDetectorRef,
         public usersStore: UsersStore,
         private listFilters: UserlistFiltersService,

@@ -3,7 +3,7 @@ import { AbstractControl } from '@angular/forms'
 import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService, UserListService } from '../../../../core/services'
+import { SpinnerService } from '../../../../core/services'
 import { globalStore, StructureCollection, UserModel } from '../../../../core/store'
 
 @Component({
@@ -47,33 +47,21 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             </ul>
         </panel-section>
     `,
-    inputs: ['user', 'structure'],
-    providers: [UserListService]
+    inputs: ['user', 'structure']
 })
 export class UserStructuresSection extends AbstractSection {
+    @ViewChild("codeInput")
+    codeInput : AbstractControl
+    showStructuresLightbox: boolean = false
+    structureCollection : StructureCollection = globalStore.structures
 
-    constructor(private userListService: UserListService,
-            private router: Router,
-            protected spinner: SpinnerService,
-            protected cdRef: ChangeDetectorRef) {
+    constructor(private router: Router,
+        public spinner: SpinnerService) {
         super()
     }
 
-    private structureCollection : StructureCollection = globalStore.structures
-
-    @ViewChild("codeInput") codeInput : AbstractControl
-
     protected onUserChange(){}
 
-    private disableStructure = (s) => {
-        return this.spinner.isLoading(s.id)
-    }
-
-    private isVisibleStructure = (s) => {
-        return this.structureCollection.data.find(struct => struct.id === s)
-    }
-
-    // Filters
     private _inputFilter = ""
     set inputFilter(filter: string) {
         this._inputFilter = filter
@@ -81,17 +69,17 @@ export class UserStructuresSection extends AbstractSection {
     get inputFilter() {
         return this._inputFilter
     }
-    private filterByInput = (s: {id: string, name: string}) => {
+
+    disableStructure = (s) => {
+        return this.spinner.isLoading(s.id)
+    }
+    
+    filterByInput = (s: {id: string, name: string}) => {
         if(!this.inputFilter) return true
         return `${s.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
-    private filterStructures = (s: {id: string, name: string}) => {
+    
+    filterStructures = (s: {id: string, name: string}) => {
         return !this.user.structures.find(struct => s.id === struct.id)
     }
-
-    //Routing
-    private routeToStructure(structureId: string) {
-        this.router.navigate(['/admin', structureId, 'users', this.user.id])
-    }
-
 }

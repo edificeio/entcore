@@ -50,6 +50,8 @@ import { UserModel } from '../../../../core/store/models/user.model'
     providers: [ UserListService ]
 })
 export class UserChildrenSection extends AbstractSection {
+    @ViewChild("codeInput") 
+    codeInput : AbstractControl
 
     constructor(
             private userListService: UserListService,
@@ -58,21 +60,18 @@ export class UserChildrenSection extends AbstractSection {
         super()
     }
 
-    @ViewChild("codeInput") codeInput : AbstractControl
-
     protected onUserChange(){}
 
-    private isRelative(u: UserModel){
+    isRelative(u: UserModel){
         return u.type === 'Relative'
     }
 
-    private filterChildren = (u: UserModel) => {
+    filterChildren = (u: UserModel) => {
         return this.details && this.details.children &&
             u.type === 'Student' && !this.details.children.find(c => c.id === u.id)
     }
 
-    private disableChild = (child) => {
+    disableChild = (child) => {
         return this.spinner.isLoading(child.id)
     }
-
 }

@@ -32,13 +32,15 @@ import { GroupsStore } from '../../groups.store'
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupManageUsers implements OnInit {
-    private inputUsers: UserModel[] = []
+    @Output() 
+    close : EventEmitter<void> = new EventEmitter<void>()
+    
+    inputUsers: UserModel[] = []
+
     private groupSubscriber : Subscription
 
-    @Output() close : EventEmitter<void> = new EventEmitter<void>()
-
     constructor(private cdRef: ChangeDetectorRef,
-        private groupsStore: GroupsStore,
+        public groupsStore: GroupsStore,
         private route: ActivatedRoute){}
 
     ngOnInit(): void {
@@ -58,7 +60,7 @@ export class GroupManageUsers implements OnInit {
         })
     }
 
-    private populateInputUsers(): void {
+    populateInputUsers(): void {
         this.inputUsers = this.filterUsers(this.groupsStore.structure.users.data
             , this.groupsStore.group.users)
     }

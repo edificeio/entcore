@@ -14,11 +14,11 @@ export abstract class AbstractSection {
         this.onUserChange()
     }
     protected _user : UserModel
-    protected details: UserDetailsModel
+    details: UserDetailsModel
     structure: StructureModel
 
     protected now : string = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`
-    protected emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+    emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
 
     protected getStructure(id: string) {
         return globalStore.structures.data.find(s => s.id === id)

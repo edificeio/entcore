@@ -54,13 +54,14 @@ export class GroupInputFilters implements OnChanges {
     @Output() 
     private onClose = new EventEmitter<any>()
 
-    private show: boolean = false
+    show: boolean = false
+
     private deselectItem: boolean = false
 
     constructor(
         private _eref: ElementRef,
         private bundles: BundlesService,
-        private listFilters: UserlistFiltersService,
+        public listFilters: UserlistFiltersService,
         private cdRef: ChangeDetectorRef){}
 
     ngOnChanges(): void {
@@ -94,16 +95,16 @@ export class GroupInputFilters implements OnChanges {
         })
     }
 
-    private orderer(a){
+    orderer(a){
         return a
     }
 
-    private deselect(filter, item) {
+    deselect(filter, item) {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         this.deselectItem = true
     }
 
-    private onClick(event) {
+    onClick(event) {
         if (this.show && !this._eref.nativeElement.contains(event.target) && !this.deselectItem) {
             this.toggleVisibility()
         }
@@ -111,7 +112,7 @@ export class GroupInputFilters implements OnChanges {
         return true
     }
 
-    private toggleVisibility(): void {
+    toggleVisibility(): void {
         this.show = !this.show
     }
 }

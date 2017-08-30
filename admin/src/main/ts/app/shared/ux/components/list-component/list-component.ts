@@ -50,7 +50,9 @@ export class ListComponent implements AfterViewInit {
     self = this
     _storedElements = []
 
-    constructor(private cdRef: ChangeDetectorRef){}
+    constructor(
+        public cdRef: ChangeDetectorRef){}
+
     ngAfterViewInit() {
         this.cdRef.markForCheck()
         this.cdRef.detectChanges()

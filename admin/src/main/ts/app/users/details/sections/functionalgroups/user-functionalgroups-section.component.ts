@@ -47,7 +47,8 @@ import { GroupModel } from '../../../../core/store/models'
 })
 export class UserFunctionalGroupsSection extends AbstractSection implements OnInit {
 
-    private listGroupModel: GroupModel[] = []
+    listGroupModel: GroupModel[] = []
+    showGroupLightbox: boolean = false
 
     private _inputFilter = ""
     set inputFilter(filter: string) {
@@ -56,30 +57,31 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
     get inputFilter() {
         return this._inputFilter
     }
-
-    constructor(protected spinner: SpinnerService) {
+    
+    constructor(
+        public spinner: SpinnerService) {
         super()
     }
-
+    
     ngOnInit() {
         if (this.structure.groups.data && this.structure.groups.data.length > 0) {
             this.listGroupModel = this.structure.groups.data.filter(g => g.type === 'FunctionalGroup')
         }
     }
 
-    private filterByInput = (g: {id: string, name: string}) => {
+    filterByInput = (g: {id: string, name: string}) => {
         if (!this.inputFilter) return true
         return `${g.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
-    private filterGroups = (g: {id: string, name: string}) => {
+    filterGroups = (g: {id: string, name: string}) => {
         if (this.details.functionalGroups) {
             return !this.details.functionalGroups.find(fg => g.id === fg.id)
         }
         return true;
     }
     
-    private disableGroup = (g) => {
+    disableGroup = (g) => {
         return this.spinner.isLoading(g.id)
     }
 

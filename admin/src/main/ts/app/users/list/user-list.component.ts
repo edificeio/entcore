@@ -95,7 +95,7 @@ export class UserList implements OnInit, OnDestroy {
 
     constructor(private cdRef: ChangeDetectorRef,
         public userLS: UserListService,
-        private listFilters: UserlistFiltersService){}
+        public listFilters: UserlistFiltersService){}
 
     ngOnInit() {
         this.filtersUpdatesSubscriber = this.listFilters.updateSubject.subscribe(() => {
@@ -107,7 +107,7 @@ export class UserList implements OnInit, OnDestroy {
         this.filtersUpdatesSubscriber.unsubscribe()
     }
 
-    private setStyles = (user: UserModel) => {
+    setStyles = (user: UserModel) => {
         return {
             selected: this.selectedUser && user && this.selectedUser.id === user.id
         }

@@ -36,7 +36,7 @@ export class GroupsComponent implements OnInit, OnDestroy {
     private structureSubscriber: Subscription
 
     // Tabs
-    private tabs = [
+    tabs = [
         { label: "manual.groups", view: "manual" },
         { label: "profile.groups", view: "profile" },
         { label: "functional.groups", view: "functional" }
@@ -47,9 +47,9 @@ export class GroupsComponent implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
+        public router: Router,
         private cdRef: ChangeDetectorRef,
-        private groupsStore: GroupsStore,
+        public groupsStore: GroupsStore,
         private ls: SpinnerService) { }
 
     ngOnInit(): void {

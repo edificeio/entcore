@@ -48,7 +48,10 @@ import { SpinnerService } from '../../../../core/services'
 })
 export class UserClassesSection extends AbstractSection {
     
-    constructor(protected spinner: SpinnerService) {
+    showClassesLightbox: boolean = false
+
+    constructor(
+        public spinner: SpinnerService) {
         super()
     }
 
@@ -60,16 +63,16 @@ export class UserClassesSection extends AbstractSection {
         return this._inputFilter
     }
 
-    private filterByInput = (c: {id: string, name: string}) => {
+    filterByInput = (c: {id: string, name: string}) => {
         if (!this.inputFilter) return true
         return `${c.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
 
-    private filterClasses = (c: {id: string, name: string}) => {
+    filterClasses = (c: {id: string, name: string}) => {
         return !this.user.classes.find(classe => c.id === classe.id)
     }
     
-    private disableClass = (c) => {
+    disableClass = (c) => {
         return this.spinner.isLoading(c.id)
     }
 

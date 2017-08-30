@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ChangeDetectorRef } from '@angular/core'
+import { Component, Input, ViewChild } from '@angular/core'
 import { NgForm, AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
@@ -54,7 +54,7 @@ import { UsersStore } from '../../../users.store'
                 </form-field>
             </form>
             <div>
-                <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update', 1)"
+                <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update')"
                     (click)="updateDetails()" class="relative">
                         <spinner-cube class="button-spinner" waitingFor="user.update">
                         </spinner-cube>
@@ -68,17 +68,21 @@ import { UsersStore } from '../../../users.store'
 })
 export class UserAdministrativeSection extends AbstractSection {
 
+    @ViewChild('administrativeForm') 
+    administrativeForm : NgForm
+    
+    @ViewChild('firstNameInput') 
+    firstNameInput: AbstractControl
+    
+    @ViewChild('lastNameInput') 
+    lastNameInput: AbstractControl
+
     constructor(
         private usersStore: UsersStore,
         private ns: NotifyService,
-        protected spinner: SpinnerService,
-        protected cdRef: ChangeDetectorRef) {
+        public spinner: SpinnerService) {
         super()
     }
-
-    @ViewChild("administrativeForm") administrativeForm : NgForm
-    @ViewChild('firstNameInput') firstNameInput: AbstractControl
-    @ViewChild('lastNameInput') lastNameInput: AbstractControl
 
     protected onUserChange() {
         if(this.administrativeForm){
@@ -86,7 +90,7 @@ export class UserAdministrativeSection extends AbstractSection {
         }
     }
 
-    public updateDetails() {
+    updateDetails() {
         this.spinner.perform('user.update', this.details.update())
             .then(() => {
                 if (this.firstNameInput && this.firstNameInput.dirty) {

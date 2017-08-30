@@ -38,7 +38,7 @@ import { UsersStore } from '../users.store'
             <s5l>user.blocked</s5l>
 
             <button class="action" (click)="toggleUserBlock()" 
-                [disabled]="spinner.isLoading('portal-content', 1)">
+                [disabled]="spinner.isLoading('portal-content')">
                 <s5l>unblock</s5l>
                 <i class="fa fa-check"></i>
             </button>
@@ -60,7 +60,7 @@ import { UsersStore } from '../users.store'
             <s5l>user.predeleted</s5l>
 
             <button class="action" (click)="restoreUser()" 
-                [disabled]="spinner.isLoading('portal-content', 1)">
+                [disabled]="spinner.isLoading('portal-content')">
                 <s5l>restore</s5l>
                 <i class="fa fa-upload"></i>
             </button>
@@ -76,9 +76,9 @@ import { UsersStore } from '../users.store'
                 <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
                 <div>
                     <button (click)="toggleUserBlock()" 
-                        [disabled]="spinner.isLoading('portal-content', 1)" 
+                        [disabled]="spinner.isLoading('portal-content')" 
                         class="relative"
-                        *ngIf="!details.blocked || details.blocked === false">
+                        *ngIf="isUnblocked()">
                         <s5l [s5l-params]="[details.blocked]">
                             toggle.account
                         </s5l>
@@ -87,7 +87,7 @@ import { UsersStore } from '../users.store'
                 </div>
                 <div *ngIf="isRemovable()">
                     <button (click)="removeUser()" 
-                        [disabled]="spinner.isLoading('portal-content', 1)">
+                        [disabled]="spinner.isLoading('portal-content')">
                         <s5l>predelete.account</s5l>
                         <i class="fa fa-times-circle"></i>
                     </button>
@@ -152,14 +152,20 @@ import { UsersStore } from '../users.store'
 })
 export class UserDetails implements OnInit, OnDestroy{
 
+    @ViewChild("codeInput")
+    codeInput : AbstractControl
+    
+    @ViewChild("administrativeForm")
+    administrativeForm : NgForm
+    
     private userSubscriber: Subscription
     private dataSubscriber: Subscription
 
-    private forceDuplicates : boolean
+    forceDuplicates : boolean
+    details : UserDetailsModel
+    structure: StructureModel = this.usersStore.structure
     
     private _user : UserModel
-    private details : UserDetailsModel
-    private structure: StructureModel = this.usersStore.structure
     set user(user: UserModel) {
         this._user = user
         this.details = user.userDetails
@@ -170,15 +176,13 @@ export class UserDetails implements OnInit, OnDestroy{
     }
     get user(){ return this._user }
 
-    constructor(private spinner: SpinnerService,
+    constructor(
+        public spinner: SpinnerService,
         private ns: NotifyService,
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
         private router: Router){}
-
-    @ViewChild("codeInput") codeInput : AbstractControl
-    @ViewChild("administrativeForm") administrativeForm : NgForm
 
     ngOnInit() {
         this.dataSubscriber = this.usersStore.onchange.subscribe(field => {
@@ -205,17 +209,17 @@ export class UserDetails implements OnInit, OnDestroy{
         this.dataSubscriber.unsubscribe()
     }
 
-    private isContextAdml() {
+    isContextAdml() {
         return this.details && this.details.functions &&
             this.details.functions[0][0] &&
             this.details.functions[0][1].find(id => this.structure.id === id)
     }
 
-    private hasDuplicates() {
+    hasDuplicates() {
         return this.user.duplicates && this.user.duplicates.length > 0
     }
 
-    private openDuplicates() {
+    openDuplicates() {
         this.forceDuplicates = null
         setTimeout(() => {
             this.forceDuplicates = true
@@ -224,7 +228,7 @@ export class UserDetails implements OnInit, OnDestroy{
         }, 0)
     }
 
-    private toggleUserBlock() {
+    toggleUserBlock() {
         this.spinner.perform('portal-content', this.details.toggleBlock())
             .then(() => {
                 this.user.blocked = !this.user.blocked
@@ -263,13 +267,17 @@ export class UserDetails implements OnInit, OnDestroy{
             })
     }
 
-    private isRemovable() {
+    isUnblocked() {
+        return !this.details.blocked
+    }
+
+    isRemovable() {
         return (this.user.disappearanceDate 
             || (this.user.source !== 'AAF' && this.user.source !== "AAF1D")
             && !this.user.deleteDate)
     }
 
-    private removeUser() {
+    removeUser() {
         this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
             .then(() => {
                 this.user.deleteDate = Date.now()
@@ -308,7 +316,7 @@ export class UserDetails implements OnInit, OnDestroy{
             })
     }
 
-    private restoreUser() {
+    restoreUser() {
         this.spinner.perform('portal-content', this.user.restore())
             .then(() => {
                 this.user.deleteDate = null

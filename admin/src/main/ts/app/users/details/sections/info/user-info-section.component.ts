@@ -84,15 +84,14 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
     inputs: ['user', 'structure']
 })
 export class UserInfoSection extends AbstractSection implements OnInit {
-
-    private passwordResetMail
-    private passwordResetMobile
-    private smsModule: boolean
+    passwordResetMail: string
+    passwordResetMobile: string
+    smsModule: boolean
 
     constructor(
         private ns: NotifyService,
-        protected spinner: SpinnerService,
-        protected cdRef: ChangeDetectorRef) {
+        private spinner: SpinnerService,
+        private cdRef: ChangeDetectorRef) {
         super()
     }
 
@@ -112,7 +111,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
         }
     }
 
-    private addAdml() {
+    addAdml() {
         this.spinner.perform('portal-content', this.details.addAdml(this.structure.id))
             .then(res => {
                 this.ns.success({
@@ -127,7 +126,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
             })
     }
 
-    private removeAdml() {
+    removeAdml() {
         this.spinner.perform('portal-content', this.details.removeAdml())
             .then(res => {
                 this.ns.success({
@@ -142,7 +141,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
             })
     }
 
-    private sendResetPasswordMail(email: string) {
+    sendResetPasswordMail(email: string) {
         this.spinner.perform('portal-content', this.details.sendResetPassword({type: 'email', value: email}))
             .then(res => {
                 this.ns.success({
@@ -164,7 +163,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
             })
     }
 
-    private sendResetPasswordMobile(mobile: string) {
+    sendResetPasswordMobile(mobile: string) {
         this.spinner.perform('portal-content', this.details.sendResetPassword({type: 'mobile', value: mobile}))
             .then(res => {
                 this.ns.success({

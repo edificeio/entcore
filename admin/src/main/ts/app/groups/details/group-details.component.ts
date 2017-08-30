@@ -35,12 +35,12 @@ import { GroupsStore } from '../groups.store'
 })
 export class GroupDetails implements OnInit, OnDestroy {
 
-    private showAddUsersLightBox: boolean = false
+    showAddUsersLightBox: boolean = false
 
     private groupSubscriber : Subscription
 
     constructor(
-        private groupsStore: GroupsStore,
+        public groupsStore: GroupsStore,
         private route: ActivatedRoute,
         private cdRef : ChangeDetectorRef){}
 
@@ -58,12 +58,12 @@ export class GroupDetails implements OnInit, OnDestroy {
         this.groupSubscriber.unsubscribe()
     }
 
-    private showLightBox() {
+    showLightBox() {
         this.showAddUsersLightBox = true
         document.body.style.overflowY = 'hidden'
     }
 
-    private closeLightBox() {
+    closeLightBox() {
         this.showAddUsersLightBox = false
         document.body.style.overflowY = 'auto'
     }

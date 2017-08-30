@@ -22,9 +22,9 @@ export class FormErrors {
     constructor(){}
 
     @Input("control")
-    private ref : AbstractControl
+    ref : AbstractControl
 
-    private getErrorsArray() {
+    getErrorsArray() {
         let errorsArray = []
         for(let prop in this.ref.errors) {
             errorsArray.push({ name: prop, value: this.ref.errors[prop]})

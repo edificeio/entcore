@@ -84,20 +84,20 @@ export class GroupInputUsers implements OnInit {
 
     // list elements stored by store pipe in list-component 
     // (takes filters in consideration)
-    private storedElements: UserModel[] = []
+    storedElements: UserModel[] = []
     
     // Users selected by enduser
-    private selectedUsers: UserModel[] = []
+    selectedUsers: UserModel[] = []
 
-    private structure: StructureModel
-    private structures: StructureModel[] = []
+    structure: StructureModel
+    structures: StructureModel[] = []
 
     constructor(private groupsStore: GroupsStore,
-        private userLS: UserListService,
+        public userLS: UserListService,
         private spinner: SpinnerService,
         private ns: NotifyService,
         private cdRef: ChangeDetectorRef,
-        private listFilters: UserlistFiltersService) {}
+        public listFilters: UserlistFiltersService) {}
 
     ngOnInit(): void {
         this.structure = this.groupsStore.structure
@@ -112,7 +112,7 @@ export class GroupInputUsers implements OnInit {
         this.filtersUpdatesSubscriber.unsubscribe()
     }
 
-    private selectUser(u: UserModel): void {
+    selectUser(u: UserModel): void {
         if (this.selectedUsers.indexOf(u) === -1) {
             this.selectedUsers.push(u)
         } else {
@@ -120,19 +120,19 @@ export class GroupInputUsers implements OnInit {
         }
     }
 
-    private setUserListStyles = (user: UserModel) => {
+    setUserListStyles = (user: UserModel) => {
         return { selected: this.selectedUsers.indexOf(user) > -1 }
     }
 
-    private selectAll(): void {
+    selectAll(): void {
         this.selectedUsers = this.storedElements
     }
 
-    private deselectAll(): void {
+    deselectAll(): void {
         this.selectedUsers = []
     }
 
-    private structureChange(s: StructureModel): void {
+    structureChange(s: StructureModel): void {
         let selectedStructure: StructureModel = globalStore.structures.data.find(
             globalS => globalS.id === s.id)
         this.structure = selectedStructure
@@ -162,7 +162,7 @@ export class GroupInputUsers implements OnInit {
         }
     }
 
-    private addUsers(): void {
+    addUsers(): void {
         this.spinner.perform('group-manage-users',
             this.groupsStore.group.addUsers(this.selectedUsers)
                 .then(() => {

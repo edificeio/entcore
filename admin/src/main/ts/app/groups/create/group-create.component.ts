@@ -38,7 +38,7 @@ import { SpinnerService, NotifyService } from '../../core/services'
 })
 export class GroupCreate {
 
-    private newGroup: GroupModel = new GroupModel()
+    newGroup: GroupModel = new GroupModel()
 
     constructor(private groupsStore: GroupsStore,
         private ns: NotifyService,

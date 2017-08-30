@@ -57,12 +57,13 @@ export class GroupUsersList {
     constructor(
             private router: Router,
             private bundles: BundlesService,
-            private userLS: UserListService){}
+            public userLS: UserListService){}
 
     // Model
-    @Input() users : GroupModel
+    @Input()
+    users : GroupModel
 
-    protected selectUser(user: UserModel) {
+    selectUser(user: UserModel) {
         if(user.structures.length > 0){
             this.router.navigate(['admin', user.structures[0].id, 'users', user.id])
         }

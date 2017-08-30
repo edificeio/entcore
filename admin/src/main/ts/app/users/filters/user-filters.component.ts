@@ -49,7 +49,7 @@ export class UserFilters implements OnInit {
         private bundles: BundlesService,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
-        private listFilters: UserlistFiltersService){}
+        public listFilters: UserlistFiltersService){}
 
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }
 

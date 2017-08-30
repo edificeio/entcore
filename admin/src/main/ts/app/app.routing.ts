@@ -10,7 +10,7 @@ import { NavComponent } from './core/nav/nav.component'
 export let routes : Routes = [
 	{
 		path: 'admin',
-		resolve: { session: SessionResolver, StructuresResolver, I18nResolver },
+		resolve: { session: SessionResolver, structures: StructuresResolver, i18n: I18nResolver },
 		component: NavComponent,
 			children: [
 				{ path: '', component: AppHomeComponent },
