@@ -142,19 +142,17 @@ public class DefaultUserService implements UserService {
 	public void get(String id, Handler<Either<String, JsonObject>> result) {
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
-				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
-				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) " +
-				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) " +
-				"RETURN DISTINCT u.profiles as type, " +
-				"COLLECT(distinct s) as structureNodes, " +
-				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) END as children, " +
-				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) END as parents, " +
-				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct {id: fgroup.id, name: fgroup.name}) END as functionalGroups, " +
-				"CASE WHEN admStruct IS NULL THEN [] ELSE collect(distinct {id: admStruct.id}) END as administrativeStructures, " +
+				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes " +
+				"OPTIONAL MATCH u<-[:RELATED]-(child: User) WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) as children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				"RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
+				"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
+				"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
+				"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
+				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
 				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result, "structureNodes"));
 	}
