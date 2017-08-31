@@ -5,7 +5,7 @@ import { GroupCreate } from './create/group-create.component'
 import { GroupDetails } from './details/group-details.component'
 import { GroupsTypeView } from './type-view/groups-type-view.component'
 import { GroupsResolver } from './groups.resolver'
-import { GroupDetailsResolve } from './details/group-details.resolve';
+import { GroupDetailsResolver } from './details/group-details.resolver';
 
 export let routes : Routes = [
     { 
@@ -15,7 +15,7 @@ export let routes : Routes = [
                 path: ':groupType', component: GroupsTypeView,
                 children: [
                     { path: 'create',   component: GroupCreate },
-                    { path: ':groupId', component: GroupDetails, resolve: { _: GroupDetailsResolve } }
+                    { path: ':groupId', component: GroupDetails, resolve: { _: GroupDetailsResolver } }
                 ]
             }]
     }

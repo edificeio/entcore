@@ -6,7 +6,7 @@ import { SpinnerService, routing } from '../../core/services'
 import { globalStore, UserModel } from '../../core/store'
 
 @Injectable()
-export class UserDetailsResolve implements Resolve<UserModel | Error> {
+export class UserDetailsResolver implements Resolve<UserModel | Error> {
 
     constructor(private spinner: SpinnerService, private router: Router){}
 

@@ -8,7 +8,7 @@ import { SijilModule } from 'sijil'
 import { UxModule } from '../shared/ux/ux.module'
 import { routes } from './groups.routing'
 import { GroupsResolver } from './groups.resolver'
-import { GroupDetailsResolve } from './details/group-details.resolve'
+import { GroupDetailsResolver } from './details/group-details.resolver'
 import { GroupsStore } from './groups.store'
 import { UserlistFiltersService } from '../core/services'
 
@@ -44,7 +44,7 @@ import { GroupsTypeView} from './type-view/groups-type-view.component'
     ],
     providers: [
         GroupsResolver,
-        GroupDetailsResolve,
+        GroupDetailsResolver,
         GroupsStore,
         UserlistFiltersService
     ],

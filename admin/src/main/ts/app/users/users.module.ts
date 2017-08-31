@@ -7,7 +7,7 @@ import { SijilModule } from 'sijil'
 
 import { UxModule } from '../shared/ux/ux.module'
 import { routes } from './users.routing'
-import { UserDetailsResolve } from './details/user-details.resolve'
+import { UserDetailsResolver } from './details/user-details.resolver'
 import { UsersResolver } from './users.resolver'
 import { UsersStore } from './users.store'
 import { UsersComponent } from './users.component'
@@ -53,7 +53,7 @@ import { UserlistFiltersService } from '../core/services'
         UserFunctionalGroupsSection
     ],
     providers: [
-        UserDetailsResolve,
+        UserDetailsResolver,
         UsersResolver,
         UserlistFiltersService
     ],

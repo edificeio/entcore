@@ -5,7 +5,7 @@ import { SpinnerService, routing } from '../../core/services'
 import { globalStore, GroupModel } from '../../core/store'
 
 @Injectable()
-export class GroupDetailsResolve implements Resolve<boolean> {
+export class GroupDetailsResolver implements Resolve<boolean> {
 
     constructor(private spinner: SpinnerService, private router: Router) { }
 
