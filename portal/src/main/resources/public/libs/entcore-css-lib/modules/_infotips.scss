@@ -1,0 +1,45 @@
+infotip{
+    position: relative;
+    display: none;
+    i.close{
+        transition: color 250ms ease;
+        cursor: pointer;
+        position: absolute;
+        top: 5px;
+        right: 10px;
+        &:hover{
+            color: $accent;
+        }
+    }
+}
+
+
+.alert{
+	color: $warning-color;
+	background: lighten($warning-color, 35%);
+	padding: 7px;
+	font-size: 12px;
+	text-align: center;
+	border-radius: 10px;
+    max-width: 100%;
+}
+
+.warning{
+	color: $warning-color-hover;
+	background: lighten($warning-color-hover, 55%);
+	padding: 7px;
+	font-size: 12px;
+	text-align: center;
+	border-radius: 10px;
+    max-width: 100%;
+}
+
+.info{
+	color: $primary;
+	background: lighten($primary, 35%);
+	padding: 7px;
+	font-size: 12px;
+	text-align: center;
+	border-radius: 10px;
+    max-width: 100%;
+}

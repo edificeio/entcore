@@ -1,0 +1,23 @@
+.search-pagination{
+    input{
+        padding-right: 45px!important;
+        margin: 0!important;
+        box-sizing: border-box;
+    }
+    input + i.search{
+        position: absolute;
+        top: 0;
+        right: 0;
+        transform: scaleX(-1);
+        width: 35px;
+        height: 100%;
+        color: $primary;
+        margin-right: 0;
+        margin-top: 0;
+        padding: 0 3px;
+        @include run-transition(all);
+        &:hover{
+            color: $accent;
+        }
+    }
+}

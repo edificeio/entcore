@@ -1,7 +1,87 @@
 
+.no-margin{
+	margin: 0!important;
+}
+
+.margin-auto{
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.horizontal-margin{
+	margin-left: 10px;
+	margin-right: 10px;
+}
+.horizontal-margin-twice{
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
+.vertical-spacing{
+	margin-top: 5px !important;
+	margin-bottom: 5px !important;
+}
+.vertical-spacing-twice{
+	margin-top: 10px !important;
+	margin-bottom: 10px !important;
+}
+
+.bottom-spacing{
+	margin-bottom: 5px !important;
+}
+.bottom-spacing-twice{
+	margin-bottom: 10px !important;
+}
+.top-spacing{
+	margin-top: 5px !important;
+}
+.top-spacing-twice{
+	margin-top: 10px !important;
+}
+
+
+
+.mini-block-container{
+	padding: 7px;
+}
+.block-container{
+	padding: 10px;
+}
+
+//padding: $size
+.reduce-block-two{
+	@include reduce-block(2px);
+}
+.reduce-block-four{
+	@include reduce-block(4px);
+}
+.reduce-block-six{
+	@include reduce-block(6px);
+}
+.reduce-block-eight{
+	@include reduce-block(8px);
+}
+
+.horizontal-spacing{
+	padding-left: 10px;
+	padding-right: 10px;
+}
+.horizontal-spacing-twice{
+	padding-left: 20px;
+	padding-right: 20px;
+}
+
+
+
+.block{
+	display: block!important;
+}
+
 .overflow-hd{
 	overflow: hidden;
 }
+
+
 .vertical-divider{
 	display: block;
 	&:before{
@@ -15,11 +95,7 @@
 	}
 }
 
-///////// COLORS ELEMENTS
 
-.bg-primary{
-	background-color: $primary;
-}
 
 ///////// CURSOR STYLES
 
@@ -45,89 +121,6 @@
 
 
 
-.block{
-	display: block!important;
-}
-
-.margin-auto{
-	margin-left: auto;
-	margin-right: auto;
-}
-.horizontal-spacing{
-	padding-left: 10px;
-	padding-right: 10px;
-}
-
-.horizontal-spacing-twice{
-	padding-left: 20px;
-	padding-right: 20px;
-}
-
-.horizontal-margin{
-	margin-left: 10px;
-	margin-right: 10px;
-}
-
-.horizontal-margin-twice{
-	margin-left: 20px;
-	margin-right: 20px;
-}
-
-.vertical-spacing{
-	margin-top: 5px !important;
-	margin-bottom: 5px !important;
-}
-
-.vertical-spacing-twice{
-	margin-top: 10px !important;
-	margin-bottom: 10px !important;
-}
-
-
-.bottom-spacing{
-	margin-bottom: 5px !important;
-}
-
-.bottom-spacing-twice{
-	margin-bottom: 10px !important;
-}
-
-.top-spacing{
-	margin-top: 5px !important;
-}
-
-.top-spacing-twice{
-	margin-top: 10px !important;
-}
-
-
-.mini-block-container{
-	padding: 7px;
-}
-
-.block-container{
-	padding: 10px;
-}
-
-.reduce-block-two{
-	@include reduce-block(2px);
-}
-
-.reduce-block-four{
-	@include reduce-block(4px);
-}
-
-.reduce-block-six{
-	@include reduce-block(6px);
-}
-
-.reduce-block-eight{
-	@include reduce-block(8px);
-}
-
-.no-margin{
-	margin: 0!important;
-}
 
 
 body{
@@ -222,4 +215,12 @@ div.hidden-content{
         width: 114px;
         height: 40px;
     }
+}
+
+@media screen and (max-width: $tablette) {
+    body {
+		.block-mobile{
+			display: block!important;
+		}
+	}
 }

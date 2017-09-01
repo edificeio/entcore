@@ -3,15 +3,13 @@
 	display: flex;
 	position: relative;
 
-// .flex-[foo] classes deprecated, use .align-[foo] classes instead
-
-	&.flex-start, &.align-start{
+	&.align-start{
 		align-items: flex-start;
 	}
-	&.flex-center, &.align-center{
+	&.align-center{
 		align-items: center;
 	}
-	&.flex-end, &.align-end{
+	&.align-end{
 		align-items: flex-end;
 	}
 
@@ -51,4 +49,31 @@
 
 .bottom-locked{
 	@include bottom-locked;
+}
+
+@media screen and (max-width: $tablette) {
+    body {
+		.flex-row{
+			&.mobile-align-start{
+				align-items: flex-start;
+			}
+			&.mobile-align-center{
+				align-items: center;
+			}
+			&.mobile-align-end{
+				align-items: flex-end;
+			}
+
+			&.mobile-justify-start{
+				justify-content: flex-start;
+			}
+			&.mobile-justify-center{
+				justify-content: center;
+			}
+			&.mobile-justify-end{
+				justify-content: flex-end;
+			}
+		}
+
+	}
 }

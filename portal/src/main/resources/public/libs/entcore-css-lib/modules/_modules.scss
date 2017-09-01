@@ -12,6 +12,7 @@
 @import "browser";
 @import "dominos";
 @import "images";
+@import "image-editor";
 @import "autocomplete";
 @import "editor-media";
 @import "banner";
@@ -43,6 +44,7 @@
 @import "square-menu";
 @import "color-picker";
 @import "page-markers";
+@import "panel";
 @import "popover";
 @import "forms";
 @import "schedules";
@@ -79,3 +81,5 @@
 @import "wayf";
 @import "embedder";
 @import "timeline";
+@import "infotips";
+@import "search-pagination";

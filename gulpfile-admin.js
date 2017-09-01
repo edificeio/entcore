@@ -9,6 +9,8 @@ gulp.task('copy-csslib', () => {
         .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'));
     var editorTemplates = gulp.src(gulp.local.paths.cssLib + '/editor-resources/img/**/*')
         .pipe(gulp.dest('./portal/src/main/resources/public/entcore-css-lib/editor-resources/img'));
+    var editorFont = gulp.src(gulp.local.paths.cssLib + '/editor-resources/font3/**/*')
+        .pipe(gulp.dest('./portal/src/main/resources/public/entcore-css-lib/editor-resources/font3'));
 
     return merge([lib, editorTemplates]);
 });

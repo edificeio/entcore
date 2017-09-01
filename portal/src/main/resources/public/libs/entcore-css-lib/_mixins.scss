@@ -102,6 +102,18 @@
 	bottom: 0px;
 }
 
+
+
+////////    FONTS
+
+@mixin fonticon {
+    font-family: "generic-icons";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+}
+
+
 ////////    GRAPHIKS
 
 
@@ -447,6 +459,7 @@
     }
 
 }
+
 
 
 
