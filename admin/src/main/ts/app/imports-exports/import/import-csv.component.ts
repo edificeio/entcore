@@ -187,10 +187,6 @@ export class ImportCSV implements OnInit, OnDestroy {
         mappings: {},
         availableClasses : {},
         profiles : [],
-        initMapping(profile: string, classesMapping:any) : void{
-            this.mappings[profile] = classesMapping[profile];
-            this.initAvailableClasses(profile, classesMapping['dbClasses']);
-        },
         initAvailableClasses(profile:string ,dbClasses:Array<string>) : void {
             let availables = [''];
             Object.values(this.mappings[profile]).forEach(el => {
@@ -198,11 +194,13 @@ export class ImportCSV implements OnInit, OnDestroy {
                     availables.push(el);
                 }
             });
-            dbClasses.forEach(el => {
-                if (availables.indexOf(el) == -1) {
-                    availables.push(el);
-                }
-            });
+            if (dbClasses != null) {
+                dbClasses.forEach(el => {
+                    if (availables.indexOf(el) == -1) {
+                        availables.push(el);
+                    }
+                });
+            }
             this.availableClasses[profile] = availables;
         }
     };
