@@ -30,7 +30,7 @@ export class ImportCSVService {
             response = await http.post('directory/wizard/' + apiPath, 
                 formData, {'headers' : { 'Content-Type': 'multipart/form-data' }});
         } catch(error) {
-                return error.response.data;
+            return error.response.data;
         }
         return response.data;
     }

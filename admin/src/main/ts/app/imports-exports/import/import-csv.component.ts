@@ -23,29 +23,29 @@ import { WizardComponent } from '../../shared/ux/components'
             <form #step1Form="ngForm">
                 <h3>{{ 'import.files.deposit' | translate }}</h3>
                 <form-field label="Teacher">
-                    <input type="checkbox" #teacherCB (change)="0">
-                    <input type="file" name="Teacher" (change)="loadFile($event)"
-                            [hidden]="!teacherCB.checked" placeholder="{{ 'import.uplaodTeachers' | translate }}">                        
+                <input type="checkbox"  name="teacherCB" [(ngModel)]="profiles.isLoaded.Teacher">
+                <input type="file" name="Teacher" (change)="loadFile($event)" 
+                        [hidden]="!profiles.isLoaded.Teacher" placeholder="{{ 'import.uplaodTeachers' | translate }}">                        
                 </form-field>
                 <form-field label="Student">
-                    <input type="checkbox" #studentCB (change)="0">
+                <input type="checkbox" name="studentCB" [(ngModel)]="profiles.isLoaded.Student">
                     <input type="file" name="Student" (change)="loadFile($event)"
-                            [hidden]="!studentCB.checked" placeholder="{{ 'import.uplaodStudents' | translate }}">
+                        [hidden]="!profiles.isLoaded.Student" placeholder="{{ 'import.uplaodStudents' | translate }}">
                 </form-field>
                 <form-field label="Relative">
-                    <input type="checkbox" #relativeCB (change)="0">
+                <input type="checkbox" name="relativeCB" [(ngModel)]="profiles.isLoaded.Relative">
                     <input type="file"  name="Relative" (change)="loadFile($event)"
-                            [hidden]="!relativeCB.checked" placeholder="{{ 'import.uplaodRelatives' | translate }}">
+                    [hidden]="!profiles.isLoaded.Relative" placeholder="{{ 'import.uplaodRelatives' | translate }}">
                 </form-field>
                 <form-field label="Personnel">
-                    <input type="checkbox" #personnelCB (change)="0">
+                <input type="checkbox" name="personnelCB" [(ngModel)]="profiles.isLoaded.Personnel">
                     <input type="file"  name="Personnel" (change)="loadFile($event)"
-                            [hidden]="!personnelCB.checked" placeholder="{{ 'import.uplaodPersonnels' | translate }}">
+                        [hidden]="!profiles.isLoaded.Personnel" placeholder="{{ 'import.uplaodPersonnels' | translate }}">
                 </form-field>
                 <form-field label="Guest">
-                    <input type="checkbox" #guestCB (change)="0">
-                    <input type="file" name="Guest" (change)="loadFile($event)"
-                            [hidden]="!guestCB.checked" placeholder="{{ 'import.uplaodGuests' | translate }}">
+                <input type="checkbox" name="guestCB" [(ngModel)]="profiles.isLoaded.Guest">
+                    <input type="file" name="Guest" (change)="loadFile($event)" 
+                        [hidden]="!profiles.isLoaded.Guest" placeholder="{{ 'import.uplaodGuests' | translate }}">
                 </form-field>
 
                 <h3>{{ 'import.parameters' | translate }}</h3>
@@ -148,21 +148,32 @@ export class ImportCSV implements OnInit, OnDestroy {
     @ViewChild(WizardComponent) wizardEl: WizardComponent;
 
     stepErrors = [];
+    
+    profiles = { 
+        isLoaded : { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false },
+        asArray() { 
+            let arr = [];
+            for (let p in this.isLoaded) {
+                if (this.isLoaded[p]) arr.push(p);
+            }
+            return arr; 
+        }
+    };
 
     importInfos = {
-        type:'',
+        type:'CSV', // type property must be alaways set to 'CSV' to match server API contract 
         structureId:'',
         structureExternalId:'',
         structureName:'',
         UAI:'',
         predelete:false,
         transition:false,
-    }
+    };
 
     columns = {
         availableFields : {},
         mappings : {},
-        profiles : [] // TODO move in report ?
+        profiles : []
     };
  
     /*
@@ -176,11 +187,11 @@ export class ImportCSV implements OnInit, OnDestroy {
         mappings: {},
         availableClasses : {},
         profiles : [],
-        initMapping : function(profile: string, classesMapping:any) : void{
+        initMapping(profile: string, classesMapping:any) : void{
             this.mappings[profile] = classesMapping[profile];
             this.initAvailableClasses(profile, classesMapping['dbClasses']);
         },
-        initAvailableClasses : function(profile:string ,dbClasses:Array<string>) : void {
+        initAvailableClasses(profile:string ,dbClasses:Array<string>) : void {
             let availables = [''];
             Object.values(this.mappings[profile]).forEach(el => {
                 if (el.trim().length > 0) {
@@ -202,25 +213,9 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.stepErrors = [];
-        this.importInfos.type = 'CSV';
-        this.importInfos.predelete = false;
-        this.importInfos.transition = false,
-
-        this.columns.mappings = {};
-        this.columns.availableFields = {};
-        this.classes.profiles = [];
-
-        this.classes.mappings = {};
-        this.classes.availableClasses = {};
-        this.classes.profiles = [];
-
-        this.report.importId = '';
-        this.report.users = [];
-
-    
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure']) {
+                this.cancel();
                 this.importInfos.structureId = data['structure'].id;
                 this.importInfos.structureExternalId = data['structure'].externalId;
                 this.importInfos.structureName = data['structure'].name;
@@ -239,13 +234,43 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     /* 
-    * Reset component's state ("re-init")
+    * Fire when (change) on input[file]. Update profile's filelist to import
+    */
+    loadFile(event) {
+        let files : FileList = event.target.files;  
+        if (files.length == 1) {
+            this.importInfos[event.target.name] = event.target.files[0];
+        }
+    }
+
+    /* 
+    * Reset component's state. 
+    * WARN : we maintain structure's informations (id, externalId, name, UAI) 
+    *        because they are set by observing the route  
     */
     cancel() {
-        // need to acces to wizard activeStep
-        this.ngOnInit();
-        this.wizardEl.doCancel();
-        this.cdRef.markForCheck();
+        // Hack to pass the first onInit() call
+        if ('' != this.importInfos.structureId) 
+            this.wizardEl.doCancel();
+        
+        this.stepErrors = [];
+
+        this.profiles.asArray().forEach(p =>{ this.importInfos[p] = null }); // Flush loaded CSV files
+        this.profiles.isLoaded = { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false};
+
+        this.importInfos.predelete = false;
+        this.importInfos.transition = false;
+
+        this.columns.mappings = {};
+        this.columns.availableFields = {};
+        this.classes.profiles = [];
+
+        this.classes.mappings = {};
+        this.classes.availableClasses = {};
+        this.classes.profiles = [];
+
+        this.report.importId = '';
+        this.report.users = [];
     }
 
     nextStep(activeStep: Number) {
@@ -267,83 +292,67 @@ export class ImportCSV implements OnInit, OnDestroy {
     finish() {
         // TODO : close Wizard
     }
-
-    /* 
-    * Fire when (change) on input[file]. Update profile's filelist to import
-    */
-    loadFile(event) {
-        let files : FileList = event.target.files;  
-        if (files.length == 1) {
-            this.importInfos[event.target.name] = event.target.files[0];
-        }
-    }
     
     /*
     * Next Step operations
     */
-    private getColumsMapping() {
-        ImportCSVService.getColumnsMapping(this.importInfos)
-            .then(data => {
-                if (data.errors) {
-                    this.stepErrors[0] = data.errors;
-                } else if (!data.mappings || !data.availableFields) {
-                    this.stepErrors[0] = "import.error.noColumnsMappingFound" // TODO : check if possible 
-                } else {
-                    this.columns.mappings = data.mappings;
-                    this.columns.availableFields = data.availableFields;
-                    this.columns.profiles = Object.keys(data.mappings);
-                    this.stepErrors[0] = null;
-                    this.wizardEl.doNextStep();
-                }
-                this.cdRef.markForCheck();
-            });
+    private async getColumsMapping() {
+        let data = await ImportCSVService.getColumnsMapping(this.importInfos);
+        if (data.error) {
+            this.stepErrors[0] = data.error;
+        } else if (!data.mappings || !data.availableFields) {
+            this.stepErrors[0] = "import.error.noColumnsMappingFound" // TODO : check if possible 
+        } else {
+            this.columns.mappings = data.mappings;
+            this.columns.availableFields = data.availableFields;
+            this.columns.profiles = Object.keys(data.mappings);
+            this.stepErrors[0] = null;
+            this.wizardEl.doNextStep();
+        }
+        this.cdRef.markForCheck();
     
     }
 
-    private getClassesMapping() {
-        ImportCSVService.getClassesMapping(this.importInfos)
-            .then(data => {
-                if (data.errors) {
-                    this.stepErrors[1] = data.errors;
+    private async getClassesMapping() {
+        let data = await ImportCSVService.getClassesMapping(this.importInfos);
+        if (data.errors) {
+            this.stepErrors[1] = data.errors;
+        } else {
+            this.classes.profiles = this.profiles.asArray();
+            for (let profile of this.classes.profiles) {
+                if (data.classesMapping[profile] == null) {
+                    // NOTE: another option is to ignore the mapping classes step
+                    this.classes.mappings[profile] = data.classesMapping['dbClasses'];
                 } else {
-                    this.classes.profiles = this.columns.profiles;
-                    for (let profile of this.classes.profiles) {
-                        if (data.classesMapping[profile] == null) {
-                            // QUEST : opther option is to ignore the mapping classes step
-                            this.classes.mappings[profile] = data.classesMapping['dbClasses'];
-                        } else {
-                            this.classes.mappings[profile] = data.classesMapping[profile];
-                            this.classes.initAvailableClasses(profile, data.classesMapping['dbClasses']);
-                        }
-                    }
-                    this.stepErrors[1] = null;
-                    this.wizardEl.doNextStep();
+                    this.classes.mappings[profile] = data.classesMapping[profile];
+                    this.classes.initAvailableClasses(profile, data.classesMapping['dbClasses']);
                 }
-                this.cdRef.markForCheck();
-            });
+            }
+            this.stepErrors[1] = null;
+            this.wizardEl.doNextStep();
+        }
+        this.cdRef.markForCheck();
     }
 
-    private validate() {
-        ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings)
-            .then(data => {
-                if (data.errors) {
-                    this.stepErrors[3] = data.errors;
-                } else if (!data.importId) {
-                    this.stepErrors[3] = 'import.error.importIdNotFound'
-                } else { 
-                    this.stepErrors[3] = null;
-                    this.report.importId = data.importId
-                    for (let p of this.columns.profiles) {
-                        if (!data[p]) break; // useless
-                        this.report.users.push(...data[p]); 
-                    }
-                }
-                this.wizardEl.doNextStep();
-                this.cdRef.markForCheck();
-            });
+    private async validate() {
+        let data = await ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings); 
+        if (data.errors) {
+            this.stepErrors[3] = data.errors;
+        } else if (!data.importId) {
+            this.stepErrors[3] = 'import.error.importIdNotFound'
+        } else { 
+            this.stepErrors[3] = null;
+            this.report.importId = data.importId
+            for (let p of this.columns.profiles) {
+                if (!data[p]) break; // useless
+                this.report.users.push(...data[p]); 
+            }
+        }
+        this.wizardEl.doNextStep();
+        this.cdRef.markForCheck();
     }
     
-    private updateReport(event) {
+    private async updateReport(event) {
         // TODO replace implementation by a "contenteditable" directive that manage binding
         let tdEls = event.target.parentElement.parentElement.children
         let profile = tdEls[4].innerText
@@ -352,18 +361,17 @@ export class ImportCSV implements OnInit, OnDestroy {
         };
         body[event.target.getAttribute('field')] = event.target.innerText;
 
-        ImportCSVService.updateReport('put', this.report.importId,profile, body).then(data => {
-            if (data.errors) {
-                this.stepErrors[3] = data.errors;
-            } else {
-                let user = this.report.users.find(el => { return el.line == body.line});
-                for (let p in body) {
-                    if ('line' != p) {
-                        user[p] = body[p];
-                    }
+        let data = await ImportCSVService.updateReport('put', this.report.importId,profile, body);
+        if (data.errors) {
+            this.stepErrors[3] = data.errors;
+        } else {
+            let user = this.report.users.find(el => { return el.line == body.line});
+            for (let p in body) {
+                if ('line' != p) {
+                    user[p] = body[p];
                 }
             }
-        });
+        }
     }
 
     private async import() {

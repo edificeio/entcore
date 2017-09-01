@@ -19,7 +19,7 @@ import { SelectOption } from "../../shared/ux/components/multi-select.component"
             <th>{{ headers[0] | translate }}</th>
             <th>{{ headers[1] | translate }}</th>
         </tr>
-        <tr *ngFor="let value of mappingsKeys">
+        <tr *ngFor="let value of mappingsKeys()">
             <td>{{value}}</td>
             <td>
             <mono-select [(ngModel)]="mappings[value]" name="availables" [options]="availablesOptions">
@@ -39,7 +39,6 @@ export class MappingsTable implements OnInit, OnChanges {
 
     @Input() headers : Array<String>;
     @Input() mappings : Object; // TODO type with a Map<> when available in Typescript
-    mappingsKeys : Array<String>
     @Input() availables : Array<string>;
 
     public availablesOptions: SelectOption<string>[] = [];
@@ -52,8 +51,13 @@ export class MappingsTable implements OnInit, OnChanges {
     }
 
     private onChange() {
-        this.mappingsKeys = Object.keys(this.mappings);
         this.availablesOptions = this.availables.map(a => ({value: a, label: a}));
         this.cdRef.detectChanges();
+    }
+
+    mappingsKeys = function() : Array<String> {
+        if (!this.mappings) 
+            return [];
+        return Object.keys(this.mappings);
     }
 }
