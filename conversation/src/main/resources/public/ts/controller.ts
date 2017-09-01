@@ -1,8 +1,9 @@
 ﻿import { ng, notify, idiom as lang, template, skin, workspace } from 'entcore/entcore';
-import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from './model';
+import { Mail, User, sorts, quota, Conversation, Trash, SystemFolder } from './model';
 
 import { $ } from 'entcore/libs/jquery/jquery';
 import { _ } from 'entcore/libs/underscore/underscore';
+import { UserFolder } from './model/folder';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -312,6 +313,10 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.rootFolderTemplate = { template: 'folder-root-template' }
         $scope.refreshFolders = async () => {
             await $scope.userFolders.sync();
+            await Conversation.instance.currentFolder.sync();
+            if(Conversation.instance.currentFolder instanceof UserFolder){
+                $scope.openUserFolder(Conversation.instance.currentFolder, {});
+            }
             $scope.rootFolderTemplate.template = ""
             $timeout(function () {
                 $scope.$apply()

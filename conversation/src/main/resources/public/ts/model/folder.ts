@@ -263,6 +263,7 @@ export class UserFolder extends Folder {
 
     async syncUserFolders(){
         const response = await http.get('folders/list?parentId=' + this.id);
+        this.userFolders.all.splice(0, this.userFolders.colLength);
         for(let f of response.data){
             const folder: UserFolder = Mix.castAs(UserFolder, f);
             folder.parentFolder = this;
