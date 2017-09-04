@@ -312,7 +312,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     private async getClassesMapping() {
-        let data = await ImportCSVService.getClassesMapping(this.importInfos);
+        let data = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
         if (data.errors) {
             this.stepErrors[1] = data.errors;
         } else {
