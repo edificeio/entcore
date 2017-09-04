@@ -176,7 +176,7 @@ export let conversationController = ng.controller('ConversationController', [
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
             await mail.setMailContent($scope.mail, 'transfer', $compile, $sanitize, $scope);
-            Conversation.instance.folders.draft.transfer($scope.state.newItem);
+            await Conversation.instance.folders.draft.transfer(mail.parentConversation, $scope.state.newItem);
             $scope.$apply();
         };
 

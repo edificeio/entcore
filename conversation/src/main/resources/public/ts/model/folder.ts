@@ -180,12 +180,12 @@ export class Draft extends SystemFolder {
         this.mails.push(draft);
     }
 
-    async transfer(mail: Mail) {
-        const id = await this.saveDraft(mail);
+    async transfer(mail: Mail, newMail: Mail) {
+        await this.saveDraft(newMail);
         try{
-            await http.put("message/" + mail.id + "/forward/" + mail.id);
+            await http.put("message/" + newMail.id + "/forward/" + mail.id);
             for (var i = 0; i < mail.attachments.length; i++) {
-                mail.attachments.push(JSON.parse(JSON.stringify(mail.attachments[i])))
+                newMail.attachments.push(JSON.parse(JSON.stringify(mail.attachments[i])))
             }
             quota.refresh();
         }
