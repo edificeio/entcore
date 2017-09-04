@@ -8,8 +8,10 @@ export class ImportCSVService {
         return this.buildPostFormData(importInfos, 'column/mapping');
     }
 
-    static async getClassesMapping(importInfos): Promise<any> {
-        return this.buildPostFormData(importInfos, 'classes/mapping');
+    static async getClassesMapping(importInfos, columnsMapping): Promise<any> {
+        let dataToPost = Object.assign({},importInfos);
+        dataToPost['columnsMapping'] = JSON.stringify(columnsMapping);
+        return this.buildPostFormData(dataToPost, 'classes/mapping');
     }
 
     static async validate(importInfos, columnsMapping, classesMapping): Promise<any> {
