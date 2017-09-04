@@ -116,19 +116,32 @@ public class Report {
 		log.error(error);
 	}
 
-	public void addSoftErrorByFile(String file, String key, String... errors) {
+	public void addSoftErrorByFile(String file, String key, String lineNumber, String... errors) {
 		JsonObject softErrors = result.getJsonObject("softErrors");
 		if (softErrors == null) {
 			softErrors = new JsonObject();
 			result.put("softErrors", softErrors);
 		}
-		JsonArray f = softErrors.getJsonArray(file);
-		if (f == null) {
-			f = new fr.wseduc.webutils.collections.JsonArray();
-			softErrors.put(file, f);
+		JsonObject fileErrors = softErrors.getJsonObject(file);
+		if (fileErrors == null) {
+			fileErrors = new JsonObject();
+			softErrors.put(file, fileErrors);
 		}
-		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
-		f.add(error);
+		String cleanKey = key.replace('.','-'); // Mongo don't support '.' characters in document field's name
+		JsonObject reason = fileErrors.getJsonObject(cleanKey);
+		if (reason == null) {
+			reason = new JsonObject();
+			fileErrors.put(cleanKey, reason);
+		}
+		JsonArray lineErrors = reason.getArray(lineNumber);
+		if (lineErrors == null) {
+			lineErrors = new JsonArray();
+			reason.put(lineNumber, lineErrors);
+		}
+		List<String> errorContext = new ArrayList<>(Arrays.asList(errors)); // Hack to support "add" operation
+		errorContext.add(0, lineNumber);
+		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errorContext.toArray(new String[errorContext.size()]));
+		lineErrors.add(error);
 		log.error(error);
 	}
 
