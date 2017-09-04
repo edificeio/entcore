@@ -35,7 +35,7 @@
     				<span ng-if="receivers.length > 2">...</span>
 
     			</td>
-				<td class="user" ng-if="getSystemFolder(mail) === 'INBOX'">
+				<td class="user" ng-if="mail.getSystemFolder() === 'INBOX'">
 					<a ng-click="variableMailAction(mail)">
 						[[mail.sender().displayName]][[mail.fromName]]
 					</a>
