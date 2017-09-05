@@ -81,7 +81,7 @@ Behaviours.register('workspace', {
         http().get('/workspace/documents').done(function (documents) {
             http().get('/workspace/documents?filter=protected').done(function (protectedDocuments) {
                 http().get('/workspace/documents?filter=public').done(function (publicDocuments) {
-                    this.resources = _.map(documents.concat(protectedDocuments).concat(publicDocuments), function (doc) {
+                    this.resources = documents.concat(protectedDocuments).concat(publicDocuments).map(function (doc) {
                         if (doc.metadata['content-type'].indexOf('image') !== -1) {
                             doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
                         }
