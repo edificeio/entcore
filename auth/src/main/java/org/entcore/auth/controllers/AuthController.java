@@ -407,7 +407,7 @@ public class AuthController extends BaseController {
 			UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 				@Override
 				public void handle(UserInfos event) {
-					if (event != null && Boolean.TRUE.equals(event.getFederated())) {
+					if (event != null && Boolean.TRUE.equals(event.getFederated()) && !request.params().contains("SAMLRequest")) {
 						if (container.config().containsField("openid-federate")) {
 							redirect(request, "/auth/openid/slo?callback=" + c);
 						} else {
