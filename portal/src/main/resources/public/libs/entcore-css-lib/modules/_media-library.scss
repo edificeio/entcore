@@ -1,87 +1,4 @@
-@keyframes splitScreenGrow{
-	0%{
-		width: 0%;
-	}
-	100%{
-		width: 75%;
-	}
-}
-
 .media-library {
-	.split-screen{
-		.loading-list{
-			width: 100%;
-			transition: 250ms ease;
-			float: left;
-
-		}
-		.compression{
-			animation: splitScreenGrow 1 250ms;
-			width: 75%;
-			float: right;
-		}
-		.split{
-			.loading-list{
-				width: 25%;
-			}
-		}
-	}
-	.import-files{
-		> article{
-			box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-			border-radius: 5px;
-			overflow: hidden;
-			opacity: 0;
-			width: 575px;
-			position: absolute;
-			top: 39%;
-			height: 70px;
-			transition: 500ms ease;
-			.help{
-				display: flex;
-				align-items: center;
-				height: 100%;
-			}
-		}
-		i.cloud-upload{
-			text-align: center;
-			&::before{
-				font-size: 40px;
-			}
-		}
-		article.default{
-			opacity: 1;
-		}
-		&.dragover{
-			article.drop{
-				opacity: 1;
-			}
-			article.default{
-				opacity: 0;
-			}
-		}
-		padding: 50px;
-		padding-top: 200px;
-		border: 2px dashed #ddd;
-		padding-bottom: 200px;
-		background: #fafafa;
-	}
-	.loading-list{
-		ul{
-			padding: 0;
-			li{
-				list-style-type: none;
-				padding: 15px;
-				border: 1px solid #ddd;
-				margin-bottom: 10px;
-				cursor: default;
-				&.image-file{
-					box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
-					cursor: pointer;
-				}
-			}
-		}
-	}
 	.browse{
         .icons-view{
             margin: 0;
@@ -93,14 +10,6 @@
 			li{
 				border: none !important;
 			}
-		}
-	}
-	image-compression{
-		display: block;
-		position: relative;
-		float: left;
-		canvas{
-			max-width: 100%;
 		}
 	}
 }

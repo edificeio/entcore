@@ -108,4 +108,7 @@
 
 .icons-view.apps{
 	text-align: left;
+	a > img{
+		pointer-events: none;
+	}
 }

@@ -1,10 +1,4 @@
 @font-face {
-  font-family: 'generic-icons';
-  src: url(../../../generic-icons/fonts/generic-icons.woff);
-  font-weight: normal;
-  font-style: normal; }
-
-@font-face {
   font-family: EcritureA;
   src: url(/public/fonts/EcritureA-Romain-Orne.otf);
   font-size-adjust: 80; }
@@ -2029,57 +2023,6 @@ image-select > div > img {
   display: inline-block !important;
   vertical-align: middle; }
 
-image-editor .output {
-  background-size: 20px 20px;
-  background-image: linear-gradient(45deg, #f5f5f5 25%, transparent 25%), linear-gradient(-45deg, #f5f5f5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f5f5f5 75%), linear-gradient(-45deg, transparent 75%, #f5f5f5 75%);
-  margin-bottom: 25px;
-  min-height: 200px;
-  display: flex;
-  flex-flow: wrap;
-  align-items: center;
-  justify-content: center; }
-  image-editor .output canvas {
-    max-width: 100%;
-    max-height: 600px;
-    display: block; }
-
-image-editor .tools-background {
-  position: absolute;
-  right: 0;
-  border-radius: 3px; }
-
-image-editor .tools {
-  position: absolute;
-  right: 0;
-  padding: 10px;
-  box-sizing: border-box;
-  border-radius: 3px; }
-  image-editor .tools button {
-    width: 100%;
-    padding: 6px;
-    background: #fff;
-    color: #666;
-    margin-left: 0; }
-    image-editor .tools button:disabled {
-      background: #888;
-      box-shadow: none;
-      color: #aaa;
-      cursor: default; }
-
-image-editor .overlay {
-  position: absolute;
-  padding: 0 !important; }
-  image-editor .overlay.crop .handle {
-    box-shadow: 0px 0 0 1000px rgba(0, 0, 0, 0.3); }
-  image-editor .overlay .handle {
-    border: 2px dashed #ddd;
-    top: 0;
-    left: 0;
-    box-sizing: border-box;
-    position: absolute;
-    height: 100%;
-    width: 100%; }
-
 .autocomplete em {
   font-style: normal;
   display: block;
@@ -2745,6 +2688,8 @@ ul.icons-tabs {
 
 .icons-view.apps {
   text-align: left; }
+  .icons-view.apps a > img {
+    pointer-events: none; }
 
 .icons-select {
   position: relative;
@@ -4173,16 +4118,7 @@ slider, slider.drawing-zone {
     border-left: 13px solid transparent;
     margin-top: -26px;
     z-index: 1;
-    cursor: pointer;
-    top: 0; }
-  slider .label, slider.drawing-zone .label {
-    top: 24px;
-    margin-left: -42px;
-    width: 100px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: bold;
-    color: #666; }
+    cursor: pointer; }
   slider .filled, slider.drawing-zone .filled {
     position: absolute;
     top: 0;
@@ -4198,68 +4134,6 @@ slider, slider.drawing-zone {
   slider legend.max, slider.drawing-zone legend.max {
     right: -25px; }
 
-@keyframes splitScreenGrow {
-  0% {
-    width: 0%; }
-  100% {
-    width: 75%; } }
-
-.media-library .split-screen .loading-list {
-  width: 100%;
-  transition: 250ms ease;
-  float: left; }
-
-.media-library .split-screen .compression {
-  animation: splitScreenGrow 1 250ms;
-  width: 75%;
-  float: right; }
-
-.media-library .split-screen .split .loading-list {
-  width: 25%; }
-
-.media-library .import-files {
-  padding: 50px;
-  padding-top: 200px;
-  border: 2px dashed #ddd;
-  padding-bottom: 200px;
-  background: #fafafa; }
-  .media-library .import-files > article {
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
-    overflow: hidden;
-    opacity: 0;
-    width: 575px;
-    position: absolute;
-    top: 39%;
-    height: 70px;
-    transition: 500ms ease; }
-    .media-library .import-files > article .help {
-      display: flex;
-      align-items: center;
-      height: 100%; }
-  .media-library .import-files i.cloud-upload {
-    text-align: center; }
-    .media-library .import-files i.cloud-upload::before {
-      font-size: 40px; }
-  .media-library .import-files article.default {
-    opacity: 1; }
-  .media-library .import-files.dragover article.drop {
-    opacity: 1; }
-  .media-library .import-files.dragover article.default {
-    opacity: 0; }
-
-.media-library .loading-list ul {
-  padding: 0; }
-  .media-library .loading-list ul li {
-    list-style-type: none;
-    padding: 15px;
-    border: 1px solid #ddd;
-    margin-bottom: 10px;
-    cursor: default; }
-    .media-library .loading-list ul li.image-file {
-      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-      cursor: pointer; }
-
 .media-library .browse .icons-view {
   margin: 0; }
 
@@ -4269,13 +4143,6 @@ slider, slider.drawing-zone {
   top: 0 !important; }
   .media-library .browse nav.vertical li {
     border: none !important; }
-
-.media-library image-compression {
-  display: block;
-  position: relative;
-  float: left; }
-  .media-library image-compression canvas {
-    max-width: 100%; }
 
 .check-tool {
   position: absolute;
@@ -4861,12 +4728,6 @@ carousel.triplets .image.next {
 [contenteditable].drawing-zone {
   height: auto; }
 
-[contenteditable] .image-container, [bind-html] .image-container {
-  display: inline-block;
-  user-select: all;
-  border: none;
-  padding: 5px; }
-
 [contenteditable] audio, [bind-html] audio {
   display: block;
   max-width: 100%; }
@@ -4924,7 +4785,7 @@ carousel.triplets .image.next {
   position: absolute;
   top: 0;
   left: 0;
-  user-: none; }
+  user-select: none; }
 
 .editor .viewer .media {
   opacity: 1; }
@@ -4939,7 +4800,7 @@ body editor {
   float: left;
   width: 100%;
   margin: 10px auto 20px;
-  -webkit-user-: auto; }
+  -webkit-user-select: auto; }
   body editor > div {
     position: relative; }
   body editor input[type=color] {
@@ -4952,7 +4813,7 @@ body editor {
     padding: 0; }
   body editor .editor-toolbar-opener, body editor .close-focus {
     display: none; }
-  body editor.focus.edit editor-toolbar.inline -list, body editor.focus.both editor-toolbar.inline -list, body editor.focus.html editor-toolbar.inline -list {
+  body editor.focus.edit editor-toolbar.inline select-list, body editor.focus.both editor-toolbar.inline select-list, body editor.focus.html editor-toolbar.inline select-list {
     display: inline;
     opacity: 1;
     pointer-events: all !important; }
@@ -4960,7 +4821,7 @@ body editor {
     display: inline-block;
     opacity: 1;
     pointer-events: all !important; }
-  body editor.focus.edit editor-toolbar.inline .option, body editor.focus.edit editor-toolbar.inline .option > -list .ed-value, body editor.focus.edit editor-toolbar.inline .option > i, body editor.focus.both editor-toolbar.inline .option, body editor.focus.both editor-toolbar.inline .option > -list .ed-value, body editor.focus.both editor-toolbar.inline .option > i, body editor.focus.html editor-toolbar.inline .option, body editor.focus.html editor-toolbar.inline .option > -list .ed-value, body editor.focus.html editor-toolbar.inline .option > i {
+  body editor.focus.edit editor-toolbar.inline .option, body editor.focus.edit editor-toolbar.inline .option > select-list .selected-value, body editor.focus.edit editor-toolbar.inline .option > i, body editor.focus.both editor-toolbar.inline .option, body editor.focus.both editor-toolbar.inline .option > select-list .selected-value, body editor.focus.both editor-toolbar.inline .option > i, body editor.focus.html editor-toolbar.inline .option, body editor.focus.html editor-toolbar.inline .option > select-list .selected-value, body editor.focus.html editor-toolbar.inline .option > i {
     opacity: 1;
     pointer-events: all !important; }
   body editor.focus.edit editor-toolbar.inline .option.disabled, body editor.focus.both editor-toolbar.inline .option.disabled, body editor.focus.html editor-toolbar.inline .option.disabled {
@@ -5115,7 +4976,7 @@ body editor {
       opacity: 0;
       pointer-events: none !important;
       transition: opacity 250ms ease; }
-      body editor.edit editor-toolbar.inline -list, body editor.edit editor-toolbar.inline popover, body editor.edit editor-toolbar.inline .option, body editor.edit editor-toolbar.inline .option > -list .ed-value, body editor.edit editor-toolbar.inline .option > i, body editor.both editor-toolbar.inline -list, body editor.both editor-toolbar.inline popover, body editor.both editor-toolbar.inline .option, body editor.both editor-toolbar.inline .option > -list .ed-value, body editor.both editor-toolbar.inline .option > i, body editor.html editor-toolbar.inline -list, body editor.html editor-toolbar.inline popover, body editor.html editor-toolbar.inline .option, body editor.html editor-toolbar.inline .option > -list .ed-value, body editor.html editor-toolbar.inline .option > i {
+      body editor.edit editor-toolbar.inline select-list, body editor.edit editor-toolbar.inline popover, body editor.edit editor-toolbar.inline .option, body editor.edit editor-toolbar.inline .option > select-list .selected-value, body editor.edit editor-toolbar.inline .option > i, body editor.both editor-toolbar.inline select-list, body editor.both editor-toolbar.inline popover, body editor.both editor-toolbar.inline .option, body editor.both editor-toolbar.inline .option > select-list .selected-value, body editor.both editor-toolbar.inline .option > i, body editor.html editor-toolbar.inline select-list, body editor.html editor-toolbar.inline popover, body editor.html editor-toolbar.inline .option, body editor.html editor-toolbar.inline .option > select-list .selected-value, body editor.html editor-toolbar.inline .option > i {
         display: inline-block;
         opacity: 0;
         pointer-events: none !important; }
@@ -5126,7 +4987,7 @@ body editor {
     body editor.edit editor-toolbar .option, body editor.both editor-toolbar .option, body editor.html editor-toolbar .option {
       display: inline-block;
       padding: 6px 5px;
-      user-: none;
+      user-select: none;
       position: relative;
       transition: all 250ms ease;
       height: 30px;
@@ -5140,7 +5001,7 @@ body editor {
         background-size: 15px;
         background-repeat: no-repeat;
         background-position: center;
-        user-: none;
+        user-select: none;
         position: absolute;
         top: 0;
         left: 0; }
@@ -5162,7 +5023,7 @@ body editor {
       box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.2); }
     body editor.edit editor-toolbar .option.font, body editor.both editor-toolbar .option.font, body editor.html editor-toolbar .option.font {
       width: 140px; }
-      body editor.edit editor-toolbar .option.font -list .ed-value, body editor.both editor-toolbar .option.font -list .ed-value, body editor.html editor-toolbar .option.font -list .ed-value {
+      body editor.edit editor-toolbar .option.font select-list .selected-value, body editor.both editor-toolbar .option.font select-list .selected-value, body editor.html editor-toolbar .option.font select-list .selected-value {
         width: 115px; }
       body editor.edit editor-toolbar .option.font:hover, body editor.both editor-toolbar .option.font:hover, body editor.html editor-toolbar .option.font:hover {
         background: none;
@@ -5229,7 +5090,7 @@ body editor {
     width: 100%;
     height: 100%;
     z-index: 100001 !important; }
-    body editor.focus -list .options {
+    body editor.focus select-list .options {
       position: fixed;
       min-width: 0;
       top: 80px;
@@ -5286,10 +5147,10 @@ body editor {
       font-size: 22px;
       height: 38px;
       width: 44px;
-      -webkit-user-: none;
-      -moz-user-: none;
-      -ms-user-: none;
-      user-: none; }
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none; }
       body editor.focus .editor-toolbar-opener::before {
         content: "+";
         display: block;
@@ -5307,7 +5168,7 @@ body editor {
       position: absolute;
       overflow: auto;
       background: #fff; }
-  .option > -list .ed-value {
+  .option > select-list .selected-value {
     border: none;
     color: transparent; } }
 
@@ -5318,7 +5179,7 @@ body editor .quote.option > [contenteditable] {
   position: relative;
   margin-bottom: 50px; }
 
-body editor .quote.option -list .ed-value {
+body editor .quote.option select-list .selected-value {
   width: 100%;
   box-sizing: border-box; }
 
@@ -5345,7 +5206,7 @@ body editor .quote.option -list .ed-value {
     padding: 5px; }
 
 body editor > popover > [popover-opener].tools {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5359,7 +5220,7 @@ body editor > popover > [popover-opener].tools {
     content: '\e815'; }
 
 body editor.edit editor-toolbar .option.undo > i, body editor.both editor-toolbar .option.undo > i, body editor.html editor-toolbar .option.undo > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5371,7 +5232,7 @@ body editor.edit editor-toolbar .option.undo > i, body editor.both editor-toolba
     content: '\e800'; }
 
 body editor.edit editor-toolbar .option.redo > i, body editor.both editor-toolbar .option.redo > i, body editor.html editor-toolbar .option.redo > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5383,7 +5244,7 @@ body editor.edit editor-toolbar .option.redo > i, body editor.both editor-toolba
     content: '\e801'; }
 
 body editor.edit editor-toolbar .option.bold > i, body editor.both editor-toolbar .option.bold > i, body editor.html editor-toolbar .option.bold > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5395,7 +5256,7 @@ body editor.edit editor-toolbar .option.bold > i, body editor.both editor-toolba
     content: '\e802'; }
 
 body editor.edit editor-toolbar .option.italic > i, body editor.both editor-toolbar .option.italic > i, body editor.html editor-toolbar .option.italic > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5407,7 +5268,7 @@ body editor.edit editor-toolbar .option.italic > i, body editor.both editor-tool
     content: '\e803'; }
 
 body editor.edit editor-toolbar .option.underline > i, body editor.both editor-toolbar .option.underline > i, body editor.html editor-toolbar .option.underline > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5419,7 +5280,7 @@ body editor.edit editor-toolbar .option.underline > i, body editor.both editor-t
     content: '\e804'; }
 
 body editor.edit editor-toolbar .option.justify-left > i, body editor.both editor-toolbar .option.justify-left > i, body editor.html editor-toolbar .option.justify-left > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5431,7 +5292,7 @@ body editor.edit editor-toolbar .option.justify-left > i, body editor.both edito
     content: '\e805'; }
 
 body editor.edit editor-toolbar .option.justify-right > i, body editor.both editor-toolbar .option.justify-right > i, body editor.html editor-toolbar .option.justify-right > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5443,7 +5304,7 @@ body editor.edit editor-toolbar .option.justify-right > i, body editor.both edit
     content: '\e807'; }
 
 body editor.edit editor-toolbar .option.justify-center > i, body editor.both editor-toolbar .option.justify-center > i, body editor.html editor-toolbar .option.justify-center > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5455,7 +5316,7 @@ body editor.edit editor-toolbar .option.justify-center > i, body editor.both edi
     content: '\e806'; }
 
 body editor.edit editor-toolbar .option.justify-full > i, body editor.both editor-toolbar .option.justify-full > i, body editor.html editor-toolbar .option.justify-full > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5467,7 +5328,7 @@ body editor.edit editor-toolbar .option.justify-full > i, body editor.both edito
     content: '\e808'; }
 
 body editor.edit editor-toolbar .option.subscript > i, body editor.both editor-toolbar .option.subscript > i, body editor.html editor-toolbar .option.subscript > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5479,7 +5340,7 @@ body editor.edit editor-toolbar .option.subscript > i, body editor.both editor-t
     content: '\e80d'; }
 
 body editor.edit editor-toolbar .option.superscript > i, body editor.both editor-toolbar .option.superscript > i, body editor.html editor-toolbar .option.superscript > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5491,7 +5352,7 @@ body editor.edit editor-toolbar .option.superscript > i, body editor.both editor
     content: '\e80c'; }
 
 body editor.edit editor-toolbar .option.quote > i, body editor.both editor-toolbar .option.quote > i, body editor.html editor-toolbar .option.quote > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5503,7 +5364,7 @@ body editor.edit editor-toolbar .option.quote > i, body editor.both editor-toolb
     content: '\e816'; }
 
 body editor.edit editor-toolbar .option.ulist i, body editor.both editor-toolbar .option.ulist i, body editor.html editor-toolbar .option.ulist i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5515,7 +5376,7 @@ body editor.edit editor-toolbar .option.ulist i, body editor.both editor-toolbar
     content: '\e809'; }
 
 body editor.edit editor-toolbar .option.olist > i, body editor.both editor-toolbar .option.olist > i, body editor.html editor-toolbar .option.olist > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5527,7 +5388,7 @@ body editor.edit editor-toolbar .option.olist > i, body editor.both editor-toolb
     content: '\e80a'; }
 
 body editor.edit editor-toolbar .option.image > i, body editor.both editor-toolbar .option.image > i, body editor.html editor-toolbar .option.image > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5539,7 +5400,7 @@ body editor.edit editor-toolbar .option.image > i, body editor.both editor-toolb
     content: '\e817'; }
 
 body editor.edit editor-toolbar .option.sound > i, body editor.both editor-toolbar .option.sound > i, body editor.html editor-toolbar .option.sound > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5581,7 +5442,7 @@ body editor.edit editor-toolbar .option.templates > i, body editor.both editor-t
   vertical-align: middle; }
 
 body editor.edit editor-toolbar .option.table popover > i, body editor.both editor-toolbar .option.table popover > i, body editor.html editor-toolbar .option.table popover > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5595,7 +5456,7 @@ body editor.edit editor-toolbar .option.table popover > i, body editor.both edit
     color: black; }
 
 body editor.edit editor-toolbar .option.linker > i, body editor.both editor-toolbar .option.linker > i, body editor.html editor-toolbar .option.linker > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5607,7 +5468,7 @@ body editor.edit editor-toolbar .option.linker > i, body editor.both editor-tool
     content: '\e812'; }
 
 body editor.edit editor-toolbar .option.smileys > i, body editor.both editor-toolbar .option.smileys > i, body editor.html editor-toolbar .option.smileys > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5619,7 +5480,7 @@ body editor.edit editor-toolbar .option.smileys > i, body editor.both editor-too
     content: '\e813'; }
 
 body editor.edit editor-toolbar .option.unlink > i, body editor.both editor-toolbar .option.unlink > i, body editor.html editor-toolbar .option.unlink > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5634,7 +5495,7 @@ body editor.edit editor-toolbar .option.embed .lightbox > .content, body editor.
   overflow: hidden; }
 
 body editor.edit editor-toolbar .option.embed > i, body editor.both editor-toolbar .option.embed > i, body editor.html editor-toolbar .option.embed > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5646,7 +5507,7 @@ body editor.edit editor-toolbar .option.embed > i, body editor.both editor-toolb
     content: '\e810'; }
 
 body editor.edit editor-toolbar .option.audio > i, body editor.both editor-toolbar .option.audio > i, body editor.html editor-toolbar .option.audio > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5658,7 +5519,7 @@ body editor.edit editor-toolbar .option.audio > i, body editor.both editor-toolb
     content: '\e839'; }
 
 body editor.edit editor-toolbar .option.color > i, body editor.both editor-toolbar .option.color > i, body editor.html editor-toolbar .option.color > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5670,7 +5531,7 @@ body editor.edit editor-toolbar .option.color > i, body editor.both editor-toolb
     content: '\e80b'; }
 
 body editor.edit editor-toolbar .option.attachment > i, body editor.both editor-toolbar .option.attachment > i, body editor.html editor-toolbar .option.attachment > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5682,7 +5543,7 @@ body editor.edit editor-toolbar .option.attachment > i, body editor.both editor-
     content: '\e80e'; }
 
 body editor.edit editor-toolbar .option.background-color > i, body editor.both editor-toolbar .option.background-color > i, body editor.html editor-toolbar .option.background-color > i {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5695,9 +5556,9 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
     content: '\e80b'; }
 
 @media screen and (max-width: 800px) {
-  body editor editor-toolbar -list .ed-value {
+  body editor editor-toolbar select-list .selected-value {
     width: 44px; }
-    body editor editor-toolbar -list .ed-value::after {
+    body editor editor-toolbar select-list .selected-value::after {
       height: 44px;
       width: 30px;
       top: 0;
@@ -5706,8 +5567,8 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
   body editor editor-toolbar .option.table popover > i::before {
     left: 7px;
     position: absolute; }
-  body editor editor-toolbar .option.font -list .ed-value {
-    font-family: "generic-icons";
+  body editor editor-toolbar .option.font select-list .selected-value {
+    font-family: "editor";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -5715,11 +5576,11 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
     position: absolute;
     text-align: center;
     line-height: 44px; }
-    body editor editor-toolbar .option.font -list .ed-value::after {
+    body editor editor-toolbar .option.font select-list .selected-value::after {
       content: '\e80b';
       color: black; }
-  body editor editor-toolbar .option.font-size -list .ed-value {
-    font-family: "generic-icons";
+  body editor editor-toolbar .option.font-size select-list .selected-value {
+    font-family: "editor";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -5727,11 +5588,11 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
     position: absolute;
     text-align: center;
     line-height: 44px; }
-    body editor editor-toolbar .option.font-size -list .ed-value::after {
+    body editor editor-toolbar .option.font-size select-list .selected-value::after {
       content: '\e819';
       color: black; }
-  body editor editor-toolbar .option.format -list .ed-value {
-    font-family: "generic-icons";
+  body editor editor-toolbar .option.format select-list .selected-value {
+    font-family: "editor";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -5739,12 +5600,12 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
     position: absolute;
     text-align: center;
     line-height: 44px; }
-    body editor editor-toolbar .option.format -list .ed-value::after {
+    body editor editor-toolbar .option.format select-list .selected-value::after {
       content: '\e81a';
       color: black; } }
 
 .download-attachments .download {
-  font-family: "generic-icons";
+  font-family: "editor";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: none;
@@ -5761,60 +5622,6 @@ body editor.edit editor-toolbar .option.background-color > i, body editor.both e
   body editor.edit editor-toolbar .option:hover {
     background-color: #EEEEEE;
     cursor: pointer; } }
-
-@keyframes slideIn {
-  0% {
-    transform: scaleY(0); }
-  100% {
-    transform: scaleY(1); } }
-
-.image-contextual-menu {
-  position: absolute;
-  background: #eee;
-  padding: 5px;
-  border-radius: 5px;
-  animation: slideIn 1 250ms;
-  transform-origin: top; }
-  .image-contextual-menu button, .image-contextual-menu i {
-    user-select: none;
-    margin-bottom: 0;
-    background: transparent;
-    color: #fff;
-    cursor: pointer; }
-  .image-contextual-menu button {
-    padding-top: 9px;
-    padding-bottom: 9px;
-    padding-left: 13px;
-    background: transparent;
-    box-shadow: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.3); }
-    .image-contextual-menu button:hover {
-      background: #fff; }
-  .image-contextual-menu i {
-    transition: 250ms ease;
-    line-height: 37px;
-    display: inline-block;
-    height: 38px;
-    box-sizing: border-box;
-    width: 35px;
-    text-align: center;
-    vertical-align: text-bottom;
-    border-radius: 3px; }
-    .image-contextual-menu i.large {
-      font-size: 30px; }
-    .image-contextual-menu i.medium {
-      font-size: 23px; }
-    .image-contextual-menu i.ed {
-      box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2) inset; }
-      .image-contextual-menu i.ed:hover {
-        box-shadow: none; }
-  .image-contextual-menu i.resize-image {
-    font-family: "generic-icons";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: none; }
-    .image-contextual-menu i.resize-image::before {
-      content: '\e929'; }
 
 embedder .lightbox > .content {
   overflow: hidden; }
@@ -5861,7 +5668,7 @@ embedder .provider {
     border-bottom: 1px solid #888;
     padding: 0; }
   embedder .provider .others {
-    font-family: "generic-icons";
+    font-family: "editor";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -7623,7 +7430,7 @@ embedder .provider {
     border-bottom: 1px solid #888;
     padding: 0; }
   embedder .provider .others {
-    font-family: "generic-icons";
+    font-family: "editor";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-image: none;
@@ -8392,11 +8199,3 @@ html.app {
     font-size: 10px; }
   article.preview {
     max-height: 800px; } }
-
-i.cloud-upload {
-  font-family: "generic-icons";
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-image: none; }
-  i.cloud-upload::before {
-    content: '\e9c3'; }
