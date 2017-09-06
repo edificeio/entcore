@@ -461,7 +461,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 					JsonObject app = (JsonObject) o;
 					String address = app.getString("address", "");
 					JsonArray patterns = app.getArray("patterns", new JsonArray());
-					if(patterns.size() == 0 || patterns.size() == 1 && patterns.get(0).toString().isEmpty()){
+					if(patterns.size() == 0 || patterns.size() > 0 && patterns.get(0).toString().isEmpty()){
 							URL addressURL;
 						try {
 							if(address.startsWith("/adapter#")){
