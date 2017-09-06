@@ -48,6 +48,7 @@ public class ColumnsMapper {
 				.putString("prenomeleve", "firstName")
 				.putString("prenomresponsable", "firstName")
 				.putString("classe", "classes")
+				.putString("libelleclasse", "classes")
 				.putString("idenfant", "childExternalId")
 				.putString("datedenaissance", "birthDate")
 				.putString("datenaissance", "birthDate")
@@ -103,9 +104,13 @@ public class ColumnsMapper {
 				.putString("sexe", "gender")
 				.putString("attestationfournie", "ignore")
 				.putString("autorisationsassociations", "ignore")
+				.putString("autorisationassociations", "ignore")
 				.putString("autorisationsphotos", "ignore")
+				.putString("autorisationphoto", "ignore")
 				.putString("decisiondepassage", "ignore")
-				.putString("directeur", "ignore");
+				.putString("directeur", "ignore")
+				.putString("ine", "ignore")
+				.putString("identifiantclasse", "");
 
 		mappings.mergeIn(additionnalsMappings);
 		namesMapping = mappings.toMap();
