@@ -31,7 +31,6 @@ export let conversationController = ng.controller('ConversationController', [
             writeMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
-
                 template.open('page', 'folders');
                 let user = new User(params.userId)
                 await user.findData();
