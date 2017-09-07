@@ -128,8 +128,8 @@ public class PersEducNat extends AbstractUser {
 					transactionHelper.add(qs, ps);
 				}
 				final JsonObject fosm = new JsonObject();
+				final JsonArray classes = new JsonArray();
 				if (externalId != null && linkClasses != null) {
-					JsonArray classes = new JsonArray();
 					final JsonObject fcm = new JsonObject();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
@@ -155,15 +155,10 @@ public class PersEducNat extends AbstractUser {
 							.putString("profileExternalId", profileExternalId)
 							.putArray("classes", classes);
 					transactionHelper.add(query, p0);
-					String q =
-							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
-									"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-									"DELETE r";
 					JsonObject p = new JsonObject()
 							.putString("userExternalId", externalId)
 							.putString("source", currentSource)
 							.putArray("classes", classes);
-					transactionHelper.add(q, p);
 					fosm.mergeIn(fcm);
 					for (String fos: fcm.getFieldNames()) {
 						String q2 =
@@ -172,6 +167,17 @@ public class PersEducNat extends AbstractUser {
 								"SET r.classes = {classes} ";
 						transactionHelper.add(q2, p.copy().putArray("classes", fcm.getArray(fos)).putString("feId", fos));
 					}
+				}
+				if (externalId != null) {
+					String q =
+							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
+							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"DELETE r";
+					JsonObject p = new JsonObject()
+							.putString("userExternalId", externalId)
+							.putString("source", currentSource)
+							.putArray("classes", classes);
+					transactionHelper.add(q, p);
 				}
 				final JsonArray groups = new JsonArray();
 				final JsonObject fgm = new JsonObject();
