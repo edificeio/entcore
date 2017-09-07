@@ -87,7 +87,6 @@ export class Conversation {
         this.eventer.trigger('change');
 
         await this.userFolders.sync();
-        await this.users.sync();
         await quota.refresh();
     }
 }

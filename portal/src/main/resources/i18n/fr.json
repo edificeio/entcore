@@ -55,6 +55,8 @@
   "hiboutheque": "Hibouthèque",
   "homeworks": "Cahier de textes",
   "ignore": "Ignorer",
+  "share.search.help1": "Tapez encore ",
+  "share.search.help2": " lettre(s) ou appuyez sur entrée",
   "info.video.embed": "Au préalable, votre contenu doit être enregistré sur une plateforme de partage. Pour l’insérer ici, copiez le lien de partage \"Embed\" et collez-le ci-dessous.",
   "video.embed.pickProvider": "Sélectionnez un type de contenu multimédia",
   "video.embed.placeholder.provider": "Saisir une URL",
