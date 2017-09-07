@@ -108,11 +108,21 @@ export let activationController = ng.controller('ActivationController', ['$scope
 		}
 		else{
 			if(Object.keys($scope.user.themes).length > 1){
+				let foundTheme = false;
 				conf.overriding.forEach(o => {
 					if(o.parent === 'theme-open-ent' && $scope.user.themes[o.child]){
 						$scope.user.theme = o.child;
+						foundTheme = true;
 					}
 				});
+				if(!foundTheme){
+					conf.overriding.forEach(o => {
+						if($scope.user.themes[o.child]){
+							$scope.user.theme = o.child;
+							foundTheme = true;
+						}
+					});
+				}
 			}
 			else if(Object.keys($scope.user.themes).length > 0){
 				$scope.user.theme = Object.keys($scope.user.themes)[0];
