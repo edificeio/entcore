@@ -38,59 +38,56 @@ export class User implements Selectable {
 }
 
 export class Users {
-    selection: Selection<User> = new Selection<User>([]);
     eventer = new Eventer();
+    searchCachedMap = {};
 
-    get all(): User[]{
-        return this.selection.all;
-    }
-
-    async sync(){
+    async sync(search: string){
+        let newArr = [];
         const response = await http.get('/conversation/visible');
         response.data.groups.forEach(group => {
             group.isGroup = true;
-            this.selection.push(Mix.castAs(User, group));
+            newArr.push(Mix.castAs(User, group));
         });
 
-        this.selection.all = this.selection.all.concat(Mix.castArrayAs(User, response.data.users));
-        this.eventer.trigger('sync');
+        newArr = newArr.concat(Mix.castArrayAs(User, response.data.users));
+        return newArr;
     }
 
-    findUser (search, include, exclude): User[] {
+    async findUser (search, include, exclude): Promise<User[]> {
+        const startText = search.substr(0, 3);
+        if(!this.searchCachedMap[startText]){
+            this.searchCachedMap[startText] = await this.sync(startText);
+        }
         var searchTerm = lang.removeAccents(search).toLowerCase();
         if (!searchTerm) {
             return [];
         }
         var found = _.filter(
-                this.all.filter(function (user) {
-                    var includeUser = _.findWhere(include, { id: user.id });
-                    if(includeUser !== undefined)
-                        includeUser.profile = user.profile;
-                    return includeUser === undefined;
-                })
-                .concat(include), function (user) {
-                    var testDisplayName = '', testNameReversed = '';
-                    if (user.displayName) {
-                        testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
-                        testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
-                            + user.displayName.split(' ')[0]).toLowerCase();
-                    }
-                    var testName = '';
-                    if (user.name) {
-                        testName = lang.removeAccents(user.name).toLowerCase();
-                    }
-
-                    return testDisplayName.indexOf(searchTerm) !== -1 ||
-                        testNameReversed.indexOf(searchTerm) !== -1 ||
-                        testName.indexOf(searchTerm) !== -1;
+            this.searchCachedMap[startText].filter(function (user) {
+                var includeUser = _.findWhere(include, { id: user.id });
+                if(includeUser !== undefined)
+                    includeUser.profile = user.profile;
+                return includeUser === undefined;
+            })
+            .concat(include), function (user) {
+                var testDisplayName = '', testNameReversed = '';
+                if (user.displayName) {
+                    testDisplayName = lang.removeAccents(user.displayName).toLowerCase();
+                    testNameReversed = lang.removeAccents(user.displayName.split(' ')[1] + ' '
+                        + user.displayName.split(' ')[0]).toLowerCase();
                 }
+                var testName = '';
+                if (user.name) {
+                    testName = lang.removeAccents(user.name).toLowerCase();
+                }
+
+                return testDisplayName.indexOf(searchTerm) !== -1 ||
+                    testNameReversed.indexOf(searchTerm) !== -1 ||
+                    testName.indexOf(searchTerm) !== -1;
+            }
         );
         return _.reject(found, function (element) {
             return _.findWhere(exclude, { id: element.id });
         });
-    }
-
-    isGroup (id) {
-        return this.all.find(u => u.isGroup && u.id === id);
     }
 }
