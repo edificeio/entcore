@@ -1,73 +1,77 @@
-<article class="twelve cell solid" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
+<article class="twelve cell solid write-mail" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
     <div class="row warning" ng-if="state.newItem.loadingAttachments.length > 0"><i18n>wait.attachments.completion</i18n></div>
-	<form class="row">
-		<div class="twelve cell">
-			<div class="row">
-				<div class="nine cell twelve-mobile">
-					<div class="row">
-						<div class="ten cell twelve-mobile right-magnet">
-							<div class="label-badge" ng-repeat="user in state.newItem.to" ng-click="removeUser(user)">
-								<span class="cell">[[user.toString()]]</span>
-								<i class="close" class="right-magnet"></i>
-							</div>
-						</div>
+	<div class="row">
+		<div class="nine cell twelve-mobile">
+			<div class="row receivers">
+				<div class="ten cell twelve-mobile right-magnet">
+					<div class="label-badge" ng-repeat="user in state.newItem.to" ng-click="removeUser(user)">
+						<span class="cell">[[user.toString()]]</span>
+						<i class="close" class="right-magnet"></i>
 					</div>
-					<div class="row">
-						<label class="two cell twelve-mobile"><i18n>to</i18n></label>
-						<input type="text" class="ten cell twelve-mobile" ng-model="users.search" autofocus ng-change="updateFoundUsers()" id="to-users" />
-						<drop-down
-								options="users.found"
-								ng-change="addUser()"
-								on-close="clearSearch()"
-								ng-model="state.newItem.currentReceiver"
-								for="to-users">
-						</drop-down>
-					</div>
-					<div class="row">
-						<div class="ten cell twelve-mobile right-magnet">
-							<div class="label-badge" ng-repeat="user in state.newItem.cc" ng-click="removeCCUser(user)">
-								<span class="cell">[[user.toString()]]</span>
-								<i class="close" class="right-magnet"></i>
-							</div>
-						</div>
-					</div>
-					<div class="row">
-						<label class="two cell twelve-mobile"><i18n>copy</i18n></label>
-						<input type="text" class="ten cell twelve-mobile" ng-model="users.searchCC"
-							   ng-change="updateFoundCCUsers()" id="cc-users" />
-						<drop-down
-								options="users.foundCC"
-								ng-change="addCCUser()"
-                                on-close="clearCCSearch()"
-								ng-model="state.newItem.currentCCReceiver"
-								for="cc-users">
-						</drop-down>
-					</div>
-					<div class="row">
-						<label class="two cell twelve-mobile"><i18n>subject</i18n></label>
-						<input type="text" class="ten cell twelve-mobile" ng-model="state.newItem.subject" />
-					</div>
-				</div>
-				<div class="three cell twelve-mobile">
-					<plus class="right-magnet">
-						<button class="cell" ng-click="saveDraft()" workflow="conversation.draft">
-							<i18n>save</i18n>
-						</button>
-						<button class="cancel cell" ng-click="conversation.currentFolder.folderName ? openView(conversation.currentFolder.folderName, 'main') : openView('folder', 'main')">
-							<i18n>cancel</i18n>
-						</button>
-					</plus>
-					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length 
-						|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
-						|| sending">
-						<i18n>submit</i18n>
-					</button>
 				</div>
 			</div>
-
-			<hr class="row" />
+			<div class="row">
+				<label class="two cell twelve-mobile"><i18n>to</i18n></label>
+				<search-user class="ten cell twelve-mobile" 
+					ng-model="users.search" 
+					clear-list="users.found.splice(0, users.found.length)" 
+					on-send="updateFoundUsers()" id="to-users">
+				</search-user>
+				
+				<drop-down
+						options="users.found"
+						ng-change="addUser()"
+						on-close="clearSearch()"
+						ng-model="state.newItem.currentReceiver"
+						for="to-users">
+				</drop-down>
+			</div>
+			<div class="row receivers">
+				<div class="ten cell twelve-mobile right-magnet">
+					<div class="label-badge" ng-repeat="user in state.newItem.cc" ng-click="removeCCUser(user)">
+						<span class="cell">[[user.toString()]]</span>
+						<i class="close" class="right-magnet"></i>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<label class="two cell twelve-mobile"><i18n>copy</i18n></label>
+				<search-user class="ten cell twelve-mobile" 
+					ng-model="users.searchCC" 
+					clear-list="users.found.splice(0, users.found.length)" 
+					on-send="updateFoundCCUsers()" id="cc-users">
+				</search-user>
+				<drop-down
+						options="users.foundCC"
+						ng-change="addCCUser()"
+						on-close="clearCCSearch()"
+						ng-model="state.newItem.currentCCReceiver"
+						for="cc-users">
+				</drop-down>
+			</div>
+			<div class="row">
+				<label class="two cell twelve-mobile"><i18n>subject</i18n></label>
+				<input type="text" class="ten cell twelve-mobile" ng-model="state.newItem.subject" />
+			</div>
 		</div>
-	</form>
+		<div class="three cell twelve-mobile">
+			<plus class="right-magnet">
+				<button class="cell" ng-click="saveDraft()" workflow="conversation.draft">
+					<i18n>save</i18n>
+				</button>
+				<button class="cancel cell" ng-click="conversation.currentFolder.folderName ? openView(conversation.currentFolder.folderName, 'main') : openView('folder', 'main')">
+					<i18n>cancel</i18n>
+				</button>
+			</plus>
+			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length 
+				|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+				|| sending">
+				<i18n>submit</i18n>
+			</button>
+		</div>
+	</div>
+
+	<hr class="row" />
 	<div class="row">
 		<editor ng-model="state.newItem.body"></editor>
 	</div>

@@ -22,17 +22,13 @@ export let conversationController = ng.controller('ConversationController', [
             writeMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
-                if (Conversation.instance.users.all.find(u => u.id === params.userId )) {
-                    template.open('page', 'folders');
-                    let user = new User(params.userId)
-                    await user.findData();
-                    template.open('main', 'mail-actions/write-mail');
-                    $scope.addUser(user);
-                    $scope.$apply();
-                }
-                else {
-                    template.open('page', 'errors/e401')
-                }
+                
+                template.open('page', 'folders');
+                let user = new User(params.userId)
+                await user.findData();
+                template.open('main', 'mail-actions/write-mail');
+                $scope.addUser(user);
+                $scope.$apply();
             },
             inbox: async () => {
                 template.open('page', 'folders');
@@ -257,7 +253,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.updateFoundCCUsers = function () {
+        $scope.updateFoundCCUsers = async () => {
             var include = [];
             var exclude = $scope.state.newItem.cc || [];
             if ($scope.mail) {
@@ -265,10 +261,11 @@ export let conversationController = ng.controller('ConversationController', [
                     return new User(item[0], item[1]);
                 });
             }
-            $scope.users.foundCC = Conversation.instance.users.findUser($scope.users.searchCC, include, exclude);
+            $scope.users.foundCC = await Conversation.instance.users.findUser($scope.users.searchCC, include, exclude);
+            $scope.$apply();
         };
 
-        $scope.updateFoundUsers = function () {
+        $scope.updateFoundUsers = async () => {
             var include = [];
             var exclude = $scope.state.newItem.to || [];
             if ($scope.mail) {
@@ -276,7 +273,8 @@ export let conversationController = ng.controller('ConversationController', [
                     return new User(item[0], item[1]);
                 });
             }
-            $scope.users.found = Conversation.instance.users.findUser($scope.users.search, include, exclude);
+            $scope.users.found = await Conversation.instance.users.findUser($scope.users.search, include, exclude);
+            $scope.$apply();
         };
 
         $scope.addUser = function (user) {
