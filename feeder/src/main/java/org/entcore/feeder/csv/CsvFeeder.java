@@ -278,15 +278,20 @@ public class CsvFeeder implements Feed {
 		try {
 			CSVReader csvParser = getCsvReader(file, charset);
 			final List<String> columns = new ArrayList<>();
+			int nbColumns = 0;
 			String[] strings;
 			int i = 0;
 			csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
 					columnsMapper.getColumsNames(strings, columns, handler);
+					nbColumns = columns.size();
 				} else if (!columns.isEmpty()) {
 					if (emptyLine(strings)) {
 						i++;
 						continue;
+					}
+					if (strings.length > nbColumns) {
+						strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
 					}
 					JsonObject user = new JsonObject();
 					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
@@ -295,9 +300,7 @@ public class CsvFeeder implements Feed {
 					for (int j = 0; j < strings.length; j++) {
 						final String c = columns.get(j);
 						final String v = strings[j].trim();
-						//if (v.isEmpty()) continue;
-						if ((v.isEmpty() && !"childUsername".equals(c)) ||
-								(v.isEmpty() && "childUsername".equals(c) && strings[j+1].trim().isEmpty())) continue;
+						if (v.isEmpty() && !c.startsWith("child")) continue;
 						switch (validator.getType(c)) {
 							case "string":
 								if ("birthDate".equals(c)) {
@@ -411,7 +414,9 @@ public class CsvFeeder implements Feed {
 									Object o = user.getValue(attr);
 									if (o instanceof JsonArray) {
 										for (Object c : (JsonArray) o) {
-											linkStudents.add(c);
+											if (c instanceof String && !((String) c).isEmpty()) {
+												linkStudents.add(c);
+											}
 										}
 									} else {
 										linkStudents.add(o);

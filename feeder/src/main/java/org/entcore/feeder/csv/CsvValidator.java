@@ -280,10 +280,13 @@ public class CsvValidator extends Report implements ImportValidator {
 							i++;
 							continue;
 						}
-						if (strings.length != nbColumns) {
-							addErrorByFile(profile, "bad.columns.number", "" + ++i);
-							continue;
+						if (strings.length > nbColumns) {
+							strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
 						}
+//						if (strings.length != nbColumns) {
+//							addErrorByFile(profile, "bad.columns.number", "" + ++i);
+//							continue;
+//						}
 						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
 						user.putArray("structures", new JsonArray().add(structure.getExternalId()));
@@ -296,8 +299,7 @@ public class CsvValidator extends Report implements ImportValidator {
 							}
 							final String c = columns.get(j);
 							final String v = strings[j].trim();
-							if ((v.isEmpty() && !"childUsername".equals(c)) ||
-									(v.isEmpty() && "childUsername".equals(c) && strings[j+1].trim().isEmpty())) continue;
+							if (v.isEmpty() && !c.startsWith("child")) continue;
 							switch (validator.getType(c)) {
 								case "string":
 									if ("birthDate".equals(c)) {

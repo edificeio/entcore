@@ -92,11 +92,17 @@ public class MappingFinder {
 
 		try {
 			CSVReader csvReader = getCsvReader(path, charset);
+			final int nbColumns = columns.size();
 			String[] values;
 			int rowIdx = 0;
 			while ((values = csvReader.readNext()) != null) {
 				if (emptyLine(values)) {
 					continue;
+				}
+				if (values.length > nbColumns) {
+					values = Arrays.asList(values).subList(0, nbColumns).toArray(new String[nbColumns]);
+				} else if (values.length < nbColumns) {
+					values = Arrays.copyOf(values, nbColumns);
 				}
 				final List<String> line = new LinkedList<>(Arrays.asList(values));
 				if (additionalColumn) {
@@ -119,6 +125,7 @@ public class MappingFinder {
 					try {
 						int i = 0;
 						for (String c : columns) {
+						//	if (i >=  values.length) break;
 							switch (c) {
 								case "lastName":
 									params.putString("lastName", sanitize(values[i]));
@@ -265,6 +272,7 @@ public class MappingFinder {
 				try {
 					int i = 0;
 					for (String c : columns) {
+						if (i >=  values.length) break;
 						switch (c) {
 							case "childLastName":
 								lastNames.addString(sanitize(values[i]));
