@@ -66,7 +66,7 @@ public interface CommunicationService {
 
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
-	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
+	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams, String preFilter,
 			Handler<Either<String, JsonArray>> handler);
 
 	void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,

@@ -30,6 +30,8 @@ import org.vertx.java.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class Group {
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
@@ -41,6 +43,9 @@ public class Group {
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
 			if (create) {
 				object.putString("id", id);
+			}
+			if (isNotEmpty(object.getString("name"))) {
+				object.putString("displayNameSearchField", Validator.sanitize(object.getString("name")));
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +

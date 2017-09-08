@@ -29,6 +29,7 @@ import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
 import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.Report;
+import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.vertx.java.core.AsyncResult;
@@ -283,7 +284,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 			name = id;
 		}
 		txXDT.add(CREATE_GROUPS, new JsonObject().putString("structureExternalId", structureExternalId)
-				.putString("name", name).putString("externalId", structureExternalId + "$" + name)
+				.putString("name", name).putString("displayNameSearchField", Validator.sanitize(name))
+				.putString("externalId", structureExternalId + "$" + name)
 				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
 	}
 
@@ -319,7 +321,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		regroup.put(currentEntity.getString(CODE), name);
 		txXDT.add(CREATE_GROUPS, new JsonObject().putString("structureExternalId", structureExternalId)
-				.putString("name", name).putString("externalId", structureExternalId + "$" + name)
+				.putString("name", name).putString("displayNameSearchField", Validator.sanitize(name))
+				.putString("externalId", structureExternalId + "$" + name)
 				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
 	}
 

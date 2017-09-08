@@ -473,7 +473,7 @@ public class ConversationController extends BaseController {
 				if (user != null) {
 					String parentMessageId = request.params().get("In-Reply-To");
 					conversationService.findVisibleRecipients(parentMessageId, user,
-							I18n.acceptLanguage(request), defaultResponseHandler(request));
+							I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
