@@ -2,6 +2,7 @@ import { Component,
     OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges,
     Input, Output, ViewChild } from '@angular/core'
 import { BundlesService } from 'sijil'
+import { Mix } from 'entcore-toolkit'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { routing } from '../../core/services/routing.service'
@@ -83,7 +84,14 @@ import { WizardComponent } from '../../shared/ux/components'
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2 class="panel-header">{{ 'import.report' | translate }}</h2>
-            <table>
+            <div *ngIf="report.hasErrors()">
+                <span *ngFor="let r of report.softErrors.reasons" 
+                [ngClass]="{'error':report.countByReason(r) > 0, 'valid':report.countByReason(r) == 0}">
+                    {{ r | translate }} :
+                    <span class="counter">{{report.countByReason(r)}}</span>
+                </span>
+            </div>
+            <table class="report">
                 <tr>
                     <th>{{ 'line' | translate }}</th>
                     <th>{{ 'lastname' | translate }}</th>
@@ -96,21 +104,27 @@ import { WizardComponent } from '../../shared/ux/components'
                 </tr>
                 <tr *ngFor="let user of report.users">
                     <td>{{user.line}}</td>
-                    <td>
+                    <td [ngClass]="{'error': !!user.error?.lastName}">
                         <span  contenteditable="true" 
                             (blur)="updateReport($event)"
                             field="lastName">
-                            {{user.lastName}}
+                            {{user.lastName?.length > 0 ? user.lastName : 'empty.lastName' | translate}}
                         </span>
                     </td>
-                    <td>
+                    <td [ngClass]="{'error': !!user.error?.firstName}">
                         <span  contenteditable="true" 
-                        (blur)="updateReport($event)"
-                        field="firstName">
-                        {{user.firstName}}
+                            (blur)="updateReport($event)"
+                            field="firstName">
+                            {{user.firstName?.length > 0 ? user.firstName : 'empty.firstName' | translate}}
                         </span>
                     </td>
-                    <td>{{user.birthDate}}</td>
+                    <td [ngClass]="{'error': !!user.error?.birthDate}">
+                        <span  contenteditable="true" 
+                            (blur)="updateReport($event)"
+                            field="birthDate">
+                            {{user.birthDate?.length > 0 ? user.birthDate : 'empty.birthDate' | translate}}
+                        </span>
+                    </td>
                     <td>{{user.profiles.join(',')}}</td>
                     <td>{{user.id}}</td>
                     <td>{{user.classesStr}}</td>
@@ -124,10 +138,23 @@ import { WizardComponent } from '../../shared/ux/components'
     </wizard>
     `,
     styles : [`
-        .error { color : red; font-weigth: bold; }
-        td { border: 2px dashed transparent; }
-        td:hover { border: 2px dashed gray; }
-        td span[contenteditable]:focus {background : yellow; }
+    .error, .valid  {
+            padding : 5px; margin: 10px;  
+            border: 2px solid red; color: red; 
+            font-weight: bold; 
+            }
+            .error .counter, valid .counter { 
+                padding : 2px; 
+                background-color : red; color: white;
+                font-family: monospace; 
+            }
+        .valid, valid .counter { border-color: green; color: green; }
+            .valid .counter { background-color : green; color: white; }
+        table.report { display: block; max-height : 500px; overflow: scroll; }
+        table.report td { border: 2px dashed transparent; }
+        table.report td.error { border: 2px dashed red; }
+        table.report td:hover { border: 2px dashed orange; }
+        table.report td span[contenteditable]:focus {background : yellow; }
     `]
 })
 
@@ -169,7 +196,6 @@ export class ImportCSV implements OnInit, OnDestroy {
         predelete:false,
         transition:false,
     };
-
     columns = {
         availableFields : {},
         mappings : {},
@@ -207,7 +233,19 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     report = {
         importId: '',
-        users : []
+        users : [],
+        softErrors : {
+            reasons : [],
+            list : [] // list's elements have type : { line:string, reason:string, attribute:string, value:string }
+        },
+        hasErrors():boolean {
+            return this.softErrors.reasons.length > 0;
+        },
+        countByReason(r:string):number {
+            return this.softErrors.list.reduce((count, item) => {
+                return count + (item.reason == r ? 1 : 0);
+            }, 0);
+        }
     }
 
     ngOnInit(): void {
@@ -342,9 +380,23 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.stepErrors[3] = null;
             this.report.importId = data.importId
             for (let p of this.columns.profiles) {
-                if (!data[p]) break; // useless
-                this.report.users.push(...data[p]); 
+                // merge profile's users 
+                if (data[p]) {
+                    this.report.users.push(...data[p]);
+                }
+                // merge profile's softErrors list
+                if (data.softErrors && data.softErrors[p]) {
+                    this.report.softErrors.list.push(...data.softErrors[p]);
+                }
             }
+            // Get softError's reasons set
+            this.report.softErrors.reasons = data.softErrors.reasons;
+            for (let err of this.report.softErrors.list) {
+                let user = this.report.users.find(el => { return el.line == err.line});
+                if (!user['error']) { user['error'] = {}; }
+                user['error'][err.attribute] = err;
+            }
+
         }
         this.wizardEl.doNextStep();
         this.cdRef.markForCheck();
@@ -366,7 +418,19 @@ export class ImportCSV implements OnInit, OnDestroy {
             let user = this.report.users.find(el => { return el.line == body.line});
             for (let p in body) {
                 if ('line' != p) {
+                    // Synchronize model with view.  
                     user[p] = body[p];
+
+                    // Update error report 
+                    // TODO : Control (if possible) with Feeder's validator
+                    if (user.error[p] && body[p].length > 0) {
+                        this.report.softErrors.list.splice(
+                            this.report.softErrors.list.indexOf(user.error[p]),
+                            1
+                        );
+                        user.error[p] = undefined;
+                    }
+                    this.cdRef.markForCheck();
                 }
             }
         }
