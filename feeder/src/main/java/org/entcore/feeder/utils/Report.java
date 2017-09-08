@@ -122,27 +122,34 @@ public class Report {
 			softErrors = new JsonObject();
 			result.put("softErrors", softErrors);
 		}
-		JsonObject fileErrors = softErrors.getJsonObject(file);
+		JsonArray reasons = softErrors.getJsonArray("reasons");
+		if (reasons == null) {
+			reasons = new JsonArray();
+			softErrors.put("reasons", reasons);
+		}
+		if (!reasons.contains(key)) {
+			reasons.add(key);
+		}
+
+		JsonArray fileErrors = softErrors.getJsonArray(file);
 		if (fileErrors == null) {
-			fileErrors = new JsonObject();
+			fileErrors = new JsonArray();
 			softErrors.put(file, fileErrors);
 		}
-		String cleanKey = key.replace('.','-'); // Mongo don't support '.' characters in document field's name
-		JsonObject reason = fileErrors.getJsonObject(cleanKey);
-		if (reason == null) {
-			reason = new JsonObject();
-			fileErrors.put(cleanKey, reason);
-		}
-		JsonArray lineErrors = reason.getJsonArray(lineNumber);
-		if (lineErrors == null) {
-			lineErrors = new JsonArray();
-			reason.put(lineNumber, lineErrors);
-		}
+		JsonObject error = new JsonObject().copy()
+				.put("line",lineNumber)
+				.put("reason", key)
+				.put("attribute", errors.length > 0 ? errors[0] : "")
+				.put("value", errors.length > 1 ? errors[1] : "");
+
 		List<String> errorContext = new ArrayList<>(Arrays.asList(errors)); // Hack to support "add" operation
 		errorContext.add(0, lineNumber);
-		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errorContext.toArray(new String[errorContext.size()]));
-		lineErrors.add(error);
-		log.error(error);
+		String translation = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errorContext.toArray(new String[errorContext.size()]));
+		error.put("translation", translation);
+
+		fileErrors.add(error);
+		log.error(translation);
+		//String cleanKey = key.replace('.','-'); // Mongo don't support '.' characters in document field's name
 	}
 
 	public void addUser(String file, JsonObject props) {
@@ -221,6 +228,7 @@ public class Report {
 		}
 		MongoDb.getInstance().update("imports", new JsonObject().put("_id", result.getString("_id")),
 				new JsonObject().put("$set", modif), handler);
+
 	}
 
 	protected void cleanKeys() {}
