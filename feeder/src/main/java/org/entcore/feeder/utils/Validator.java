@@ -489,7 +489,7 @@ public class Validator {
 				if (errorsContext != null) {
 					errorsContext.add(new JsonObject()
 							.put("reason", "invalid.value")
-							.put("attribute", i18n.translate(attr, I18n.DEFAULT_DOMAIN, acceptLanguage))
+							.put("attribute", attr)
 							.put("value", (value != null ? value.toString() : "null"))
 					);
 				}
