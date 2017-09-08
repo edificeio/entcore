@@ -83,7 +83,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected static final String CREATE_GROUPS =
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
 			"MERGE (fg:FunctionalGroup:Group {externalId:{externalId}}) " +
-			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source} " +
+			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source}, fg.displayNameSearchField = {displayNameSearchField} " +
 			"MERGE (fg)-[:DEPENDS]->(s) ";
 	private static final String PERSEDUCNAT_TO_GROUPS =
 			"MATCH (u:User {id : {id}}), (fg:FunctionalGroup) " +

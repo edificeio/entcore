@@ -19,6 +19,7 @@
 
 package org.entcore.conversation.service.impl;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.vertx.java.core.Handler;
@@ -353,13 +355,21 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
-			final String acceptLanguage, final Handler<Either<String, JsonObject>> result) {
+			final String acceptLanguage, final String search, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result))
 			return;
 
 		final JsonObject visible = new JsonObject();
 
 		final JsonObject params = new JsonObject();
+
+		final String preFilter;
+		if (isNotEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			params.putString("search", StringValidation.removeAccents(search.trim()).toLowerCase());
+		} else {
+			preFilter = null;
+		}
 
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
 			String getMessageQuery = "SELECT m.* FROM " + messageTable +
@@ -385,7 +395,7 @@ public class SqlConversationService implements ConversationService{
 							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 							"visibles.profiles[0] as profile";
 
-					findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, new Handler<JsonArray>() {
+					findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibles) {
 							JsonArray users = new JsonArray();
@@ -413,7 +423,7 @@ public class SqlConversationService implements ConversationService{
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile";
-			findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, new Handler<JsonArray>() {
+			findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
 					JsonArray users = new JsonArray();

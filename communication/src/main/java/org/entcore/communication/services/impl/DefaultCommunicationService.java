@@ -537,7 +537,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
-			Handler<Either<String, JsonArray>> handler) {
+			String preFilter, Handler<Either<String, JsonArray>> handler) {
 		String r;
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			r = "WITH gp as profileGroup, profile " + customReturn;
@@ -551,7 +551,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		params.putString("userId", userId);
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
-				"WHERE n.id = {userId} AND (length(p) > 1 OR gp.users <> 'INCOMING') " +
+				"WHERE n.id = {userId} AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
 				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				r;
 		neo4j.execute(query, params, validResultHandler(handler));

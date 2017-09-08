@@ -92,10 +92,11 @@ public class ManualFeeder extends BusModBase {
 					"CREATE (s:Structure {props}) " +
 					"WITH s " +
 					"MATCH (p:Profile) " +
-					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name})-[:DEPENDS]->s " +
+					"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->s " +
 					"SET g.id = id(g)+'-'+timestamp() " +
 					"RETURN DISTINCT s.id as id ";
 			JsonObject params = new JsonObject()
+					.putString("groupSearchField", Validator.sanitize(struct.getString("name")))
 					.putObject("props", struct);
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
@@ -125,11 +126,12 @@ public class ManualFeeder extends BusModBase {
 					"SET c.externalId = s.externalId + '$' + c.name " +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name})-[:DEPENDS]->g " +
+					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->g " +
 					"SET pg.id = id(pg)+'-'+timestamp() " +
 					"RETURN DISTINCT c.id as id ";
 			JsonObject params = new JsonObject()
 					.putString("structureId", structureId)
+					.putString("groupSearchField", Validator.sanitize(c.getString("name")))
 					.putObject("props", c);
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
