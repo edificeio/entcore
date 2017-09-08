@@ -20,13 +20,20 @@
 package org.entcore.cas.controllers;
 
 import fr.wseduc.bus.BusAddress;
+import fr.wseduc.rs.Get;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
 import java.util.Arrays;
 
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.cas.services.RegisteredServices;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -34,6 +41,14 @@ import org.vertx.java.core.json.JsonObject;
 public class ConfigurationController extends BaseController {
 
 	private RegisteredServices services;
+
+	@Get("/configuration/reload")
+	@ResourceFilter(SuperAdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void reloadPatterns(HttpServerRequest request) {
+		loadPatterns();
+		Renders.renderJson(request, new JsonObject().putString("result", "done"), 200);
+	}
 
 	public void loadPatterns() {
 		eb.send("wse.app.registry.bus", new JsonObject().putString("action", "list-cas-connectors"),

@@ -62,7 +62,7 @@
     				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
     				<select class="four cell" ng-model="application.casType" ng-options="type.id as type.name for type in casTypes"></select>
     			</div>
-    			<div class="row">
+    			<div class="row" ng-if="isCentralAdmin()">
     				<label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
     				<input type="text" ng-model="application.pattern" class="four cell" i18n-placeholder="optional"/>
     			</div>

@@ -25,6 +25,7 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.services.AppRegistryService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -33,9 +34,13 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -45,6 +50,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 
 	private final Neo4j neo = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultAppRegistryService.class);
+	private static Pattern URL_PATTERN = Pattern.compile("^https?://[^\\s/$.?#].[^\\s]*$");
 
 	@Override
 	public void listApplications(String structureId, Handler<Either<String, JsonArray>> handler) {
@@ -462,24 +468,53 @@ public class DefaultAppRegistryService implements AppRegistryService {
 					String address = app.getString("address", "");
 					JsonArray patterns = app.getArray("patterns", new JsonArray());
 					if(patterns.size() == 0 || patterns.size() > 0 && patterns.get(0).toString().isEmpty()){
-							URL addressURL;
-						try {
-							if(address.startsWith("/adapter#")){
-								addressURL = new URL(address.substring(address.indexOf("#") + 1));
-							} else {
-								addressURL = new URL(address);
-							}
-						} catch (MalformedURLException e) {
-							log.error("Malformed address : " + address, e);
-							continue;
+						final URL addressURL = checkCasUrl(address);
+
+						if (addressURL != null) {
+							String pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
+							patterns.add(pattern);
+						} else {
+							log.error("Url for registered service : " + app.getString("service", "") + " is malformed : " + address);
 						}
-						String pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
-						patterns.add(pattern);
 					}
 				}
 				handler.handle(new Either.Right<String, JsonArray>(results));
 			}
 		}));
+	}
+
+	public static URL checkCasUrl(final String address) {
+		URL addressURL = null;
+
+		if (!StringUtils.isEmpty(address)) {
+			try {
+				String finalAddress = "";
+				if (address.startsWith("/adapter#")) {
+					finalAddress = address.substring(address.indexOf("#") + 1);
+				} else if (address.startsWith("/cas/login?service=")) {
+					final String urlEncoded = address.substring(address.indexOf("=") + 1);
+					final String urlDecoded = URLDecoder.decode(urlEncoded, "UTF-8");
+					//check url is encoded
+					if (!StringUtils.isEmpty(urlDecoded) && !urlDecoded.equals(urlEncoded)) {
+						finalAddress = urlDecoded;
+					}
+				} else {
+					finalAddress = address;
+				}
+
+				if (!StringUtils.isEmpty(finalAddress)) {
+					final Matcher matcher = URL_PATTERN.matcher(finalAddress);
+
+					if (matcher.matches()) {
+						addressURL = new URL(finalAddress);
+					}
+				}
+			} catch (MalformedURLException | UnsupportedEncodingException | IllegalArgumentException e) {
+				if (log.isDebugEnabled()) log.debug("address of external CAS app is malformed", e);
+			}
+		}
+
+		return (addressURL != null && !StringUtils.isEmpty(addressURL.getHost())) ? addressURL : null;
 	}
 
 }

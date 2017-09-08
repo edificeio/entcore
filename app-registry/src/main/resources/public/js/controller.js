@@ -434,18 +434,18 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     $scope.createExternalApp = function(app){
         app.save($scope.school.id).done(function(){
             notify.message('success', lang.translate('appregistry.notify.createApp'));
-            $scope.school.syncExternalApps($scope.$apply)
-            $scope.showExternalAppList()
-        }).e409(function(){
-            notify.error('appregistry.failed.app')
+            $scope.school.syncExternalApps($scope.$apply);
+            $scope.showExternalAppList();
+        }).e400(function(e){
+            notify.error(e.responseJSON.error);
         });
     }
 
     $scope.updateExternalApp = function(app){
         app.save().done(function(){
             notify.info('appregistry.notify.modified');
-        }).e400(function(){
-            notify.error('appregistry.failed.app')
+        }).e400(function(e){
+            notify.error(e.responseJSON.error);
         })
     }
 

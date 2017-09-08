@@ -231,6 +231,7 @@
     "ok": "Ok",
     "appregistry.confirm.app.deletion": "Veuillez confirmer la suppression définitive de l'application ",
     "appregistry.failed.app": "Erreur lors de la création ou modification de l'application.<br><small>Une autre application porte peut être ce nom.</small>",
+    "appregistry.failed.app.url": "Erreur lors de la création ou modification de l'application.<br><small>L'URL saisie est invalide.</small>",
     "appregistry.link.parameters": "Paramètres du lien",
     "appregistry.connector.parameters": "Paramètres du connecteur",
     "appregistry.show.connector.opts": "Afficher les paramètres du connecteur",

@@ -49,7 +49,7 @@ object AppRegistryAdmlScenario {
       .header("Content-Type", "application/json")
       .body(StringBody("""{"grantType" : "authorization_code", "name":"testadml""" + now +
       """", "secret":"clientSecret", "address" : "http://localhost", "scope" : "userinfo"}"""))
-      .check(status.is(409)))
+      .check(status.is(400)))
       .exec(http("Update external application")
       .put("""/appregistry/application/conf/${app-adml-id}""")
       .header("Content-Type", "application/json")

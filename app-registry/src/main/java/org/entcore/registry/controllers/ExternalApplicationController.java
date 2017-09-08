@@ -23,18 +23,19 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
 import fr.wseduc.bus.BusAddress;
 
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.services.ExternalApplicationService;
+import org.entcore.registry.services.impl.DefaultAppRegistryService;
 import org.entcore.registry.services.impl.DefaultExternalApplicationService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -78,34 +79,44 @@ public class ExternalApplicationController extends BaseController {
 			@Override
 			public void handle(final JsonObject body) {
 				String structureId = request.params().get("structureId");
-				final String casType = body.getString("casType","");
+				final String casType = body.getString("casType", "");
 				final String address = body.getString("address", "");
-				final boolean updateCas = !casType.trim().isEmpty();
-				externalAppService.createExternalApplication(structureId, body, new Handler<Either<String,JsonObject>>() {
-					public void handle(Either<String, JsonObject> event) {
-						if(event.isRight() && updateCas){
-							String pattern = body.getString("pattern", "");
-							if(pattern.isEmpty() && !address.isEmpty()){
-								try {
-									URL addressURL;
-									if(address.startsWith("/adapter#")){
-										addressURL = new URL(address.substring(address.indexOf("#") + 1));
-									} else {
-										addressURL = new URL(address);
-									}
-									pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
-								} catch (MalformedURLException e) {
-									pattern = "";
-								}
+				final boolean updateCas = !StringUtils.isEmpty(casType);
+				final URL addressURL = DefaultAppRegistryService.checkCasUrl(address);
+
+				//for oauth url is not used
+				if (!updateCas || addressURL != null) {
+					externalAppService.createExternalApplication(structureId, body, new Handler<Either<String, JsonObject>>() {
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isLeft()) {
+								JsonObject error = new JsonObject()
+										.putString("error", event.left().getValue());
+								Renders.renderJson(request, error, 400);
+								return;
 							}
-							Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
-								.putString("action", "add-patterns")
-								.putString("service", casType)
-								.putArray("patterns", new JsonArray().add(pattern)));
+
+							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+								if (updateCas) {
+									String pattern = body.getString("pattern", "");
+									if (pattern.isEmpty()) {
+										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
+									}
+									Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
+											.putString("action", "add-patterns")
+											.putString("service", casType)
+											.putArray("patterns", new JsonArray().add(pattern)));
+								}
+								Renders.renderJson(request, event.right().getValue(), 201);
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", "appregistry.failed.app");
+								Renders.renderJson(request, error, 400);
+							}
 						}
-						notEmptyResponseHandler(request, 201, 409).handle(event);
-					}
-				});
+					});
+				} else {
+					badRequest(request, "appregistry.failed.app.url");
+				}
 			}
 		});
 	}

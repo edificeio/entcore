@@ -81,8 +81,8 @@ Application.prototype.createApplication = function(){
 		model.applications.sync();
 		notify.message('success', lang.translate('appregistry.notify.createApp'));
 	})
-    .e409(function(){
-        notify.error('appregistry.failed.app')
+    .e400(function(e){
+		notify.error(e.responseJSON.error);
     });
 };
 
@@ -103,8 +103,8 @@ Application.prototype.saveChanges = function(){
 		model.applications.sync();
 		notify.info(lang.translate('appregistry.notify.modified'));
 	})
-    .e400(function(){
-        notify.error('appregistry.failed.app')
+    .e400(function(e){
+		notify.error(e.responseJSON.error);
     });
 };
 
