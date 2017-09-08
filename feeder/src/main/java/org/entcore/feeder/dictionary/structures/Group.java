@@ -23,9 +23,12 @@ import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.json.JsonObject;
 
 import java.util.UUID;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Group {
 
@@ -38,6 +41,9 @@ public class Group {
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
 			if (create) {
 				object.putString("id", id);
+			}
+			if (isNotEmpty(object.getString("name"))) {
+				object.putString("displayNameSearchField", Validator.sanitize(object.getString("name")));
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +

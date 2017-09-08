@@ -169,9 +169,10 @@ public class CommunicationController extends BaseController {
 				communicationService.usersCanSeeMe(userId, responseHandler);
 				break;
 			case "visibleProfilsGroups":
+				String pF = message.body().getString("preFilter");
 				String c = message.body().getString("customReturn");
 				JsonObject p = message.body().getObject("additionnalParams");
-				communicationService.visibleProfilsGroups(userId, c, p, responseHandler);
+				communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
 				break;
 			case "visibleManualGroups":
 				String cr = message.body().getString("customReturn");

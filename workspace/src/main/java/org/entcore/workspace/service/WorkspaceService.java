@@ -162,7 +162,8 @@ public class WorkspaceService extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					shareService.shareInfos(user.getUserId(), id, I18n.acceptLanguage(request), defaultResponseHandler(request));
+					shareService.shareInfos(user.getUserId(), id, I18n.acceptLanguage(request),
+							request.params().get("search"), defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
