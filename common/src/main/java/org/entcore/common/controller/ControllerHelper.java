@@ -80,7 +80,7 @@ public abstract class ControllerHelper extends BaseController {
 							public void handle(Boolean event) {
 								if (Boolean.TRUE.equals(event)) {
 									shareService.shareInfos(user.getUserId(), id,
-											I18n.acceptLanguage(request), defaultResponseHandler(request));
+											I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
 								} else {
 									unauthorized(request);
 								}
@@ -88,7 +88,7 @@ public abstract class ControllerHelper extends BaseController {
 						});
 					} else {
 						shareService.shareInfos(user.getUserId(), id,
-								I18n.acceptLanguage(request), defaultResponseHandler(request));
+								I18n.acceptLanguage(request), request.params().get("search"), defaultResponseHandler(request));
 					}
 				} else {
 					unauthorized(request);

@@ -27,7 +27,7 @@ import java.util.List;
 
 public interface ShareService {
 
-	void shareInfos(String userId, String resourceId, String acceptLanguage,
+	void shareInfos(String userId, String resourceId, String acceptLanguage, String search,
 					Handler<Either<String, JsonObject>> handler);
 
 	void groupShare(String userId, String groupShareId, String resourceId, List<String> actions,

@@ -110,6 +110,12 @@ public class UserUtils {
 		findUsers(eb, userId, m, handler);
 	}
 
+	public static void findVisibleUsers(final EventBus eb, String userId, boolean profile, String preFilter,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = queryVisibleUsers(preFilter, customReturn, additionnalParams, false, profile);
+		findUsers(eb, userId, m, handler);
+	}
+
 	public static void findVisibleUsers(final EventBus eb, String userId, boolean itSelf, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf, profile);
@@ -147,13 +153,22 @@ public class UserUtils {
 	}
 
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
+		JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
+		final String acceptLanguage, final Handler<JsonArray> handler) {
+		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, acceptLanguage, null, handler);
+	}
+
+	public static void findVisibles(EventBus eb, String userId, String customReturn,
 			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
-			final String acceptLanguage, final Handler<JsonArray> handler) {
+			final String acceptLanguage, String preFilter, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
 				.putBoolean("mygroup", myGroup)
 				.putBoolean("profile", profile)
 				.putString("action", "visibleUsers");
+		if (preFilter != null) {
+			m.putString("preFilter", preFilter);
+		}
 		if (customReturn != null) {
 			m.putString("customReturn", customReturn);
 		}
@@ -178,7 +193,9 @@ public class UserUtils {
 		for (Object u : groups) {
 			if (!(u instanceof JsonObject)) continue;
 			JsonObject group = (JsonObject) u;
-			groupDisplayName(group, acceptLanguage);
+			if (group.getString("name") != null) {
+				groupDisplayName(group, acceptLanguage);
+			}
 		}
 	}
 
@@ -230,6 +247,17 @@ public class UserUtils {
 		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
 				.putString("customReturn", customReturn)
 				.putObject("additionnalParams", additionnalParams);
+		findUsers(eb, userId, m, handler);
+	}
+
+	public static void findVisibleProfilsGroups(final EventBus eb, String userId, String preFilter,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
+				.putString("customReturn", customReturn)
+				.putObject("additionnalParams", additionnalParams);
+		if (preFilter != null) {
+			m.putString("preFilter", preFilter);
+		}
 		findUsers(eb, userId, m, handler);
 	}
 

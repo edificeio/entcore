@@ -326,7 +326,7 @@ public class User {
 				"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
 				"WITH n, f " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
-				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) " +
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"WITH fg " +
 				"MATCH (u:User { id : {userId}}) " +
