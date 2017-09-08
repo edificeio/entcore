@@ -61,13 +61,16 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 	// Default Map of ID's academies
 	private static final Map<String , String> ACADEMIC_SUFFIX = new HashMap<String , String>() {{
 		put("PARIS","020");
+		put("PARIS-CRIF","001");
 		put("CRETEIL","009");
+		put("CRETEIL-CRIF","001");
 		put("VERSAILLES","027");
+		put("VERSAILLES-CRIF","001");
+		put("AGRICOLE","028");
 	}};
 
-
 	private String externalIdPrefix = "^ENT\\$([0-9]*)$";
-	private String academicConfPattern = "^(PARIS|CRETEIL|VERSAILLES)-([0-9]*)$";
+	private String academicConfPattern = "^(PARIS|CRETEIL|VERSAILLES|PARIS-CRIF|VERSAILLES-CRIF|CRETEIL-CRIF|AGRICOLE)-([0-9]*)$";
 
 	private  Pattern academicPattern = Pattern.compile(academicConfPattern);
 
