@@ -494,8 +494,8 @@ public class CsvFeeder implements Feed {
 					importer.getPersEducNat().createAndLinkSubjects(structure.getExternalId());
 					break;
 				case "Relative":
-					importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID);
-					importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID);
+					importer.linkRelativeToClass(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
+					importer.linkRelativeToStructure(RELATIVE_PROFILE_EXTERNAL_ID, null, structure.getExternalId());
 					importer.addRelativeProperties(getSource());
 					break;
 			}

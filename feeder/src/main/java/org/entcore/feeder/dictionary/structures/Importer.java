@@ -622,11 +622,19 @@ public class Importer {
 	}
 
 	public void linkRelativeToStructure(String profileExternalId, String prefix) {
+		linkRelativeToStructure(profileExternalId, prefix, null);
+	}
+
+	public void linkRelativeToStructure(String profileExternalId, String prefix, String structureExternalId) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
 			j.putString("prefix", prefix);
+		}
+		if (isNotEmpty(structureExternalId)) {
+			filter += "AND c.externalId = {structureExternalId} ";
+			j.putString("structureExternalId", structureExternalId);
 		}
 		String query =
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
@@ -641,30 +649,45 @@ public class Importer {
 	}
 
 	public void linkRelativeToClass(String profileExternalId, String prefix) {
+		linkRelativeToClass(profileExternalId, prefix, null);
+	}
+
+	public void linkRelativeToClass(String profileExternalId, String prefix, String structureExternalId) {
 		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
 			j.putString("prefix", prefix);
 		}
+		String filter2 = "";
+		String filter3 = "(s:Structure) ";
+		String additionalMatch = "";
+		String additionalMatch2 = "";
+		if (isNotEmpty(structureExternalId)) {
+			additionalMatch = ", c-[:BELONGS]->(s:Structure) ";
+			additionalMatch2 = "-[:BELONGS]->(s:Structure {externalId : {structureExternalId}}) ";
+			filter2 = "AND s.externalId = {structureExternalId} ";
+			filter3 = "(s:Structure {externalId : {structureExternalId}}) ";
+			j.putString("structureExternalId", structureExternalId);
+		}
 		String query =
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Class)<-[:DEPENDS]-(rcg:ProfileGroup)" +
-				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WHERE p.externalId = {profileExternalId} " + filter +
+				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " + additionalMatch +
+				"WHERE p.externalId = {profileExternalId} " + filter + filter2 +
 				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 		String query2 =
-				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " + additionalMatch2 +
 				"WITH u, COLLECT(distinct c.id) as cIds " +
-				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
+				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " + additionalMatch2 +
 				"WHERE NOT(c.id IN cIds) " + filter +
 				"DELETE r";
 		transactionHelper.add(query2, j);
 		String query3 =
-				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"MATCH (u:User)<-[:RELATED]-(:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->" + filter3 +
 				"WITH u, COLLECT(distinct s.id) as sIds " +
-				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
+				"MATCH u-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->" + filter3 +
 				"WHERE NOT(s.id IN sIds) " + filter +
 				"DELETE r";
 		transactionHelper.add(query3, j);
