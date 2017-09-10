@@ -60,28 +60,47 @@ public class PostImport {
 	}
 
 	public void execute() {
+		execute(null);
+	}
+
+	public void execute(String source) {
 		storeImportedEvent();
-		duplicateUsers.markDuplicates(new Handler<JsonObject>() {
-			@Override
-			public void handle(final JsonObject event) {
-			duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+		if (source == null || config.getArray("exclude-mark-duplicates-by-source") == null ||
+				!config.getArray("exclude-mark-duplicates-by-source").contains(source)) {
+			duplicateUsers.markDuplicates(new Handler<JsonObject>() {
 				@Override
-				public void handle(AsyncResult<JsonArray> mergedUsers) {
-				applyComRules(new VoidHandler() {
-					@Override
-					protected void handle() {
+				public void handle(final JsonObject event) {
+					duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+						@Override
+						public void handle(AsyncResult<JsonArray> mergedUsers) {
+							applyComRules(new VoidHandler() {
+								@Override
+								protected void handle() {
+									if (config.getBoolean("notify-apps-after-import", true)) {
+										ApplicationUtils.afterImport(eb);
+									}
+									if (config.getObject("ws-call-after-import") != null) {
+										wsCall(config.getObject("ws-call-after-import"));
+									}
+								}
+							});
+						}
+					});
+				}
+			});
+		} else {
+			applyComRules(new VoidHandler() {
+				@Override
+				protected void handle() {
 					if (config.getBoolean("notify-apps-after-import", true)) {
 						ApplicationUtils.afterImport(eb);
 					}
 					if (config.getObject("ws-call-after-import") != null) {
 						wsCall(config.getObject("ws-call-after-import"));
 					}
-					}
-				});
 				}
 			});
-			}
-		});
+		}
 	}
 
 	private void wsCall(JsonObject object) {

@@ -550,7 +550,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
 									if (executePostImport) {
-										postImport.execute();
+										postImport.execute(feed.getSource());
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
