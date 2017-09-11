@@ -44,6 +44,7 @@ public class ColumnsMapper {
 				.putString("nomdusageeleve", "username")
 				.putString("nomusageresponsable", "username")
 				.putString("nomusage", "username")
+				.putString("nomdusage", "username")
 				.putString("prenom", "firstName")
 				.putString("prenomeleve", "firstName")
 				.putString("prenomresponsable", "firstName")
@@ -114,6 +115,13 @@ public class ColumnsMapper {
 				.putString("directeur", "ignore")
 				.putString("ine", "ine")
 				.putString("identifiantclasse", "ignore")
+				.putString("dateinscription", "ignore")
+				.putString("deuxiemeprenom", "ignore")
+				.putString("troisiemeprenom", "ignore")
+				.putString("communenaissance", "ignore")
+				.putString("deptnaissance", "ignore")
+				.putString("paysnaissance", "ignore")
+				.putString("etat", "ignore")
 				.putString("intervenant", "ignore");
 
 		mappings.mergeIn(additionnalsMappings);
