@@ -414,11 +414,11 @@ public class CsvFeeder implements Feed {
 									Object o = user.getValue(attr);
 									if (o instanceof JsonArray) {
 										for (Object c : (JsonArray) o) {
-											if (c instanceof String && !((String) c).isEmpty()) {
+											if (c instanceof String && !((String) c).trim().isEmpty()) {
 												linkStudents.add(c);
 											}
 										}
-									} else {
+									} else if (o instanceof String && !((String) o).trim().isEmpty()) {
 										linkStudents.add(o);
 									}
 								} else if ("childUsername".equals(attr)) {
