@@ -521,7 +521,8 @@
                 // this is will have very poor perf, but will work for now.
                 var comment = '',
                     delimiter = '>',
-                    matched = false;
+                    matched = false,
+                    input_char = '';
 
                 this.pos = start_pos;
                 input_char = this.input.charAt(this.pos);
