@@ -659,22 +659,21 @@ public class Importer {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
 			j.putString("prefix", prefix);
 		}
-		String filter2 = "";
 		String filter3 = "(s:Structure) ";
 		String additionalMatch = "";
 		String additionalMatch2 = "";
 		if (isNotEmpty(structureExternalId)) {
-			additionalMatch = ", c-[:BELONGS]->(s:Structure) ";
+			additionalMatch = "MATCH (s:Structure {externalId : {structureExternalId}})<-[:BELONGS]-(c:Class) WITH c ";
 			additionalMatch2 = "-[:BELONGS]->(s:Structure {externalId : {structureExternalId}}) ";
-			filter2 = "AND s.externalId = {structureExternalId} ";
 			filter3 = "(s:Structure {externalId : {structureExternalId}}) ";
 			j.putString("structureExternalId", structureExternalId);
 		}
 		String query =
+				additionalMatch +
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
 				"-[:DEPENDS]->(c:Class)<-[:DEPENDS]-(rcg:ProfileGroup)" +
-				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " + additionalMatch +
-				"WHERE p.externalId = {profileExternalId} " + filter + filter2 +
+				"-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"WHERE p.externalId = {profileExternalId} " + filter +
 				"MERGE u-[:IN]->rcg";
 		transactionHelper.add(query, j);
 		String query2 =
