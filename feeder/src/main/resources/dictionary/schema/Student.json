@@ -146,6 +146,10 @@
 			"type" : "string",
 			"validator" : "notEmpty"
 		},
+		"ine" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
 		"fieldOfStudy" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"

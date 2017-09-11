@@ -112,8 +112,9 @@ public class ColumnsMapper {
 				.putString("autorisationphoto", "ignore")
 				.putString("decisiondepassage", "ignore")
 				.putString("directeur", "ignore")
-				.putString("ine", "ignore")
-				.putString("identifiantclasse", "");
+				.putString("ine", "ine")
+				.putString("identifiantclasse", "ignore")
+				.putString("intervenant", "ignore");
 
 		mappings.mergeIn(additionnalsMappings);
 		namesMapping = mappings.toMap();
