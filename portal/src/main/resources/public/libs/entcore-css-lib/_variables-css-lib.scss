@@ -84,3 +84,10 @@ $font-size: 12px !default;
 
 //datePicker
 $btnPrimaryBackground: $medium-grey !default;
+
+@font-face {
+    font-family: 'generic-icons';
+    src: url(../../../generic-icons/fonts/generic-icons.woff);
+    font-weight: normal;
+    font-style: normal;
+}
