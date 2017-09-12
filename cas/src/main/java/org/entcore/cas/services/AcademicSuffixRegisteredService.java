@@ -61,11 +61,11 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 	// Default Map of ID's academies
 	private static final Map<String , String> ACADEMIC_SUFFIX = new HashMap<String , String>() {{
 		put("PARIS","020");
-		put("PARIS-CRIF","001");
+		put("PARIS-CRIF","");
 		put("CRETEIL","009");
-		put("CRETEIL-CRIF","001");
+		put("CRETEIL-CRIF","");
 		put("VERSAILLES","027");
-		put("VERSAILLES-CRIF","001");
+		put("VERSAILLES-CRIF","");
 		put("AGRICOLE","028");
 	}};
 
