@@ -26,7 +26,7 @@
                 <nav class="three cell recursive-list">
                     <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="structureFilteringInput" />
                     <ul ng-if="!structureFilteringInput">
-                        <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'"
+                        <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name' track by struct.id"
                             ng-click="getCurrentLeaf().onStructureClick(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
                             ng-class="{ selected: struct.selected }">
                             [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
@@ -34,7 +34,7 @@
                         </li>
                     </ul>
                     <ul ng-if="structureFilteringInput">
-                        <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'"
+                        <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name' track by struct.id"
                             ng-click="getCurrentLeaf().onStructureClick(struct);  setShowWhat('showCurrentStructure'); selectOnly(struct, allStructures)"
                             ng-class="{ selected: struct.selected }">
                             [[struct.name]]
@@ -44,7 +44,7 @@
             </script>
             <script type="text/ng-template" id="structure-tree-sub-levels">
                 <ul ng-if="struct.children">
-                    <li ng-repeat="struct in levelStructures = filterChildren(struct) | orderBy: 'name'"
+                    <li ng-repeat="struct in levelStructures = filterChildren(struct) | orderBy: 'name' track by struct.id"
                         ng-click="$event.stopPropagation(); getCurrentLeaf().onStructureClick(struct);  setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
                         ng-class="{ selected: struct.selected }">
                         [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
