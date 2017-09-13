@@ -16,10 +16,12 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.conversation = Conversation.instance;
     
         route({
-            readMail: function (params) {
+            readMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
                 template.open('page', 'folders');
                 $scope.readMail(new Mail(params.mailId));
+                await Conversation.instance.sync();
+                $scope.$apply();
             },
             writeMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
