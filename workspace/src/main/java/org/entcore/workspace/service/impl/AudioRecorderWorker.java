@@ -38,7 +38,6 @@ import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.impl.ws.DefaultWebSocketFrame;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
@@ -46,8 +45,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.zip.DataFormatException;
+import java.util.Set;
 
 
 public class AudioRecorderWorker extends BusModBase implements Handler<Message<JsonObject>> {
@@ -56,6 +56,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	private WorkspaceHelper workspaceHelper;
 	private final Map<String, PersistantBuffer> buffers = new HashMap<>();
 	private final Map<String, Handler<Message<byte[]>>> handlers = new HashMap<>();
+	private final Set<String> disabledCompression = new HashSet<>();
 
 	@Override
 	public void start() {
@@ -79,7 +80,15 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 			case "save":
 				save(id, message);
 				break;
+			case "rawdata":
+				disableCompression(id, message);
+				break;
 		}
+	}
+
+	private void disableCompression(String id, Message<JsonObject> message) {
+		disabledCompression.add(id);
+		sendOK(message);
 	}
 
 	private void save(final String id, final Message<JsonObject> message) {
@@ -126,6 +135,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	}
 
 	private void cancel(String id, Message<JsonObject> message) {
+		disabledCompression.remove(id);
 		PersistantBuffer buffer = buffers.remove(id);
 		if (buffer != null) {
 			buffer.clear();
@@ -145,7 +155,12 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 			public void handle(Message<byte[]> chunk) {
 				try {
 					final PersistantBuffer buf = buffers.get(id);
-					Buffer tmp = new Buffer(ZLib.decompress(chunk.body()));
+					final Buffer tmp;
+					if (disabledCompression.contains(id)) {
+						tmp = new Buffer(chunk.body());
+					} else {
+						tmp = new Buffer(ZLib.decompress(chunk.body()));
+					}
 					if (buf != null) {
 						buf.appendBuffer(tmp);
 					} else {

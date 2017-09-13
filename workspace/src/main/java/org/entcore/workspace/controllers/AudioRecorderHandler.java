@@ -110,6 +110,8 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 											save(id, command.substring(5), infos, ws);
 										} else if ("cancel".equals(command)) {
 											cancel(id, ws);
+										} else if ("rawdata".equals(command)) {
+											disableCompression(id, ws);
 										}
 									}
 								}
@@ -165,6 +167,24 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 								ws.writeTextFrame(event.body().getString("message"));
 							}
 							ws.close();
+						}
+					}
+				});
+	}
+
+	private void disableCompression(String id, final ServerWebSocket ws) {
+		eb.send(AudioRecorderWorker.class.getSimpleName(),
+				new JsonObject().putString("action", "rawdata").putString("id", id),
+				new Handler<Message<JsonObject>>() {
+
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if (ws != null) {
+							if ("ok".equals(event.body().getString("status"))) {
+								ws.writeTextFrame("ok");
+							} else {
+								ws.writeTextFrame(event.body().getString("message"));
+							}
 						}
 					}
 				});
