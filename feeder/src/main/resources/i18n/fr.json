@@ -67,5 +67,7 @@
   "report.modified" : "Nombre d'utilisateurs modifiés",
   "report.disappearance" : "Nombre d'utilisateurs disparus",
   "report.errors" : "Erreurs",
-  "report.loadedFiles" : "Fichiers chargés"
+  "report.loadedFiles" : "Fichiers chargés",
+  "validator.errorWithLine" : "Ligne {0} : {1}",
+  "invalid.child.mapping" : "Ligne {0} : valeur(s) invalide(s) associée(s) au(x) champs {1} "
 }

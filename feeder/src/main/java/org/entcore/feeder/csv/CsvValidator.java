@@ -433,7 +433,7 @@ public class CsvValidator extends Report implements ImportValidator {
 													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										} else {
-											addError(profile, "invalid.child.mapping");
+											addErrorByFile(profile, "invalid.child.mapping", "" + (i+1) , "childLUsername");
 											handler.handle(result);
 											return;
 										}
@@ -462,7 +462,7 @@ public class CsvValidator extends Report implements ImportValidator {
 													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										} else {
-											addError(profile, "invalid.child.mapping");
+											addErrorByFile(profile, "invalid.child.mapping", "" + (i+1) , "childLastName & childFirstName");
 											handler.handle(result);
 											return;
 										}
@@ -483,7 +483,7 @@ public class CsvValidator extends Report implements ImportValidator {
 						String error = validator.validate(user, acceptLanguage);
 						if (error != null) {
 							log.warn(error);
-							addError(profile, error);
+							addErrorByFile(profile, "validator.errorWithLine", "" + (i+1), error); // Note that 'error' is already translated
 						} else {
 							final String classesStr = Joiner.on(", ").join(classesNames);
 							classesNamesMapping.put(user.getString("externalId"), classesStr);
