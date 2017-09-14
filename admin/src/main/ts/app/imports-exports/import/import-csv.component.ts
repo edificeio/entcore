@@ -21,21 +21,19 @@ import { WizardComponent } from '../../shared/ux/components'
         <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
             <h2 class="panel-header">{{ 'import.files.deposit' | translate }}</h2>
             <p *ngIf="stepErrors[0]" class="error">{{stepErrors[0]}}</p>
-            <form #step1Form="ngForm">
-                <h3>{{ 'import.files.deposit' | translate }}</h3>
-                <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
-                    <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]">
-                    <input type="file" name="{{p}}" (change)="loadFile($event)" 
-                        [hidden]="!isLoaded(p)" placeholder="{{ 'import.uplaod' + p | translate }}">
-                </form-field>
-                <h3>{{ 'import.parameters' | translate }}</h3>
-                <form-field label="import.step1.preDeleteOption">
-                    <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" >
-                </form-field>
-                <form-field label="import.step1.transitionOption">
-                    <input type="checkbox"  name="transitionOption" [(ngModel)]="importInfos.transition" >
-                </form-field>
-            </form>
+            <h3>{{ 'import.files.deposit' | translate }}</h3>
+            <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
+                <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]">
+                <input type="file" name="{{p}}" (change)="loadFile($event)" 
+                    [hidden]="!isLoaded(p)" placeholder="{{ 'import.uplaod' + p | translate }}">
+            </form-field>
+            <h3>{{ 'import.parameters' | translate }}</h3>
+            <form-field label="import.step1.preDeleteOption">
+                <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" >
+            </form-field>
+            <form-field label="import.step1.transitionOption">
+                <input type="checkbox"  name="transitionOption" [(ngModel)]="importInfos.transition" >
+            </form-field>
         </step>
         <step #step2 name="{{ 'import.fields.checking' | translate }}" [class.active]="step2.isActived">
             <h2 class="panel-header">{{ 'import.fields.checking' | translate }}</h2>
@@ -105,8 +103,8 @@ import { WizardComponent } from '../../shared/ux/components'
                         </span>
                     </td>
                     <td>{{user.profiles.join(',')}}</td>
-                    <td>{{user.id}}</td>
-                    <td>{{user.classesStr}}</td>
+                    <td><span ellipsis>{{user.id}}</span></td>
+                    <td><span ellipsis="expand">{{user.classesStr}}</span></td>
                     <td>{{user.state}}</td>
                 </tr>
             </table>
