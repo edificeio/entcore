@@ -23,32 +23,11 @@ import { WizardComponent } from '../../shared/ux/components'
             <p *ngIf="stepErrors[0]" class="error">{{stepErrors[0]}}</p>
             <form #step1Form="ngForm">
                 <h3>{{ 'import.files.deposit' | translate }}</h3>
-                <form-field label="Teacher">
-                <input type="checkbox"  name="teacherCB" [(ngModel)]="profiles.isLoaded.Teacher">
-                <input type="file" name="Teacher" (change)="loadFile($event)" 
-                        [hidden]="!profiles.isLoaded.Teacher" placeholder="{{ 'import.uplaodTeachers' | translate }}">                        
+                <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
+                    <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]">
+                    <input type="file" name="{{p}}" (change)="loadFile($event)" 
+                        [hidden]="!isLoaded(p)" placeholder="{{ 'import.uplaod' + p | translate }}">
                 </form-field>
-                <form-field label="Student">
-                <input type="checkbox" name="studentCB" [(ngModel)]="profiles.isLoaded.Student">
-                    <input type="file" name="Student" (change)="loadFile($event)"
-                        [hidden]="!profiles.isLoaded.Student" placeholder="{{ 'import.uplaodStudents' | translate }}">
-                </form-field>
-                <form-field label="Relative">
-                <input type="checkbox" name="relativeCB" [(ngModel)]="profiles.isLoaded.Relative">
-                    <input type="file"  name="Relative" (change)="loadFile($event)"
-                    [hidden]="!profiles.isLoaded.Relative" placeholder="{{ 'import.uplaodRelatives' | translate }}">
-                </form-field>
-                <form-field label="Personnel">
-                <input type="checkbox" name="personnelCB" [(ngModel)]="profiles.isLoaded.Personnel">
-                    <input type="file"  name="Personnel" (change)="loadFile($event)"
-                        [hidden]="!profiles.isLoaded.Personnel" placeholder="{{ 'import.uplaodPersonnels' | translate }}">
-                </form-field>
-                <form-field label="Guest">
-                <input type="checkbox" name="guestCB" [(ngModel)]="profiles.isLoaded.Guest">
-                    <input type="file" name="Guest" (change)="loadFile($event)" 
-                        [hidden]="!profiles.isLoaded.Guest" placeholder="{{ 'import.uplaodGuests' | translate }}">
-                </form-field>
-
                 <h3>{{ 'import.parameters' | translate }}</h3>
                 <form-field label="import.step1.preDeleteOption">
                     <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" >
@@ -177,15 +156,34 @@ export class ImportCSV implements OnInit, OnDestroy {
     stepErrors = [];
     
     profiles = { 
-        isLoaded : { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false },
-        asArray() { 
+        Teacher:false, 
+        Student:false, 
+        Relative:false, 
+        Personnel:false, 
+        Guest:false ,
+        inputFiles : {}, // Use to keep reference of profile's inputFile to clean FileList's attribute when inputFile is hidden
+        asArray(all = false) { 
             let arr = [];
-            for (let p in this.isLoaded) {
-                if (this.isLoaded[p]) arr.push(p);
+            for (let p in this) {
+                if (typeof this[p] == 'boolean') {
+                    if (all) arr.push(p);
+                    else if (this[p]) arr.push(p);
+                }
             }
             return arr; 
         }
     };
+
+    isLoaded(p) {
+        if (typeof this.profiles[p] == 'boolean' && !this.profiles[p]) {
+            this.importInfos[p] = undefined;
+            if (this.profiles.inputFiles[p]) {
+                this.profiles.inputFiles[p].value = null; // Set value to null empty the FileList 
+            }
+        }
+        return this.profiles[p]
+    };
+
 
     importInfos = {
         type:'CSV', // type property must be alaways set to 'CSV' to match server API contract 
@@ -196,6 +194,19 @@ export class ImportCSV implements OnInit, OnDestroy {
         predelete:false,
         transition:false,
     };
+
+    /* 
+    * Fire when (change) on input[file]. Update profile's filelist to import
+    * TODO : wrap into a component
+    */
+    loadFile(event) {
+        let files : FileList = event.target.files;
+        this.profiles.inputFiles[event.target.name] = event.target;
+        if (files.length == 1) {
+            this.importInfos[event.target.name] = event.target.files[0];
+        }
+    }
+
     columns = {
         availableFields : {},
         mappings : {},
@@ -270,16 +281,6 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     /* 
-    * Fire when (change) on input[file]. Update profile's filelist to import
-    */
-    loadFile(event) {
-        let files : FileList = event.target.files;  
-        if (files.length == 1) {
-            this.importInfos[event.target.name] = event.target.files[0];
-        }
-    }
-
-    /* 
     * Reset component's state. 
     * WARN : we maintain structure's informations (id, externalId, name, UAI) 
     *        because they are set by observing the route  
@@ -292,21 +293,14 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.stepErrors = [];
 
         this.profiles.asArray().forEach(p =>{ this.importInfos[p] = null }); // Flush loaded CSV files
-        this.profiles.isLoaded = { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false};
-
-        this.importInfos.predelete = false;
-        this.importInfos.transition = false;
-
-        this.columns.mappings = {};
-        this.columns.availableFields = {};
-        this.classes.profiles = [];
-
-        this.classes.mappings = {};
-        this.classes.availableClasses = {};
-        this.classes.profiles = [];
-
-        this.report.importId = '';
-        this.report.users = [];
+        
+        Object.assign(this.profiles,
+            { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false, inputFiles : {}}
+        );
+        Object.assign(this.importInfos, {predelete:false, transition:false});
+        Object.assign(this.columns, {mappings:{},availableFields:{},profiles:[]});
+        Object.assign(this.classes, {mappings:{},availableClasses:{},profiles:[]});
+        Object.assign(this.report, {importId:'', users:[], softErrors : {reasons:[],list:[]}});
     }
 
     nextStep(activeStep: Number) {
@@ -341,7 +335,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         } else {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
-            this.columns.profiles = Object.keys(data.mappings);
+            this.columns.profiles = this.profiles.asArray();
             this.stepErrors[0] = null;
             this.wizardEl.doNextStep();
         }
@@ -379,7 +373,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         } else { 
             this.stepErrors[3] = null;
             this.report.importId = data.importId
-            for (let p of this.columns.profiles) {
+            for (let p of this.profiles.asArray()) {
                 // merge profile's users 
                 if (data[p]) {
                     this.report.users.push(...data[p]);
@@ -390,13 +384,14 @@ export class ImportCSV implements OnInit, OnDestroy {
                 }
             }
             // Get softError's reasons set
-            this.report.softErrors.reasons = data.softErrors.reasons;
-            for (let err of this.report.softErrors.list) {
-                let user = this.report.users.find(el => { return el.line == err.line});
-                if (!user['error']) { user['error'] = {}; }
-                user['error'][err.attribute] = err;
+            if (data.softErrors) {
+                this.report.softErrors.reasons = data.softErrors.reasons;
+                for (let err of this.report.softErrors.list) {
+                    let user = this.report.users.find(el => { return el.line == err.line});
+                    if (!user['error']) { user['error'] = {}; }
+                    user['error'][err.attribute] = err;
+                }
             }
-
         }
         this.wizardEl.doNextStep();
         this.cdRef.markForCheck();
