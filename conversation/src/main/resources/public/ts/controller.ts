@@ -221,8 +221,10 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.sendMail = async () => {
+            $scope.sending = true; //Blocks submit button while message hasn't been send
             const mail: Mail = $scope.state.newItem;
             await mail.send();
+            delete $scope.sending;
             $scope.state.newItem = new Mail();
             await $scope.openFolder(Conversation.instance.folders.outbox.folderName);
         };

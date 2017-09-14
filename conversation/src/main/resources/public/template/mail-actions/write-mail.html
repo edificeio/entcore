@@ -57,7 +57,9 @@
 							<i18n>cancel</i18n>
 						</button>
 					</plus>
-					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)">
+					<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length 
+						|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+						|| sending">
 						<i18n>submit</i18n>
 					</button>
 				</div>
