@@ -1,0 +1,2 @@
+drop trigger deletemessage_trigger ON conversation.usermessages;
+drop trigger deleteattachment_trigger ON conversation.usermessagesattachments;

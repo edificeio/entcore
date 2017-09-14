@@ -19,11 +19,15 @@
 
 package org.entcore.conversation;
 
+import fr.wseduc.cron.CronTrigger;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
+import org.entcore.conversation.service.impl.DeleteOrphan;
+
+import java.text.ParseException;
 
 public class Conversation extends BaseServer {
 
@@ -39,6 +43,14 @@ public class Conversation extends BaseServer {
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage));
 
+		final String deleteOrphanCron = config.getString("deleteOrphanCron");
+		if (deleteOrphanCron != null) {
+			try {
+				new CronTrigger(vertx, deleteOrphanCron).schedule(new DeleteOrphan());
+			} catch (ParseException e) {
+				log.error("Invalid cron expression.", e);
+			}
+		}
 	}
 
 }
