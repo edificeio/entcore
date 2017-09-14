@@ -1,4 +1,5 @@
-/* Copyright © WebServices pour l'Éducation, 2014
+/*
+ * Copyright © WebServices pour l'Éducation, 2017
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -14,45 +15,46 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *
  */
 
 package org.entcore.feeder.aaf;
 
-import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-public class StudentImportProcessing2 extends StudentImportProcessing {
+public class CleanImportProcessing extends BaseImportProcessing {
 
-	protected StudentImportProcessing2(String path, Vertx vertx) {
+
+	protected CleanImportProcessing(String path, Vertx vertx) {
 		super(path, vertx);
 	}
 
 	@Override
-	public void start(final Handler<Message<JsonObject>> handler) {
-		parse(handler, new CleanImportProcessing(path, vertx));
+	public void start(Handler<Message<JsonObject>> handler) {
+		parse(handler, null);
+	}
+
+	@Override
+	public String getMappingResource() {
+		return "";
 	}
 
 	@Override
 	protected void preCommit() {
-		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
-		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
-//		importer.removeOldFunctionalGroup();
-//		importer.removeEmptyClasses();
-//		importer.restorePreDeletedUsers();
+		log.info("clean import process");
+		importer.removeOldFunctionalGroup();
+		importer.removeEmptyClasses();
+		importer.restorePreDeletedUsers();
 	}
 
 	@Override
 	public void process(JsonObject object) {
-		String[][] classes = createClasses(object.getArray("classes"));
-		String[][] groups = createGroups(object.getArray("groups"));
-		JsonArray relative = parseRelativeField(object.getArray("relative"));
-		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
-				null, null, classes, groups, relative, false, true);
 	}
 
+	@Override
+	protected String getFileRegex() {
+		return "";
+	}
 }
