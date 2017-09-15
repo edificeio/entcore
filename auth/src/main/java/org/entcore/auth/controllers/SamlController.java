@@ -245,7 +245,7 @@ public class SamlController extends AbstractFederateController {
 						j.putString(attr, request.formAttributes().get(attr));
 					}
 				}
-				final String nameId = j.getString("nameId");
+				final String nameId = j.getString("nameId", "").replaceAll("\\r", "");
 				final String sessionIndex = j.getString("sessionIndex");
 				try {
 					if (j.getString("key", "").equals(HmacSha1.sign(sessionIndex + nameId + j.getString("login") + j.getString("id"), signKey))) {
