@@ -13,7 +13,7 @@ type EllipsisBehavior = "expand" | "hide";
     styles: [`
         :host {
             display: block;
-            width: 10em;
+            width: 8em;
             overflow: hidden;
             white-space: nowrap; 
             text-overflow: ellipsis; 
