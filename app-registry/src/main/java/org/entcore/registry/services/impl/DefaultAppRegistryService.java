@@ -444,6 +444,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		final JsonObject params = new JsonObject().putString("id", classId);
 		final String widgetQuery =
 				"MATCH (c:Class { id : {id}})<-[:DEPENDS]-(csg:ProfileGroup)-[:DEPENDS]->(ssg:ProfileGroup), (w:Widget) " +
+				"WHERE w.default = true " +
 				"MERGE w<-[r:AUTHORIZED]-ssg";
 		StatementsBuilder sb = new StatementsBuilder();
 		sb.add(query, params).add(widgetQuery, params);
