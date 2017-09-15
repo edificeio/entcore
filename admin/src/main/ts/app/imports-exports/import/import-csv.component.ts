@@ -19,7 +19,7 @@ import { WizardComponent } from '../../shared/ux/components'
         (previousStep)="previousStep($event)"
     >
         <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
-            <h2 class="panel-header">{{ 'import.files.deposit' | translate }}</h2>
+            <h2>{{ 'import.files.deposit' | translate }}</h2>
             <p *ngIf="stepErrors[0]" class="error">{{stepErrors[0]}}</p>
             <h3>{{ 'import.files.deposit' | translate }}</h3>
             <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
@@ -63,13 +63,13 @@ import { WizardComponent } from '../../shared/ux/components'
             <h2 class="panel-header">{{ 'import.report' | translate }}</h2>
             <div *ngIf="report.hasErrors()">
                 <span *ngFor="let r of report.softErrors.reasons" 
-                [ngClass]="{'error':report.countByReason(r) > 0, 'valid':report.countByReason(r) == 0}">
+                    [ngClass]="{'error':report.countByReason(r) > 0, 'valid':report.countByReason(r) == 0}">
                     {{ r | translate }} :
                     <span class="counter">{{report.countByReason(r)}}</span>
                 </span>
             </div>
             <table class="report">
-                <tr>
+                <thead>
                     <th>{{ 'line' | translate }}</th>
                     <th>{{ 'lastname' | translate }}</th>
                     <th>{{ 'firstname' | translate }}</th>
@@ -78,35 +78,37 @@ import { WizardComponent } from '../../shared/ux/components'
                     <th>{{ 'id' | translate }}</th>
                     <th>{{ 'classes' | translate }}</th>
                     <th>{{ 'operation' | translate }}</th>
-                </tr>
-                <tr *ngFor="let user of report.users">
-                    <td>{{user.line}}</td>
-                    <td [ngClass]="{'error': !!user.error?.lastName}">
-                        <span  contenteditable="true" 
-                            (blur)="updateReport($event)"
-                            field="lastName">
-                            {{user.lastName?.length > 0 ? user.lastName : 'empty.lastName' | translate}}
-                        </span>
-                    </td>
-                    <td [ngClass]="{'error': !!user.error?.firstName}">
-                        <span  contenteditable="true" 
-                            (blur)="updateReport($event)"
-                            field="firstName">
-                            {{user.firstName?.length > 0 ? user.firstName : 'empty.firstName' | translate}}
-                        </span>
-                    </td>
-                    <td [ngClass]="{'error': !!user.error?.birthDate}">
-                        <span  contenteditable="true" 
-                            (blur)="updateReport($event)"
-                            field="birthDate">
-                            {{user.birthDate?.length > 0 ? user.birthDate : 'empty.birthDate' | translate}}
-                        </span>
-                    </td>
-                    <td>{{user.profiles.join(',')}}</td>
-                    <td><span ellipsis>{{user.id}}</span></td>
-                    <td><span ellipsis="expand">{{user.classesStr}}</span></td>
-                    <td>{{user.state}}</td>
-                </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of report.users">
+                        <td>{{user.line}}</td>
+                        <td [ngClass]="{'error': !!user.error?.lastName}" class="clickable">
+                            <span  contenteditable="true" 
+                                (blur)="updateReport($event)"
+                                field="lastName">
+                                {{user.lastName?.length > 0 ? user.lastName : 'empty.lastName' | translate}}
+                            </span>
+                        </td>
+                        <td [ngClass]="{'error': !!user.error?.firstName}" class="clickable">
+                            <span  contenteditable="true" 
+                                (blur)="updateReport($event)"
+                                field="firstName">
+                                {{user.firstName?.length > 0 ? user.firstName : 'empty.firstName' | translate}}
+                            </span>
+                        </td>
+                        <td [ngClass]="{'error': !!user.error?.birthDate}" class="clickable">
+                            <span  contenteditable="true" 
+                                (blur)="updateReport($event)"
+                                field="birthDate">
+                                {{user.birthDate?.length > 0 ? user.birthDate : 'empty.birthDate' | translate}}
+                            </span>
+                        </td>
+                        <td>{{user.profiles.join(',')}}</td>
+                        <td><span ellipsis>{{user.id}}</span></td>
+                        <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
+                        <td>{{user.state}}</td>
+                    </tr>
+                </tbody>
             </table>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
@@ -115,23 +117,26 @@ import { WizardComponent } from '../../shared/ux/components'
     </wizard>
     `,
     styles : [`
-    .error, .valid  {
-            padding : 5px; margin: 10px;  
+        div .error , div .valid {
+            display : inline-flex;
+        }
+        .error, .valid  {
+            padding : 5px; margin: 5px 10px 10px;  
             border: 2px solid red; color: red; 
             font-weight: bold; 
-            }
-            .error .counter, valid .counter { 
-                padding : 2px; 
-                background-color : red; color: white;
-                font-family: monospace; 
-            }
-        .valid, valid .counter { border-color: green; color: green; }
-            .valid .counter { background-color : green; color: white; }
+        }
+        .error .counter, .valid .counter { 
+            padding : 2px; 
+            background-color : red; color: white;
+            font-family: monospace; 
+        }
+        .valid { border-color: green; color: green; }
+        .valid .counter { background-color : green; color: white; }
+
         table.report { display: block; max-height : 500px; overflow: scroll; }
-        table.report td { border: 2px dashed transparent; }
+        table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
         table.report td.error { border: 2px dashed red; }
-        table.report td:hover { border: 2px dashed orange; }
-        table.report td span[contenteditable]:focus {background : yellow; }
+        table.report td span[contenteditable]:focus { background : yellow; }
     `]
 })
 

@@ -2122,6 +2122,15 @@ div.flatpickr {
 /* reset */
 div:focus { outline: 0; }
 
+@media screen and (max-width: 860px) {
+  .card-layout > *,
+  .side-companion,
+  .side-card
+  {
+    flex: 100%;
+  }
+}
+
 i.fa {
   &.is-succcess { color: $success; }
   &.is-info { color: $info; }
@@ -2292,4 +2301,66 @@ div.legend-square.outlined, input.outlined {
 
 .trumbowyg-box {
   z-index: 0;
+}
+
+/* <table> 
+* TODO : manage fix header style
+*/
+table {
+    border-collapse: collapse;
+    thead
+    {
+        color: white;
+        background: $main;
+        font-weight: bolder;
+        th {
+            padding: 10px;
+        }
+    }
+    tbody
+    {
+        tr > td {
+            padding: 6px;
+            font-size: 0.95em;
+            border-bottom: 1px solid grey;
+            text-align: left;
+        }
+    }
+}
+
+/* <wizard> */
+wizard {
+    background: $main-light !important;
+    button {
+        background-color: $accent;
+        color: white !important;
+        padding: 10px 10px;
+        &:hover {
+            background-color: $accent-dark !important;
+        }
+    }
+    nav.steps-progress-menu {
+        font-size: 1.05em;
+        font-weight: bold;
+        color: $main-lighter;
+        li { 
+            padding: 5px 0;
+            &.active { 
+                color : white; 
+            }
+        }
+    }
+    nav.steps-nav-button {
+        padding : 10px;
+    }
+    step {
+        min-height: 300px;
+        padding: 10px;
+        h2 {
+            margin-top: 5px;
+            font-size : 1.6em;
+            font-weight : bold;
+            color: $main-dark;
+        }
+    }
 }
