@@ -46,7 +46,7 @@ public class Conversation extends BaseServer {
 		final String deleteOrphanCron = config.getString("deleteOrphanCron");
 		if (deleteOrphanCron != null) {
 			try {
-				new CronTrigger(vertx, deleteOrphanCron).schedule(new DeleteOrphan());
+				new CronTrigger(vertx, deleteOrphanCron).schedule(new DeleteOrphan(storage));
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}

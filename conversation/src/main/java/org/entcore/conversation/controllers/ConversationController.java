@@ -580,11 +580,7 @@ public class ConversationController extends BaseController {
 							}
 
 							JsonArray results = event.right().getValue();
-							JsonArray unusedAttachments =
-								((JsonArray) results.get(0)).size() > 0 ?
-									new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("unusedattachments", "[]")) :
-									new JsonArray();
-							final long freeQuota = ((JsonObject) ((JsonArray) results.get(1)).get(0)).getLong("totalquota", 0L);
+							final long freeQuota = ((JsonObject) ((JsonArray) results.get(0)).get(0)).getLong("totalquota", 0L);
 
 							updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 								public void handle(Void event) {
@@ -592,17 +588,6 @@ public class ConversationController extends BaseController {
 								}
 							});
 
-							for(Object attObj : unusedAttachments){
-								JsonObject unusedAttachment = (JsonObject) attObj;
-								final String attachmentId = unusedAttachment.getString("id");
-								storage.removeFile(attachmentId, new Handler<JsonObject>() {
-									public void handle(JsonObject event) {
-										if (!"ok".equals(event.getString("status"))) {
-											log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
-										}
-									}
-								});
-							}
 						}
 					});
 				} else {
@@ -804,11 +789,7 @@ public class ConversationController extends BaseController {
 						}
 
 						JsonArray results = event.right().getValue();
-						JsonArray unusedAttachments =
-							((JsonArray) results.get(0)).size() > 0 ?
-								new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("unusedattachments", "[]")) :
-								new JsonArray();
-						final long freeQuota = ((JsonObject) ((JsonArray) results.get(1)).get(0)).getLong("totalquota", 0L);
+						final long freeQuota = ((JsonObject) ((JsonArray) results.get(0)).get(0)).getLong("totalquota", 0L);
 
 						updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 							public void handle(Void event) {
@@ -816,18 +797,6 @@ public class ConversationController extends BaseController {
 							}
 						});
 
-						for(Object attObj : unusedAttachments){
-							JsonObject unusedAttachment = (JsonObject) attObj;
-							final String attachmentId = unusedAttachment.getString("id");
-							storage.removeFile(attachmentId, new Handler<JsonObject>() {
-								@Override
-								public void handle(JsonObject event) {
-									if (!"ok".equals(event.getString("status"))) {
-										log.error("["+ConversationController.class.getSimpleName()+"] Error while tying to delete attachment file (_id: {"+attachmentId+"})");
-									}
-								}
-							});
-						}
 					}
 				});
 			}
