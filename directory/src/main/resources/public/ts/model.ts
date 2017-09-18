@@ -89,8 +89,9 @@ export const directory = {
 
 		this.importFile = function(file, type){
 			var form = new FormData();
-			form.append('file', file);
-			http().postFile('/directory/csv/' + type + '/class/' + this.id, form)
+			form.append(type.replace(/(\w)(\w*)/g, function(g0,g1,g2){return g1.toUpperCase() + g2.toLowerCase();}), file);
+			form.append('className', this.name);
+			http().postFile('/directory/import/' + type + '/class/' + this.id, form)
 				.done(function(){
 					this.sync();
 				}.bind(this))

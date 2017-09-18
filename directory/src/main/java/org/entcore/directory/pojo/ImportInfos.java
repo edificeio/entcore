@@ -51,7 +51,7 @@ public class ImportInfos {
 	private String id;
 	private String structureId;
 	private String structureExternalId;
-
+	private String overrideClass;
 	private String language;
 
 	public String getFeeder() {
@@ -126,6 +126,14 @@ public class ImportInfos {
 		this.language = language;
 	}
 
+	public String getOverrideClass() {
+		return overrideClass;
+	}
+
+	public void setOverrideClass(String overrideClass) {
+		this.overrideClass = overrideClass;
+	}
+
 	public void validate(final boolean isAdmc, final Vertx vertx, final Handler<AsyncResult<String>> handler) {
 		if (!isAdmc && isEmpty(structureId)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.id"));
@@ -154,8 +162,8 @@ public class ImportInfos {
 
 	private void moveFiles(final String [] l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {
 		final String p = path + File.separator + structureName +
-				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
-				(isNotEmpty(UAI) ? "_" + UAI : "");
+				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") + "_" +
+				(isNotEmpty(UAI) ? UAI : "") + "_" + (isNotEmpty(overrideClass) ? overrideClass : "");
 		fs.mkdir(p, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
