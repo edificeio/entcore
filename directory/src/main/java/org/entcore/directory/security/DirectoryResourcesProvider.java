@@ -547,11 +547,11 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		validateQuery(request, handler, query, params);
 	}
 
-	private Set<String> getIds(UserInfos user) {
+	static Set<String> getIds(UserInfos user) {
 		return getIds(user, false);
 	}
 
-	private Set<String> getIds(UserInfos user, boolean structuresOnly) {
+	private static Set<String> getIds(UserInfos user, boolean structuresOnly) {
 		Set<String> ids = new HashSet<>();
 		Map<String, UserInfos.Function> functions = user.getFunctions();
 		if (functions != null && !functions.isEmpty()) {

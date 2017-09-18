@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
@@ -89,12 +90,16 @@ public class CsvFeeder implements Feed {
 					final Structure s;
 					try {
 						JsonObject structure = CSVUtil.getStructure(path);
+						final String overrideClass = structure.getString("overrideClass");
 			//			final boolean isUpdate = importer.getStructure(structure.getString("externalId")) != null;
 						s = importer.createOrUpdateStructure(structure);
 						if (s == null) {
 							log.error("Structure error with directory " + path + ".");
 							handler.handle(new ResultMessage().error("structure.error"));
 							return;
+						}
+						if (isNotEmpty(overrideClass)) {
+							s.setOverrideClass(overrideClass);
 						}
 					} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 						log.error("Structure error with directory " + path + ".");
@@ -297,10 +302,23 @@ public class CsvFeeder implements Feed {
 					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
 					user.putArray("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
+
+					// Class Admin
+					if (isNotEmpty(structure.getOverrideClass())) {
+						String eId = structure.getExternalId() + '$' + structure.getOverrideClass();
+						structure.createClassIfAbsent(eId, structure.getOverrideClass());
+						final String[] classId = new String[3];
+						classId[0] = structure.getExternalId();
+						classId[1] = eId;
+						classId[2] = "";
+						classes.add(classId);
+					}
+
 					for (int j = 0; j < strings.length; j++) {
 						final String c = columns.get(j);
 						final String v = strings[j].trim();
-						if (v.isEmpty() && !c.startsWith("child")) continue;
+						if ((v.isEmpty() && !c.startsWith("child")) ||
+								("classes".equals(c) && isNotEmpty(structure.getOverrideClass()))) continue;
 						switch (validator.getType(c)) {
 							case "string":
 								if ("birthDate".equals(c)) {
@@ -405,7 +423,9 @@ public class CsvFeeder implements Feed {
 									classes.toArray(new String[classes.size()][2]), null, null, true, true);
 							break;
 						case "Relative":
-							if ("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) {
+							if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||
+									("".equals(strings[0]) && "Intitulé".equals(strings[1]) &&
+											"Adresse Organisme".equals(strings[2]))) {
 								break csvParserWhile;
 							}
 							JsonArray linkStudents = new JsonArray();
