@@ -54,8 +54,11 @@ public class CSVUtil {
 			structure.putString("name", n[0]);
 			structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
 		}
-		if (n.length == 2) {
+		if (n.length > 1 && isNotEmpty(n[1])) {
 			structure.putString("UAI", n[1]);
+		}
+		if (n.length > 2 && isNotEmpty(n[2])) {
+			structure.putString("overrideClass", n[2]);
 		}
 		return structure;
 	}

@@ -44,6 +44,7 @@ public class Structure {
 	protected JsonObject struct;
 	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
 	protected final Set<String> functionalGroups = Collections.synchronizedSet(new HashSet<String>());
+	private transient String overrideClass;
 
 	public Structure(JsonObject struct) {
 		this(struct.getString("externalId"), struct);
@@ -350,6 +351,14 @@ public class Structure {
 				.putString("parentStructureId", parentStructureId);
 		transactionHelper.add(query, params);
 		transactionHelper.add(query2, params);
+	}
+
+	public String getOverrideClass() {
+		return overrideClass;
+	}
+
+	public void setOverrideClass(String overrideClass) {
+		this.overrideClass = overrideClass;
 	}
 
 }
