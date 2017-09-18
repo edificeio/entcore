@@ -34,7 +34,9 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.exceptions.ImportException;
 import org.entcore.directory.pojo.ImportInfos;
+import org.entcore.directory.security.TeacherOfClass;
 import org.entcore.directory.services.ImportService;
+import org.entcore.directory.services.SchoolService;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -45,6 +47,7 @@ import org.vertx.java.core.json.JsonObject;
 import java.io.File;
 import java.util.UUID;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.reportResponseHandler;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
@@ -52,6 +55,7 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 public class ImportController extends BaseController {
 
 	private ImportService importService;
+	private SchoolService schoolService;
 
 	@Get("/wizard")
 	@ResourceFilter(AdminFilter.class)
@@ -94,6 +98,9 @@ public class ImportController extends BaseController {
 				importInfos.setStructureName(request.formAttributes().get("structureName"));
 				importInfos.setUAI(request.formAttributes().get("UAI"));
 				importInfos.setLanguage(I18n.acceptLanguage(request));
+				if (isNotEmpty(request.formAttributes().get("className"))) {
+					importInfos.setOverrideClass(request.formAttributes().get("className"));
+				}
 				try {
 					importInfos.setFeeder(request.formAttributes().get("type"));
 				} catch (IllegalArgumentException | NullPointerException e) {
@@ -189,8 +196,48 @@ public class ImportController extends BaseController {
 		});
 	}
 
+	@Post("/import/:userType/class/:classId")
+	@ResourceFilter(TeacherOfClass.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void doClassImport(final HttpServerRequest request) {
+		request.pause();
+		schoolService.getByClassId(request.params().get("classId"), new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> s) {
+				if (s.isRight()) {
+					final JsonObject structure = s.right().getValue();
+					request.expectMultiPart(true);
+					request.formAttributes().add("structureId", structure.getString("id"));
+					request.formAttributes().add("structureExternalId", structure.getString("externalId"));
+					request.formAttributes().add("predelete", "false");
+					request.formAttributes().add("transition", "false");
+					request.formAttributes().add("structureName", structure.getString("name"));
+					request.formAttributes().add("UAI", structure.getString("UAI"));
+					request.formAttributes().add("type", "CSV");
+					request.resume();
+					uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+						@Override
+						public void handle(final AsyncResult<ImportInfos> event) {
+							if (event.succeeded()) {
+								importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+							} else {
+								badRequest(request, event.cause().getMessage());
+							}
+						}
+					});
+				} else {
+					notFound(request, "class.not.found");
+				}
+			}
+		});
+	}
+
 	public void setImportService(ImportService importService) {
 		this.importService = importService;
+	}
+
+	public void setSchoolService(SchoolService schoolService) {
+		this.schoolService = schoolService;
 	}
 
 }

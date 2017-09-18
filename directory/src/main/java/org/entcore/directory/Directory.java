@@ -115,6 +115,7 @@ public class Directory extends BaseServer {
 
 		ImportController importController = new ImportController();
 		importController.setImportService(new DefaultImportService(vertx, eb));
+		importController.setSchoolService(schoolService);
 		addController(importController);
 
 		TimetableController timetableController = new TimetableController();
