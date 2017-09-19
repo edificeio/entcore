@@ -157,7 +157,7 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	};
 }]);
 
-function CGUController($scope, template){
+export const cguController = ng.controller('CGUController', ['$scope', ($scope) => {
 	$scope.template = template;
 	$scope.template.open('main', 'cgu-content');
-}
+}]);
