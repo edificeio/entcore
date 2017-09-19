@@ -11,5 +11,4 @@ export class ApplicationCollection extends Collection<ApplicationModel> {
     }
 
     public structureId : string
-
 }

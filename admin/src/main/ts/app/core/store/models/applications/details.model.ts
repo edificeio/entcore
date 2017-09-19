@@ -9,4 +9,5 @@ export class ApplicationDetailsModel extends Model<ApplicationDetailsModel> {
     }
 
     id: string
+    name: string
 }

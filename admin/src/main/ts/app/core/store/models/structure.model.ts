@@ -1,4 +1,4 @@
-import { UserCollection, GroupCollection, ApplicationCollection, AppActionModel, AppActionsCollection } from '..';
+import { UserCollection, GroupCollection, ApplicationCollection, RoleCollection } from '..';
 import { Model } from 'entcore-toolkit'
 
 export class StructureModel extends Model<StructureModel> {
@@ -8,7 +8,6 @@ export class StructureModel extends Model<StructureModel> {
         this.users = new UserCollection()
         this.groups = new GroupCollection()
         this.applications = new ApplicationCollection()
-        this.appActions = new AppActionsCollection()
     }
 
     _id?: string
@@ -16,7 +15,6 @@ export class StructureModel extends Model<StructureModel> {
         this.users.structureId = id
         this.groups.structureId = id
         this.applications.structureId = id
-        this.appActions.structureId = id
         this._id = id
     }
     get id() { return this._id }
@@ -30,7 +28,6 @@ export class StructureModel extends Model<StructureModel> {
     classes: Array<{id: string, name: string}> = []
     groups: GroupCollection
     applications: ApplicationCollection
-    appActions: AppActionsCollection
     sources: string[] = []
     profiles: {name: string, blocked: any}[] = []
     aafFunctions: string[] = []

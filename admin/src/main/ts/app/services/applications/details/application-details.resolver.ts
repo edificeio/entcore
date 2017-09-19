@@ -19,7 +19,7 @@ export class ApplicationDetailsResolver implements Resolve<ApplicationDetailsMod
             if (!targetApp) {
                 return this.router.navigate(["/admin", structure._id, "services"])
             }
-            return this.spinner.perform('portal-content', targetApp.applicationDetails.sync()
+            return this.spinner.perform('portal-content', targetApp.details.sync()
                 .then(app => {
                     return app.data
                 })

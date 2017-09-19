@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy,
     ChangeDetectorRef, Input } from "@angular/core"
-
 import { ActivatedRoute, Router,  Data } from '@angular/router'
 
 import { Subscription } from 'rxjs/Subscription'
@@ -8,23 +7,30 @@ import { SpinnerService, routing } from '../../../core/services'
 import { globalStore as globalStore } from '../../../core/store'
 
 import { ServicesStore } from '../../services.store'
-import { ApplicationModel } from '../../../core/store/models'
+import { ApplicationModel, RoleModel } from '../../../core/store/models'
 
 @Component({
     selector: 'app-details',
     template: `
-        <div class="panel-header">
-            <span>Attribuer les droits de {{ app.applicationDetails.name }}</span>
+        <div class="panel-header" [ngSwitch]="app.roles.length">
+            <span *ngSwitchCase="0">Il n'existe aucun rôle configuré pour cette application</span>
+            <span *ngSwitchDefault>Attribuer les droits de {{ app.details.name }}</span>
         </div>
-        <div *ngFor="let action of app.applicationActions.actions">
-            <panel-section section-title="{{ action[1] || 'Il n\\'y a pas de droits applicatifs disponibles
-                    pour cette application' }}">
-                <button *ngIf="action[1]" (click)="showAddGroupLightbox = true">
+        <div *ngFor="let role of app.roles | orderBy: name">
+            <panel-section section-title="{{ role.roleName }}">
+                <button (click)="showLightbox = true">
                     <s5l>Ajouter des groupes</s5l>
+                    <i class="fa fa-plus"></i>
                 </button>
+                <div class="flex-container">
+                    <div *ngFor="let group of role.groups | filter: filterGroup()" class="flex-item">
+                        <label>{{ group.name }}</label>
+                        <i class="fa fa-times action" (click)="removeGroupFromRole(group.id, role.id)"></i>
+                    </div>
+                </div>
             </panel-section>
         </div>
-        <light-box class="inner-list" [show]="showAddGroupLightbox" 
+        <light-box class="inner-list" [show]="showLightbox" 
             (onClose)="showAddGroupLightbox = false">
             <div class="panel-header">
                 <span>Ajouter des groupes</span>
@@ -73,17 +79,15 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         })
         
         this.appSubscriber = this.route.data.subscribe(data => {
-            if(data["appDetails"]) {
-                Object.assign(this.servicesStore.application.applicationDetails, data['appDetails'])
-                //this.servicesStore.application.applicationDetails = data['appDetails']
+            if(data["details"]) {
+                Object.assign(this.servicesStore.application.details, 
+                    data['details'])
                 this.app = this.servicesStore.application
                 this.cdRef.markForCheck()
             }
-            if(data["appActions"]) {
-                Object.assign(this.servicesStore.application.applicationActions,
-                    data['appActions'].find(a => a.id === this.servicesStore.application.id))
-                // this.servicesStore.application.actions = data['appActions']
-                //     .find(a => a.id === this.servicesStore.application.id).actions
+            if(data["roles"]) {
+                Object.assign(this.servicesStore.application.roles,
+                    data['roles'].filter(r => r.appId === this.servicesStore.application.id))
                 this.app = this.servicesStore.application
                 this.cdRef.markForCheck()
             }
@@ -91,10 +95,19 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.routeSubscriber.unsubscribe()
         this.appSubscriber.unsubscribe()
     }
 
     addGroupToRole(): void {
 
+    }
+
+    removeGroupFromRole(): void {
+
+    }
+
+    filterGroup() {
+       
     }
 }

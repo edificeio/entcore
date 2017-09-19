@@ -1,5 +1,4 @@
 import { Model } from 'entcore-toolkit'
-import { globalStore } from '../..'
 
 export class RoleModel extends Model<RoleModel> {
 
@@ -7,4 +6,10 @@ export class RoleModel extends Model<RoleModel> {
         super({})
     }
     
+    roleId: string
+    roleName: string
+    groups: [{
+        groupId: string, 
+        groupName: string
+    }]
 }

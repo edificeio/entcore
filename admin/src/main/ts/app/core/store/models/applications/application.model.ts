@@ -1,24 +1,31 @@
-import { AppActionModel } from './application-action.model';
-import { AppActionsCollection } from '../../collections/app-actions.collection';
+import { RoleModel, ApplicationDetailsModel } from '.'
+import { RoleCollection, globalStore } from '../..'
+
 import { Model } from 'entcore-toolkit'
-import { ApplicationDetailsModel } from './applicationdetails.model'
-import { globalStore } from '../..'
 
 export class ApplicationModel extends Model<ApplicationModel> {
 
     constructor() {
         super({})
-        this.applicationDetails = new ApplicationDetailsModel()
-        this.applicationActions = new AppActionModel
+        this.details = new ApplicationDetailsModel()
+        this.roles = new Array<RoleModel>()
     }
 
     private _id: string
+
     get id(){ return this._id }
     set id(id) {
         this._id = id
-        this.applicationDetails.id = id
+        this.details.id = id
     }
 
-    applicationDetails: ApplicationDetailsModel
-    applicationActions: AppActionModel
+    syncRoles = (structureId: string, appId: string): Promise<void> => {
+        return this.http.get(`/admin/api/structure/${structureId}/application/${appId}`)
+            .then(res => {
+                this.roles = res.data
+            })
+    }
+
+    details: ApplicationDetailsModel
+    roles: RoleModel[]
 }

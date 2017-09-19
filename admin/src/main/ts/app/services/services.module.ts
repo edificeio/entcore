@@ -1,5 +1,5 @@
 import { NgModule } from "@angular/core";
-import { CommonModule } from '@angular/common'
+import { CommonModule, NgSwitch } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { InfraComponentsModule } from 'infra-components'
@@ -11,7 +11,7 @@ import { routes } from './services.routing'
 import { ServicesStore } from './services.store'
 import { ApplicationsResolver } from './applications/applications.resolver'
 import { ApplicationDetailsResolver } from './applications/details/application-details.resolver'
-import { ApplicationActionsResolver } from './applications/details/application-actions.resolver'
+import { RolesResolver } from './applications/details/roles.resolver'
 
 import { ServicesComponent } from "./services.component"
 import { ApplicationsDetailsListComponent } from './applications/details/applications-details-list.component'
@@ -34,10 +34,11 @@ import { ApplicationDetailsComponent } from './applications/details/application-
         ApplicationDetailsComponent
     ],
     providers: [ 
+        NgSwitch,
         ServicesStore,
         ApplicationsResolver,
         ApplicationDetailsResolver,
-        ApplicationActionsResolver
-     ]
+        RolesResolver     
+    ]
 })
 export class ServicesModule { }

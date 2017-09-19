@@ -7,7 +7,7 @@ import { ApplicationDetailsComponent } from './applications/details/application-
 
 import { ApplicationsResolver } from './applications/applications.resolver'
 import { ApplicationDetailsResolver } from './applications/details/application-details.resolver'
-import { ApplicationActionsResolver } from './applications/details/application-actions.resolver'
+import { RolesResolver } from './applications/details/roles.resolver'
 
 export let routes: Routes = [
     { 
@@ -31,8 +31,8 @@ export let routes: Routes = [
                         path: '', 
                         component: ApplicationDetailsComponent,
                         resolve: { 
-                            appDetails: ApplicationDetailsResolver, 
-                            appActions: ApplicationActionsResolver 
+                            details: ApplicationDetailsResolver, 
+                            roles: RolesResolver
                         }
                     }
                 ]
