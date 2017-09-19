@@ -391,6 +391,13 @@ public class DefaultCommunicationService implements CommunicationService {
 				"WITH DISTINCT v " +
 				"SET v:Visible ";
 		s.add(setVisible, params);
+		String setVisible2 =
+				"MATCH (s:Structure)<-[:DEPENDS]-(g:Group)<-[:COMMUNIQUE]-(), " +
+				"g<-[:DEPENDS]-(v)" +
+				"WHERE s.id IN {structures} AND NOT(v:Visible) " +
+				"WITH DISTINCT v " +
+				"SET v:Visible ";
+		s.add(setVisible2, params);
 		neo4j.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
 	}
 
