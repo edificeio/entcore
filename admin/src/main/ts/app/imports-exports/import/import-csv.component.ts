@@ -20,7 +20,7 @@ import { Wizard } from 'infra-components'
         <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
             <h2 class="panel-header">{{ 'import.files.deposit' | translate }}</h2>
             <p *ngIf="stepErrors[0]" class="error">{{stepErrors[0]}}</p>
-            <form #step1Form="ngForm" (ngSubmit)="createNewUser()">
+            <form #step1Form="ngForm">
                 <h3>{{ 'import.files.deposit' | translate }}</h3>
                 <form-field label="Teacher">
                     <input type="checkbox" #teacherCB (change)="0">

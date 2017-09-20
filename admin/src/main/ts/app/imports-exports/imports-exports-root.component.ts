@@ -28,7 +28,7 @@ export class ImportsExportsRoot implements OnInit, OnDestroy {
     private structureSubscriber: Subscription
 
     // Tabs
-    private tabs = [
+    tabs = [
         { label: "import.users", view: "importCSV" },
         { label: "export.accounts", view: "" },
         { label: "massmail.accounts", view: "" } // Meld MassMail into export ?
