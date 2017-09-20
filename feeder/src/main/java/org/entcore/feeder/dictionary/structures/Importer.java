@@ -712,13 +712,9 @@ public class Importer {
 	}
 
 	public void removeEmptyClasses() {
-		String query =
-				"MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) " +
-				"WITH COLLECT(distinct c.id) as usedClasses " +
-				"MATCH (c:Class)<-[r1:DEPENDS]-(g:Group) " +
-				"WHERE NOT(c.id IN usedClasses) " +
-				"DETACH DELETE c, g, r1 ";
-		transactionHelper.add(query, null);
+		transactionHelper.add("MATCH (c:Class) set c.notEmptyClass = false;", null);
+		transactionHelper.add("MATCH (c:Class)<-[:DEPENDS]-(:Group)<-[:IN]-(:User) set c.notEmptyClass = true;", null);
+		transactionHelper.add("MATCH (c:Class {notEmptyClass : false})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
