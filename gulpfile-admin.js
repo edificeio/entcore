@@ -23,7 +23,7 @@ gulp.task('sass', ['copy-csslib'], () => {
         .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib/entcore-css-lib'))
 });
 
-gulp.task('build', ['sass'], () => {
+gulp.task('build', () => {
     //return gulp.src('./portal/src/main/resources/public/admin/**/theme.less')
     //    .pipe(less())
     //    .pipe(gulp.dest('./portal/src/main/resources/public/admin'));
