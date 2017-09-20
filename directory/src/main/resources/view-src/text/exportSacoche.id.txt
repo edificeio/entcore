@@ -1,4 +1,4 @@
-"Identifiant";"Profil";"Sconet";"Nom";"Prénom"
+"Id";"Id Siecle";"Type";"Nom";"Prénom";"Login"
 {{#list}}
-"{{login}}";"{{#i18n}}{{type}}{{/i18n}}";"{{attachmentId}}";"{{lastName}}";"{{firstName}}"
+"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}"
 {{/list}}
