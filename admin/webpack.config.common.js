@@ -40,6 +40,10 @@ module.exports = {
             filename: '../view/admin.html',
             template: path_prefix + '/resources/view-src/admin.ejs'
         }),
-        new ExtractTextPlugin('styles/admin.css')
+        new ExtractTextPlugin({
+            filename:  (getPath) => {
+                return getPath('css/admin.[hash].css');
+            }
+        })
     ]
 }
