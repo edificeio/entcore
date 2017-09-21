@@ -17,7 +17,7 @@ module.exports = webpackMerge(commonConfig, {
             {
                 test: /\.ts$/,
                 use: [
-                    'ts-loader?tsconfig=' + path_prefix + '/ts/tsconfig.json',
+                    'ts-loader',
                     'angular-router-loader',
                     'angular2-template-loader?keepUrl=true'
                 ]
