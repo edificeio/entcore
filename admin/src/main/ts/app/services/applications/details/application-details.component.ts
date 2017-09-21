@@ -16,7 +16,7 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
             <span *ngSwitchCase="0">Il n'existe aucun rôle configuré pour cette application</span>
             <span *ngSwitchDefault>Attribuer les droits de {{ app.details.name }}</span>
         </div>
-        <div *ngFor="let role of app.roles | orderBy: name">
+        <div *ngFor="let role of app.roles">
             <panel-section section-title="{{ role.roleName }}">
                 <button (click)="showLightbox = true">
                     <s5l>Ajouter des groupes</s5l>
@@ -30,27 +30,6 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
                 </div>
             </panel-section>
         </div>
-        <light-box class="inner-list" [show]="showLightbox" 
-            (onClose)="showAddGroupLightbox = false">
-            <div class="panel-header">
-                <span>Ajouter des groupes</span>
-                <list-component
-                    [model]="servicesStore.structure.applications.data"
-                    sort="name"
-                    [inputFilter]="filterByInput"
-                    searchPlaceholder="search.group"
-                    noResultsLabel="list.results.no.group"
-                    (inputChange)="groupInputFilter = $event">
-                    <ng-template let-item>
-                        {{ item.name }}
-                    </ng-template>
-                </list-component>
-                <button type="submit" (click)="test = true">
-                    <s5l>Enregistrer</s5l>
-                </button>
-            </div>
-
-        </light-box>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -66,7 +45,7 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private ls: SpinnerService,
-        private servicesStore: ServicesStore
+        public servicesStore: ServicesStore
     ) {}
 
     ngOnInit(): void {

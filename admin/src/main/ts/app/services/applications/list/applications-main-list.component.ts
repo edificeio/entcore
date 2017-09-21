@@ -40,7 +40,7 @@ export class ApplicationsMainListComponent implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private ls: SpinnerService,
-        private servicesStore: ServicesStore
+        public servicesStore: ServicesStore
     ) {}
 
     ngOnInit(): void {

@@ -44,7 +44,7 @@ export class ApplicationsDetailsListComponent  implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private spinner: SpinnerService,
-        private servicesStore: ServicesStore
+        public servicesStore: ServicesStore
     ) {}
 
     ngOnInit(): void {
