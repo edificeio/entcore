@@ -18,23 +18,22 @@
  ~
  -->
 
-<div ng-controller="Share" class="share">
+<div class="share">
 	<div class="row line">
-		<h2>[[translate('share.title')]]</h2>
+		<h2><i18n>share.title</i18n></h2>
 		<div class="block" ng-if="varyingRights">
 			<div class="warning">
-				[[translate('share.varyingrights')]]
+				<i18n>share.varyingrights</i18n>
 			</div>
 		</div>
 
 		<div class="groups-list">
 
-			<div class="">
-				<!-- <div ng-include="shareTable"></div> -->
+			<div>
 				<ng-include src="shareTable"></ng-include>
 			</div>
 
-			<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more">[[translate('share.more')]]</a>
+			<a ng-click="displayMore()" ng-if="sharingModel.edited.length > maxEdit" class="display-more"><i18n>share.more</i18n></a>
 		</div>
 	</div>
 
@@ -42,7 +41,11 @@
 
 	<div class="row">
 		<h2>[[translate('share.search.title')]]</h2>
-		<input type="text" ng-model="search" ng-change="findUserOrGroup()" i18n-placeholder="share.search.placeholder" />
+		<search-user class="twelve cell" 
+			ng-model="search"
+			clear-list="clearSearch()"
+			on-send="findUserOrGroup()">
+		</search-user>
 		<div class="found-users-list">
 			<div ng-repeat="item in found | limitTo:maxResults | orderBy:'lastName'" class="row autocomplete">
 				<em ng-click="addEdit(item)" class="row">
@@ -54,7 +57,7 @@
 			</div>
 			<div class="row">
 				<a ng-click="addResults()" ng-if="found.length > maxResults" class="right-magnet reduce-block-four">
-					[[translate('seemore')]]
+					<i18n>seemore</i18n>
 				</a>
 			</div>
 		</div>
