@@ -89,7 +89,7 @@ public class AdminNeoService implements AdminService {
 
 		JsonObject params = new JsonObject()
 			.putString("structureId", structureId)
-			.putString("appId", appId);
+			.putString("appId", /*appId)*/ "");
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 
 	}

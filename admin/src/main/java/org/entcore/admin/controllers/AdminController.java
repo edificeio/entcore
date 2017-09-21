@@ -1,5 +1,6 @@
 package org.entcore.admin.controllers;
 
+import fr.wseduc.rs.Post;
 import org.entcore.admin.filters.AdminStructureFilter;
 import org.entcore.admin.services.AdminService;
 import org.entcore.admin.services.impl.AdminNeoService;
@@ -71,6 +72,6 @@ public class AdminController extends BaseController {
 		String structureId = request.params().get("structureId");
 		String groupId = request.params().get("groupId");
 		String roleId = request.params().get("roleId");
-		this.service.re(structureId, groupId, roleId, arrayResponseHandler(request));
+		this.service.removeRoleFromGroup(structureId, groupId, roleId, arrayResponseHandler(request));
 	}
 }
