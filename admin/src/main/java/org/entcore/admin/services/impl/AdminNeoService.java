@@ -70,4 +70,28 @@ public class AdminNeoService implements AdminService {
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
+	@Override
+	public void applicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler) {
+		String query = 
+		"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-()-[]-(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]-(ac:Action)-[:PROVIDE]-(a:Application {id: {appId}})" +
+		"RETURN r.id as roleId, r.name as roleName, a.id as appId, COLLECT(DISTINCT {id: g.id, name: g.name}) as groups";
+
+		JsonObject params = new JsonObject()
+			.putString("structureId", structureId)
+			.putString("appId", appId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
+	}
+
+	@Override
+	public void removeRoleFromGroup(String structureId, String groupId, String roleId, Handler<Either<String, JsonArray>> handler) {
+		String query = 
+		"";
+
+		JsonObject params = new JsonObject()
+			.putString("structureId", structureId)
+			.putString("appId", appId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
+
+	}
+
 }

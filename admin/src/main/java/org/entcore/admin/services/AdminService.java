@@ -9,4 +9,6 @@ public interface AdminService {
 
 	public void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler);
 	public void userList(String structureId, Handler<Either<String, JsonArray>> handler);
+	public void applicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler);
+	public void removeRoleFromGroup(String structureId, String groupId, String roleId, Handler<Either<String, JsonArray>> handler);
 }

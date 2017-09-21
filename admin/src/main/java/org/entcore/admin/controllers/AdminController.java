@@ -54,4 +54,23 @@ public class AdminController extends BaseController {
 		String structureId = request.params().get("id");
 		this.service.userList(structureId, arrayResponseHandler(request));
 	}
+
+	@Get("api/structure/:structureId/application/:appId")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminStructureFilter.class)
+	public void applicationRolesWithGroups(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String appId = request.params().get("appId");
+		this.service.applicationRolesWithGroups(structureId, appId, arrayResponseHandler(request));
+	}
+
+	@Post("api/structure/:structureId/group/:groupId/roles/remove/:roleId/")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminStructureFilter.class)
+	public void removeRoleFromGroup(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String groupId = request.params().get("groupId");
+		String roleId = request.params().get("roleId");
+		this.service.re(structureId, groupId, roleId, arrayResponseHandler(request));
+	}
 }
