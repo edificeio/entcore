@@ -43,7 +43,7 @@ export class Users {
 
     async sync(search: string){
         let newArr = [];
-        const response = await http.get('/conversation/visible');
+        const response = await http.get('/conversation/visible?search=' + search);
         response.data.groups.forEach(group => {
             group.isGroup = true;
             newArr.push(Mix.castAs(User, group));
@@ -59,9 +59,6 @@ export class Users {
             this.searchCachedMap[startText] = await this.sync(startText);
         }
         var searchTerm = lang.removeAccents(search).toLowerCase();
-        if (!searchTerm) {
-            return [];
-        }
         var found = _.filter(
             this.searchCachedMap[startText].filter(function (user) {
                 var includeUser = _.findWhere(include, { id: user.id });
