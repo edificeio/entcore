@@ -30,8 +30,8 @@ export class ImportsExportsRoot implements OnInit, OnDestroy {
     // Tabs
     tabs = [
         { label: "import.users", view: "importCSV" },
-        { label: "export.accounts", view: "" },
-        { label: "massmail.accounts", view: "" } // Meld MassMail into export ?
+        { label: "export.accounts", view: "export" },
+        { label: "massmail.accounts", view: "massmail" } // Meld MassMail into export ?
     ]
 
     private routerSubscriber : Subscription

@@ -9,6 +9,10 @@ import { routes } from './imports-exports-routing.module'
 import { ImportsExportsRoot } from './imports-exports-root.component'
 import { ImportCSV } from './import/import-csv.component'
 import { MappingsTable } from './import/mappings-table.component'
+import { ExportComponent } from './export/export.component'
+import { MassMailComponent } from './export/mass-mail.component'
+import { UserlistFiltersService } from '../core/services'
+import { FiltersPipe } from './export/mass-mail.pipe'
 
 @NgModule({
     imports: [
@@ -22,10 +26,15 @@ import { MappingsTable } from './import/mappings-table.component'
     declarations: [
         ImportsExportsRoot,
         ImportCSV,
-        MappingsTable
+        MappingsTable,
+        MappingsTable,
+        ExportComponent,
+        MassMailComponent,
+        FiltersPipe
     ],
     providers: [
-        // TODO Service to communicate with server API
+        UserlistFiltersService,
+        FiltersPipe
     ],
     exports: [
         RouterModule

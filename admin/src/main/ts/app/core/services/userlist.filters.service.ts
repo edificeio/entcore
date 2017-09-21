@@ -221,4 +221,8 @@ export class UserlistFiltersService {
         }
         return formattedFilters
     }
+
+    pushNewFilter(filter: UserFilter<String>){
+        this.filters.push(filter)
+    }
 }
