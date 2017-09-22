@@ -27,6 +27,7 @@ import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
+import org.joda.time.DateTime;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -45,20 +46,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DuplicateUsers {
 
 	private static final Logger log = LoggerFactory.getLogger(DuplicateUsers.class);
-	private final JsonArray searchSources;
 	private final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
 
-	public DuplicateUsers(JsonArray searchSources, boolean updateCourses) {
-		this(searchSources, null, updateCourses);
+	public DuplicateUsers(boolean updateCourses) {
+		this(null, updateCourses);
 	}
 
-	public DuplicateUsers(JsonArray searchSources, JsonArray sourcesPriority, boolean updateCourses) {
-		this.searchSources = (searchSources != null) ? searchSources : new JsonArray().add(ManualFeeder.SOURCE)
-				.add("CSV").add("EDT").add("UDT");
+	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses) {
 		if (sourcesPriority == null) {
-			sourcesPriority = new JsonArray().add("AAF").add("BE1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
+			sourcesPriority = new JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {
@@ -76,31 +74,56 @@ public class DuplicateUsers {
 	}
 
 	public void markDuplicates(final Message<JsonObject> message, final Handler<JsonObject> handler) {
-		final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
-		final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
-		final long start = System.currentTimeMillis();
-		handlers[handlers.length - 1] = new VoidHandler() {
+		final String now = DateTime.now().toString();
+		final String query = "MATCH (s:System {name : 'Starter'}) return s.lastSearchDuplicates as lastSearchDuplicates ";
+		TransactionManager.getNeo4jHelper().execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
-			protected void handle() {
+			public void handle(Message<JsonObject> event) {
+				JsonArray res = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null &&
+						res.size() == 1 && res.<JsonObject>get(0).getString("lastSearchDuplicates") != null) {
+					final String last = res.<JsonObject>get(0).getString("lastSearchDuplicates");
+					final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
+					final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
+					final long start = System.currentTimeMillis();
+					handlers[handlers.length - 1] = new VoidHandler() {
+						@Override
+						protected void handle() {
+							final String updateDate = "MATCH (s:System {name : 'Starter'}) set s.lastSearchDuplicates = {now} ";
+							TransactionManager.getNeo4jHelper().execute(updateDate, new JsonObject().putString("now", now),
+									new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> event) {
+											if (!"ok".equals(event.body().getString("status"))) {
+												log.error("Error updating last search duplicate date : " + event.body().getString("message"));
+											}
+										}
+									});
 				log.info("Mark duplicates users finished - elapsed time " + (System.currentTimeMillis() - start) + " ms.");
-				if (message != null) {
+							if (message != null) {
+								message.reply(new JsonObject().putString("status", "ok"));
+							}
+							if (handler != null) {
+								handler.handle(new JsonObject().putString("status", "ok"));
+							}
+						}
+					};
+					for (int i = profiles.length - 1; i >= 0; i--) {
+						final int j = i;
+						handlers[i] = new VoidHandler() {
+							@Override
+							protected void handle() {
+								searchDuplicatesByProfile(last, profiles[j], handlers[j + 1]);
+							}
+						};
+					}
+					handlers[0].handle(null);
+				} else {
+					log.warn("lastSearchDuplicates not found.");
 					message.reply(new JsonObject().putString("status", "ok"));
 				}
-				if (handler != null) {
-					handler.handle(new JsonObject().putString("status", "ok"));
-				}
 			}
-		};
-		for (int i = profiles.length - 1; i >= 0; i--) {
-			final int j = i;
-			handlers[i] = new VoidHandler() {
-				@Override
-				protected void handle() {
-					searchDuplicatesByProfile(profiles[j], handlers[j + 1]);
-				}
-			};
-		}
-		handlers[0].handle(null);
+		});
 	}
 
 	public void ignoreDuplicate(final Message<JsonObject> message) {
@@ -352,12 +375,12 @@ public class DuplicateUsers {
 		return (priority != null) ? priority : 0;
 	}
 
-	private void searchDuplicatesByProfile(final String profile, final VoidHandler handler) {
+	private void searchDuplicatesByProfile(String last, final String profile, final VoidHandler handler) {
 		String query =
-				"MATCH (u:User) WHERE u.source IN {searchSources} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
+				"MATCH (u:User) WHERE u.modified > {lastSearchDuplicate} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
 						"u.birthDate as birthDate, u.email as email";
-		JsonObject params = new JsonObject().putString("profile", profile).putArray("searchSources", searchSources);
+		JsonObject params = new JsonObject().putString("profile", profile).putString("lastSearchDuplicate", last);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -463,6 +486,9 @@ public class DuplicateUsers {
 			}
 			v = v.replaceAll("\\W+", "");
 			if (v.isEmpty() || (v.length() < 4 && values.length > 1)) continue;
+			if ("OR".equalsIgnoreCase(v) || "AND".equalsIgnoreCase(v) || "NOT".equalsIgnoreCase(v)) {
+				v = "\"" + v + "\"";
+			}
 			sb.append(attributeName).append(":").append(v).append(d).append(" OR ");
 		}
 		int len = sb.length();
