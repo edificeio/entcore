@@ -34,6 +34,14 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	}
 
 	@Override
+	protected void preCommit() {
+		super.preCommit();
+		importer.removeOldFunctionalGroup();
+		importer.removeEmptyClasses();
+		importer.restorePreDeletedUsers();
+	}
+
+	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
 		initAcademyPrefix(path);
 		importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
