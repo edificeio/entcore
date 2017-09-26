@@ -49,3 +49,5 @@ portal/src/main/resources/public/temp
 directory/src/main/resources/view/*
 directory/src/main/resources/public/js
 directory/src/main/resources/public/temp
+archive/src/main/resources/view
+timeline/src/main/resources/view
