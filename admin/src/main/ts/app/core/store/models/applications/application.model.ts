@@ -1,4 +1,4 @@
-import { RoleModel, ApplicationDetailsModel } from '.'
+import { RoleModel } from '.'
 import { RoleCollection, globalStore } from '../..'
 
 import { Model } from 'entcore-toolkit'
@@ -7,7 +7,6 @@ export class ApplicationModel extends Model<ApplicationModel> {
 
     constructor() {
         super({})
-        this.details = new ApplicationDetailsModel()
         this.roles = new Array<RoleModel>()
     }
 
@@ -16,7 +15,6 @@ export class ApplicationModel extends Model<ApplicationModel> {
     get id(){ return this._id }
     set id(id) {
         this._id = id
-        this.details.id = id
     }
 
     syncRoles = (structureId: string, appId: string): Promise<void> => {
@@ -26,6 +24,5 @@ export class ApplicationModel extends Model<ApplicationModel> {
             })
     }
 
-    details: ApplicationDetailsModel
     roles: RoleModel[]
 }

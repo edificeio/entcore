@@ -1,12 +1,10 @@
 import { Routes } from '@angular/router'
 
 import { ServicesComponent } from './services.component'
-import { ApplicationsDetailsListComponent } from './applications/details/applications-details-list.component'
-import { ApplicationsMainListComponent } from './applications/list/applications-main-list.component'
+import { ApplicationsListComponent } from './applications/list/applications-list.component'
 import { ApplicationDetailsComponent } from './applications/details/application-details.component'
 
 import { ApplicationsResolver } from './applications/applications.resolver'
-import { ApplicationDetailsResolver } from './applications/details/application-details.resolver'
 import { RolesResolver } from './applications/details/roles.resolver'
 
 export let routes: Routes = [
@@ -20,12 +18,21 @@ export let routes: Routes = [
             },
             { 
                 path: 'applications', 
-                component: ApplicationsMainListComponent, 
-                resolve: { apps: ApplicationsResolver }
+                component: ApplicationsListComponent, 
+                resolve: { apps: ApplicationsResolver },
+                children: [
+                    {
+                        path: ':appId', 
+                        component: ApplicationDetailsComponent,
+                        resolve: { 
+                            roles: RolesResolver
+                        }
+                    }
+                ]
             },
-            {
+            /*{
                 path: 'applications/:appId', 
-                component: ApplicationsDetailsListComponent,
+                component: ApplicationsMainListComponent,
                 children: [
                     {
                         path: '', 
@@ -36,7 +43,7 @@ export let routes: Routes = [
                         }
                     }
                 ]
-            }/*,
+            },
             { 
                 path: 'widgets', component: WidgetsListComponent,
                 children: [{

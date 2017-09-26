@@ -14,7 +14,7 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
     template: `
         <div class="panel-header" [ngSwitch]="app.roles.length">
             <span *ngSwitchCase="0">Il n'existe aucun rôle configuré pour cette application</span>
-            <span *ngSwitchDefault>Attribuer les droits de {{ app.details.name }}</span>
+            <span *ngSwitchDefault>Attribuer les droits de {{ app.name }}</span>
         </div>
         <div *ngFor="let role of app.roles">
             <panel-section section-title="{{ role.roleName }}">
@@ -23,7 +23,7 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
                     <i class="fa fa-plus"></i>
                 </button>
                 <div class="flex-container">
-                    <div *ngFor="let group of role.groups | filter: filterGroup()" class="flex-item">
+                    <div *ngFor="let group of role.groups" class="flex-item">
                         <label>{{ group.name }}</label>
                         <i class="fa fa-times action" (click)="removeGroupFromRole(group.id, role.id)"></i>
                     </div>
@@ -53,21 +53,15 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
             if (params['appId']) {
                 this.servicesStore.application = this.servicesStore.structure
                     .applications.data.find(a => a.id === params['appId'])
+                this.app = this.servicesStore.application
                 this.cdRef.markForCheck()
             }
         })
         
         this.appSubscriber = this.route.data.subscribe(data => {
-            if(data["details"]) {
-                Object.assign(this.servicesStore.application.details, 
-                    data['details'])
-                this.app = this.servicesStore.application
-                this.cdRef.markForCheck()
-            }
             if(data["roles"]) {
-                Object.assign(this.servicesStore.application.roles,
-                    data['roles'].filter(r => r.appId === this.servicesStore.application.id))
-                this.app = this.servicesStore.application
+                this.servicesStore.application.roles = data["roles"]
+                this.app.roles = this.servicesStore.application.roles
                 this.cdRef.markForCheck()
             }
         })
@@ -82,8 +76,19 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
 
     }
 
-    removeGroupFromRole(): void {
-
+    removeGroupFromRole(groupId: string, roleId: string): void {
+        /*let role = this.servicesStore.application.roles
+            .find(role => role.id == roleId)
+        let groupIndex: number 
+        role.groups.find((group, index) => {
+            if (group.id == groupId){
+                groupIndex = index
+                return true
+            }
+            else
+                return false
+        })
+        role.groups.splice(groupIndex, 1)*/
     }
 
     filterGroup() {

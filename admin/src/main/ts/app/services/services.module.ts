@@ -10,12 +10,10 @@ import { routes } from './services.routing'
 
 import { ServicesStore } from './services.store'
 import { ApplicationsResolver } from './applications/applications.resolver'
-import { ApplicationDetailsResolver } from './applications/details/application-details.resolver'
 import { RolesResolver } from './applications/details/roles.resolver'
 
 import { ServicesComponent } from "./services.component"
-import { ApplicationsDetailsListComponent } from './applications/details/applications-details-list.component'
-import { ApplicationsMainListComponent } from './applications/list/applications-main-list.component'
+import { ApplicationsListComponent } from './applications/list/applications-list.component'
 import { ApplicationDetailsComponent } from './applications/details/application-details.component'
 
 @NgModule({
@@ -29,15 +27,13 @@ import { ApplicationDetailsComponent } from './applications/details/application-
     ],
     declarations: [
         ServicesComponent,
-        ApplicationsMainListComponent,
-        ApplicationsDetailsListComponent,
+        ApplicationsListComponent,
         ApplicationDetailsComponent
     ],
     providers: [ 
         NgSwitch,
         ServicesStore,
         ApplicationsResolver,
-        ApplicationDetailsResolver,
         RolesResolver     
     ]
 })

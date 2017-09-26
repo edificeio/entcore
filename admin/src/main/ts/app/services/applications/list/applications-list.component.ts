@@ -5,25 +5,26 @@ import { ActivatedRoute, Router,  Data } from '@angular/router'
 
 import { Subscription } from 'rxjs/Subscription'
 import { SpinnerService, routing } from '../../../core/services'
+import { globalStore, ApplicationModel, ApplicationCollection } from '../../../core/store'
 
 import { ServicesStore } from '../../services.store'
 
 @Component({
-    selector: 'apps-details-list',
+    selector: 'apps-list',
     template: `
-        <side-layout [showCompanion]="true">
+        <side-layout (closeCompanion)="closePanel()" [showCompanion]="showDetails()">
             <div side-card>
                 <list-component
-                    [model]="servicesStore.structure.applications.data"
-                    sort="name"
-                    [inputFilter]="filterByInput"
-                    searchPlaceholder="search.application"
-                    noResultsLabel="list.results.no.applications"
-                    [isSelected]="isSelected"
-                    (inputChange)="appInputFilter = $event"
-                    (onSelect)="routeToApplication($event)">
+                [model]="servicesStore.structure.applications.data"
+                sort="name"
+                [inputFilter]="filterByInput"
+                searchPlaceholder="search.application"
+                noResultsLabel="list.results.no.applications"
+                [isSelected]="isSelected"
+                (inputChange)="appInputFilter = $event"
+                (onSelect)="routeToApplication($event)">
                     <ng-template let-item>
-                        {{ item.name }}
+                        {{ item.name }}                        
                     </ng-template>
                 </list-component>
             </div>
@@ -34,16 +35,17 @@ import { ServicesStore } from '../../services.store'
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ApplicationsDetailsListComponent  implements OnInit, OnDestroy {
+export class ApplicationsListComponent implements OnInit, OnDestroy {
     
-    appInputFilter: string
     private appsSubscriber: Subscription
+    appInputFilter: string
+    iconsRoot: string = "/assets/themes/panda/img/icons/"
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
-        private spinner: SpinnerService,
+        private ls: SpinnerService,
         public servicesStore: ServicesStore
     ) {}
 
@@ -64,13 +66,32 @@ export class ApplicationsDetailsListComponent  implements OnInit, OnDestroy {
         return this.servicesStore.application === app
     }
 
-    routeToApplication(app) {
-        this.spinner.perform('portal-content',this.router.navigate(['..', app.id], { relativeTo: this.route }))
+    routeToApplication(app: ApplicationModel) {
+        this.servicesStore.application = app
+        this.router.navigate([app.id], { relativeTo: this.route })
     }
 
     filterByInput = (app: any) => {
         if(!this.appInputFilter) return true
         return app.name.toLowerCase()
             .indexOf(this.appInputFilter.toLowerCase()) >= 0
+    }
+
+    showDetails = (): boolean => {
+        const appsRoute = '/admin/' + 
+        (this.servicesStore.structure ? this.servicesStore.structure.id : '') + 
+        '/services/applications'
+
+        let res: boolean = false
+        if (this.servicesStore.application) {
+            res = this.router.isActive(appsRoute + '/' + this.servicesStore.application.id, true)
+        }
+
+        return res
+    }
+
+    closePanel() {
+        this.router.navigateByUrl('/admin/' + (this.servicesStore.structure ? this.servicesStore.structure.id : '') +
+            '/services/applications/')
     }
 }

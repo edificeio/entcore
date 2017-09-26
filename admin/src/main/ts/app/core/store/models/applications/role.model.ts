@@ -6,10 +6,11 @@ export class RoleModel extends Model<RoleModel> {
         super({})
     }
     
-    roleId: string
-    roleName: string
+    id: string
+    name: string
     groups: [{
-        groupId: string, 
-        groupName: string
+        id: string, 
+        name: string
     }]
+
 }
