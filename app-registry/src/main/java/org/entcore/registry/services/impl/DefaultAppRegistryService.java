@@ -62,7 +62,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		}
 		String query =
 				"MATCH (n:Application) " + filter +
-				"RETURN n.id as id, n.name as name";
+				"RETURN n.id as id, n.name as name, n.icon as icon";
 		neo.execute(query, params, validResultHandler(handler));
 	}
 

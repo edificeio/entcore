@@ -28,7 +28,7 @@ import org.vertx.java.core.json.JsonObject;
 public interface AppRegistryService {
 
 	void listApplications(String structureId, Handler<Either<String, JsonArray>> handler);
-
+	
 	void listRoles(String structureId, Handler<Either<String, JsonArray>> handler);
 
 	void listRolesWithActions(String structureId, Handler<Either<String, JsonArray>> handler);
