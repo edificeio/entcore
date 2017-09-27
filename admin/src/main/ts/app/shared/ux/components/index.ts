@@ -11,6 +11,7 @@ export { MessageStickerComponent } from './message/message-sticker.component';
 export { MessageBoxComponent } from './message/message-box.component';
 export { GroupPickerComponent } from './group-picker.component';
 export { UploadFilesComponent } from './upload-files.component';
+export { EllipsisComponent} from './ellipsis/ellipsis.component';
 
 // (Infra components historic)
 export { ItemTreeComponent } from './item-tree.component';
