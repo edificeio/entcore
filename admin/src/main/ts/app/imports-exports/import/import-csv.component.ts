@@ -5,7 +5,7 @@ import { BundlesService } from 'sijil'
 import { Mix } from 'entcore-toolkit'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
-import { routing } from '../../core/services/routing.service'
+import { SpinnerService,routing } from '../../core/services'
 import { ImportCSVService } from './import-csv.service'
 import { User, Error, Profile } from './user.model'
 import { WizardComponent } from '../../shared/ux/components'
@@ -143,6 +143,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router:Router,
         private bundles: BundlesService,
+        private spinner: SpinnerService,
         private cdRef: ChangeDetectorRef){}
 
     translate = (...args) => { return (<any> this.bundles.translate)(...args) }

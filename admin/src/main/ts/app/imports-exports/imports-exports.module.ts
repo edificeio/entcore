@@ -25,7 +25,6 @@ import { EllipsisComponent } from './import/ellipsis.component'
         ImportsExportsRoot,
         ImportCSV,
         MappingsTable,
-        MappingsTable,
         ExportComponent,
         MassMailComponent,
         EllipsisComponent
