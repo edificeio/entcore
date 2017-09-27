@@ -11,7 +11,6 @@ import { MappingsTable } from './import/mappings-table.component'
 import { ExportComponent } from './export/export.component'
 import { MassMailComponent } from './mailing/mass-mail.component'
 import { UserlistFiltersService } from '../core/services'
-import { EllipsisComponent } from './import/ellipsis.component'
 
 @NgModule({
     imports: [
@@ -26,8 +25,7 @@ import { EllipsisComponent } from './import/ellipsis.component'
         ImportCSV,
         MappingsTable,
         ExportComponent,
-        MassMailComponent,
-        EllipsisComponent
+        MassMailComponent
     ],
     providers: [
         UserlistFiltersService,
