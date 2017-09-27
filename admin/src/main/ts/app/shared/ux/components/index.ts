@@ -6,6 +6,7 @@ export { ListComponent } from './list.component'
 export { PanelSectionComponent } from './panel-section.component'
 export { SideLayoutComponent } from './side-layout.component'
 export { SpinnerCubeComponent } from './spinner-cube.component'
+export { SimpleSelectComponent } from './value-editable/simple-select.component'
 
 // (Infra components historic)
 export { ItemTreeComponent } from './item-tree.component'
