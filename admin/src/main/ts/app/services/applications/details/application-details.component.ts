@@ -13,13 +13,13 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
     selector: 'app-details',
     template: `
         <div class="panel-header" [ngSwitch]="app.roles.length">
-            <span *ngSwitchCase="0">Il n'existe aucun rôle configuré pour cette application</span>
-            <span *ngSwitchDefault>Attribuer les droits de {{ app.name }}</span>
+            <span *ngSwitchCase="0">{{ 'list.no.role' | translate }}</span>
+            <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ app.name }}</span>
         </div>
         <div *ngFor="let role of app.roles">
             <panel-section section-title="{{ role.roleName }}">
                 <button (click)="showLightbox = true">
-                    <s5l>Ajouter des groupes</s5l>
+                    {{ 'add.groups' | translate }}
                     <i class="fa fa-plus"></i>
                 </button>
                 <div class="flex-container">

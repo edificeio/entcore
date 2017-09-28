@@ -10,7 +10,7 @@ import { SpinnerService, routing } from '../core/services'
 @Component({
     selector: 'services-root',
     template: `
-        <h1><i class="fa fa-th"></i><s5l>Services</s5l></h1>
+        <h1><i class="fa fa-th"></i> {{ 'services' | translate }}</h1>
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
                 [routerLink]="tab.view"
