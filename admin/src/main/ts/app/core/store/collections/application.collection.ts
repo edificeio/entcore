@@ -1,5 +1,5 @@
 import { ApplicationModel } from '..'
-import { Collection } from 'entcore-toolkit'
+import { Collection, Mix } from 'entcore-toolkit'
 
 export class ApplicationCollection extends Collection<ApplicationModel> {
 
@@ -8,11 +8,8 @@ export class ApplicationCollection extends Collection<ApplicationModel> {
     }
 
     syncApps = () => {
-        return this.http.get(`/appregistry/applications-icons?structureId=${this.structureId}`)
-            .then(res => {
-                let apps = res.data.map(app => Object.assign(new ApplicationModel, app))
-                this.data = apps
-            })
+        return this.http.get('/appregistry/applications')
+            .then(res => this.data = Mix.castArrayAs(ApplicationModel, res.data))
     }
     public structureId : string
 }
