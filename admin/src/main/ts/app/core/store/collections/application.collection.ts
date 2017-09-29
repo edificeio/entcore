@@ -11,5 +11,6 @@ export class ApplicationCollection extends Collection<ApplicationModel> {
         return this.http.get('/appregistry/applications')
             .then(res => this.data = Mix.castArrayAs(ApplicationModel, res.data))
     }
+    
     public structureId : string
 }

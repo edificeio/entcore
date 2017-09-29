@@ -23,9 +23,9 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
                     <i class="fa fa-plus"></i>
                 </button>
                 <div class="flex-container">
-                    <div *ngFor="let group of role.groups" class="flex-item">
-                        <label>{{ group.name }}</label>
-                        <i class="fa fa-times action" (click)="removeGroupFromRole(group.id, role.id)"></i>
+                    <div *ngFor="let group of (role.groups | mapToArray: 'id': 'name')" class="flex-item">
+                        <label>{{ group['name'] }}</label>
+                        <i class="fa fa-times action" (click)="removeGroupFromRole(group['id'], role.id)"></i>
                     </div>
                 </div>
             </panel-section>

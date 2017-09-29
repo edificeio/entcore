@@ -1,7 +1,7 @@
 import { RoleModel } from '.'
 import { RoleCollection, globalStore } from '../..'
 
-import { Model } from 'entcore-toolkit'
+import { Model, Mix } from 'entcore-toolkit'
 
 export class ApplicationModel extends Model<ApplicationModel> {
 
@@ -20,8 +20,14 @@ export class ApplicationModel extends Model<ApplicationModel> {
     syncRoles = (structureId: string, appId: string): Promise<void> => {
         return this.http.get(`/admin/api/structure/${structureId}/application/${appId}`)
             .then(res => {
-                this.roles = res.data
-            })
+                let roles = res.data
+    
+                this.roles = Mix.castArrayAs(RoleModel, roles)
+                this.roles.forEach((role, index) => {
+                    role.groups = new Map<string, string>(roles[index].groups.map(group => [group.id, group.name]))
+                }) 
+            }
+        )
     }
 
     roles: RoleModel[]

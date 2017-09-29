@@ -8,9 +8,5 @@ export class RoleModel extends Model<RoleModel> {
     
     id: string
     name: string
-    groups: [{
-        id: string, 
-        name: string
-    }]
-
+    groups: Map<string, string>
 }
