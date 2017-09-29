@@ -13,12 +13,30 @@ import { WizardComponent } from '../../shared/ux/components'
 @Component({
     selector: 'import-csv',
     template : `
+        <light-box [show]="confirmCancel" (onClose)="confirmCancel = false">
+            <div class="container">
+                <h2>{{'import.cancel.header' | translate}}</h2>
+                <article class="message is-warning">
+                    {{'import.cancel.message' | translate}}
+                </article>
+                    <button 
+                        (click)="confirmCancel = false"
+                        [title]="'import.backToImport'  | translate">
+                        {{'import.cancel.backToImport' | translate}}
+                    </button>
+                    <button 
+                        (click)="cancel();confirmCancel = false;"
+                        [title]="'import.cancel.confirm' | translate">
+                        {{'import.cancel.confirm'  | translate}}
+                    </button>
+            </div>
+        </light-box>
         <wizard
-        (cancel)="cancel()"
-        (finish)="finish()"
-        (nextStep)="nextStep($event)"
-        (previousStep)="previousStep($event)"
-    >
+            (cancel)="confirmCancel=true"
+            (finish)="finish()"
+            (nextStep)="nextStep($event)"
+            (previousStep)="previousStep($event)"
+        >
         <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
             <h2>{{ 'import.files.deposit' | translate }}</h2>
             <article *ngIf="stepErrors[0]" class="message is-danger">{{stepErrors[0]}}</article>
