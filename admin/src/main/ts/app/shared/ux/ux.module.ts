@@ -6,6 +6,7 @@ import { NgModule } from '@angular/core'
 
 import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent, Datepicker } from './components'
 import { AnchorDirective } from './directives'
+import { MapToArrayPipe } from './pipes'
 
 @NgModule({
     imports: [
@@ -22,7 +23,9 @@ import { AnchorDirective } from './directives'
         FormField,
         FormErrors,
         AnchorDirective,
-        Datepicker
+        Datepicker,
+        MapToArrayPipe
+
     ],
     exports: [
         SpinnerComponent,
@@ -32,7 +35,8 @@ import { AnchorDirective } from './directives'
         FormField,
         FormErrors,
         AnchorDirective,
-        Datepicker
+        Datepicker,
+        MapToArrayPipe
     ]
 })
 export class UxModule{}
