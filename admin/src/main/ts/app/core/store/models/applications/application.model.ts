@@ -18,7 +18,7 @@ export class ApplicationModel extends Model<ApplicationModel> {
     }
 
     syncRoles = (structureId: string, appId: string): Promise<void> => {
-        return this.http.get(`/admin/api/structure/${structureId}/application/${appId}`)
+        return this.http.get(`/appregistry/structure/${structureId}/application/${appId}/groups/roles`)
             .then(res => {
                 let roles = res.data
     

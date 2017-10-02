@@ -28,13 +28,13 @@ import { ApplicationDetailsComponent } from './applications/details/application-
     declarations: [
         ServicesComponent,
         ApplicationsListComponent,
-        ApplicationDetailsComponent
+        ApplicationDetailsComponent,
     ],
     providers: [ 
         NgSwitch,
         ServicesStore,
         ApplicationsResolver,
-        RolesResolver     
+        RolesResolver
     ]
 })
 export class ServicesModule { }
