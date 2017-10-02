@@ -29,9 +29,12 @@ import { DatepickerComponent,
     MessageBoxComponent,
     GroupPickerComponent,
     UploadFilesComponent,
-    EllipsisComponent } from './components'
+    EllipsisComponent,
+    PagerComponent,
+    LengthPipe } from './components'
 
 import { AnchorDirective, DynamicTemplateDirective, DynamicComponentDirective, DragAndDropFilesDirective } from './directives'
+
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe, LocalizedDatePipe, BytesPipe } from './pipes'
 import { DynamicModuleImportsService, LabelsService, InputFileService } from './services';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
@@ -71,6 +74,8 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         GroupPickerComponent,
         UploadFilesComponent,
         EllipsisComponent,
+        PagerComponent,
+        LengthPipe,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
@@ -113,6 +118,8 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         UploadFilesComponent,
         SimpleSelectComponent,
         EllipsisComponent,
+        PagerComponent,
+        LengthPipe,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
