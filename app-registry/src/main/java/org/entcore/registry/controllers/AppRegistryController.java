@@ -102,6 +102,14 @@ public class AppRegistryController extends BaseController {
 		String actionType = request.params().get("actionType");
 		appRegistryService.listApplicationsWithActions(structureId, actionType, arrayResponseHandler(request));
 	}
+	
+	@Get("structure/:structureId/application/:appId/groups/roles")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	public void listApplicationRolesWithGroups(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String appId = request.params().get("appId");
+		appRegistryService.listApplicationRolesWithGroups(structureId, appId, arrayResponseHandler(request));
+	}
 
 	@Post("/role")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

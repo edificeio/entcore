@@ -65,6 +65,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"RETURN n.id as id, n.name as name, n.icon as icon";
 		neo.execute(query, params, validResultHandler(handler));
 	}
+	
+	
 
 	@Override
 	public void listRoles(String structureId, Handler<Either<String, JsonArray>> handler) {
@@ -143,6 +145,20 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		}
 		query += "RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions";
 		neo.execute(query, params, validResultHandler(handler));
+	}
+	
+	@Override
+	public void listApplicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler) {
+		String query = 
+		"MATCH (r:Role)-[:AUTHORIZE]-(ac:Action)-[:PROVIDE]-(a:Application {id: {appId}}) " +
+		"OPTIONAL MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-()-[]-(g:Group)-[:AUTHORIZED]->(r) " +
+		"WITH r, a, CASE WHEN g IS NOT NULL THEN COLLECT(DISTINCT{ id: g.id, name: g.name }) ELSE [] END as groups " +
+		"RETURN r.id as id, r.name as name, a.id as appId, groups";
+
+		JsonObject params = new JsonObject()
+			.putString("appId", appId)
+			.putString("structureId", structureId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
 	@Override
