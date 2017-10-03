@@ -7,6 +7,7 @@ export class GroupModel extends Model<GroupModel> {
     name?: string
     displayName?: string
     type?: string
+    subType?: string
     classes?: {id: string, name: string}[]
     structureId?: string
     users: UserModel[]

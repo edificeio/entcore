@@ -33,23 +33,29 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
         <light-box [show]="showLightbox" (onClose)="showLightbox = false"> 
             <h1 class="panel-header">{{ 'add.groups' | translate }}</h1>
             <div class="panel-header-sub">
-                <button (click)="filterByType('classes')">Classes</button>
-                <button (click)="filterByType('profiles')">Groupes établissement</button>
+                <button (click)="filterByType('all')">{{ 'all' | translate }}</button>
+                <button (click)="filterByType('profile')">{{ 'applications.groups.structure' | translate }}</button>
+                <button (click)="filterByType('class')">{{ 'applications.classes' | translate }}</button>
+                <button (click)="filterByType('functional')">{{ 'applications.groups.functional' | translate }}</button>
+                <button (click)="filterByType('manual')">{{ 'applications.groups.manual' | translate }}</button>
             </div>
-            <list-component
-            [model]="this.groupType"
-            sort="name"
-            [inputFilter]="filterByName"
-            searchPlaceholder="search.group"
-            noResultsLabel="list.results.no.groups"
-            (inputChange)="this.groupInputFilter = $event">
-                <ng-template let-item>
-                    <span>
-                        <input type="checkbox" (click)="addGroupToRole(item.id)" />
-                        <label>{{ item.name }}</label>                        
-                    </span>
-                    </ng-template>
-            </list-component>
+            <form>
+                <list-component
+                [model]="this.groupsList"
+                sort="name"
+                [inputFilter]="filterByName"
+                searchPlaceholder="search.group"
+                noResultsLabel="list.results.no.groups"
+                (inputChange)="this.groupInputFilter = $event">
+                    <ng-template let-item>
+                        <span>
+                            <input type="checkbox" id="{{ item.id }}" />
+                            <label>{{ item.name }}</label>                        
+                        </span>
+                        </ng-template>
+                </list-component>
+                <button type="submit" (click)="addGroupsToRole()">{{ 'save' | translate }}</button>
+            </form>
         </light-box>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -60,7 +66,7 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     selectedRole: RoleModel
     showLightbox: boolean = false
     groupInputFilter: string
-    groupType: string
+    groupsList: {}[]
     
     private appSubscriber: Subscription
     private routeSubscriber: Subscription
@@ -90,6 +96,8 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
                 this.cdRef.markForCheck()
             }
         })
+
+        this.filterByType('all')
     }
 
     ngOnDestroy(): void {
@@ -104,13 +112,37 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     }
 
     filterByType(type: string) {
-        
+        if (type == 'all'){
+            this.groupsList = this.servicesStore.structure.groups.data
+            this.groupsList = this.groupsList.concat(this.servicesStore.structure.classes)
+        }
+        else if (type == 'class')
+            this.groupsList = this.servicesStore.structure.classes
+        else if (type == 'profile')
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ProfileGroup' && g.subType == 'StructureGroup')
+        else if (type == 'functional')
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'FunctionalGroup')
+        else if (type == 'manual')
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ManualGroup')
+        this.cdRef.markForCheck()
     }
 
-    addGroupToRole(groupId: string): void {
+    addGroupsToRole(): void {
+        let roleId = this.selectedRole.id
+        let groupsIds = this.getCheckedGroups()
         
 
+    }
 
+    private getCheckedGroups() {
+
+        let arr = []
+        let elmts = document.querySelectorAll('input[type=checkbox]:checked')
+
+        for (let i = 0; i < elmts.length; ++i)
+            arr.push(elmts[i].id)
+
+        return arr
     }
 
     removeGroupFromRole(groupId: string, roleId: string): void {
