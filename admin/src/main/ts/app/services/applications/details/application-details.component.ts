@@ -49,10 +49,13 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
                 (inputChange)="this.groupInputFilter = $event">
                     <ng-template let-item>
                         <span>
-                            <input type="checkbox" id="{{ item.id }}" />
+                            <span [ngSwitch]="isAuthorized(item.id)">
+                                <input *ngSwitchCase="true" type="checkbox" id="{{ item.id }}" value="{{ item.name }}" checked />
+                                <input *ngSwitchDefault type="checkbox" id="{{ item.id }}" value="{{ item.name }}" />
+                            </span>
                             <label>{{ item.name }}</label>                        
                         </span>
-                        </ng-template>
+                    </ng-template>
                 </list-component>
                 <button type="submit" (click)="addGroupsToRole()">{{ 'save' | translate }}</button>
             </form>
@@ -127,11 +130,21 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         this.cdRef.markForCheck()
     }
 
-    addGroupsToRole(): void {
-        let roleId = this.selectedRole.id
-        let groupsIds = this.getCheckedGroups()
-        
+    isAuthorized(groupId: string) {
+        if (this.selectedRole && this.selectedRole.groups.has(groupId))
+            return true
+        else
+            return false
+    }
 
+    addGroupsToRole(): void {
+        let groups = this.getCheckedGroups()
+
+        this.servicesStore.application.roles.find(r => r.id == this.selectedRole.id)
+            .addGroupsToRole(groups)
+        this.showLightbox = false
+
+        this.cdRef.markForCheck()
     }
 
     private getCheckedGroups() {
@@ -139,15 +152,15 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         let arr = []
         let elmts = document.querySelectorAll('input[type=checkbox]:checked')
 
-        for (let i = 0; i < elmts.length; ++i)
-            arr.push(elmts[i].id)
+        for (let i = 0; i < elmts.length; i++)
+            arr.push({id: elmts[i].id, name: elmts[i].attributes.getNamedItem('value').value})
 
         return arr
     }
 
     removeGroupFromRole(groupId: string, roleId: string): void {
         let role = this.servicesStore.application.roles.find(role => role.id == roleId)
-        role.removeGroupLink(groupId, roleId)
+        role.removeGroupFromRole(groupId)
             .then(() => {
                 this.cdRef.markForCheck()
             })
