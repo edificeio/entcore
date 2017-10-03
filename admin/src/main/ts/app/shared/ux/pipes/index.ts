@@ -1,1 +1,1 @@
-export * from './map-to-array.pipe'
+export * from './map-to-array.pipe';

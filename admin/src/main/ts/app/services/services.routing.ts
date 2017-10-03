@@ -1,11 +1,11 @@
-import { Routes } from '@angular/router'
+import { Routes } from '@angular/router';
 
-import { ServicesComponent } from './services.component'
-import { ApplicationsListComponent } from './applications/list/applications-list.component'
-import { ApplicationDetailsComponent } from './applications/details/application-details.component'
+import { ServicesComponent } from './services.component';
+import { ApplicationsListComponent } from './applications/list/applications-list.component';
+import { ApplicationDetailsComponent } from './applications/details/application-details.component';
 
-import { ApplicationsResolver } from './applications/applications.resolver'
-import { RolesResolver } from './applications/details/roles.resolver'
+import { ApplicationsResolver } from './applications/applications.resolver';
+import { RolesResolver } from './applications/details/roles.resolver';
 
 export let routes: Routes = [
     { 
@@ -55,6 +55,6 @@ export let routes: Routes = [
                 children: [{
 
                 }]
-            }*/]
+            }*/];
     }
 ]

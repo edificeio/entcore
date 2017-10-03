@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy,
-    ChangeDetectorRef, Input } from "@angular/core"
-import { ActivatedRoute, Router,  Data } from '@angular/router'
+    ChangeDetectorRef, Input } from "@angular/core";
+import { ActivatedRoute, Router,  Data } from '@angular/router';
 
-import { Subscription } from 'rxjs/Subscription'
-import { SpinnerService, routing } from '../../../core/services'
-import { globalStore } from '../../../core/store'
+import { Subscription } from 'rxjs/Subscription';
+import { SpinnerService, routing } from '../../../core/services';
+import { globalStore } from '../../../core/store';
 
-import { ServicesStore } from '../../services.store'
-import { ApplicationModel, RoleModel } from '../../../core/store/models'
+import { ServicesStore } from '../../services.store';
+import { ApplicationModel, RoleModel } from '../../../core/store/models';
 
 @Component({
     selector: 'app-details',
@@ -65,104 +65,104 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models'
 })
 export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     
-    app: ApplicationModel
-    selectedRole: RoleModel
-    showLightbox: boolean = false
-    groupInputFilter: string
-    groupsList: {}[]
+    app: ApplicationModel;
+    selectedRole: RoleModel;
+    showLightbox: boolean = false;
+    groupInputFilter: string;
+    groupsList: {}[];
     
-    private appSubscriber: Subscription
-    private routeSubscriber: Subscription
+    private appSubscriber: Subscription;
+    private routeSubscriber: Subscription;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private ls: SpinnerService,
-        public servicesStore: ServicesStore,
+        public servicesStore: ServicesStore
     ) {}
 
     ngOnInit(): void {
         this.routeSubscriber = this.route.params.subscribe(params => {
             if (params['appId']) {
                 this.servicesStore.application = this.servicesStore.structure
-                    .applications.data.find(a => a.id === params['appId'])
-                this.app = this.servicesStore.application
-                this.cdRef.markForCheck()
+                    .applications.data.find(a => a.id === params['appId']);
+                this.app = this.servicesStore.application;
+                this.cdRef.markForCheck();
             }
         })
         
         this.appSubscriber = this.route.data.subscribe(data => {
             if(data["roles"]) {
-                this.servicesStore.application.roles = data["roles"]
-                this.app.roles = this.servicesStore.application.roles
-                this.cdRef.markForCheck()
+                this.servicesStore.application.roles = data["roles"];
+                this.app.roles = this.servicesStore.application.roles;
+                this.cdRef.markForCheck();
             }
         })
 
-        this.filterByType('all')
+        this.filterByType('all');
     }
 
     ngOnDestroy(): void {
-        this.routeSubscriber.unsubscribe()
-        this.appSubscriber.unsubscribe()
+        this.routeSubscriber.unsubscribe();
+        this.appSubscriber.unsubscribe();
     }
 
     filterByName = (group: any) => {
-        if(!this.groupInputFilter) return true
+        if(!this.groupInputFilter) return true;
         return group.name.toLowerCase()
-            .indexOf(this.groupInputFilter.toLowerCase()) >= 0
+            .indexOf(this.groupInputFilter.toLowerCase()) >= 0;
     }
 
     filterByType(type: string) {
         if (type == 'all'){
-            this.groupsList = this.servicesStore.structure.groups.data
-            this.groupsList = this.groupsList.concat(this.servicesStore.structure.classes)
+            this.groupsList = this.servicesStore.structure.groups.data;
+            this.groupsList = this.groupsList.concat(this.servicesStore.structure.classes);
         }
         else if (type == 'class')
-            this.groupsList = this.servicesStore.structure.classes
+            this.groupsList = this.servicesStore.structure.classes;
         else if (type == 'profile')
-            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ProfileGroup' && g.subType == 'StructureGroup')
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ProfileGroup' && g.subType == 'StructureGroup');
         else if (type == 'functional')
-            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'FunctionalGroup')
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'FunctionalGroup');
         else if (type == 'manual')
-            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ManualGroup')
-        this.cdRef.markForCheck()
+            this.groupsList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ManualGroup');
+        this.cdRef.markForCheck();
     }
 
     isAuthorized(groupId: string) {
         if (this.selectedRole && this.selectedRole.groups.has(groupId))
-            return true
+            return true;
         else
-            return false
+            return false;
     }
 
     addGroupsToRole(): void {
-        let groups = this.getCheckedGroups()
+        let groups = this.getCheckedGroups();
 
         this.servicesStore.application.roles.find(r => r.id == this.selectedRole.id)
-            .addGroupsToRole(groups)
-        this.showLightbox = false
+            .addGroupsToRole(groups);
+        this.showLightbox = false;
 
-        this.cdRef.markForCheck()
+        this.cdRef.markForCheck();
     }
 
     private getCheckedGroups() {
 
-        let arr = []
-        let elmts = document.querySelectorAll('input[type=checkbox]:checked')
+        let arr = [];
+        let elmts = document.querySelectorAll('input[type=checkbox]:checked');
 
         for (let i = 0; i < elmts.length; i++)
-            arr.push({id: elmts[i].id, name: elmts[i].attributes.getNamedItem('value').value})
+            arr.push({id: elmts[i].id, name: elmts[i].attributes.getNamedItem('value').value});
 
-        return arr
+        return arr;
     }
 
     removeGroupFromRole(groupId: string, roleId: string): void {
-        let role = this.servicesStore.application.roles.find(role => role.id == roleId)
+        let role = this.servicesStore.application.roles.find(role => role.id == roleId);
         role.removeGroupFromRole(groupId)
             .then(() => {
-                this.cdRef.markForCheck()
+                this.cdRef.markForCheck();
             })
     }
 }

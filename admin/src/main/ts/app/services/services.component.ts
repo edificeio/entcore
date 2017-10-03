@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy,
-     OnInit } from '@angular/core'
-import { ActivatedRoute, Router, Data, NavigationEnd } from '@angular/router'
+     OnInit } from '@angular/core';
+import { ActivatedRoute, Router, Data, NavigationEnd } from '@angular/router';
 
-import { Subscription } from 'rxjs/Subscription'
+import { Subscription } from 'rxjs/Subscription';
 
-import { ServicesStore } from './services.store'
-import { SpinnerService, routing } from '../core/services'
+import { ServicesStore } from './services.store';
+import { SpinnerService, routing } from '../core/services';
 
 @Component({
     selector: 'services-root',
@@ -25,14 +25,14 @@ import { SpinnerService, routing } from '../core/services'
 export class ServicesComponent implements OnInit, OnDestroy {
 
     // Subscriberts
-    private structureSubscriber: Subscription
-    private routerSubscriber: Subscription
+    private structureSubscriber: Subscription;
+    private routerSubscriber: Subscription;
     
     tabs = [
         { label: "Applications", view: "applications" },
         { label: "Connecteurs", view: "connectors" },
         { label: "Widgets", view: "widgets" }
-    ]
+    ];
 
     constructor(
         private route: ActivatedRoute,
@@ -44,19 +44,19 @@ export class ServicesComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data['structure']) {
-                this.servicesStore.structure = data['structure']
-                this.cdRef.markForCheck()
+                this.servicesStore.structure = data['structure'];
+                this.cdRef.markForCheck();
             }
-        })
+        });
 
         this.routerSubscriber = this.router.events.subscribe(e => {
             if(e instanceof NavigationEnd)
-                this.cdRef.markForCheck()
-        })
+                this.cdRef.markForCheck();
+        });
     }
 
     ngOnDestroy(): void {
-        this.structureSubscriber.unsubscribe()
-        this.routerSubscriber.unsubscribe()
+        this.structureSubscriber.unsubscribe();
+        this.routerSubscriber.unsubscribe();
     }
 }
