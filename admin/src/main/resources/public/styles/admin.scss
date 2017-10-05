@@ -557,6 +557,7 @@ i.group_add {
 .has-shadow {box-shadow: 2px 2px 10px $shadow-light;}
 
 .has-text-centered {text-align: center !important;}
+.has-text-right {text-align: right;}
 
 .has-no-padding {padding: 0;}
 
@@ -2137,6 +2138,7 @@ i.fa {
   &.is-danger { color: $danger; }
   &.is-warning { color: $warning; }
 }
+
 @media screen and (max-width: 860px) {
   .card-layout > *,
   .side-companion,
@@ -2298,7 +2300,6 @@ div.legend-square.outlined, input.outlined {
 }
 
 // Trumbowyg editor
-
 .trumbowyg-box {
   z-index: 0;
 }
@@ -2332,11 +2333,10 @@ table {
 wizard {
     background: $main-light !important;
     button {
-        background-color: $accent;
-        color: white !important;
+        background-color: $button-bg;
         padding: 10px 10px;
         &:hover {
-            background-color: $accent-dark !important;
+            background-color: $button-bg-hover ;
         }
     }
     nav.steps-progress-menu {

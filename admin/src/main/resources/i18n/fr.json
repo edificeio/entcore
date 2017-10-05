@@ -296,6 +296,7 @@
     "import.cancel.message":"Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données imports et modifiées dans l'assistant d'import seront perdues. Êtes vous sûr de vouloir annuler l'import ?",
     "import.cancel.confirm":"Annuler l'import",
     "import.cancel.backToImport":"Retour à l'import",
+    "pager.position" : "{{offset}} à {{offsetLimit}} sur {{total}}", 
     "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
     "notify.user.update.title": "Modifications effectuées",
     "notify.user.update.content": "Les données de l'utilisateur {{user}} ont bien été mises à jour.",
