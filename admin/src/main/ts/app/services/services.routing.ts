@@ -55,6 +55,6 @@ export let routes: Routes = [
                 children: [{
 
                 }]
-            }*/];
+            }*/]
     }
 ]
