@@ -82,9 +82,11 @@ import { WizardComponent } from '../../shared/ux/components'
             <h2 class="panel-header">{{ 'import.report' | translate }}</h2>
             <div *ngIf="report.hasErrors()" class="container report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
-                    class="button is-outline"
-                    [ngClass]="{'is-danger':report.countByReason(r) > 0, 'is-success':report.countByReason(r) == 0}"
-                    (click)="report.setFilter('reasons',r)"
+                    class="button"
+                    [ngClass]="{'is-danger':report.countByReason(r) > 0, 
+                                'is-success':report.countByReason(r) == 0,
+                                'is-outlined':!report.hasFilter('reasons',r)}"
+                    (click)="report.setFilter('reasons',r); report.page.offset=0"
                 >
                 {{ [r, report.countByReason(r)] | translate }}
                     &nbsp;
@@ -92,6 +94,11 @@ import { WizardComponent } from '../../shared/ux/components'
             </div>
             <div class="container has-text-right">
                 <a (click)="report.setFilter('none')">{{'view.all' | translate}}</a>
+                <pager 
+                    [(offset)]="report.page.offset"
+                    [limit]="report.page.limit"
+                    [total]="report.users | filter: report.filter() | length">
+                </pager>
             </div>
             <table class="report">
                 <thead>
@@ -108,7 +115,7 @@ import { WizardComponent } from '../../shared/ux/components'
                     </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of (report.users | filter: report.filter())">
+                <tr *ngFor="let user of report.users | filter: report.filter() | slice: report.page.offset:report.page.offset + report.page.limit">
                         <td>{{user.line}}</td>
                         <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
                             <span  contenteditable="true" 
@@ -173,7 +180,9 @@ export class ImportCSV implements OnInit, OnDestroy {
     @ViewChild(WizardComponent) wizardEl: WizardComponent;
 
     stepErrors = [];
-    
+
+    confirmCancel : boolean;
+
     profiles = { 
         Teacher:false, 
         Student:false, 
@@ -261,6 +270,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         }
     };
 
+
     report = {
         importId: '',
         users : [],
@@ -268,8 +278,10 @@ export class ImportCSV implements OnInit, OnDestroy {
             reasons : [],
             list : []
         },
+        page : {offset: 0, limit: 30, total: 0},
         filter : User.filter,
         setFilter : User.setFilter,
+        hasFilter : User.hasFilter,
         hasErrors():boolean {
             return this.softErrors.reasons.length > 0;
         },
@@ -297,7 +309,8 @@ export class ImportCSV implements OnInit, OnDestroy {
                 softErrors : {
                     reasons:[],
                     list: []
-                }
+                },
+                page : {offset: 0, limit: 30, total: 0},
             });
         }
     }
@@ -428,7 +441,8 @@ export class ImportCSV implements OnInit, OnDestroy {
                     this.report.markUserErrors(data.softErrors[p], p);
                 }
             }
-            
+            // Set report total user
+            this.report.page.total = this.report.users.length;
             if (data.softErrors) {
                 this.report.softErrors.reasons = data.softErrors.reasons;
                 this.report.setFilter('errors');

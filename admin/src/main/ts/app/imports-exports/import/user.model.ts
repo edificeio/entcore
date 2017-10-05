@@ -1,5 +1,6 @@
 
 export type Profile = 'Student' | 'Teacher' | 'Relative' | 'Personnel' | 'Guest';
+export type FilterUser = 'errors'| 'reasons' | 'state' | 'none'
 
 export type Error = {
     line:string, 
@@ -51,7 +52,7 @@ export class User {
     private static _filter: any ; // {reasons: string} | {state: string} | Function;
     static filter() { return User._filter }
 
-    static setFilter(type:'errors'| 'reasons' | 'state' | 'none' , value?:string):void {
+    static setFilter(type:FilterUser , value?:string):void {
         switch (type) {
             case 'errors' : User._filter = (u:User) => { return u.errors.size > 0; } ; break;
             case 'reasons' : User._filter = {reasons: value}; break;
@@ -59,4 +60,12 @@ export class User {
             default : User._filter = {};
         }
     };
+    static hasFilter(type:FilterUser, value:string):boolean {
+        if (User._filter[type] != undefined) {
+            if (User._filter[type] == value) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
