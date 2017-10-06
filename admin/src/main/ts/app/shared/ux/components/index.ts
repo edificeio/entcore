@@ -7,6 +7,8 @@ export { PanelSectionComponent } from './panel-section.component'
 export { SideLayoutComponent } from './side-layout.component'
 export { SpinnerCubeComponent } from './spinner-cube.component'
 export { SimpleSelectComponent } from './value-editable/simple-select.component'
+export { MessageStickerComponent } from './message/message-sticker.component'
+export { MessageBoxComponent } from './message/message-box.component'
 
 // (Infra components historic)
 export { ItemTreeComponent } from './item-tree.component'

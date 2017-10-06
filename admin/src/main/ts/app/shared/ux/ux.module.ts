@@ -22,7 +22,9 @@ import { DatepickerComponent,
     StepComponent,
     TooltipComponent,
     WizardComponent,
-    SimpleSelectComponent } from './components'
+    SimpleSelectComponent,
+    MessageStickerComponent,
+    MessageBoxComponent } from './components'
 import { AnchorDirective, DynamicTemplateDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe } from './pipes'
 import { DynamicModuleImportsService, LabelsService } from './services';
@@ -56,6 +58,8 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         TooltipComponent,
         WizardComponent,
         SimpleSelectComponent,
+        MessageStickerComponent,
+        MessageBoxComponent,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
@@ -86,6 +90,8 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         StepComponent,
         TooltipComponent,
         WizardComponent,
+        MessageStickerComponent,
+        MessageBoxComponent,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
@@ -97,7 +103,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         StorePipe
     ],
     providers: [],
-    entryComponents: [SimpleSelectComponent]
+    entryComponents: [SimpleSelectComponent, MessageBoxComponent]
 })
 export class UxModule {
     static forRoot(labelsProvider: Provider): ModuleWithProviders {
