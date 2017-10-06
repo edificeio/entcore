@@ -15,6 +15,7 @@ import { RolesResolver } from './applications/details/roles.resolver';
 import { ServicesComponent } from "./services.component";
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
 import { ApplicationDetailsComponent } from './applications/details/application-details.component';
+import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRoleAttributionComponent } from './shared/';
 
 @NgModule({
     imports: [
@@ -29,6 +30,9 @@ import { ApplicationDetailsComponent } from './applications/details/application-
         ServicesComponent,
         ApplicationsListComponent,
         ApplicationDetailsComponent,
+        ServicesListWithCompanionComponent,
+        ServicesRoleComponent,
+        ServicesRoleAttributionComponent
     ],
     providers: [ 
         NgSwitch,

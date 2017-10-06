@@ -12,26 +12,18 @@ import { ServicesStore } from '../../services.store';
 @Component({
     selector: 'apps-list',
     template: `
-        <side-layout (closeCompanion)="closePanel()" [showCompanion]="showDetails()">
-            <div side-card>
-                <list-component
-                [model]="servicesStore.structure.applications.data"
-                sort="name"
-                [inputFilter]="filterByInput"
-                searchPlaceholder="search.application"
-                noResultsLabel="list.results.no.applications"
-                [isSelected]="isSelected"
-                (inputChange)="appInputFilter = $event"
-                (onSelect)="routeToApplication($event)">
-                    <ng-template let-item>
-                        {{ item.name }}                        
-                    </ng-template>
-                </list-component>
-            </div>
-            <div side-companion>
-                <router-outlet></router-outlet>
-            </div>
-        </side-layout>
+        <services-list-with-companion
+            [showCompanion]="showDetails()"
+            [model]="servicesStore.structure.applications.data"
+            sort="name"
+            [inputFilter]="filterByInput"
+            searchPlaceholder="search.application"
+            noResultsLabel="list.results.no.applications"
+            [isSelected]="isSelected"
+            (inputChange)="appInputFilter = $event"
+            (onSelect)="routeToApplication($event)"
+        >
+        </services-list-with-companion>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -87,10 +79,5 @@ export class ApplicationsListComponent implements OnInit, OnDestroy {
             res = this.router.isActive(appsRoute + '/' + this.servicesStore.application.id, true);
 
         return res;
-    }
-
-    closePanel() {
-        this.router.navigateByUrl('/admin/' + (this.servicesStore.structure ? this.servicesStore.structure.id : '') +
-            '/services/applications/');
     }
 }

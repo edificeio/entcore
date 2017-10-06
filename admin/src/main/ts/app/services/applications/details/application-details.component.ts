@@ -17,49 +17,36 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models';
             <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ app.name }}</span>
         </div>
         <div *ngFor="let role of app.roles">
-            <panel-section section-title="{{ role.name }}" *ngIf="role.transverse == false">
-                <button (click)="this.selectedRole = role; this.showLightbox = true">
-                    {{ 'add.groups' | translate }}
-                    <i class="fa fa-plus"></i>
-                </button>
-                <div class="flex-container">
-                    <div *ngFor="let group of (role.groups | mapToArray)" class="flex-item">
-                        <label>{{ group.value }}</label>
-                        <i class="fa fa-times action" (click)="removeGroupFromRole(group.key, role.id)"></i>
-                    </div>
-                </div>
-            </panel-section>
+            <services-role
+                [role]="role"
+                (openLightbox)="openLightbox($event)"
+                (onRemove)="removeGroupFromRole($event, role.id)"
+            >
+            </services-role>
         </div>
-        <light-box [show]="showLightbox" (onClose)="showLightbox = false"> 
-            <h1 class="panel-header">{{ 'add.groups' | translate }}</h1>
-            <div class="panel-header-sub">
-                <button (click)="filterByType('all')">{{ 'all' | translate }}</button>
-                <button (click)="filterByType('profile')">{{ 'applications.groups.structure' | translate }}</button>
-                <button (click)="filterByType('class')">{{ 'applications.classes' | translate }}</button>
-                <button (click)="filterByType('functional')">{{ 'applications.groups.functional' | translate }}</button>
-                <button (click)="filterByType('manual')">{{ 'applications.groups.manual' | translate }}</button>
-            </div>
-            <form>
-                <list-component
-                [model]="this.groupsList"
-                sort="name"
-                [inputFilter]="filterByName"
-                searchPlaceholder="search.group"
-                noResultsLabel="list.results.no.groups"
-                (inputChange)="this.groupInputFilter = $event">
-                    <ng-template let-item>
-                        <span>
-                            <span [ngSwitch]="isAuthorized(item.id)">
-                                <input *ngSwitchCase="true" type="checkbox" id="{{ item.id }}" value="{{ item.name }}" checked />
-                                <input *ngSwitchDefault type="checkbox" id="{{ item.id }}" value="{{ item.name }}" />
-                            </span>
-                            <label>{{ item.name }}</label>                        
-                        </span>
-                    </ng-template>
-                </list-component>
-                <button type="submit" (click)="addGroupsToRole()">{{ 'save' | translate }}</button>
-            </form>
-        </light-box>
+        <services-role-attribution
+            [show]="showLightbox"
+            (onClose)="showLightbox = false"
+            [model]="this.groupsList"
+            sort="name"
+            [inputFilter]="filterByName"
+            searchPlaceholder="search.group"
+            noResultsLabel="list.results.no.groups"
+            (inputChange)="this.groupInputFilter = $event"
+            (onAdd)="addGroupsToRole()"
+            [isAuthorized]="isAuthorized"
+            [selectedRole]="selectedRole"
+        >
+            <ng-template>
+                <div class="panel-header-sub">
+                    <button (click)="filterByType('all')">{{ 'all' | translate }}</button>
+                    <button (click)="filterByType('profile')">{{ 'applications.groups.structure' | translate }}</button>
+                    <button (click)="filterByType('class')">{{ 'applications.classes' | translate }}</button>
+                    <button (click)="filterByType('functional')">{{ 'applications.groups.functional' | translate }}</button>
+                    <button (click)="filterByType('manual')">{{ 'applications.groups.manual' | translate }}</button>
+                </div>
+            </ng-template>
+        </services-role-attribution>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -130,8 +117,13 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         this.cdRef.markForCheck();
     }
 
-    isAuthorized(groupId: string) {
-        if (this.selectedRole && this.selectedRole.groups.has(groupId))
+    openLightbox(role: RoleModel){
+        this.selectedRole = role;
+        this.showLightbox = true;
+    }
+
+    isAuthorized(groupId: string, selectedRole: RoleModel) {
+        if (selectedRole && selectedRole.groups.has(groupId))
             return true;
         else
             return false;
