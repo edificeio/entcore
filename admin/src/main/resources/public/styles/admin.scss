@@ -2271,6 +2271,21 @@ i.fa {
       transform: scale(1);
     }
   }
+    .message-body {
+        padding: .5em;
+        font-size: 0.9em;
+        background: white;
+    }
+
+    &.is-success { border-color:  green; color: green;}
+    &.is-info { border-color:  blue; color: blue;}
+    &.is-danger { border-color: red; color: red;}
+    &.is-warning { border-color: orange; color: orange;}
+
+    &.is-success .message-header  { background: green;}
+    &.is-info .message-header { background: blue;}
+    &.is-danger .message-header { background: red;}
+    &.is-warning .message-header { background: orange;}
 }
 
 // SQUARE COMPONENT
