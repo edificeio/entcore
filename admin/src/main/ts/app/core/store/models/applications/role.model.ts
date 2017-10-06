@@ -9,6 +9,7 @@ export class RoleModel extends Model<RoleModel> {
     id: string;
     name: string;
     groups: Map<string, string>;
+    transverse: boolean
 
     removeGroupFromRole = (groupId: string): Promise<void> => {
         return this.http

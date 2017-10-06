@@ -17,7 +17,7 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models';
             <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ app.name }}</span>
         </div>
         <div *ngFor="let role of app.roles">
-            <panel-section section-title="{{ role.name }}">
+            <panel-section section-title="{{ role.name }}" *ngIf="role.transverse == false">
                 <button (click)="this.selectedRole = role; this.showLightbox = true">
                     {{ 'add.groups' | translate }}
                     <i class="fa fa-plus"></i>
