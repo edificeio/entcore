@@ -2595,7 +2595,6 @@ module.directive('tooltip', function($compile) {
 
                     var top  = tgtElement.offset().top;
                     var left = parseInt(tgtElement.offset().left - tip.width() - 5);
-
                     if (restrictToElement) {
                         if (left < restrictToElement.offset().left) {
                             left = parseInt(tgtElement.offset().left + tgtElement.width() + 5);
@@ -2606,8 +2605,13 @@ module.directive('tooltip', function($compile) {
                             left = restrictToElement.offset().left + 5;
                             top += 30;
                         }
-                    }
 
+                        // now, is it too far bot ?
+                        if (top > restrictToElement.height() + 150) {
+                          top -= 130;
+                        }
+
+                    }
                     tip.css('left', left);
                     tip.css('top', top);
                 } else {
