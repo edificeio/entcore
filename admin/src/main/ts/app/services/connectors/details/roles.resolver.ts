@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
 
 import { GroupCollection } from '../../../core/store';
-import { RoleModel } from '../../../core/store/models/role.model';
+import { RoleModel } from '../../../core/store/models';
 import { SpinnerService, routing } from '../../../core/services';
 
 import { ServicesStore } from '../../services.store';
 
 @Injectable()
-export class ApplicationRolesResolver implements Resolve<RoleModel[]|Boolean> {
+export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
 
     constructor(
         private spinner: SpinnerService, 

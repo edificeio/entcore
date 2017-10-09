@@ -10,11 +10,15 @@ import { routes } from './services.routing';
 
 import { ServicesStore } from './services.store';
 import { ApplicationsResolver } from './applications/applications.resolver';
-import { RolesResolver } from './applications/details/roles.resolver';
+import { ConnectorsResolver } from './connectors/connectors.resolver';
+import { ApplicationRolesResolver } from './applications/details/roles.resolver';
+import { ConnectorRolesResolver } from './connectors/details/roles.resolver';
 
 import { ServicesComponent } from "./services.component";
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
+import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
 import { ApplicationDetailsComponent } from './applications/details/application-details.component';
+import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
 import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRoleAttributionComponent } from './shared/';
 
 @NgModule({
@@ -30,6 +34,8 @@ import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRole
         ServicesComponent,
         ApplicationsListComponent,
         ApplicationDetailsComponent,
+        ConnectorsListComponent,
+        ConnectorDetailsComponent,
         ServicesListWithCompanionComponent,
         ServicesRoleComponent,
         ServicesRoleAttributionComponent
@@ -38,7 +44,9 @@ import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRole
         NgSwitch,
         ServicesStore,
         ApplicationsResolver,
-        RolesResolver
+        ConnectorsResolver,
+        ApplicationRolesResolver,
+        ConnectorRolesResolver
     ]
 })
 export class ServicesModule { }

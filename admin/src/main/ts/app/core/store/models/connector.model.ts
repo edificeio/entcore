@@ -1,9 +1,9 @@
 import { RoleModel } from '.';
-import { RoleCollection, globalStore } from '../..';
+import { RoleCollection, globalStore } from '..';
 
 import { Model, Mix } from 'entcore-toolkit';
 
-export class ApplicationModel extends Model<ApplicationModel> {
+export class ConnectorModel extends Model<ConnectorModel> {
 
     constructor() {
         super({});
@@ -14,11 +14,11 @@ export class ApplicationModel extends Model<ApplicationModel> {
 
     get id(){ return this._id };
     set id(id) {
-        this._id = id
+        this._id = id;
     };
 
-    syncRoles = (structureId: string, appId: string): Promise<void> => {
-        return this.http.get(`/appregistry/structure/${structureId}/application/${appId}/groups/roles`)
+    syncRoles = (structureId: string, connectorId: string): Promise<void> => {
+        return this.http.get(`/appregistry/structure/${structureId}/connectors/${connectorId}/groups/roles`)
             .then(res => {
                 let roles = res.data;
     
@@ -30,5 +30,7 @@ export class ApplicationModel extends Model<ApplicationModel> {
         );
     }
 
+    name: string;
+    icon: string;
     roles: RoleModel[];
 }

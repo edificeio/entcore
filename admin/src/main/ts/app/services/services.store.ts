@@ -1,4 +1,4 @@
-import { StructureModel, ApplicationModel, AbstractStore } from '../core/store';
+import { StructureModel, ApplicationModel, ConnectorModel, AbstractStore } from '../core/store';
 
 export class ServicesStore extends AbstractStore {
 
@@ -6,4 +6,5 @@ export class ServicesStore extends AbstractStore {
     
     structure: StructureModel;
     application: ApplicationModel;
+    connector: ConnectorModel;
 }

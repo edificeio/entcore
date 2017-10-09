@@ -20,7 +20,6 @@ import { ActivatedRoute, Router } from '@angular/router';
                     <ng-template let-item>
                         <div>
                             {{ item.name }}
-                            {{ item.icon }}
                         </div>                        
                     </ng-template>
                 </list-component>
