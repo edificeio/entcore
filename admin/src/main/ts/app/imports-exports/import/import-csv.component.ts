@@ -1,7 +1,6 @@
 import { Component, 
     OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges,
     Input, Output, ViewChild } from '@angular/core'
-import { BundlesService } from 'sijil'
 import { Mix } from 'entcore-toolkit'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
@@ -9,6 +8,8 @@ import { SpinnerService,routing } from '../../core/services'
 import { ImportCSVService } from './import-csv.service'
 import { User, Error, Profile } from './user.model'
 import { WizardComponent } from '../../shared/ux/components'
+
+import { Messages } from './messages.model'
 
 @Component({
     selector: 'import-csv',
@@ -21,7 +22,7 @@ import { WizardComponent } from '../../shared/ux/components'
                 </article>
                     <button 
                         (click)="confirmCancel = false"
-                        [title]="'import.backToImport'  | translate">
+                        [title]="'import.cancel.backToImport'  | translate">
                         {{'import.cancel.backToImport' | translate}}
                     </button>
                     <button 
@@ -37,27 +38,37 @@ import { WizardComponent } from '../../shared/ux/components'
             (nextStep)="nextStep($event)"
             (previousStep)="previousStep($event)"
         >
-        <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
-            <h2>{{ 'import.files.deposit' | translate }}</h2>
-            <article *ngIf="stepErrors[0]" class="message is-danger">{{stepErrors[0]}}</article>
-            <h3>{{ 'import.files.deposit' | translate }}</h3>
-            <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
-                <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]">
-                <input type="file" name="{{p}}" (change)="loadFile($event)" 
-                    [hidden]="!isLoaded(p)" placeholder="{{ 'import.uplaod' + p | translate }}">
-            </form-field>
-            <h3>{{ 'import.parameters' | translate }}</h3>
-            <form-field label="import.step1.preDeleteOption">
-                <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" >
-            </form-field>
-            <form-field label="import.step1.transitionOption">
-                <input type="checkbox"  name="transitionOption" [(ngModel)]="importInfos.transition" >
-            </form-field>
+        <step #step1 name="{{ 'import.filesDeposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
+            <h2>{{ 'import.filesDeposit' | translate }}
+            <message-sticker [type]="'info'" [header]="'import.info.file.0'" 
+                [messages]="messages.get('import.info.file')">
+            </message-sticker>
+            </h2>
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <h3>{{ 'import.header.selectFile' | translate }}</h3>
+            <p *ngFor="let p of profiles.asArray(true)">
+                <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]" />
+                <label>{{'import.file.'+p | translate}}</label>
+                <input type="file" name="{{p}}" (change)="loadFile($event)" [hidden]="!isLoaded(p)" />
+                <message-box *ngIf="globalError.profile['error.'+p]" [type]="'danger'" 
+                    [messages]="globalError.profile['error.'+p]"></message-box>
+            </p>
+            <h3>{{ 'import.header.parameters' | translate }}</h3>
+            <p>
+                <input type="checkbox"  name="predeleteOption"  [(ngModel)]="importInfos.predelete" />
+                <label>{{'import.deleteAccountOption' | translate}}</label>
+                <message-sticker [type]="'info'" [messages]="messages.get('import.info.deleteAccount')"></message-sticker>
+            </p>
+            <p>
+                <input type="checkbox" name="transitionOption" [(ngModel)]="importInfos.transition" />
+                <label>{{'import.transitionOption' | translate}}</label>
+                <message-sticker [type]="'info'" [messages]="messages.get('import.info.transition')"></message-sticker>
+            </p>
         </step>
-        <step #step2 name="{{ 'import.fields.checking' | translate }}" [class.active]="step2.isActived">
-            <h2 class="panel-header">{{ 'import.fields.checking' | translate }}</h2>
-            <article *ngIf="stepErrors[1]" class="message is-danger">{{stepErrors[1]}}</article>
-            <panel-section *ngFor="let profile of columns.profiles" section-title="{{'import.'+profile+'File'}}" [folded]="true">
+        <step #step2 name="{{ 'import.fieldsChecking' | translate }}" [class.active]="step2.isActived">
+            <h2>{{ 'import.fieldsChecking' | translate }}</h2>
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <panel-section *ngFor="let profile of columns.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true">
                 <mappings-table 
                     [headers]="['import.fieldFromFile','import.fieldToMap']"
                     [mappings]="columns.mappings[profile]"
@@ -66,10 +77,10 @@ import { WizardComponent } from '../../shared/ux/components'
                 </mappings-table>
             </panel-section>
         </step>
-        <step #step3 name="{{ 'import.classCheckingBetweenFiles' | translate }}" [class.active]="step3.isActived">
-            <h2 class="panel-header">{{ 'import.class.checking' | translate }}</h2>
-            <article *ngIf="stepErrors[2]" class="message is-danger">{{stepErrors[2]}}</article>
-            <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.'+profile+'File'}}" [folded]="true"> 
+        <step #step3 name="{{'import.classesChecking' | translate }}" [class.active]="step3.isActived">
+            <h2>{{ 'import.class.checking' | translate }}</h2>
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true"> 
                 <mappings-table 
                     [headers]="['import.classFromFile','import.classToMap']"
                     [mappings]="classes.mappings[profile]"
@@ -79,7 +90,7 @@ import { WizardComponent } from '../../shared/ux/components'
             </panel-section>
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
-            <h2 class="panel-header">{{ 'import.report' | translate }}</h2>
+            <h2>{{ 'import.report' | translate }}</h2>
             <div *ngIf="report.hasErrors()" class="container report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
                     class="button"
@@ -104,9 +115,9 @@ import { WizardComponent } from '../../shared/ux/components'
                 <thead>
                     <tr>
                         <th>{{ 'line' | translate }}</th>
-                        <th>{{ 'lastname' | translate }}</th>
-                        <th>{{ 'firstname' | translate }}</th>
-                        <th>{{ 'birthdate' | translate }}</th>
+                        <th>{{ 'lastName' | translate }}</th>
+                        <th>{{ 'firstName' | translate }}</th>
+                        <th>{{ 'birthDate' | translate }}</th>
                         <th>{{ 'login' | translate }}</th>
                         <th>{{ 'profile' | translate }}</th>
                         <th>{{ 'externalId'| translate }}</th>
@@ -148,7 +159,8 @@ import { WizardComponent } from '../../shared/ux/components'
             </table>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
-            <h2 class="panel-header">{{ 'import.finish' | translate }}</h2>
+            <h2>{{ 'import.finish' | translate }}</h2>
+            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
         </step>
     </wizard>
     `,
@@ -167,11 +179,10 @@ export class ImportCSV implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private router:Router,
-        private bundles: BundlesService,
         private spinner: SpinnerService,
         private cdRef: ChangeDetectorRef){}
 
-    translate = (...args) => { return (<any> this.bundles.translate)(...args) }
+    messages:Messages = new Messages();
 
     // Subscriberts
     private structureSubscriber: Subscription;
@@ -179,7 +190,14 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     @ViewChild(WizardComponent) wizardEl: WizardComponent;
 
-    stepErrors = [];
+    globalError:{ message:string,profile:{},reset:Function} = {
+        message:undefined,
+        profile:{},
+        reset : function(){
+            this.message = undefined;
+            this.profile={};
+        }
+    };
 
     confirmCancel : boolean;
 
@@ -346,9 +364,11 @@ export class ImportCSV implements OnInit, OnDestroy {
         if ('' != this.importInfos.structureId) 
             this.wizardEl.doCancel();
         
-        this.stepErrors = [];
+        this.globalError.reset();
 
-        this.profiles.asArray().forEach(p =>{ this.importInfos[p] = null }); // Flush loaded CSV files
+        this.profiles.asArray().forEach(
+            p =>
+            { this.importInfos[p] = null }); // Flush loaded CSV files
         
         Object.assign(this.profiles,
             { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false, inputFiles : {}}
@@ -383,16 +403,19 @@ export class ImportCSV implements OnInit, OnDestroy {
     * Next Step operations
     */
     private async getColumsMapping() {
+        this.globalError.reset();
         let data = await ImportCSVService.getColumnsMapping(this.importInfos);
         if (data.error) {
-            this.stepErrors[0] = data.error;
+            this.globalError.message = data.error;
+        } else if (data.errors) {
+            this.globalError.message = 'import.error.malformedFiles';
+            this.globalError.profile = data.errors.errors; // TODO Fix server API. serve only {errors:{...}}
         } else if (!data.mappings || !data.availableFields) {
-            this.stepErrors[0] = "import.error.noColumnsMappingFound" // TODO : check if possible 
+            this.globalError.message = "import.error.noColumnsMappingFound" // TODO : check if possible 
         } else {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
             this.columns.profiles = this.profiles.asArray();
-            this.stepErrors[0] = null;
             this.wizardEl.doNextStep();
         }
         this.cdRef.markForCheck();
@@ -400,9 +423,10 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     private async getClassesMapping() {
+        this.globalError.reset();
         let data = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
         if (data.errors) {
-            this.stepErrors[1] = data.errors;
+            this.globalError.message = data.errors;
         } else {
             this.classes.profiles = this.profiles.asArray();
             for (let profile of this.classes.profiles) {
@@ -414,7 +438,6 @@ export class ImportCSV implements OnInit, OnDestroy {
                     this.classes.initAvailableClasses(profile, data.classesMapping['dbClasses']);
                 }
             }
-            this.stepErrors[1] = null;
             this.wizardEl.doNextStep();
         }
         this.cdRef.markForCheck();
@@ -422,13 +445,14 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     private async validate() {
         this.report.reset();
+        this.globalError.reset();
         let data = await ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings); 
         if (data.errors) {
-            this.stepErrors[3] = data.errors;
+            this.globalError.message = 'import.error.validationGlobalError'
+            this.globalError.profile = data.errors;
         } else if (!data.importId) {
-            this.stepErrors[3] = 'import.error.importIdNotFound'
+            this.globalError.message = 'import.error.importIdNotFound'
         } else { 
-            this.stepErrors[3] = null;
             this.report.importId = data.importId
             for (let p of this.profiles.asArray()) {
                 // merge profile's users 
@@ -462,8 +486,8 @@ export class ImportCSV implements OnInit, OnDestroy {
         body[event.target.getAttribute('field')] = event.target.innerText;
 
         let data = await ImportCSVService.updateReport('put', this.report.importId,profile, body);
-        if (data.errors) {
-            this.stepErrors[3] = data.errors;
+        if (data.error) {
+            this.globalError.message = data.error; // use an other variable to manage inline error check
         } else {
             let user:User = this.report.users.find(el => { return el.line == body.line});
             for (let p in body) {
@@ -487,9 +511,10 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     private async import() {
+        this.globalError.reset();
         let data = await ImportCSVService.import(this.report.importId);
-        if (data.errors) {
-            this.stepErrors[3] = data.errors;
+        if (data.error) {
+            this.globalError.message = data.error;
         } else {
             this.wizardEl.doNextStep();
             this.cdRef.markForCheck();
