@@ -69,12 +69,13 @@ public class DuplicateUsers {
 	private final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
+	private final boolean autoMergeOnlyInSameStructure;
 
-	public DuplicateUsers(boolean updateCourses) {
-		this(null, updateCourses);
+	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
+		this(null, updateCourses, autoMergeOnlyInSameStructure);
 	}
 
-	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses) {
+	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
 		if (sourcesPriority == null) {
 			sourcesPriority = new JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 		}
@@ -83,6 +84,7 @@ public class DuplicateUsers {
 			sourcePriority.put(sourcesPriority.<String>get(i), size - i);
 		}
 		this.updateCourses = updateCourses;
+		this.autoMergeOnlyInSameStructure = autoMergeOnlyInSameStructure;
 	}
 
 	public void markDuplicates(Handler<JsonObject> handler) {
@@ -653,7 +655,7 @@ public class DuplicateUsers {
 			}
 		};
 		listDuplicates(new ResultMessage(duplicatesHandler).put("minScore", 5)
-				.put("inSameStructure", true).put("inherit", false));
+				.put("inSameStructure", autoMergeOnlyInSameStructure).put("inherit", false));
 	}
 
 }
