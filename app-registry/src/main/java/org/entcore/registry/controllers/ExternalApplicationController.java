@@ -60,6 +60,14 @@ public class ExternalApplicationController extends BaseController {
 		externalAppService.listExternalApps(structureId, arrayResponseHandler(request));
 	}
 
+	@Get("/application/external/:id/groups/roles")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	public void listExternalApplicationRolesWithGroups(HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String connectorId = request.params().get("id");
+		externalAppService.listExternalApplicationRolesWithGroups(structureId, connectorId, arrayResponseHandler(request));
+	}
+
 	@Delete("/application/external/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(ApplicationFilter.class)

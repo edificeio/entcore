@@ -18,7 +18,7 @@ export class ConnectorModel extends Model<ConnectorModel> {
     };
 
     syncRoles = (structureId: string, connectorId: string): Promise<void> => {
-        return this.http.get(`/appregistry/structure/${structureId}/connectors/${connectorId}/groups/roles`)
+        return this.http.get(`/appregistry/application/external/${connectorId}/groups/roles?structureId=${structureId}`)
             .then(res => {
                 let roles = res.data;
     

@@ -10,7 +10,7 @@ import { globalStore, ConnectorModel } from '../../../core/store';
 import { ServicesStore } from '../../services.store';
 
 @Component({
-    selector: 'apps-list',
+    selector: 'connectors-list',
     template: `
         <services-list-with-companion
             [showCompanion]="showDetails()"
@@ -21,7 +21,7 @@ import { ServicesStore } from '../../services.store';
             noResultsLabel="list.results.no.connector"
             [isSelected]="isSelected"
             (inputChange)="connectorInputFilter = $event"
-            (onSelect)="routeToConnectorn($event)"
+            (onSelect)="routeToConnector($event)"
         >
         </services-list-with-companion>
     `,
@@ -58,7 +58,7 @@ export class ConnectorsListComponent implements OnInit, OnDestroy {
         return this.servicesStore.connector === connector;
     }
 
-    routeToConnectorn(connector: ConnectorModel) {
+    routeToConnector(connector: ConnectorModel) {
         this.servicesStore.connector = connector;
         this.router.navigate([connector.id], { relativeTo: this.route });
     }

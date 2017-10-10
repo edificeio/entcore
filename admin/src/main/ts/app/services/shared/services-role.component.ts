@@ -3,6 +3,8 @@ import { Component, ChangeDetectorRef, Input, Output,
 
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { RoleModel } from '../../core/store/models';
+
 @Component({
     selector: 'services-role',
     template: `
@@ -22,8 +24,15 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class ServicesRoleComponent {
     
-    @Input() role
+    @Input() role: RoleModel;
 
     @Output("openLightbox") openLightbox: EventEmitter<{}> = new EventEmitter();
     @Output("onRemove") onRemove: EventEmitter<string> = new EventEmitter();
+
+    constructor(public cdRef: ChangeDetectorRef){}
+
+    ngAfterViewInit() {
+        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
+    }
 }

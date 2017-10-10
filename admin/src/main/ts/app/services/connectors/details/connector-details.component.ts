@@ -7,16 +7,16 @@ import { SpinnerService, routing } from '../../../core/services';
 import { globalStore } from '../../../core/store';
 
 import { ServicesStore } from '../../services.store';
-import { ApplicationModel, RoleModel } from '../../../core/store/models';
+import { ConnectorModel, RoleModel } from '../../../core/store/models';
 
 @Component({
-    selector: 'app-details',
+    selector: 'connector-details',
     template: `
-        <div class="panel-header" [ngSwitch]="app.roles.length">
+        <div class="panel-header" [ngSwitch]="connector.roles.length">
             <span *ngSwitchCase="0">{{ 'list.no.role' | translate }}</span>
-            <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ app.name }}</span>
+            <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ connector.name }}</span>
         </div>
-        <div *ngFor="let role of app.roles">
+        <div *ngFor="let role of connector.roles">
             <services-role
                 [role]="role"
                 (openLightbox)="openLightbox($event)"
@@ -52,13 +52,13 @@ import { ApplicationModel, RoleModel } from '../../../core/store/models';
 })
 export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
     
-    app: ApplicationModel;
+    connector: ConnectorModel;
     selectedRole: RoleModel;
     showLightbox: boolean = false;
     groupInputFilter: string;
     groupsList: {}[];
     
-    private appSubscriber: Subscription;
+    private connectorSubscriber: Subscription;
     private routeSubscriber: Subscription;
 
     constructor(
@@ -71,18 +71,18 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.routeSubscriber = this.route.params.subscribe(params => {
-            if (params['appId']) {
-                this.servicesStore.application = this.servicesStore.structure
-                    .applications.data.find(a => a.id === params['appId']);
-                this.app = this.servicesStore.application;
+            if (params['connectorId']) {
+                this.servicesStore.connector = this.servicesStore.structure
+                    .connectors.data.find(a => a.id === params['connectorId']);
+                this.connector = this.servicesStore.connector;
                 this.cdRef.markForCheck();
             }
         })
         
-        this.appSubscriber = this.route.data.subscribe(data => {
+        this.connectorSubscriber = this.route.data.subscribe(data => {
             if(data["roles"]) {
-                this.servicesStore.application.roles = data["roles"];
-                this.app.roles = this.servicesStore.application.roles;
+                this.servicesStore.connector.roles = data["roles"];
+                this.connector.roles = this.servicesStore.connector.roles;
                 this.cdRef.markForCheck();
             }
         })
@@ -92,7 +92,7 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.routeSubscriber.unsubscribe();
-        this.appSubscriber.unsubscribe();
+        this.connectorSubscriber.unsubscribe();
     }
 
     filterByName = (group: any) => {
@@ -132,7 +132,7 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
     addGroupsToRole(): void {
         let groups = this.getCheckedGroups();
 
-        this.servicesStore.application.roles.find(r => r.id == this.selectedRole.id)
+        this.servicesStore.connector.roles.find(r => r.id == this.selectedRole.id)
             .addGroupsToRole(groups);
         this.showLightbox = false;
 
@@ -151,7 +151,7 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
     }
 
     removeGroupFromRole(groupId: string, roleId: string): void {
-        let role = this.servicesStore.application.roles.find(role => role.id == roleId);
+        let role = this.servicesStore.connector.roles.find(role => role.id == roleId);
         role.removeGroupFromRole(groupId)
             .then(() => {
                 this.cdRef.markForCheck();

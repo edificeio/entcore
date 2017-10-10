@@ -19,18 +19,18 @@ export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
     resolve(route: ActivatedRouteSnapshot): Promise<RoleModel[]|Boolean> {
         let structureId = routing.getParam(route, 'structureId').toString();
         let structure = this.servicesStore.structure;
-        let appId = route.params["appId"];
-        let targetApp = structure && structure.applications.data.find(a => a.id === appId);
+        let connectorId = route.params["connectorId"];
+        let targetConnector = structure && structure.connectors.data.find(a => a.id === connectorId);
 
-        if (!targetApp) {
+        if (!targetConnector) {
             return this.router.navigate(["/admin", structure._id, "services"]);
         }
         else {
-            return this.spinner.perform('portal-content', targetApp.syncRoles(structureId, appId)
-                .then(() => targetApp.roles)
+            return this.spinner.perform('portal-content', targetConnector.syncRoles(structureId, connectorId)
+                .then(() => targetConnector.roles)
                 .catch(e => {
                     console.error(e);
-                    return this.router.navigate(["/admin", structure._id, "services/applications"]);
+                    return this.router.navigate(["/admin", structure._id, "services/connectors"]);
                 })
             )
         }

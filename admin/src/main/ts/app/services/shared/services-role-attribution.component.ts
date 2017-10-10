@@ -44,6 +44,15 @@ export class ServicesRoleAttributionComponent {
     @Input() isAuthorized
     @Input() selectedRole
 
+    constructor(
+        public cdRef: ChangeDetectorRef
+    ){}
+
+    ngAfterViewInit() {
+        this.cdRef.markForCheck();
+        this.cdRef.detectChanges();
+    }
+
     @Output("onClose") onClose: EventEmitter<any> = new EventEmitter();
     @Output("onAdd") onAdd: EventEmitter<any> = new EventEmitter();
     @Output("inputChange") inputChange: EventEmitter<any> = new EventEmitter<string>();
