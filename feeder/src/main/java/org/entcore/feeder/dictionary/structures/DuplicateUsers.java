@@ -46,6 +46,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DuplicateUsers {
 
 	private static final Logger log = LoggerFactory.getLogger(DuplicateUsers.class);
+	private static final String SIMPLE_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
+			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
+			"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId " +
+			"DELETE r, r2, u2 " +
+			"WITH u1, IDPN, oldId " +
+			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
+			"SET u1.IDPN = IDPN " +
+			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
+	private static final String SWITCH_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
+			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId " +
+			"DELETE r, r2, u2 " +
+			"WITH u1, source, externalId, IDPN, oldId " +
+			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
+			"u1.externalId = externalId, u1.source = source, u1.disappearanceDate = null " +
+			"WITH u1, IDPN, oldId " +
+			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
+			"SET u1.IDPN = IDPN " +
+			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
@@ -205,7 +225,9 @@ public class DuplicateUsers {
 		String query =
 				"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}) " +
 				"RETURN DISTINCT u1.id as userId1, u1.source as source1, NOT(HAS(u1.activationCode)) as activatedU1, " +
-				"u2.id as userId2, u2.source as source2, NOT(HAS(u2.activationCode)) as activatedU2";
+				"u1.disappearanceDate as disappearanceDate1, u1.deleteDate as deleteDate1, " +
+				"u2.id as userId2, u2.source as source2, NOT(HAS(u2.activationCode)) as activatedU2, " +
+				"u2.disappearanceDate as disappearanceDate2, u2.deleteDate as deleteDate2";
 		JsonObject params = new JsonObject().putString("userId1", userId1).putString("userId2", userId2);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -235,8 +257,11 @@ public class DuplicateUsers {
 		final boolean activatedU2 = r.getBoolean("activatedU2", false);
 		final String userId1 = r.getString("userId1");
 		final String userId2 = r.getString("userId2");
+		final boolean missing1 = r.getLong("disappearanceDate1") != null || r.getLong("deleteDate1") != null;
+		final boolean missing2 = r.getLong("disappearanceDate2") != null || r.getLong("deleteDate2") != null;
 		final JsonObject error = new JsonObject().putString("status", "error");
-		if (source1 != null && source1.equals(source2) && notDeduplicateSource.contains(source1)) {
+		if (source1 != null && source1.equals(source2) && notDeduplicateSource.contains(source1) &&
+				!missing1 && !missing2) {
 			message.reply(error.putString("message", "two.users.in.same.source"));
 			return;
 		}
@@ -245,37 +270,36 @@ public class DuplicateUsers {
 		if ((activatedU1 && prioritySource(source1) >= prioritySource(source2)) ||
 				(activatedU2 && prioritySource(source1) <= prioritySource(source2)) ||
 				(!activatedU1 && !activatedU2)) {
-			query = "MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
-					"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId " +
-					"DELETE r, r2, u2 " +
-					"WITH u1, IDPN, oldId " +
-					"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-					"SET u1.IDPN = IDPN " +
-					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
-			if (activatedU1) {
-				params.putString("userId1", userId1).putString("userId2", userId2);
-			} else if (activatedU2) {
-				params.putString("userId1", userId2).putString("userId2", userId1);
-			} else {
-				if (prioritySource(source1) > prioritySource(source2)) {
+			query = SIMPLE_MERGE_QUERY;
+			if (prioritySource(source1) == prioritySource(source2) && notDeduplicateSource.contains(source1)) {
+				if (!missing1 && activatedU1) {
 					params.putString("userId1", userId1).putString("userId2", userId2);
-				} else {
+				} else if (!missing2 && activatedU2) {
 					params.putString("userId1", userId2).putString("userId2", userId1);
+				} else {
+					query = SWITCH_MERGE_QUERY;
+					if (activatedU1) {
+						params.putString("userId1", userId1).putString("userId2", userId2);
+					} else {
+						params.putString("userId1", userId2).putString("userId2", userId1);
+					}
+				}
+			} else {
+				if (activatedU1) {
+					params.putString("userId1", userId1).putString("userId2", userId2);
+				} else if (activatedU2) {
+					params.putString("userId1", userId2).putString("userId2", userId1);
+				} else {
+					if (prioritySource(source1) > prioritySource(source2)) {
+						params.putString("userId1", userId1).putString("userId2", userId2);
+					} else {
+						params.putString("userId1", userId2).putString("userId2", userId1);
+					}
 				}
 			}
 		} else if ((activatedU1 && prioritySource(source1) < prioritySource(source2)) ||
 				(activatedU2 && prioritySource(source1) > prioritySource(source2))) {
-			query = "MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId " +
-					"DELETE r, r2, u2 " +
-					"WITH u1, source, externalId, IDPN, oldId " +
-					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
-					"u1.externalId = externalId, u1.source = source " +
-					"WITH u1, IDPN, oldId " +
-					"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-					"SET u1.IDPN = IDPN " +
-					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
+			query = SWITCH_MERGE_QUERY;
 			if (activatedU1) {
 				params.putString("userId1", userId1).putString("userId2", userId2);
 			} else {
@@ -408,7 +432,7 @@ public class DuplicateUsers {
 		String query =
 				"MATCH (u:User) WHERE u.modified > {lastSearchDuplicate} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.birthDate as birthDate, u.email as email";
+						"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
 		JsonObject params = new JsonObject().putString("profile", profile).putString("lastSearchDuplicate", last);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -433,7 +457,7 @@ public class DuplicateUsers {
 				"START u=node:node_auto_index({luceneQuery}) " +
 				"WHERE HEAD(u.profiles) = {profile} AND u.id <> {id} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.birthDate as birthDate, u.email as email";
+				"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
 		final JsonObject params = new JsonObject().putString("profile", profile);
 		TransactionHelper tx;
 		try {
@@ -539,6 +563,8 @@ public class DuplicateUsers {
 		final String firstName = cleanAttribute(searchUser.getString("firstName"));
 		final String birthDate = cleanAttribute(searchUser.getString("birthDate"));
 		final String email = cleanAttribute(searchUser.getString("email"));
+		final String source = searchUser.getString("source");
+		final Long disappearanceDate = searchUser.getLong("disappearanceDate");
 
 		for (int i = 0; i < findUsers.size(); i++) {
 			int score = 2;
@@ -547,7 +573,8 @@ public class DuplicateUsers {
 			score += exactMatch(firstName, cleanAttribute(fu.getString("firstName")));
 			score += exactMatch(birthDate, cleanAttribute(fu.getString("birthDate")));
 			score += exactMatch(email, cleanAttribute(fu.getString("email")));
-			if (score > 3) {
+			if (score > 3 && (!notDeduplicateSource.contains(source) || !source.equals(fu.getString("source")) ||
+					disappearanceDate != null || fu.getLong("disappearanceDate") != null)) {
 				tx.add(query, params.copy().putString("dId", fu.getString("id")).putNumber("score", score));
 			}
 		}
