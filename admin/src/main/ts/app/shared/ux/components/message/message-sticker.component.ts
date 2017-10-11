@@ -6,14 +6,18 @@ import { MessageBoxComponent, MessageType, icons } from './message-box.component
 @Component({
     selector: 'message-sticker',
     template: `
-        <i (click)="loadMessageBox()" class="fa {{icons[type]}} is-{{type}}"></i>
-        <ng-template [dynamic-component]="newMessageBox()"></ng-template>
+    <i (click)="loadMessageBox()" class="fa {{icons[type]}} is-{{type}}"></i>
+        <span message-box-anchor>
+            <ng-container [dynamic-component]="newMessageBox()"></ng-container>
+        </span>
         `,
     styles: [`
         :host {
             display: inline;
+            padding-left : .2em;
+        }
+        span[message-box-anchor] {
             position: absolute;
-            padding-left : .5em;
         }
         i { cursor : pointer; }
     `]
@@ -24,7 +28,7 @@ export class MessageStickerComponent implements OnInit {
 
     @Input() type: MessageType;
     @Input() header:string;
-    @Input() messages:string[];
+    @Input() messages:(string | [string,Object])[];
     @ViewChild(DynamicComponent) dComponent: DynamicComponent;
 
     readonly icons = icons;
