@@ -325,7 +325,9 @@
     "import.error.noColumnsMappingFound":"Les données d'association de champs de colonnes sont indisponible. Vérifier que vos fichiers possèdes bien une ligne d'entête",
     "missing.csv.files": "Il manque un(des) fichier(s) pour les profils sélectionnés",
     "invalid.file.extension":"Extension invalide. Vous devez charger des fichiers avec l'extension <u>'.csv'</u>",
-    "import.error.malformedFiles": "Les erreurs affichées en rouge avec ce symbole bloquent l'import des fichiers : <strong>Vous devez renouveler le chargement des fichiers</strong>",
+    "import.error.malformedFiles": "Les erreurs affichées en rouge bloquent l'import des fichiers : <strong>Vous devez renouveler le chargement des fichiers</strong>",
+    "import.error.requieredFieldNotFound.global":"Nous n'avons pas trouver un ou plusieurs champs obligatoires dans ce fichier. <strong>Vous devez procéder à une association manuelle</strong>",
+    "import.error.requieredFieldNotFound":"Champ(s) obligatoire(s) manquant(s) : <strong>{{fields}}</strong>.",
 
     "import.warning.":"",
 
@@ -346,6 +348,10 @@
     "import.info.transition.4":"- Les partages associés à ces classes et ces groupes sont également supprimés",
     "import.info.transition.5":"- Les règles de communication sont réinitialisées (retour aux règles par défaut)",
     "import.info.deleteAccount.1":"Les comptes des utilisateurs qui ne figurent pas dans les fichiers seront automatiquement pré-supprimés. Ces utilisateurs pourront continuer à accéder à l'ENT pour récupérer leurs données pendant un délai de 90 jours. Leurs comptes seront définitivement supprimés après ce délai.",
+    "import.info.columns.Student":"Le fichier Élève doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong>, <strong>Date de naissance</strong> et <strong>classes</strong>",
+    "import.info.columns.Teacher":"Le fichier Enseignant doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong>",
+    "import.info.columns.Personnel":"Le fichier Personnel doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong>",
+    "import.info.columns.Guest":"Le fichier Invité doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong>",
     "pager.position" : "{{offset}} à {{offsetLimit}} sur {{total}}", 
     "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
     "notify.user.update.title": "Modifications effectuées",

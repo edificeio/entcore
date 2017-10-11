@@ -5,6 +5,7 @@ import { Mix } from 'entcore-toolkit'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { SpinnerService,routing } from '../../core/services'
+import { BundlesService } from 'sijil'
 import { ImportCSVService } from './import-csv.service'
 import { User, Error, Profile } from './user.model'
 import { WizardComponent } from '../../shared/ux/components'
@@ -68,11 +69,18 @@ import { Messages } from './messages.model'
         <step #step2 name="{{ 'import.fieldsChecking' | translate }}" [class.active]="step2.isActived">
             <h2>{{ 'import.fieldsChecking' | translate }}</h2>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
-            <panel-section *ngFor="let profile of columns.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true">
+            <panel-section *ngFor="let p of columns.profiles" section-title="{{'import.file.'+ p}}" [folded]="true">
+                <ng-template>
+                    <message-sticker [type]="'info'" [messages]="['import.info.columns.'+p]"></message-sticker>            
+                    <message-sticker *ngIf="globalError.profile[p]" [type]="'danger'" 
+                        [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-sticker>
+                </ng-template>
+                <message-box *ngIf="globalError.profile[p]" [type]="'danger'" 
+                    [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-box>
                 <mappings-table 
                     [headers]="['import.fieldFromFile','import.fieldToMap']"
-                    [mappings]="columns.mappings[profile]"
-                    [availables]="columns.availableFields[profile]"
+                    [mappings]="columns.mappings[p]"
+                    [availables]="columns.availableFields[p]"
                 >
                 </mappings-table>
             </panel-section>
@@ -180,8 +188,11 @@ export class ImportCSV implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router:Router,
         private spinner: SpinnerService,
+        private bundles: BundlesService,
         private cdRef: ChangeDetectorRef){}
 
+    private translate = (...args) => { return (<any> this.bundles.translate)(...args) }
+        
     messages:Messages = new Messages();
 
     // Subscriberts
@@ -193,7 +204,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     globalError:{ message:string,profile:{},reset:Function} = {
         message:undefined,
         profile:{},
-        reset : function(){
+        reset(){
             this.message = undefined;
             this.profile={};
         }
@@ -254,9 +265,39 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     columns = {
+        // TODO : Move server-side
+        requieredFields : {
+            Teacher:['firstName','lastName'], 
+            Student:['firstName','lastName','birthDate','classes'], 
+            Relative:['firstName','lastName'],
+            Personnel:['firstName','lastName'],
+            Guest:['firstName','lastName'],
+        },
         availableFields : {},
         mappings : {},
-        profiles : []
+        profiles : [],
+        errors(){
+            let res = {};
+            let errorCounter = 0;
+            for (let profile of this.profiles) {
+                res[profile] = Array.from(this.requieredFields[profile])
+                    .filter((field) => {
+                        if (Object.values(this.mappings[profile]).indexOf(field) == -1) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    },this);
+                if (res[profile].length == 0)
+                    res[profile] = undefined;
+                else 
+                    errorCounter += res[profile].length;
+            }
+            if (errorCounter > 0) 
+                return res;
+            else 
+                return undefined;
+        }
     };
  
     /*
@@ -416,6 +457,16 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
             this.columns.profiles = this.profiles.asArray();
+            let errors = this.columns.errors();
+            if (errors) {
+                this.globalError.message = 'import.error.requieredFieldNotFound.global';
+                for(let p of this.columns.profiles) {
+                    if (errors[p]) {
+                        this.globalError.profile[p] = 
+                            errors[p].map(field => { return this.translate(field); }, this);
+                    }
+                }
+            }
             this.wizardEl.doNextStep();
         }
         this.cdRef.markForCheck();
