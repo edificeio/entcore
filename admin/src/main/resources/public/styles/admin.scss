@@ -1129,10 +1129,12 @@ div.panel-message {
   @extend .is-clearfix;
 }
 .panel-section-header {
-  color: white;
-  background: $grey-dark;
-  border-bottom: 1px solid $shadow-light;
-  i.opener { font-size: 1.3em }
+    color: white;
+    background: $grey-dark;
+    border-bottom: 1px solid $shadow-light;
+
+    i.opener{ font-size: 1.3em }
+    message-sticker i.fa.is-info { color: white; }
 }
 .panel-section-content {
   font-size: 0.9em;
@@ -2326,6 +2328,19 @@ table {
             border-bottom: 1px solid grey;
             text-align: left;
         }
+    }
+}
+
+/* <message-sticker> */
+
+message-sticker {
+    i.fa {
+        transition: color 0.25s;
+        &.is-succcess { color: green; }
+        &.is-info { color: blue; }
+        &.is-danger { color: red; }
+        &.is-warning { color: orange; }
+        &:hover { color: $accent;}
     }
 }
 
