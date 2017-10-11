@@ -22,7 +22,7 @@ export const icons = {
             <div class="message-body">
             <i *ngIf="canHide() && !header" (click)="hidden = true" class="fa fa-times-circle"></i>
                 <p *ngFor="let message of messages"> 
-                    <s5l>{{message}}</s5l>
+                    <s5l [s5l-params]="message[1]">{{message[0]}}</s5l>
                 </p>
             </div>
         </article>
@@ -49,7 +49,24 @@ export class MessageBoxComponent implements OnInit {
 
     @Input() type: MessageType;
     @Input() header:string;
-    @Input() messages:string[];
+
+    private _messages:[string,Object][];
+    @Input() set messages(value:(string | [string,Object])[]) {
+        this._messages = [];
+
+        for (let m of value) {
+            if (typeof m == "string")
+                this._messages.push([m,{}]);
+            else if (typeof m == "object") {
+                this._messages.push(m);
+                console.log(m[0] +' '+m[1]);
+                console.log(typeof m);
+            }
+        }
+    };
+    get messages() {
+        return this._messages
+    }
 
     private _position:'absolute' | 'inherit' = 'inherit';
     @Input() set position(value:'absolute' | 'inherit') {
