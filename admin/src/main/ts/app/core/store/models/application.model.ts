@@ -7,7 +7,7 @@ export class ApplicationModel extends Model<ApplicationModel> {
 
     constructor() {
         super({});
-        this.roles = new Array<RoleModel>();
+        this.roles = [];
     }
 
     private _id: string;
@@ -17,15 +17,10 @@ export class ApplicationModel extends Model<ApplicationModel> {
         this._id = id
     };
 
-    syncRoles = (structureId: string, appId: string): Promise<void> => {
-        return this.http.get(`/appregistry/structure/${structureId}/application/${appId}/groups/roles`)
+    syncRoles = (structureId: string): Promise<void> => {
+        return this.http.get(`/appregistry/structure/${structureId}/application/${this._id}/groups/roles`)
             .then(res => {
-                let roles = res.data;
-    
-                this.roles = Mix.castArrayAs(RoleModel, roles);
-                this.roles.forEach((role, index) => {
-                    role.groups = new Map<string, string>(roles[index].groups.map(group => [group.id, group.name]))
-                }) 
+                this.roles = Mix.castArrayAs(RoleModel, res.data);
             }
         );
     }

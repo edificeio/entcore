@@ -3,6 +3,7 @@ import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
 
 import { GroupCollection } from '../../../core/store';
 import { RoleModel } from '../../../core/store/models/role.model';
+import { ApplicationModel } from '../../../core/store/models/application.model';
 import { SpinnerService, routing } from '../../../core/services';
 
 import { ServicesStore } from '../../services.store';
@@ -20,13 +21,13 @@ export class ApplicationRolesResolver implements Resolve<RoleModel[]|Boolean> {
         let structureId = routing.getParam(route, 'structureId').toString();
         let structure = this.servicesStore.structure;
         let appId = route.params["appId"];
-        let targetApp = structure && structure.applications.data.find(a => a.id === appId);
+        let targetApp:ApplicationModel = structure && structure.applications.data.find(a => a.id == appId);
 
         if (!targetApp) {
             return this.router.navigate(["/admin", structure._id, "services"]);
         }
         else {
-            return this.spinner.perform('portal-content', targetApp.syncRoles(structureId, appId)
+            return this.spinner.perform('portal-content', targetApp.syncRoles(structureId)
                 .then(() => targetApp.roles)
                 .catch(e => {
                     console.error(e);

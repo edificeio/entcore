@@ -7,7 +7,7 @@ export class ConnectorModel extends Model<ConnectorModel> {
 
     constructor() {
         super({});
-        this.roles = new Array<RoleModel>();
+        this.roles = [];
     }
 
     private _id: string;
@@ -20,12 +20,7 @@ export class ConnectorModel extends Model<ConnectorModel> {
     syncRoles = (structureId: string, connectorId: string): Promise<void> => {
         return this.http.get(`/appregistry/application/external/${connectorId}/groups/roles?structureId=${structureId}`)
             .then(res => {
-                let roles = res.data;
-    
-                this.roles = Mix.castArrayAs(RoleModel, roles);
-                this.roles.forEach((role, index) => {
-                    role.groups = new Map<string, string>(roles[index].groups.map(group => [group.id, group.name]))
-                }) 
+                this.roles = Mix.castArrayAs(RoleModel, res.data);
             }
         );
     }

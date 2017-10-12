@@ -1,4 +1,5 @@
 import { Model } from 'entcore-toolkit';
+import { GroupModel } from './group.model';
 
 export class RoleModel extends Model<RoleModel> {
 
@@ -8,22 +9,21 @@ export class RoleModel extends Model<RoleModel> {
     
     id: string;
     name: string;
-    groups: Map<string, string>;
+    groups: GroupModel[];
     transverse: boolean
 
-    removeGroupFromRole = (groupId: string): Promise<void> => {
+    removeGroupFromRole = (group:GroupModel): Promise<void> => {
         return this.http
-            .delete(`/appregistry/authorize/group/${groupId}/role/${this.id}`)
+            .delete(`/appregistry/authorize/group/${group.id}/role/${this.id}`)
             .then((res) => { 
-                this.groups.delete(groupId);
-                this.groups = new Map(this.groups.entries());
+                let groupIndex = this.groups.findIndex(g => {return g.id == group.id})
+                this.groups.splice(groupIndex,1);
             })
             .catch(e => console.log(e)
         );
     }
 
     addGroupsToRole = (groups) => {
-        this.groups = new Map(this.groups.entries());
-        groups.forEach((g) => this.groups.set(g.id, g.name));
+        this.groups = groups;
     }
 }
