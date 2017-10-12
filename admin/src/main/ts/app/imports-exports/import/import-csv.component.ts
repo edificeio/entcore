@@ -70,11 +70,11 @@ import { Messages } from './messages.model'
             <h2>{{ 'import.fieldsChecking' | translate }}</h2>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
             <panel-section *ngFor="let p of columns.profiles" section-title="{{'import.file.'+ p}}" [folded]="true">
-                <ng-template>
+                <span other-actions>
                     <message-sticker [type]="'info'" [messages]="['import.info.columns.'+p]"></message-sticker>            
                     <message-sticker *ngIf="globalError.profile[p]" [type]="'danger'" 
                         [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-sticker>
-                </ng-template>
+                </span>
                 <message-box *ngIf="globalError.profile[p]" [type]="'danger'" 
                     [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-box>
                 <mappings-table 
