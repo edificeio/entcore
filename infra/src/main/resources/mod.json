@@ -174,7 +174,7 @@
       }
     },
     {
-      "name": "fr.wseduc~mod-image-resizer~1.2.0",
+      "name": "fr.wseduc~mod-image-resizer~1.5-SNAPSHOT",
       "config": {
         "address": "wse.image.resizer",
         "gridfs": {
