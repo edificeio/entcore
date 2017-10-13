@@ -3,9 +3,8 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
-        "name": { "type": "string"}
-    },
-    "required": [
-        "name"
-    ]
+        "name": { "type": "string"},
+        "alt": { "type": "string"},
+        "legend": { "type": "string"}
+    }
 }

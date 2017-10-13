@@ -87,6 +87,7 @@ public class WorkspaceService extends BaseController {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 	public static final String DOCUMENT_REVISION_COLLECTION = "documentsRevisions";
+	private static final JsonObject PROPERTIES_KEYS = new JsonObject().putNumber("name", 1).putNumber("alt", 1).putNumber("legend", 1);
 	private String imageResizerAddress;
 	private MongoDb mongo;
 	private DocumentDao documentDao;
@@ -538,14 +539,20 @@ public class WorkspaceService extends BaseController {
 		log.debug(doc.encodePrettily());
 		mongo.save(mongoCollection, doc, new Handler<Message<JsonObject>>() {
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(final Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
 					incrementStorage(doc);
 					createRevision(res.body().getString("_id"), uploaded.getString("_id"), doc.getString("name"), doc.getString("owner"), doc.getString("owner"), doc.getString("ownerName"), doc.getObject("metadata"));
 					createThumbnailIfNeeded(mongoCollection, uploaded,
-							res.body().getString("_id"), null, thumbs);
-				}
-				if (handler != null) {
+							res.body().getString("_id"), null, thumbs, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if (handler != null) {
+										handler.handle(res);
+									}
+								}
+							});
+				} else if (handler != null) {
 					handler.handle(res);
 				}
 			}
@@ -854,10 +861,11 @@ public class WorkspaceService extends BaseController {
 	}
 
 	private void createThumbnailIfNeeded(final String collection, final JsonObject srcFile,
-			final String documentId, JsonObject oldThumbnail, final List<String> thumbs) {
+			final String documentId, JsonObject oldThumbnail, final List<String> thumbs,
+			final Handler<Message<JsonObject>> callback) {
 		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() &&
 				srcFile != null && isImage(srcFile) && srcFile.getString("_id") != null) {
-			createThumbnails(thumbs, srcFile, collection, documentId);
+			createThumbnails(thumbs, srcFile, collection, documentId, callback);
 		}
 		if (oldThumbnail != null) {
 			for (String attr: oldThumbnail.getFieldNames()) {
@@ -866,7 +874,8 @@ public class WorkspaceService extends BaseController {
 		}
 	}
 
-	private void createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection, final String documentId) {
+	private void createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection,
+			final String documentId, final Handler<Message<JsonObject>> callback) {
 		Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
 		JsonArray outputs = new JsonArray();
 		for (String thumb: thumbs) {
@@ -903,10 +912,12 @@ public class WorkspaceService extends BaseController {
 					if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
 						mongo.update(collection, new JsonObject().putString("_id", documentId),
 								new JsonObject().putObject("$set", new JsonObject()
-										.putObject("thumbnails", thumbnails)));
+										.putObject("thumbnails", thumbnails)), callback);
 					}
 				}
 			});
+		} else if (callback != null) {
+			callback.handle(null);
 		}
 	}
 
@@ -1037,17 +1048,38 @@ public class WorkspaceService extends BaseController {
 										incrementStorage(doc);
 										createRevision(id, doc.getString("file"), doc.getString("name"), result.getString("owner"), userId, userName, metadata);
 										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION,
-												uploaded, id, thumbs, t);
+												uploaded, id, thumbs, t, new Handler<Message<JsonObject>>() {
+													@Override
+													public void handle(Message<JsonObject> event) {
+														if (handler != null) {
+															handler.handle(res);
+														}
+													}
+												});
 
-									}
-
-									if (handler != null) {
+									} else if (handler != null) {
 										handler.handle(res);
 									}
 								}
 							});
 				} else if (handler != null) {
 					handler.handle(null);
+				}
+			}
+		});
+	}
+
+	@Get("/document/properties/:id")
+	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
+	public void getDocumentProperties(final HttpServerRequest request) {
+		documentDao.findById(request.params().get("id"), PROPERTIES_KEYS, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject res) {
+				JsonObject result = res.getObject("result");
+				if ("ok".equals(res.getString("status")) && result != null) {
+					renderJson(request, result);
+				} else {
+					notFound(request);
 				}
 			}
 		});
@@ -2196,11 +2228,12 @@ public class WorkspaceService extends BaseController {
 					public void handle(UserInfos userInfos) {
 						if(userInfos != null){
 							String id = request.params().get("id");
-							String name = body.getString("name");
 
 							final QueryBuilder matcher = QueryBuilder.start("_id").is(id).put("owner").is(userInfos.getUserId()).and("file").exists(true);
 							MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-							modifier.set("name", name);
+							if (body.getString("name") != null) modifier.set("name", body.getString("name"));
+							if (body.getString("alt") != null) modifier.set("alt", body.getString("alt"));
+							if (body.getString("legend") != null) modifier.set("legend", body.getString("legend"));
 
 							mongo.update(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(matcher), modifier.build(), MongoDbResult.validResultHandler(defaultResponseHandler(request)));
 						} else {
