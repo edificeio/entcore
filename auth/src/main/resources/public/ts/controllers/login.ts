@@ -40,6 +40,14 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 				outdated: version < 39
 			}
 		}
+		else if(userAgent.indexOf('IEMobile') === -1){
+			version = parseInt(navigator.userAgent.split('IEMobile/')[1].split(';')[0]);
+			return {
+				browser: 'MSIE',
+				version: version,
+				outdated: version < 10
+			}
+		}
 		else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){
 			version = parseInt(userAgent.split('Version/')[1].split('.')[0]);
 			return {
