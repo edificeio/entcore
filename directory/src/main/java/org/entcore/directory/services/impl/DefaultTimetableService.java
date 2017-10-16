@@ -88,16 +88,14 @@ public class DefaultTimetableService implements TimetableService {
 		final String endDate = end + END_DATE_PATTERN;
 
 		JsonObject betweenStart = new JsonObject();
-		betweenStart.putString("$gte",startDate);
-		betweenStart.putString("$lte",endDate);
+		betweenStart.putString("$lte", endDate);
 
 		JsonObject betweenEnd = new JsonObject();
-		betweenEnd.putString("$gte",startDate);
-		betweenEnd.putString("$lte",endDate);
+		betweenEnd.putString("$gte", startDate);
 
 		if (group != null) {
 			JsonObject dateOperand =  new JsonObject()
-					.putArray("$or", new JsonArray()
+					.putArray("$and", new JsonArray()
 							.addObject(new JsonObject().putObject("startDate" ,betweenStart))
 							.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
 
@@ -107,9 +105,9 @@ public class DefaultTimetableService implements TimetableService {
 							.addObject(new JsonObject().putString("groups", group)));
 			query.putArray("$and", new JsonArray().addObject(dateOperand).add(groupOperand));
 		} else {
-			query.putArray("$or", new JsonArray()
-					.addObject(new JsonObject().putObject("startDate" ,betweenStart))
-					.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
+			query.putArray("$and", new JsonArray()
+					.addObject(new JsonObject().putObject("startDate", betweenStart))
+					.addObject(new JsonObject().putObject("endDate", betweenEnd)));
 		}
 
 		final JsonObject sort = new JsonObject().putNumber("startDate", 1);
