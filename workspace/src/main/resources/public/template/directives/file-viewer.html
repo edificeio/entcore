@@ -1,0 +1,19 @@
+<div class="embedded-viewer">
+	<div class="controls">
+		<button class="cancel right-magnet" ng-click="editImage()" ng-if="!isFullscreen && ngModel.isEditableImage"><i18n>editImage</i18n></button>
+		<button class="cancel right-magnet" ng-click="download()" ng-if="!isFullscreen"><i18n>download</i18n></button>
+		<button class="cancel right-magnet" ng-click="fullscreen(true)" ng-if="!isFullscreen"><i18n>preview</i18n></button>
+		<i class="close" ng-click="fullscreen(false)" ng-if="isFullscreen"></i>
+	</div>
+	<div class="file">
+		<img ng-if="contentType === 'img'" class="render" ng-src="[[ngModel.link]]?v=[[ngModel.version]]" />
+		<audio ng-if="contentType === 'audio'" controls class="render" ng-src="[[ngModel.link]]"></audio>
+		<video ng-if="contentType === 'video'" controls class="render" ng-src="[[ngModel.link]]"></video>
+		<pdf-viewer ng-if="contentType === 'pdf'" ng-src="[[ngModel.link]]"></pdf-viewer>
+		<div ng-if="contentType === 'unknown' || contentType === 'doc' || contentType === 'xls' || contentType === 'ppt' || contentType === 'zip'" class="default-viewer">
+			<button ng-click="download()">
+				<i18n>file.viewer.download</i18n>
+			</button>
+		</div>
+	</div>
+</div>

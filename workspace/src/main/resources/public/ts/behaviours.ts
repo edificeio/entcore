@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { Behaviours, http, workspace as ws } from 'entcore';
+import { Behaviours, http, MediaLibrary } from 'entcore';
 import { _ } from 'entcore';
 
 console.log('workspace behaviours loaded');
@@ -135,11 +135,10 @@ Behaviours.register('workspace', {
 		xhr.responseType = 'blob';
 		xhr.onload = function(e) {
 			if (xhr.status == 200) {
-				var workspace = ws || (window as any).workspace;
 				var blobDocument = xhr.response;
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
-				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + workspace.thumbnails, formData).done(function(data){
+				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + MediaLibrary.thumbnails, formData).done(function(data){
 					if(typeof callback === 'function'){
                         data.metadata = file.metadata;
                         data.name = file.metadata.filename;

@@ -3,10 +3,10 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        'timeline/application': './timeline/src/main/resources/public/temp/timeline/app.js',
-        'externalNotifs/application': './timeline/src/main/resources/public/temp/externalNotifs/app.js',
-        'history/application': './timeline/src/main/resources/public/temp/history/app.js',
-        behaviours: './timeline/src/main/resources/public/temp/behaviours.js'
+        'timeline/application': './timeline/src/main/resources/public/ts/timeline/app.ts',
+        'externalNotifs/application': './timeline/src/main/resources/public/ts/externalNotifs/app.ts',
+        'history/application': './timeline/src/main/resources/public/ts/history/app.ts',
+        behaviours: './timeline/src/main/resources/public/ts/behaviours.ts'
     },
     output: {
         filename: '[name].js',
@@ -23,14 +23,14 @@ module.exports = {
     resolve: {
         modulesDirectories: ['bower_components', 'node_modules'],
         root: path.resolve(__dirname),
-        extensions: ['', '.js']
+        extensions: ['', '.ts', '.js']
     },
     devtool: "source-map",
     module: {
-        preLoaders: [
+        loaders: [
             {
-                test: /\.js$/,
-                loader: 'source-map-loader'
+                test: /\.ts$/,
+                loader: 'awesome-typescript-loader'
             }
         ]
     }

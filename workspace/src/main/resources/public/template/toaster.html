@@ -61,9 +61,9 @@
 				</resource-right>
 				<resource-right resource="selectedItems()" name="renameFolder">
 					<button ng-click="display.editImage = true"
-							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && currentTree.name === 'documents'"
+							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].isEditableImage && currentTree.name === 'documents'"
 							class="cell">
-						<i18n>Retoucher</i18n>
+						<i18n>editImage</i18n>
 					</button>
 				</resource-right>
 				<resource-right resource="selectedItems()" name="showRevisions" class="zero-mobile">

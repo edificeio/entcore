@@ -3,7 +3,7 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        'myapps/application': './portal/src/main/resources/public/temp/myapps/app.js'
+        'myapps/application': './portal/src/main/resources/public/ts/myapps/app.ts'
     },
     output: {
         filename: '[name].js',
@@ -18,16 +18,16 @@ module.exports = {
         "angular": "angular"
     },
     resolve: {
-        modulesDirectories: ['bower_components', 'node_modules'],
+        modulesDirectories: ['node_modules'],
         root: path.resolve(__dirname),
-        extensions: ['', '.js']
+        extensions: ['', '.ts', '.js']
     },
     devtool: "source-map",
     module: {
-        preLoaders: [
+        loaders: [
             {
-                test: /\.js$/,
-                loader: 'source-map-loader'
+                test: /\.ts$/,
+                loader: 'awesome-typescript-loader'
             }
         ]
     }

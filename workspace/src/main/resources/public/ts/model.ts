@@ -15,12 +15,54 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { model, http } from 'entcore';
+import { model, http, _ } from 'entcore';
 
 export let workspace = {
 	Folder: function(data?){},
 	Tree: function(){},
 	Quota: function(){}
+}
+
+export function containsFolder(container, child){
+	var checkSubFolders = function(currentFolder){
+		if(child === currentFolder){
+			return true;
+		}
+
+		if(!currentFolder || !currentFolder.children){
+			return;
+		}
+
+		for(var i = 0; i < currentFolder.children.length; i++){
+			if(checkSubFolders(currentFolder.children[i])){
+				return true;
+			}
+		}
+	};
+
+	return checkSubFolders(container);
+}
+
+export function folderToString(tree, folder){
+	var folderString = '';
+	function childString(cursor){
+		var result = cursor.name;
+
+		if(!cursor.children){
+			return result;
+		}
+
+		for(var i = 0; i < cursor.children.length; i++){
+			if(containsFolder(cursor.children[i], folder)){
+				result = result + '_' + childString(cursor.children[i])
+			}
+		}
+
+		return result;
+	}
+
+	var basePath = childString(tree);
+	return _.reject(basePath.split('_'), function(path){ return path === tree.name }).join('_');
 }
 
 workspace.Quota.prototype.sync = function(){

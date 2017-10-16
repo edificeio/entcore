@@ -1,0 +1,64 @@
+<!--
+ ~	Copyright © WebServices pour l'Éducation, 2014
+ ~
+ ~ This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
+ ~
+ ~ This program is free software; you can redistribute it and/or modify
+ ~ it under the terms of the GNU Affero General Public License as
+ ~ published by the Free Software Foundation (version 3 of the License).
+ ~
+ ~ For the sake of explanation, any module that communicate over native
+ ~ Web protocols, such as HTTP, with ENT Core is outside the scope of this
+ ~ license and could be license under its own terms. This is merely considered
+ ~ normal use of ENT Core, and does not fall under the heading of "covered work".
+ ~
+ ~ This program is distributed in the hope that it will be useful,
+ ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~
+ -->
+
+<div class="row media-library">
+    <div class="split-screen" ng-class="{ split: display.editedDocument !== undefined }">
+        <div class="loading-list drop-zone">
+            <ul>
+                <li ng-repeat="doc in upload.documents" 
+                    ng-click="openCompression(doc)" 
+                    ng-class="{ 'image-file': doc.isEditableImage && doc.status === 'loaded', 'loading': doc.status === 'loading' }"
+                >
+                    <div class="cell icon">
+                        <i class="[[doc.role()]]"></i>
+                        <i class="edit"></i>
+                    </div>
+                    <div class="title">[[doc.title]]</div>
+                    <div class="right-magnet size">
+                        [[doc.size]]
+                    </div>
+                    <i class="right-magnet" ng-class="{ 
+                        loading: doc.status === 'loading',
+                        loaded: doc.status === 'loaded',
+                        failed: doc.status === 'failed'
+                    }"></i>
+                    <i class="close" ng-click="abortOrDelete(doc)"></i>
+                </li>
+            </ul>
+        </div>
+        
+        <div ng-if="display.editedDocument" class="compression">
+            <div class="compression-view">
+                <a class="cell to-list" ng-click="closeCompression()">
+                    <i class="show-list"></i><i18n>medialibrary.backtolist</i18n>
+                </a>
+                <h2 class="document-title"><i class="back" ng-click="display.editedDocument = undefined"></i>[[display.editedDocument.title]]</h2>
+                <button type="button" class="cancel right-magnet zero-mobile" ng-click="editImage()"><i18n>medialibrary.editImage</i18n></button>
+                <i class="back nav-arrow" ng-if="!isEditedFirst()" ng-click="previousImage()"></i>
+                <i class="forward nav-arrow" ng-if="!isEditedLast()" ng-click="nextImage()"></i>
+                <div ng-if="display.compressionReady"><image-compression document="display.editedDocument"></image-compression></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <button class="right-magnet" ng-click="confirmImport()"><i18n>import</i18n></button>
+        <button class="right-magnet cancel" ng-click="cancelUpload()"><i18n>cancel</i18n></button>
+    </div>
+</div>

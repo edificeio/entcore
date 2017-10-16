@@ -3,8 +3,8 @@ var path = require('path');
 
 module.exports = {
     entry: {
-        application: './directory/src/main/resources/public/temp/app.js',
-        behaviours: './directory/src/main/resources/public/temp/behaviours.js'
+        application: './directory/src/main/resources/public/ts/app.ts',
+        behaviours: './directory/src/main/resources/public/ts/behaviours.ts'
     },
     output: {
         filename: '[name].js',
@@ -21,14 +21,14 @@ module.exports = {
     resolve: {
         modulesDirectories: ['bower_components', 'node_modules'],
         root: path.resolve(__dirname),
-        extensions: ['', '.js']
+        extensions: ['', '.ts', '.js']
     },
     devtool: "source-map",
     module: {
-        preLoaders: [
+        loaders: [
             {
-                test: /\.js$/,
-                loader: 'source-map-loader'
+                test: /\.ts$/,
+                loader: 'awesome-typescript-loader'
             }
         ]
     }

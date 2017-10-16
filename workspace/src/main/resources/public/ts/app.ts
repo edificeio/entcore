@@ -1,5 +1,8 @@
 import { ng, routes } from 'entcore';
 import { workspaceController } from './controller';
+import { importFiles } from './directives/import';
+import { fileViewer } from './directives/fileViewer';
+import { pdfViewer } from './directives/pdfViewer';
 
 routes.define(function($routeProvider) {
 	$routeProvider
@@ -18,3 +21,6 @@ routes.define(function($routeProvider) {
 });
 
 ng.controllers.push(workspaceController);
+ng.directives.push(importFiles);
+ng.directives.push(fileViewer);
+ng.directives.push(pdfViewer);
