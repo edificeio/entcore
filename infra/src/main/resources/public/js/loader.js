@@ -121,7 +121,7 @@ var findVersion = function(){
 			outdated: version < 39
 		}
 	}
-	else if(userAgent.indexOf('IEMobile') === -1){
+	else if(userAgent.indexOf('IEMobile') !== -1){
 		version = parseInt(navigator.userAgent.split('IEMobile/')[1].split(';')[0]);
 		return {
 			browser: 'MSIE',
