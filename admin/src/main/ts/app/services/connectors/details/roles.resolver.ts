@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
 
-import { GroupCollection } from '../../../core/store';
+import { globalStore} from '../../../core/store';
 import { RoleModel } from '../../../core/store/models';
 import { SpinnerService, routing } from '../../../core/services';
 
@@ -17,8 +17,8 @@ export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
     ) { }
 
     resolve(route: ActivatedRouteSnapshot): Promise<RoleModel[]|Boolean> {
-        let structureId = routing.getParam(route, 'structureId').toString();
-        let structure = this.servicesStore.structure;
+        let structure = globalStore.structures.data.find(
+            s => s.id === routing.getParam(route, 'structureId'));
         let connectorId = route.params["connectorId"];
         let targetConnector = structure && structure.connectors.data.find(a => a.id === connectorId);
 
@@ -26,7 +26,7 @@ export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
             return this.router.navigate(["/admin", structure._id, "services"]);
         }
         else {
-            return this.spinner.perform('portal-content', targetConnector.syncRoles(structureId, connectorId)
+            return this.spinner.perform('portal-content', targetConnector.syncRoles(structure._id, connectorId)
                 .then(() => targetConnector.roles)
                 .catch(e => {
                     console.error(e);

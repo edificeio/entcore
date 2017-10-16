@@ -1,7 +1,11 @@
 import { Component, ChangeDetectorRef, Input, Output,
-    ContentChild, TemplateRef, EventEmitter, AfterViewInit } from "@angular/core";
+    ContentChild, EventEmitter, AfterViewInit } from "@angular/core";
 
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router,  Data } from '@angular/router';
+import { SpinnerService, routing } from '../../core/services';
+import { Subscription } from 'rxjs/Subscription';
+
+import { ServicesStore } from '../services.store';
 
 @Component({
     selector: 'services-list-with-companion',
@@ -9,18 +13,18 @@ import { ActivatedRoute, Router } from '@angular/router';
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
             <div side-card>
                 <list-component
-                [model]="model"
-                sort="{{ sort }}"
-                [inputFilter]="inputFilter"
-                searchPlaceholder="{{ searchPlaceholder }}"
-                noResultsLabel="{{ noResultsLabel }}"
+                [model]="collectionRef[serviceName].collection"
+                sort="name"
+                [inputFilter]="filterByInput"
+                [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
+                [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
                 [isSelected]="isSelected"
-                (inputChange)="inputChange.emit($event)"
-                (onSelect)="onSelect.emit($event)">
+                (inputChange)="itemInputFilter = $event"
+                >
                     <ng-template let-item>
-                        <div>
+                        <div routerLink="{{item.id}}">
                             {{ item.name }}
-                        </div>                        
+                        </div>
                     </ng-template>
                 </list-component>
             </div>
@@ -43,37 +47,77 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     constructor(
         public cdRef: ChangeDetectorRef,
         private router: Router,
-        private route: ActivatedRoute){}
+        private route: ActivatedRoute,
+        public servicesStore: ServicesStore){}
 
     ngAfterViewInit() {
         this.cdRef.markForCheck();
         this.cdRef.detectChanges();
     }
 
-    @Input() showCompanion;
+    // TODO extract from router 
+    @Input() serviceName: 'applications' | 'connectors' | 'widgets';
 
-    @Input() model = [];
-    @Input() filters;
-    @Input() inputFilter;
-    @Input() sort;
-    @Input() limit: number;
+    collectionRef = {
+        applications : {
+            collection: this.servicesStore.structure.applications.data, 
+            model:this.servicesStore.application, 
+            routeData:'apps',
+            searchPlaceholder:'search.application',
+            noResultsLabel:'list.results.no.applications'
+        },
+        connectors : {
+            collection: this.servicesStore.structure.connectors.data, 
+            model:this.servicesStore.connector, 
+            routeData:'connectors',
+            searchPlaceholder:'search.connector',
+            noResultsLabel:'list.results.no.connectors'
+        }
+    }
 
-    @Input() searchPlaceholder = "search";
-    @Input() isSelected = () => false;
-    @Input() isDisabled = () => false;
-    @Input() ngClass = () => ({});
-
-    @Input() listScroll = (event, list, cdRef) => {}
-
-    @Input() noResultsLabel = "list.results.no.items";
-
-    @Output("inputChange") inputChange: EventEmitter<string> = new EventEmitter<string>();
     @Output("onSelect") onSelect: EventEmitter<{}> = new EventEmitter();
     @Output("listChange") listChange: EventEmitter<any> = new EventEmitter();
 
-    @ContentChild(TemplateRef) templateRef:TemplateRef<any>;
-
     closePanel() {
         this.router.navigate(['..'], { relativeTo: this.route });
+    }
+
+    
+    private routeSubscriber:Subscription;
+
+    ngOnInit(): void {
+        if (!this.serviceName) {
+            throw new Error('Input property serviceName  is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
+        }
+        this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
+            if(data[this.serviceName]) {
+                this.collectionRef[this.serviceName].collection = data[this.serviceName];
+                this.cdRef.markForCheck();
+            }
+        })
+    }
+
+    ngOnDestroy(): void {
+        this.routeSubscriber.unsubscribe();
+    }
+
+
+    itemInputFilter:string;
+    filterByInput = (item: any) => {
+        if(!this.itemInputFilter) return true;
+        return item.name.toLowerCase()
+            .indexOf(this.itemInputFilter.toLowerCase()) >= 0;
+    }
+
+    isSelected = (item) => {
+        return this.collectionRef[this.serviceName].model == item;
+    }
+
+    showCompanion = (): boolean => {
+        let basePath = `/admin/${this.servicesStore.structure.id}/services/${this.serviceName}`;
+        if (this.collectionRef[this.serviceName].model)
+            return this.router.isActive(`${basePath}\\${this.collectionRef[this.serviceName].model.id}`  , true);
+        else 
+            return false;
     }
 }
