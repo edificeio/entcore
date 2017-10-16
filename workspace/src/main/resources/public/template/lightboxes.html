@@ -4,6 +4,7 @@
 <lightbox show="display.share">
     <container template="share"></container>
 </lightbox>
-<div ng-if="display.editImage && selectedDocuments().length === 1">
+<div ng-if="display.editImage">
     <image-editor document="selectedDocuments()[0]" show="display.editImage"></image-editor>
 </div>
+<import-files show="display.importFiles"></import-files>

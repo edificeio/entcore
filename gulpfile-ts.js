@@ -1,5 +1,5 @@
 var gulp = require('./gulpfile-loader')('ts');
-var ts = require('gulp-typescript');
+var rootGulp = require('gulp');
 var webpack = require('webpack-stream');
 var merge = require('merge2');
 var watch = require('gulp-watch');
@@ -8,6 +8,8 @@ var revReplace = require("gulp-rev-replace");
 var clean = require('gulp-clean');
 var sourcemaps = require('gulp-sourcemaps');
 var typescript = require('typescript');
+var argv = require('argv');
+var fs = require('fs');
 
 var apps = ['auth', 'timeline', 'conversation', 'archive', 'workspace', 'directory', 'portal'];
 
@@ -15,30 +17,15 @@ var paths = {
     infra: '../infra-front'
 };
 
-function compileTs(){
+function startWebpack(mode) {
     var streams = [];
     apps.forEach(a => {
-        var tsProject = ts.createProject('./' + a + '/src/main/resources/public/ts/tsconfig.json', {
-            typescript: typescript
-        });
-        var tsResult = gulp.src('./' + a + '/src/main/resources/public/ts/**/*.ts')
-            .pipe(sourcemaps.init())
-            .pipe(tsProject());
-        
-        streams.push(tsResult.js
-            .pipe(sourcemaps.write('.'))
-            .pipe(gulp.dest('./' + a + '/src/main/resources/public/temp'))
-        );
-    });
-
-    return merge(streams);
-}
-
-function startWebpack(isLocal) {
-    var streams = [];
-    apps.forEach(a => {
-        var str = gulp.src('./' + a + '/src/main/resources/public/**/*.js')
-            .pipe(webpack(require('./' + a + '/webpack.config.js')))
+        var webpackConf = require('./' + a + '/webpack.config.js');
+        if(mode === 'dev'){
+            webpackConf.devtool = 'inline-source-map';
+        }
+        var str = gulp.src('./' + a + '/src/main/resources/public/**/*.ts')
+            .pipe(webpack(webpackConf))
             .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist'))
             .pipe(rev())
             .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist'))
@@ -51,6 +38,7 @@ function startWebpack(isLocal) {
 }
 
 function updateRefs() {
+    console.log('Updating hashs in views');
     var streams = [];
     apps.forEach(a => {
         var str = gulp.src('./' + a + '/src/main/resources/view-src/**/*.+(html|txt|json)')
@@ -62,13 +50,15 @@ function updateRefs() {
     return merge(streams);
 }
 
+function updateLibs(){
+    
+}
+
 gulp.task('drop-old-files', function () {
     var streams = [];
     apps.forEach(a => {
         var str = gulp.src([
-            './' + a + '/src/main/resources/public/temp', 
-            './' + a + '/src/main/resources/public/dist',
-            './' + a + '/src/main/resources/public/ts/entcore'
+            './' + a + '/src/main/resources/public/dist'
         ], { read: false })
             .pipe(clean());
         streams.push(str);
@@ -96,19 +86,14 @@ gulp.task('update-libs', ['drop-old-files'], function(){
     return merge(streams);
 });
 
-
-gulp.task('ts', ['update-libs'], function () { return compileTs() });
-gulp.task('webpack', ['ts'], function(){ return startWebpack() });
+gulp.task('webpack', ['update-libs'], function(){ return startWebpack() });
 
 gulp.task('drop-temp', ['webpack'], () => {
     var streams = [];
     apps.forEach(a => {
-        var str = gulp.src([
-            './' + a + '/src/main/resources/public/**/*.map.map',
-            './' + a + '/src/main/resources/public/temp'
-        ], { read: false })
-            .pipe(clean());
-        streams.push(str);
+        var copyMaps = gulp.src('./node_modules/entcore/bundle/ng-app.js.map')
+            .pipe(gulp.dest('./' + a + '/src/main/resources/public/dist/entcore'));
+        streams.push(copyMaps);
     });
 
     return merge(streams);
@@ -125,3 +110,49 @@ gulp.task('build', ['drop-temp'], function () {
     
     return merge(streams);
 });
+
+function getModName(fileContent, app){
+    var getProp = function(prop){
+        return fileContent.split(prop + '=')[1].split(/\r*\n/)[0];
+    }
+    return getProp('modowner') + '~' + app + '~' + getProp('version');
+}
+
+apps.forEach((app) => {
+    rootGulp.task('watch-' + app, () => {
+        var springboard = argv.springboard;
+        if(!springboard){
+            springboard = '../springboard-open-ent/';
+        }
+        if(springboard[springboard.length - 1] !== '/'){
+            springboard += '/';
+        }
+    
+        rootGulp.watch('./' + app + '/src/main/resources/public/ts/**/*.ts', () => startWebpack('dev'));
+    
+        fs.readFile("./gradle.properties", "utf8", function(error, content){
+            var modName = getModName(content, app);
+            rootGulp.watch(['./' + app + '/src/main/resources/public/template/**/*.html', '!./' + app + '/src/main/resources/public/template/entcore/*.html'], () => {
+                console.log('Copying resources to ' + springboard + 'mods/' + modName);
+                rootGulp.src('./' + app + '/src/main/resources/**/*')
+                    .pipe(rootGulp.dest(springboard + 'mods/' + modName));
+            });
+    
+            rootGulp.watch('./' + app + '/src/main/resources/view/**/*.html', () => {
+                console.log('Copying resources to ' + springboard + 'mods/' + modName);
+                rootGulp.src('./' + app + '/src/main/resources/**/*')
+                    .pipe(rootGulp.dest(springboard + 'mods/' + modName));
+            });
+
+            rootGulp.watch(['./' + app + '/src/main/resources/public/dist/**/*.js', '!./' + app + '/src/main/resources/public/dist/entcore/**/*.js'], () => {
+                console.log('Copying resources to ' + springboard + 'mods/' + modName);
+                rootGulp.src('./' + app + '/src/main/resources/public/dist/**/*')
+                    .pipe(rootGulp.dest(springboard + 'mods/' + modName + '/public/dist'));
+            });
+
+            rootGulp.watch('./' + app + '/rev-manifest.json', () => {
+                updateRefs();
+            });
+        });
+    });
+})

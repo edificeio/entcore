@@ -15,12 +15,13 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { routes, ng, template, idiom as lang, http, notify, Document } from 'entcore';
-import { workspace } from './model';
+import { routes, ng, template, idiom as lang, http, notify, Document, quota } from 'entcore';
+import { workspace, containsFolder, folderToString } from './model';
 import { _ } from 'entcore';
 import { $ } from 'entcore';
 import { moment } from 'entcore';
 import { Mix } from 'entcore-toolkit';
+import { importFiles } from './directives/import';
 
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', 'model', 'route', ($scope, $rootScope, $timeout, model, route) => {
 
@@ -42,33 +43,32 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		viewSharedFolder: function(params){
 			if($scope.lastRoute === window.location.href)
 				return
-			$scope.lastRoute = window.location.href
-		    $scope.currentTree = trees[1]
-		    $scope.currentFolderTree = $scope.folder.children[1]
-		    $scope.openFolder($scope.folder.children[1])
+			$scope.lastRoute = window.location.href;
+		    $scope.currentTree = trees[1];
+		    $scope.currentFolderTree = $scope.folder.children[1];
+		    $scope.openFolder($scope.folder.children[1]);
 		    if($scope.initSequence && $scope.initSequence.executed){
-				$scope.openFolderById(params.folderId)
+				$scope.openFolderById(params.folderId);
 		    } else {
 				$scope.initSequence = {
 					executed: false,
 					type: 'openSharedFolder',
 		        	folderId: params.folderId
-				}
+				};
 			}
 		},
 		openShared: function(params){
 			if($scope.lastRoute === window.location.href)
 				return;
-			$scope.lastRoute = window.location.href
-			$scope.currentTree = trees[1]
-			$scope.currentFolderTree = $scope.folder.children[1]
+			$scope.lastRoute = window.location.href;
+			$scope.currentTree = trees[1];
+			$scope.currentFolderTree = $scope.folder.children[1];
 			$scope.openFolder($scope.folder.children[1])
 		}
 	});
 
 	$scope.lang = lang;
 	$scope.model = model;
-	$scope.newFile = { name: lang.translate('nofile'), chosenFiles: [] };
 	$scope.display = {
 	    nbFiles: 50
 	};
@@ -87,8 +87,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			var idField;
 
 			if(way){
-				var actions = changes.added.actions
-				idField = changes.added.groupId ? "groupId" : "userId"
+				var actions = changes.added.actions;
+				idField = changes.added.groupId ? "groupId" : "userId";
 
 				$scope.sharedFolders.forEach(function(folder){
 					var sharedItem = _.find(folder.shared, function(item){
@@ -98,7 +98,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 						sharedItem = {}
 						sharedItem[idField] = changes.added[idField]
 						folder.shared = folder.shared ? folder.shared : []
-						folder.shared.push(sharedItem)
+						folder.shared.push(sharedItem);
 					}
 					if(way === "added"){
 						_.each(actions, function(action){
@@ -124,22 +124,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.users = [];
 	$scope.me = model.me;
 
-	$scope.maxQuota = 8;
-	$scope.usedQuota = 4;
-
 	$scope.folderTreeTemplate = 'folder-content';
-	$scope.quota = model.quota;
-
-	$scope.maxFileSize = parseInt(lang.translate('max.file.size'));
-
-	$scope.maxSize = function(){
-		var leftOvers = model.quota.max - model.quota.used;
-		if(model.quota.unit === 'gb'){
-			leftOvers *= 1000;
-		}
-		return leftOvers;
-	};
-
 	$scope.totalFilesSize = function(fileList){
 		var size = 0
 		if(!fileList.files)
@@ -164,28 +149,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		callback(documents);
 	}
 
-	function folderToString(tree, folder){
-		var folderString = '';
-		function childString(cursor){
-			var result = cursor.name;
-
-			if(!cursor.children){
-				return result;
-			}
-
-			for(var i = 0; i < cursor.children.length; i++){
-				if($scope.containsFolder(cursor.children[i], folder)){
-					result = result + '_' + childString(cursor.children[i])
-				}
-			}
-
-			return result;
-		}
-
-		var basePath = childString(tree);
-		return _.reject(basePath.split('_'), function(path){ return path === tree.name }).join('_');
-	}
-
 	$scope.inInterval = function(document, first, last){
 		if(first < 0){
 			first = 0;
@@ -205,12 +168,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 
 	$scope.downloadFile = function (document) {
 	    window.location.href = '/workspace/document/' + document._id;
-	};
-
-	$scope.openNewDocumentView = function(){
-		$scope.loadingFiles = [];
-		$scope.newFile = { name: $scope.translate('nofile'), chosenFiles: [] };
-		template.open('lightbox', 'create-file');
 	};
 
 	$scope.openNewFolderView = function(){
@@ -247,14 +204,14 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		$scope.sharedFolders = undefined
 		$scope.sharedDocuments = $scope.selectedDocuments();
 		$scope.display.share = true;
-		template.open('share', 'share');
+		template.open('share', 'share/share');
 	};
 
 	$scope.openShareFolderView = function(){
 		$scope.sharedDocuments = undefined
 		$scope.sharedFolders = $scope.selectedFolders();
 		$scope.display.share = true;
-		template.open('share', 'share-folders-warning');
+		template.open('share', 'share/share-folders-warning');
 	};
 
 	var refreshFolders = function(){
@@ -333,7 +290,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			});
 			http().delete('document/' + document._id)
 				.done(function(){
-					model.quota.sync();
+					quota.refresh();
 				})
 		});
 
@@ -424,7 +381,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		filter: 'owner',
 		hierarchical: true,
 		buttons: [
-			{ text: 'workspace.add.document', action: $scope.openNewDocumentView, icon: true, workflow: 'workspace.create' }
+			{ text: 'workspace.add.document', action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create' }
 		],
 		contextualButtons: [
 			{ text: 'workspace.move', action: $scope.openMoveFileView, url: 'move-files' },
@@ -605,68 +562,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		}) !== undefined;
 	};
 
-	$scope.addLoadingFiles = function(){
-		var chosenNames = $scope.newFile.name.split(', ');
-		$scope.newFile.chosenFiles.forEach(function(file, i){
-			var formData = new FormData();
-			var index = $scope.loadingFiles.length;
-			var loadingFile = {
-				file: file.file,
-				loading: true,
-				request: undefined
-			};
-
-			if(chosenNames[i]){
-				formData.append('file', file.file, chosenNames[i] + '.' + file.extension);
-			}
-			else{
-				formData.append('file', file.file);
-			}
-
-			var url = 'document?thumbnail=120x120&thumbnail=290x290';
-			if($scope.newFile.quality > 0){
-				url += '&quality=' + $scope.newFile.quality / 100;
-			}
-
-			var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
-
-			var request = http().postFile(url,  formData, {
-					requestName: 'file-upload-' + file.file.name + '-' + index
-				}).done(function(e){
-					loadingFile.loading = false;
-					if(path !== ''){
-						http().put("documents/move/" + e._id + '/' + encodeURIComponent(path)).done(function(){
-							$scope.openFolder($scope.openedFolder.folder);
-						});
-					}
-					else{
-						$scope.openFolder($scope.openedFolder.folder);
-					}
-
-					model.quota.sync();
-				})
-				.e413(function(e){
-					$scope.loadingFiles.splice($scope.loadingFiles.indexOf(loadingFile), 1);
-					notify.error(lang.translate('file.too.large.limit') + ($scope.maxFileSize/1024/1024) + lang.translate('mb'));
-					$scope.$apply();
-				})
-				.e400(function(e){
-					$scope.loadingFiles.splice($scope.loadingFiles.indexOf(loadingFile), 1);
-					notify.error(lang.translate('file.too.large.max') + $scope.maxSize() + lang.translate(model.quota.unit));
-					$scope.$apply();
-				});
-
-			loadingFile.request = request;
-			$scope.loadingFiles.push(loadingFile);
-		});
-		$scope.newFile.blockIdentical = true;
-
-	}
-	$scope.confirmIdentical = function(){
-		$scope.newFile.blockIdentical = false;
-		$scope.newFile.warnIdentical = false;
-	}
-
 	$scope.translate = function(key){
 		return lang.translate(key);
 	};
@@ -736,25 +631,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		folder.showComments = true;
 	};
 
-	$scope.containsFolder = function(container, child){
-		var checkSubFolders = function(currentFolder){
-			if(child === currentFolder){
-				return true;
-			}
-
-			if(!currentFolder || !currentFolder.children){
-				return;
-			}
-
-			for(var i = 0; i < currentFolder.children.length; i++){
-				if(checkSubFolders(currentFolder.children[i])){
-					return true;
-				}
-			}
-		};
-
-		return checkSubFolders(container);
-	}
+	$scope.containsFolder = (container, child) => containsFolder(container, child);
 
 	$scope.containsCurrentFolder = function(folder){
 		return $scope.containsFolder(folder, $scope.openedFolder.folder);
@@ -1335,7 +1212,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		http().putFile("document/" + $scope.targetDocument._id + "?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
 			delete $scope.revisionInProgress;
 			$scope.openFolder($scope.openedFolder.folder);
-			model.quota.sync();
+			quota.refresh();
 			template.close('lightbox');
 			//$scope.refreshHistory($scope.targetDocument);
 		}).e400(function(e){
@@ -1349,7 +1226,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(function(){
 			$('.tooltip').remove()
 			$scope.openHistory($scope.targetDocument)
-			model.quota.sync();
+			quota.refresh();
 		})
 	}
 }]);
