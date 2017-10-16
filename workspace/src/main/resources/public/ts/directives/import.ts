@@ -66,7 +66,6 @@ export const importFiles = ng.directive('importFiles', () => {
                 }
                 scope.upload.files = undefined;
             }
-
             scope.openCompression = (doc: Document) => {
                 if(!doc.isEditableImage){
                     return;
@@ -147,7 +146,6 @@ export const importFiles = ng.directive('importFiles', () => {
                 scope.openFolder(scope.openedFolder.folder);
 				scope.upload.documents = [];
             }
-
             scope.confirmImport = async () => {
                 template.open('import', 'directives/import/upload');
 				scope.upload.documents.forEach(doc => doc.applyBlob());
