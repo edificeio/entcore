@@ -253,6 +253,20 @@ public class StructureController extends BaseController {
 		});
 	}
 
+	@Get("/structure/:structureId/massMail/allUsers")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getMassMailUsersList(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos infos) {
+				final String structureId = request.params().get("structureId");
+
+				structureService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
+			}
+		});
+	}
+
+
 	@Get("/structure/:structureId/massMail/process/:type")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void performMassmail(final HttpServerRequest request){

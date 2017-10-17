@@ -1522,6 +1522,9 @@ mass-mail{
         padding: 5px;
         border-bottom:1px solid grey;
     }
+    th{
+        text-align: left;
+    }
     tr {
         &:hover {
             background-color: $main-lighter;
@@ -1529,6 +1532,13 @@ mass-mail{
     }
     th {
 
+    }
+}
+
+export{
+    button{
+        background-color: #ff8352;
+        color: white ! important;
     }
 }
 

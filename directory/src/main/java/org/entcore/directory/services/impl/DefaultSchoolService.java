@@ -342,6 +342,55 @@ public class DefaultSchoolService implements SchoolService {
 
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
+
+	@Override
+	public void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
+		String filter =
+				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
+						"(g)-[:HAS_PROFILE]-(p: Profile) ";
+		String condition = "";
+		String optional =
+				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		//Admin check
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition += "WHERE s.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		}
+
+		//With clause
+		String withStr =
+				"WITH u, p ";
+
+		//Return clause
+		String returnStr =
+				"RETURN distinct collect(p.name)[0] as type, " +
+						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+						"u.email as email, u.login as login, u.activationCode as code ";
+
+		withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+		returnStr += ", classes, classname, isInClass ";
+
+		withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+		returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
+
+		String sort = "ORDER BY lastName";
+
+		String query = filter + condition + optional + withStr + returnStr + sort;
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
 	
 	@Override
 	public void listSources(String structureId, Handler<Either<String, JsonArray>> result) {

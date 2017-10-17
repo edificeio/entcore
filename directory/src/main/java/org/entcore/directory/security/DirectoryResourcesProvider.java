@@ -120,6 +120,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 				case "getLevels" :
 				case "getMassmailUsers" :
+				case "getMassMailUsersList" :
 				case "performMassmail" :
 					isAdmin(user, false, handler);
 					break;

@@ -55,6 +55,7 @@ public interface SchoolService {
 	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren,
 			Boolean hasMail, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void getMetrics(String structureId, Handler<Either<String, JsonObject>> results);
 

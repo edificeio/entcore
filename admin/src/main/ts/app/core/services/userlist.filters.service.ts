@@ -222,6 +222,15 @@ export class UserlistFiltersService {
         return formattedFilters
     }
 
+    getFormattedOutputModels(): Object{
+        let outputModels = {}
+        for(let i = 0; i < this.filters.length; i++) {
+            let filter = this.filters[i]
+            outputModels[filter.type] = filter.outputModel;
+        }
+        return outputModels
+    }
+
     pushNewFilter(filter: UserFilter<String>){
         this.filters.push(filter)
     }
