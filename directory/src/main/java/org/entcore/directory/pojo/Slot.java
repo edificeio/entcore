@@ -64,8 +64,8 @@ public class Slot {
                 && (end != null)
                 && (givenSlotStart != null)
                 && (givenSlotEnd != null)
-                && (start <= givenSlotEnd)
-                && (givenSlotStart <= end);
+                && (start < givenSlotEnd)
+                && (givenSlotStart < end);
     }
 
     public String getId() {
