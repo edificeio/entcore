@@ -15,16 +15,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
             <span>{{ details.login }}</span>
         </form-field>
         <form-field label="activation.code" *ngIf="details.activationCode">
-            <div>
-                <input type="text" [(ngModel)]="details.activationCode" #codeInput="ngModel" 
-                    [attr.placeholder]="'activation.code.placeholder' | translate"
-                    required minlength="4">
-                <form-errors [control]="codeInput"></form-errors>
-                <button [disabled]="codeInput.invalid">
-                    <s5l>change.activation.code</s5l>
-                    <i class="fa fa-refresh"></i>
-                </button>
-            </div>
+            <span>{{ details.activationCode }}</span>
         </form-field>
         <form-field label="id">
             <span>{{ user.id }}</span>
