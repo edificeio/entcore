@@ -25,20 +25,22 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
         </form-field>
         <form-field label="administration" *ngIf="!user.deleteDate">
             <button class= "noflex"
-                *ngIf="!details.functions || !details.functions[0] || !details.functions[0][0]" 
+                *ngIf="!details.isAdml(this.structure.id)" 
                 (click)="addAdml()">
                 <s5l>adml.add</s5l>
                 <i class="fa fa-cog"></i>
             </button>
             <div *ngFor="let function of details.functions">
-                {{ function[0] | translate }}
-                <span *ngIf="function[1] && function[1].length > 0 && getStructure(function[1][0])">
-                    ({{ 'structure.or.more' | translate:{ head: getStructure(function[1][0]).name, rest: function[1].length - 1 } }})
-                </span>
-                <span *ngIf="function[1] && function[1].length > 0 && !getStructure(function[1][0])">
-                    ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
-                </span>
-                <button *ngIf="details.isAdml()" 
+                <div class="adml-listing">
+                    {{ function[0] | translate }}
+                    <span *ngIf="function[1] && function[1].length > 0 && getStructure(function[1][0])">
+                        ({{ getStructures(function[1]) }})
+                    </span>
+                    <span *ngIf="function[1] && function[1].length > 0 && !getStructure(function[1][0])">
+                        ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
+                    </span>
+                </div>
+                <button *ngIf="details.isAdml(this.structure.id)" 
                     (click)="removeAdml()">
                     <s5l>adml.remove</s5l>
                     <i class="fa fa-cog"></i>
@@ -108,7 +110,8 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                 this.ns.success({
                         key: 'notify.user.add.adml.content',
                         parameters: {user: this.user.firstName + ' ' + this.user.lastName}
-                    }, 'notify.user.add.adml.title')
+                    }, 'notify.user.add.adml.title');
+                this.cdRef.markForCheck();
             }).catch(err => {
                 this.ns.error({
                         key: 'notify.user.add.adml.error.content',
@@ -174,5 +177,9 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                         }
                     }, 'notify.user.sendResetPassword.mobile.error.title', err)
             })
+    }
+
+    getStructures(fn) {
+        return fn.map((id: string) => this.getStructure(id).name).join(', ');
     }
 }

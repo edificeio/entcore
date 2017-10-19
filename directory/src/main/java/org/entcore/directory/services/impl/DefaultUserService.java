@@ -335,6 +335,15 @@ public class DefaultUserService implements UserService {
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
+	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
+		String query =
+				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " + 
+				"RETURN COLLECT(distinct [f.externalId, rf.scope]) as functions";
+		JsonObject params = new JsonObject();
+		params.putString("userId", userId);
+		neo.execute(query, params, validResultHandler(result));
+	}
+
 	@Override
 	public void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()

@@ -194,15 +194,18 @@ export class UserDetails implements OnInit, OnDestroy{
                         this.router.navigate(['..'], 
                         {relativeTo: this.route, replaceUrl: true})
                     }, 0)
-                } else if(this.user !== this.usersStore.user) {
+                } else if(this.user !== this.usersStore.user || this.structure !== this.usersStore.structure) {
+                    this.structure = this.usersStore.structure
                     this.user = this.usersStore.user
                 }
+                this.cdRef.markForCheck()
             }
         })
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
             console.log('user component');
             
             this.usersStore.user = data['user']
+            this.cdRef.markForCheck()
         })
     }
 

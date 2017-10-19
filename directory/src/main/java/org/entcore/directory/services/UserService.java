@@ -65,6 +65,8 @@ public interface UserService {
 
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);
 
+	void listFunctions(String userId, Handler<Either<String, JsonArray>> handler);
+
 	void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
 
 	void removeGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);

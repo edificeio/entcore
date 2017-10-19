@@ -324,6 +324,13 @@ public class UserController extends BaseController {
 		userService.removeFunction(userId, function, defaultResponseHandler(request));
 	}
 
+	@Get("/user/:userId/functions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listFunctions(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		userService.listFunctions(userId, arrayResponseHandler(request));
+	}
+
 	@Post("/user/group/:userId/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addGroup(final HttpServerRequest request) {
