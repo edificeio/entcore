@@ -99,7 +99,7 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 					JsonArray rs = r.get(0);
 					handler.handle(rs);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(null);
 				}
 			}
 		});
