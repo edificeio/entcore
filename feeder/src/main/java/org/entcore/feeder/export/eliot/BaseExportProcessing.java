@@ -91,7 +91,11 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 							list(j*nbByFile, nbByFile, new Handler<JsonArray>() {
 								@Override
 								public void handle(JsonArray objects) {
-									if (objects != null && objects.size() > 0) {
+									if (objects == null) {
+										error("list.return.null.array", handler);
+										return;
+									}
+									if (objects.size() > 0) {
 										try {
 											if (!concat) {
 												writeDocument(j, objects);
