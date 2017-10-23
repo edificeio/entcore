@@ -129,7 +129,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
         private ns: NotifyService,
         private spinner: SpinnerService,
     ) { }
-    sortObject = {};
+    sortObject = {lastName: String, firstName: String, classesStr: String};
     dataSubscriber: Subscription
     routerSubscriber: Subscription
     countUsers = 0;
