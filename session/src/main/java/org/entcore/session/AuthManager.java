@@ -23,6 +23,7 @@ import com.hazelcast.core.BaseMap;
 import com.hazelcast.core.IMap;
 import com.hazelcast.nio.serialization.HazelcastSerializationException;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.eventbus.ResultMessage;
 import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -40,6 +41,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	protected Map<String, String> sessions;
 	protected Map<String, List<LoginInfo>> logins;
+	protected Map<String, Long> inactivity;
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 	private static final String SESSIONS_COLLECTION = "sessions";
@@ -72,9 +74,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
+			if (config.getBoolean("inactivy", false)) {
+				inactivity = cm.getSyncMap("inactivity");
+			}
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
+			if (config.getBoolean("inactivy", false)) {
+				inactivity = new HashMap<>();
+			}
 		}
 		final String address = getOptionalStringConfig("address", "wse.session");
 		Number timeout = config.getNumber("session_timeout");
@@ -302,6 +310,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			});
 		} else {
 			sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+			if (inactivity != null) {
+				Long timer = inactivity.get(sessionId);
+				String userId = sessions.get(sessionId);
+				if (timer != null && userId != null) {
+					vertx.cancelTimer(timer);
+					setTimer(userId, sessionId);
+				}
+			}
 		}
 	}
 
@@ -335,12 +351,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
-					long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
-						public void handle(Long timerId) {
-							logins.remove(userId);
-							sessions.remove(sessionId);
-						}
-					});
+					long timerId = setTimer(userId, sessionId);
+
 					try {
 						sessions.put(sessionId, infos.encode());
 						addLoginInfo(userId, timerId, sessionId);
@@ -374,6 +386,24 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		});
+	}
+
+	protected long setTimer(final String userId, final String sessionId) {
+		Long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
+							public void handle(Long timerId) {
+								if (inactivity != null) {
+									inactivity.remove(sessionId);
+									dropSession(new ResultMessage(), sessionId, null);
+								} else {
+									logins.remove(userId);
+									sessions.remove(sessionId);
+								}
+							}
+						});
+		if (inactivity != null) {
+			inactivity.put(sessionId, timerId);
+		}
+		return timerId;
 	}
 
 	private void addLoginInfo(String userId, long timerId, String sessionId) {
@@ -431,7 +461,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if (config.getBoolean("slo", false)) {
 					eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
 				}
-				if (info != null) {
+				Long timerId;
+				if (inactivity != null && (timerId = inactivity.remove(sessionId)) != null) {
+					vertx.cancelTimer(timerId);
+				} else if (info != null) {
 					vertx.cancelTimer(info.timerId);
 				}
 			}
