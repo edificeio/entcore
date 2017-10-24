@@ -60,7 +60,7 @@ public class FrEduVecteurService implements SamlVectorService {
                                 // Get parent vectors for saml response : '2|'+u.lastName+'|'+u.firstName+'|'+ child.externalId+'|'+s.UAI"
                                 String query = "MATCH (child: User)-[:RELATED]->u-[:IN]->()-[:DEPENDS]->(s:Structure) " +
                                         "WHERE u.id = {userId} " +
-                                        "RETURN '2|'+u.lastName+'|'+u.firstName+'|'+ child.attachmentId+'|'+s.UAI as FrEduVecteur";
+                                        "RETURN DISTINCT '2|'+u.lastName+'|'+u.firstName+'|'+ child.attachmentId+'|'+s.UAI as FrEduVecteur";
 
                                 neo4j.execute(query, new JsonObject().putString("userId", userId), validResultHandler(handler));
                             } else {
