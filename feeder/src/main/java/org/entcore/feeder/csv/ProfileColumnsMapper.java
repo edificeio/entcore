@@ -223,6 +223,7 @@ public class ProfileColumnsMapper {
 							.put("childexternalid", "childExternalId")
 							.put("importid", "importId");
 					for (String attr : m.fieldNames()) {
+
 						j.put(cleanKey(attr), m.getString(attr));
 					}
 					profilesNamesMapping.put(profile, j.getMap());

@@ -207,7 +207,7 @@ public class DefaultImportService implements ImportService {
 
 	public void findById(String importId, Handler<Either<String,JsonObject>> handler) {
 		mongo.findOne("imports",
-				new JsonObject().putString("_id", importId),
+				new JsonObject().put("_id", importId),
 				MongoDbResult.validActionResultHandler(handler));
 	}
 

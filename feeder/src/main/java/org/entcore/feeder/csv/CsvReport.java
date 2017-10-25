@@ -233,6 +233,14 @@ public class CsvReport extends Report {
 				.put("softErrors", new JsonObject());
 	}
 
+	protected void setSeed(long seed) {
+		result.put("seed", seed);
+	}
+
+	protected Long getSeed() {
+		return result.getLong("seed", new Random().nextLong());
+	}
+
 //	protected void setStructureExternalIdIfAbsent(String structureExternalId) {
 //		if (isEmpty(result.getString("structureExternalId"))) {
 //			result.putString("structureExternalId", structureExternalId);
