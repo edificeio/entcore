@@ -477,12 +477,19 @@ public class DefaultUserService implements UserService {
 		}
 
 		query.append(", cpg<-[:IN]-(u:User) ")
-				.append(filter)
-				.append("RETURN DISTINCT ");
+				.append(filter);
+
+		if (fields.contains("administrativeStructure")) {
+			query.append("OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->sa ");
+		}
+
+		query.append("RETURN DISTINCT ");
 
 		for (Object field : fields) {
 			if ("type".equals(field) || "profile".equals(field)) {
 				query.append(" HEAD(u.profiles)");
+			} else if ("administrativeStructure".equals(field)) {
+				query.append(" sa.externalId ");
 			} else {
 				query.append(" u.").append(field);
 			}
