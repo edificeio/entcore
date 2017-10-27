@@ -7,7 +7,7 @@ import { StructureModel } from '../../core/store'
 @Component({
     selector: 'export',
     template: `
-  	<h4><span><i class="fa fa-wrench"></i> Configuration de l'export </span></h4>
+  	<h4><span><i class="fa fa-wrench"></i><s5l>export.configuration</s5l></span></h4>
 
 
     <div class="row">
@@ -20,7 +20,7 @@ import { StructureModel } from '../../core/store'
          <option *ngFor="let c of structure.classes | orderBy: ['+name']" [ngValue]="c.id"><s5l>{{ c.name }}</s5l></option>
      </select>
     </form-field>
-    <form-field label="Profile">
+    <form-field label="profile">
     <select class="three cell row-item" [(ngModel)]="profile" name="profile">
         <option value="">
             <s5l>all</s5l>
@@ -42,7 +42,7 @@ import { StructureModel } from '../../core/store'
         </option>
     </select>
     </form-field>
-    <form-field label="Filtre">
+    <form-field label="filter">
     <select class="three cell" [(ngModel)]="filter" name="filter">
         <option value=""><s5l>ignore.activation</s5l></option>
         <option value="active"><s5l>users.activated</s5l></option>
@@ -86,14 +86,13 @@ export class ExportComponent implements OnInit{
     }
 
     launchExport(): void{
-        let link = 'directory/export/users?format=csv&filterActive='+ this.filter;
+        let link = `directory/export/users?format=csv&filterActive=${this.filter}`;
         if(this.classe.length > 0)
-            link = link + '&classId=' + this.classe;
+            link = `${link}&classId=${this.classe}`;
         else
-            link = link + '&structureId=' + this.structure._id;
+            link = `${link}&structureId=${this.structure._id}`;
         if(this.profile.length > 0)
-            link = link + '&profile=' + this.profile;
+            link = `${link}&profile=${this.profile}`;
         window.open(link, '_blank');
-
     }
 }

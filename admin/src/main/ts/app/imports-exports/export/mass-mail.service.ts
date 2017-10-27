@@ -8,7 +8,7 @@ export class MassMailService {
     static async getList(structureId): Promise<any> {
         let response;
         try {
-            response = await http.get('directory/structure/'+structureId+'/massMail/allUsers');
+            response = await http.get(`directory/structure/${structureId}/massMail/allUsers`);
         }catch(error){
             return error.response.data
         }
@@ -21,12 +21,12 @@ export class MassMailService {
     static async massMailProcess(structureId, type, filters){
         let response;
         try{
-            response = await http.get('directory/structure/'+structureId+'/massMail/process/'+type, {
+            response = await http.get(`directory/structure/${structureId}/massMail/process/${type}`, {
                 params: filters,
                 paramsSerializer: function(params) {
                 return qs.stringify(params, {arrayFormat: 'repeat'})
-        },
-                responseType: 'blob'
+        },     
+        responseType: 'blob'
             });
         }catch(error){
             return error.response.data

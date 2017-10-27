@@ -129,7 +129,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
         private ns: NotifyService,
         private spinner: SpinnerService,
     ) { }
-    sortObject = {lastName: String, firstName: String, classesStr: String};
+    sortObject = {lastName: '', firstName: '', classesStr: ''};
     dataSubscriber: Subscription
     routerSubscriber: Subscription
     countUsers = 0;
@@ -219,26 +219,24 @@ export class MassMailComponent implements OnInit, OnDestroy {
             c: outputModels['classes'].map(c => c.id),
             a: 'all'
         }
+        let blob;
         if (outputModels['email'].length == 1) {
             params.mail = outputModels['email'][0].indexOf('users.with.mail') >= 0;
         }
-        console.log(params)
         if (outputModels['code'].length == 1) {
-            
             params.a = outputModels['code'][0].indexOf('users.activated') >= 0;
-            
         }
        try {
            blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));
        } catch (error) {
-           this.ns.error(this.translate("massmail.error"), "error", error);
+           this.ns.error("massmail.error", "error", error);
            return
        }
        if (type.indexOf("pdf") > -1) {
           this.ajaxDownload(blob, this.translate("massmail.filename") + ".pdf");
-          this.ns.success(this.translate("massmail.pdf.done"));
+          this.ns.success("massmail.pdf.done");
        } else {
-          this.ns.success(this.translate("massmail.mail.done"));
+          this.ns.success("massmail.mail.done");
        }
     }
 
