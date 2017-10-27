@@ -459,7 +459,9 @@ public class UserController extends BaseController {
 		final List<String> structures = request.params().getAll("uai");
 
 		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
-
+		if ("true".equalsIgnoreCase(request.params().get("administrativeStructure"))) {
+			fields.add("administrativeStructure");
+		}
 		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
 
 		boolean isExportFull = false;

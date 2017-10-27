@@ -145,6 +145,7 @@ public class Users {
 			"displayName",
 			"profiles",
 			"structures",
+			"administrativeStructure"
 	})
 	public static class User {
 
@@ -173,6 +174,8 @@ public class Users {
 		protected String profiles;
 		@XmlElement(required = false)
 		protected String structures;
+		@XmlElement(required = false)
+		protected String administrativeStructure;
 
 		/**
 		 * Gets the value of the externalId property.
@@ -332,6 +335,14 @@ public class Users {
 
 		public void setStructures(String structures) {
 			this.structures = structures;
+		}
+
+		public String getAdministrativeStructure() {
+			return administrativeStructure;
+		}
+
+		public void setAdministrativeStructure(String administrativeStructure) {
+			this.administrativeStructure = administrativeStructure;
 		}
 
 	}
