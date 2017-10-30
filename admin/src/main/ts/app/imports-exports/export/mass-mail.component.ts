@@ -42,23 +42,22 @@ import { FilterPipe } from 'infra-components'
                     </div>
                 </div>
             </div>
-
             </div>
             </div>
-            <div side-companion class="padded">
-                <a>Lancer le publipostage : </a>
+            <div side-card class="padded">
+                <div style="text-align: center">
+                    <div >{{countUsers}} <s5l>massmail.users.total</s5l></div>
+                    <div >{{countUsersWithoutMail}} <s5l>massmail.users.nomail</s5l></div>
+                </div>
+                    <a><s5l>process.massmail</s5l> : </a>
                 <button class="cell" (click)="processMassMail('pdf')">
                     <s5l>massmail.pdf</s5l>
                 </button>
                 <button class="cell" (click)="processMassMail('mail')">
                     <s5l>massmail.mail</s5l>
                 </button>
-                <div style="text-align: center">
-                    <div >{{countUsers}} <s5l>massmail.users.total</s5l></div>
-                    <div >{{countUsersWithoutMail}} <s5l>massmail.users.nomail</s5l></div>
-                </div>
             </div>
-            <div side-companion>
+            <div side-card>
             
             <hr>
             
@@ -141,6 +140,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     addFilter = false;
     downloadAnchor = null;
     downloadObjectUrl = null;
+    show: boolean = false;
 
     translate = (...args) => { return (<any>this.bundles.translate)(...args) }
 

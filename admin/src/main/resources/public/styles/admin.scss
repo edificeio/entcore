@@ -1522,6 +1522,12 @@ mass-mail{
     .padded{
         padding: 15px
     }
+    div.side-card{
+        flex: 100% !important;
+    }
+    table{
+        width: 100%;
+    }
     td {
         padding: 5px;
         border-bottom:1px solid grey;
@@ -1531,11 +1537,36 @@ mass-mail{
     }
     tr {
         &:hover {
-            background-color: $main-lighter;
+            cursor: pointer;
         }
     }
-    th {
 
+    .filters {
+        & > i {
+            font-size: 1.5em;
+            
+            &:hover {
+                cursor: pointer;
+                color: $accent;
+            }
+        }
+
+        & > div {
+            position: absolute;
+            z-index: 2;
+            border: 1px solid $main;
+            background: white;
+            padding: 15px 15px;
+            min-width: 550px;
+            box-shadow: 0px 0px 20px #AAA;
+        }
+    }
+    .close{
+        display: flex; 
+        justify-content: flex-end;
+        &:hover {
+           cursor: pointer;
+        }
     }
 }
 
