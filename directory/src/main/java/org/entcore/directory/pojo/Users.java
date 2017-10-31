@@ -122,6 +122,7 @@ public class Users {
 	 *         &lt;element name="functions" type="{http://www.w3.org/2001/XMLSchema}string[]"/>
 	 *         &lt;element name="displayName" type="{http://www.w3.org/2001/XMLSchema}string"/>
 	 *         &lt;element name="profiles" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="classes" type="{http://www.w3.org/2001/XMLSchema}string[]"/>
 	 *         &lt;element name="structures" type="{http://www.w3.org/2001/XMLSchema}string"/>
 	 *       &lt;/sequence>
 	 *     &lt;/restriction>
@@ -144,6 +145,7 @@ public class Users {
 			"functions",
 			"displayName",
 			"profiles",
+			"classes",
 			"structures",
 			"administrativeStructure"
 	})
@@ -172,6 +174,9 @@ public class Users {
 		protected String displayName;
 		@XmlElement(required = false)
 		protected String profiles;
+		@XmlElementWrapper(name="classes")
+		@XmlElement(name="classe", required = false)
+		protected List<String> classes;
 		@XmlElement(required = false)
 		protected String structures;
 		@XmlElement(required = false)
@@ -329,6 +334,13 @@ public class Users {
 			this.profiles = profiles;
 		}
 
+		public List<String> getclasses() {
+			return classes;
+		}
+
+		public void setClasses(List<String> classes) {
+			this.classes = classes;
+		}
 		public String getStructures() {
 			return structures;
 		}
