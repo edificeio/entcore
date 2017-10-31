@@ -46,6 +46,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DuplicateUsers {
 
 	private static final Logger log = LoggerFactory.getLogger(DuplicateUsers.class);
+	private static final String INCREMENT_RELATIVE_SCORE =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}), " +
+			"(u1)-[:RELATED]->()-[rp:DUPLICATE]-()<-[:RELATED]-(u2) " +
+			"SET rp.score = rp.score + 1 ";
 	private static final String SIMPLE_MERGE_QUERY =
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
@@ -310,21 +314,29 @@ public class DuplicateUsers {
 			return;
 		}
 		if (tx != null) {
+			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params);
 			message.reply(new JsonObject().putString("status", "ok"));
 		} else {
-			TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						log.info("Merge duplicates : " + r.encode());
-						if (updateCourses) {
-							AbstractTimetableImporter.updateMergedUsers(event.body().getArray("result"));
+			try {
+				TransactionHelper txl = TransactionManager.getTransaction();
+				txl.add(INCREMENT_RELATIVE_SCORE, params);
+				txl.add(query, params);
+				txl.commit(new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if ("ok".equals(event.body().getString("status"))) {
+						  log.info("Merge duplicates : " + r.encode());
+							if (updateCourses) {
+								AbstractTimetableImporter.updateMergedUsers(event.body().getArray("results"));
+							}
 						}
+						message.reply(event.body());
 					}
-					message.reply(event.body());
-				}
-			});
+				});
+			} catch (TransactionException e) {
+				message.reply(error.putString("message", "invalid.transaction"));
+			}
 		}
 	}
 
