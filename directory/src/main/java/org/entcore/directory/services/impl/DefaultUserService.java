@@ -500,7 +500,8 @@ public class DefaultUserService implements UserService {
 		//Full Export : profiles and Structure
 		if(isExportFull){
 			query.append(", p.name as profiles");
-			query.append(", s.externalId as structures");
+			query.append(", s.externalId as structures")
+					.append(" , CASE WHEN size(u.classes) > 0  THEN  last(collect(u.classes)) END as classes");
 		}
 
 		neo.execute(query.toString(), params, validResultHandler(results));
