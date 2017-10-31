@@ -472,15 +472,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static void updateMergedUsers(JsonArray mergedUsers) {
 		if (mergedUsers == null) return;
 		long now = System.currentTimeMillis();
-		for (Object o: mergedUsers) {
-			if (o instanceof JsonObject) {
-				final JsonObject j = (JsonObject) o;
-				updateMergedUsers(j, now);
-			} else if (o instanceof JsonArray) {
-				final JsonArray a = (JsonArray) o;
-				if (a.size() > 0) {
-					updateMergedUsers(a.<JsonObject>get(0), now);
-				}
+		for (int i=1; i < mergedUsers.size(); i+=2) {
+			final JsonArray a = mergedUsers.get(i);
+			if (a.size() > 0) {
+				updateMergedUsers(a.<JsonObject>get(0), now);
 			}
 		}
 	}
