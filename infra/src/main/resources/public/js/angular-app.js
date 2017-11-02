@@ -893,7 +893,7 @@ module.directive('scheduleItem', function($compile) {
         link: function(scope, element, attributes) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
-            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || !scope.item.myRights.process || moment().diff(moment(scope.item.end_date)) > 0) {
+            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || !scope.item.myRights.process || moment().diff(moment(scope.item.end_date)) > 0 || scope.item.parent_booking_id != null) {
                 scheduleItemEl.removeAttr('resizable');
                 scheduleItemEl.removeAttr('draggable');
                 scheduleItemEl.unbind('mouseover');
