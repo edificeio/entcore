@@ -504,6 +504,13 @@ public class UserController extends BaseController {
 		}
 	}
 
+	@Post("/duplicate/generate/mergeKey/:userId")
+	@ResourceFilter(AdmlOfUser.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void generateMergeKeyByAdml(final HttpServerRequest request) {
+		userService.generateMergeKey(request.params().get("userId"), notEmptyResponseHandler(request));
+	}
+
 	@Get("/duplicate/user/mergeKey")
 	@SecuredAction("user.generate.merge.key")
 	public void generateMergeKey(final HttpServerRequest request) {
