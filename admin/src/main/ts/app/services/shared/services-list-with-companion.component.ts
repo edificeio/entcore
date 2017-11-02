@@ -39,10 +39,22 @@ import { ServicesStore } from '../services.store';
 })
 export class ServicesListWithCompanionComponent implements AfterViewInit {
     
-
     /* Store pipe */
     self = this;
     _storedElements = [];
+
+    private filteredApps = [
+        "Auth",
+        "Cas",
+        "Communication",
+        "Directory",
+        "Eliot",
+        "FakeSSO",
+        "Portal",
+        "RSS",
+        "Timeline",
+        "Xiti"
+    ];
 
     constructor(
         public cdRef: ChangeDetectorRef,
@@ -90,8 +102,10 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
             throw new Error('Input property serviceName  is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
         }
         this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
-            if(data[this.serviceName]) {
-                this.collectionRef[this.serviceName].collection = data[this.serviceName];
+            if(data[this.collectionRef[this.serviceName].routeData]) {
+                this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
+                    .filter(app => this.filteredApps.indexOf(app.name) < 0
+                );
                 this.cdRef.markForCheck();
             }
         })
