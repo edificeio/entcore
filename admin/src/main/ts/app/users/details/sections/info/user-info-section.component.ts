@@ -23,6 +23,15 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
         <form-field label="source">
             <span>{{ details.source }}</span>
         </form-field>
+        <form-field label="mergeKey">
+            <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
+            <button class= "noflex"
+                *ngIf="!details.mergeKey"
+                (click)="generateMergeKey()">
+                <s5l>generate</s5l>
+                <i class="fa fa-cog"></i>
+            </button>
+        </form-field>
         <form-field label="administration" *ngIf="!user.deleteDate">
             <button class= "noflex"
                 *ngIf="!details.isAdml(this.structure.id)" 
@@ -177,6 +186,10 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                         }
                     }, 'notify.user.sendResetPassword.mobile.error.title', err)
             })
+    }
+
+    generateMergeKey() {
+        this.spinner.perform('portal-content', this.details.generateMergeKey())
     }
 
     getStructures(fn) {

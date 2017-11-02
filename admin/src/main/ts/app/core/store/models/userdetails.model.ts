@@ -34,6 +34,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     functionalGroups?: GroupModel[]
     manualGroups?: GroupModel[]
     administrativeStructures?: Array<string>
+    mergeKey?: string
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
@@ -100,6 +101,12 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             && this.functions[0] && this.functions[0].length > 0 
             && this.functions[0][0] === 'ADMIN_LOCAL'
             && this.functions[0][1].includes(structureId)
+    }
+
+    generateMergeKey() {
+    return this.http.post(`/directory/duplicate/generate/mergeKey/${this.id}`, {}).then((res) => {
+            this.mergeKey = res.data.mergeKey
+        });
     }
 
     toJSON() {

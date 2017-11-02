@@ -241,5 +241,7 @@
     "applications.groups.functional": "Groupes d'enseignement",
     "applications.groups.manual": "Groupes manuels",
     "users.with.mail": "Utilisateur avec courriel",
-    "users.without.mail": "Utilisateur sans courriel"
+    "users.without.mail": "Utilisateur sans courriel",
+    "mergeKey": "Clé de fusion",
+    "generate" : "Générer"
 }
