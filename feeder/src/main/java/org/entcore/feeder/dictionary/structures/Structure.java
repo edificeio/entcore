@@ -45,7 +45,7 @@ public class Structure {
 	protected final Importer importer = Importer.getInstance();
 	protected JsonObject struct;
 	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
-	protected final Set<String> functionalGroups = Collections.synchronizedSet(new HashSet<String>());
+	protected final Set<String> groups = Collections.synchronizedSet(new HashSet<String>());
 	private transient String overrideClass;
 
 	public Structure(JsonObject struct) {
@@ -57,7 +57,7 @@ public class Structure {
 		if (groups != null) {
 			for (Object o : groups) {
 				if (!(o instanceof String)) continue;
-				functionalGroups.add((String) o);
+				this.groups.add((String) o);
 			}
 		}
 		if (classes != null) {
@@ -174,7 +174,7 @@ public class Structure {
 	}
 
 	public void createFunctionalGroupIfAbsent(String groupExternalId, String name) {
-		if (functionalGroups.add(groupExternalId)) {
+		if (groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
@@ -186,6 +186,25 @@ public class Structure {
 							.put("id", UUID.randomUUID().toString())
 							.put("displayNameSearchField", Validator.sanitize(name))
 							.put("name", name)
+					);
+			getTransaction().add(query, params);
+		}
+	}
+
+	public void createFunctionGroupIfAbsent(String groupExternalId, String name) {
+		if (groups.add(groupExternalId)) {
+			String query =
+					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
+					"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
+					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup {props}) ";
+			JsonObject params = new JsonObject()
+					.put("structureExternalId", externalId)
+					.put("props", new JsonObject()
+									.put("externalId", groupExternalId)
+									.put("id", UUID.randomUUID().toString())
+									.put("displayNameSearchField", Validator.sanitize(name))
+									.put("structureName", struct.getString("name"))
+									.put("name", name)
 					);
 			getTransaction().add(query, params);
 		}
