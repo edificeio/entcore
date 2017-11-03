@@ -299,6 +299,10 @@ public class FileStorage implements Storage {
 		final AtomicInteger count = new AtomicInteger(ids.size());
 		final JsonArray errors = new JsonArray();
 		for (final Object o: ids) {
+			if (o == null) {
+				decrementRemove(count, errors, handler, res);
+				continue;
+			}
 			try {
 				final String path = getPath(o.toString());
 				fs.delete(path, new AsyncResultHandler<Void>() {
