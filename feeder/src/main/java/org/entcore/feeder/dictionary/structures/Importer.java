@@ -696,9 +696,9 @@ public class Importer {
 	}
 
 	public void removeOldFunctionalGroup() {
-		transactionHelper.add("MATCH (g:FunctionalGroup) set g.notEmptyGroup = false;", null);
-		transactionHelper.add("MATCH (g:FunctionalGroup)<-[:IN]-(:User) set g.notEmptyGroup = true;", null);
-		transactionHelper.add("MATCH (g:FunctionalGroup {notEmptyGroup:false}) detach delete g;", null);
+		transactionHelper.add("MATCH (g:Group) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] set g.notEmptyGroup = false;", null);
+		transactionHelper.add("MATCH (g:Group)<-[:IN]-(:User) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] set g.notEmptyGroup = true;", null);
+		transactionHelper.add("MATCH (g:Group {notEmptyGroup:false}) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] detach delete g;", null);
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User) " +

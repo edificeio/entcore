@@ -56,7 +56,8 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 	@Override
 	public void process(JsonObject object) {
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<String>();
-		String[][] groups = createGroups(object.getJsonArray("groups"), c);
+		final List<String[]> groups = new ArrayList<>();
+		createGroups(object.getJsonArray("groups"), c, groups);
 		String[][] classes = createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		JsonArray functions = object.getJsonArray("functions");
 		JsonArray structuresByFunctions = null;
@@ -68,8 +69,9 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 			}
 			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
 		}
+		createFunctionGroups(object.getJsonArray("functions"), groups);
 		importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,
-				classes, groups, false, true);
+				classes, groups.toArray(new String[][]{}), false, true);
 	}
 
 }

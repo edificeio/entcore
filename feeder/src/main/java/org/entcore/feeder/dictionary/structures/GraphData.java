@@ -40,7 +40,7 @@ public class GraphData {
 	static void loadData(final Neo4j neo4j, final Handler<Message<JsonObject>> handler) {
 		String query =
 				"MATCH (s:Structure) " +
-				"OPTIONAL MATCH s<-[:DEPENDS]-(g:FunctionalGroup) " +
+				"OPTIONAL MATCH s<-[:DEPENDS]-(g:Group) " +
 				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class) " +
 				"return s, collect(distinct g.externalId) as groups, collect(distinct c.externalId) as classes ";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
