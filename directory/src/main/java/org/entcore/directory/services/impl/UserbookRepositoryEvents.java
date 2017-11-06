@@ -49,11 +49,11 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 		String query =
 				"MATCH (u:UserBook)-[r]-(n) " +
 				"WHERE (n:Hobby OR n:UserBook) AND NOT(u<--(:User)) " +
-				"DELETE u, r, n";
+				"DETACH DELETE u, r, n";
 		StatementsBuilder b = new StatementsBuilder().add(query);
 		query = "MATCH (p:UserAppConf) " +
 				"WHERE NOT(p<--(:User)) " +
-				"DELETE p";
+				"DETACH DELETE p";
 		b.add(query);
 		Neo4j.getInstance().executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override

@@ -26,6 +26,7 @@ import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -44,32 +45,71 @@ public class User {
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 		private final long delay;
 		private final EventBus eb;
+		private final Vertx vertx;
 		private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
+		private static final int LIMIT = 1000;
+		private int page;
 
-		public DeleteTask(long delay, EventBus eb) {
+		public DeleteTask(long delay, EventBus eb, Vertx vertx) {
 			this.delay = delay;
 			this.eb = eb;
+			this.vertx = vertx;
 		}
 
 		@Override
 		public void handle(Long event) {
 			log.info("Execute task delete user.");
+			page = 1;
+			delete();
+		}
+
+		protected void delete() {
 			try {
 				TransactionHelper tx = TransactionManager.getInstance().begin();
-				User.delete(delay, tx);
+				User.getDelete(delay, LIMIT, tx);
 				tx.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
 						JsonArray results = m.body().getArray("results");
 						if ("ok".equals(m.body().getString("status")) && results != null) {
-							JsonArray r = results.get(0);
+							final JsonArray r = results.get(0);
 							if (r != null && r.size() > 0) {
-								log.info("Delete users : " + r.encode());
-								eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
-										.putString("action", "delete-users")
-										.putArray("old-users", r));
-								eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
-										(UserInfos) null, new JsonObject().putArray("old-users", r));
+								final JsonArray deleteUsers = new JsonArray();
+								for (Object o : r) {
+									if (!(o instanceof JsonObject)) continue;
+									deleteUsers.addString(((JsonObject) o).getString("id"));
+								}
+								try {
+									TransactionHelper tx = TransactionManager.getInstance().begin();
+									User.delete(deleteUsers, tx);
+									tx.commit(new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> m2) {
+											if ("ok".equals(m2.body().getString("status"))) {
+												log.info("Delete users : " + r.encode());
+												eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+														.putString("action", "delete-users")
+														.putArray("old-users", r));
+												eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
+														(UserInfos) null, new JsonObject().putArray("old-users", r));
+												if (r.size() == LIMIT) {
+													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
+														@Override
+														public void handle(Long event) {
+															log.info("Delete page " + ++page);
+															delete();
+														}
+													});
+												}
+											} else {
+												log.error("Error deleting user : " + m2.body().getString("message"));
+											}
+										}
+									});
+								} catch (Exception e) {
+									log.error("Delete task error");
+									log.error(e.getMessage(), e);
+								}
 							} else if (r == null) {
 								log.error("User delete task return null array.");
 							}
@@ -276,8 +316,10 @@ public class User {
 		transaction.add(query, params);
 	}
 
-	public static void delete(long delay, TransactionHelper transactionHelper) {
-		JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+	public static void getDelete(long delay, int limit, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.putNumber("date", System.currentTimeMillis() - delay)
+				.putNumber("limit", limit);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
@@ -287,15 +329,20 @@ public class User {
 				"WHERE c.externalId IN u.classes " +
 				"OPTIONAL MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.structures " +
-				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, u.externalId as externalId, u.displayName as displayName, " +
+				"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, u.externalId as externalId, u.displayName as displayName, " +
 				"HEAD(u.profiles) as type, " +
 				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
 				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
-				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds";
+				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds " +
+				"LIMIT {limit} ";
 		transactionHelper.add(query, params);
-		query =
+	}
+
+	public static void delete(JsonArray deleteUsers, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject().putArray("deleteUsers", deleteUsers);
+		final String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"WHERE u.id IN {deleteUsers} " +
 				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"OPTIONAL MATCH u-[r]-() " +
 				"DELETE u,b,r,rb ";

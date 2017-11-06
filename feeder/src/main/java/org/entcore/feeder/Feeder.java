@@ -96,7 +96,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final JsonObject imports = container.config().getObject("imports");
 		final JsonObject preDelete = container.config().getObject("pre-delete");
 		try {
-			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
+			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx));
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.getFieldNames())) {
