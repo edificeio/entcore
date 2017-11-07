@@ -9,14 +9,14 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     selector: 'services-role',
     template: `
         <panel-section section-title="{{ role.name }}" *ngIf="role.transverse == false">
-            <button (click)="openLightbox.emit(role)">
+            <!--<button (click)="openLightbox.emit(role)">
                 {{ 'add.groups' | translate }}
                 <i class="fa fa-plus"></i>
-            </button>
+            </button>-->
             <div class="flex-container">
                 <div *ngFor="let group of role.groups" class="flex-item">
                     <label>{{ group.name }}</label>
-                    <i class="fa fa-times action" (click)="onRemove.emit(group)"></i>
+                    <!--<i class="fa fa-times action" (click)="onRemove.emit(group)"></i>-->
                 </div>
             </div>
         </panel-section>
