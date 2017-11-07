@@ -174,8 +174,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					String serviceProvider = message.body().getString("SP");
 					String userId = message.body().getString("userId");
 					String nameid = message.body().getString("nameid");
+					String host = message.body().getString("host");
 					spSSODescriptor = getSSODescriptor(serviceProvider);
-					generateSAMLResponse(serviceProvider, userId, nameid, message);
+					generateSAMLResponse(serviceProvider, userId, nameid,host, message);
 					break;
 				case "validate-signature":
 					sendOK(message, new JsonObject().putBoolean("valid", validateSignature(response)));
@@ -221,7 +222,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws UnsupportedEncodingException
 	 * @throws MarshallingException
 	 */
-	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId, final Message<JsonObject> message)
+	public void generateSAMLResponse(final String serviceProvider, final String userId, final String nameId, final String host, final Message<JsonObject> message)
 			throws SignatureException, NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
 		logger.info("start generating SAMLResponse");
 		logger.info("SP : " + serviceProvider);
@@ -257,11 +258,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		}
 
 		// --- TAG AttributeStatement ---
-		createVectors(userId, new Handler<Either<String, JsonArray>>() {
+		createVectors(userId,host, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isRight()) {
-					HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+					LinkedHashMap<String, List<String>> attributes = new LinkedHashMap<String, List<String>>();
 
 					JsonArray vectors = event.right().getValue();
 					if(vectors == null || vectors.size() == 0) {
@@ -269,12 +270,22 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 						logger.error(error);
 						sendError(message, error);
 					}else {
-						String vectorType = ((JsonObject) vectors.get(0)).getFieldNames().iterator().next();
-						List<String> vectorsValue = new ArrayList<>();
-						for (Object vector : vectors) {
-							vectorsValue.add(((JsonObject) vector).getString(vectorType));
+
+						for ( int i =0 ; i < vectors.size() ; i++ ) {
+							List<String> vectorsValue = new ArrayList<>();
+							String vectorType = "";
+
+							JsonObject vectorsJsonObject = ((JsonObject) vectors.get(i));
+
+							for (Iterator<String> iter = ((JsonObject) vectors.get(i)).getFieldNames().iterator(); iter.hasNext(); ) {
+								vectorType = iter.next();
+								if(attributes.containsKey(vectorType)){
+									vectorsValue = attributes.get(vectorType);
+								}
+								vectorsValue.add(((JsonObject) vectorsJsonObject).getString(vectorType));
+							}
+							attributes.put(vectorType, vectorsValue);
 						}
-						attributes.put(vectorType, vectorsValue);
 					}
 
 					AttributeStatement attributeStatement = createAttributeStatement(attributes);
@@ -501,26 +512,54 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @param userId userId neo4j
 	 * @param handler handler containing results
 	 */
-	private void createVectors(String userId, final Handler<Either<String, JsonArray>> handler) {
+	private void createVectors(String userId,final String host, final Handler<Either<String, JsonArray>> handler) {
 		debug("create user Vector(s)");
 		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
-
-		// browse supported type vector by the service provider
-		for (AttributeConsumingService attributeConsumingService : spSSODescriptor.getAttributeConsumingServices()) {
+		final JsonArray jsonArrayResult = new JsonArray();
+		// browse supported type vector required by the service provider
+		for (final AttributeConsumingService attributeConsumingService : spSSODescriptor.getAttributeConsumingServices()) {
 			for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
 				String vectorName = requestedAttribute.getName();
 				if(vectorName.equals("FrEduVecteur")) {
 					samlVectorService = new FrEduVecteurService(neo4j);
-					samlVectorService.getVectors(userId, handler);
+					samlVectorService.getVectors(userId, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> stringJsonArrayEither) {
+							if(stringJsonArrayEither.isRight()){
+								JsonArray jsonArrayResultTemp = ((JsonArray)stringJsonArrayEither.right().getValue());
+								for (int i =0 ; i<jsonArrayResultTemp.size();i++){
+									jsonArrayResult.add(jsonArrayResultTemp.get(i));
+								}
+								// add FrEduUrlRetour vector
+								for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
+									String vectorName = requestedAttribute.getName();
+									if(vectorName.equals("FrEduUrlRetour")) {
+										JsonObject vectorRetour = new JsonObject().putString("FrEduUrlRetour",host);
+										jsonArrayResult.add(vectorRetour);
+									}
+								}
+								handler.handle(new Either.Right<String, JsonArray>(jsonArrayResult));
+							}
 
+						}
+					});
+
+				} else if(requestedAttribute.isRequired() && vectorName.equals("FrEduUrlRetour")) {
+					String error = "vector "+vectorName+" not implemented yet";
+					logger.error(error);
+					handler.handle(new Either.Left<String, JsonArray>(error));
 				} else if(vectorName.equals("mail")) {
 					String error = "vector "+vectorName+" not implemented yet";
 					logger.error(error);
 					handler.handle(new Either.Left<String, JsonArray>(error));
 				} else {
-					String error = "vector "+vectorName+" not supported for user " + userId;
-					logger.error(error);
-					handler.handle(new Either.Left<String, JsonArray>(error));
+					if(requestedAttribute.isRequired()) {
+						String error = "vector " + vectorName + " not supported for user " + userId;
+						logger.error(error);
+						handler.handle(new Either.Left<String, JsonArray>(error));
+					}else{
+						logger.debug("vector " + vectorName + " don't have to be supported.");
+					}
 				}
 			}
 		}

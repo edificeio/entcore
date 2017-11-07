@@ -221,7 +221,8 @@ public class SamlController extends AbstractFederateController {
 						.putString("action", "generate-saml-response")
 						.putString("SP", serviceProviderId)
 						.putString("userId", user.getUserId())
-						.putString("nameid", sessionId);
+						.putString("nameid", sessionId)
+						.putString("host", getScheme(request) + "://" + getHost(request));
 				vertx.eventBus().send("saml", event, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
