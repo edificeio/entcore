@@ -1,4 +1,4 @@
-import { ng, notify, idiom as lang, template, skin, workspace, $, _ } from 'entcore';
+import { ng, notify, idiom as lang, template, skin, Document, $, _ } from 'entcore';
 import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from './model';
 
 export let conversationController = ng.controller('ConversationController', [
