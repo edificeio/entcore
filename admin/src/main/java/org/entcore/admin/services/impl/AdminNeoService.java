@@ -42,7 +42,7 @@ public class AdminNeoService implements AdminService {
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
-			"u.source as source, u.deleteDate as deleteDate, u.blocked as blocked," +
+			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked," +
 			"EXTRACT(function IN u.functions | last(split(function, \"$\"))) as aafFunctions," +
 			"CASE WHEN class IS NULL THEN [] " +
 			"ELSE COLLECT(distinct {id: class.id, name: class.name}) END as classes," +
@@ -61,7 +61,7 @@ public class AdminNeoService implements AdminService {
 			"WHERE s.id IN b.structureIds " +
 			"WITH u, b, s " +
 			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, " +
-			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.blocked as blocked, " +
+			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, " +
 			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as duplicates, " +
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";
