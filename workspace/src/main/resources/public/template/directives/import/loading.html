@@ -28,7 +28,7 @@
                 >
                     <div class="cell icon">
                         <i class="[[doc.role()]]"></i>
-                        <i class="edit"></i>
+                        <i class="edit" ng-if="doc.isEditableImage && doc.status === 'loaded'"></i>
                     </div>
                     <div class="title">[[doc.title]]</div>
                     <div class="right-magnet size">

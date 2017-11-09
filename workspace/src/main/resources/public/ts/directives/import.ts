@@ -98,6 +98,20 @@ export const importFiles = ng.directive('importFiles', () => {
 				scope.importFiles(e.originalEvent.dataTransfer.files);
 				scope.$apply();
             });
+
+            scope.abortOrDelete = (doc: Document) => {
+				if(doc.status === DocumentStatus.loaded){
+					doc.delete();
+				}
+				if(doc.status === DocumentStatus.loading){
+					doc.abort();
+				}
+				const index = scope.upload.documents.indexOf(doc);
+				scope.upload.documents.splice(index, 1);
+				if(!scope.upload.documents.length){
+					template.open('import', 'directives/import/upload');
+				}
+			};
             
             const cancelAll = async () => {
                 template.open('import', 'directives/import/upload');
