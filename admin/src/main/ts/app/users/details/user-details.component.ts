@@ -1,7 +1,7 @@
 import { Component, Input, Output, ViewChild, ChangeDetectorRef, 
     ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
 import { AbstractControl, NgForm } from '@angular/forms'
-import { ActivatedRoute, Data, Router } from '@angular/router'
+import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 
 import { SpinnerService, NotifyService } from '../../core/services'
@@ -182,7 +182,8 @@ export class UserDetails implements OnInit, OnDestroy{
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
-        private router: Router){}
+        private router: Router
+    ){}
 
     ngOnInit() {
         this.dataSubscriber = this.usersStore.onchange.subscribe(field => {
@@ -207,6 +208,13 @@ export class UserDetails implements OnInit, OnDestroy{
             this.usersStore.user = data['user']
             this.cdRef.markForCheck()
         })
+        //Scroll top in case of details switching, see comments on CAV2 #280
+        this.router.events.subscribe((evt) => {
+            if (!(evt instanceof NavigationEnd)) {
+                return;
+            }
+            window.scrollTo(0, 0)
+        });
     }
 
     ngOnDestroy() {

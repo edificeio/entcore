@@ -27,16 +27,16 @@ import { UserModel } from '../../../../core/store/models'
                         (onSelect)="spinner.perform($event.id, details?.addRelative($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
-                                {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+                                {{ item?.displayName.split(' ')[1] | uppercase }} {{ item?.displayName.split(' ')[0] }}
                             </span>
                         </ng-template>
                     </list-component>
                 </div>
             </light-box>
             <ul class="actions-list">
-                <li *ngFor="let parent of details?.parents">
+                <li *ngFor="let parent of details.parents">
                     <a class="action" [routerLink]="['..', parent.id]">
-                        {{ parent.lastName | uppercase }} {{ parent.firstName }}
+                        {{ parent.displayName.split(' ')[1] | uppercase }} {{ parent.displayName.split(' ')[0] }}
                     </a>
                     <i  class="fa fa-times action" (click)="spinner.perform(parent.id, details?.removeRelative(parent), 0)"
                         [tooltip]="'delete.this.relative' | translate"
