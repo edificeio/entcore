@@ -130,7 +130,6 @@ export const importFiles = ng.directive('importFiles', () => {
 					template.open('import', 'directives/import/upload');
 				}
 			};
-
             const cancelAll = async () => {
                 template.open('import', 'directives/import/upload');
 				scope.display.editedDocument = undefined;
