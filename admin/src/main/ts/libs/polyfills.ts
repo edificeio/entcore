@@ -1,6 +1,7 @@
  // styles are required in polyfills as a workaround
 // see : https://github.com/webpack/webpack/issues/1967
 import '../../resources/public/styles/admin.scss'
+import '../../../../../node_modules/flatpickr/dist/themes/confetti.css'
 
 import 'core-js/es6'
 import 'core-js/es7/reflect'

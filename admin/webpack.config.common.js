@@ -22,7 +22,7 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.scss$/,
+                test: /\.(scss|css)$/,
                 use: ExtractTextPlugin.extract({
                     use: ['css-loader', 'sass-loader'],
                     allChunks: true
@@ -42,7 +42,7 @@ module.exports = {
         }),
         new ExtractTextPlugin({
             filename:  (getPath) => {
-                return getPath('css/admin.[hash].css');
+                return getPath('styles/admin.[hash].css');
             }
         })
     ]

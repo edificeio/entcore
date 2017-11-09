@@ -24,7 +24,6 @@ import Flatpickr from 'flatpickr';
             <a *ngIf="!disabled" data-clear [tooltip]="'datepicker.delete' | translate"><i class="fa fa-times delete" aria-hidden="true"></i></a>
         </div>
     `,
-    styles: ['@import url("/admin/public/styles/flatpickr-confetti.css")'],
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ]
 })
 export class Datepicker implements OnDestroy, AfterViewInit, ControlValueAccessor {
