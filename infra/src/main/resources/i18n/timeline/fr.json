@@ -1,5 +1,6 @@
 {
   "system": "Système",
   "userbook.delete-email": "Suppression d'un email invalide (hard-bounce)",
-  "timeline.delete.invalid.email" : "Votre email était invalide. Il a été supprimé."
+  "timeline.delete.invalid.email" : "Votre email était invalide. Il a été supprimé.",
+  "timeline.delete.virus" : "Suppression d'un virus contenu dans votre fichier"
 }

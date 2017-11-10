@@ -21,17 +21,20 @@ package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.infra.controllers.AntiVirusController;
 import org.entcore.infra.controllers.EmbedController;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.services.EventStoreService;
+import org.entcore.infra.services.impl.ClamAvService;
 import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -47,7 +50,6 @@ import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.File;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -139,6 +141,16 @@ public class Starter extends BaseServer {
 		addController(eventStoreController);
 		addController(new MonitoringController());
 		addController(new EmbedController());
+		if (config.getBoolean("antivirus", false)) {
+			ClamAvService antivirusService = new ClamAvService();
+			antivirusService.setVertx(vertx);
+			antivirusService.setTimeline(new TimelineHelper(vertx, getEventBus(vertx), container));
+			antivirusService.setRender(new Renders(vertx, container));
+			antivirusService.init();
+			AntiVirusController antiVirusController = new AntiVirusController();
+			antiVirusController.setAntivirusService(antivirusService);
+			addController(antiVirusController);
+		}
 	}
 
 	private void loadInvalidEmails() {
