@@ -35,12 +35,14 @@ import { UserModel } from '../../../../core/store/models'
             </light-box>
             <ul class="actions-list">
                 <li *ngFor="let parent of details.parents">
-                    <a class="action" [routerLink]="['..', parent.id]">
-                        {{ parent.displayName.split(' ')[1] | uppercase }} {{ parent.displayName.split(' ')[0] }}
-                    </a>
-                    <i  class="fa fa-times action" (click)="spinner.perform(parent.id, details?.removeRelative(parent), 0)"
-                        [tooltip]="'delete.this.relative' | translate"
-                        [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
+                    <div *ngIf="parent.id">
+                        <a class="action" [routerLink]="['..', parent.id]">
+                            {{ parent.displayName.split(' ')[1] | uppercase }} {{ parent.displayName.split(' ')[0] }}
+                        </a>
+                        <i  class="fa fa-times action" (click)="spinner.perform(parent.id, details?.removeRelative(parent), 0)"
+                            [tooltip]="'delete.this.relative' | translate"
+                            [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
+                    </div>
                 </li>
             </ul>
         </panel-section>
