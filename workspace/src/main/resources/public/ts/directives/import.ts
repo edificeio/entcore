@@ -78,20 +78,20 @@ export const importFiles = ng.directive('importFiles', () => {
 				documents: []
             };
             
-            element.on('dragenter', '.drop-zone', (e) => {
+            element.on('dragenter', (e) => {
 				e.preventDefault();
 			});
 
-			element.on('dragover', '.drop-zone', (e) => {
+			element.on('dragover', (e) => {
 				element.find('.drop-zone').addClass('dragover');
 				e.preventDefault();
 			});
 
-			element.on('dragleave', '.drop-zone', () => {
+			element.on('dragleave', () => {
 				element.find('.drop-zone').removeClass('dragover');
 			});
 
-			element.on('drop', '.drop-zone', async (e) => {
+			element.on('drop', async (e) => {
 				element.find('.drop-zone').removeClass('dragover');
 				e.preventDefault();
 				const files = e.originalEvent.dataTransfer.files;
