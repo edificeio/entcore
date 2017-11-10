@@ -20,6 +20,7 @@
 package org.entcore.workspace;
 
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.dao.DocumentDao;
@@ -42,7 +43,8 @@ public class Workspace extends BaseServer {
 		setResourceProvider(new WorkspaceResourcesProvider());
 		super.start();
 
-		Storage storage = new StorageFactory(vertx, config).getStorage();
+		Storage storage = new StorageFactory(vertx, config,
+				new MongoDBApplicationStorage("documents", Workspace.class.getSimpleName())).getStorage();
 		WorkspaceService service = new WorkspaceService();
 
 		final boolean neo4jPlugin = container.config().getBoolean("neo4jPlugin", false);

@@ -25,6 +25,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
+import org.entcore.conversation.service.impl.ConversationStorage;
 import org.entcore.conversation.service.impl.DeleteOrphan;
 
 import java.text.ParseException;
@@ -37,7 +38,7 @@ public class Conversation extends BaseServer {
 	public void start() {
 		super.start();
 
-		Storage storage = new StorageFactory(vertx, config).getStorage();
+		Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 
 		addController(new ConversationController(storage));
 

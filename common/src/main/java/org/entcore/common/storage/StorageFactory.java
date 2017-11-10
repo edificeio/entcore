@@ -20,6 +20,7 @@
 package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
+import org.entcore.common.storage.impl.AbstractApplicationStorage;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.SwiftStorage;
@@ -42,6 +43,10 @@ public class StorageFactory {
 	}
 
 	public StorageFactory(Vertx vertx, JsonObject config) {
+		this(vertx, config, null);
+	}
+
+	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
 		this.vertx = vertx;
 		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
 		String s = (String) server.get("swift");
@@ -61,6 +66,10 @@ public class StorageFactory {
 			this.gridfsAddress = config.getString("gridfs-address");
 		}
 
+		if (applicationStorage != null) {
+			applicationStorage.setVertx(vertx);
+			vertx.eventBus().registerLocalHandler("storage", applicationStorage);
+		}
 	}
 
 	public Storage getStorage() {
