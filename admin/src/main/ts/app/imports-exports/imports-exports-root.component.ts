@@ -12,6 +12,7 @@ import { routing } from '../core/services/routing.service'
         
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
+                [disabled]="tab.disabled"
                 [routerLink]="tab.view"
                 routerLinkActive="active">
                 {{ tab.label | translate }}
@@ -29,7 +30,7 @@ export class ImportsExportsRoot implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        { label: "import.users", view: "importCSV" },
+        { label: "import.users", view: "importCSV", disabled: true},
         { label: "export.accounts", view: "export" },
         { label: "massmail.accounts", view: "massmail" } // Meld MassMail into export ?
     ]

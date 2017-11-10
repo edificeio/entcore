@@ -31,6 +31,11 @@ import { Subscription } from 'rxjs/Subscription'
                     *ngIf="currentStructure"
                     title="En construction"
                     disabled></i>
+                <i class="fa fa-exchange"
+                    *ngIf="currentStructure"
+                    [tooltip]="'imports.exports' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)"></i>
                 <i class="fa fa-th"
                     *ngIf="currentStructure"
                     [tooltip]="'services' | translate"
