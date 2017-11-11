@@ -22,6 +22,7 @@ package org.entcore.common.storage.impl;
 import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
+import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.core.AsyncResult;
@@ -52,6 +53,7 @@ public class FileStorage implements Storage {
 	private final String basePath;
 	private final FileSystem fs;
 	private final boolean flat;
+	private AntivirusClient antivirus;
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat) {
 		this.basePath = (basePath != null && !basePath.endsWith("/")) ? basePath + "/" : basePath;
@@ -113,6 +115,7 @@ public class FileStorage implements Storage {
 						handler.handle(res.putString("_id", id)
 								.putString("status", "ok")
 								.putObject("metadata", metadata));
+						scanFile(path);
 					}
 				});
 				upload.exceptionHandler(new Handler<Throwable>() {
@@ -136,6 +139,12 @@ public class FileStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	private void scanFile(String path) {
+		if (antivirus != null) {
+			antivirus.scan(path);
+		}
 	}
 
 	private void mkdirsIfNotExists(String id, String path, final AsyncResultHandler<Void> h) {
@@ -182,6 +191,7 @@ public class FileStorage implements Storage {
 								final JsonObject metadata = new JsonObject().putString("content-type", contentType)
 										.putString("filename", filename).putNumber("size", buff.length());
 								res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
+								scanFile(path);
 							} else {
 								res.putString("status", "error").putString("message", event.cause().getMessage());
 							}
@@ -466,6 +476,10 @@ public class FileStorage implements Storage {
 			}
 		}
 		throw new FileNotFoundException("Invalid file : " + file);
+	}
+
+	public void setAntivirus(AntivirusClient antivirus) {
+		this.antivirus = antivirus;
 	}
 
 }
