@@ -69,24 +69,7 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 			@Override
 			public void handle(AsyncResult<List<InfectedFile>> event) {
 				if (event.succeeded()) {
-					final JsonObject j = new JsonObject();
-					for (final InfectedFile i : event.result()) {
-						final JsonObject message = new JsonObject()
-								.putString("action", "getInfos")
-								.putString("id", i.getId())
-								.putString("replyTo", "antivirus")
-								.putString("replyAction", "rmInfected");
-						final long timerId = vertx.setTimer(30000l, new Handler<Long>() {
-							@Override
-							public void handle(Long event) {
-								removeInfectedFile(i, null);
-							}
-						});
-						i.setTimerId(timerId);
-						queue.put(i.getId(), i);
-						vertx.eventBus().publish("storage", message);
-						j.putString(i.getPath(), i.getVirus());
-					}
+					final JsonObject j = launchReplace(event.result());
 					handler.handle(new Either.Right<String, JsonObject>(j));
 				} else {
 					log.error("Error parsing scan report.", event.cause());
@@ -94,6 +77,28 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 				}
 			}
 		});
+	}
+
+	protected JsonObject launchReplace(List<InfectedFile> infectedFiles) {
+		final JsonObject j = new JsonObject();
+		for (final InfectedFile i : infectedFiles) {
+			final JsonObject message = new JsonObject()
+					.putString("action", "getInfos")
+					.putString("id", i.getId())
+					.putString("replyTo", "antivirus")
+					.putString("replyAction", "rmInfected");
+			final long timerId = vertx.setTimer(30000l, new Handler<Long>() {
+				@Override
+				public void handle(Long event) {
+					removeInfectedFile(i, null);
+				}
+			});
+			i.setTimerId(timerId);
+			queue.put(i.getId(), i);
+			vertx.eventBus().publish("storage", message);
+			j.putString(i.getPath(), i.getVirus());
+		}
+		return j;
 	}
 
 	@Override

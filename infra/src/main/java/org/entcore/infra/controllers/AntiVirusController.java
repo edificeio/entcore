@@ -52,6 +52,23 @@ public class AntiVirusController extends BaseController {
 		});
 	}
 
+	@Post("/antivirus/scan")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void scan(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				if (event != null && isNotEmpty(event.getString("file"))) {
+					antivirusService.scan(event.getString("file"));
+					ok(request);
+				} else {
+					badRequest(request);
+				}
+			}
+		});
+	}
+
 	public void setAntivirusService(AntivirusService antivirusService) {
 		this.antivirusService = antivirusService;
 	}

@@ -30,7 +30,6 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import static org.entcore.common.sql.SqlResult.countResult;
 import static org.entcore.common.sql.SqlResult.validResult;
 
 public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
