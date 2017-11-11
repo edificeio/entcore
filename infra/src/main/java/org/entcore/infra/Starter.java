@@ -35,6 +35,7 @@ import org.entcore.infra.controllers.MonitoringController;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
+import org.entcore.infra.services.impl.ExecCommandWorker;
 import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -147,6 +148,7 @@ public class Starter extends BaseServer {
 			AntiVirusController antiVirusController = new AntiVirusController();
 			antiVirusController.setAntivirusService(antivirusService);
 			addController(antiVirusController);
+			container.deployWorkerVerticle(ExecCommandWorker.class.getName());
 		}
 	}
 
