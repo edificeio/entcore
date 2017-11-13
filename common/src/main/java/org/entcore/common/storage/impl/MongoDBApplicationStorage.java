@@ -30,11 +30,11 @@ import org.vertx.java.core.json.JsonObject;
 
 public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 
-	private final MongoDb mongo = MongoDb.getInstance();
-	private final String collection;
-	private final String application;
-	private final JsonObject keys;
-	private final JsonObject mapping;
+	protected final MongoDb mongo = MongoDb.getInstance();
+	protected final String collection;
+	protected final String application;
+	protected final JsonObject keys;
+	protected final JsonObject mapping;
 
 	public MongoDBApplicationStorage(String collection, String application) {
 		this(collection, application, null);
@@ -44,6 +44,7 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 		this.collection = collection;
 		this.application = application;
 		this.mapping = new JsonObject()
+				.putString("title", "name")
 				.putString("name", "metadata.filename")
 				.putString("size", "metadata.size")
 				.putString("contentType", "metadata.content-type");
@@ -51,13 +52,13 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 			this.mapping.mergeIn(mapping);
 		}
 		this.keys = new JsonObject()
-				.putNumber("owner", 1)
-				.putNumber("name", 1);
+				.putNumber(this.mapping.getString("owner", "owner"), 1)
+				.putNumber(this.mapping.getString("title", "title"), 1);
 	}
 
 	@Override
 	public void getInfo(final String fileId, final AsyncResultHandler<FileInfos> handler) {
-		final JsonObject query = new JsonObject().putString("file", fileId);
+		final JsonObject query = new JsonObject().putString(mapping.getString("file", "file"), fileId);
 		mongo.findOne(collection, query, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -67,7 +68,7 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 						final FileInfos fi = new FileInfos();
 						fi.setApplication(application);
 						fi.setId(fileId);
-						fi.setName(res.getString("name"));
+						fi.setName(res.getString(mapping.getString("title", "title")));
 						fi.setOwner(res.getString(mapping.getString("owner", "owner")));
 						handler.handle(new DefaultAsyncResult<>(fi));
 					} else {
@@ -83,7 +84,7 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 
 	@Override
 	public void updateInfo(String fileId, FileInfos fileInfos, final AsyncResultHandler<Integer> handler) {
-		final JsonObject query = new JsonObject().putString("file", fileId);
+		final JsonObject query = new JsonObject().putString(mapping.getString("file", "file"), fileId);
 		final JsonObject modifier = new JsonObject().putObject("$set", fileInfos.toJsonExcludeEmpty(mapping));
 		mongo.update(collection, query, modifier, new Handler<Message<JsonObject>>() {
 			@Override
