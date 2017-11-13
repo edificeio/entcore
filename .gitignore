@@ -63,6 +63,7 @@ bower_components/
 admin/src/main/resources/public/js
 admin/src/main/resources/public/templates
 admin/src/main/resources/view
+admin/src/main/resources/public/styles/admin.css
 admin/src/main/resources/public/styles/admin.*.css
 admin/src/main/resources/public/styles/admin.*.css.map
 admin/src/main/resources/public/styles/flatpickr-confetti.css

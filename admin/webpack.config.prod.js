@@ -1,5 +1,6 @@
 const webpack = require('webpack')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const ngtools = require('@ngtools/webpack')
 const webpackMerge = require('webpack-merge')
 
@@ -30,6 +31,17 @@ module.exports = webpackMerge(commonConfig, {
             {
                 test: /\.html$/,
                 use: 'html-loader'
+            },
+            {
+                test: /\.(scss|css)$/,
+                use: ExtractTextPlugin.extract({
+                    use: ['css-loader', 'sass-loader'],
+                    allChunks: true
+                })
+            },
+            {
+                test: /\.woff$/,
+                use: 'file-loader?emitFile=false&name=[name].[ext]&publicPath=./'
             }
         ]
     },
@@ -51,6 +63,11 @@ module.exports = webpackMerge(commonConfig, {
         new ngtools.AotPlugin({
             tsConfigPath:   __dirname + '/src/main/ts/tsconfig.aot.json',
             entryModule:    __dirname + '/src/main/ts/app/app.module#AppModule'
+        }),
+        new ExtractTextPlugin({
+            filename:  (getPath) => {
+                return getPath('styles/admin.[hash].css');
+            }
         })
     ]
 })

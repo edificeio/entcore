@@ -27,6 +27,7 @@ gulp.task('clean', function() {
     return del([
         './admin/src/main/resources/public/js/*',
         './admin/src/main/resources/public/templates/*',
+        './admin/src/main/resources/public/styles/admin.css',
         './admin/src/main/resources/public/styles/admin.*.css',
         './admin/src/main/resources/public/styles/admin.*.css.map',
         './admin/src/main/resources/public/styles/generic-icons-1.0.0.woff',
