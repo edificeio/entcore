@@ -31,14 +31,16 @@ import { GroupModel } from '../../../../core/store/models'
                     </list-component>
                 </div>
             </light-box>
-            
+    
             <ul class="actions-list">
-                <li *ngFor="let mg of details?.manualGroups">
-                    <span>{{ mg.name }}</span>
-                    <i  class="fa fa-times action" (click)="spinner.perform(mg.id, user.removeManualGroup(mg), 0)"
-                        [tooltip]="'delete.this.group' | translate"
-                        [ngClass]="{ disabled: spinner.isLoading(mg.id)}">
-                    </i>
+                <li *ngFor="let mg of user.manualGroups">
+                    <div *ngIf="mg.id">
+                        <span>{{ mg.name }}</span>
+                        <i  class="fa fa-times action" (click)="spinner.perform(mg.id, user.removeManualGroup(mg), 0)"
+                            [tooltip]="'delete.this.group' | translate"
+                            [ngClass]="{ disabled: spinner.isLoading(mg.id)}">
+                        </i>
+                    </div>
                 </li>
             </ul>
         </panel-section>

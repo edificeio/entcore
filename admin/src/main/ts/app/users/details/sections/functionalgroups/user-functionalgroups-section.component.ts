@@ -34,11 +34,13 @@ import { GroupModel } from '../../../../core/store/models'
             
             <ul class="actions-list">
                 <li *ngFor="let g of details?.functionalGroups">
-                    <span>{{ g.name }}</span>
-                    <i  class="fa fa-times action" (click)="spinner.perform(g.id, user.removeFunctionalGroup(g), 0)"
-                        [tooltip]="'delete.this.group' | translate"
-                        [ngClass]="{ disabled: spinner.isLoading(g.id)}">
-                    </i>
+                    <div *ngIf="g.id">
+                        <span>{{ g.name }}</span>
+                        <i  class="fa fa-times action" (click)="spinner.perform(g.id, user.removeFunctionalGroup(g), 0)"
+                            [tooltip]="'delete.this.group' | translate"
+                            [ngClass]="{ disabled: spinner.isLoading(g.id)}">
+                        </i>
+                    </div>
                 </li>
             </ul>
         </panel-section>
