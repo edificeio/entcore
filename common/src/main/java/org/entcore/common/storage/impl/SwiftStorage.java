@@ -79,6 +79,12 @@ public class SwiftStorage implements Storage {
 	}
 
 	@Override
+	public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
+		StorageObject o = new StorageObject(id, buff, filename, contentType);
+		writeStorageObject(handler, o);
+	}
+
+	@Override
 	public void writeFsFile(String id, String filename, Handler<JsonObject> handler) {
 		swiftClient.writeFromFileSystem(id, filename, container, handler);
 	}
