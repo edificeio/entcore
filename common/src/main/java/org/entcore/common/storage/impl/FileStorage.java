@@ -177,33 +177,38 @@ public class FileStorage implements Storage {
 
 	@Override
 	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
-			final Handler<JsonObject> handler) {
-		final JsonObject res = new JsonObject();
+							final Handler<JsonObject> handler) {
 		try {
-			final String path = getPath(id);
-			mkdirsIfNotExists(id, path, new AsyncResultHandler<Void>() {
-				@Override
-				public void handle(AsyncResult<Void> event) {
-					fs.writeFile(path, buff, new Handler<AsyncResult<Void>>() {
-						@Override
-						public void handle(AsyncResult<Void> event) {
-							if (event.succeeded()) {
-								final JsonObject metadata = new JsonObject().putString("content-type", contentType)
-										.putString("filename", filename).putNumber("size", buff.length());
-								res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
-								scanFile(path);
-							} else {
-								res.putString("status", "error").putString("message", event.cause().getMessage());
-							}
-							handler.handle(res);
-						}
-					});
-				}
-			});
+			writeBuffer(getPath(id), id, buff, contentType, filename, handler);
 		} catch (FileNotFoundException e) {
-			handler.handle(res.putString("status", "error").putString("message", "invalid.path"));
+			handler.handle(new JsonObject().putString("status", "error").putString("message", "invalid.path"));
 			log.warn(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename,
+			final Handler<JsonObject> handler) {
+		final JsonObject res = new JsonObject();
+		mkdirsIfNotExists(id, path, new AsyncResultHandler<Void>() {
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				fs.writeFile(path, buff, new Handler<AsyncResult<Void>>() {
+					@Override
+					public void handle(AsyncResult<Void> event) {
+						if (event.succeeded()) {
+							final JsonObject metadata = new JsonObject().putString("content-type", contentType)
+									.putString("filename", filename).putNumber("size", buff.length());
+							res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
+							scanFile(path);
+						} else {
+							res.putString("status", "error").putString("message", event.cause().getMessage());
+						}
+						handler.handle(res);
+					}
+				});
+			}
+		});
 	}
 
 	@Override
