@@ -135,6 +135,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/:userId")
+	@ResourceFilter(UserAccess.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
@@ -241,6 +242,7 @@ public class UserController extends BaseController {
 	}
 
 	@Put("/restore/user")
+	@ResourceFilter(AnyAdminOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void restore(final HttpServerRequest request) {
 		List<String> users = request.params().getAll("userId");

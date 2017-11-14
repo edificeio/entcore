@@ -88,7 +88,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					adminOrTeacher(request, user, handler);
 					break;
 				case "updateAvatar" :
-				case "get" :
 				case "getUserBook" :
 				case "updateUserBook" :
 				case "update" :
@@ -221,9 +220,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		validateQuery(request, handler, query, params);
 	}
 
-	private void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
+	private static void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
 		request.pause();
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
@@ -426,7 +425,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
-	private void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+	static void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
 		List<String> userIds = request.params().getAll("userId");
 		if (userIds == null || userIds.isEmpty() || userIds.contains(user.getUserId()) ||
 				(!"Teacher".equals(user.getType()) && !"Personnel".equals(user.getType()))) {
