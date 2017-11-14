@@ -47,6 +47,11 @@ $user-li-hover: #ffccb8;
 $user-profile-img-width: 200px;
 $fontawesome-size: 1.5em;
 
+$info: $main;
+$success: $validate;
+$warning: $contrast;
+$danger: darken($contrast, 5%);
+
 /* Elements */
 body {
     padding: 0;
@@ -68,6 +73,12 @@ h1 {
     padding: 1em 0;
     color: $main-dark;
     font-weight: normal;
+}
+
+h2 {
+    font-size: 1.6em;
+    font-weight: normal;
+    color: $main-dark;
 }
 
 button {
@@ -154,6 +165,54 @@ form-errors {
     }
 }
 
+table{
+    width: 100%;
+    table-layout: fixed;
+    word-break: break-word;
+    font-size: 0.9em;
+    border-collapse: collapse;
+    
+    th {
+        text-align: left;
+
+        input {
+            max-width: 100%;
+            padding: 10px !important;
+        }
+    }
+    
+    tr {
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    tbody {
+        tr {
+            &:hover {
+                background-color: $accent-light;
+            }
+
+            td {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+        
+    }
+
+    td {
+        border: 1px solid #dbdbdb;
+        border-width: 0 0 1px;
+        padding: 15px 5px;
+    }
+
+    &.is-bordered {
+        border: 1px solid #dbdbdb;
+    }
+}
+
 ul {
     list-style: none;
     padding-left: 20px;
@@ -171,8 +230,55 @@ ul {
     }
 }
 
-/* UX */
+/* generic style 
+* TODO : replacce by using a css framework
+* here a bulma.io semantic is used 
+*/
+.container {
+    background-color: white;
+    padding: 5px 30px;
+    margin-bottom: 40px;
+}
 
+.message {
+    border-radius: 3px;
+    margin: 10px 0px;
+
+    p { margin : 0px ;}
+    .message-header {
+        padding: .25em;
+        background: black;
+        color:white;
+        font-size: 1.1em;
+        font-weight: bold;
+    }
+
+    .message-body {
+        padding: .5em;
+        font-size: 0.9em;
+        font-weight: initial;
+    }
+
+    &.is-success { border-color: $success; color: $success; background-color: lighten($success, 40%);}
+    &.is-info { border-color:  $info; color: $info; background-color: lighten($info, 45%);}
+    &.is-danger { border-color: $danger; color: $danger; background-color: lighten($danger, 40%);}
+    &.is-warning { border-color: $warning; color: $warning; background-color: lighten($warning, 30%);}
+
+    &.is-success .message-header  { background: $success;}
+    &.is-info .message-header { background: $info;}
+    &.is-danger .message-header { background: $danger;}
+    &.is-warning .message-header { background: $warning;}
+}
+
+.has-text-centered {
+    text-align: center !important;
+}
+
+.has-vertical-padding {
+    padding: 10px 0px;
+}
+
+/* UX */
 .badge {
     font-size: 0.8em;
     padding: 0.2em 10px;
@@ -1381,9 +1487,6 @@ group-create {
 
 group-manage-users {
     h2 {
-        font-size: 1.6em;
-        font-weight: normal;
-        color: $main-dark;
         padding: 10px 0;
     }
 
@@ -1537,48 +1640,31 @@ app-details {
 }
 
 mass-mail{
-    .padded{
-        padding: 15px
+    .filters-toggle {
+        cursor: pointer;
+        font-size: 1.5em;
+        padding-left: 0px;
     }
-    div.side-card{
-        flex: 100% !important;
-    }
-    table{
-        width: 100%;
-    }
-    td {
-        padding: 5px;
-        border-bottom:1px solid grey;
-    }
-    th{
-        text-align: left;
-    }
-    tr {
-        &:hover {
-            cursor: pointer;
+
+    .filtersOn {
+        background-color: $accent;
+        color: white;
+
+        i {
+            color: white;
         }
     }
 
     .filters {
-        & > i {
-            font-size: 1.5em;
-            
-            &:hover {
-                cursor: pointer;
-                color: $accent;
-            }
-        }
-
-        & > div {
-            position: absolute;
-            z-index: 2;
-            border: 1px solid $main;
-            background: white;
-            padding: 15px 15px;
-            min-width: 550px;
-            box-shadow: 0px 0px 20px #AAA;
-        }
+        position: absolute;
+        z-index: 2;
+        border: 1px solid $main;
+        background: white;
+        padding: 15px 15px;
+        min-width: 550px;
+        box-shadow: 0px 0px 20px #AAA;
     }
+    
     .close{
         display: flex; 
         justify-content: flex-end;

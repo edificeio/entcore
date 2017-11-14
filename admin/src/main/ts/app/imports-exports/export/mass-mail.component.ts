@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core'
 import { Subscription, Subject } from 'rxjs'
 import { ActivatedRoute, Router, Data, NavigationEnd } from '@angular/router'
 import { routing } from '../../core/services/routing.service'
@@ -10,109 +10,110 @@ import { MassMailService } from './mass-mail.service'
 import { BundlesService } from 'sijil'
 import { FilterPipe } from 'infra-components'
 
-
 @Component({
     selector: 'mass-mail',
     template: `
-            <side-layout [showCompanion]="true">
-            <div side-card class="filters padded">
-            <i class="fa fa-filter"><a (click)="show = !show"><s5l>massmail.filters</s5l></a></i>
-            <div [hidden]="!show" >
-            <i class="fa fa-close close" (click)="show=false"></i>
-            <div *ngFor="let filter of listFilters.filters">
-                <div *ngIf="filter.comboModel.length > 0">
-                    <multi-combo
-                        [comboModel]="filter.comboModel"
-                        [(outputModel)]="filter.outputModel"
-                        [title]="filter.label | translate"
-                        [display]="filter.display || translate"
-                        [orderBy]="filter.order || orderer"
-                    ></multi-combo>
-                    <div class="multi-combo-companion">
-                        <div *ngFor="let item of filter.outputModel"
-                            (click)="deselect(filter, item)">
-                            <span *ngIf="filter.display">
-                                {{ item[filter.display] }}
-                            </span>
-                            <span *ngIf="!filter.display">
-                                {{ item | translate }}
-                            </span>
-                            <i class="fa fa-trash"></i>
+        <div class="container">
+            <h2>{{ 'massmail.accounts' | translate }}</h2>
+            <div class="has-vertical-padding">
+                <s5l>massmail.filters</s5l> 
+                <button id="buttonToggle" (click)="toggleVisibility()" [ngClass]="setFiltersOnStyle()" #filtersToggle>
+                    <i class="fa fa-filter filters-toggle"></i>
+                </button>
+                
+                <div [hidden]="!show" class="filters" #filtersDiv>
+                    <i class="fa fa-close close" (click)="show=false"></i>
+
+                    <div *ngFor="let filter of listFilters.filters">
+                        <div *ngIf="filter.comboModel.length > 0">
+                            <multi-combo
+                                [comboModel]="filter.comboModel"
+                                [(outputModel)]="filter.outputModel"
+                                [title]="filter.label | translate"
+                                [display]="filter.display || translate"
+                                [orderBy]="filter.order || orderer">
+                            </multi-combo>
+                            
+                            <div class="multi-combo-companion">
+                                <div *ngFor="let item of filter.outputModel" (click)="deselect(filter, item)">
+                                    <span *ngIf="filter.display">{{ item[filter.display] }}</span>
+                                    <span *ngIf="!filter.display">{{ item | translate }}</span>
+                                    <i class="fa fa-trash"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            </div>
-            </div>
-            <div side-card class="padded">
-                <div style="text-align: center">
-                    <div >{{countUsers}} <s5l>massmail.users.total</s5l></div>
-                    <div >{{countUsersWithoutMail}} <s5l>massmail.users.nomail</s5l></div>
-                </div>
-                    <a><s5l>process.massmail</s5l> : </a>
-                <button class="cell" (click)="processMassMail('pdf')">
-                    <s5l>massmail.pdf</s5l>
-                </button>
-                <button class="cell" (click)="processMassMail('mail')">
-                    <s5l>massmail.mail</s5l>
-                </button>
-            </div>
-            <div side-card>
             
-            <hr>
-            
-               
-            <table>
-                <thead>
-                    <tr>
-                        <th (click)="setUserOrder('lastName')"><i class="fa fa-sort"></i><s5l>lastName</s5l></th>
-                        <th (click)="setUserOrder('firstName')"><i class="fa fa-sort"></i><s5l>firstName</s5l></th>
-                        <th (click)="setUserOrder('type')"><i class="fa fa-sort"></i><s5l>profile</s5l></th>
-                        <th (click)="setUserOrder('login')"><i class="fa fa-sort"></i><s5l>login</s5l></th>
-                        <th (click)="setUserOrder('code')"><i class="fa fa-sort"></i><s5l>activation.code</s5l></th>
-                        <th (click)="setUserOrder('email')"><i class="fa fa-sort"></i><s5l>email</s5l></th>
-                        <th (click)="setUserOrder('classesStr')"><i class="fa fa-sort"></i><s5l>create.user.classe</s5l></th>
-                        <th><s5l>link</s5l></th>
-                    </tr>
-                    <tr>    
-                        <th>
-                            <input class="twelve" type="text" [(ngModel)]="sortObject.lastName" [attr.placeholder]="'search' | translate"/></th>
-                        <th>
-                            <input type="text" [(ngModel)]="sortObject.firstName" [attr.placeholder]="'search' | translate"/>
-                        </th>
-                        <th>
-                        </th>
-                        <th></th>
-                        <th></th>
-                        <th></th>
-                        <th>
-                            <input type="text" [(ngModel)]="sortObject.classesStr" [attr.placeholder]="'search' | translate"/>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let user of (getData() | filter: sortObject) | orderBy: userOrder ">
-                        <td> 
-                        <i class="fa fa-lock"  *ngIf="user?.code && user?.code?.length > 0"
-                        [tooltip]="'user.icons.tooltip.inactive' | translate"></i> {{user.lastName}}</td>
-                        <td>{{user.firstName}}</td>
-                        <td [ngClass]="user.type">{{user.type | translate}}</td>
-                        <td>{{user.login}}</td>
-                        <td>{{user.code}}</td>
-                        <td>{{user.email}}</td>
-                        <td>{{user.classesStr}}
-                        </td>
-                        <td>
-                            <a  [routerLink]="'/admin/'+structureId+'/users/'+user.id"
-                            routerLinkActive="active">
-                                <button  class="fa fa-external-link"></button>
-                            </a>
-                        </td>
+            <div class="has-vertical-padding">
+                <a><s5l>process.massmail</s5l> : </a>
                 
-                </tbody>
-            </table>
+                <button class="cell" (click)="processMassMail('pdf')"><s5l>massmail.pdf</s5l></button>
+                <button class="cell" (click)="processMassMail('mail')"><s5l>massmail.mail</s5l></button>
             </div>
-        </side-layout>`,
+            
+            <div class="has-vertical-padding">
+                <div class="message is-info">
+                    <div class="message-body has-text-centered">{{countUsers}} <s5l>massmail.users.total</s5l></div>
+                </div>
+                <div class="message is-warning">
+                    <div class="message-body has-text-centered">{{countUsersWithoutMail}} <s5l>massmail.users.nomail</s5l></div>
+                </div>
+            </div>
+
+            <div class="has-vertical-padding">
+                <table>
+                    <thead>
+                        <tr>
+                            <th (click)="setUserOrder('lastName')"><i class="fa fa-sort"></i><s5l>lastName</s5l></th>
+                            <th (click)="setUserOrder('firstName')"><i class="fa fa-sort"></i><s5l>firstName</s5l></th>
+                            <th (click)="setUserOrder('type')"><i class="fa fa-sort"></i><s5l>profile</s5l></th>
+                            <th (click)="setUserOrder('login')"><i class="fa fa-sort"></i><s5l>login</s5l></th>
+                            <th (click)="setUserOrder('code')"><i class="fa fa-sort"></i><s5l>activation.code</s5l></th>
+                            <th (click)="setUserOrder('email')"><i class="fa fa-sort"></i><s5l>email</s5l></th>
+                            <th (click)="setUserOrder('classesStr')"><i class="fa fa-sort"></i><s5l>create.user.classe</s5l></th>
+                        </tr>
+                        <tr>    
+                            <th>
+                                <input class="twelve" type="text" [(ngModel)]="sortObject.lastName" 
+                                    [attr.placeholder]="'search' | translate"/>
+                            </th>
+                            <th>
+                                <input type="text" [(ngModel)]="sortObject.firstName" 
+                                    [attr.placeholder]="'search' | translate"/>
+                            </th>
+                            <th colspan="4"></th>
+                            <th>
+                                <input type="text" [(ngModel)]="sortObject.classesStr" 
+                                    [attr.placeholder]="'search' | translate"/>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of (getData() | filter: sortObject) | orderBy: userOrder "
+                            [routerLink]="'/admin/'+structureId+'/users/'+user.id" 
+                            routerLinkActive="active"
+                            title="{{ 'massmail.link.user' | translate}}">
+                            <td> 
+                                <i class="fa fa-lock" 
+                                    *ngIf="user?.code && user?.code?.length > 0"
+                                    title="{{ 'user.icons.tooltip.inactive' | translate }}"></i> {{user.lastName}}
+                            </td>
+                            <td>{{user.firstName}}</td>
+                            <td [ngClass]="user.type">{{user.type | translate}}</td>
+                            <td>{{user.login}}</td>
+                            <td>{{user.code}}</td>
+                            <td title="{{user.email}}">{{user.email}}</td>
+                            <td>{{user.classesStr}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>`,
+    host: {
+        '(document:click)': 'onClick($event)',
+    },
     changeDetection: ChangeDetectionStrategy.OnPush
 
 
@@ -126,7 +127,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
         public cdRef: ChangeDetectorRef,
         public bundles: BundlesService,
         private ns: NotifyService,
-        private spinner: SpinnerService,
+        private spinner: SpinnerService
     ) { }
     sortObject = {lastName: '', firstName: '', classesStr: ''};
     dataSubscriber: Subscription
@@ -141,12 +142,15 @@ export class MassMailComponent implements OnInit, OnDestroy {
     downloadAnchor = null;
     downloadObjectUrl = null;
     show: boolean = false;
+    
+    @ViewChild('filtersDiv') filtersDivRef: ElementRef;
+    @ViewChild('filtersToggle') filtersToggleRef;
+    private deselectItem: boolean = false
 
     translate = (...args) => { return (<any>this.bundles.translate)(...args) }
 
     ngOnInit(): void {
         this.dataSubscriber = routing.observe(this.route, "data").subscribe(async (data: Data) => {
-            console.log(data);
             if (data['structure']) {
                 let structure: StructureModel = data['structure']
                 this.spinner.perform('portal-content', this.getList(structure._id))
@@ -154,7 +158,6 @@ export class MassMailComponent implements OnInit, OnDestroy {
                         this.structureId = structure._id;
                         this.initFilters(structure)
                         this.filters = this.listFilters.getFormattedFilters();
-                        console.log(this.listFilters)
                         this.cdRef.detectChanges();
                     }).catch(err => {
                         this.ns.error("massmail.error", "error", err);
@@ -209,7 +212,6 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     private async getList(id) {
         this.data = await MassMailService.getList(id);
-        console.log(this.data)
     }
 
     async processMassMail(type: String) {
@@ -243,6 +245,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     deselect(filter, item) {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
+        this.deselectItem = true;
     }
 
     setUserOrder(order: string) {
@@ -260,7 +263,29 @@ export class MassMailComponent implements OnInit, OnDestroy {
         })
         return users;
 
-    }   
+    }
+
+    setFiltersOnStyle = () => {
+        return { 'filtersOn': this.listFilters.filters.some(f => f.outputModel && f.outputModel.length > 0) }
+    }
+
+    onClick(event) {
+        let buttonChildren = Array.from(this.filtersToggleRef.nativeElement.children);
+
+        if (this.show 
+                && event.target != this.filtersToggleRef.nativeElement 
+                && !buttonChildren.includes(event.target)
+                && !this.filtersDivRef.nativeElement.contains(event.target)
+                && !this.deselectItem) {
+            this.toggleVisibility();
+        }
+        this.deselectItem = false
+        return true
+    }
+
+    toggleVisibility(): void {
+        this.show = !this.show
+    }
 }
 
 export class MailFilter extends UserFilter<string> {
