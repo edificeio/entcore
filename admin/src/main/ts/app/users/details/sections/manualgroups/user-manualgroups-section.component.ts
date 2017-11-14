@@ -33,7 +33,7 @@ import { GroupModel } from '../../../../core/store/models'
             </light-box>
     
             <ul class="actions-list">
-                <li *ngFor="let mg of user.manualGroups">
+                <li *ngFor="let mg of details.manualGroups">
                     <div *ngIf="mg.id">
                         <span>{{ mg.name }}</span>
                         <i  class="fa fa-times action" (click)="spinner.perform(mg.id, user.removeManualGroup(mg), 0)"

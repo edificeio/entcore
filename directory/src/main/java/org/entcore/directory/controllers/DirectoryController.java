@@ -470,7 +470,7 @@ public class DirectoryController extends BaseController {
 				userService.list(userId, itSelf2, excludeUserId, responseHandler(message));
 				break;
 			case "getUser" :
-				userService.get(userId, BusResponseHandler.busResponseHandler(message));
+				userService.get(userId, false, BusResponseHandler.busResponseHandler(message));
 				break;
 			case "getUserInfos" :
 				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));

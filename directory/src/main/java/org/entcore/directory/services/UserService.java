@@ -39,7 +39,7 @@ public interface UserService {
 
 	void sendUserCreatedEmail(HttpServerRequest request, String userId, Handler<Either<String, Boolean>> result);
 
-	void get(String id, Handler<Either<String, JsonObject>> result);
+	void get(String id, Boolean getManualGroups, Handler<Either<String, JsonObject>> result);
 
 	void list(String structureId, String classId, JsonArray expectedProfiles, Handler<Either<String, JsonArray>> results);
 

@@ -441,6 +441,21 @@ light-box {
         box-shadow: 0px 0px 5px white;
         max-height: 90% !important;
         overflow: auto !important;
+
+        & > i {
+            &::after {
+                content: '\f00d';
+                font-family: FontAwesome;
+                float: right;
+                margin: 20px;
+                font-style: normal;
+                transition: transform 0.25s, color 0.25s;
+                cursor: pointer;
+            }
+            &:hover::after {
+                color: $accent;
+            }
+        }
     }
 
     &.inner-list {
@@ -1358,10 +1373,6 @@ group-create {
 }
 
 group-manage-users {
-    div.padded {
-        position: relative;
-    }
-
     h2 {
         font-size: 1.6em;
         font-weight: normal;

@@ -138,7 +138,8 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
-		userService.get(userId, notEmptyResponseHandler(request));
+		Boolean getManualGroups = Boolean.valueOf(request.params().get("manual-groups"));
+		userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
 	}
 
 	@Get("/userbook/:userId")

@@ -15,7 +15,6 @@ import { GroupsStore } from '../../groups.store'
         <div class="padded">
             <h2>
                 <span><s5l>group.manage.users</s5l></span>
-                <i class="fa fa-times action top-right" (click)="close.emit()"></i>
             </h2>
 
 

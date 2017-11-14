@@ -5,7 +5,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     constructor() {
         super({
-            sync: '/directory/user/:id',
+            sync: '/directory/user/:id?manual-groups=true',
             update: '/directory/user/:id'
         })
     }

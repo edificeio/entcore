@@ -139,7 +139,14 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, Handler<Either<String, JsonObject>> result) {
+	public void get(String id, Boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
+		
+		String getMgroups = "";
+		String resultMgroups = "";
+		if (getManualGroups != null && getManualGroups == true) {
+			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, admStruct, admGroups, parents, children, functions, u, structureNodes ";
+			resultMgroups = "CASE WHEN manualGroups IS NULL THEN NULL ELSE manualGroups END as manualGroups, ";
+		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
@@ -148,11 +155,13 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				getMgroups +
 				"RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 				"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
 				"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
 				"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
 				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
+				resultMgroups +
 				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result, "structureNodes"));
 	}
