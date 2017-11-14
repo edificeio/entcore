@@ -65,11 +65,24 @@ public class AAFUtil {
 				case "functions-etab" :
 					res = functionsEtabConverter((JsonArray) value);
 					break;
+				case "structure-to-function":
+					res = structureToFunction((JsonArray) value);
+					break;
 				default :
 					res = value;
 			}
 		} catch (RuntimeException e) {
 			res = value;
+		}
+		return res;
+	}
+
+	private static Object structureToFunction(JsonArray value) {
+		JsonArray res = new JsonArray();
+		if (value != null) {
+			for (Object o : value) {
+				res.add(o.toString() + "$-$SANS OBJET$-$SANS OBJET");
+			}
 		}
 		return res;
 	}

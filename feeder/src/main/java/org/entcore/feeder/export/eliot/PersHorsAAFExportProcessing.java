@@ -30,8 +30,8 @@ public class PersHorsAAFExportProcessing extends UserExportProcessing {
 	private final String stdPrefix;
 
 	public PersHorsAAFExportProcessing(String path, String date, String stdPrefix, boolean concat) {
-		super("dictionary/export/eliot/PersRelEleve.json", 10000, path,
-				new JsonArray().add("Guest"), "PersHorsAAF", date, stdPrefix, concat);
+		super("dictionary/export/eliot/PersHorsAAF.json", 10000, path,
+				new JsonArray().add("Guest"), "HorsAAF", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}
