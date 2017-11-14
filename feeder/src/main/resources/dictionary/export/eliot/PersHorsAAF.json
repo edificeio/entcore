@@ -1,0 +1,18 @@
+{
+	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"birthDate" : { "attribute" : "ENTPersonDateNaissance", "converter" : "date" },
+	"lastName" : { "attribute" : "sn" },
+	"firstName" : { "attribute" : "givenName" },
+	"surname" : { "attribute" : "ENTPersonNomPatro" },
+	"title" : { "attribute" : "personalTitle" },
+	"homePhone" : { "attribute" : "homePhone" },
+	"workPhone" : { "attribute" : "telephoneNumber" },
+	"address" : { "attribute" : "ENTPersonAdresse" },
+	"zipCode" : { "attribute" : "ENTPersonCodePostal" },
+	"city" : { "attribute" : "ENTPersonVille" },
+	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
+	"country" : { "attribute" : "ENTPersonPays" },
+	"mobile" : { "attribute" : "ENTPersonMobileSMS" },
+	"mobilePhone" : { "attribute" : "ENTPersonMobile" },
+	"structures" : { "attribute" : "eliot.fonctionPortail", "converter" : "structure-to-function" }
+}
