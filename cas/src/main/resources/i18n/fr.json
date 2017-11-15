@@ -9,6 +9,8 @@
   "LeSiteTvRegisteredService.description" : "Service CAS spécifique <a href='http://www.lesite.tv/' target='_blank'>LeSite.tv</a>, catalogue de ressources audiovisuelles.",
   "UniversalisRegisteredService.name" : "Universalis",
   "UniversalisRegisteredService.description" : "Service CAS spécifique pour Universalis, l'encyplopédie en ligne.",
+  "EnglishAttackRegisteredService.name" : "English Attack",
+  "EnglishAttackRegisteredService.description" : "Service CAS spécifique pour English Attack",
   "WebclasseursRegisteredService.name" : "Webclasseur",
   "WebclasseursRegisteredService.description" : "Service CAS spécifique <a href='http://www.onisep.fr/Mes-infos-regionales/Ile-de-France/Espace-pedagogique/Le-Webclasseur-Orientation' target='_blank'>Webclasseur</a>, outil pédagogique national dédié à l’orientation.",
   "ProEPSRegisteredService.name" : "ProEPS",
