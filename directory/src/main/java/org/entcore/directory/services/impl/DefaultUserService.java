@@ -139,13 +139,13 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, Boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
+	public void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
 		
 		String getMgroups = "";
 		String resultMgroups = "";
-		if (getManualGroups != null && getManualGroups == true) {
+		if (getManualGroups) {
 			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, admStruct, admGroups, parents, children, functions, u, structureNodes ";
-			resultMgroups = "CASE WHEN manualGroups IS NULL THEN NULL ELSE manualGroups END as manualGroups, ";
+			resultMgroups = "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
 		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +

@@ -139,7 +139,7 @@ public class UserController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
-		Boolean getManualGroups = Boolean.valueOf(request.params().get("manual-groups"));
+		boolean getManualGroups = Boolean.parseBoolean(request.params().get("manual-groups"));
 		userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
 	}
 
