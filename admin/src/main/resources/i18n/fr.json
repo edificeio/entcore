@@ -131,7 +131,7 @@
     "massmail.users.total": "comptes sélectionnés au total",
     "massmail.users.nomail": "comptes sans adresse courrielle",
     "massmail.filename": "publipostage_pdf",
-    "massmail.filters" : "Filtrer la liste à publiposter :",
+    "massmail.filters" : "Filtrer la liste à publiposter",
     "massmail.mail.done" : "Publipostage mail effectué ",
     "massmail.pdf.done" : "Publipostage PDF effectué ",
     "massmail.error" :  "Erreur lors du publipostage",

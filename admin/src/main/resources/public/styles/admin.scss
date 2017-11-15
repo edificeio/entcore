@@ -291,6 +291,10 @@ ul {
     float: right;
 }
 
+.is-clearfix {
+    clear: both;
+}
+
 /* UX */
 .badge {
     font-size: 0.8em;
@@ -1653,10 +1657,15 @@ app-details {
 }
 
 mass-mail{
+    button:hover {
+        i.filters-toggle {
+            color: white;
+        }
+    }
+
     .filters-toggle {
-        cursor: pointer;
+        color: $accent;
         font-size: 1.5em;
-        padding-left: 0px;
     }
 
     .filtersOn {

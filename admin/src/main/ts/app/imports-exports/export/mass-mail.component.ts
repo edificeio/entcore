@@ -15,9 +15,10 @@ import { FilterPipe } from 'infra-components'
     template: `
         <div class="container has-shadow">
             <h2>{{ 'massmail.accounts' | translate }}</h2>
-            <div class="has-vertical-padding">
-                <s5l>massmail.filters</s5l> 
+            
+            <div class="has-vertical-padding is-pulled-left">
                 <button id="buttonToggle" (click)="toggleVisibility()" [ngClass]="setFiltersOnStyle()" #filtersToggle>
+                    <s5l>massmail.filters</s5l> 
                     <i class="fa fa-filter filters-toggle"></i>
                 </button>
                 
@@ -46,14 +47,14 @@ import { FilterPipe } from 'infra-components'
                 </div>
             </div>
             
-            <div class="has-vertical-padding">
+            <div class="has-vertical-padding is-pulled-right">
                 <a><s5l>process.massmail</s5l> : </a>
                 
                 <button class="cell" (click)="processMassMail('pdf')"><s5l>massmail.pdf</s5l></button>
                 <button class="cell" (click)="processMassMail('mail')"><s5l>massmail.mail</s5l></button>
             </div>
             
-            <div class="has-vertical-padding">
+            <div class="has-vertical-padding is-clearfix">
                 <div class="message is-info">
                     <div class="message-body has-text-centered">{{countUsers}} <s5l>massmail.users.total</s5l></div>
                 </div>
@@ -270,11 +271,9 @@ export class MassMailComponent implements OnInit, OnDestroy {
     }
 
     onClick(event) {
-        let buttonChildren = Array.from(this.filtersToggleRef.nativeElement.children);
-
         if (this.show 
                 && event.target != this.filtersToggleRef.nativeElement 
-                && !buttonChildren.includes(event.target)
+                && !this.filtersToggleRef.nativeElement.contains(event.target)
                 && !this.filtersDivRef.nativeElement.contains(event.target)
                 && !this.deselectItem) {
             this.toggleVisibility();
