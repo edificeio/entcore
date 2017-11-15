@@ -861,15 +861,23 @@ public class WorkspaceService extends BaseController {
 	}
 
 	private void createThumbnailIfNeeded(final String collection, final JsonObject srcFile,
-			final String documentId, JsonObject oldThumbnail, final List<String> thumbs,
+			final String documentId, final JsonObject oldThumbnail, final List<String> thumbs,
 			final Handler<Message<JsonObject>> callback) {
 		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() &&
 				srcFile != null && isImage(srcFile) && srcFile.getString("_id") != null) {
 			createThumbnails(thumbs, srcFile, collection, documentId, callback);
 		}
 		if (oldThumbnail != null) {
-			for (String attr: oldThumbnail.getFieldNames()) {
-				storage.removeFile(oldThumbnail.getString(attr), null);
+			for (final String attr: oldThumbnail.getFieldNames()) {
+				storage.removeFile(oldThumbnail.getString(attr), new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject event) {
+						if (!"ok".equals(event.getString("status"))) {
+							log.error("Error removing thumbnail " + oldThumbnail.getString(attr) + " : "
+									+ event.getString("message"));
+						}
+					}
+				});
 			}
 		}
 	}
