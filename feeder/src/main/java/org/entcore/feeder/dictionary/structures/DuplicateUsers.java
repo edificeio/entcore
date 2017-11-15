@@ -618,6 +618,7 @@ public class DuplicateUsers {
 								mergeDuplicate(new ResultMessage(mergeHandler)
 										.put("userId1", u1.getString("id"))
 										.put("userId2", u2.getString("id")), tx);
+								log.info("AutoMerge duplicates - u1 : " + u1.encode() + ", u2 : " + u2.encode());
 							} else {
 								decrementCount(count, tx);
 							}
