@@ -10,6 +10,7 @@ import { UsersStore } from '../../../users.store'
     selector: 'user-administrative-section',
     template: `
         <panel-section section-title="users.details.section.administrative">
+
             <form #administrativeForm="ngForm">
                 <form-field label="firstName">
                     <input type="text" [(ngModel)]="details.firstName" 
@@ -53,15 +54,14 @@ import { UsersStore } from '../../../users.store'
                     <input type="tel" [(ngModel)]="details.mobile" name="mobile">
                 </form-field>
             </form>
-            <div>
-                <button [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update')"
-                    (click)="updateDetails()" class="relative">
-                        <spinner-cube class="button-spinner" waitingFor="user.update">
-                        </spinner-cube>
-                        <s5l>save.modifications</s5l>
-                        <i class="fa fa-floppy-o"></i>
-                    </button>
-            </div>
+            
+            <button (click)="updateDetails()" 
+                class="is-pulled-right"
+                [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update')">
+                    <spinner-cube class="button-spinner" waitingFor="user.update"></spinner-cube>
+                    <s5l>save.modifications</s5l>
+                    <i class="fa fa-floppy-o"></i>
+            </button>
         </panel-section>
     `,
     inputs: ['user', 'structure']
