@@ -11,11 +11,13 @@ import { GroupsStore } from './groups.store'
     template: `
         <div class="flex-header">
             <h1><i class="fa fa-users"></i><s5l>groups</s5l></h1>
-            <button [routerLink]="['manual', 'create']" 
+            
+            <!-- Removed button in BETA 1 -->
+            <!-- button [routerLink]="['manual', 'create']" 
                 [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
                 <s5l>create.group</s5l>
                 <i class="fonticon group_add"></i>
-            </button>
+            </button -->
         </div>
         
         <div class="tabs">

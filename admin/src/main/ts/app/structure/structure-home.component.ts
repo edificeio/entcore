@@ -12,7 +12,7 @@ import { Subscription } from 'rxjs/Subscription'
             <div class="card-layout">
                 <quick-actions-card></quick-actions-card>
                 <user-search-card [structure]="structure" class="align-start"></user-search-card>
-                <structure-card></structure-card>
+                <services-card></services-card>
                 <imports-exports-card></imports-exports-card>
             </div>
         </div>

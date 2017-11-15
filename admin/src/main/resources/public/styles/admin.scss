@@ -219,6 +219,12 @@ ul {
             font-weight: bold;
             border-bottom-color: $accent;
         }
+
+        &[disabled] { 
+            background-color: #eee; 
+            color: graytext;
+            cursor: not-allowed;
+        }
     }
 }
 
@@ -967,7 +973,7 @@ user-search-card {
     background-color: white;
 }
 
-structure-card {
+services-card {
     background-color: white;
 }
 

@@ -7,7 +7,7 @@ import { routing } from '../core/services/routing.service'
     selector: 'imports-exports-root',
     template: `
         <div class="flex-header">
-            <h1><i class="fa fa-exchange"></i>{{ 'imports.exports' | translate }}</h1>
+            <h1><i class="fa fa-exchange"></i> {{ 'imports.exports' | translate }}</h1>
         </div>
         
         <div class="tabs">

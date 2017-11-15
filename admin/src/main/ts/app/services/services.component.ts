@@ -13,6 +13,7 @@ import { SpinnerService, routing } from '../core/services';
         <h1><i class="fa fa-th"></i> {{ 'services' | translate }}</h1>
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
+                [disabled]="tab.disabled"
                 [routerLink]="tab.view"
                 routerLinkActive="active">
                 {{ tab.label | translate }}
@@ -31,7 +32,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
     tabs = [
         { label: "Applications", view: "applications" },
         { label: "Connecteurs", view: "connectors" },
-        { label: "Widgets", view: "widgets" }
+        { label: "Widgets", view: "widgets", disabled: true }
     ];
 
     constructor(

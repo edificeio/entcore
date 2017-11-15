@@ -53,7 +53,7 @@ import { Subscription } from 'rxjs/Subscription'
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"></i>
                 <i class="fa fa-home" aria-hidden="true"
                     *ngIf="currentStructure"
-                    [tooltip]="'structure' | translate"
+                    [tooltip]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"></i>
             </div>
