@@ -75,17 +75,6 @@
 				</div>
 			</explorer>
 
-		</div><!--
-		--><div ng-repeat="file in loadingFiles | filter:{loading:true}" class="element loading">
-			<a class="container cell">
-				<i class="loading-panel"></i>
-			</a>
-
-			<legend>
-				<a ng-href="[[file.file.name]]">
-				</a>
-				<a><strong>[[me.username]]</strong></a>
-			</legend>
 		</div>
 		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<explorer ng-model="document.selected" on-open="viewFile(document)">

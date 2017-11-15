@@ -830,7 +830,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			data.path = folderString;
 		}
 
-		if(origin.file){
+		if(origin.metadata){
 			var basePath = 'documents/move/' + origin._id;
 			if(folderString !== ''){
 				basePath += '/' + encodeURIComponent(folderString);
