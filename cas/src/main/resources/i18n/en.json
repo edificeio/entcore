@@ -9,6 +9,8 @@
   "LeSiteTvRegisteredService.description" : "LeSite.tv",
   "UniversalisRegisteredService.name" : "Universalis",
   "UniversalisRegisteredService.description" : "Universalis",
+  "EnglishAttackRegisteredService.name" : "English Attack",
+  "EnglishAttackRegisteredService.description" : "Service CAS spécifique pour English Attack",
   "WebclasseursRegisteredService.name" : "Webclasseur",
   "WebclasseursRegisteredService.description" : "Webclasseur",
   "UidRegisteredService.name" : "Uid",
