@@ -120,6 +120,8 @@
     "export": "Exporter",
     "export.accounts": "Exporter des comptes",
     "export": "Exporter",
+    "export.accounts": "Exporter des comptes",
+    "export.classe": "Classe",
     "export.configuration": "Configuration de l'export",
     "link": "Lien",
     "import.users": "Importer des utilisateurs",

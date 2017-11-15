@@ -13,7 +13,7 @@ import { FilterPipe } from 'infra-components'
 @Component({
     selector: 'mass-mail',
     template: `
-        <div class="container">
+        <div class="container has-shadow">
             <h2>{{ 'massmail.accounts' | translate }}</h2>
             <div class="has-vertical-padding">
                 <s5l>massmail.filters</s5l> 

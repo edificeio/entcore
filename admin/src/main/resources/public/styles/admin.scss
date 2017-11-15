@@ -236,8 +236,9 @@ ul {
 */
 .container {
     background-color: white;
-    padding: 5px 30px;
+    padding: 10px 30px 40px 30px;
     margin-bottom: 40px;
+    overflow: auto;
 }
 
 .message {
@@ -276,6 +277,18 @@ ul {
 
 .has-vertical-padding {
     padding: 10px 0px;
+}
+
+.has-shadow {
+    box-shadow: 1px 1px 5px #AAA;
+}
+
+.is-pulled-left {
+    float: left;
+}
+
+.is-pulled-right {
+    float: right;
 }
 
 /* UX */
@@ -1674,10 +1687,14 @@ mass-mail{
     }
 }
 
-export{
-    button{
-        background-color: #ff8352;
+export {
+    button.action{
+        background-color: $accent;
         color: white ! important;
+
+        &:hover {
+            background-color: $accent-dark;
+        }
     }
 }
 
