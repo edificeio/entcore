@@ -20,8 +20,6 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users'], {replaceUrl: false})
                 }).then(() => {
-                    console.log('user resolver');
-                    
                     return user
                 }))
         } else {
