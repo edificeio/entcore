@@ -45,7 +45,6 @@
 /***/ (function(module, exports) {
 
 	Behaviours.register('auth', {});
-	
 
 
 /***/ })
