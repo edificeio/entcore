@@ -866,6 +866,8 @@ public class WorkspaceService extends BaseController {
 		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() &&
 				srcFile != null && isImage(srcFile) && srcFile.getString("_id") != null) {
 			createThumbnails(thumbs, srcFile, collection, documentId, callback);
+		} else {
+			callback.handle(null);
 		}
 		if (oldThumbnail != null) {
 			for (final String attr: oldThumbnail.getFieldNames()) {
