@@ -11,6 +11,8 @@
   "UniversalisRegisteredService.description" : "Universalis",
   "EnglishAttackRegisteredService.name" : "English Attack",
   "EnglishAttackRegisteredService.description" : "Service CAS spécifique pour English Attack",
+  "CIDJRegisteredService.name" : "CIDJ",
+  "CIDJRegisteredService.description" : "Service CAS spécifique pour CIDJ",
   "WebclasseursRegisteredService.name" : "Webclasseur",
   "WebclasseursRegisteredService.description" : "Webclasseur",
   "UidRegisteredService.name" : "Uid",
