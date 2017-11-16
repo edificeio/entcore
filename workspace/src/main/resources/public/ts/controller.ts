@@ -954,43 +954,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	updateFolders();
 	updateSharedFolders();
 
-	$scope.setFilesName = function(){
-		$scope.newFile.name = '';
-		$scope.newFile.chosenFiles = [];
-		$scope.newFile.blockIdentical = false;
-		$scope.newFile.warnIdentical = false;
-		var checkAlreadyLoaded = function(newFile){
-			_.forEach($scope.loadingFiles, function(loadedFile){
-				var fileName = loadedFile.file.name
-				var fileSize = loadedFile.file.size
-				if(newFile.file.name === fileName && newFile.file.size === fileSize){
-					$scope.newFile.warnIdentical = true
-					$scope.newFile.blockIdentical = true
-				}
-			})
-		}
-
-		for(var i = 0; i < $scope.newFile.files.length ; i++){
-			var file = $scope.newFile.files[i];
-			var splitList = file.name.split('.');
-			var extension = splitList[splitList.length - 1];
-
-			var newFile = { file: file, name: file.name.split('.' + extension)[0] } as any;
-			if($scope.newFile.name !== ''){
-				$scope.newFile.name = $scope.newFile.name + ', ';
-			}
-			$scope.newFile.name = $scope.newFile.name + file.name.split('.' + extension)[0];
-			if(splitList.length > 1){
-				newFile.extension = extension;
-			}
-			else{
-				newFile.extension = '';
-			}
-			$scope.newFile.chosenFiles.push(newFile);
-			checkAlreadyLoaded(newFile)
-		}
-	};
-
 	$scope.createFolder = function(){
 		template.close('lightbox');
 		var path = folderToString($scope.currentFolderTree, $scope.openedFolder.folder);
