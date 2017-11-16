@@ -1,4 +1,4 @@
-import { ng, Document, quota, template, DocumentStatus } from 'entcore';
+import { ng, Document, quota, template, DocumentStatus, $ } from 'entcore';
 import { folderToString } from '../model';
 
 export const importFiles = ng.directive('importFiles', () => {
@@ -76,11 +76,11 @@ export const importFiles = ng.directive('importFiles', () => {
 
 			scope.upload = {
 				documents: []
-            };
-            
-            element.on('dragenter', (e) => {
-				e.preventDefault();
-			});
+			};
+			
+			$('body').on('dragenter', '.icons-view', (e) => e.preventDefault());
+			$('body').on('dragover', '.icons-view', (e) => e.preventDefault());
+            element.on('dragenter', (e) => e.preventDefault());
 
 			element.on('dragover', (e) => {
 				element.find('.drop-zone').addClass('dragover');
@@ -91,13 +91,17 @@ export const importFiles = ng.directive('importFiles', () => {
 				element.find('.drop-zone').removeClass('dragover');
 			});
 
-			element.on('drop', async (e) => {
+			const dropFiles = async (e) => {
 				element.find('.drop-zone').removeClass('dragover');
 				e.preventDefault();
 				const files = e.originalEvent.dataTransfer.files;
 				scope.importFiles(e.originalEvent.dataTransfer.files);
+				scope.display.importFiles = true;
 				scope.$apply();
-            });
+            }
+
+			$('body').on('drop', '.icons-view', dropFiles);
+			element.on('drop', dropFiles);
 
             scope.abortOrDelete = (doc: Document) => {
 				if(doc.status === DocumentStatus.loaded){
