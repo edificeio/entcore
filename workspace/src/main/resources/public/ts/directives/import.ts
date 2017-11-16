@@ -85,7 +85,6 @@ export const importFiles = ng.directive('importFiles', () => {
 			scope.upload = {
 				documents: []
 			};
-
 			$('body').on('dragenter', '.icons-view', (e) => e.preventDefault());
 			$('body').on('dragover', '.icons-view', (e) => e.preventDefault());
             element.on('dragenter', (e) => e.preventDefault());
