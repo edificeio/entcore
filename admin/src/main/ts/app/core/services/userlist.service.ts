@@ -1,12 +1,16 @@
 import { UserModel } from '../store'
 import { Injectable, ElementRef, Renderer } from '@angular/core'
 import { BundlesService } from 'sijil'
+import { Subject } from 'rxjs/Subject';
 
 @Injectable()
 export class UserListService {
 
     constructor(private renderer: Renderer,
         private bundlesService: BundlesService){}
+
+    // Subject: used to notify userlist to refresh when a user is updated
+    updateSubject: Subject<any> = new Subject<any>();
 
     // Sorts
     sortsMap = {

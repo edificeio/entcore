@@ -10,33 +10,33 @@ import { UserModel } from '../../core/store/models'
     template: `
     <list-component
         [model]="userlist"
-        [filters]="listFilters.getFormattedFilters()"
-        [inputFilter]="userLS.filterByInput"
-        [sort]="userLS.sorts"
+        [filters]="listFiltersService.getFormattedFilters()"
+        [inputFilter]="userListService.filterByInput"
+        [sort]="userListService.sorts"
         searchPlaceholder="search.user"
         noResultsLabel="list.results.no.users"
         [ngClass]="setStyles"
-        [limit]="userLS.limit"
-        [listScroll]="userLS.listScroll"
-        (inputChange)="userLS.inputFilter = $event"
+        [limit]="userListService.limit"
+        [listScroll]="userListService.listScroll"
+        (inputChange)="userListService.inputFilter = $event"
         (onSelect)="selectedUser = $event; onselect.emit($event)">
         <div toolbar class="user-toolbar">
              <i class="fa" aria-hidden="true"
                 [ngClass]="{
-                    'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
-                    'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
-                    'selected': userLS.sortsMap.alphabetical.selected
+                    'fa-sort-alpha-asc': userListService.sortsMap.alphabetical.sort === '+',
+                    'fa-sort-alpha-desc': userListService.sortsMap.alphabetical.sort === '-',
+                    'selected': userListService.sortsMap.alphabetical.selected
                 }"
                 [tooltip]="'sort.alphabetical' | translate" position="top"
-                (click)="userLS.changeSorts('alphabetical')"></i>
+                (click)="userListService.changeSorts('alphabetical')"></i>
             <i class="fa" aria-hidden="true"
                 [ngClass]="{
-                    'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
-                    'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
-                    'selected': userLS.sortsMap.profile.selected
+                    'fa-sort-amount-asc': userListService.sortsMap.profile.sort === '+',
+                    'fa-sort-amount-desc': userListService.sortsMap.profile.sort === '-',
+                    'selected': userListService.sortsMap.profile.selected
                 }"
                 [tooltip]="'sort.profile' | translate" position="top"
-                (click)="userLS.changeSorts('profile')"></i>
+                (click)="userListService.changeSorts('profile')"></i>
             <i class="fa fa-filter toolbar-right" aria-hidden="true"
                 [tooltip]="'filters' | translate" position="top"
                 (click)="companionChange.emit('filter')"></i>
@@ -60,7 +60,7 @@ import { UserModel } from '../../core/store/models'
                     *ngIf="item?.deleteDate"
                     [tooltip]="'user.icons.tooltip.deleted' | translate"></i>
                 <i class="fonticon waiting-predelete" 
-                    *ngIf="item?.disappearanceDate"
+                    *ngIf="!item?.deleteDate && item?.disappearanceDate"
                     [tooltip]="'user.icons.tooltip.disappeared' | translate"></i>
             </span>
             <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
@@ -77,34 +77,34 @@ import { UserModel } from '../../core/store/models'
         }
     `],
 
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ UserListService ]
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserList implements OnInit, OnDestroy {
 
-    private filtersUpdatesSubscriber: Subscription
+    private filtersUpdatesSubscriber: Subscription;
+    private userUpdatesSubscriber: Subscription;
 
-    @Input() userlist: UserModel[] = []
+    @Input() userlist: UserModel[] = [];
 
-    @Input() listCompanion: string
-    @Output("listCompanionChange") companionChange: EventEmitter<string> = new EventEmitter<string>()
+    @Input() listCompanion: string;
+    @Output("listCompanionChange") companionChange: EventEmitter<string> = new EventEmitter<string>();
 
     // Selection
-    @Input() selectedUser: UserModel
-    @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>()
+    @Input() selectedUser: UserModel;
+    @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>();
 
     constructor(private cdRef: ChangeDetectorRef,
-        public userLS: UserListService,
-        public listFilters: UserlistFiltersService){}
+        public userListService: UserListService,
+        public listFiltersService: UserlistFiltersService){}
 
     ngOnInit() {
-        this.filtersUpdatesSubscriber = this.listFilters.updateSubject.subscribe(() => {
-            this.cdRef.markForCheck()
-        })
+        this.filtersUpdatesSubscriber = this.listFiltersService.updateSubject.subscribe(() => this.cdRef.markForCheck());
+        this.userUpdatesSubscriber = this.userListService.updateSubject.subscribe(() => this.cdRef.markForCheck());
     }
 
     ngOnDestroy() {
-        this.filtersUpdatesSubscriber.unsubscribe()
+        this.filtersUpdatesSubscriber.unsubscribe();
+        this.userUpdatesSubscriber.unsubscribe();
     }
 
     setStyles = (user: UserModel) => {

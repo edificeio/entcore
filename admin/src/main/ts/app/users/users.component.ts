@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs/Subscription'
 
 import { StructureModel, UserModel } from '../core/store'
 import { routing } from '../core/services/routing.service'
-import { UserlistFiltersService, SpinnerService, NotifyService } from '../core/services'
+import { UserlistFiltersService, SpinnerService, NotifyService, UserListService } from '../core/services'
 import { UsersStore } from './users.store'
 
 @Component({
@@ -32,7 +32,7 @@ import { UsersStore } from './users.store'
             </div>
         </side-layout>
     `,
-    providers: [UsersStore],
+    providers: [UsersStore, UserListService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UsersComponent implements OnInit, OnDestroy {

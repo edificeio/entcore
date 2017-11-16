@@ -4,11 +4,9 @@ import { AbstractControl, NgForm } from '@angular/forms'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 
-import { SpinnerService, NotifyService } from '../../core/services'
+import { SpinnerService, NotifyService, UserListService } from '../../core/services'
 import { globalStore } from '../../core/store'
 import { UserModel, UserDetailsModel, StructureModel } from '../../core/store/models'
-
-
 import { UsersStore } from '../users.store'
 
 @Component({
@@ -66,7 +64,7 @@ import { UsersStore } from '../users.store'
             </button>
         </div>
 
-        <div class="panel-message yellow" *ngIf="user?.disappearanceDate">
+        <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
             <i class="fonticon waiting-predelete"></i>
             <s5l>user.predeleted.waiting</s5l>
         </div>
@@ -182,7 +180,8 @@ export class UserDetails implements OnInit, OnDestroy{
         private usersStore: UsersStore,
         private cdRef: ChangeDetectorRef,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private userListService: UserListService
     ){}
 
     ngOnInit() {
@@ -242,8 +241,9 @@ export class UserDetails implements OnInit, OnDestroy{
     toggleUserBlock() {
         this.spinner.perform('portal-content', this.details.toggleBlock())
             .then(() => {
-                this.user.blocked = !this.user.blocked
-                this.updateBlockedInStructures()
+                this.user.blocked = !this.user.blocked;
+                this.updateBlockedInStructures();
+                this.userListService.updateSubject.next();
 
                 this.ns.success(
                     {
@@ -283,17 +283,18 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     isRemovable() {
-        return (this.user.disappearanceDate 
-            || (this.user.source !== 'AAF' && this.user.source !== "AAF1D")
+        return ((this.user.disappearanceDate 
+            || (this.user.source !== 'AAF' && this.user.source !== "AAF1D"))
             && !this.user.deleteDate)
     }
 
     removeUser() {
         this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
             .then(() => {
-                this.user.deleteDate = Date.now()
-                this.updateDeletedInStructures()
-                this.cdRef.markForCheck()
+                this.user.deleteDate = Date.now();
+                this.updateDeletedInStructures();
+                this.userListService.updateSubject.next();
+                this.cdRef.markForCheck();
                 
                 this.ns.success(
                     { 
@@ -330,8 +331,9 @@ export class UserDetails implements OnInit, OnDestroy{
     restoreUser() {
         this.spinner.perform('portal-content', this.user.restore())
             .then(() => {
-                this.user.deleteDate = null
-                this.updateDeletedInStructures()
+                this.user.deleteDate = null;
+                this.updateDeletedInStructures();
+                this.userListService.updateSubject.next();
 
                 this.ns.success(
                     { 
