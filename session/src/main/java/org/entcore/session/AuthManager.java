@@ -113,6 +113,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "drop":
 			doDrop(message);
 			break;
+		case "dropCacheSession":
+			doDropCacheSession(message);
+			break;
 		case "dropPermanentSessions" :
 			doDropPermanentSessions(message);
 			break;
@@ -125,6 +128,25 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		default:
 			sendError(message, "Invalid action: " + action);
 		}
+	}
+
+	private void doDropCacheSession(Message<JsonObject> message) {
+		final String userId = message.body().getString("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "[doDropCacheSession] Invalid userId : " + message.body().encode());
+			return;
+		}
+		final List<LoginInfo> loginInfos = logins.get(userId);
+		if (loginInfos != null) {
+			final List<String> sessionIds = new ArrayList<>();
+			for (LoginInfo loginInfo : loginInfos) {
+				sessionIds.add(loginInfo.sessionId);
+			}
+			for (String sessionId : sessionIds) {
+				dropSession(null, sessionId, null);
+			}
+		}
+		sendOK(message);
 	}
 
 	private void doDropPermanentSessions(final Message<JsonObject> message) {
@@ -418,7 +440,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		if (meta != null) {
 			res.putObject("sessionMetadata", meta);
 		}
-		sendOK(message, res);
+		if (message != null) {
+			sendOK(message, res);
+		}
 	}
 
 	private LoginInfo removeLoginInfo(String sessionId, String userId) {

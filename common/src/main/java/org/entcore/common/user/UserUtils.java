@@ -445,6 +445,21 @@ public class UserUtils {
 		});
 	}
 
+	public static void deleteCacheSession(EventBus eb, String userId, final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "dropCacheSession")
+				.putString("userId", userId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
 	public static void addSessionAttribute(EventBus eb, String userId,
 			String key, Object value, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()

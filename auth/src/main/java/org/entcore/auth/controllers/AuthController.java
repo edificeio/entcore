@@ -882,6 +882,14 @@ public class AuthController extends BaseController {
 									}
 								}
 							});
+							UserUtils.deleteCacheSession(eb, userId, new org.vertx.java.core.Handler<Boolean>() {
+								@Override
+								public void handle(Boolean event) {
+									if (!event) {
+										log.error("Error delete cache session with userId : " + userId);
+									}
+								}
+							});
 						} else {
 							badRequest(request);
 						}
