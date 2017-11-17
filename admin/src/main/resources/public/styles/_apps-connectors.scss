@@ -1,0 +1,716 @@
+//  CONNECTORS TURNING APPS ?
+i.agenda-large,
+i.type.agenda,
+i.agenda {
+  @include fonticon;
+}
+
+i.agenda-large::before,
+i.type.agenda::before,
+i.agenda::before {
+  content: "\e83c";
+  color: $yellow;
+}
+
+i.absences-large,
+i.type.absences,
+i.absences {
+  @include fonticon;
+}
+
+i.absences-large::before,
+i.type.absences::before,
+i.absences::before {
+  content: "\e80b";
+  color: $red;
+}
+
+//  CONNECTORS
+i.esidoc-large,
+i.type.esidoc,
+i.esidoc {
+  @include fonticon;
+}
+
+i.esidoc-large::before,
+i.type.esidoc::before,
+i.esidoc::before {
+  content: "\e826";
+  color: $purple;
+}
+
+i.edumedia-large,
+i.type.edumedia,
+i.edumedia {
+  @include fonticon;
+}
+
+i.edumedia-large::before,
+i.type.edumedia::before,
+i.edumedia::before {
+  content: "\e887";
+  color: $cyan;
+}
+
+i.lesitetv-large,
+i.type.lesitetv,
+i.lesitetv {
+  @include fonticon;
+}
+
+i.lesitetv-large::before,
+i.type.lesitetv::before,
+i.lesitetv::before {
+  content: "\e87a";
+  color: $yellow;
+}
+
+i.maxicours-large,
+i.type.maxicours,
+i.maxicours {
+  @include fonticon;
+}
+
+i.maxicours-large::before,
+i.type.maxicours::before,
+i.maxicours::before {
+  content: '\e818';
+  color: $pink;
+}
+
+i.scolarite-large,
+i.type.scolarite,
+i.scolarite {
+  @include fonticon;
+}
+
+i.scolarite-large::before,
+i.type.scolarite::before,
+i.scolarite::before {
+  content: "\e802";
+  color: $cyan;
+}
+
+i.td-base-large,
+i.type.td-base,
+i.td-base {
+  @include fonticon;
+}
+
+i.td-base-large::before,
+i.type.td-base::before,
+i.td-base::before {
+  content: "\e883";
+  color: $cyan;
+}
+
+i.canal-numerique-large,
+i.type.canal-numerique,
+i.canal-numerique {
+  @include fonticon;
+}
+
+i.canal-numerique-large::before,
+i.type.canal-numerique::before,
+i.canal-numerique::before {
+  content: "\e80a";
+  color: $red;
+}
+
+i.aide-devoirs-large,
+i.type.aide-devoirs,
+i.aide-devoirs {
+  @include fonticon;
+}
+
+i.aide-devoirs-large::before,
+i.type.aide-devoirs::before,
+i.aide-devoirs::before {
+  content: "\e818";
+  color: $green;
+}
+
+i.universalis-large,
+i.type.universalis,
+i.universalis {
+  @include fonticon;
+}
+
+i.universalis-large::before,
+i.type.universalis::before,
+i.universalis::before {
+  content: "\e831";
+  color: $cyan;
+}
+
+i.webclasseur-large,
+i.type.webclasseur,
+i.webclasseur {
+  @include fonticon;
+}
+
+i.webclasseur-large::before,
+i.type.webclasseur::before,
+i.webclasseur::before {
+  content: "\e878";
+  color: $cyan;
+}
+
+i.admission-post-bac-large,
+i.type.admission-post-bac,
+i.admission-post-bac {
+  @include fonticon;
+}
+
+i.admission-post-bac-large::before,
+i.type.admission-post-bac::before,
+i.admission-post-bac::before {
+  content: '\e816';
+  color: $red;
+}
+
+i.pronote-large,
+i.type.pronote,
+i.pronote {
+  @include fonticon;
+}
+
+i.pronote-large::before,
+i.type.pronote::before,
+i.pronote::before {
+  content: '\e82a';
+  color: $purple;
+}
+
+i.cerise-large,
+i.type.cerise,
+i.cerise {
+  @include fonticon;
+}
+
+i.cerise-large::before,
+i.type.cerise::before,
+i.cerise::before {
+  content: '\e81c';
+  color: $purple;
+}
+
+i.charlemagne-large,
+i.type.charlemagne,
+i.charlemagne {
+  @include fonticon;
+}
+
+i.charlemagne-large::before,
+i.type.charlemagne::before,
+i.charlemagne::before {
+  content: '\e885';
+  color: $red;
+}
+
+i.scolinfo-large,
+i.type.scolinfo,
+i.scolinfo {
+  @include fonticon;
+}
+
+i.scolinfo-large::before,
+i.type.scolinfo::before,
+i.scolinfo::before {
+  content: '\e886';
+  color: $purple;
+}
+
+i.paraschool-large,
+i.type.paraschool,
+i.paraschool {
+  @include fonticon;
+}
+
+i.paraschool-large::before,
+i.type.paraschool::before,
+i.paraschool::before {
+  content: '\e82d';
+  color: $purple;
+}
+
+i.vie-scolaire-large,
+i.type.vie-scolaire,
+i.vie-scolaire {
+  @include fonticon;
+}
+
+i.vie-scolaire-large::before,
+i.type.vie-scolaire::before,
+i.vie-scolaire::before {
+  content: '\e879';
+  color: $yellow;
+}
+
+i.pro-eps-large,
+i.type.pro-eps,
+i.pro-eps {
+  @include fonticon;
+}
+
+i.pro-eps-large::before,
+i.type.pro-eps::before,
+i.pro-eps::before {
+  content: '\e884';
+  color: $cyan;
+}
+
+i.kne-large,
+i.type.kne,
+i.kne {
+  @include fonticon;
+}
+
+i.kne-large::before,
+i.type.kne::before,
+i.kne::before {
+  content: '\e81f';
+  color: $purple;
+}
+
+i.picardie-cursus-large,
+i.type.picardie-cursus,
+i.picardie-cursus {
+  @include fonticon;
+}
+
+i.picardie-cursus-large::before,
+i.type.picardie-cursus::before,
+i.picardie-cursus::before {
+  content: '\e921';
+  color: $purple;
+}
+
+i.award-large,
+i.type.award,
+i.award {
+  @include fonticon;
+}
+
+i.award-large::before,
+i.type.award::before,
+i.award::before {
+  content: '\e818';
+  color: $purple;
+}
+
+i.onisep-large,
+i.type.onisep,
+i.onisep {
+  @include fonticon;
+}
+
+i.onisep-large::before,
+i.type.onisep::before,
+i.onisep::before {
+  content: '\e88c';
+  color: $cyan;
+}
+
+i.banquesavoir-large,
+i.type.banquesavoir,
+i.banquesavoir {
+  @include fonticon;
+}
+
+i.banquesavoir-large::before,
+i.type.banquesavoir::before,
+i.banquesavoir::before {
+  content: '\e88d';
+  color: $cyan;
+}
+
+i.unstagepourtous-large,
+i.type.unstagepourtous,
+i.unstagepourtous {
+  @include fonticon;
+}
+
+i.unstagepourtous-large::before,
+i.type.unstagepourtous::before,
+i.unstagepourtous::before {
+  content: '\e88e';
+  color: $pink;
+}
+
+i.bcdi-large,
+i.type.bcdi,
+i.bcdi {
+  @include fonticon;
+}
+
+i.bcdi-large::before,
+i.type.bcdi::before,
+i.bcdi::before {
+  content: '\e88f';
+  color: $purple;
+}
+
+i.ressoucesdepartementale91-large,
+i.type.ressoucesdepartementale91,
+i.ressoucesdepartementale91 {
+  @include fonticon;
+}
+
+i.ressoucesdepartementale91-large::before,
+i.type.ressoucesdepartementale91::before,
+i.ressoucesdepartementale91::before {
+  content: '\e890';
+  color: $cyan;
+}
+
+i.assr-large,
+i.type.assr,
+i.assr {
+  @include fonticon;
+}
+
+i.assr-large::before,
+i.type.assr::before,
+i.assr::before {
+  content: '\e891';
+  color: $red;
+}
+
+i.museefrancaisphoto-large,
+i.type.museefrancaisphoto,
+i.museefrancaisphoto {
+  @include fonticon;
+}
+
+i.museefrancaisphoto-large::before,
+i.type.museefrancaisphoto::before,
+i.museefrancaisphoto::before {
+  content: '\e892';
+  color: $purple;
+}
+
+i.cidj-large,
+i.type.cidj,
+i.cidj {
+  @include fonticon;
+}
+
+i.cidj-large::before,
+i.type.cidj::before,
+i.cidj::before {
+  content: '\e893';
+  color: $green;
+}
+
+i.onisep2-large,
+i.type.onisep2,
+i.onisep2 {
+  @include fonticon;
+}
+
+i.onisep2-large::before,
+i.type.onisep2::before,
+i.onisep2::before {
+  content: '\e894';
+  color: $cyan;
+}
+
+i.itopstore-large,
+i.type.itopstore,
+i.itopstore {
+  @include fonticon;
+}
+
+i.itopstore-large::before,
+i.type.itopstore::before,
+i.itopstore::before {
+  content: '\e895';
+  color: $green;
+}
+
+i.cervoprint-large,
+i.type.cervoprint,
+i.cervoprint {
+  @include fonticon;
+}
+
+i.cervoprint-large::before,
+i.type.cervoprint::before,
+i.cervoprint::before {
+  content: '\e896';
+  color: $cyan;
+}
+
+i.glpi-large,
+i.type.glpi,
+i.glpi {
+  @include fonticon;
+}
+
+i.glpi-large::before,
+i.type.glpi::before,
+i.glpi::before {
+  content: '\e897';
+  color: $red;
+}
+
+i.elyceepicardie-large,
+i.type.elyceepicardie,
+i.elyceepicardie {
+  @include fonticon;
+}
+
+i.elyceepicardie-large::before,
+i.type.elyceepicardie::before,
+i.elyceepicardie::before {
+  content: '\e898';
+  color: $purple;
+}
+
+i.sacoche-large,
+i.type.sacoche,
+i.sacoche {
+  @include fonticon;
+}
+
+i.sacoche-large::before,
+i.type.sacoche::before,
+i.sacoche::before {
+  content: '\e899';
+  color: $indigo;
+}
+
+i.planetemetierspicardie-large,
+i.type.planetemetierspicardie,
+i.planetemetierspicardie {
+  @include fonticon;
+}
+
+i.planetemetierspicardie-large::before,
+i.type.planetemetierspicardie::before,
+i.planetemetierspicardie::before {
+  content: '\e89a';
+  color: $purple;
+}
+
+i.electron-large,
+i.type.electron,
+i.electron {
+  @include fonticon;
+}
+
+i.electron-large::before,
+i.type.electron::before,
+i.electron::before {
+  content: '\e89b';
+  color: $red;
+}
+
+i.gepi-large,
+i.type.gepi,
+i.gepi {
+  @include fonticon;
+}
+
+i.gepi-large::before,
+i.type.gepi::before,
+i.gepi::before {
+  content: '\e89c';
+  color: $cyan;
+}
+
+i.madmagz-large,
+i.type.madmagz,
+i.madmagz {
+  @include fonticon;
+}
+
+i.madmagz-large::before,
+i.type.madmagz::before,
+i.madmagz::before {
+  content: '\e89d';
+  color: $yellow;
+}
+
+i.educagri-large,
+i.type.educagri,
+i.educagri {
+  @include fonticon;
+}
+
+i.educagri-large::before,
+i.type.educagri::before,
+i.educagri::before {
+  content: '\e89e';
+  color: $purple;
+}
+
+i.monorientationenligne-large,
+i.type.monorientationenligne,
+i.monorientationenligne {
+  @include fonticon;
+}
+
+i.monorientationenligne-large::before,
+i.type.monorientationenligne::before,
+i.monorientationenligne::before {
+  content: '\e89f';
+  color: $yellow;
+}
+
+i.turboself-large,
+i.type.turboself,
+i.turboself {
+  @include fonticon;
+}
+
+i.turboself-large::before,
+i.type.turboself::before,
+i.turboself::before {
+  content: '\e8a0';
+  color: $yellow;
+}
+
+i.netvibes-large,
+i.type.netvibes,
+i.netvibes {
+  @include fonticon;
+}
+
+i.netvibes-large::before,
+i.type.netvibes::before,
+i.netvibes::before {
+  content: '\e8a1';
+  color: $green;
+}
+
+i.monstageenligne-large,
+i.type.monstageenligne,
+i.monstageenligne {
+  @include fonticon;
+}
+
+i.monstageenligne-large::before,
+i.type.monstageenligne::before,
+i.monstageenligne::before {
+  content: '\e8a2';
+  color: $cyan;
+}
+
+i.matholycee-large,
+i.type.matholycee,
+i.matholycee {
+  @include fonticon;
+}
+
+i.matholycee-large::before,
+i.type.matholycee::before,
+i.matholycee::before {
+  content: '\e8a3';
+  color: $red;
+}
+
+i.biblionisep-large,
+i.type.biblionisep,
+i.biblionisep {
+  @include fonticon;
+}
+
+i.biblionisep-large::before,
+i.type.biblionisep::before,
+i.biblionisep::before {
+  content: '\e8a4';
+  color: $green;
+}
+
+i.lesechos-large,
+i.type.lesechos,
+i.lesechos {
+  @include fonticon;
+}
+
+i.lesechos-large::before,
+i.type.lesechos::before,
+i.lesechos::before {
+  content: '\e8a5';
+  color: $cyan;
+}
+
+i.edutheque-large,
+i.type.edutheque,
+i.edutheque {
+  @include fonticon;
+}
+
+i.edutheque-large::before,
+i.type.edutheque::before,
+i.edutheque::before {
+  content: '\e8a6';
+  color: $yellow;
+}
+
+i.europress-large,
+i.type.europress,
+i.europress {
+  @include fonticon;
+}
+
+i.europress-large::before,
+i.type.europress::before,
+i.europress::before {
+  content: '\e8a7';
+  color: $cyan;
+}
+
+i.picardieregion-large,
+i.type.picardieregion,
+i.picardieregion {
+  @include fonticon;
+}
+
+i.picardieregion-large::before,
+i.type.picardieregion::before,
+i.picardieregion::before {
+  content: '\e8a8';
+  color: $green;
+}
+
+i.lemonde-large,
+i.type.lemonde,
+i.lemonde {
+  @include fonticon;
+}
+
+i.lemonde-large::before,
+i.type.lemonde::before,
+i.lemonde::before {
+  content: '\e8a9';
+  color: $cyan;
+}
+
+i.connecteurgenerique1-large,
+i.type.connecteurgenerique1,
+i.connecteurgenerique1 {
+  @include fonticon;
+}
+
+i.connecteurgenerique1-large::before,
+i.type.connecteurgenerique1::before,
+i.connecteurgenerique1::before {
+  content: '\e8aa';
+  color: $cyan;
+}
+
+i.connecteurgenerique2-large,
+i.type.connecteurgenerique2,
+i.connecteurgenerique2 {
+  @include fonticon;
+}
+
+i.connecteurgenerique2-large::before,
+i.type.connecteurgenerique2::before,
+i.connecteurgenerique2::before {
+  content: '\e8ab';
+  color: $cyan;
+}

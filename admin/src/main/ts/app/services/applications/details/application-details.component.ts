@@ -14,18 +14,27 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
 @Component({
     selector: 'app-details',
     template: `
-        <div class="panel-header" [ngSwitch]="app.roles.length">
-            <span *ngSwitchCase="0">{{ 'list.no.role' | translate }}</span>
-            <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ app.name }}</span>
+        <div class="panel-header">
+            {{ 'application.give.rights' | translate }}
         </div>
-        <div *ngFor="let role of app.roles">
-            <services-role
-                [role]="role"
-                (openLightbox)="openLightbox($event)"
-                (onRemove)="removeGroupFromRole($event, role.id)"
-            >
-            </services-role>
+
+        <div class="panel-section">
+            <div *ngIf="app.roles.length == 0" class="message is-warning">
+                <div class="message-body">
+                    {{ 'list.no.role' | translate }}
+                </div>
+            </div>
+            
+            <div *ngFor="let role of app.roles" class="has-vertical-padding">
+                <services-role
+                    [role]="role"
+                    (openLightbox)="openLightbox($event)"
+                    (onRemove)="removeGroupFromRole($event, role.id)">
+                </services-role>
+            </div>
         </div>
+        
+        
         <services-role-attribution
             [show]="showLightbox"
             (onClose)="showLightbox = false"
@@ -33,8 +42,7 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
             searchPlaceholder="search.group"
             noResultsLabel="list.results.no.groups"
             (onAdd)="addGroupsToRole()"
-            [selectedRole]="selectedRole"
-        >
+            [selectedRole]="selectedRole">
         </services-role-attribution>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -70,7 +78,7 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         this.appSubscriber = this.route.data.subscribe(data => {
             if(data["roles"]) {
                 this.servicesStore.application.roles = data["roles"];
-                this.app.roles = this.servicesStore.application.roles;
+                this.app.roles = this.servicesStore.application.roles.filter(r => r.transverse == false);
                 this.cdRef.markForCheck();
             }
         })

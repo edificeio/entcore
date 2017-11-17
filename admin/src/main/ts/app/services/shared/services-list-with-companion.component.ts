@@ -13,18 +13,18 @@ import { ServicesStore } from '../services.store';
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
             <div side-card>
                 <list-component
-                [model]="collectionRef[serviceName].collection"
-                sort="name"
-                [inputFilter]="filterByInput"
-                [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
-                [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
-                [isSelected]="isSelected"
-                (inputChange)="itemInputFilter = $event"
-                >
+                    [model]="collectionRef[serviceName].collection"
+                    sort="name"
+                    [inputFilter]="filterByInput"
+                    [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
+                    [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
+                    [isSelected]="isSelected"
+                    (inputChange)="itemInputFilter = $event"
+                    (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})"
+                    [ngClass]="setStylesListItem">
                     <ng-template let-item>
-                        <div routerLink="{{item.id}}">
-                            {{ item.name }}
-                        </div>
+                        <div><i class="{{ item.icon }}"></i></div>
+                        <div>{{ item.name }}</div>
                     </ng-template>
                 </list-component>
             </div>
@@ -57,10 +57,10 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     ];
 
     constructor(
-        public cdRef: ChangeDetectorRef,
-        private router: Router,
-        private route: ActivatedRoute,
-        public servicesStore: ServicesStore){}
+        private cdRef: ChangeDetectorRef,
+        public router: Router,
+        public route: ActivatedRoute,
+        private servicesStore: ServicesStore){}
 
     ngAfterViewInit() {
         this.cdRef.markForCheck();
@@ -73,10 +73,10 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     collectionRef = {
         applications : {
             collection: this.servicesStore.structure.applications.data, 
-            model:this.servicesStore.application, 
-            routeData:'apps',
-            searchPlaceholder:'search.application',
-            noResultsLabel:'list.results.no.applications'
+            model: this.servicesStore.application, 
+            routeData: 'apps',
+            searchPlaceholder: 'search.application',
+            noResultsLabel: 'list.results.no.applications'
         },
         connectors : {
             collection: this.servicesStore.structure.connectors.data, 
@@ -87,25 +87,21 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         }
     }
 
-    @Output("onSelect") onSelect: EventEmitter<{}> = new EventEmitter();
-    @Output("listChange") listChange: EventEmitter<any> = new EventEmitter();
+    @Input() selectedItem
 
     closePanel() {
         this.router.navigate(['..'], { relativeTo: this.route });
     }
-
-    
     private routeSubscriber:Subscription;
 
     ngOnInit(): void {
         if (!this.serviceName) {
-            throw new Error('Input property serviceName  is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
+            throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
         }
         this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
             if(data[this.collectionRef[this.serviceName].routeData]) {
                 this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
-                    .filter(app => this.filteredApps.indexOf(app.name) < 0
-                );
+                    .filter(app => this.filteredApps.indexOf(app.name) < 0);
                 this.cdRef.markForCheck();
             }
         })
@@ -133,5 +129,11 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
             return this.router.isActive(`${basePath}\\${this.collectionRef[this.serviceName].model.id}`  , true);
         else 
             return false;
+    }
+
+    setStylesListItem = (item) => {
+        return {
+            selected: this.selectedItem && item && this.selectedItem.id === item.id
+        }
     }
 }

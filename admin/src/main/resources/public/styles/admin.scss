@@ -1,26 +1,6 @@
 /* Google Font */
 @import url('https://fonts.googleapis.com/css?family=Oxygen');
-
-/* Generic Icons */
-@font-face {
-    font-family: 'generic-icons';
-    src: url('generic-icons-1.0.0.woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
-@mixin fonticon {
-    font-family: "generic-icons";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: none;
-    font-weight: normal;
-    font-style: normal;
-}
-
-i.fonticon {
-    @include fonticon;
-}
+@import "icons";
 
 /* Variables */
 // $main: rgb(0, 200, 248);
@@ -243,7 +223,7 @@ ul {
 
 .message {
     border-radius: 3px;
-    margin: 10px 0px;
+    margin: 10px 10px;
 
     p { margin : 0px ;}
     .message-header {
@@ -269,6 +249,10 @@ ul {
     &.is-info .message-header { background: $info;}
     &.is-danger .message-header { background: $danger;}
     &.is-warning .message-header { background: $warning;}
+}
+
+.has-accent-color {
+    color: $accent;
 }
 
 .has-text-centered {
@@ -726,12 +710,9 @@ spinner-cube.button-spinner {
 
     .side-companion {
         @extend .card;
+        background-color: white;
 
         margin-bottom: 60px;
-
-        div[side-companion] {
-            background-color: white;
-        }
 
         .panel-header {
             font-size: 1.6em;
@@ -964,8 +945,37 @@ user-list {
         }
     }
     .list-wrapper {
-        max-height: 55vh;
+        max-height: 60vh;
         overflow-y: auto;
+    }
+}
+
+services-list-with-companion {
+    .panel-section {
+        min-height: 50px;
+    }
+
+    .side-card {
+        flex-basis: 200px !important;
+    }
+
+    .list-wrapper {
+        max-height: 60vh;
+        overflow-y: auto;
+
+        li {
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px !important;
+            min-height: 80px;
+            text-align: center;
+
+            i {
+                font-size: 3.5em;
+            }
+        }
     }
 }
 
