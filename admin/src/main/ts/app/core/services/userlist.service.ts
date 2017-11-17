@@ -79,7 +79,8 @@ export class UserListService {
 
         if (!this.ticking) {
             window.requestAnimationFrame(() => {
-                 if ((divElem.offsetHeight + divElem.scrollTop) >= divElem.scrollHeight) {
+                // add users when user scroll until 70% of visbile div list
+                if ((divElem.offsetHeight + divElem.scrollTop) >= (divElem.scrollHeight * 0.7)) {
                     this.addPage(list.length)
                     cdRef.markForCheck()
                 }
