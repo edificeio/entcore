@@ -21,11 +21,19 @@ import { RoleModel, GroupModel } from '../../core/store/models';
                 </div>
             </div>
             <div class="flex-container" *ngIf="role.groups.length > 0">
-                <div *ngFor="let group of role.groups" class="flex-item">
-                    <label>{{ group.name }}</label>
-
-                    <!-- Button removed for Beta 1 -->
-                    <!--<i class="fa fa-times action" (click)="onRemove.emit(group)"></i>-->
+                <div>
+                    <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">{{ 'groups.local' | translate }}</h4>
+                    <div *ngFor="let group of role.groups" class="flex-item">
+                        <label>{{ group.name }}</label>
+                        <!-- Button removed for Beta 1 -->
+                        <!--<i class="fa fa-times action" (click)="onRemove.emit(group)"></i>-->
+                    </div>    
+                </div>
+                <div *ngIf="role.subStructures != null && role.subStructures.length > 0">
+                    <h4>{{ 'role.substructure' | translate }}</h4>
+                    <div *ngFor="let s of role.subStructures" class="flex-item">
+                        <label>{{ s }}</label>
+                    </div>   
                 </div>
             </div>
         </panel-section>

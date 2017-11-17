@@ -263,5 +263,7 @@
     "users.with.mail": "Utilisateur avec courriel",
     "users.without.mail": "Utilisateur sans courriel",
     "mergeKey": "Clé de fusion",
-    "generate" : "Générer"
+    "generate" : "Générer",
+    "groups.local": "Groupes locaux :",
+    "role.substructure": "Structures bénéficiaires du droit :"
 }
