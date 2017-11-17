@@ -9,14 +9,14 @@ import { ServicesStore } from '../../services/services.store';
 @Component({
     selector: 'services-role-attribution',
     template: `
-        <light-box [show]="show" (onClose)="onClose.emit()"> 
-            <h1 class="panel-header">{{ 'add.groups' | translate }}</h1>
+        <light-box [show]="show" (onClose)="onClose.emit()">
+            <h1 class="panel-header">{{ 'services.roles.groups.add' | translate }}</h1>
             <div class="panel-header-sub">
-                <button (click)="filterByType('all')">{{ 'all' | translate }}</button>
-                <button (click)="filterByType('profile')">{{ 'applications.groups.structure' | translate }}</button>
-                <button (click)="filterByType('class')">{{ 'applications.classes' | translate }}</button>
-                <button (click)="filterByType('functional')">{{ 'applications.groups.functional' | translate }}</button>
-                <button (click)="filterByType('manual')">{{ 'applications.groups.manual' | translate }}</button>
+                <button (click)="filterByType('all')">{{ 'services.roles.groups.all' | translate }}</button>
+                <button (click)="filterByType('profile')">{{ 'services.groups.structure' | translate }}</button>
+                <button (click)="filterByType('class')">{{ 'services.classes' | translate }}</button>
+                <button (click)="filterByType('functional')">{{ 'services.groups.functional' | translate }}</button>
+                <button (click)="filterByType('manual')">{{ 'services.groups.manual' | translate }}</button>
             </div>
             <form>
                 <list-component

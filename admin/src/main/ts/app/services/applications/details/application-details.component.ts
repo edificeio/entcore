@@ -15,13 +15,13 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
     selector: 'app-details',
     template: `
         <div class="panel-header">
-            {{ 'application.give.rights' | translate }}
+            {{ 'services.rights.give' | translate }}
         </div>
 
         <div class="panel-section">
             <div *ngIf="app.roles.length == 0" class="message is-warning">
                 <div class="message-body">
-                    {{ 'list.no.role' | translate }}
+                    {{ 'services.application.roles.list.empty' | translate }}
                 </div>
             </div>
             

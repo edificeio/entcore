@@ -17,7 +17,7 @@ import { RoleModel, GroupModel } from '../../core/store/models';
 
             <div *ngIf="role.groups.length == 0" class="message is-warning">
                 <div class="message-body">
-                    <s5l>list.role.no.groups</s5l>
+                    <s5l>services.roles.groups.empty</s5l>
                 </div>
             </div>
             <div class="flex-container" *ngIf="role.groups.length > 0">

@@ -13,18 +13,26 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
 @Component({
     selector: 'connector-details',
     template: `
-        <div class="panel-header" [ngSwitch]="connector.roles.length">
-            <span *ngSwitchCase="0">{{ 'list.no.role' | translate }}</span>
-            <span *ngSwitchDefault>{{ 'application.give.rights' | translate }} {{ connector.name }}</span>
+        <div class="panel-header">
+            {{ 'services.rights.give' | translate }}
         </div>
-        <div *ngFor="let role of connector.roles">
-            <services-role
-                [role]="role"
-                (openLightbox)="openLightbox($event)"
-                (onRemove)="removeGroupFromRole($event, role.id)"
-            >
-            </services-role>
+
+        <div class="panel-section">
+            <div *ngIf="connector.roles.length == 0" class="message is-warning">
+                <div class="message-body">
+                    {{ 'services.connector.roles.list.empty' | translate }}
+                </div>
+            </div>
+            
+            <div *ngFor="let role of connector.roles" class="has-vertical-padding">
+                <services-role
+                    [role]="role"
+                    (openLightbox)="openLightbox($event)"
+                    (onRemove)="removeGroupFromRole($event, role.id)">
+                </services-role>
+            </div>
         </div>
+
         <services-role-attribution
             [show]="showLightbox"
             (onClose)="showLightbox = false"
@@ -89,7 +97,6 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
         this.servicesStore.connector.roles.find(r => r.id == this.selectedRole.id)
             .addGroupsToRole(this.roleAttributionComponent  .getCheckedGroups());
         this.showLightbox = false;
-
         this.cdRef.markForCheck();
     }
 

@@ -23,8 +23,13 @@ import { ServicesStore } from '../services.store';
                     (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})"
                     [ngClass]="setStylesListItem">
                     <ng-template let-item>
-                        <div><i class="{{ item.icon }}"></i></div>
-                        <div>{{ item.name }}</div>
+                        <div class="service-icon">
+                            <img src="{{ item.icon }}" *ngIf="isIconWorkspaceImg(item.icon)" />
+                            <i class="{{ item.icon }}" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
+                        </div>
+                        <div class="service-name">
+                            {{ item.name }}
+                        </div>
                     </ng-template>
                 </list-component>
             </div>
@@ -75,15 +80,15 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
             collection: this.servicesStore.structure.applications.data, 
             model: this.servicesStore.application, 
             routeData: 'apps',
-            searchPlaceholder: 'search.application',
-            noResultsLabel: 'list.results.no.applications'
+            searchPlaceholder: 'services.application.search',
+            noResultsLabel: 'services.application.list.empty'
         },
         connectors : {
             collection: this.servicesStore.structure.connectors.data, 
             model:this.servicesStore.connector, 
             routeData:'connectors',
-            searchPlaceholder:'search.connector',
-            noResultsLabel:'list.results.no.connectors'
+            searchPlaceholder:'services.connector.search',
+            noResultsLabel:'services.connector.list.empty'
         }
     }
 
@@ -135,5 +140,9 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         return {
             selected: this.selectedItem && item && this.selectedItem.id === item.id
         }
+    }
+
+    private isIconWorkspaceImg(src: String) {
+        return src.startsWith('/workspace');
     }
 }
