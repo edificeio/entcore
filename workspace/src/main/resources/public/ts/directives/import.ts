@@ -138,8 +138,8 @@ export const importFiles = ng.directive('importFiles', () => {
 				scope.upload.documents.forEach(doc => doc.applyBlob());
 				scope.upload.documents = [];
                 scope.display.importFiles = false;
-                scope.closeCompression();
-				scope.$apply();
+				scope.closeCompression();
+				scope.openFolder(scope.openedFolder.folder);
 			}
 
 			scope.cancelUpload = () => {
