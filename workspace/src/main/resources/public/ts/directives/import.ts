@@ -9,7 +9,8 @@ export const importFiles = ng.directive('importFiles', () => {
                 <div ng-if="display.editDocument">
                     <image-editor document="display.editedDocument" show="display.editDocument" inline></image-editor>
                 </div>
-                <div class="row media-library" ng-if="!display.editDocument">
+				<div class="row media-library" ng-if="!display.editDocument">
+					<h2 class="zero-mobile"><i18n>medialibrary.title</i18n></h2>
                     <container template="import"></container>
                 </div>
             <lightbox>
