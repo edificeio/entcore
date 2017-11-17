@@ -59,9 +59,9 @@
 						<i18n>workspace.rename</i18n>
 					</button>
 				</resource-right>
-				<resource-right resource="selectedItems()" name="renameFolder">
+				<resource-right resource="selectedItems()" name="renameDocument">
 					<button ng-click="display.editImage = true"
-							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].isEditableImage && currentTree.name === 'documents'"
+							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].isEditableImage && (currentTree.name === 'shared' || currentTree.name === 'documents' || currentTree.name === 'appDocuments')"
 							class="cell zero-mobile">
 						<i18n>editImage</i18n>
 					</button>
