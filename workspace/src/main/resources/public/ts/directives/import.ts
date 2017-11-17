@@ -143,6 +143,7 @@ export const importFiles = ng.directive('importFiles', () => {
 			}
 
 			scope.cancelUpload = () => {
+				scope.display.editedDocument = undefined;
                 scope.display.importFiles = false;
 				cancelAll();
             };
