@@ -2,8 +2,9 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core'
 import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService, UserListService } from '../../../../core/services'
+import { SpinnerService, UserListService, NotifyService } from '../../../../core/services'
 import { SessionModel, Session, globalStore } from '../../../../core/store'
+import { UsersStore } from '../../../users.store'
 
 @Component({
     selector: 'user-duplicates-section',
@@ -32,7 +33,7 @@ import { SessionModel, Session, globalStore } from '../../../../core/store'
                         <s5l>minor.duplicate</s5l>
                     </span>
                     <div>
-                        <button (click)="spinner.perform(duplicate.id, user.separateDuplicate(duplicate.id))" 
+                        <button (click)="separate(duplicate.id)" 
                             [disabled]="spinner.isLoading(duplicate.id)">
                             <spinner-cube class="button-spinner" waitingFor="duplicate.id">
                             </spinner-cube>
@@ -63,7 +64,9 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
 
     constructor(protected spinner: SpinnerService,
         protected cdRef: ChangeDetectorRef,
-        private router: Router) {
+        private router: Router,
+        private usersStore: UsersStore,
+        private ns: NotifyService) {
         super()
     }
 
@@ -91,8 +94,39 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
     private merge = (dupId) => {
         return this.spinner.perform(dupId, this.user.mergeDuplicate(dupId)).then(res => {
             if(res.id !== this.user.id && res['structure']) {
+                this.usersStore.structure.users.data.splice(
+                    this.usersStore.structure.users.data.findIndex(u => u.id == this.user.id), 1
+                );
                 this.router.navigate(['/admin', res['structure'], 'users', res.id])
+                this.ns.success({
+                    key: 'notify.user.merge.success.content',
+                    parameters: {}
+                }, 'notify.user.merge.success.title');
             }
+            else {
+                this.usersStore.structure.users.data.splice(
+                    this.usersStore.structure.users.data.findIndex(u => u.id == res.id), 1
+                );
+            }
+        }).catch((err) => {
+            this.ns.error({
+                key: 'notify.user.merge.error.content',
+                parameters: {}
+            }, 'notify.user.merge.error.title', err);
+        })
+    }
+
+    private separate = (dupId) => {
+        return this.spinner.perform(dupId, this.user.separateDuplicate(dupId)).then(res => {
+            this.ns.success({
+                key: 'notify.user.dissociate.success.content',
+                parameters: {}
+            }, 'notify.user.dissociate.success.title');
+        }).catch((err) => {
+            this.ns.error({
+                key: 'notify.user.dissociate.error.content',
+                parameters: {}
+            }, 'notify.user.dissociate.error.title', err);
         })
     }
 }
