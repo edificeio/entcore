@@ -1925,7 +1925,10 @@ var calendar = {
           });
           cur.add(1, 'day');
         }
-
+        that.collection(calendar.TimeSlot);
+        for (var i = calendar.startOfDay; i < calendar.endOfDay; i++) {
+          that.timeSlots.push(new calendar.TimeSlot({ beginning: i, end: i + 1 }));
+        }
         that.days.load(days);
       },
     });
