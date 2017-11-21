@@ -16,7 +16,7 @@ export class ApplicationsResolver implements Resolve<ApplicationModel[]> {
         if (currentStructure.applications.data.length > 0) {
             return Promise.resolve(currentStructure.applications.data);
         } else {
-            return this.spinner.perform('portal-content', currentStructure.applications.syncApps()
+            return this.spinner.perform('portal-content', currentStructure.applications.syncApps(currentStructure.id)
                 .then(data => {
                     return currentStructure.applications.data;
                 })
