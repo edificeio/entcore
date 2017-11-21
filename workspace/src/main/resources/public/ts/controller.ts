@@ -188,7 +188,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	$scope.openRenameView = function(document){
-		document.newName = document.name
+		document.newName = document.newProperties.name;
 		$scope.renameTarget = document;
 		template.open('lightbox', 'rename');
 	};
@@ -1056,8 +1056,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				$scope.reloadFolderView()
 			})
 		} else {
-			//Rename file
-			newName = item.metadata.extension ? newName + "." + item.metadata.extension : newName
 			http().putJson("/workspace/rename/document/" + item._id, {name: newName}).done(function(){
 				$scope.openFolder($scope.openedFolder.folder)
 			})
