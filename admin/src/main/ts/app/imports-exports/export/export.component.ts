@@ -14,7 +14,7 @@ import { StructureModel } from '../../core/store'
                 <form-field label="export.classe">
                     <select [(ngModel)]="classe" name="classe">
                         <option value="">
-                            <s5l>all</s5l>
+                            <s5l>export.all.classes</s5l>
                         </option>
                         <option *ngFor="let c of structure.classes | orderBy: ['+name']" [ngValue]="c.id">
                             <s5l>{{ c.name }}</s5l>
@@ -25,7 +25,7 @@ import { StructureModel } from '../../core/store'
                 <form-field label="profile">
                     <select class="three cell row-item" [(ngModel)]="profile" name="profile">
                         <option value="">
-                            <s5l>all</s5l>
+                            <s5l>export.all.profiles</s5l>
                         </option>
                         <option value="Teacher">
                             <s5l>Teacher</s5l>
