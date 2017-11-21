@@ -92,6 +92,7 @@
   "imagecompression.pngwarning": "La modification de la qualité de l'image n'est disponible que pour les fichiers JPEG.",
   "media.library.compression.min": "Fichier léger",
   "media.library.compression.max": "Fichier lourd",
+  "medialibrary.compression.warning": "Attention, fichier volumineux ! Privilégiez des images qui pèsent moins de 500 ko pour éviter de ralentir le chargement des pages. Utilisez le curseur pour ajuster la taille de l'image.",
   "medialibrary.compression.info": "Privilégiez des images qui pèsent moins de 500 ko pour éviter de ralentir le chargement des pages. Utilisez le curseur pour ajuster la taille de l'image.",
   "medialibrary.drop.help": "Glissez-déposez des fichiers depuis votre appareil ou cliquez sur parcourir",
   "medialibrary.drop.help2": "Déposez les fichiers",
