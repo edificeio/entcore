@@ -5,9 +5,10 @@ export class GroupCollection extends Collection<GroupModel> {
 
     constructor(){
         super({
-            sync: '/directory/group/admin/list?structureId=:structureId'
+            sync: '/directory/group/admin/list?structureId=:structureId&translate=:translate'
         }, GroupModel)
     }
 
     structureId: string
+    translate: boolean = true
 }

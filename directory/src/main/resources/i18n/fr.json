@@ -550,5 +550,11 @@
     "attachmentId" : "Identifiant SIECLE",
     "default.import" : "Alimentation standard (AAF, CSV)",
     "directory.metrics": "Métriques",
-    "invalid.file.extension" : "Le format du fichier n’est pas valide. Votre fichier doit être au format CSV (séparateur point virgule)."
+    "invalid.file.extension" : "Le format du fichier n’est pas valide. Votre fichier doit être au format CSV (séparateur point virgule).",
+    "group.AdminLocal": "Tous les admins locaux de {0}.",
+    "group.Guest": "Tous les invités du groupe {0}.",
+    "group.Personnel": "Tous les personnels du groupe {0}.",
+    "group.Relative": "Tous les parents du groupe {0}.",
+    "group.Student": "Tous les élèves du groupe {0}.",
+    "group.Teacher": "Tous les enseignants du groupe {0}."
 }

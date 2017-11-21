@@ -105,10 +105,23 @@ public class AppRegistryController extends BaseController {
 	
 	@Get("structure/:structureId/application/:appId/groups/roles")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
-	public void listApplicationRolesWithGroups(HttpServerRequest request) {
+	public void listApplicationRolesWithGroups(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String appId = request.params().get("appId");
-		appRegistryService.listApplicationRolesWithGroups(structureId, appId, arrayResponseHandler(request));
+		appRegistryService.listApplicationRolesWithGroups(structureId, appId, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> r) {
+				if (r.isRight()) {
+					JsonArray list = r.right().getValue();
+					for (Object res : list) {
+						UserUtils.translateGroupsNames(((JsonObject)res).getArray("groups"), I18n.acceptLanguage(request));
+					}
+					renderJson(request, list);
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	@Post("/role")
