@@ -144,6 +144,7 @@ export const importFiles = ng.directive('importFiles', () => {
 			}
 
 			scope.cancelUpload = () => {
+				scope.display.editDocument = false;
 				scope.display.editedDocument = undefined;
                 scope.display.importFiles = false;
 				cancelAll();
