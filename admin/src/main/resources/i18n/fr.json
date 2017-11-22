@@ -41,7 +41,7 @@
     "functions.multi.combo.title": "Fonctions & matières",
     // "matieres.multi.combo.title": "Matières (enseignants)", // FIXME when user model updated
     "functionalGroups.multi.combo.title": "Groupes d'enseignement",
-    "manualGroups.multi.combo.title": "Groupes ENT",
+    "manualGroups.multi.combo.title": "Groupes manuels",
     "ignore.activation": "Pas de filtre sur l'activation",
     "users.activated": "Utilisateurs activés",
     "users.not.activated": "Utilisateurs non activés",
@@ -69,7 +69,7 @@
     "users.details.section.structures": "Etablissement(s)",
     "users.details.section.classes": "Classe(s)",
     "users.details.section.functional.groups": "Groupe(s) d'enseignement",
-    "users.details.section.manual.groups": "Groupe(s) ENT",
+    "users.details.section.manual.groups": "Groupe(s) manuel(s)",
     "users.details.section.duplicates": "Doublon(s)",
     "users.details.button.comm.rules": "Règles de communication de l'utilisateur",
     "users.details.button.app.rights": "Droits applicatifs de l'utilisateur",
