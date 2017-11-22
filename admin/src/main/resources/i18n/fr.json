@@ -54,6 +54,7 @@
     "activation.code.placeholder": "Entrez un code d'activation",
     "login": "Login",
     "id": "Identifiant",
+    "externalId": "Identifiant externe",
     "source": "Source",
     "change.activation.code": "Changer le code d'activation",
     "user.inactive": "Inactif",

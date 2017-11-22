@@ -20,6 +20,9 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
         <form-field label="id">
             <span>{{ user.id }}</span>
         </form-field>
+        <form-field label="externalId">
+            <span>{{ details.externalId }}</span>
+        </form-field>
         <form-field label="source">
             <span>{{ details.source }}</span>
         </form-field>
