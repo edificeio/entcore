@@ -4,7 +4,7 @@ import { Resolve, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { globalStore } from '../../../core/store';
 import { RoleModel } from '../../../core/store/models/role.model';
 import { ApplicationModel } from '../../../core/store/models/application.model';
-import { SpinnerService, routing } from '../../../core/services';
+import { SpinnerService, routing, NotifyService } from '../../../core/services';
 
 import { ServicesStore } from '../../services.store';
 
@@ -14,7 +14,8 @@ export class ApplicationRolesResolver implements Resolve<RoleModel[]|Boolean> {
     constructor(
         private spinner: SpinnerService, 
         private router: Router,
-        private servicesStore: ServicesStore
+        private servicesStore: ServicesStore,
+        private ns: NotifyService
     ) { }
 
     resolve(route: ActivatedRouteSnapshot): Promise<RoleModel[]|Boolean> {
@@ -24,14 +25,14 @@ export class ApplicationRolesResolver implements Resolve<RoleModel[]|Boolean> {
         let targetApp:ApplicationModel = structure && structure.applications.data.find(a => a.id == appId);
 
         if (!targetApp) {
-            return this.router.navigate(["/admin", structure._id, "services"]);
+            this.router.navigate(["/admin", structure._id, "services", "applications"]);
         }
         else {
             return this.spinner.perform('portal-content', targetApp.syncRoles(structure._id)
                 .then(() => targetApp.roles)
-                .catch(e => {
-                    console.error(e);
-                    return this.router.navigate(["/admin", structure._id, "services/applications"]);
+                .catch(error => {
+                    this.ns.error("user.root.error.text", "user.root.error", error);
+                    return false
                 })
             )
         }
