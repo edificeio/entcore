@@ -14,6 +14,7 @@
 		<thead>
 		<tr>
 			<th class="icon"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /></th>
+			<th class="" ng-click="setSort(folders.inbox, sortBy.unread)"><i18n>unread</i18n></th>
 			<th class="user" ng-click="setSort(folders.inbox, sortBy.name)"><i18n>from</i18n></th>
 			<th class="content" ng-click="setSort(folders.inbox, sortBy.subject)"><i18n>subject</i18n></th>
 			<th class="icon"></th>
@@ -30,6 +31,7 @@
 				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
 				dragstart="drag(mail, $originalEvent)">
 				<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
+				<td class=""><i class="mail" ng-if="mail.unread"></i></td>
 				<td class="user"><a ng-click="readMail(mail)">[[mail.sender().displayName]][[mail.fromName]]</a></td>
 				<td class="content"><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
 				<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
