@@ -18,11 +18,11 @@ import { UsersStore } from '../../../users.store'
                     <span *ngIf="findVisibleStruct(duplicate.structures)">
                         <a class="action" 
                             [routerLink]="['/admin', findVisibleStruct(duplicate.structures), 'users', duplicate.id]">
-                            {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }}
+                            {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ formatStructures(duplicate.structures) }}
                         </a>
                     </span>
                     <span *ngIf="!findVisibleStruct(duplicate.structures)">
-                        {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }}
+                        {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ (formatStructures(duplicate.structures)) }}
                     </span>
                     <span class="badge alert" *ngIf="duplicate.score > 3" 
                         [tooltip]="'blocking.duplicate.tooltip' | translate">
@@ -78,17 +78,21 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
         SessionModel.getSession().then(session => { this.session = session })
     }
 
-    canMerge(duplicate: { code: string, structures: string[] }) {
+    formatStructures(structures) {
+        return '(' + structures.map(structure => structure.name).join(', ') + ')';
+    }
+
+    canMerge(duplicate: { code: string, structures:[{id: string, name: string}]}) {
         if(!this.session)
             return false
         let localScope = this.session.functions['ADMIN_LOCAL'] && this.session.functions['ADMIN_LOCAL'].scope
         let superAdmin = this.session.functions['SUPER_ADMIN']
         let bothActivated = !this.user.code && !duplicate.code
-        return !bothActivated && (superAdmin || localScope && duplicate.structures.some(sId => localScope.some(f =>  f === sId)))
+        return !bothActivated && (superAdmin || localScope && duplicate.structures.some(structure => localScope.some(f =>  f == structure.id)))
     }
 
-    findVisibleStruct(sIds: string[]) {
-        return sIds.find(id => globalStore.structures.data.some(struct => struct.id === id))
+    findVisibleStruct(structures:[{id: string, name: string}]) {
+        return structures.find(structure => globalStore.structures.data.some(struct => struct.id == structure.id))
     }
 
     private merge = (dupId) => {
