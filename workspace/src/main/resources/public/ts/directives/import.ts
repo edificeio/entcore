@@ -111,6 +111,9 @@ export const importFiles = ng.directive('importFiles', () => {
 				if(doc.status === DocumentStatus.loading){
 					doc.abort();
 				}
+				if(doc === scope.display.editedDocument){
+					scope.display.editedDocument = undefined;
+				}
 				const index = scope.upload.documents.indexOf(doc);
 				scope.upload.documents.splice(index, 1);
 				if(!scope.upload.documents.length){
