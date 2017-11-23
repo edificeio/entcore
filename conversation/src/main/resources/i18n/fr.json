@@ -98,6 +98,7 @@
     "transfer.to": "A : ",
     "trash": "Corbeille",
     "undelivered": " n'ont pu recevoir le message.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
+    "unread": "Non lus",
     "updating": "Mise à jour...",
     "used.space": "Espace utilisé",
     "user.folders": "Dossiers",

@@ -53,6 +53,9 @@ export const sorts = {
         if (systemFolder === "DRAFT")
             return 3
         return 0
+    },
+    unread: function(mail){
+        return mail.unread;
     }
 }
 
