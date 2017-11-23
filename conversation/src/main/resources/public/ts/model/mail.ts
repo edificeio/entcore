@@ -172,20 +172,15 @@ export class Mail implements Selectable {
             if (parseInt(result.sent) > 0) {
                 notify.info('mail.sent');
             }
-            var inactives = '';
-            result.inactive.forEach(function (name) {
-                inactives += name + ' ' + lang.translate('invalid') + '<br />';
-            });
-            if (result.inactive.length > 0) {
-                notify.info(inactives);
-            }
             var undelivered = result.undelivered.join(', ');
             if (result.undelivered.length > 0) {
                 notify.error(undelivered + lang.translate('undelivered'));
             }
+            return result.inactive;
         }
         catch(e){
             notify.error(e.response.data.error);
+            return [];
         }
     };
 
