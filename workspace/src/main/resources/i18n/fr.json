@@ -142,7 +142,6 @@
     "workspace.share": "Partager",
     "move": "Déplacer",
     "workspace.shared.message": "L'attribution des droits a bien été prise en compte",
-    "imagecompression.pngwarning": "La compression de cette image n'est pas réglable. Seules les images jpg ou jpeg peuvent être réglées.",
     "workspace.show.versions": "Voir les versions archivées",
     "workspace.sniplet.carousel.add": "Ajouter une image",
     "workspace.sniplet.carousel.description": "Affiche des images dans un slider",
