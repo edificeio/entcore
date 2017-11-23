@@ -218,7 +218,7 @@ export let conversationController = ng.controller('ConversationController', [
             await mail.send();
             delete $scope.sending;
             $scope.state.newItem = new Mail();
-            await $scope.openFolder(Conversation.instance.folders.outbox.folderName);
+            await $scope.openFolder(Conversation.instance.folders.inbox.folderName);
         };
 
         $scope.restore = async () => {
