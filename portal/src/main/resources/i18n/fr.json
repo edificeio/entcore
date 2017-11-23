@@ -84,6 +84,7 @@
   "library.header.browse.mobile": "Mes documents",
   "library.header.record.mobile": "Dictaphone",
   "library.header.upload.mobile": "Parcourir",
+  "imageeditor.restore.mobile": "Tout annuler",
   "library.linker.notice": "Si vous ne trouvez pas le document que vous cherchez, vous pouvez l'importer depuis votre ordinateur :",
   "library.title": "Recherche de documents",
   "library.upload.import": "Importer",
