@@ -59,7 +59,7 @@ export class UserListService {
     }
 
     // Limit
-    DEFAULT_INCREMENT: number = 100
+    DEFAULT_INCREMENT: number = 40
     limit = this.DEFAULT_INCREMENT
     resetLimit() {
         this.limit = this.DEFAULT_INCREMENT
