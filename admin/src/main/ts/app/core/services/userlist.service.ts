@@ -90,3 +90,8 @@ export class UserListService {
         this.ticking = true;
     }
 }
+
+@Injectable()
+export class UserChildrenListService extends UserListService {
+    
+}

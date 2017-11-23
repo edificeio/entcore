@@ -298,15 +298,26 @@ public class User {
 
 	public static void restorePreDeleted(String userId, TransactionHelper transaction){
 		JsonObject params = new JsonObject().putString("userId", userId);
-		String query =
+		
+		String query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " + 
+			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING CREATE UNIQUE u-[:IN]->g";
+		transaction.add(query, params);
+		
+		query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING CREATE UNIQUE u-[:COMMUNIQUE]->g";
+		transaction.add(query, params);
+		
+		query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING CREATE UNIQUE u<-[:COMMUNIQUE]-g";
+		transaction.add(query, params);
+				
+		query = 
 			"MATCH (u:User {id: {userId}})-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"REMOVE u.disappearanceDate, u.deleteDate WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.IN_OUTGOING " +
-			"CREATE UNIQUE u-[:IN]->g WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.COMMUNIQUE_OUTGOING " +
-			"CREATE UNIQUE u-[:COMMUNIQUE]->g WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.COMMUNIQUE_INCOMING " +
-			"CREATE UNIQUE u<-[:COMMUNIQUE]-g DELETE r, r2, b ";
+			"REMOVE u.disappearanceDate, u.deleteDate " + 
+			"DELETE r, r2, b";
 		transaction.add(query, params);
 	}
 

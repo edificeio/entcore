@@ -26,7 +26,8 @@ import { UsersStore } from '../users.store'
             <span *ngIf="isContextAdml()" class="user-admin">
                 <s5l>ADMIN_LOCAL</s5l> <i class="fa fa-cog"></i>
             </span>
-            <span class="user-inactive" *ngIf="user.code && user.code.length > 0">
+            <span class="user-inactive" 
+                *ngIf="details?.activationCode && details?.activationCode?.length > 0">
                 <s5l>user.inactive</s5l> <i class='fa fa-lock'></i>
             </span>
         </div>
@@ -212,6 +213,11 @@ export class UserDetails implements OnInit, OnDestroy{
             }
             window.scrollTo(0, 0)
         });
+
+        // Fix userlist inactive information after user creation
+        if(!this.user.code && this.user.userDetails.activationCode) {
+            this.user.code = this.user.userDetails.activationCode;
+        }
     }
 
     ngOnDestroy() {
@@ -292,6 +298,7 @@ export class UserDetails implements OnInit, OnDestroy{
         this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
             .then(() => {
                 this.user.deleteDate = Date.now();
+                this.user.duplicates = [];
                 this.updateDeletedInStructures();
                 this.userListService.updateSubject.next();
                 this.cdRef.markForCheck();

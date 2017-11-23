@@ -153,6 +153,9 @@ export class UserModel extends Model<UserModel> {
 
     restore() {
         return this.http.put('/directory/restore/user', null, {params: {'userId': this.id}})
-            .then(() => this.deleteDate = null)
+            .then(() => {
+                this.deleteDate = null;
+                this.disappearanceDate = null;
+            });
     }
 }

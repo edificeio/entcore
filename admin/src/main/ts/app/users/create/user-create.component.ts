@@ -7,7 +7,7 @@ import { UsersStore } from '../users.store'
 import { routing } from '../../core/services/routing.service'
 import { StructureModel } from '../../core/store/models/structure.model'
 import { UserModel } from '../../core/store/models/user.model'
-import { SpinnerService, NotifyService, UserListService } from '../../core/services'
+import { SpinnerService, NotifyService, UserListService, UserChildrenListService } from '../../core/services'
 
 @Component({
     selector: 'user-create',
@@ -55,13 +55,13 @@ import { SpinnerService, NotifyService, UserListService } from '../../core/servi
                         <search-input
                             [delay]="300"
                             [attr.placeholder]="'search' | translate"
-                            (onChange)="userListService.inputFilter = $event">
+                            (onChange)="userChildrenListService.inputFilter = $event">
                         </search-input>
 
                         <div class="list-wrapper" 
-                            *ngIf="userListService.inputFilter?.length > 0">
+                            *ngIf="userChildrenListService.inputFilter?.length > 0">
                             <ul>
-                                <li *ngFor="let child of usersStore.structure.users.data | filter: {type: 'Student'} | filter: userListService.filterByInput"
+                                <li *ngFor="let child of usersStore.structure.users.data | filter: {type: 'Student'} | filter: userChildrenListService.filterByInput"
                                     (click)="addChild(child)">
                                     {{ child.lastName | uppercase }} {{ child.firstName }}
                                 </li>
@@ -106,7 +106,7 @@ import { SpinnerService, NotifyService, UserListService } from '../../core/servi
             </form>
         </panel-section>
     `,
-    providers: [ UserListService ]
+    providers: [ UserChildrenListService ]
 })
 export class UserCreate implements OnInit, OnDestroy {
 
@@ -122,7 +122,8 @@ export class UserCreate implements OnInit, OnDestroy {
         private router: Router,
         private route: ActivatedRoute,
         private location: Location,
-        private userListService: UserListService) {}
+        private userListService: UserListService,
+        private userChildrenListService: UserChildrenListService) {}
 
     ngOnInit(): void {
         this.usersStore.user = null
@@ -146,14 +147,15 @@ export class UserCreate implements OnInit, OnDestroy {
     createNewUser() {
         this.spinner.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
             .then(res => {
-                this.newUser.id = res.data.id
                 this.ns.success({
-                        key: 'notify.user.create.content',
-                        parameters: {
-                            user: this.newUser.firstName + ' ' + this.newUser.lastName}
-                        }
+                    key: 'notify.user.create.content',
+                    parameters: {
+                        user: this.newUser.firstName + ' ' + this.newUser.lastName}
+                    }
                     , 'notify.user.create.title')
-
+                    
+                this.newUser.id = res.data.id;
+                this.newUser.source = 'MANUAL';
                 this.usersStore.structure.users.data.push(this.newUser)
 
                 this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
