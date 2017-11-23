@@ -28,7 +28,7 @@ import { UserModel } from '../../../../core/store/models/user.model'
                         (onSelect)="spinner.perform($event.id, details?.addChild($event), 0)">
                         <ng-template let-item>
                             <span class="display-name">
-                                {{ item?.displayName.split(' ')[1] | uppercase }} {{ item?.displayName.split(' ')[0] }}
+                                {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
                             </span>
                         </ng-template>
                     </list-component>
@@ -38,7 +38,7 @@ import { UserModel } from '../../../../core/store/models/user.model'
                 <li *ngFor="let child of details?.children">
                     <div *ngIf="child.id">
                         <a class="action" [routerLink]="['..', child.id]">
-                        {{ child.displayName.split(' ')[1] | uppercase }} {{ child.displayName.split(' ')[0] }}
+                        {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
                         </a>
                         <i  class="fa fa-times action" (click)="spinner.perform(child.id, details?.removeChild(child), 0)"
                             [tooltip]="'delete.this.child' | translate"
