@@ -41,4 +41,32 @@
 	</table>
 </article>
 
+<lightbox show="inactives.length > 0" on-close="clearInactives()">
+	<h2><i18n>warning.title</i18n></h2>
+	<label><i18n>warning.inactive</i18n></label>
+	<div class="row">
+		<table class="twelve">
+			<thead>
+			<tr>
+				<th class="" ng-click=""><i18n>name</i18n></th>
+			</tr>
+			</thead>
+			<tbody>
+			<tr ng-if="conversation.currentFolder.mails.empty()">
+				<td colspan="4">
+					<i18n>folder.empty</i18n>
+				</td>
+			</tr>
+			<tr ng-repeat="inactive in inactives | orderBy : folders.inbox.sort : folders.inbox.reverse">
+				<td class="user"><a>[[inactive]]</a></td>
+			</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="row">
+		<button type="button" class="cancel right-magnet" ng-click="clearInactives()"><i18n>warning.close</i18n></button>
+	</div>
+
+</lightbox>
+
 <container template="toaster"></container>
