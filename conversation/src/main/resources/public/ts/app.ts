@@ -1,5 +1,6 @@
 import { routes, ng } from 'entcore';
 import { conversationController } from './controller';
+import {printController} from "./printController";
 
 routes.define(function ($routeProvider) {
     $routeProvider
@@ -12,9 +13,13 @@ routes.define(function ($routeProvider) {
         .when('/inbox', {
             action: 'inbox'
         })
+        .when('/printMail/:mailId', {
+            action: 'viewPrint'
+        })
         .otherwise({
             redirectTo: "/inbox"
         })
 });
 
 ng.controllers.push(conversationController)
+ng.controllers.push(printController);

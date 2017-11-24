@@ -1042,6 +1042,11 @@ public class ConversationController extends BaseController {
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
 	}
 
+	@Get("/print")
+	@SecuredAction(value = "conversation.print", type = ActionType.AUTHENTICATED)
+	public void print(final HttpServerRequest request) {
+		renderView(request, null, "print.html", null);
+	}
 
 	@BusAddress("org.entcore.conversation")
 	public void conversationEventBusHandler(Message<JsonObject> message) {
