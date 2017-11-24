@@ -46,23 +46,23 @@ import { UsersStore } from '../users.store';
 
         <ng-template let-item>
             <span class="display-name">
-                {{item?.lastName.toUpperCase()}} {{item?.firstName}}
+                {{item.lastName?.toUpperCase()}} {{item.firstName}}
             </span>
             <span class="icons">
                 <i class="fa fa-lock" 
-                    *ngIf="item?.code && item?.code?.length > 0"
+                    *ngIf="item.code && item.code?.length > 0"
                     [tooltip]="'user.icons.tooltip.inactive' | translate"></i>
                 <i class="fa fa-ban" 
-                    *ngIf="item?.blocked"
+                    *ngIf="item.blocked"
                     [tooltip]="'user.icons.tooltip.blocked' | translate"></i>
                 <i class="fonticon duplicates" 
-                    *ngIf="item?.duplicates && item?.duplicates?.length > 0"
+                    *ngIf="item.duplicates && item.duplicates?.length > 0"
                     [tooltip]="'user.icons.tooltip.duplicated' | translate"></i>
                 <i class="fa fa-times-circle" 
-                    *ngIf="item?.deleteDate"
+                    *ngIf="item.deleteDate"
                     [tooltip]="'user.icons.tooltip.deleted' | translate"></i>
                 <i class="fonticon waiting-predelete" 
-                    *ngIf="!item?.deleteDate && item?.disappearanceDate"
+                    *ngIf="!item.deleteDate && item.disappearanceDate"
                     [tooltip]="'user.icons.tooltip.disappeared' | translate"></i>
             </span>
             <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
