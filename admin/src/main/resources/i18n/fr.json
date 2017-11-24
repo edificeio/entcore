@@ -257,6 +257,7 @@
     "services.application.search": "Rechercher une application",
     "services.application.list.empty":" Aucune application",
     "services.application.roles.list.empty": "Il n'existe aucun rôle configuré pour cette application",
+    "services.application.message.targetWarning" : "L'interface de cette application est adaptée pour le niveau {{target == 1D ? Primaire : Secondaire }} uniquement",
     "services.connector.search": "Rechercher un connecteur",
     "services.connector.list.empty":" Aucun connecteur",
     "services.connector.roles.list.empty": "Il n'existe aucun rôle configuré pour ce connecteur",
