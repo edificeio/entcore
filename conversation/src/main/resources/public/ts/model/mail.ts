@@ -184,7 +184,7 @@ export class Mail implements Selectable {
         }
     };
 
-    async open() {
+    async open(forPrint? : boolean) {
         if(this.unread){
             Conversation.instance.currentFolder.nbUnread --;
         }
@@ -204,9 +204,10 @@ export class Mail implements Selectable {
                 displayName: this.displayNames.find(name => name[0] === user as any)[1]
             })
         ));
-
-        Conversation.instance.folders['inbox'].countUnread();
-        Conversation.instance.currentFolder.mails.refresh();
+       if(!forPrint) {
+           Conversation.instance.folders['inbox'].countUnread();
+           Conversation.instance.currentFolder.mails.refresh();
+       }
     };
 
     async remove() {
