@@ -55,7 +55,7 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
 export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     
     @ViewChild(ServicesRoleAttributionComponent) roleAttributionComponent; 
-    app: ApplicationModel;
+    app: any;
     selectedRole: RoleModel;
     showLightbox: boolean = false;
     
