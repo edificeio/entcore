@@ -250,7 +250,7 @@ public class DuplicateUsers {
 		});
 	}
 
-	private void mergeDuplicate(JsonObject r, final Message<JsonObject> message, final TransactionHelper tx) {
+	private void mergeDuplicate(final JsonObject r, final Message<JsonObject> message, final TransactionHelper tx) {
 		final String source1 = r.getString("source1");
 		final String source2 = r.getString("source2");
 		final boolean activatedU1 = r.getBoolean("activatedU1", false);
@@ -317,6 +317,7 @@ public class DuplicateUsers {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
+						log.info("Merge duplicates : " + r.encode());
 						if (updateCourses) {
 							AbstractTimetableImporter.updateMergedUsers(event.body().getArray("result"));
 						}
