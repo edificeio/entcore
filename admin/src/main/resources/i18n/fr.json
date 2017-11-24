@@ -268,5 +268,10 @@
     "mergeKey": "Clé de fusion",
     "generate" : "Générer",
     "groups.local": "Groupes locaux :",
-    "role.substructure": "Structures bénéficiaires du droit :"
+    "role.substructure": "Structures bénéficiaires du droit :",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "warning": "Attention !",
+    "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
+    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?"
 }

@@ -87,6 +87,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "removeFunction" :
 					adminOrTeacher(request, user, handler);
 					break;
+				case "listFunctions" :
+					adminOrTeacher(request, user, handler);
+					break;
 				case "updateAvatar" :
 				case "getUserBook" :
 				case "updateUserBook" :

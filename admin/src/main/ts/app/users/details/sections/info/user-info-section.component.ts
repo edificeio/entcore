@@ -53,10 +53,18 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                     </span>
                 </div>
                 <button *ngIf="details.isAdml(this.structure.id)" 
-                    (click)="removeAdml()">
+                    (click)="showConfirmation = true">
                     <s5l>adml.remove</s5l>
                     <i class="fa fa-cog"></i>
                 </button>
+                <confirm-light-box
+                    [show]="showConfirmation"
+                    [title]="'warning'"
+                    (onConfirm)="removeAdml()"
+                    (onCancel)="showConfirmation = false">
+                    <p>{{ 'user.remove.adml.disclaimer.info' | translate:{ username: user.displayName } }}</p>
+                    <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
+                </confirm-light-box>
             </div>
         </form-field>
         <form-field label="send.reset.password" *ngIf="!details.activationCode">
@@ -85,13 +93,15 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                 </div>
             </div>
         </form-field>
-    </panel-section>`,
+    </panel-section>
+    `,
     inputs: ['user', 'structure']
 })
 export class UserInfoSection extends AbstractSection implements OnInit {
     passwordResetMail: string
     passwordResetMobile: string
     smsModule: boolean
+    showConfirmation: boolean = false;
 
     constructor(
         private ns: NotifyService,
@@ -133,6 +143,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
 
     removeAdml() {
+        this.showConfirmation = false;
         this.spinner.perform('portal-content', this.details.removeAdml())
             .then(res => {
                 this.ns.success({

@@ -90,6 +90,34 @@ button {
         color: white;
     }
 
+    &.selected {
+        background-color: $accent-dark;
+        color: white;
+
+        &:hover {
+            background-color: $accent-dark;
+        }
+    }
+
+    &.confirm {
+        background-color: $accent;
+        color: white;
+    }
+    
+    &.confirm:hover {
+        background-color: $accent-dark !important;
+    }
+
+    &.cancel {
+        background-color: $button-bg;
+        color: $accent;
+    }
+
+    &.cancel:hover {
+        background-color: $button-bg-hover;
+        color: $accent;
+    }
+
     i {
         padding-left: 10px;
         float: right;
@@ -586,6 +614,26 @@ light-box {
                 overflow-y: auto;
             }
         }
+    }
+}
+
+confirm-light-box {
+    h2 {
+        padding-left: 40px;
+    }
+
+    div.content {
+        padding: 0 40px;
+    }
+
+    div.action {
+        padding: 0 40px;
+    }
+
+    button {
+        float: right;
+        margin-right: 5px;
+        margin-bottom: 30px;
     }
 }
 

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
 import { NgModule } from '@angular/core'
 
-import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent, Datepicker } from './components'
+import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent, Datepicker, ConfirmationLightbox } from './components'
 import { AnchorDirective } from './directives'
 import { MapToArrayPipe } from './pipes'
 
@@ -24,6 +24,7 @@ import { MapToArrayPipe } from './pipes'
         FormErrors,
         AnchorDirective,
         Datepicker,
+        ConfirmationLightbox,
         MapToArrayPipe
 
     ],
@@ -36,6 +37,7 @@ import { MapToArrayPipe } from './pipes'
         FormErrors,
         AnchorDirective,
         Datepicker,
+        ConfirmationLightbox,
         MapToArrayPipe
     ]
 })
