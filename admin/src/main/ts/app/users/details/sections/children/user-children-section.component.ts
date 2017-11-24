@@ -69,8 +69,11 @@ export class UserChildrenSection extends AbstractSection {
     }
 
     filterChildren = (u: UserModel) => {
-        return this.details && this.details.children &&
-            u.type === 'Student' && !this.details.children.find(c => c.id === u.id)
+        return this.details 
+            && this.details.children 
+            && !this.details.children.find(c => c.id === u.id)
+            && u.type === 'Student' 
+            && !u.deleteDate
     }
 
     disableChild = (child) => {

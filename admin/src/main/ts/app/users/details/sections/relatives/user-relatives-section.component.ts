@@ -67,8 +67,11 @@ export class UserRelativesSection extends AbstractSection {
     }
 
     filterRelatives = (u: UserModel) => {
-        return this.details && this.details.parents &&
-            u.type === 'Relative' && !this.details.parents.find(p => p.id === u.id)
+        return this.details 
+            && this.details.parents 
+            && !this.details.parents.find(p => p.id === u.id)
+            && u.type === 'Relative' 
+            && !u.deleteDate
     }
 
     disableRelative = (relative) => {
