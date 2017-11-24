@@ -12,7 +12,7 @@ export class RoleModel extends Model<RoleModel> {
     groups: GroupModel[];
     transverse: boolean
 
-    removeGroupFromRole = (group:GroupModel): Promise<void> => {
+    removeGroup(group:GroupModel): Promise<void> {
         return this.http
             .delete(`/appregistry/authorize/group/${group.id}/role/${this.id}`)
             .then((res) => { 
@@ -23,7 +23,9 @@ export class RoleModel extends Model<RoleModel> {
         );
     }
 
-    addGroupsToRole = (groups) => {
-        this.groups = groups;
+    async addGroup(group:GroupModel) {
+        let res = await this.http.put(`/appregistry/authorize/group/${group.id}/role/${this.id}`);
+        this.groups.push(group);
+        return res;
     }
 }

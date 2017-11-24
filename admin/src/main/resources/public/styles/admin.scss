@@ -85,7 +85,7 @@ button {
         }
     }
 
-    &:hover:not(:disabled) {
+    &.active, &:hover:not(:disabled) {
         background-color: $accent;
         color: white;
     }
@@ -958,23 +958,22 @@ services-list-with-companion {
 
     .side-card {
         flex-basis: 200px !important;
-    }
+        .list-wrapper {
+            max-height: 60vh;
+            overflow-y: auto;
 
-    .list-wrapper {
-        max-height: 60vh;
-        overflow-y: auto;
+            li {
+                display: flex;
+                flex-flow: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px !important;
+                min-height: 80px;
+                text-align: center;
 
-        li {
-            display: flex;
-            flex-flow: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px !important;
-            min-height: 80px;
-            text-align: center;
-
-            i {
-                font-size: 3.5em;
+                i {
+                    font-size: 3.5em;
+                }
             }
         }
     }

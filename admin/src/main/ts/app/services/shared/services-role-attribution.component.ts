@@ -11,12 +11,13 @@ import { ServicesStore } from '../../services/services.store';
     template: `
         <light-box [show]="show" (onClose)="onClose.emit()">
             <h1 class="panel-header">{{ 'services.roles.groups.add' | translate }}</h1>
-            <div class="panel-header-sub">
-                <button (click)="filterByType('all')">{{ 'services.roles.groups.all' | translate }}</button>
-                <button (click)="filterByType('profile')">{{ 'services.groups.structure' | translate }}</button>
-                <button (click)="filterByType('class')">{{ 'services.classes' | translate }}</button>
-                <button (click)="filterByType('functional')">{{ 'services.groups.functional' | translate }}</button>
-                <button (click)="filterByType('manual')">{{ 'services.groups.manual' | translate }}</button>
+            <div class="panel-header-su b">
+                <button (click)="filterByType('StructureGroup','ProfileGroup')" [class.active]="visibleGroupType.includes('ProfileGroup')">
+                    {{ 'profile.groups' | translate }}</button>
+                <button (click)="filterByType('FunctionalGroup')" [class.active]="visibleGroupType.includes('FunctionalGroup')">
+                    {{ 'functional.groups' | translate }}</button>
+                <button (click)="filterByType('ManualGroup')" [class.active]="visibleGroupType.includes('ManualGroup')">
+                    {{ 'manual.groups' | translate }}</button>
             </div>
             <form>
                 <list-component
@@ -25,18 +26,12 @@ import { ServicesStore } from '../../services/services.store';
                 [inputFilter]="filterByName"
                 searchPlaceholder="{{ searchPlaceholder }}"
                 noResultsLabel="{{ noResultsLabel }}"
-                (inputChange)="groupInputFilter = $event">
+                (inputChange)="groupInputFilter = $event"
+                (onSelect)="onAdd.emit($event)">
                     <ng-template let-item>
-                        <span>
-                            <span>
-                            <input type="checkbox" id="{{ item.id }}" value="{{ item.name }}" name="{{ item.name }}" 
-                                [checked]="isAuthorized(item.id, selectedRole)" [(ngModel)]="checkedGroups[item.id]"/>
-                            </span>
-                            <label>{{ item.name }}</label>                        
-                        </span>
+                        <div>{{ item.name }}</div>
                     </ng-template>
                 </list-component>
-                <button type="submit" (click)="onAdd.emit()">{{ 'save' | translate }}</button>
             </form>
         </light-box>
     `
@@ -44,12 +39,12 @@ import { ServicesStore } from '../../services/services.store';
 export class ServicesRoleAttributionComponent implements OnInit {
     
     @Input() show;
-    @Input() groupList:(GroupModel | {id:string, name:string})[];
+    @Input() groupList:GroupModel[];
     @Input() sort;
     @Input() searchPlaceholder;
     @Input() noResultsLabel;
     @Input() selectedRole:RoleModel;
-   groupInputFilter:string;
+    groupInputFilter:string;
 
     constructor(
         private cdRef: ChangeDetectorRef,
@@ -57,12 +52,11 @@ export class ServicesRoleAttributionComponent implements OnInit {
     ){}
 
     ngOnInit() {
-        this.filterByType('all');
+        this.filterByType();
     }
 
-
     @Output("onClose") onClose: EventEmitter<any> = new EventEmitter();
-    @Output("onAdd") onAdd: EventEmitter<any> = new EventEmitter();
+    @Output("onAdd") onAdd: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
     @Output("inputChange") inputChange: EventEmitter<any> = new EventEmitter<string>();
 
     @ContentChild(TemplateRef) filterTabsRef:TemplateRef<any>;
@@ -73,39 +67,28 @@ export class ServicesRoleAttributionComponent implements OnInit {
             .indexOf(this.groupInputFilter.toLowerCase()) >= 0;
     }
 
-    filterByType(type: string) {
-        if (type == 'all'){
-            this.groupList = this.servicesStore.structure.groups.data;
-            this.groupList = this.groupList.concat(this.servicesStore.structure.classes);
+    visibleGroupType:string[] = [];
+
+    filterByType(...types:string[]) {
+        this.groupList = this.servicesStore.structure.groups.data;
+        // Do not display groups if tey are already linked to the selected role
+        if (this.selectedRole) {
+            let selectedGroupId:string[] = this.selectedRole.groups.map(g => g.id);
+            this.groupList = this.groupList.filter(
+                g => !selectedGroupId.includes(g.id)
+            );    
         }
-        else if (type == 'class')
-            this.groupList = this.servicesStore.structure.classes;
-        else if (type == 'profile')
-            this.groupList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ProfileGroup' && g.subType == 'StructureGroup');
-        else if (type == 'functional')
-            this.groupList = this.servicesStore.structure.groups.data.filter(g => g.type == 'FunctionalGroup');
-        else if (type == 'manual')
-            this.groupList = this.servicesStore.structure.groups.data.filter(g => g.type == 'ManualGroup');
+        
+        if (types != undefined && types.length > 0) {
+            types.forEach(type => {
+                if (this.visibleGroupType.includes(type))
+                    this.visibleGroupType.splice(this.visibleGroupType.indexOf(type),1);
+                else
+                    this.visibleGroupType.push(type)
+            });
+            this.groupList = this.groupList.filter(g => this.visibleGroupType.includes(g.type));
+        }
         this.cdRef.markForCheck();
     }
 
-    isAuthorized(groupId: string, selectedRole: RoleModel) {
-        if (selectedRole && selectedRole.groups.findIndex(g => {return g.id == groupId; }) > -1)
-            return true;
-        else
-            return false;
-    }
-
-    checkedGroups = {};
-    getCheckedGroups() { 
-        let arr = [];
-
-        for (let groupId in this.checkedGroups) {
-            if (typeof this.checkedGroups[groupId] == 'boolean' && this.checkedGroups[groupId] == true) {
-                arr.push(this.groupList.find(g => {return g.id == groupId}));
-            }
-        }
-        this.checkedGroups = {};
-        return arr; 
-    }
 }

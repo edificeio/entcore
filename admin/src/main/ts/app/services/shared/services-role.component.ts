@@ -9,12 +9,10 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     selector: 'services-role',
     template: `
         <panel-section section-title="{{ role.name }}" [folded]="false">
-            <!-- Button removed for Beta 1 -->
-            <!--<button (click)="openLightbox.emit(role)">
+            <button (click)="openLightbox.emit(role)">
                 {{ 'add.groups' | translate }}
                 <i class="fa fa-plus"></i>
-            </button>-->
-
+            </button>
             <div *ngIf="role.groups.length == 0" class="message is-warning">
                 <div class="message-body">
                     <s5l>services.roles.groups.empty</s5l>
@@ -25,8 +23,7 @@ import { RoleModel, GroupModel } from '../../core/store/models';
                     <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">{{ 'groups.local' | translate }}</h4>
                     <div *ngFor="let group of role.groups" class="flex-item">
                         <label>{{ group.name }}</label>
-                        <!-- Button removed for Beta 1 -->
-                        <!--<i class="fa fa-times action" (click)="onRemove.emit(group)"></i>-->
+                        <i class="fa fa-times action" (click)="onRemove.emit(group)"></i>
                     </div>    
                 </div>
                 <div *ngIf="role.subStructures != null && role.subStructures.length > 0">

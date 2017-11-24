@@ -41,7 +41,7 @@ import { ServicesRoleAttributionComponent } from '../../shared/services-role-att
             sort="name"
             searchPlaceholder="search.group"
             noResultsLabel="list.results.no.groups"
-            (onAdd)="addGroupsToRole()"
+            (onAdd)="addGroupToSelectedRole($event)"
             [selectedRole]="selectedRole">
         </services-role-attribution>
     `,
@@ -94,16 +94,14 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         this.showLightbox = true;
     }
 
-    addGroupsToRole(): void {
-        this.servicesStore.application.roles.find(r => r.id == this.selectedRole.id)
-            .addGroupsToRole(this.roleAttributionComponent.getCheckedGroups());
-        this.showLightbox = false;
+    async addGroupToSelectedRole(group:GroupModel) {
+        let res = await this.selectedRole.addGroup(group);
         this.cdRef.markForCheck();
     }
 
     removeGroupFromRole(group: GroupModel, roleId: string): void {
         let role = this.servicesStore.application.roles.find(role => role.id == roleId);
-        role.removeGroupFromRole(group)
+        role.removeGroup(group)
             .then(() => {
                 this.cdRef.markForCheck();
             })
