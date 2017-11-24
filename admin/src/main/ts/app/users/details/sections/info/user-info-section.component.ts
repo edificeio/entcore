@@ -24,7 +24,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
             <span>{{ details.externalId }}</span>
         </form-field>
         <form-field label="source">
-            <span>{{ details.source }}</span>
+            <span>{{ details.source | translate }}</span>
         </form-field>
         <form-field label="mergeKey">
             <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
