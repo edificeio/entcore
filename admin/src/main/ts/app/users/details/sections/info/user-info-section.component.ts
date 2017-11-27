@@ -30,7 +30,8 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
             <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
             <button class= "noflex"
                 *ngIf="!details.mergeKey"
-                (click)="generateMergeKey()">
+                (click)="generateMergeKey()"
+                [disabled]="user.deleteDate != null">
                 <s5l>generate</s5l>
                 <i class="fa fa-cog"></i>
             </button>

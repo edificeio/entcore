@@ -1326,6 +1326,18 @@ user-info-section {
     }
 }
 
+user-administrative-section {
+    fieldset {
+        border: none;
+
+        &[disabled] {
+            input {
+                background: none
+            }
+        }
+    }
+}
+
 user-create {
     panel-section {
         form {

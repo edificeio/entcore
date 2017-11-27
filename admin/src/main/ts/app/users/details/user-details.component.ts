@@ -341,6 +341,7 @@ export class UserDetails implements OnInit, OnDestroy{
                 this.user.deleteDate = null;
                 this.updateDeletedInStructures();
                 this.userListService.updateSubject.next();
+                this.cdRef.markForCheck();
 
                 this.ns.success(
                     { 
