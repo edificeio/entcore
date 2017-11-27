@@ -710,6 +710,29 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public void getAllAttachments(String messageId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+		if (user == null) {
+			result.handle(new Either.Left<String, JsonArray>("conversation.invalid.user"));
+			return;
+		}
+		if (messageId == null) {
+			result.handle(new Either.Left<String, JsonArray>("conversation.invalid.parameter"));
+			return;
+		}
+
+		String query =
+			"SELECT att.* FROM " + attachmentTable + " att JOIN " +
+			userMessageAttachmentTable + " uma ON uma.attachment_id = att.id " +
+			"WHERE uma.user_id = ? AND uma.message_id = ?";
+
+		JsonArray values = new JsonArray()
+			.add(user.getUserId())
+			.add(messageId);
+
+		sql.prepared(query, values, SqlResult.validResultHandler(result));
+	}
+
+	@Override
 	public void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result) {
 		if(validationParamsError(user, result, messageId, attachmentId))
 			return;

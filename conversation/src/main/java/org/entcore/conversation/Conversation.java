@@ -40,7 +40,10 @@ public class Conversation extends BaseServer {
 
 		Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 
-		addController(new ConversationController(storage));
+		final String exportPath = container.config()
+				.getString("export-path", System.getProperty("java.io.tmpdir"));
+
+		addController(new ConversationController(storage, exportPath));
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage));
 
