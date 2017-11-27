@@ -238,6 +238,15 @@ ul {
     }
 }
 
+i.group_add {
+    color: #fff;
+    font-size: 2.5em;
+
+    &:before {
+        content: '\e91d';
+    }
+}
+
 /* generic style 
 * TODO : replacce by using a css framework
 * here a bulma.io semantic is used 
@@ -1466,15 +1475,6 @@ groups-root {
             &.hidden {
                 display: none;
             }
-
-            i.group_add {
-                color: #fff;
-                font-size: 2.5em;
-
-                &:before {
-                    content: '\e91d';
-                }
-            }
         }
     }
 }
@@ -1729,6 +1729,18 @@ app-details {
         >.flex-item {
             flex: none;
             margin: 5px 10px 5px 10px; 
+        }
+    }
+}
+
+services-role {
+
+    i.group_add {
+        color: #000;
+        font-size: 2.5em;
+    
+        &:before {
+            content: '\e91d';
         }
     }
 }

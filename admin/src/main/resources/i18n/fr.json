@@ -170,6 +170,7 @@
     "add.class": "Ajouter une classe",
     "delete.this.class": "Supprimer la classe",
     "add.group": "Ajouter un groupe",
+    "add.groups": "Ajouter des groupes",
     "delete.this.group": "Supprimer le groupe",
     "user.has.duplicates": "Utilisateur en doublon",
     "merge": "Fusionner",
