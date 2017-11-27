@@ -60,7 +60,12 @@
 			</div>
 		</div>
 		<div class="row block-container medium-text" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
-			<p><h2><i18n>attachments</i18n></h2></p>
+			<p>
+				<h2>
+					<i18n>attachments</i18n>
+					<a  data-ng-if="mail.attachments.length > 1" class="" ng-href="[['message/'+mail.id+'/allAttachments']]"><i class="mail-in" ></i></a>
+				</h2>
+			</p>
 			<article class="list-view">
 				<table class="list-view">
 					<thead>

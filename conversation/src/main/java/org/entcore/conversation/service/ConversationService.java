@@ -87,6 +87,7 @@ public interface ConversationService {
 	//Attachments
 	void addAttachment(String messageId, UserInfos user, JsonObject uploaded, Handler<Either<String, JsonObject>> result);
 	void getAttachment(String messageId, String attachmentId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void getAllAttachments(String messageId, UserInfos user, Handler<Either<String, JsonArray>> result);
 	void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result);
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 }
