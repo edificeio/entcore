@@ -68,6 +68,7 @@ public class UserController extends BaseController {
 	private UserService userService;
 	private UserBookService userBookService;
 	private TimelineHelper notification;
+	private static final int MOTTO_MAX_LENGTH = 75;
 
 	@Put("/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -103,6 +104,11 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(final JsonObject body) {
 				final String userId = request.params().get("userId");
+				String motto = body.getString("motto");
+				if( motto != null && motto.length() > MOTTO_MAX_LENGTH){
+					badRequest(request);
+					return;
+				}
 				userBookService.update(userId, body, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
