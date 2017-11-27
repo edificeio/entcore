@@ -1053,6 +1053,11 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void getAllAttachments(String messageId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+		result.handle(new Either.Left<String, JsonArray>("conversation.invalid"));
+	}
+
+	@Override
 	public void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result) {
 		if(validationParamsError(user, result, messageId, attachmentId)) return;
 

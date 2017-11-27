@@ -38,6 +38,8 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.utils.StringUtils;
+import org.entcore.common.utils.Zip;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.filters.MessageOwnerFilter;
 import org.entcore.conversation.filters.MessageUserFilter;
@@ -52,20 +54,26 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 
+import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.file.FileSystem;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.http.HttpServerResponse;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.Deflater;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -83,9 +91,11 @@ public class ConversationController extends BaseController {
 	private TimelineHelper notification;
 	private EventStore eventStore;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
+	private final String exportPath;
 
-	public ConversationController(Storage storage) {
+	public ConversationController(Storage storage, String exportPath) {
 		this.storage = storage;
+		this.exportPath = exportPath;
 	}
 
 	@Override
@@ -903,6 +913,120 @@ public class ConversationController extends BaseController {
 		};
 
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	//Download all attachments
+	@Get("message/:id/allAttachments")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
+	public void getAllAttachment(final HttpServerRequest request){
+		final String messageId = request.params().get("id");
+
+		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+			public void handle(final UserInfos user) {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+
+				conversationService.getAllAttachments(messageId, user, new Handler<Either<String, JsonArray>>() {
+					@Override
+					public void handle(Either<String, JsonArray> event) {
+						if(event.isRight()){
+							if(event.right().getValue() == null || event.right().getValue().size() < 1){
+								badRequest(request);
+								return;
+							}
+							if(event.right().getValue().size() < 2){
+								JsonObject attachment = event.right().getValue().get(0);
+								JsonObject metadata = new JsonObject()
+										.putString("filename", attachment.getString("filename"))
+										.putString("content-type", attachment.getString("contentType"));
+
+								storage.sendFile(attachment.getString("id"), attachment.getString("filename"), request, false, metadata);
+							}else{
+								zipAllAttachments(request, event.right().getValue());
+							}
+						}else {
+							badRequest(request, event.left().getValue());
+						}
+
+
+					}
+				});
+			}
+		};
+
+		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	private void zipAllAttachments(final HttpServerRequest request, JsonArray files){
+		JsonObject tmp;
+		final FileSystem fs = vertx.fileSystem();
+		final List<String> fileIds = new ArrayList<>();
+		final JsonObject aliasFileName = new JsonObject();
+		final String zipDownloadName = I18n.getInstance().translate("attachments", I18n.DEFAULT_DOMAIN, I18n.acceptLanguage(request)) + ".zip";
+		final String zipDirectory = exportPath + File.separator + UUID.randomUUID().toString();
+
+		for(Object file : files){
+			tmp = (JsonObject)file;
+			fileIds.add(tmp.getString("id"));
+			aliasFileName.putString(tmp.getString("id"), StringUtils.stripAccents(tmp.getString("filename")));
+		}
+
+		fs.mkdir(zipDirectory, true, new Handler<AsyncResult<Void>>() {
+
+			private void delete(final String path){
+				fs.delete(path, true, new Handler<AsyncResult<Void>>() {
+					@Override
+					public void handle(AsyncResult<Void> event) {
+						if (event.failed())
+							log.error("[Conversation] Error deleting  : " + path, event.cause());
+						badRequest(request);
+					}
+				});
+			}
+
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				if(event.succeeded()) {
+					final String zipfile = zipDirectory + ".zip";
+
+					storage.writeToFileSystem(fileIds.toArray(new String[0]), zipDirectory, aliasFileName, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject event) {
+							if (!"ok".equals(event.getString("status"))) {
+								log.error("[Conversation] Can't write to zip directory : " + event.getString("message"));
+								delete(zipDirectory);
+								badRequest(request);
+
+							} else {
+								Zip.getInstance().zipFolder(zipDirectory, zipfile, true, Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										if (!"ok".equals(event.body().getString("status"))) {
+											log.error("[Conversation] Zip folder " + zipDirectory + " error : " + event.body().getString("message"));
+											delete(zipDirectory);
+										}else {
+											final HttpServerResponse resp = request.response();
+											resp.putHeader("Content-Disposition", "attachment; filename=\"" + zipDownloadName + "\"");
+											resp.putHeader("Content-Type", "application/zip; name=\"\" + zipDownloadName + \"\"");
+											resp.sendFile(zipfile, new Handler<AsyncResult<Void>>() {
+												public void handle(AsyncResult<Void> event) {
+													if(event.failed())
+														log.error("Error can't send  the file: ", event.cause());
+													delete(zipfile);
+												}
+											});
+										}
+									}
+								});
+							}
+						}
+					});
+				}
+			}
+		});
 	}
 
 	//Delete an attachment
