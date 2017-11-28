@@ -36,7 +36,6 @@ public class CIDJRegisteredService extends AbstractCas20ExtensionRegisteredServi
 
 	protected static final String CIDJ_ID = "uid";
 	protected static final String CIDJ_STRUCTURE_CODERNE = "CodeRNE";
-	protected static final String CIDJ_LOGIN = "user";
 
 	@Override
 	public void configure(org.vertx.java.core.eventbus.EventBus eb, Map<String,Object> conf) {
