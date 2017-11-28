@@ -206,6 +206,7 @@ public class SqlConversationService implements ConversationService{
 
 		String additionalWhere = "";
 		JsonArray values = new JsonArray()
+			.add("SENT")
 			.add(user.getUserId());
 
 		if(restrain != null){
@@ -215,14 +216,15 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere = addFolderCondition(folder, values, user.getUserId());
 		}
 
-		String query = "SELECT m.*, um.unread as unread, " +
+		String query = "SELECT m.*, um.unread as unread, r.id as response," +
 			"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 			"FROM " + userMessageTable + " um LEFT JOIN " +
 			userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
 			messageTable + " m ON um.message_id = m.id LEFT JOIN " +
+			messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? LEFT JOIN " +
 			attachmentTable + " att ON uma.attachment_id = att.id " +
 			"WHERE um.user_id = ? " + additionalWhere + " " +
-			"GROUP BY m.id, unread " +
+			"GROUP BY m.id, unread, response " +
 			"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "displayNames"));
@@ -856,7 +858,7 @@ public class SqlConversationService implements ConversationService{
 		String additionalWhere = "";
 		switch(folder.toUpperCase()){
 			case "INBOX":
-				additionalWhere = "AND (m.from <> ? OR \"to\" @> ?::jsonb OR \"cc\" @> ?::jsonb) AND m.state = ? AND um.trashed = false";
+				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
 				values.add(new JsonArray().add(userId).toString());
