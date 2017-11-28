@@ -5,6 +5,8 @@ import { Subscription } from 'rxjs/Subscription'
 import { UserListService, UserlistFiltersService } from '../../core/services'
 import { UserModel } from '../../core/store/models'
 
+import { UsersStore } from '../users.store';
+
 @Component({
     selector: 'user-list',
     template: `
@@ -83,6 +85,7 @@ export class UserList implements OnInit, OnDestroy {
 
     private filtersUpdatesSubscriber: Subscription;
     private userUpdatesSubscriber: Subscription;
+    private storeSubscriber: Subscription;
 
     @Input() userlist: UserModel[] = [];
 
@@ -93,13 +96,20 @@ export class UserList implements OnInit, OnDestroy {
     @Input() selectedUser: UserModel;
     @Output("selectedUserChange") onselect: EventEmitter<UserModel> = new EventEmitter<UserModel>();
 
-    constructor(private cdRef: ChangeDetectorRef,
+    constructor(
+        private cdRef: ChangeDetectorRef,
+        private usersStore: UsersStore,
         public userListService: UserListService,
         public listFiltersService: UserlistFiltersService){}
 
     ngOnInit() {
         this.filtersUpdatesSubscriber = this.listFiltersService.updateSubject.subscribe(() => this.cdRef.markForCheck());
         this.userUpdatesSubscriber = this.userListService.updateSubject.subscribe(() => this.cdRef.markForCheck());
+        this.storeSubscriber = this.usersStore.onchange.subscribe((field) => {
+            if (field == 'user') {
+                this.cdRef.markForCheck();
+            }
+        });
     }
 
     ngOnDestroy() {

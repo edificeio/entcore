@@ -156,7 +156,8 @@ export class UserCreate implements OnInit, OnDestroy {
                     
                 this.newUser.id = res.data.id;
                 this.newUser.source = 'MANUAL';
-                this.usersStore.structure.users.data.push(this.newUser)
+                this.usersStore.structure.users.data.push(this.newUser);
+                this.usersStore.user = this.newUser
 
                 this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
             }).catch(err => {
