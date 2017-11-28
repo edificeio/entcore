@@ -198,6 +198,28 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.$apply();
         };
 
+        $scope.replyOutbox = async () => {
+            template.open('main', 'mail-actions/write-mail');
+            const mail = $scope.state.newItem as Mail;
+            mail.parentConversation = $scope.mail;
+            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, true);
+            mail.cc = [];
+            mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
+            $scope.$apply();
+        };
+
+        $scope.replyAllOutbox = async () => {
+            template.open('main', 'mail-actions/write-mail');
+            const mail = $scope.state.newItem as Mail;
+            mail.parentConversation = $scope.mail;
+            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, true);
+            mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
+            mail.cc = _.filter($scope.state.newItem.cc, function (user) {
+                return user.id !== model.me.userId && !_.findWhere($scope.state.newItem.to, { id: user.id })
+            })
+            $scope.$apply();
+        };
+
         $scope.editDraft = async (draft: Mail) => {
             template.open('main', 'mail-actions/write-mail');
             $scope.state.newItem = draft;
