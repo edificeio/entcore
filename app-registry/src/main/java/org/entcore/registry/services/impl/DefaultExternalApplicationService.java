@@ -113,7 +113,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	public void listExternalApplicationRolesWithGroups(String structureId, String connectorId, Handler<Either<String, JsonArray>> handler) {
 		String query =
             "MATCH (e:External{id: {connectorId}})-[:PROVIDE]->()<-[:AUTHORIZE]-(r:Role) " +
-                "OPTIONAL MATCH (r)<-[:AUTHORIZED]-(g:Group)-[:DEPENDS]->(s:Structure {id: {structureId}}) " +
+                "OPTIONAL MATCH (r)<-[:AUTHORIZED]-(g:Group)-[:DEPENDS*1..2]->(s:Structure {id: {structureId}}) " +
                 "OPTIONAL MATCH (s)<-[:HAS_ATTACHMENT]-(subStruct:Structure)<-[:DEPENDS]-()-[:AUTHORIZED]-(r) " +
             "WITH r,e,subStruct, COLLECT(DISTINCT{id: g.id, name: g.name}) as groups " +
             "RETURN r.id as id, r.name as name, e.id as connectorId, " +

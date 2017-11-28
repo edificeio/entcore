@@ -226,14 +226,12 @@ ul {
     padding-left: 20px;
 
     &.actions-list {
-        display: table;
-        border-spacing: 10px 5px;
-        text-align: center;
-
         li {
-            display: table-row;
-            > * { display: table-cell; }
-            > *:first-child { text-align: left; }
+            padding: 5px 0;
+
+            i.action {
+                font-size: 1.5em;
+            }
         }
     }
 }
@@ -260,7 +258,7 @@ i.group_add {
 
 .message {
     border-radius: 3px;
-    margin: 10px 10px;
+    margin: 15px 0px;
 
     p { margin : 0px ;}
     .message-header {
@@ -1734,14 +1732,8 @@ app-details {
 }
 
 services-role {
-
     i.group_add {
         color: #000;
-        font-size: 2.5em;
-    
-        &:before {
-            content: '\e91d';
-        }
     }
 }
 

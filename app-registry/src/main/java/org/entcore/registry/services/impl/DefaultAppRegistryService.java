@@ -149,12 +149,13 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	
 	@Override
 	public void listApplicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler) {
-		String query = 
-		"MATCH (r:Role)-[:AUTHORIZE]-(ac:Action)-[:PROVIDE]-(a:Application {id: {appId}}), (r)-[:AUTHORIZE]-(:Action)-[:PROVIDE]-(apps:Application) " +
-		"OPTIONAL MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group)-[:AUTHORIZED]->(r) " +
-		"WITH r, a, apps, CASE WHEN g IS NOT NULL THEN COLLECT(DISTINCT{ id: g.id, name: g.name }) ELSE [] END as groups " +
-		"RETURN r.id as id, r.name as name, a.id as appId, groups, COUNT(DISTINCT apps) > 1 as transverse";
-
+		String query =
+				"MATCH (a:Application {id: {appId}})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) " +
+				"WITH r,a " +
+				"MATCH (r)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(apps:Application) " +
+				"    OPTIONAL MATCH (s:Structure {id: {structureId}})<-[:DEPENDS*1..2]-(g:Group)-[:AUTHORIZED]->(r) " +
+				"    WITH r, a, apps, CASE WHEN g IS NOT NULL THEN COLLECT(DISTINCT{ id: g.id, name: g.name }) ELSE [] END as groups " +
+				"RETURN r.id as id, r.name as name, a.id as appId, groups, COUNT(DISTINCT apps) > 1 as transverse";
 		JsonObject params = new JsonObject()
 			.putString("appId", appId)
 			.putString("structureId", structureId);

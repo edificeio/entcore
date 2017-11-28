@@ -9,30 +9,33 @@ import { ServicesStore } from '../../services/services.store';
 @Component({
     selector: 'services-role-attribution',
     template: `
-        <light-box [show]="show" (onClose)="onClose.emit()">
-            <h1 class="panel-header">{{ 'services.roles.groups.add' | translate }}</h1>
-            <div class="panel-header-su b">
-                <button (click)="filterByType('StructureGroup','ProfileGroup')" [class.active]="visibleGroupType.includes('ProfileGroup')">
-                    {{ 'profile.groups' | translate }}</button>
-                <button (click)="filterByType('FunctionalGroup')" [class.active]="visibleGroupType.includes('FunctionalGroup')">
-                    {{ 'functional.groups' | translate }}</button>
-                <button (click)="filterByType('ManualGroup')" [class.active]="visibleGroupType.includes('ManualGroup')">
-                    {{ 'manual.groups' | translate }}</button>
+        <light-box [show]="show" (onClose)="onClose.emit()" class="inner-list">
+            <div class="padded">
+                <h3>{{ 'services.roles.groups.add' | translate }}</h3>
+                <div>
+                    <button (click)="filterByType('StructureGroup','ProfileGroup')" [class.active]="visibleGroupType.includes('ProfileGroup')">
+                        {{ 'profile.groups' | translate }}</button>
+                    <button (click)="filterByType('FunctionalGroup')" [class.active]="visibleGroupType.includes('FunctionalGroup')">
+                        {{ 'functional.groups' | translate }}</button>
+                    <button (click)="filterByType('ManualGroup')" [class.active]="visibleGroupType.includes('ManualGroup')">
+                        {{ 'manual.groups' | translate }}</button>
+                </div>
+                <form>
+                    <list-component
+                        [model]="groupList"
+                        [sort]="sort"
+                        [filters]="filterGroups"
+                        [inputFilter]="filterByInput"
+                        [searchPlaceholder]="searchPlaceholder"
+                        [noResultsLabel]="noResultsLabel"
+                        (inputChange)="groupInputFilter = $event"
+                        (onSelect)="onAdd.emit($event)">
+                        <ng-template let-item>
+                            <div>{{ item.name }}</div>
+                        </ng-template>
+                    </list-component>
+                </form>
             </div>
-            <form>
-                <list-component
-                [model]="groupList"
-                sort="{{ sort }}"
-                [inputFilter]="filterByName"
-                searchPlaceholder="{{ searchPlaceholder }}"
-                noResultsLabel="{{ noResultsLabel }}"
-                (inputChange)="groupInputFilter = $event"
-                (onSelect)="onAdd.emit($event)">
-                    <ng-template let-item>
-                        <div>{{ item.name }}</div>
-                    </ng-template>
-                </list-component>
-            </form>
         </light-box>
     `
 })
@@ -52,7 +55,7 @@ export class ServicesRoleAttributionComponent implements OnInit {
     ){}
 
     ngOnInit() {
-        this.filterByType();
+        this.groupList = this.servicesStore.structure.groups.data;
     }
 
     @Output("onClose") onClose: EventEmitter<any> = new EventEmitter();
@@ -61,7 +64,7 @@ export class ServicesRoleAttributionComponent implements OnInit {
 
     @ContentChild(TemplateRef) filterTabsRef:TemplateRef<any>;
 
-    filterByName = (group: any) => {
+    filterByInput = (group: any) => {
         if(!this.groupInputFilter) return true;
         return group.name.toLowerCase()
             .indexOf(this.groupInputFilter.toLowerCase()) >= 0;
@@ -69,9 +72,18 @@ export class ServicesRoleAttributionComponent implements OnInit {
 
     visibleGroupType:string[] = [];
 
-    filterByType(...types:string[]) {
+    filterGroups = (group: GroupModel) => {
+         // Do not display groups if they are already linked to the selected role
+         if (this.selectedRole) {
+            let selectedGroupId:string[] = this.selectedRole.groups.map(g => g.id);
+            return !selectedGroupId.find(g => g == group.id);
+        }
+        return true;
+    }
+
+    filterByType = (...types:string[]) => {
         this.groupList = this.servicesStore.structure.groups.data;
-        // Do not display groups if tey are already linked to the selected role
+        // Do not display groups if they are already linked to the selected role
         if (this.selectedRole) {
             let selectedGroupId:string[] = this.selectedRole.groups.map(g => g.id);
             this.groupList = this.groupList.filter(
