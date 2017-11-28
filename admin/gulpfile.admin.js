@@ -19,7 +19,7 @@ const devServConf   = require('./webpack.config.devserver.js')
 
 const buildTs = function(prodMode) {
     return gulp.src('./admin')
-        .pipe(webpackstream(prodMode ? prodConf : devConf, webpack).on('error', console.log))
+        .pipe(webpackstream(prodMode ? prodConf : devConf, webpack))
         .pipe(gulp.dest('./admin/src/main/resources/public'))
 }
 
