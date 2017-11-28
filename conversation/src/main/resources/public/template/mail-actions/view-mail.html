@@ -1,9 +1,11 @@
 <div class="twelve cell">
 	<div class="row">
 		<plus class="right-magnet">
-			<button ng-click="transfer()"><i18n>transfer</i18n></button>
+			<button ng-click="replyOutbox()"><i18n>reply</i18n></button>
+			<button ng-click="replyAllOutbox()"><i18n>replyall</i18n></button>
+			<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
 		</plus>
-		<button ng-click="mail.remove(); openFolder()" class="right-magnet"><i18n>remove</i18n></button>
+		<button ng-click="transfer()" class="right-magnet"><i18n>transfer</i18n></button>
 	</div>
 
 	<article class="twelve cell vertical-spacing">
