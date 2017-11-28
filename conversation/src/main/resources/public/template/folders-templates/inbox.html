@@ -31,7 +31,7 @@
 				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
 				dragstart="drag(mail, $originalEvent)">
 				<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
-				<td class=""><i class="mail" ng-if="mail.unread"></i></td>
+				<td class=""><i class="arrow" ng-if="mail.response"></i><i class="mail" ng-if="mail.unread"></i></td>
 				<td class="user"><a ng-click="readMail(mail)">[[mail.sender().displayName]][[mail.fromName]]</a></td>
 				<td class="content"><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
 				<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
