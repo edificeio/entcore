@@ -399,6 +399,10 @@ public class Validator {
 		if (p == null) {
 			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
 		}
+		// hack #16883
+		if ("mobile".equals(validator) && value instanceof String && ((String) value).isEmpty()) {
+			return null;
+		}
 		if (value instanceof String && p.matcher((String) value).matches()) {
 			if ("email".equals(validator) && !"emailAcademy".equals(attr) &&
 					invalidEmails != null && invalidEmails.containsKey(value)) {

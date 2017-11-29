@@ -78,7 +78,7 @@
 		},
 		"mobilePhone" : {
 		  "type" : "array-string",
-		  "validator" : "notEmpty"
+		  "validator" : "nop"
 		},
 		"mobile" : {
 			"type" : "string",

@@ -83,7 +83,8 @@ public final class AAFHandler extends DefaultHandler {
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
-		if (s == null || (s.isEmpty() && !"ENTAuxEnsClassesPrincipal".equals(currentAttribute))) {
+		if (s == null || (s.isEmpty() && !"ENTAuxEnsClassesPrincipal".equals(currentAttribute) &&
+				!"mobile".equals(currentAttribute) && !"ENTPersonMobileSMS".equals(currentAttribute))) {
 			return;
 		}
 		JsonObject j = mapping.getObject(currentAttribute);
