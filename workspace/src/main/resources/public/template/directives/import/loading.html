@@ -24,7 +24,11 @@
             <ul>
                 <li ng-repeat="doc in upload.documents" 
                     ng-click="openCompression(doc)" 
-                    ng-class="{ 'image-file': doc.isEditableImage && doc.status === 'loaded', 'loading': doc.status === 'loading' }"
+                    ng-class="{ 
+                        'image-file': doc.isEditableImage && doc.status === 'loaded', 
+                        'loading': doc.status === 'loading',
+                        selected: doc === display.editedDocument
+                    }"
                 >
                     <div class="cell icon">
                         <i class="[[doc.role()]]"></i>
