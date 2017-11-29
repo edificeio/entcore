@@ -39,7 +39,7 @@ import { FilterPipe } from 'infra-components'
                                 <div *ngFor="let item of filter.outputModel" (click)="deselect(filter, item)">
                                     <span *ngIf="filter.display">{{ item[filter.display] }}</span>
                                     <span *ngIf="!filter.display">{{ item | translate }}</span>
-                                    <i class="fa fa-trash"></i>
+                                    <i class="fa fa-trash is-size-5"></i>
                                 </div>
                             </div>
                         </div>

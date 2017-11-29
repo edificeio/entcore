@@ -16,7 +16,7 @@ import { UsersStore } from './users.store'
             <button [routerLink]="['create']"
                 [class.hidden]="router.isActive('/admin/' + usersStore.structure?.id + '/users/create', true)">
                 <s5l>create.user</s5l>
-                <i class="fa fa-user-plus"></i>
+                <i class="fa fa-user-plus is-size-5"></i>
             </button>
         </div>
         <side-layout (closeCompanion)="closeCompanion()"

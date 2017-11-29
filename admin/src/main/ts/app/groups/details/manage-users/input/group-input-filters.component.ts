@@ -31,7 +31,7 @@ import { UserlistFiltersService, ProfilesService } from '../../../../core/servic
                             <span *ngIf="!filter.display">
                                 {{ item | translate }}
                             </span>
-                            <i class="fa fa-trash"></i>
+                            <i class="fa fa-trash is-size-5"></i>
                         </div>
                     </div>
                 </div>

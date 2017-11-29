@@ -88,6 +88,8 @@ button {
     &.active, &:hover:not(:disabled) {
         background-color: $accent;
         color: white;
+
+        i { color: white; }
     }
 
     &.selected {
@@ -96,6 +98,10 @@ button {
 
         &:hover {
             background-color: $accent-dark;
+        }
+
+        i {
+            color: white;
         }
     }
 
@@ -121,7 +127,6 @@ button {
     i {
         padding-left: 10px;
         float: right;
-        color: #444;
     }
 }
 
@@ -237,9 +242,6 @@ ul {
 }
 
 i.group_add {
-    color: #fff;
-    font-size: 2.5em;
-
     &:before {
         content: '\e91d';
     }
@@ -285,6 +287,14 @@ i.group_add {
     &.is-danger .message-header { background: $danger;}
     &.is-warning .message-header { background: $warning;}
 }
+
+.is-size-1 { font-size: 3rem; }
+.is-size-2 { font-size: 2.5rem; }
+.is-size-3 { font-size: 2rem; }
+.is-size-4 { font-size: 1.5rem; }
+.is-size-5 { font-size: 1.25rem; }
+.is-size-6 { font-size: 1rem; }
+.is-size-7 { font-size: 0.75rem; }
 
 .has-accent-color {
     color: $accent;
@@ -383,10 +393,9 @@ button.card-button {
         float: right;
         font-size: 1.2em;
         width: 1.2em;
-        color: #444;
     }
 
-    &:hover {
+    &:not([disabled]):hover {
         background-color: $accent;
 
         i {
@@ -439,10 +448,6 @@ button.card-button {
             &[disabled]:hover {
                 background-color: $button-bg;
                 cursor: not-allowed;
-                
-                i {
-                    color: black;
-                }
             }
         }
 
@@ -1197,11 +1202,6 @@ users-root {
             &.hidden {
                 display: none;
             }
-
-            i {
-                color: #fff;
-                font-size: 1.5em;
-            }
         }
     }
 }
@@ -1278,12 +1278,6 @@ user-detail {
         }
     }
 
-    .fa {
-        font-size: $fontawesome-size;
-    }
-}
-
-user-filters {
     .fa {
         font-size: $fontawesome-size;
     }
@@ -1664,7 +1658,6 @@ group-manage-users {
                 & > div {
                     position: absolute;
                     z-index: 2;
-                    left: 270px;
                     top: 40px;
                     border: 1px solid $main;
                     background: white;
@@ -1728,12 +1721,6 @@ app-details {
             flex: none;
             margin: 5px 10px 5px 10px; 
         }
-    }
-}
-
-services-role {
-    i.group_add {
-        color: #000;
     }
 }
 
@@ -1903,12 +1890,13 @@ multi-combo {
         transition: all 0.25s;
         border-radius: 3px;
         background-color: $main-dark;
-        min-width: 150px;
+        line-height: 1.5em;
 
         i {
             opacity: 0;
             transition: opacity 0.25s;
             float: right;
+            padding-left: 10px;
         }
 
         &:hover {

@@ -16,7 +16,7 @@ import { GroupsStore } from './groups.store'
            <button [routerLink]="['manual', 'create']" 
                 [class.hidden]="router.isActive('/admin/' + groupsStore.structure?.id + '/groups/manual/create', true)">
                 <s5l>create.group</s5l>
-                <i class="fonticon group_add"></i>
+                <i class="fonticon group_add is-size-3"></i>
             </button>
         </div>
         

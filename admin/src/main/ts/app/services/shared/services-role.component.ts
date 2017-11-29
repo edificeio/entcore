@@ -9,9 +9,9 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     selector: 'services-role',
     template: `
         <panel-section section-title="{{ role.name }}" [folded]="false">
-            <button class="add-groups" (click)="openLightbox.emit(role)">
+            <button (click)="openLightbox.emit(role)">
                 {{ 'add.groups' | translate }}
-                <i class="fonticon group_add"></i>
+                <i class="fonticon group_add is-size-3"></i>
             </button>
             
             <div *ngIf="role.groups.length == 0" class="message is-warning">

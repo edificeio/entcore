@@ -10,7 +10,7 @@ import { UsersStore } from '../users.store';
     selector: 'user-filters',
     template: `
         <div class="panel-header">
-            <i class="fa fa-filter"></i>
+            <i class="fa fa-filter is-size-3"></i>
             <span><s5l>filters</s5l></span>
         </div>
         <div class="padded">
@@ -33,7 +33,7 @@ import { UsersStore } from '../users.store';
                             <span *ngIf="!filter.display">
                                 {{ item | translate }}
                             </span>
-                            <i class="fa fa-trash"></i>
+                            <i class="fa fa-trash is-size-5"></i>
                         </div>
                     </div>
                 </div>
