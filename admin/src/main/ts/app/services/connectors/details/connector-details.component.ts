@@ -10,6 +10,8 @@ import { ServicesStore } from '../../services.store';
 import { ConnectorModel, RoleModel, GroupModel } from '../../../core/store/models';
 import { ServicesRoleAttributionComponent } from '../../shared/services-role-attribution.component'
 
+import { BundlesService } from 'sijil'
+
 @Component({
     selector: 'connector-details',
     template: `
@@ -61,7 +63,8 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private ls: SpinnerService,
-        public servicesStore: ServicesStore
+        public servicesStore: ServicesStore,
+        private bundles: BundlesService
     ) {}
 
     ngOnInit(): void {
@@ -78,6 +81,9 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
             if(data["roles"]) {
                 this.servicesStore.connector.roles = data["roles"];
                 this.connector.roles = this.servicesStore.connector.roles;
+                // Hack to gracful translate connector's role's name
+                this.connector.roles.forEach(
+                    r => {r.name = this.connector.name + ' - ' + this.bundles.translate('services.connector.access')});
                 this.cdRef.markForCheck();
             }
         })

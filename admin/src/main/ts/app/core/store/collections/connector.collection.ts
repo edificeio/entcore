@@ -14,7 +14,7 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                 res.data.forEach(connector => {
                     connectors.push({
                         id: connector.data.id,
-                        name: connector.data.name, 
+                        name: connector.data.displayName,
                         icon: connector.data.icon
                     })
                 });

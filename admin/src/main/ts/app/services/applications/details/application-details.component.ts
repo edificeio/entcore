@@ -61,22 +61,23 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
     
     // Dirty hack to display an alert message to ADML about the target (1D or 2D) of the applcation
     appsTarget = {
+        'admin-large' : '1D-2D',
         'workspace-large':'1D-2D',
         'conversation-large':'2D-1D',
         'wiki-large':'1D-2D',
         'collaborative-wall-large':'2D',
         'rack-large':'1D-2D',
-        'timelinegenerator-large':'2D',
+        'timelinegenerator-large':'1D-2D',
         'bookmark-large':'2D',
         'Xiti-large':'1D-2D',
-        'stats-large':'2D',
+        'stats-large':'1D',
         'rbs-large':'2D',
         'schoolbook':'1D',
         'scrap-book-large':'1D',
         'searchengine-large':'1D',
         'poll-large':'2D',
-        'actualites-large':'1D-2D',
-        'mindmap-large':'2D',
+        'actualites-large':'2D',
+        'mindmap-large':'1D-2D',
         'pages-large':'2D',
         'support-large':'1D-2D',
         'rss-large':'2D',
@@ -88,9 +89,10 @@ export class ApplicationDetailsComponent  implements OnInit, OnDestroy {
         'calendar-large':'2D',
         'pad-large':'2D',
         'cns-large':'2D',
-        'forum-large':'1D-2D',
+        'forum-large':'2D',
         'sharebigfiles-large':'2D',
-        'cahier-de-texte-large':'1D'
+        'cahier-de-texte-large':'1D',
+        'userbook-large': '1D-2D' // annuaire
     }
 
     private appSubscriber: Subscription;

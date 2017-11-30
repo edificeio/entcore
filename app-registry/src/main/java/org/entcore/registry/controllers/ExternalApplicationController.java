@@ -23,14 +23,17 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 
 import java.net.URL;
 import java.util.List;
 
 import fr.wseduc.bus.BusAddress;
 
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.SuperAdminFilter;
@@ -62,10 +65,23 @@ public class ExternalApplicationController extends BaseController {
 
 	@Get("/application/external/:id/groups/roles")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
-	public void listExternalApplicationRolesWithGroups(HttpServerRequest request) {
+	public void listExternalApplicationRolesWithGroups(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		String connectorId = request.params().get("id");
-		externalAppService.listExternalApplicationRolesWithGroups(structureId, connectorId, arrayResponseHandler(request));
+		externalAppService.listExternalApplicationRolesWithGroups(structureId, connectorId, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> r) {
+				if (r.isRight()) {
+					JsonArray list = r.right().getValue();
+					for (Object res : list) {
+						UserUtils.translateGroupsNames(((JsonObject) res).getArray("groups"), I18n.acceptLanguage(request));
+					}
+					renderJson(request, list);
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	@Delete("/application/external/:id")

@@ -6,6 +6,7 @@ import { SpinnerService, routing } from '../../core/services';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from '../services.store';
+import { SessionModel } from '../../core/store'
 
 @Component({
     selector: 'services-list-with-companion',
@@ -56,9 +57,11 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         "Eliot",
         "FakeSSO",
         "Portal",
-        "RSS",
+        "Rss",
         "Timeline",
-        "Xiti"
+        "Xiti",
+        "Searchengine",
+        "Signets"
     ];
 
     constructor(
@@ -97,19 +100,27 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     closePanel() {
         this.router.navigate(['..'], { relativeTo: this.route });
     }
+
     private routeSubscriber:Subscription;
 
     ngOnInit(): void {
-        if (!this.serviceName) {
-            throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
-        }
-        this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
-            if(data[this.collectionRef[this.serviceName].routeData]) {
-                this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
-                    .filter(app => this.filteredApps.indexOf(app.name) < 0);
-                this.cdRef.markForCheck();
+        // HAck : display app just if user is ADMC => TODO implement a directive or a component
+        // Session is already fetched in nav.component and must be shared instead of being requested again
+        SessionModel.getSession().then(session => { 
+            if (!session.functions['SUPER_ADMIN']) {
+                this.filteredApps.push('Admin', 'Administration', 'ABSENCES','NOTES','SCOLARITE','TEXTES');
             }
-        })
+            if (!this.serviceName) {
+                throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
+            }
+            this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
+                if(data[this.collectionRef[this.serviceName].routeData]) {
+                    this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
+                        .filter(app => this.filteredApps.indexOf(app.name) < 0);
+                    this.cdRef.markForCheck();
+                }
+            })
+        });
     }
 
     ngOnDestroy(): void {
