@@ -436,11 +436,17 @@ export let conversationController = ng.controller('ConversationController', [
         var letterIcon = document.createElement("img")
         letterIcon.src = skin.theme + "../../img/icons/message-icon.png"
         $scope.drag = function (item, $originalEvent) {
+            var selected = [];
+            if(Conversation.instance.currentFolder.mails.selection.selected.indexOf(item) > -1)
+                selected = Conversation.instance.currentFolder.mails.selection.selected;
+            else
+                selected.push(item);
+
             $originalEvent.dataTransfer.setDragImage(letterIcon, 0, 0);
             try {
-                $originalEvent.dataTransfer.setData('application/json', JSON.stringify(item));
+                $originalEvent.dataTransfer.setData('application/json', JSON.stringify(selected));
             } catch (e) {
-                $originalEvent.dataTransfer.setData('Text', JSON.stringify(item));
+                $originalEvent.dataTransfer.setData('Text', JSON.stringify(selected));
             }
         };
         $scope.dropCondition = function (targetItem) {
@@ -459,12 +465,11 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.dropTo = function (targetItem, $originalEvent) {
             var dataField = $scope.dropCondition(targetItem)($originalEvent)
-            var originalItem = JSON.parse($originalEvent.dataTransfer.getData(dataField))
-
+            var originalItems = JSON.parse($originalEvent.dataTransfer.getData(dataField))
             if (targetItem.folderName === 'trash')
-                $scope.dropTrash(originalItem);
+                $scope.dropTrash(originalItems);
             else
-                $scope.dropMove(originalItem, targetItem);
+                $scope.dropMove(originalItems, targetItem);
         };
 
         $scope.removeMail = async () => {
@@ -472,15 +477,22 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.openFolder();
         }
 
-        $scope.dropMove = async (mail, folder) => {
-            var mailObj = new Mail(mail.id);
-            await mailObj.move(folder);
-            $scope.$apply();
+        $scope.dropMove = async (mails, folder) => {
+            var mailObj
+            mails.forEach(async mail => {
+                mailObj = new Mail(mail.id);
+                await mailObj.move(folder);
+                $scope.$apply();
+            })
         }
-        $scope.dropTrash = async mail => {
-            var mailObj = new Mail(mail.id);
-            await mailObj.trash();
-            $scope.$apply();
+        $scope.dropTrash = async mails => {
+            var mailObj;
+            mails.forEach(async mail => {
+                mailObj = new Mail(mail.id);
+                await mailObj.trash();
+                $scope.$apply();
+            })
+
         }
 
         //Given a data size in bytes, returns a more "user friendly" representation.
