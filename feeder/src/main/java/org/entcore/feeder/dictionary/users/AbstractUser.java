@@ -23,10 +23,10 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.JsonUtil;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -60,7 +60,7 @@ public abstract class AbstractUser {
 	}
 
 	public static void checkUpdateEmail(JsonObject object, TransactionHelper transactionHelper) {
-		if (object.containsField("email")) {
+		if (object.containsKey("email")) {
 			final String queryUpdateEmail =
 					"MATCH (u:User {externalId: {externalId}}) " +
 					"WHERE NOT(HAS(u.email)) OR (HAS(u.activationCode) AND u.email <> {email}) " +
@@ -96,10 +96,10 @@ public abstract class AbstractUser {
 	public JsonObject applyMapping(JsonObject object) throws ValidationException {
 		if (mapping != null) {
 			final JsonObject res = new JsonObject();
-			for (String attr : object.getFieldNames()) {
-				if (mapping.containsField(attr)) {
+			for (String attr : object.fieldNames()) {
+				if (mapping.containsKey(attr)) {
 					String s = object.getString(attr);
-					JsonObject j = mapping.getObject(attr);
+					JsonObject j = mapping.getJsonObject(attr);
 					if (j == null) {
 						throw new ValidationException("Unknown attribute " + attr);
 					}
@@ -111,7 +111,7 @@ public abstract class AbstractUser {
 					} else if ("deprecated".equals(attribute)) {
 						continue;
 					}
-					res.putString(attribute, s);
+					res.put(attribute, s);
 				}
 			}
 			return res;

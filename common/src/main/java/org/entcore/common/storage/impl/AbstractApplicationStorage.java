@@ -20,18 +20,19 @@
 package org.entcore.common.storage.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.vertx.core.Handler;
 import org.entcore.common.storage.ApplicationStorage;
 import org.entcore.common.storage.FileInfos;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
@@ -44,17 +45,17 @@ public abstract class AbstractApplicationStorage implements ApplicationStorage {
 	public void handle(final Message<JsonObject> event) {
 		switch (event.body().getString("action", "")) {
 			case "getInfos" :
-				getInfo(event.body().getString("id", ""), new AsyncResultHandler<FileInfos>() {
+				getInfo(event.body().getString("id", ""), new Handler<AsyncResult<FileInfos>>() {
 					@Override
 					public void handle(AsyncResult<FileInfos> infos) {
 						JsonObject response;
 						if (infos.succeeded()) {
 							if (infos.result() == null) return;
 							response = infos.result().toJsonExcludeEmpty();
-							response.putString("status", "ok");
+							response.put("status", "ok");
 						} else {
-							response = new JsonObject().putString("status", "error")
-									.putString("message", infos.cause().getMessage());
+							response = new JsonObject().put("status", "error")
+									.put("message", infos.cause().getMessage());
 							log.error("Error retrieving file infos.", infos.cause());
 						}
 						reply(event, response);
@@ -68,29 +69,29 @@ public abstract class AbstractApplicationStorage implements ApplicationStorage {
 					final FileInfos fi = mapper.readValue(event.body().encode(), FileInfos.class);
 					final String fileId = fi.getId();
 					if (fileId == null) {
-						response.putString("status", "error")
-								.putString("message", "missing.file.id");
+						response.put("status", "error")
+								.put("message", "missing.file.id");
 						log.error("Missing file id");
 						reply(event, response);
 						return;
 					}
 					fi.setId(null);
-					updateInfo(fileId, fi, new AsyncResultHandler<Integer>() {
+					updateInfo(fileId, fi, new Handler<AsyncResult<Integer>>() {
 						@Override
 						public void handle(AsyncResult<Integer> updated) {
 							if (updated.succeeded()) {
-								response.putNumber("count", updated.result()).putString("status", "ok");
+								response.put("count", updated.result()).put("status", "ok");
 							} else {
-								response.putString("status", "error")
-										.putString("message", updated.cause().getMessage());
+								response.put("status", "error")
+										.put("message", updated.cause().getMessage());
 								log.error("Error updating file infos.", updated.cause());
 							}
 							reply(event, response);
 						}
 					});
 				} catch (IOException e) {
-					response.putString("status", "error")
-							.putString("message", e.getMessage());
+					response.put("status", "error")
+							.put("message", e.getMessage());
 					log.error("Error  deserializing file infos.", e);
 					reply(event, response);
 				}
@@ -103,11 +104,11 @@ public abstract class AbstractApplicationStorage implements ApplicationStorage {
 		if (isNotEmpty(replyTo)) {
 			final String replyAction = event.body().getString("replyAction");
 			if (isNotEmpty(replyAction)) {
-				response.putString("action", replyAction);
+				response.put("action", replyAction);
 			}
-			vertx.eventBus().send(replyTo, response, this);
+			vertx.eventBus().send(replyTo, response, handlerToAsyncHandler(this));
 		} else {
-			event.reply(response, this);
+			event.reply(response, handlerToAsyncHandler(this));
 		}
 	}
 

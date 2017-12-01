@@ -25,7 +25,6 @@ import org.entcore.auth.services.SamlVectorService;
 import org.entcore.auth.services.impl.FrEduVecteurService;
 import org.entcore.common.neo4j.Neo4j;
 import org.joda.time.DateTime;
-import org.joda.time.ReadableDuration;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.common.SAMLObject;
 import org.opensaml.common.SAMLVersion;
@@ -61,13 +60,12 @@ import org.opensaml.xml.signature.impl.ExplicitKeySignatureTrustEngine;
 import org.opensaml.xml.signature.impl.SignatureBuilder;
 import org.opensaml.xml.util.XMLHelper;
 import org.opensaml.xml.validation.ValidationException;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.json.impl.Base64;
 import org.w3c.dom.Element;
 
 import java.io.*;
@@ -108,7 +106,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		final EventBus eb = getEventBus(vertx);
 		super.start();
 
-		String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
 		if (neo4jConfig != null) {
 			neo4j = Neo4j.getInstance();
 			neo4j.init(vertx, new JsonObject(neo4jConfig));
@@ -127,11 +125,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				return;
 			}
 
-			for (String f : vertx.fileSystem().readDirSync(path)) {
+			for (String f : vertx.fileSystem().readDirBlocking(path)) {
 				loadSignatureTrustEngine(f);
 			}
 			loadPrivateKey(config.getString("saml-private-key"));
-			vertx.eventBus().registerLocalHandler("saml", this);
+			vertx.eventBus().localConsumer("saml", this);
 		} catch (ConfigurationException | MetadataProviderException | InvalidKeySpecException | NoSuchAlgorithmException e) {
 			logger.error("Error loading SamlValidator.", e);
 		}
@@ -139,8 +137,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 	private void loadPrivateKey(String path) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		logger.info("loadPrivateKey : " + path);
-		if (path != null && !path.trim().isEmpty() && vertx.fileSystem().existsSync(path)) {
-			byte[] encodedPrivateKey = vertx.fileSystem().readFileSync(path).getBytes();
+		if (path != null && !path.trim().isEmpty() && vertx.fileSystem().existsBlocking(path)) {
+			byte[] encodedPrivateKey = vertx.fileSystem().readFileBlocking(path).getBytes();
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encodedPrivateKey);
 			privateKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(privateKeySpec);
 		}
@@ -179,24 +177,24 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					generateSAMLResponse(serviceProvider, userId, nameid,host, message);
 					break;
 				case "validate-signature":
-					sendOK(message, new JsonObject().putBoolean("valid", validateSignature(response)));
+					sendOK(message, new JsonObject().put("valid", validateSignature(response)));
 					break;
 				case "decrypt-assertion":
-					sendOK(message, new JsonObject().putString("assertion", decryptAssertion(response)));
+					sendOK(message, new JsonObject().put("assertion", decryptAssertion(response)));
 					break;
 				case "validate-signature-decrypt":
 					final JsonObject res = new JsonObject();
 					if (validateSignature(response)) {
-						res.putBoolean("valid", true).putString("assertion", decryptAssertion(response));
+						res.put("valid", true).put("assertion", decryptAssertion(response));
 					} else {
-						res.putBoolean("valid", false).putString("assertion", null);
+						res.put("valid", false).put("assertion", (String) null);
 					}
 					sendOK(message, res);
 					break;
 				case "generate-slo-request":
 					String sessionIndex = message.body().getString("SessionIndex");
 					String nameID = message.body().getString("NameID");
-					sendOK(message, new JsonObject().putString("slo", generateSloRequest(nameID, sessionIndex, idp)));
+					sendOK(message, new JsonObject().put("slo", generateSloRequest(nameID, sessionIndex, idp)));
 					break;
 				default:
 					sendError(message, "invalid.action");
@@ -231,7 +229,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		if(entngIdpNameQualifier == null) {
 			String error = "entngIdpNameQualifier can not be null. You must specify it in auth configuration (saml-entng-idp-nq properties)";
 			logger.error(error);
-			JsonObject jsonObject = new JsonObject().putString("error", error);
+			JsonObject jsonObject = new JsonObject().put("error", error);
 			sendOK(message, jsonObject);
 		}
 		logger.info("entngIdpNameQualifier : " + entngIdpNameQualifier);
@@ -240,7 +238,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		if(spSSODescriptor == null) {
 			String error = "error SSODescriptor not found for serviceProvider : " + serviceProvider;
 			logger.error(error);
-			JsonObject jsonObject = new JsonObject().putString("error", error);
+			JsonObject jsonObject = new JsonObject().put("error", error);
 			sendOK(message, jsonObject);
 		}
 
@@ -275,9 +273,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 							List<String> vectorsValue = new ArrayList<>();
 							String vectorType = "";
 
-							JsonObject vectorsJsonObject = ((JsonObject) vectors.get(i));
+							JsonObject vectorsJsonObject = (vectors.getJsonObject(i));
 
-							for (Iterator<String> iter = ((JsonObject) vectors.get(i)).getFieldNames().iterator(); iter.hasNext(); ) {
+							for (Iterator<String> iter = ( vectors.getJsonObject(i)).fieldNames().iterator(); iter.hasNext(); ) {
 								vectorType = iter.next();
 								if(attributes.containsKey(vectorType)){
 									vectorsValue = attributes.get(vectorType);
@@ -348,11 +346,11 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					debug("response : "+ rspWrt.toString());
 					JsonObject jsonObject = new JsonObject();
 
-					String base64Response = Base64.encodeBytes(rspWrt.toString().getBytes(), Base64.DONT_BREAK_LINES);
+					String base64Response = Base64.getEncoder().encodeToString(rspWrt.toString().getBytes()); //, Base64.DONT_BREAK_LINES);
 					debug("base64Response : "+ base64Response);
-					jsonObject.putString("SAMLResponse64",base64Response);
+					jsonObject.put("SAMLResponse64",base64Response);
 
-					jsonObject.putString("destination",destination);
+					jsonObject.put("destination",destination);
 
 					sendOK(message, jsonObject);
 				} else {
@@ -528,13 +526,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 							if(stringJsonArrayEither.isRight()){
 								JsonArray jsonArrayResultTemp = ((JsonArray)stringJsonArrayEither.right().getValue());
 								for (int i =0 ; i<jsonArrayResultTemp.size();i++){
-									jsonArrayResult.add(jsonArrayResultTemp.get(i));
+									jsonArrayResult.add(jsonArrayResultTemp.getValue(i));
 								}
 								// add FrEduUrlRetour vector
 								for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
 									String vectorName = requestedAttribute.getName();
 									if(vectorName.equals("FrEduUrlRetour")) {
-										JsonObject vectorRetour = new JsonObject().putString("FrEduUrlRetour",host);
+										JsonObject vectorRetour = new JsonObject().put("FrEduUrlRetour",host);
 										jsonArrayResult.add(vectorRetour);
 									}
 								}
@@ -686,8 +684,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 	private JsonObject generateSimpleSPEntityIDRequest(String idp, String sp) {
 		return new JsonObject()
-				.putString("authn-request", getAuthnRequestUri(idp) + "?SPEntityID=" + sp)
-				.putString("relay-state", SamlUtils.SIMPLE_RS);
+				.put("authn-request", getAuthnRequestUri(idp) + "?SPEntityID=" + sp)
+				.put("relay-state", SamlUtils.SIMPLE_RS);
 	}
 
 	private JsonObject generateAuthnRequest(String idp, String sp, String acs, boolean sign)
@@ -739,9 +737,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		}
 
 		return new JsonObject()
-				.putString("id", id)
-				.putString("relay-state", rs)
-				.putString("authn-request", getAuthnRequestUri(idp) + "?" + queryString);
+				.put("id", id)
+				.put("relay-state", rs)
+				.put("authn-request", getAuthnRequestUri(idp) + "?" + queryString);
 	}
 
 	private String sign(String c) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
@@ -749,7 +747,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		java.security.Signature sign = java.security.Signature.getInstance("SHA1withRSA");
 		sign.initSign(privateKey);
 		sign.update(content.getBytes("UTF-8"));
-		return content + "&Signature=" +  URLEncoder.encode(Base64.encodeBytes(sign.sign(), Base64.DONT_BREAK_LINES), "UTF-8");
+		return content + "&Signature=" +  URLEncoder.encode(Base64.getEncoder().encodeToString(sign.sign()), "UTF-8"); //, Base64.DONT_BREAK_LINES), "UTF-8");
 	}
 
 	private String generateSloRequest(String nameID, String sessionIndex, String idp) throws Exception {

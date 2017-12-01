@@ -24,12 +24,12 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.communication.services.CommunicationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -49,8 +49,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"CREATE UNIQUE g1-[:COMMUNIQUE { source: 'MANUAL'}]->g2 " +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
-				.putString("startGroupId", startGroupId)
-				.putString("endGroupId", endGroupId);
+				.put("startGroupId", startGroupId)
+				.put("endGroupId", endGroupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -62,8 +62,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"DELETE r " +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
-				.putString("startGroupId", startGroupId)
-				.putString("endGroupId", endGroupId);
+				.put("startGroupId", startGroupId)
+				.put("endGroupId", endGroupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -87,7 +87,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH g<-[:IN]-(u:User) " +
 				"CREATE UNIQUE " + createRelationship +
 				"RETURN COUNT(*) as number ";
-		JsonObject params = new JsonObject().putString("groupId", groupId).putString("direction", direction.name());
+		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -115,7 +115,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH " + relationship +
 				"DELETE r " +
 				"RETURN COUNT(*) as number ";
-		JsonObject params = new JsonObject().putString("groupId", groupId);
+		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -139,7 +139,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH (g:Group { id : {groupId}}) " +
 				"OPTIONAL MATCH g-[:COMMUNIQUE]->(g1:Group) " +
 				"RETURN g as group, COLLECT(g1) as communiqueWith ";
-		JsonObject params = new JsonObject().putString("groupId", groupId);
+		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, fullNodeMergeHandler("group", handler, "communiqueWith"));
 	}
 
@@ -162,7 +162,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"SET g.relativeCommuniqueStudent = {direction} " +
 				"CREATE UNIQUE " + createRelationship +
 				"RETURN COUNT(*) as number ";
-		JsonObject params = new JsonObject().putString("groupId", groupId).putString("direction", direction.name());
+		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -194,7 +194,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH " + relationship +
 				"DELETE r " +
 				"RETURN COUNT(*) as number ";
-		JsonObject params = new JsonObject().putString("groupId", groupId);
+		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -216,8 +216,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH (ag:FunctionalGroup) " +
 				"SET ag.users = 'BOTH' "
 		);
-		for (String attr : defaultRules.getFieldNames()) {
-			initDefaultRules(structureIds, attr, defaultRules.getObject(attr), s1, s2);
+		for (String attr : defaultRules.fieldNames()) {
+			initDefaultRules(structureIds, attr, defaultRules.getJsonObject(attr), s1, s2);
 		}
 		neo4j.executeTransaction(s1.build(), null, false, new Handler<Message<JsonObject>>() {
 			@Override
@@ -270,9 +270,9 @@ public class DefaultCommunicationService implements CommunicationService {
 					"AND cg.name =~ {profile} " +
 					"SET cg.relativeCommuniqueStudent = {direction} ";
 			JsonObject params = new JsonObject()
-					.putArray("structures", structureIds)
-					.putString("direction", relativeStudent)
-					.putString("profile", "^.*?" + a[1] + "$");
+					.put("structures", structureIds)
+					.put("direction", relativeStudent)
+					.put("profile", "^.*?" + a[1] + "$");
 			newGroups.add(query, params);
 		}
 		String users = defaultRules.getString("users"); // TODO check type in enum
@@ -283,12 +283,12 @@ public class DefaultCommunicationService implements CommunicationService {
 					"AND cg.name =~ {profile} " +
 					"SET cg.users = {direction} ";
 			JsonObject params = new JsonObject()
-					.putArray("structures", structureIds)
-					.putString("direction", users)
-					.putString("profile", "^.*?" + a[1] + "$");
+					.put("structures", structureIds)
+					.put("direction", users)
+					.put("profile", "^.*?" + a[1] + "$");
 			newGroups.add(query, params);
 		}
-		JsonArray communiqueWith = defaultRules.getArray("communiqueWith", new JsonArray());
+		JsonArray communiqueWith = defaultRules.getJsonArray("communiqueWith", new JsonArray());
 		Set<String> classes = new HashSet<>();
 		Set<String> structures = new HashSet<>();
 		for (Object o : communiqueWith) {
@@ -303,8 +303,8 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		}
 		JsonObject params = new JsonObject()
-				.putArray("structures", structureIds)
-				.putString("profile", "^.*?" + a[1] + "$");
+				.put("structures", structureIds)
+				.put("profile", "^.*?" + a[1] + "$");
 		if (!classes.isEmpty()) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
@@ -328,8 +328,8 @@ public class DefaultCommunicationService implements CommunicationService {
 						"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + sg.id ";
 			}
 			JsonObject p = params.copy();
-			p.putString("otherProfile", "^.*?(" + Joiner.on("|").join(classes) + ")$");
-			p.putString("structureProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
+			p.put("otherProfile", "^.*?(" + Joiner.on("|").join(classes) + ")$");
+			p.put("structureProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
 			existingGroups.add(query, p);
 			newGroups.add(query2, p);
 		}
@@ -344,7 +344,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
 					"AND g.name =~ {otherProfile} " +
 					"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
-			params.putString("otherProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
+			params.put("otherProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
 			existingGroups.add(query, params);
 			newGroups.add(query2, params);
 		}
@@ -353,7 +353,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler) {
 		StatementsBuilder s = new StatementsBuilder();
-		JsonObject params = new JsonObject().putArray("structures", structureIds);
+		JsonObject params = new JsonObject().put("structures", structureIds);
 		String query =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
 				"WHERE s.id IN {structures} AND HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
@@ -404,7 +404,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void applyRules(String groupId, Handler<Either<String, JsonObject>> handler) {
 		StatementsBuilder s = new StatementsBuilder();
-		JsonObject params = new JsonObject().putString("groupId", groupId);
+		JsonObject params = new JsonObject().put("groupId", groupId);
 		String query =
 				"MATCH (g:Group {id : {groupId}}) " +
 				"WHERE HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
@@ -455,7 +455,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"OPTIONAl MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]" +
 					"-(u:User)-[r1:COMMUNIQUE_DIRECT]->() " +
 					"DELETE r, r1";
-			params.putString("schoolId", structureId);
+			params.put("schoolId", structureId);
 		} else {
 			query = "MATCH ()-[r:COMMUNIQUE]->() " +
 					"OPTIONAL MATCH ()-[r1:COMMUNIQUE_DIRECT]->() " +
@@ -473,7 +473,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
-			params.putString("schoolId", structureId);
+			params.put("schoolId", structureId);
 		} else {
 			String l = (myGroup) ? " AND (length(p) >= 2 OR m.users <> 'INCOMING')" : " AND length(p) >= 2";
 			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..1]->ipg" +
@@ -513,7 +513,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 							+ "ORDER BY name, username ");
 		}
-		params.putString("userId", userId);
+		params.put("userId", userId);
 		if (additionnalParams != null) {
 			params.mergeIn(additionnalParams);
 		}
@@ -531,7 +531,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"m.displayName as username, profile.name as type " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
-		params.putString("userId", userId);
+		params.put("userId", userId);
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
@@ -548,7 +548,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		JsonObject params =
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
-		params.putString("userId", userId);
+		params.put("userId", userId);
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
 				"WHERE n.id = {userId} AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
@@ -570,7 +570,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		JsonObject params =
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
-		params.putString("userId", userId);
+		params.put("userId", userId);
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(mg:ManualGroup) " +
 				"WHERE n.id = {userId} AND (length(p) > 1 OR mg.users <> 'INCOMING') " +

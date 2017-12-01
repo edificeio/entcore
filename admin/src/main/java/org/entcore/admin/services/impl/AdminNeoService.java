@@ -2,9 +2,9 @@ package org.entcore.admin.services.impl;
 import org.entcore.admin.services.AdminService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
@@ -22,8 +22,8 @@ public class AdminNeoService implements AdminService {
 			"ORDER BY u.lastName";
 		String inputRegExp = "(?i).*" + input.trim() + ".*";
 		JsonObject params = new JsonObject()
-				.putString("id", structureId)
-				.putString("inputRegExp", inputRegExp);
+				.put("id", structureId)
+				.put("inputRegExp", inputRegExp);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
@@ -66,7 +66,7 @@ public class AdminNeoService implements AdminService {
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";
 
-		JsonObject params = new JsonObject().putString("structureId", structureId);
+		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 }

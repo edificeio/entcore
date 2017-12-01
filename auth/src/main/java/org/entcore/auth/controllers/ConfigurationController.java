@@ -29,9 +29,9 @@ import fr.wseduc.webutils.http.BaseController;
 import org.entcore.auth.services.ConfigurationService;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -66,16 +66,16 @@ public class ConfigurationController extends BaseController {
 				if (event.isRight()) {
 					if (event.right().getValue() != null && event.right().getValue().size() > 0) {
 						JsonObject res = event.right().getValue();
-						if (res.getObject(host) != null && res.getObject(host).getString(language) != null) {
+						if (res.getJsonObject(host) != null && res.getJsonObject(host).getString(language) != null) {
 							renderJson(request, new JsonObject()
-									.putString("welcomeMessage", res.getObject(host).getString(language))
-									.putBoolean("enabled", res.getObject(host).getBoolean("enabled", false))
+									.put("welcomeMessage", res.getJsonObject(host).getString(language))
+									.put("enabled", res.getJsonObject(host).getBoolean("enabled", false))
 							);
-						} else if (res.getObject(host) != null) {
-							if (!res.getObject(host).containsField("enabled")) {
-								res.getObject(host).putBoolean("enabled", false);
+						} else if (res.getJsonObject(host) != null) {
+							if (!res.getJsonObject(host).containsKey("enabled")) {
+								res.getJsonObject(host).put("enabled", false);
 							}
-							renderJson(request, res.getObject(host));
+							renderJson(request, res.getJsonObject(host));
 						} else {
 							renderJson(request, res);
 						}

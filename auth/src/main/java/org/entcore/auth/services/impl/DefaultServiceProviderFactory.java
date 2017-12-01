@@ -22,9 +22,9 @@ package org.entcore.auth.services.impl;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.auth.services.SamlServiceProviderFactory;
 import org.opensaml.saml2.core.Assertion;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +36,7 @@ public class DefaultServiceProviderFactory implements SamlServiceProviderFactory
 
 	public DefaultServiceProviderFactory(JsonObject confSP) {
 		if (confSP != null) {
-			for (String attr : confSP.getFieldNames()) {
+			for (String attr : confSP.fieldNames()) {
 				try {
 					services.put(attr, (SamlServiceProvider) Class.forName(confSP.getString(attr)).newInstance());
 				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | ClassCastException e) {

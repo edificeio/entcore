@@ -24,8 +24,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.entcore.common.aggregation.indicators.Indicator;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 /**
  * The AggregationProcessing class launches the processing of values aggregated from ent-core traces.

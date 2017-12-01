@@ -20,11 +20,11 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class StudentImportProcessing2 extends StudentImportProcessing {
 
@@ -45,9 +45,9 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		String[][] classes = createClasses(object.getArray("classes"));
-		String[][] groups = createGroups(object.getArray("groups"));
-		JsonArray relative = parseRelativeField(object.getArray("relative"));
+		String[][] classes = createClasses(object.getJsonArray("classes"));
+		String[][] groups = createGroups(object.getJsonArray("groups"));
+		JsonArray relative = parseRelativeField(object.getJsonArray("relative"));
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
 				null, null, classes, groups, relative, false, true);
 	}

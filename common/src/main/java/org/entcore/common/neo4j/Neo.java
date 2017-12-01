@@ -21,14 +21,14 @@ package org.entcore.common.neo4j;
 
 import java.util.Map;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
 
 @Deprecated
 public class Neo  {
@@ -45,18 +45,18 @@ public class Neo  {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (handler != null) {
-					JsonArray results = event.body().getArray("results");
+					JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null) {
 						for (Object o : results) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject j = (JsonObject) o;
 							int i = 0;
 							JsonObject r = new JsonObject();
-							for (Object o2 : j.getArray("result")) {
+							for (Object o2 : j.getJsonArray("result")) {
 								if (!(o2 instanceof JsonObject)) continue;
-								r.putObject(String.valueOf(i++), (JsonObject) o2);
+								r.put(String.valueOf(i++), (JsonObject) o2);
 							}
-							j.putObject("result", r);
+							j.put("result", r);
 						}
 					}
 					handler.handle(event);
@@ -108,15 +108,15 @@ public class Neo  {
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					JsonArray result = event.body().getArray("result");
+					JsonArray result = event.body().getJsonArray("result");
 					if ("ok".equals(event.body().getString("status")) && result != null) {
 						int i = 0;
 						JsonObject r = new JsonObject();
 						for (Object o : result) {
 							if (!(o instanceof JsonObject)) continue;
-							r.putObject(String.valueOf(i++), (JsonObject) o);
+							r.put(String.valueOf(i++), (JsonObject) o);
 						}
-						event.body().putObject("result", r);
+						event.body().put("result", r);
 					}
 					handler.handle(event);
 				}
@@ -134,16 +134,16 @@ public class Neo  {
 	@Deprecated
 	public static JsonObject toJsonObject(String query, JsonObject params) {
 		return new JsonObject()
-		.putString("query", query)
-		.putObject("params", (params != null) ? params : new JsonObject());
+		.put("query", query)
+		.put("params", (params != null) ? params : new JsonObject());
 	}
 
 	@Deprecated
 	public static JsonArray resultToJsonArray(JsonObject j) {
 		JsonArray r = new JsonArray();
 		if (j != null) {
-			for (String idx : j.getFieldNames()) {
-				r.addObject(j.getObject(idx));
+			for (String idx : j.fieldNames()) {
+				r.add(j.getJsonObject(idx));
 			}
 		}
 		return r;

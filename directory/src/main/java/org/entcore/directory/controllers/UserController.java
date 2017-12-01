@@ -44,10 +44,10 @@ import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -84,8 +84,8 @@ public class UserController extends BaseController {
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 						   !user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
 						   !user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
-							body.removeField("lastName");
-							body.removeField("firstName");
+							body.remove("lastName");
+							body.remove("firstName");
 						}
 						userService.update(userId, body, notEmptyResponseHandler(request));
 
@@ -125,7 +125,7 @@ public class UserController extends BaseController {
 							renderJson(request, event.right().getValue());
 						} else {
 							JsonObject error = new JsonObject()
-									.putString("error", event.left().getValue());
+									.put("error", event.left().getValue());
 							renderJson(request, error, 400);
 						}
 					}
@@ -162,7 +162,7 @@ public class UserController extends BaseController {
 					badRequest(request);
 					return;
 				}
-				final JsonObject j = new JsonObject().putString("picture", p);
+				final JsonObject j = new JsonObject().put("picture", p);
 				userBookService.update(userId, j, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> u) {
@@ -193,10 +193,10 @@ public class UserController extends BaseController {
 					userIds.add(u.getString("id"));
 				}
 				JsonObject params = new JsonObject()
-						.putString("uri", pathPrefix + "/annuaire#" + user.getUserId() + "#" + user.getType())
-						.putString("username", user.getUsername())
-						.putString("motto", motto)
-						.putString("moodImg", mood);
+						.put("uri", pathPrefix + "/annuaire#" + user.getUserId() + "#" + user.getType())
+						.put("username", user.getUsername())
+						.put("motto", motto)
+						.put("moodImg", mood);
 				if (mood != null && !mood.trim().isEmpty()) {
 					notification.notifyTimeline(request, "userbook.userbook_mood", user, userIds,
 						user.getUserId() + System.currentTimeMillis() + "mood", params);
@@ -233,7 +233,7 @@ public class UserController extends BaseController {
 			@SuppressWarnings("unchecked")
 			public void handle(JsonObject event) {
 				if (event != null) {
-					userService.delete(event.getArray("users", new JsonArray()).toList(), defaultResponseHandler(request));
+					userService.delete(event.getJsonArray("users", new JsonArray()).getList(), defaultResponseHandler(request));
 				} else {
 					badRequest(request, "invalid.json");
 				}
@@ -258,7 +258,7 @@ public class UserController extends BaseController {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
-					JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
+					JsonArray types = new JsonArray(request.params().getAll("profile"));
 					final String filterActive = request.params().get("filterActive");
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
 					final String format = request.params().get("format");
@@ -271,7 +271,7 @@ public class UserController extends BaseController {
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
 									processTemplate(request, "text/export" + exportType + ".id.txt",
-										new JsonObject().putArray("list", r.right().getValue()), new Handler<String>() {
+										new JsonObject().put("list", r.right().getValue()), new Handler<String>() {
 											@Override
 											public void handle(final String export) {
 												if (export != null) {
@@ -291,7 +291,7 @@ public class UserController extends BaseController {
 											}
 										});
 								} else {
-									renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+									renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 								}
 							}
 						};
@@ -314,7 +314,7 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addFunction(userId, event.getString("functionCode"),
-						event.getArray("scope"), event.getString("inherit", ""), defaultResponseHandler(request));
+						event.getJsonArray("scope"), event.getString("inherit", ""), defaultResponseHandler(request));
 			}
 		});
 	}
@@ -344,14 +344,14 @@ public class UserController extends BaseController {
 			public void handle(Either<String, JsonObject> res) {
 				if (res.isRight()) {
 					JsonObject j = new JsonObject()
-							.putString("action", "setCommunicationRules")
-							.putString("groupId", groupId);
+							.put("action", "setCommunicationRules")
+							.put("groupId", groupId);
 					eb.send("wse.communication", j);
-					JsonArray a = new JsonArray().addString(userId);
+					JsonArray a = new JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					renderJson(request, res.right().getValue());
 				} else {
-					renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+					renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
 				}
 			}
 		});
@@ -388,7 +388,7 @@ public class UserController extends BaseController {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
-					final JsonArray types = new JsonArray(request.params().getAll("profile").toArray());
+					final JsonArray types = new JsonArray(request.params().getAll("profile"));
 					final String groupId = request.params().get("groupId");
 					final String nameFilter = request.params().get("name");
 					final String filterActive = request.params().get("filterActive");
@@ -411,12 +411,12 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(Either<String, JsonObject> res) {
 				if (res.isRight()) {
-					JsonArray structures = res.right().getValue().getArray("structures");
+					JsonArray structures = res.right().getValue().getJsonArray("structures");
 					JsonObject j = new JsonObject()
-							.putString("action", "setMultipleDefaultCommunicationRules")
-							.putArray("schoolIds", structures);
+							.put("action", "setMultipleDefaultCommunicationRules")
+							.put("schoolIds", structures);
 					eb.send("wse.communication", j);
-					JsonArray a = new JsonArray().addString(relativeId);
+					JsonArray a = new JsonArray().add(relativeId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					if (structures == null || structures.size() == 0) {
 						notFound(request, "user.not.found");
@@ -424,7 +424,7 @@ public class UserController extends BaseController {
 						ok(request);
 					}
 				} else {
-					renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+					renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
 				}
 			}
 		});
@@ -463,7 +463,7 @@ public class UserController extends BaseController {
 	public void listDuplicates(final HttpServerRequest request) {
 		final List<String> structures = request.params().getAll("structure");
 		final boolean inherit = "true".equals(request.params().get("inherit"));
-		userService.listDuplicates(new JsonArray(structures.toArray()), inherit, arrayResponseHandler(request));
+		userService.listDuplicates(new JsonArray(structures), inherit, arrayResponseHandler(request));
 	}
 
 
@@ -478,7 +478,7 @@ public class UserController extends BaseController {
 		if ("true".equalsIgnoreCase(request.params().get("administrativeStructure"))) {
 			fields.add("administrativeStructure");
 		}
-		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
+		JsonArray types = new JsonArray(request.params().getAll("type"));
 
 		boolean isExportFull = false;
 		String isExportFullParameter = request.params().get("full");

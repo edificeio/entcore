@@ -27,9 +27,9 @@ import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import java.util.UUID;
 
@@ -71,12 +71,12 @@ public abstract class AbstractFederateController extends BaseController {
 
 	protected void createSession(String userId, String sessionIndex, String nameId, final HttpServerRequest request) {
 		UserUtils.createSession(eb, userId, sessionIndex, nameId,
-				new org.vertx.java.core.Handler<String>() {
+				new io.vertx.core.Handler<String>() {
 
 			@Override
 			public void handle(String sessionId) {
 				if (sessionId != null && !sessionId.trim().isEmpty()) {
-					long timeout = container.config().getLong("cookie_timeout", Long.MIN_VALUE);
+					long timeout = config.getLong("cookie_timeout", Long.MIN_VALUE);
 					CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
 					CookieHelper.set("authenticated", "true", timeout, request);
 					final String callback = CookieHelper.getInstance().getSigned("callback", request);
@@ -106,10 +106,10 @@ public abstract class AbstractFederateController extends BaseController {
 					log.info("Echec de l'activation : compte utilisateur " + login +
 							" introuvable ou déjà activé.");
 					JsonObject error = new JsonObject()
-							.putObject("error", new JsonObject()
-									.putString("message", I18n.getInstance()
+							.put("error", new JsonObject()
+									.put("message", I18n.getInstance()
 											.translate("activation.error", getHost(request), I18n.acceptLanguage(request))));
-					error.putString("activationCode", activationCode);
+					error.put("activationCode", activationCode);
 					renderJson(request, error);
 				}
 			}
@@ -131,12 +131,12 @@ public abstract class AbstractFederateController extends BaseController {
 								CookieHelper.set("authenticated", "", 0l, request);
 								afterDropSession(event, request, user, c);
 							} else {
-								AuthController.logoutCallback(request, c, container, eb);
+								AuthController.logoutCallback(request, c, config, eb);
 							}
 						}
 					});
 				} else {
-					AuthController.logoutCallback(request, c, container, eb);
+					AuthController.logoutCallback(request, c, config, eb);
 				}
 			}
 		});

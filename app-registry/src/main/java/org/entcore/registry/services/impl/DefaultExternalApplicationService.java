@@ -30,10 +30,10 @@ import java.util.UUID;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.registry.services.ExternalApplicationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
@@ -51,7 +51,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				", (s:Structure)-[:HAS_ATTACHMENT*0..]->(p:Structure) " +
 				"WHERE HAS(app.structureId) AND s.id = {structure} AND p.id = app.structureId AND r.structureId = app.structureId " +
 				"AND (app.inherits = true OR p = s) ";
-			params = new JsonObject().putString("structure", structureId);
+			params = new JsonObject().put("structure", structureId);
 		}
 		String query =
 				"MATCH (app:Application:External)-[:PROVIDE]->(act:Action)<-[:AUTHORIZE]-(r:Role) " + filter +
@@ -67,39 +67,39 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				JsonArray rows = event.right().getValue();
 				for(Object objRow : rows){
 					JsonObject row = (JsonObject) objRow;
-					JsonObject application = row.getObject("application");
-					JsonArray actions = row.getArray("actions");
-					JsonArray roles = row.getArray("roles");
+					JsonObject application = row.getJsonObject("application");
+					JsonArray actions = row.getJsonArray("actions");
+					JsonArray roles = row.getJsonArray("roles");
 
-					JsonObject appData = application.getObject("data");
-					JsonArray scope = appData.getArray("scope");
+					JsonObject appData = application.getJsonObject("data");
+					JsonArray scope = appData.getJsonArray("scope");
 					if (scope != null && scope.size() > 0) {
-						appData.putString("scope", Joiner.on(" ").join(scope.toArray()));
+						appData.put("scope", Joiner.on(" ").join(scope));
 					} else {
-						appData.putString("scope", "");
+						appData.put("scope", "");
 					}
-					row.putObject("data", appData);
-					row.removeField("application");
+					row.put("data", appData);
+					row.remove("application");
 
 					JsonArray actionsCopy = new JsonArray();
 					for(Object actionObj: actions){
 						JsonObject action = (JsonObject) actionObj;
-						JsonObject data = action.getObject("data");
+						JsonObject data = action.getJsonObject("data");
 						actionsCopy.add(data);
 					}
-					row.putArray("actions", actionsCopy);
+					row.put("actions", actionsCopy);
 
 					for(Object roleObj : roles){
 						JsonObject role = (JsonObject) roleObj;
-						JsonObject data = role.getObject("role").getObject("data");
-						role.putObject("role", data);
-						JsonArray acts = role.getArray("actions");
+						JsonObject data = role.getJsonObject("role").getJsonObject("data");
+						role.put("role", data);
+						JsonArray acts = role.getJsonArray("actions");
 						JsonArray actsCopy = new JsonArray();
 						for(Object actionObj : acts){
 							JsonObject action = (JsonObject) actionObj;
-							actsCopy.add(action.getObject("data"));
+							actsCopy.add(action.getJsonObject("data"));
 						}
-						role.putArray("actions", actsCopy);
+						role.put("actions", actsCopy);
 
 					}
 				}
@@ -121,8 +121,8 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
                     "CASE WHEN any(x in groups where x <> {name: null, id: null}) THEN groups ELSE [] END as groups";
 
 		JsonObject params = new JsonObject()
-			.putString("connectorId", connectorId)
-			.putString("structureId", structureId);
+			.put("connectorId", connectorId)
+			.put("structureId", structureId);
 		neo.execute(query, params, validResultHandler(handler));
 	}
 
@@ -136,7 +136,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 			"OPTIONAL MATCH r<-[r3:AUTHORIZED]-(g:Group) " +
 			"WHERE r.structureId = n.structureId " +
 			"DELETE r1, r2, r3, n, a, r ";
-		JsonObject params = new JsonObject().putString("id", applicationId);
+		JsonObject params = new JsonObject().put("id", applicationId);
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
 
@@ -152,9 +152,9 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
-		application.putArray("scope", new JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
-		application.putString("id", id);
-		application.putString("structureId", structureId);
+		application.put("scope", new JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
+		application.put("id", id);
+		application.put("structureId", structureId);
 
 		/* App creation query */
 		final String createApplicationQuery =
@@ -167,7 +167,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		final StatementsBuilder b = new StatementsBuilder()
 				.add(createApplicationQuery,
-						new JsonObject().putString("applicationName", applicationName).putObject("props", application));
+						new JsonObject().put("applicationName", applicationName).put("props", application));
 
 		/* Underlying action & role creation query */
 		String createActionsAndRolesQuery =
@@ -179,24 +179,24 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				"CREATE UNIQUE (r:Role {id: {roleId}, name: {roleName}, structureId: {structureId}})-[:AUTHORIZE]->(a) " +
 				"RETURN r.id as roleId";
 		b.add(createActionsAndRolesQuery, new JsonObject()
-				.putString("id", id)
-				.putString("roleId", UUID.randomUUID().toString())
-				.putString("type", "SECURED_ACTION_WORKFLOW")
-				.putString("name", applicationName + "|address")
-				.putString("roleName", applicationName + "- ACCESS ")
-				.putString("structureId", structureId)
-				.putString("displayName", applicationName + ".address"));
+				.put("id", id)
+				.put("roleId", UUID.randomUUID().toString())
+				.put("type", "SECURED_ACTION_WORKFLOW")
+				.put("name", applicationName + "|address")
+				.put("roleName", applicationName + "- ACCESS ")
+				.put("structureId", structureId)
+				.put("displayName", applicationName + ".address"));
 
 		neo.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
-				JsonArray results = m.body().getArray("results");
+				JsonArray results = m.body().getJsonArray("results");
 				if ("ok".equals(m.body().getString("status")) && results != null) {
-					JsonArray appRes = results.get(0);
-					JsonArray roleRes = results.get(1);
+					JsonArray appRes = results.getJsonArray(0);
+					JsonArray roleRes = results.getJsonArray(1);
 					JsonObject j = new JsonObject()
-							.mergeIn(appRes.size() > 0 ? (JsonObject) appRes.get(0) : new JsonObject())
-							.mergeIn(roleRes.size() > 0 ? (JsonObject) roleRes.get(0) : new JsonObject());
+							.mergeIn(appRes.size() > 0 ? appRes.getJsonObject(0) : new JsonObject())
+							.mergeIn(roleRes.size() > 0 ? roleRes.getJsonObject(0) : new JsonObject());
 					handler.handle(new Either.Right<String, JsonObject>(j));
 				} else {
 					handler.handle(new Either.Left<String, JsonObject>(m.body().getString("message")));
@@ -212,7 +212,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				"MATCH (app:Application:External) WHERE app.id = {structureId} " +
 				"SET app.locked = NOT coalesce(app.locked, false) " +
 				"RETURN app.locked as locked";
-		neo.execute(query, new JsonObject().putString("structureId", structureId), validUniqueResultHandler(handler));
+		neo.execute(query, new JsonObject().put("structureId", structureId), validUniqueResultHandler(handler));
 	}
 
 	@Override
@@ -224,8 +224,8 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 			"AND p.name IN {profiles} AND NOT((pg)-[:AUTHORIZED]->(r)) " +
 			"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
 		JsonObject params = new JsonObject()
-				.putString("appId", appId)
-				.putArray("profiles", new JsonArray(profiles.toArray()));
+				.put("appId", appId)
+				.put("profiles", new JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -240,8 +240,8 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				"MATCH (r)<-[auth:AUTHORIZED]-(pg) " +
 				"DELETE auth ";
 			JsonObject params = new JsonObject()
-					.putString("appId", appId)
-					.putArray("profiles", new JsonArray(profiles.toArray()));
+					.put("appId", appId)
+					.put("profiles", new JsonArray(profiles));
 
 			neo.execute(query, params, validEmptyHandler(handler));
 	}

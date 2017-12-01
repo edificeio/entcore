@@ -22,9 +22,9 @@ package org.entcore.infra.services.impl;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import org.entcore.infra.services.EventStoreService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public class MongoDbEventStore implements EventStoreService {
 

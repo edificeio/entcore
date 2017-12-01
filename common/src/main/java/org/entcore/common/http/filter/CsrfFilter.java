@@ -25,13 +25,13 @@ import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.DecodeException;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,8 +109,8 @@ public class CsrfFilter implements Filter {
 			@Override
 			public void handle(JsonObject session) {
 				String XSRFToken = null;
-				if (session != null && session.getObject("cache") != null) {
-					XSRFToken = session.getObject("cache").getString("xsrf-token");
+				if (session != null && session.getJsonObject("cache") != null) {
+					XSRFToken = session.getJsonObject("cache").getString("xsrf-token");
 					if (XSRFToken == null) { // TODO remove when support session cache persistence
 						XSRFToken = CookieHelper.get("XSRF-TOKEN", request);
 					}

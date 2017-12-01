@@ -24,11 +24,11 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 
@@ -64,10 +64,10 @@ public abstract class AdmlResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
-								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});
@@ -81,14 +81,14 @@ public abstract class AdmlResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("results");
+				JsonArray res = r.body().getJsonArray("results");
 				if (!"ok".equals(r.body().getString("status")) || res == null || res.size() != statements.size()) {
 					handler.handle(false);
 					return;
 				}
 				for (int i = 0; i < statements.size(); i++) {
-					JsonArray j = res.get(i);
-					if (j.size() != 1 || !j.<JsonObject>get(0).getBoolean("exists", false)) {
+					JsonArray j = res.getJsonArray(i);
+					if (j.size() != 1 || !j.getJsonObject(0).getBoolean("exists", false)) {
 						handler.handle(false);
 						return;
 					}

@@ -19,8 +19,8 @@
 
 package org.entcore.common.sql;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class SqlStatementsBuilder {
 
@@ -33,9 +33,9 @@ public class SqlStatementsBuilder {
 	public SqlStatementsBuilder raw(String query) {
 		if (query != null && !query.trim().isEmpty()) {
 			JsonObject statement = new JsonObject()
-					.putString("action", "raw")
-					.putString("command", query);
-			statements.addObject(statement);
+					.put("action", "raw")
+					.put("command", query);
+			statements.add(statement);
 		}
 		return this;
 	}
@@ -43,10 +43,10 @@ public class SqlStatementsBuilder {
 	public SqlStatementsBuilder prepared(String query, JsonArray values) {
 		if (query != null && !query.trim().isEmpty()) {
 			JsonObject statement = new JsonObject()
-					.putString("action", "prepared")
-					.putString("statement", query)
-					.putArray("values", values);
-			statements.addObject(statement);
+					.put("action", "prepared")
+					.put("statement", query)
+					.put("values", values);
+			statements.add(statement);
 		}
 		return this;
 	}
@@ -61,11 +61,11 @@ public class SqlStatementsBuilder {
 		}
 		JsonArray fields = new JsonArray();
 		JsonArray values = new JsonArray();
-		for (String attr : params.getFieldNames()) {
+		for (String attr : params.fieldNames()) {
 			fields.add(attr);
 			values.add(params.getValue(attr));
 		}
-		insert(table, fields, new JsonArray().addArray(values), returning);
+		insert(table, fields, new JsonArray().add(values), returning);
 		return this;
 	}
 
@@ -76,14 +76,14 @@ public class SqlStatementsBuilder {
 	public SqlStatementsBuilder insert(String table, JsonArray fields, JsonArray values, String returning) {
 		if (table != null && !table.trim().isEmpty()) {
 			JsonObject statement = new JsonObject()
-					.putString("action", "insert")
-					.putString("table", table)
-					.putArray("fields", fields)
-					.putArray("values", values);
+					.put("action", "insert")
+					.put("table", table)
+					.put("fields", fields)
+					.put("values", values);
 			if (returning != null && !returning.trim().isEmpty()) {
-				statement.putString("returning", returning);
+				statement.put("returning", returning);
 			}
-			statements.addObject(statement);
+			statements.add(statement);
 		}
 		return this;
 	}
@@ -91,10 +91,10 @@ public class SqlStatementsBuilder {
 	public SqlStatementsBuilder select(String table, JsonArray fields) {
 		if (table != null && !table.trim().isEmpty()) {
 			JsonObject statement = new JsonObject()
-					.putString("action", "select")
-					.putString("table", table)
-					.putArray("fields", fields);
-			statements.addObject(statement);
+					.put("action", "select")
+					.put("table", table)
+					.put("fields", fields);
+			statements.add(statement);
 		}
 		return this;
 	}

@@ -28,6 +28,8 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
@@ -39,19 +41,17 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
+import org.entcore.common.utils.MapFactory;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
-import org.vertx.java.core.spi.cluster.ClusterManager;
-import org.vertx.java.platform.Container;
 
 import java.util.*;
 
@@ -63,40 +63,33 @@ public class ArchiveController extends BaseController {
 	private enum ArchiveEvent { ACCESS }
 
 	@Override
-	public void init(Vertx vertx, final Container container, RouteMatcher rm,
+	public void init(Vertx vertx, final JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
-		String exportPath = container.config()
-				.getString("export-path", System.getProperty("java.io.tmpdir"));
+		super.init(vertx, config, rm, securedActions);
+		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		Set<String> expectedExports = new HashSet<>();
-		final JsonArray e = container.config().getArray("expected-exports");
+		final JsonArray e = config.getJsonArray("expected-exports");
 		for (Object o : e) {
 			if (o instanceof String) {
 				expectedExports.add((String) o);
 			}
 		}
-		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		Boolean cluster = (Boolean) server.get("cluster");
-		final Map<String, Long> userExport;
-		if (Boolean.TRUE.equals(cluster)) {
-			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-			userExport = cm.getSyncMap(Archive.ARCHIVES);
-		} else {
-			userExport = new HashMap<>();
-		}
-		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
-		EmailSender notification = container.config().getBoolean("send.export.email", false) ?
+		final Map<String, Long> userExport = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
+		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
-		storage = new StorageFactory(vertx, container.config()).getStorage();
+		storage = new StorageFactory(vertx, config).getStorage();
 		exportService = new FileSystemExportService(vertx.fileSystem(),
-				eb, exportPath, expectedExports, notification, storage, userExport, new TimelineHelper(vertx, eb, container));
+				eb, exportPath, expectedExports, notification, storage, userExport, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
-		Long periodicUserClear = container.config().getLong("periodicUserClear");
+		Long periodicUserClear = config.getLong("periodicUserClear");
 		if (periodicUserClear != null) {
 			vertx.setPeriodic(periodicUserClear, new Handler<Long>() {
 				@Override
 				public void handle(Long event) {
-					final long limit = System.currentTimeMillis() - container.config().getLong("userClearDelay", 3600000l);
+					final long limit = System.currentTimeMillis() - config.getLong("userClearDelay", 3600000l);
 					Set<Map.Entry<String, Long>> entries = new HashSet<>(userExport.entrySet());
 					for (Map.Entry<String, Long> e: entries) {
 						if (e.getValue() == null || e.getValue() < limit) {
@@ -127,8 +120,8 @@ public class ArchiveController extends BaseController {
 						public void handle(Either<String, String> event) {
 							if (event.isRight()) {
 								renderJson(request, new JsonObject()
-										.putString("message", "export.in.progress")
-										.putString("exportId", event.right().getValue())
+										.put("message", "export.in.progress")
+										.put("exportId", event.right().getValue())
 								);
 							} else {
 								badRequest(request, event.left().getValue());
@@ -152,31 +145,32 @@ public class ArchiveController extends BaseController {
 				if (Boolean.TRUE.equals(event)) {
 					log.debug("waiting export true");
 					final String address = "export." + exportId;
+					final MessageConsumer<JsonObject> consumer =  eb.consumer(address);
 					final Handler<Message<JsonObject>> downloadHandler = new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							String path = event.body().getString("destZip");
 							if ("ok".equals(event.body().getString("status")) && path != null) {
 								log.debug("Download export " + exportId);
-								event.reply(new JsonObject().putString("status", "ok"));
+								event.reply(new JsonObject().put("status", "ok"));
 								downloadExport(request, exportId);
 							} else {
-								event.reply(new JsonObject().putString("status", "error"));
+								event.reply(new JsonObject().put("status", "error"));
 								renderError(request, event.body());
 							}
-							eb.unregisterHandler(address, this);
+							consumer.unregister();
 						}
 					};
 					request.response().closeHandler(new Handler<Void>() {
 						@Override
 						public void handle(Void event) {
-							eb.unregisterHandler(address, downloadHandler);
+							consumer.unregister();
 							if (log.isDebugEnabled()) {
 								log.debug("Unregister handler : " + address);
 							}
 						}
 					});
-					eb.registerHandler(address, downloadHandler);
+					consumer.handler(downloadHandler);
 				} else {
 					log.debug("waiting export false");
 					downloadExport(request, exportId);
@@ -187,11 +181,13 @@ public class ArchiveController extends BaseController {
 
 	private void downloadExport(final HttpServerRequest request, final String exportId) {
 		exportService.setDownloadInProgress(exportId);
-		storage.sendFile(exportId, exportId + ".zip", request, false, null, new AsyncResultHandler<Void>() {
+		storage.sendFile(exportId, exportId + ".zip", request, false, null, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded() && request.response().getStatusCode() == 200) {
 					exportService.deleteExport(exportId);
+				} else if (!request.response().ended()) {
+					notFound(request);
 				}
 			}
 		});
@@ -206,7 +202,7 @@ public class ArchiveController extends BaseController {
 						message.body().getString("exportId"),
 						message.body().getString("status"),
 						message.body().getString("locale", "fr"),
-						message.body().getString("host", container.config().getString("host", ""))
+						message.body().getString("host", config.getString("host", ""))
 				);
 				break;
 			default: log.error("Archive : invalid action " + action);

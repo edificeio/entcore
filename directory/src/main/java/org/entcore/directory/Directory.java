@@ -33,9 +33,9 @@ import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 
 public class Directory extends BaseServer {
 
@@ -48,7 +48,7 @@ public class Directory extends BaseServer {
 	}
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		final EventBus eb = getEventBus(vertx);
 		super.start();
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
@@ -60,15 +60,15 @@ public class Directory extends BaseServer {
 			}
 		});
 
-		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender emailSender = emailFactory.getSender();
 		UserService userService = new DefaultUserService(emailSender, eb);
 		UserBookService userBookService = new DefaultUserBookService();
-		TimelineHelper timeline = new TimelineHelper(vertx, eb, container);
+		TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb);
 		GroupService groupService = new DefaultGroupService(eb);
-		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, container);
+		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
 		directoryController.setClassService(classService);
@@ -76,7 +76,8 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		addController(directoryController);
-		directoryController.createSuperAdmin();
+		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
+
 
 		UserBookController userBookController = new UserBookController();
 		userBookController.setSchoolService(schoolService);
@@ -122,7 +123,7 @@ public class Directory extends BaseServer {
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
 
-		vertx.eventBus().registerLocalHandler("user.repository",
+		vertx.eventBus().localConsumer("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));
 	}
 

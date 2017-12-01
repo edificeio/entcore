@@ -21,9 +21,9 @@ package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
 
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -48,15 +48,15 @@ public class ProEPSRegisteredService extends AbstractCas20ExtensionRegisteredSer
 
 		try {
 			// Uid
-			if (data.containsField("externalId")) {
+			if (data.containsKey("externalId")) {
 				additionnalAttributes.add(createTextElement(UID, data.getString("externalId"), doc));
 			}
 
 			// Structures
-			for (Object o : data.getArray("structures", new JsonArray())) {
+			for (Object o : data.getJsonArray("structures", new JsonArray())) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) o;
-				if (structure.containsField("UAI")) {
+				if (structure.containsKey("UAI")) {
 					additionnalAttributes.add(createTextElement(STRUCTURE_UAI, structure.getString("UAI"), doc));
 				}
 			}

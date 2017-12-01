@@ -20,6 +20,7 @@
 package org.entcore.feeder.dictionary.structures;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
+import io.vertx.core.AsyncResult;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -28,14 +29,12 @@ import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -85,7 +84,7 @@ public class DuplicateUsers {
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {
-			sourcePriority.put(sourcesPriority.<String>get(i), size - i);
+			sourcePriority.put(sourcesPriority.getString(i), size - i);
 		}
 		this.updateCourses = updateCourses;
 		this.autoMergeOnlyInSameStructure = autoMergeOnlyInSameStructure;
@@ -105,18 +104,18 @@ public class DuplicateUsers {
 		TransactionManager.getNeo4jHelper().execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null &&
-						res.size() == 1 && res.<JsonObject>get(0).getString("lastSearchDuplicates") != null) {
-					final String last = res.<JsonObject>get(0).getString("lastSearchDuplicates");
+						res.size() == 1 && res.getJsonObject(0).getString("lastSearchDuplicates") != null) {
+					final String last = res.getJsonObject(0).getString("lastSearchDuplicates");
 					final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
-					final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
+					final Handler[] handlers = new Handler[profiles.length + 1];
 					final long start = System.currentTimeMillis();
-					handlers[handlers.length - 1] = new VoidHandler() {
+					handlers[handlers.length - 1] = new Handler<Void>() {
 						@Override
-						protected void handle() {
+						public void handle(Void v) {
 							final String updateDate = "MATCH (s:System {name : 'Starter'}) set s.lastSearchDuplicates = {now} ";
-							TransactionManager.getNeo4jHelper().execute(updateDate, new JsonObject().putString("now", now),
+							TransactionManager.getNeo4jHelper().execute(updateDate, new JsonObject().put("now", now),
 									new Handler<Message<JsonObject>>() {
 										@Override
 										public void handle(Message<JsonObject> event) {
@@ -127,18 +126,18 @@ public class DuplicateUsers {
 									});
 				log.info("Mark duplicates users finished - elapsed time " + (System.currentTimeMillis() - start) + " ms.");
 							if (message != null) {
-								message.reply(new JsonObject().putString("status", "ok"));
+								message.reply(new JsonObject().put("status", "ok"));
 							}
 							if (handler != null) {
-								handler.handle(new JsonObject().putString("status", "ok"));
+								handler.handle(new JsonObject().put("status", "ok"));
 							}
 						}
 					};
 					for (int i = profiles.length - 1; i >= 0; i--) {
 						final int j = i;
-						handlers[i] = new VoidHandler() {
+						handlers[i] = new Handler<Void>() {
 							@Override
-							protected void handle() {
+							public void handle(Void v) {
 								searchDuplicatesByProfile(last, profiles[j], handlers[j + 1]);
 							}
 						};
@@ -146,7 +145,7 @@ public class DuplicateUsers {
 					handlers[0].handle(null);
 				} else {
 					log.warn("lastSearchDuplicates not found.");
-					message.reply(new JsonObject().putString("status", "ok"));
+					message.reply(new JsonObject().put("status", "ok"));
 				}
 			}
 		});
@@ -156,7 +155,7 @@ public class DuplicateUsers {
 		String userId1 = message.body().getString("userId1");
 		String userId2 = message.body().getString("userId2");
 		if (userId1 == null || userId2 == null || userId1.trim().isEmpty() || userId2.trim().isEmpty()) {
-			message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.id"));
+			message.reply(new JsonObject().put("status", "error").put("message", "invalid.id"));
 			return;
 		}
 		String query =
@@ -164,7 +163,7 @@ public class DuplicateUsers {
 				"SET u1.ignoreDuplicates = coalesce(u1.ignoreDuplicates, []) + u2.id, " +
 				"u2.ignoreDuplicates = coalesce(u2.ignoreDuplicates, []) + u1.id " +
 				"DELETE r";
-		JsonObject params = new JsonObject().putString("userId1", userId1).putString("userId2", userId2);
+		JsonObject params = new JsonObject().put("userId1", userId1).put("userId2", userId2);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -174,7 +173,7 @@ public class DuplicateUsers {
 	}
 
 	public void listDuplicates(final Message<JsonObject> message) {
-		JsonArray structures = message.body().getArray("structures");
+		JsonArray structures = message.body().getJsonArray("structures");
 		boolean inherit = message.body().getBoolean("inherit");
 		final Integer minScore = message.body().getInteger("minScore");
 		final boolean inSameStructure = message.body().getBoolean("inSameStructure", false);
@@ -208,7 +207,7 @@ public class DuplicateUsers {
 					"{id: u2.id, firstName: u2.firstName, lastName: u2.lastName, birthDate: u2.birthDate, email: u2.email, profiles: u2.profiles} as user2 " +
 					"ORDER BY score DESC";
 		}
-		JsonObject params = new JsonObject().putArray("structures", structures).putNumber("minScore", minScore);
+		JsonObject params = new JsonObject().put("structures", structures).put("minScore", minScore);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -225,7 +224,7 @@ public class DuplicateUsers {
 		String userId1 = message.body().getString("userId1");
 		String userId2 = message.body().getString("userId2");
 		if (userId1 == null || userId2 == null || userId1.trim().isEmpty() || userId2.trim().isEmpty()) {
-			message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.id"));
+			message.reply(new JsonObject().put("status", "error").put("message", "invalid.id"));
 			return;
 		}
 		String query =
@@ -234,21 +233,21 @@ public class DuplicateUsers {
 				"u1.disappearanceDate as disappearanceDate1, u1.deleteDate as deleteDate1, " +
 				"u2.id as userId2, u2.source as source2, NOT(HAS(u2.activationCode)) as activatedU2, " +
 				"u2.disappearanceDate as disappearanceDate2, u2.deleteDate as deleteDate2";
-		JsonObject params = new JsonObject().putString("userId1", userId1).putString("userId2", userId2);
+		JsonObject params = new JsonObject().put("userId1", userId1).put("userId2", userId2);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
-				JsonObject error = new JsonObject().putString("status", "error");
+				JsonArray res = event.body().getJsonArray("result");
+				JsonObject error = new JsonObject().put("status", "error");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					JsonObject r = res.get(0);
+					JsonObject r = res.getJsonObject(0);
 					if (r.getBoolean("activatedU1", true) && r.getBoolean("activatedU2", true)) {
-						message.reply(error.putString("message", "two.users.activated"));
+						message.reply(error.put("message", "two.users.activated"));
 					} else {
 						mergeDuplicate(r, message, tx);
 					}
 				} else if ("ok".equals(event.body().getString("status"))) {
-					message.reply(error.putString("message", "not.found.duplicate"));
+					message.reply(error.put("message", "not.found.duplicate"));
 				} else {
 					message.reply(event.body());
 				}
@@ -265,10 +264,10 @@ public class DuplicateUsers {
 		final String userId2 = r.getString("userId2");
 		final boolean missing1 = r.getLong("disappearanceDate1") != null || r.getLong("deleteDate1") != null;
 		final boolean missing2 = r.getLong("disappearanceDate2") != null || r.getLong("deleteDate2") != null;
-		final JsonObject error = new JsonObject().putString("status", "error");
+		final JsonObject error = new JsonObject().put("status", "error");
 		if (source1 != null && source1.equals(source2) && notDeduplicateSource.contains(source1) &&
 				!missing1 && !missing2) {
-			message.reply(error.putString("message", "two.users.in.same.source"));
+			message.reply(error.put("message", "two.users.in.same.source"));
 			return;
 		}
 		String query;
@@ -279,27 +278,27 @@ public class DuplicateUsers {
 			query = SIMPLE_MERGE_QUERY;
 			if (prioritySource(source1) == prioritySource(source2) && notDeduplicateSource.contains(source1)) {
 				if (!missing1 && activatedU1) {
-					params.putString("userId1", userId1).putString("userId2", userId2);
+					params.put("userId1", userId1).put("userId2", userId2);
 				} else if (!missing2 && activatedU2) {
-					params.putString("userId1", userId2).putString("userId2", userId1);
+					params.put("userId1", userId2).put("userId2", userId1);
 				} else {
 					query = SWITCH_MERGE_QUERY;
 					if (activatedU1) {
-						params.putString("userId1", userId1).putString("userId2", userId2);
+						params.put("userId1", userId1).put("userId2", userId2);
 					} else {
-						params.putString("userId1", userId2).putString("userId2", userId1);
+						params.put("userId1", userId2).put("userId2", userId1);
 					}
 				}
 			} else {
 				if (activatedU1) {
-					params.putString("userId1", userId1).putString("userId2", userId2);
+					params.put("userId1", userId1).put("userId2", userId2);
 				} else if (activatedU2) {
-					params.putString("userId1", userId2).putString("userId2", userId1);
+					params.put("userId1", userId2).put("userId2", userId1);
 				} else {
 					if (prioritySource(source1) > prioritySource(source2)) {
-						params.putString("userId1", userId1).putString("userId2", userId2);
+						params.put("userId1", userId1).put("userId2", userId2);
 					} else {
-						params.putString("userId1", userId2).putString("userId2", userId1);
+						params.put("userId1", userId2).put("userId2", userId1);
 					}
 				}
 			}
@@ -307,18 +306,18 @@ public class DuplicateUsers {
 				(activatedU2 && prioritySource(source1) > prioritySource(source2))) {
 			query = SWITCH_MERGE_QUERY;
 			if (activatedU1) {
-				params.putString("userId1", userId1).putString("userId2", userId2);
+				params.put("userId1", userId1).put("userId2", userId2);
 			} else {
-				params.putString("userId1", userId2).putString("userId2", userId1);
+				params.put("userId1", userId2).put("userId2", userId1);
 			}
 		} else {
-			message.reply(error.putString("message", "invalid.merge.case"));
+			message.reply(error.put("message", "invalid.merge.case"));
 			return;
 		}
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params);
-			message.reply(new JsonObject().putString("status", "ok"));
+			message.reply(new JsonObject().put("status", "ok"));
 		} else {
 			try {
 				TransactionHelper txl = TransactionManager.getTransaction();
@@ -330,39 +329,39 @@ public class DuplicateUsers {
 						if ("ok".equals(event.body().getString("status"))) {
 						  log.info("Merge duplicates : " + r.encode());
 							if (updateCourses) {
-								AbstractTimetableImporter.updateMergedUsers(event.body().getArray("results"));
+								AbstractTimetableImporter.updateMergedUsers(event.body().getJsonArray("results"));
 							}
 						}
 						message.reply(event.body());
 					}
 				});
 			} catch (TransactionException e) {
-				message.reply(error.putString("message", "invalid.transaction"));
+				message.reply(error.put("message", "invalid.transaction"));
 			}
 		}
 	}
 
 	public void mergeBykeys(final Message<JsonObject> message) {
-		final JsonObject error = new JsonObject().putString("status", "error");
+		final JsonObject error = new JsonObject().put("status", "error");
 		final String originalUserId = message.body().getString("originalUserId");
 		if (originalUserId == null || originalUserId.isEmpty()) {
-			message.reply(error.putString("message", "invalid.original.user"));
+			message.reply(error.put("message", "invalid.original.user"));
 			return;
 		}
-		final JsonArray mergeKeys = message.body().getArray("mergeKeys");
+		final JsonArray mergeKeys = message.body().getJsonArray("mergeKeys");
 		if (mergeKeys == null || mergeKeys.size() < 1) {
-			message.reply(error.putString("message", "invalid.merge.keys"));
+			message.reply(error.put("message", "invalid.merge.keys"));
 			return;
 		}
 		final JsonObject params = new JsonObject()
-				.putString("userId", originalUserId);
+				.put("userId", originalUserId);
 		TransactionManager.getNeo4jHelper().execute(
 				"MATCH (u:User {id: {userId}}) RETURN u.mergeKey as mergeKey", params, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
-						JsonArray result = event.body().getArray("result");
+						JsonArray result = event.body().getJsonArray("result");
 						if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
-							String mergeKey = result.<JsonObject>get(0).getString("mergeKey");
+							String mergeKey = result.getJsonObject(0).getString("mergeKey");
 							if (mergeKey != null && mergeKeys.contains(mergeKey)) {
 								final JsonArray tmp = new JsonArray();
 								for (Object o : mergeKeys) {
@@ -371,13 +370,13 @@ public class DuplicateUsers {
 									}
 								}
 								if (tmp.size() > 0) {
-									params.putArray("mergeKeys", tmp);
+									params.put("mergeKeys", tmp);
 								} else {
-									message.reply(error.putString("message", "invalid.merge.keys"));
+									message.reply(error.put("message", "invalid.merge.keys"));
 									return;
 								}
 							} else {
-								params.putArray("mergeKeys", mergeKeys);
+								params.put("mergeKeys", mergeKeys);
 							}
 							try {
 								TransactionHelper tx = TransactionManager.getTransaction();
@@ -428,10 +427,10 @@ public class DuplicateUsers {
 								});
 							} catch (TransactionException e) {
 								log.error("transaction.error", e);
-								message.reply(error.putString("message", "transaction.error"));
+								message.reply(error.put("message", "transaction.error"));
 							}
 						} else {
-							message.reply(error.putString("message", "user.not.found"));
+							message.reply(error.put("message", "user.not.found"));
 						}
 					}
 				});
@@ -443,16 +442,16 @@ public class DuplicateUsers {
 		return (priority != null) ? priority : 0;
 	}
 
-	private void searchDuplicatesByProfile(String last, final String profile, final VoidHandler handler) {
+	private void searchDuplicatesByProfile(String last, final String profile, final Handler<Void> handler) {
 		String query =
 				"MATCH (u:User) WHERE u.modified > {lastSearchDuplicate} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
 						"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
-		JsonObject params = new JsonObject().putString("profile", profile).putString("lastSearchDuplicate", last);
+		JsonObject params = new JsonObject().put("profile", profile).put("lastSearchDuplicate", last);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray result = event.body().getArray("result");
+				JsonArray result = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && result != null && result.size() > 0) {
 					scoreDuplicates(profile, result, handler);
 				} else {
@@ -467,13 +466,13 @@ public class DuplicateUsers {
 		});
 	}
 
-	private void scoreDuplicates(final String profile, final JsonArray search, final VoidHandler handler) {
+	private void scoreDuplicates(final String profile, final JsonArray search, final Handler<Void> handler) {
 		final String query =
 				"START u=node:node_auto_index({luceneQuery}) " +
 				"WHERE HEAD(u.profiles) = {profile} AND u.id <> {id} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
 				"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
-		final JsonObject params = new JsonObject().putString("profile", profile);
+		final JsonObject params = new JsonObject().put("profile", profile);
 		TransactionHelper tx;
 		try {
 			tx = TransactionManager.getTransaction(false);
@@ -483,7 +482,7 @@ public class DuplicateUsers {
 		}
 		final JsonArray result = new JsonArray();
 		for (int i = 0; i < search.size(); i++) {
-			final JsonObject json = search.get(i);
+			final JsonObject json = search.getJsonObject(i);
 			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.6);
 			final String lastNameAttr = luceneAttribute("lastName", json.getString("lastName"), 0.6);
 			String luceneQuery;
@@ -491,13 +490,13 @@ public class DuplicateUsers {
 					!firstNameAttr.trim().isEmpty() && !lastNameAttr.trim().isEmpty()) {
 				luceneQuery = firstNameAttr + " AND " + lastNameAttr;
 				result.add(json);
-				tx.add(query, params.copy().putString("luceneQuery", luceneQuery).putString("id", json.getString("id")));
+				tx.add(query, params.copy().put("luceneQuery", luceneQuery).put("id", json.getString("id")));
 			}
 		}
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray results = event.body().getArray("results");
+				JsonArray results = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
 					TransactionHelper tx;
 					try {
@@ -508,9 +507,9 @@ public class DuplicateUsers {
 						return;
 					}
 					for (int i = 0; i < results.size(); i++) {
-						JsonArray findUsers = results.get(i);
+						JsonArray findUsers = results.getJsonArray(i);
 						if (findUsers == null || findUsers.size() == 0) continue;
-						JsonObject searchUser = result.get(i);
+						JsonObject searchUser = result.getJsonObject(i);
 						calculateAndStoreScore(searchUser, findUsers, tx);
 					}
 					if (!tx.isEmpty()) {
@@ -572,7 +571,7 @@ public class DuplicateUsers {
 				"MATCH (u:User {id : {sId}}), (d:User {id : {dId}}) " +
 				"WHERE NOT({dId} IN coalesce(u.ignoreDuplicates, [])) AND NOT({sId} IN coalesce(d.ignoreDuplicates, [])) " +
 				"MERGE u-[:DUPLICATE {score:{score}}]-d ";
-		JsonObject params = new JsonObject().putString("sId", searchUser.getString("id"));
+		JsonObject params = new JsonObject().put("sId", searchUser.getString("id"));
 
 		final String lastName = cleanAttribute(searchUser.getString("lastName"));
 		final String firstName = cleanAttribute(searchUser.getString("firstName"));
@@ -583,14 +582,14 @@ public class DuplicateUsers {
 
 		for (int i = 0; i < findUsers.size(); i++) {
 			int score = 2;
-			JsonObject fu = findUsers.get(i);
+			JsonObject fu = findUsers.getJsonObject(i);
 			score += exactMatch(lastName, cleanAttribute(fu.getString("lastName")));
 			score += exactMatch(firstName, cleanAttribute(fu.getString("firstName")));
 			score += exactMatch(birthDate, cleanAttribute(fu.getString("birthDate")));
 			score += exactMatch(email, cleanAttribute(fu.getString("email")));
 			if (score > 3 && (!notDeduplicateSource.contains(source) || !source.equals(fu.getString("source")) ||
 					disappearanceDate != null || fu.getLong("disappearanceDate") != null)) {
-				tx.add(query, params.copy().putString("dId", fu.getString("id")).putNumber("score", score));
+				tx.add(query, params.copy().put("dId", fu.getString("id")).put("score", score));
 			}
 		}
 	}
@@ -606,11 +605,11 @@ public class DuplicateUsers {
 		return Validator.removeAccents(attribute).replaceAll("\\s+", "").toLowerCase();
 	}
 
-	public void autoMergeDuplicatesInStructure(final AsyncResultHandler<JsonArray> handler) {
+	public void autoMergeDuplicatesInStructure(final Handler<AsyncResult<JsonArray>> handler) {
 		final Handler<JsonObject> duplicatesHandler = new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject duplicatesRes) {
-				JsonArray res = duplicatesRes.getArray("result");
+				JsonArray res = duplicatesRes.getJsonArray("result");
 				if ("ok".equals(duplicatesRes.getString("status")) && res != null && res.size() > 0) {
 					try {
 						final TransactionHelper tx = TransactionManager.getTransaction();
@@ -627,8 +626,8 @@ public class DuplicateUsers {
 								continue;
 							}
 							JsonObject j = (JsonObject) o;
-							JsonObject u1 = j.getObject("user1");
-							JsonObject u2 = j.getObject("user2");
+							JsonObject u1 = j.getJsonObject("user1");
+							JsonObject u2 = j.getJsonObject("user2");
 							if (u1 != null && u2 != null) {
 								mergeDuplicate(new ResultMessage(mergeHandler)
 										.put("userId1", u1.getString("id"))
@@ -655,9 +654,9 @@ public class DuplicateUsers {
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
 								if (updateCourses) {
-									AbstractTimetableImporter.updateMergedUsers(event.body().getArray("results"));
+									AbstractTimetableImporter.updateMergedUsers(event.body().getJsonArray("results"));
 								}
-								handler.handle(new DefaultAsyncResult<>(event.body().getArray("results")));
+								handler.handle(new DefaultAsyncResult<>(event.body().getJsonArray("results")));
 							} else {
 								log.error("Error in automerge duplicates transaction : " + event.body().getString("message"));
 								handler.handle(new DefaultAsyncResult<JsonArray>(

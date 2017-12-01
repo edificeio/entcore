@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 public final class DefaultProfiles {
 
@@ -27,27 +27,27 @@ public final class DefaultProfiles {
 
 	public static final String TEACHER_PROFILE_EXTERNAL_ID = "PROFILE_TEACHER";
 	public static final JsonObject TEACHER_PROFILE = new JsonObject()
-			.putString("externalId", TEACHER_PROFILE_EXTERNAL_ID)
-			.putString("name", "Teacher");
+			.put("externalId", TEACHER_PROFILE_EXTERNAL_ID)
+			.put("name", "Teacher");
 
 	public static final String RELATIVE_PROFILE_EXTERNAL_ID = "PROFILE_RELATIVE";
 	public static final JsonObject RELATIVE_PROFILE = new JsonObject()
-			.putString("externalId", RELATIVE_PROFILE_EXTERNAL_ID)
-			.putString("name", "Relative");
+			.put("externalId", RELATIVE_PROFILE_EXTERNAL_ID)
+			.put("name", "Relative");
 
 	public static final String STUDENT_PROFILE_EXTERNAL_ID = "PROFILE_STUDENT";
 	public static final JsonObject STUDENT_PROFILE = new JsonObject()
-			.putString("externalId", STUDENT_PROFILE_EXTERNAL_ID)
-			.putString("name", "Student");
+			.put("externalId", STUDENT_PROFILE_EXTERNAL_ID)
+			.put("name", "Student");
 
 	public static final String PERSONNEL_PROFILE_EXTERNAL_ID = "PROFILE_PERSONNEL";
 	public static final JsonObject PERSONNEL_PROFILE = new JsonObject()
-			.putString("externalId", PERSONNEL_PROFILE_EXTERNAL_ID)
-			.putString("name", "Personnel");
+			.put("externalId", PERSONNEL_PROFILE_EXTERNAL_ID)
+			.put("name", "Personnel");
 
 	public static final String GUEST_PROFILE_EXTERNAL_ID = "PROFILE_GUEST";
 	public static final JsonObject GUEST_PROFILE = new JsonObject()
-			.putString("externalId", GUEST_PROFILE_EXTERNAL_ID)
-			.putString("name", "Guest");
+			.put("externalId", GUEST_PROFILE_EXTERNAL_ID)
+			.put("name", "Guest");
 
 }

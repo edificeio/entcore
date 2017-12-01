@@ -22,10 +22,10 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.AdmlResourcesProvider;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
@@ -47,8 +47,8 @@ public class AdmlOfStructures extends AdmlResourcesProvider {
 					"WITH COLLECT(so.id) as sIds " +
 					"RETURN LENGTH(FILTER(sId IN sIds WHERE sId IN {scope})) = LENGTH(sIds) as exists ";
 			JsonObject params = new JsonObject()
-					.putArray("structures", new JsonArray(structures.toArray()))
-					.putArray("scope", new JsonArray(adminLocal.getScope().toArray()));
+					.put("structures", new JsonArray(structures))
+					.put("scope", new JsonArray(adminLocal.getScope()));
 			validateQuery(resourceRequest, handler, query, params);
 		} else {
 			handler.handle(true);

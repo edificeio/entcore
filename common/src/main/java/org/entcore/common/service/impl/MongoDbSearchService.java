@@ -27,9 +27,9 @@ import fr.wseduc.webutils.Either;
 import org.entcore.common.service.SearchService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -81,10 +81,10 @@ public class MongoDbSearchService implements SearchService {
 
         final QueryBuilder query = new QueryBuilder().and(worldsQuery.get(),rightsOrQuery.get());
 
-        JsonObject sort = new JsonObject().putNumber("modified", -1);
+        JsonObject sort = new JsonObject().put("modified", -1);
         final JsonObject projection = new JsonObject();
         for (String field : returnFields) {
-            projection.putNumber(field, 1);
+            projection.put(field, 1);
         }
 
         mongo.find(collection, MongoQueryBuilder.build(query), sort,

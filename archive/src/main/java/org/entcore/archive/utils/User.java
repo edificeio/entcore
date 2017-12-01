@@ -23,10 +23,10 @@ package org.entcore.archive.utils;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class User {
 
@@ -34,14 +34,14 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"RETURN b.IN_OUTGOING as groups ";
-		JsonObject params = new JsonObject().putString("userId", userId);
+		JsonObject params = new JsonObject().put("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				Either<String, JsonObject> r = Neo4jResult.validUniqueResult(message);
 				JsonArray a = new JsonArray();
 				if (r.isRight()) {
-					a = r.right().getValue().getArray("groups", a);
+					a = r.right().getValue().getJsonArray("groups", a);
 				}
 				handler.handle(a);
 			}

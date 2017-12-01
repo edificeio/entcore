@@ -20,11 +20,10 @@
 package org.entcore.common.neo4j;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonElement;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Neo4jResult {
 
@@ -33,27 +32,27 @@ public class Neo4jResult {
 		Either<String, JsonObject> r = validUniqueResult(res);
 		if (r.isRight() && r.right().getValue().size() > 0) {
 			JsonObject j = r.right().getValue();
-			JsonObject data = j.getObject(nodeAttr, new JsonObject()).getObject("data");
+			JsonObject data = j.getJsonObject(nodeAttr, new JsonObject()).getJsonObject("data");
 			if (otherNodes != null && otherNodes.length > 0) {
 				for (String attr : otherNodes) {
-					JsonElement e = j.getElement(attr);
+					Object e = j.getValue(attr);
 					if (e == null) continue;
 					if (e instanceof JsonObject) {
-						data.putObject(attr, ((JsonObject) e).getObject("data"));
+						data.put(attr, ((JsonObject) e).getJsonObject("data"));
 					} else if (e instanceof JsonArray) {
 						JsonArray a = new JsonArray();
 						for (Object o : (JsonArray) e) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject jo = (JsonObject) o;
-							a.addObject(jo.getObject("data"));
+							a.add(jo.getJsonObject("data"));
 						}
-						data.putArray(attr, a);
+						data.put(attr, a);
 					}
-					j.removeField(attr);
+					j.remove(attr);
 				}
 			}
 			if (data != null) {
-				j.removeField(nodeAttr);
+				j.remove(nodeAttr);
 				return new Either.Right<>(data.mergeIn(j));
 			}
 		}
@@ -67,8 +66,8 @@ public class Neo4jResult {
 			if (results == null || results.size() == 0) {
 				return new Either.Right<>(new JsonObject());
 			}
-			if (results.size() == 1 && (results.get(0) instanceof JsonObject)) {
-				return new Either.Right<>((JsonObject) results.get(0));
+			if (results.size() == 1 && (results.getValue(0) instanceof JsonObject)) {
+				return new Either.Right<>(results.getJsonObject(0));
 			}
 			return new Either.Left<>("non.unique.result");
 		} else {
@@ -86,7 +85,7 @@ public class Neo4jResult {
 
 	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray r = res.body().getArray("result", new JsonArray());
+			JsonArray r = res.body().getJsonArray("result", new JsonArray());
 			return new Either.Right<>(r);
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
@@ -95,7 +94,7 @@ public class Neo4jResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return new Either.Right<>(res.body().getArray("results", new JsonArray()));
+			return new Either.Right<>(res.body().getJsonArray("results", new JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}
@@ -108,9 +107,9 @@ public class Neo4jResult {
 			if (results == null || results.size() == 0) {
 				return new Either.Right<>(new JsonObject());
 			} else {
-				results = results.get(idx);
-				if (results.size() == 1 && (results.get(0) instanceof JsonObject)) {
-					return new Either.Right<>((JsonObject) results.get(0));
+				results = results.getJsonArray(idx);
+				if (results.size() == 1 && (results.getValue(0) instanceof JsonObject)) {
+					return new Either.Right<>(results.getJsonObject(0));
 				}
 			}
 			return new Either.Left<>("non.unique.result");

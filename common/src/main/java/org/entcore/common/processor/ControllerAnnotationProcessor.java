@@ -41,7 +41,7 @@ import java.util.*;
 		"fr.wseduc.rs.Get", "fr.wseduc.rs.Post", "fr.wseduc.rs.Delete", "fr.wseduc.rs.Put",
 		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc",
 		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf"})
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ControllerAnnotationProcessor extends fr.wseduc.processor.ControllerAnnotationProcessor {
 
 	@Override
@@ -66,7 +66,7 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 					element.getSimpleName().toString() + "\", \"ignore\" :  " + annotation.value() + " }");
 		}
 		if (filters.size() > 0) {
-			writeFile("", filtersMap);
+			writeFile("", "", filtersMap);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 			filtersClasses.add(value);
 		}
 		if (filters.size() > 0) {
-			writeFile("", filtersMap);
+			writeFile("", "", filtersMap);
 			writeMetaInfServices(ResourcesProvider.class.getName(), filtersClasses);
 		}
 	}

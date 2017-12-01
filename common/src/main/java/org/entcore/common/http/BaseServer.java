@@ -22,6 +22,7 @@ package org.entcore.common.http;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
@@ -31,6 +32,7 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.events.EventStoreFactory;
@@ -48,12 +50,11 @@ import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Zip;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.util.*;
@@ -68,7 +69,7 @@ public abstract class BaseServer extends Server {
 	private AccessLogger accessLogger;
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}
@@ -77,9 +78,9 @@ public abstract class BaseServer extends Server {
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 		initFilters();
 
-		String node = (String) vertx.sharedData().getMap("server").get("node");
+		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 
-		contentSecurityPolicy = (String) vertx.sharedData().getMap("server").get("contentSecurityPolicy");
+		contentSecurityPolicy = (String) vertx.sharedData().getLocalMap("server").get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
@@ -91,7 +92,6 @@ public abstract class BaseServer extends Server {
 		}
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setContainer(container);
 		eventStoreFactory.setVertx(vertx);
 
 		if (config.getBoolean("csrf-token", false)) {
@@ -103,8 +103,8 @@ public abstract class BaseServer extends Server {
 		} else {
 			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
 		}
-		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
-		vertx.eventBus().registerLocalHandler("search.searching", this.searchingHandler);
+		vertx.eventBus().localConsumer("user.repository", repositoryHandler);
+		vertx.eventBus().localConsumer("search.searching", this.searchingHandler);
 
 		loadI18nAssetsFiles();
 
@@ -153,13 +153,14 @@ public abstract class BaseServer extends Server {
 
 	protected void initModulesHelpers(String node) {
 		if (config.getBoolean("neo4j", true)) {
-			if (config.getObject("neo4jConfig") != null) {
-				Neo4j.getInstance().init(vertx, config.getObject("neo4jConfig"));
+			if (config.getJsonObject("neo4jConfig") != null) {
+				Neo4j.getInstance().init(vertx, config.getJsonObject("neo4jConfig"));
 			} else {
-				String neo4jConfig = (String) vertx.sharedData().getMap("server").get("neo4jConfig");
+				String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
 				Neo4j.getInstance().init(vertx, new JsonObject(neo4jConfig));
 			}
-			Neo4jUtils.loadScripts(this.getClass().getSimpleName(), vertx, config.getString("neo4j-init-scripts", "neo4j"));
+			Neo4jUtils.loadScripts(this.getClass().getSimpleName(), vertx,
+					FileResolver.absolutePath(config.getString("neo4j-init-scripts", "neo4j")));
 		}
 		if (config.getBoolean("mongodb", true)) {
 			MongoDb.getInstance().init(getEventBus(vertx), node +
@@ -173,7 +174,7 @@ public abstract class BaseServer extends Server {
 			Sql.getInstance().init(getEventBus(vertx), node +
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
-			DB.loadScripts(schema, vertx, config.getString("init-scripts", "sql"));
+			DB.loadScripts(schema, vertx, FileResolver.absolutePath(config.getString("init-scripts", "sql")));
 		}
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
@@ -186,11 +187,11 @@ public abstract class BaseServer extends Server {
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String className = this.getClass().getSimpleName();
 		readI18n(I18n.DEFAULT_DOMAIN, assetsDirectory + File.separator + "i18n" + File.separator + className,
-				new VoidHandler() {
+				new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final String themesDirectory = assetsDirectory + File.separator + "themes";
-				final Map<String, String> skins = vertx.sharedData().getMap("skins");
+				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 				final Map<String, String> reverseSkins = new HashMap<>();
 				for (Map.Entry<String, String> e: skins.entrySet()) {
 					reverseSkins.put(e.getValue(), e.getKey());
@@ -199,9 +200,9 @@ public abstract class BaseServer extends Server {
 					@Override
 					public void handle(AsyncResult<Boolean> event) {
 						if (event.succeeded() && event.result()) {
-							vertx.fileSystem().readDir(themesDirectory, new Handler<AsyncResult<String[]>>() {
+							vertx.fileSystem().readDir(themesDirectory, new Handler<AsyncResult<List<String>>>() {
 								@Override
-								public void handle(AsyncResult<String[]> themes) {
+								public void handle(AsyncResult<List<String>> themes) {
 									if (themes.succeeded()) {
 										for (String theme : themes.result()) {
 											final String domain = reverseSkins.get(theme.substring(theme.lastIndexOf(File.separator) + 1));
@@ -227,16 +228,16 @@ public abstract class BaseServer extends Server {
 
 	}
 
-	private void readI18n(final String domain, final String i18nDirectory, final VoidHandler handler) {
+	private void readI18n(final String domain, final String i18nDirectory, final Handler<Void> handler) {
 		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
 				if (ar.succeeded() && ar.result()) {
-					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> asyncResult) {
+						public void handle(AsyncResult<List<String>> asyncResult) {
 							if (asyncResult.succeeded()) {
-								String[] files = asyncResult.result();
+								List<String> files = asyncResult.result();
 								final I18n i18n = I18n.getInstance();
 								for (final String s : files) {
 									final Locale locale = Locale.forLanguageTag(
@@ -283,8 +284,8 @@ public abstract class BaseServer extends Server {
 
 	protected BaseServer setSearchingEvents(final SearchingEvents searchingEvents) {
 		searchingHandler.setSearchingEvents(searchingEvents);
-		final Set<String> set = vertx.sharedData().getSet(SearchingHandler.class.getName());
-		set.add(searchingEvents.getClass().getSimpleName());
+		final LocalMap<String, String> set = vertx.sharedData().getLocalMap(SearchingHandler.class.getName());
+		set.putIfAbsent(searchingEvents.getClass().getSimpleName(), "");
 		return this;
 	}
 

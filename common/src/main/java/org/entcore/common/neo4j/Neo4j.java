@@ -21,15 +21,15 @@ package org.entcore.common.neo4j;
 
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.eventbus.ResultMessage;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class Neo4j {
 
 	public void init(Vertx vertx, JsonObject config) {
 		this.eb = Server.getEventBus(vertx);
-		JsonArray serverUris = config.getArray("server-uris");
+		JsonArray serverUris = config.getJsonArray("server-uris");
 		String serverUri = config.getString("server-uri");
 		if (serverUris == null && serverUri != null) {
 			serverUris = new JsonArray().add(serverUri);
@@ -62,7 +62,7 @@ public class Neo4j {
 			try {
 				URI[] uris = new URI[serverUris.size()];
 				for (int i = 0; i < serverUris.size(); i++) {
-					uris[i] = new URI(serverUris.<String>get(i));
+					uris[i] = new URI(serverUris.getString(i));
 				}
 				database = new Neo4jRest(uris, config.getBoolean("slave-readonly", false), vertx,
 						config.getLong("checkDelay", 3000l),
@@ -147,7 +147,7 @@ public class Neo4j {
 			public void handle(JsonObject res) {
 				if (res.getString("message") != null) {
 					log.error(res.getString("exception") + " : " + res.getString("message"));
-					res.putString("status", "error");
+					res.put("status", "error");
 				}
 				if (m != null) {
 					m.handle(new ResultMessage(res));

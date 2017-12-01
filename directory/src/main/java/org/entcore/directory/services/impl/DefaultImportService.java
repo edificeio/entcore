@@ -23,22 +23,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.ImportService;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultImportService implements ImportService {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultImportService.class);
+	private static final long TIMEOUT = 10 * 60 * 1000l;
 	private final EventBus eb;
 	private final Vertx vertx;
 	private static final ObjectMapper mapper = new ObjectMapper();
@@ -52,31 +56,31 @@ public class DefaultImportService implements ImportService {
 	public void validate(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
-					.putString("action", "validate");
-			eb.send(Directory.FEEDER, action, new Handler<Message<JsonObject>>() {
+					.put("action", "validate");
+			eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result", new JsonObject());
-						if (r.getObject("errors", new JsonObject()).size() > 0) {
-							handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
+						JsonObject r = res.body().getJsonObject("result", new JsonObject());
+						if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
+							handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
 						} else {
-							JsonObject f = r.getObject("files");
-							if(r.getObject("softErrors") != null) {
-								f.putObject("softErrors", r.getObject("softErrors"));
+							JsonObject f = r.getJsonObject("files");
+							if(r.getJsonObject("softErrors") != null) {
+								f.put("softErrors", r.getJsonObject("softErrors"));
 							}
 							handler.handle(new Either.Right<JsonObject, JsonObject>(f));
 						}
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
-								new JsonObject().putArray("global",
-								new JsonArray().addString(res.body().getString("message", "")))));
+								new JsonObject().put("global",
+								new JsonArray().add(res.body().getString("message", "")))));
 					}
 				}
-			});
+			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.putArray("global", new JsonArray().addString("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -85,26 +89,26 @@ public class DefaultImportService implements ImportService {
 	public void doImport(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
 		try {
 			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
-					.putString("action", "import");
-			eb.send("entcore.feeder", action, new Handler<Message<JsonObject>>() {
+					.put("action", "import");
+			eb.send("entcore.feeder", action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
-						JsonObject r = event.body().getObject("result", new JsonObject());
-						if (r.getObject("errors", new JsonObject()).size() > 0) {
-							handler.handle(new Either.Left<JsonObject, JsonObject>(r.getObject("errors")));
+						JsonObject r = event.body().getJsonObject("result", new JsonObject());
+						if (r.getJsonObject("errors", new JsonObject()).size() > 0) {
+							handler.handle(new Either.Left<JsonObject, JsonObject>(r.getJsonObject("errors")));
 						} else {
-							handler.handle(new Either.Right<JsonObject, JsonObject>(r.getObject("ignored")));
+							handler.handle(new Either.Right<JsonObject, JsonObject>(r.getJsonObject("ignored")));
 						}
 					} else {
-						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().putArray("global",
-								new JsonArray().addString(event.body().getString("message", "")))));
+						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().put("global",
+								new JsonArray().add(event.body().getString("message", "")))));
 					}
 			}
-			});
+			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.putArray("global", new JsonArray().addString("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}

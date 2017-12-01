@@ -20,10 +20,12 @@
 package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.feeder.Feeder;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class ImporterTask implements Handler<Long> {
 
@@ -39,14 +41,14 @@ public class ImporterTask implements Handler<Long> {
 
 	@Override
 	public void handle(Long event) {
-		eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().putString("action", "import").putString("feeder", feeder), new Handler<Message<JsonObject>>() {
+		eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "import").put("feeder", feeder), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && export) {
-					eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().putString("action", "export"));
+					eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "export"));
 				}
 			}
-		});
+		}));
 	}
 
 }

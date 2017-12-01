@@ -182,7 +182,7 @@ object DuplicateScenario {
           .formParam("""acceptCGU""", """true""")
           .check(status.is(302)))
       }
-        .doIf ("${merge(1)}", "MonjeUa") {
+        .doIfEquals ("${merge(1)}", "MonjeUa") {
         exec(http("Details")
           .get("""/directory/user/${merge(0)}""")
           .check(status.is(200),
@@ -197,7 +197,7 @@ object DuplicateScenario {
           .formParam("""acceptCGU""", """true""")
           .check(status.is(200)))
       }
-      .doIf ("${merge(3)}", "MonjeUa") {
+      .doIfEquals ("${merge(3)}", "MonjeUa") {
         exec(http("Details")
           .get("""/directory/user/${merge(2)}""")
           .check(status.is(200),

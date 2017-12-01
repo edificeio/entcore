@@ -21,15 +21,16 @@ package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.Handler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +59,7 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 	private final Neo4j neo = Neo4j.getInstance();
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, Map<String,Object> conf) {
+	public void configure(EventBus eb, Map<String,Object> conf) {
 		super.configure(eb, conf);
 		this.directoryAction = "getUserInfos";
 	};
@@ -77,19 +78,19 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 			}
 
 			String query = "MATCH (u:`User` { id : {id}}) return u";
-			JsonObject params = new JsonObject().putString("id", userId);
+			JsonObject params = new JsonObject().put("id", userId);
 			neo.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
 
 					// Uid
-					if (data.containsField("externalId")) {
+					if (data.containsKey("externalId")) {
 						additionnalAttributes.add(createTextElement(EA_ID, data.getString("externalId"), doc));
 					}
 
 					// Structures
 					Element rootStructures = createElement(EA_STRUCTURE+"s", doc);
-					for (Object o : data.getArray("structures", new JsonArray()).toList()) {
+					for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
 						Element rootStructure = createElement(EA_STRUCTURE, doc);
 						Map<String, Object> structure = ((Map<String, Object>) o);
 						if (structure.containsKey("UAI")) {
@@ -116,7 +117,7 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 								}
 							});
 							// Email
-							if (data.containsField("email")) {
+							if (data.containsKey("email")) {
 								additionnalAttributes.add(createTextElement(EA_EMAIL, data.getString("email"), doc));
 							}
 							break;
@@ -136,15 +137,15 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 							Either<String, JsonObject> res = validUniqueResult(m);
 							if (res.isRight()) {
 								JsonObject j = res.right().getValue();
-								if(null != j.getObject("u")
-										&& null != j.getObject("u").getObject("data")
-										&& null != j.getObject("u").getObject("data").getArray("functions")){
-									JsonArray jsonArrayFunctions = j.getObject("u").getObject("data").getArray("functions");
+								if(null != j.getJsonObject("u")
+										&& null != j.getJsonObject("u").getJsonObject("data")
+										&& null != j.getJsonObject("u").getJsonObject("data").getJsonArray("functions")){
+									JsonArray jsonArrayFunctions = j.getJsonObject("u").getJsonObject("data").getJsonArray("functions");
 									if(jsonArrayFunctions.size() > 0){
 										Element rootDisciplines = createElement(EA_DISCIPLINE+"s", doc);
 										List<String> vTempListDiscipline = new ArrayList<>();
 										for (int i = 0; i < jsonArrayFunctions.size(); i++) {
-											String fonction = jsonArrayFunctions.get(i);
+											String fonction = jsonArrayFunctions.getString(i);
 											String[] elements = fonction.split("\\$");
 											if ( elements.length > 1 ){
 												String discipline = elements[elements.length - 2] + "$" + elements[elements.length - 1];
@@ -165,9 +166,9 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 								log.error("Failed to get User functions userID : " + userId);
 							}
 							// Email
-							if (data.containsField("emailAcademy")) {
+							if (data.containsKey("emailAcademy")) {
 								additionnalAttributes.add(createTextElement(EA_EMAIL, data.getString("emailAcademy"), doc));
-							} else if (data.containsField("email")) {
+							} else if (data.containsKey("email")) {
 								additionnalAttributes.add(createTextElement(EA_EMAIL, data.getString("email"), doc));
 
 							}
@@ -181,12 +182,12 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 					}
 
 					// Lastname
-					if (data.containsField("lastName")) {
+					if (data.containsKey("lastName")) {
 						additionnalAttributes.add(createTextElement(EA_LASTNAME, data.getString("lastName"), doc));
 					}
 
 					// Firstname
-					if (data.containsField("firstName")) {
+					if (data.containsKey("firstName")) {
 						additionnalAttributes.add(createTextElement(EA_FIRSTNAME, data.getString("firstName"), doc));
 					}
 				}
@@ -203,8 +204,8 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 
 	private void addStringArray(String casLabel, String entLabel,String entLabel2, JsonObject data, Document doc, List<Element> additionalAttributes, Mapper<String, String> mapper){
 		Element root = createElement(casLabel+"s", doc);
-		if(data.containsField(entLabel)){
-			for(Object item: data.getArray(entLabel)){
+		if(data.containsKey(entLabel)){
+			for(Object item: data.getJsonArray(entLabel)){
 				if (item.getClass().getName().equalsIgnoreCase(JsonObject.class.getName())) {
 					root.appendChild(createTextElement(casLabel, ((JsonObject) item).getString(entLabel2), doc));
 				} else {

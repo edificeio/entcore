@@ -20,18 +20,20 @@
 package org.entcore.common.sql;
 
 import fr.wseduc.webutils.Utils;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DB {
@@ -54,7 +56,7 @@ public class DB {
 						@Override
 						public void handle(Message<JsonObject> message) {
 							if ("ok".equals(message.body().getString("status"))) {
-								JsonArray fileNames = Utils.flatten(message.body().getArray("results"));
+								JsonArray fileNames = Utils.flatten(message.body().getJsonArray("results"));
 								loadAndExecute(s, vertx, path, fileNames);
 							}
 						}
@@ -68,15 +70,15 @@ public class DB {
 
 	private static void loadAndExecute(final String schema, final Vertx vertx,
 			final String path, final JsonArray excludeFileNames) {
-		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
+		vertx.fileSystem().readDir(path, ".*?\\.sql$", new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<String[]> asyncResult) {
+			public void handle(AsyncResult<List<String>> asyncResult) {
 				if (asyncResult.succeeded()) {
-					final String [] files = asyncResult.result();
-					Arrays.sort(files);
+					final List<String> files = asyncResult.result();
+					Collections.sort(files);
 					final SqlStatementsBuilder s = new SqlStatementsBuilder();
 					final JsonArray newFiles = new JsonArray();
-					final AtomicInteger count = new AtomicInteger(files.length);
+					final AtomicInteger count = new AtomicInteger(files.size());
 					for (final String f : files) {
 						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);
 						if (!excludeFileNames.contains(filename)) {
@@ -87,7 +89,7 @@ public class DB {
 										String script = bufferAsyncResult.result().toString();
 										script = script.replaceAll("\\-\\-\\s.*(\r|\n|$)", "").replaceAll("(\r|\n|\t)", " ");
 										s.raw(script);
-										newFiles.addArray(new JsonArray().add(filename));
+										newFiles.add(new JsonArray().add(filename));
 									} else {
 										log.error("Error reading file : " + f, bufferAsyncResult.cause());
 									}

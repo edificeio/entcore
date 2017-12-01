@@ -31,10 +31,10 @@ import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.GroupService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -60,7 +60,7 @@ public class GroupController extends BaseController {
 			public void handle(UserInfos user) {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
-					final JsonArray types = new JsonArray(request.params().getAll("type").toArray());
+					final JsonArray types = new JsonArray(request.params().getAll("type"));
 					final Boolean translate= request.params().contains("translate") ?
 							new Boolean(request.params().get("translate")) :
 							Boolean.FALSE;
@@ -97,8 +97,8 @@ public class GroupController extends BaseController {
 			public void handle(JsonObject body) {
 				final String structureId = body.getString("structureId");
 				final String classId = body.getString("classId");
-				body.removeField("structureId");
-				body.removeField("classId");
+				body.remove("structureId");
+				body.remove("classId");
 				groupService.createOrUpdateManual(body, structureId, classId, notEmptyResponseHandler(request, 201));
 			}
 		});
@@ -112,7 +112,7 @@ public class GroupController extends BaseController {
 			bodyToJson(request, pathPrefix + "updateManualGroup", new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject body) {
-					body.putString("id", groupId);
+					body.put("id", groupId);
 					groupService.createOrUpdateManual(body, null, null, notEmptyResponseHandler(request));
 				}
 			});
@@ -141,19 +141,19 @@ public class GroupController extends BaseController {
 			bodyToJson(request, new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject body) {
-					final JsonArray userIds = body.getArray("userIds");
+					final JsonArray userIds = body.getJsonArray("userIds");
 					groupService.addUsers(groupId, userIds, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight()) {
 								JsonObject j = new JsonObject()
-										.putString("action", "setCommunicationRules")
-										.putString("groupId", groupId);
+										.put("action", "setCommunicationRules")
+										.put("groupId", groupId);
 								eb.send("wse.communication", j);
 								ApplicationUtils.publishModifiedUserGroup(eb, userIds);
 								renderJson(request, res.right().getValue());
 							} else {
-								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+								renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
 							}
 						}
 					});
@@ -175,7 +175,7 @@ public class GroupController extends BaseController {
 			bodyToJson(request, new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject body) {
-					final JsonArray userIds = body.getArray("userIds");
+					final JsonArray userIds = body.getJsonArray("userIds");
 					groupService.removeUsers(groupId, userIds, defaultResponseHandler(request));
 				}
 			});

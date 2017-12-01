@@ -22,8 +22,8 @@ package org.entcore.feeder.dictionary.structures;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -82,18 +82,18 @@ public class Profile {
 		String query =
 				"CREATE (p:Profile {props})<-[:HAS_PROFILE]-(g:Group:ProfileGroup:DefaultProfileGroup) ";
 		JsonObject params = new JsonObject()
-				.putString("id", id)
-				.putString("externalId", externalId)
-				.putObject("props", profile);
+				.put("id", id)
+				.put("externalId", externalId)
+				.put("props", profile);
 		getTransaction().add(query, params);
 	}
 
 	public void createFunctionIfAbsent(String functionExternalId, String name) {
 		if (functions.add(functionExternalId)) {
 			JsonObject function = new JsonObject()
-					.putString("externalId", functionExternalId)
-					.putString("id", UUID.randomUUID().toString())
-					.putString("name", name);
+					.put("externalId", functionExternalId)
+					.put("id", UUID.randomUUID().toString())
+					.put("name", name);
 			createFunction(null, externalId, function, getTransaction());
 		}
 	}
@@ -101,14 +101,14 @@ public class Profile {
 	public static void createFunction(String profileName, String profileExternalId, JsonObject function,
 			TransactionHelper transaction) {
 		JsonObject params = new JsonObject()
-				.putObject("props", function.putString("id", UUID.randomUUID().toString()));
+				.put("props", function.put("id", UUID.randomUUID().toString()));
 		String query;
 		if (profileName != null && !profileName.trim().isEmpty()) {
 			query = "MATCH (p:Profile { name : {profileName}}) ";
-			params.putString("profileName", profileName);
+			params.put("profileName", profileName);
 		} else {
 			query = "MATCH (p:Profile { externalId : {profileExternalId}}) ";
-			params.putString("profileExternalId", profileExternalId);
+			params.put("profileExternalId", profileExternalId);
 		}
 		query += "CREATE p<-[:COMPOSE]-(f:Function {props}) RETURN f.id as id ";
 		transaction.add(query, params);
@@ -119,18 +119,18 @@ public class Profile {
 				"MATCH (f:Function { externalId : {externalId}}) " +
 				"OPTIONAL MATCH f-[r]-() " +
 				"DELETE r,f ";
-		JsonObject params = new JsonObject().putString("externalId", functionExternalId);
+		JsonObject params = new JsonObject().put("externalId", functionExternalId);
 		transaction.add(query, params);
 	}
 	public static void createFunctionGroup(JsonArray functions, String name, String externalId,
 			TransactionHelper transaction) {
 		JsonObject fg = new JsonObject()
-				.putString("id", UUID.randomUUID().toString())
-				.putString("name", name)
-				.putString("externalId", externalId);
+				.put("id", UUID.randomUUID().toString())
+				.put("name", name)
+				.put("externalId", externalId);
 		JsonObject params = new JsonObject()
-				.putArray("functions", functions)
-				.putObject("props", fg);
+				.put("functions", functions)
+				.put("props", fg);
 		String query =
 				"MATCH (f:Function) " +
 				"WHERE f.externalId IN {functions} " +
@@ -144,7 +144,7 @@ public class Profile {
 				"MATCH (f:FunctionGroup { id : {id}}) " +
 				"OPTIONAL MATCH f-[r]-() " +
 				"DELETE r,f ";
-		JsonObject params = new JsonObject().putString("id", functionGroupId);
+		JsonObject params = new JsonObject().put("id", functionGroupId);
 		transaction.add(query, params);
 	}
 

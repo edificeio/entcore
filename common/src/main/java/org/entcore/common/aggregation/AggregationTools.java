@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.ListIterator;
 
-import org.vertx.java.core.Handler;
+import io.vertx.core.Handler;
 
 public class AggregationTools {
 

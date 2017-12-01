@@ -23,33 +23,30 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.email.SendInBlueSender;
 import fr.wseduc.webutils.email.GoMailSender;
 import fr.wseduc.webutils.exception.InvalidConfigurationException;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 
 import java.net.URISyntaxException;
 
 public class EmailFactory {
 
 	private final Vertx vertx;
-	private final Container container;
 	private final JsonObject config;
 	private final Logger log = LoggerFactory.getLogger(EmailFactory.class);
 
-	public EmailFactory(Vertx vertx, Container container) {
-		this(vertx, container, null);
+	public EmailFactory(Vertx vertx) {
+		this(vertx, null);
 	}
 
-	public EmailFactory(Vertx vertx, Container container, JsonObject config) {
+	public EmailFactory(Vertx vertx, JsonObject config) {
 		this.vertx = vertx;
-		this.container = container;
-		if (config != null && config.getObject("emailConfig") != null) {
+		if (config != null && config.getJsonObject("emailConfig") != null) {
 			this.config = config;
 		} else {
-			ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 			String s = (String) server.get("emailConfig");
 			if (s != null) {
 				this.config = new JsonObject(s);
@@ -64,21 +61,21 @@ public class EmailFactory {
 		if (config != null){
 			if ("SendInBlue".equals(config.getString("type"))) {
 				try {
-					sender = new SendInBlueSender(vertx, container, config);
+					sender = new SendInBlueSender(vertx, config);
 				} catch (InvalidConfigurationException | URISyntaxException e) {
 					log.error(e.getMessage(), e);
-					vertx.stop();
+					vertx.close();
 				}
 			} else if ("GoMail".equals(config.getString("type"))) {
 				try {
-					sender = new GoMailSender(vertx, container, config);
+					sender = new GoMailSender(vertx, config);
 				} catch (InvalidConfigurationException | URISyntaxException e) {
 					log.error(e.getMessage(), e);
-					vertx.stop();
+					vertx.close();
 				}
 			}
 		} else {
-			sender = new SmtpSender(vertx, container);
+			sender = new SmtpSender(vertx);
 		}
 		return sender;
 	}

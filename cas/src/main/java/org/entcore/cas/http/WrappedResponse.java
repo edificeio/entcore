@@ -20,9 +20,9 @@
 package org.entcore.cas.http;
 
 import fr.wseduc.cas.http.Response;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class WrappedResponse implements Response {
 

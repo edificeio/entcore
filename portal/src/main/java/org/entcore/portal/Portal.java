@@ -25,7 +25,7 @@ import org.entcore.portal.controllers.PortalController;
 public class Portal extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 		addController(new PortalController());
 	}

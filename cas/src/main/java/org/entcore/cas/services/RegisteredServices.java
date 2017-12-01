@@ -25,9 +25,9 @@ import java.util.Set;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class RegisteredServices {
 

@@ -21,12 +21,12 @@ package org.entcore.common.mongodb;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.SecuredAction;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.share.impl.MongoDbShareService;
-import org.vertx.java.core.Vertx;
+import io.vertx.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.platform.Container;
 
 import java.util.List;
 import java.util.Map;
@@ -52,8 +52,8 @@ public abstract class MongoDbControllerHelper extends ControllerHelper {
 	}
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
 		this.mongo = MongoDb.getInstance();
 		setShareService(new MongoDbShareService(eb, this.mongo,
 				sharedCollection, securedActions, groupedActions));

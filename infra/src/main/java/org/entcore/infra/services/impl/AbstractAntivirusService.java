@@ -27,23 +27,24 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.infra.services.AntivirusService;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.DecodeException;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public abstract class AbstractAntivirusService implements AntivirusService, Handler<Message<JsonObject>> {
 
@@ -57,15 +58,15 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 	public void init() {
 		this.queue = new HashMap<>();
 		this.storage = new StorageFactory(vertx).getStorage();
-		vertx.eventBus().registerLocalHandler("antivirus", this);
+		vertx.eventBus().localConsumer("antivirus", this);
 	}
 
-	protected abstract void parseScanReport(String path, AsyncResultHandler<List<InfectedFile>> handler);
+	protected abstract void parseScanReport(String path, Handler<AsyncResult<List<InfectedFile>>> handler);
 
 
 	@Override
 	public void replaceInfectedFiles(String path, final Handler<Either<String, JsonObject>> handler) {
-		parseScanReport(path, new AsyncResultHandler<List<InfectedFile>>() {
+		parseScanReport(path, new Handler<AsyncResult<List<InfectedFile>>>() {
 			@Override
 			public void handle(AsyncResult<List<InfectedFile>> event) {
 				if (event.succeeded()) {
@@ -83,10 +84,10 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 		final JsonObject j = new JsonObject();
 		for (final InfectedFile i : infectedFiles) {
 			final JsonObject message = new JsonObject()
-					.putString("action", "getInfos")
-					.putString("id", i.getId())
-					.putString("replyTo", "antivirus")
-					.putString("replyAction", "rmInfected");
+					.put("action", "getInfos")
+					.put("id", i.getId())
+					.put("replyTo", "antivirus")
+					.put("replyAction", "rmInfected");
 			final long timerId = vertx.setTimer(30000l, new Handler<Long>() {
 				@Override
 				public void handle(Long event) {
@@ -96,7 +97,7 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 			i.setTimerId(timerId);
 			queue.put(i.getId(), i);
 			vertx.eventBus().publish("storage", message);
-			j.putString(i.getPath(), i.getVirus());
+			j.put(i.getPath(), i.getVirus());
 		}
 		return j;
 	}
@@ -126,7 +127,7 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 			render.processTemplate(request, "text/infectedFile.txt", params, new Handler<String>() {
 				@Override
 				public void handle(String content) {
-					storage.writeBuffer(i.getPath(), i.getId(), new Buffer(content), "text/plain", i.getName() + ".txt", new Handler<JsonObject>() {
+					storage.writeBuffer(i.getPath(), i.getId(), Buffer.buffer(content), "text/plain", i.getName() + ".txt", new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
 							if (timeline != null && i.getOwner() != null) {
@@ -137,11 +138,11 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 							}
 							if (message != null) {
 								JsonObject m = new JsonObject()
-										.putString("id", i.getId())
-										.putString("name", i.getName() + ".txt")
-										.putString("contentType", "text/plain")
-										.putString("action", "updateInfos");
-								message.reply(m, new Handler<Message<JsonObject>>() {
+										.put("id", i.getId())
+										.put("name", i.getName() + ".txt")
+										.put("contentType", "text/plain")
+										.put("action", "updateInfos");
+								message.reply(m, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> r) {
 										if ("ok".equals(r.body().getString("status")) && r.body().getInteger("count", -1) > 0) {
@@ -150,7 +151,7 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 											log.error("Error updating file info " + i.getId());
 										}
 									}
-								});
+								}));
 							}
 						}
 					});

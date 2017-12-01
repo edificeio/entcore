@@ -20,8 +20,8 @@
 package org.entcore.common.events;
 
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 public interface EventStore {
 

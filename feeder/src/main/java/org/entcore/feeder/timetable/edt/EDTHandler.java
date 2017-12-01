@@ -19,10 +19,10 @@
 
 package org.entcore.feeder.timetable.edt;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -49,12 +49,12 @@ public class EDTHandler extends DefaultHandler {
 		currentTag = localName;
 		final JsonObject o = attributesToJsonObject(attributes);
 		if (isNotEmpty(currentEntityType)) {
-			JsonArray a = currentEntity.getArray(currentTag);
+			JsonArray a = currentEntity.getJsonArray(currentTag);
 			if (a == null) {
 				a = new JsonArray();
-				currentEntity.putArray(currentTag, a);
+				currentEntity.put(currentTag, a);
 			}
-			a.addObject(o);
+			a.add(o);
 			return;
 		}
 
@@ -98,7 +98,7 @@ public class EDTHandler extends DefaultHandler {
 	private JsonObject attributesToJsonObject(Attributes attributes) {
 		final JsonObject j = new JsonObject();
 		for (int i = 0; i < attributes.getLength(); i++) {
-			j.putString(attributes.getLocalName(i), attributes.getValue(i));
+			j.put(attributes.getLocalName(i), attributes.getValue(i));
 		}
 		return j;
 	}
@@ -109,7 +109,7 @@ public class EDTHandler extends DefaultHandler {
 		currentTag = "";
 		if (localName.equals(currentEntityType)) {
 			currentEntityType = "";
-//			if (currentEntity.containsField("SemainesAnnulation")) {
+//			if (currentEntity.containsKey("SemainesAnnulation")) {
 //				log.info(currentEntity.encode());
 //			}
 			if (persEducNatOnly) {

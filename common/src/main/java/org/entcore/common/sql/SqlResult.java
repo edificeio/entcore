@@ -20,26 +20,22 @@
 package org.entcore.common.sql;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SqlResult {
 
 	public static Long countResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray values = res.body().getArray("results");
+			JsonArray values = res.body().getJsonArray("results");
 			if (values != null && values.size() == 1) {
-				JsonArray row = values.get(0);
+				JsonArray row = values.getJsonArray(0);
 				if (row != null && row.size() == 1) {
-					Number number = row.get(0);
-					return number != null ? number.longValue() : null;
+					return row.getLong(0);
 				}
 			}
 		}
@@ -57,8 +53,8 @@ public class SqlResult {
 			if (results == null || results.size() == 0) {
 				return new Either.Right<>(new JsonObject());
 			}
-			if (results.size() == 1 && (results.get(0) instanceof JsonObject)) {
-				return new Either.Right<>((JsonObject) results.get(0));
+			if (results.size() == 1 && (results.getValue(0) instanceof JsonObject)) {
+				return new Either.Right<>(results.getJsonObject(0));
 			}
 			return new Either.Left<>("non.unique.result");
 		} else {
@@ -73,10 +69,10 @@ public class SqlResult {
 
 	public static Either<String, JsonArray> validResult(int idx, Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray a = res.body().getArray("results");
+			JsonArray a = res.body().getJsonArray("results");
 			if (a != null && idx < a.size()) {
-				return jsonToEither(a.<JsonObject>get(idx)
-					.putArray("jsonb_fields", res.body().getArray("jsonb_fields", new JsonArray())));
+				return jsonToEither(a.getJsonObject(idx)
+					.put("jsonb_fields", res.body().getJsonArray("jsonb_fields", new JsonArray())));
 			} else {
 				return new Either.Left<>("missing.result");
 			}
@@ -87,7 +83,7 @@ public class SqlResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray a = res.body().getArray("results");
+			JsonArray a = res.body().getJsonArray("results");
 			JsonArray r = new JsonArray();
 			for (Object o : a) {
 				if (!(o instanceof JsonObject)) continue;
@@ -112,38 +108,38 @@ public class SqlResult {
 	}
 
 	private static JsonArray transform(JsonObject body) {
-		JsonArray f = body.getArray("fields");
-		JsonArray r = body.getArray("results");
+		JsonArray f = body.getJsonArray("fields");
+		JsonArray r = body.getJsonArray("results");
 		JsonArray result = new JsonArray();
 		if (f != null && r != null) {
-			JsonArray jsonbAttributes = body.getArray("jsonb_fields");
-			List ja = (jsonbAttributes != null) ? jsonbAttributes.toList() : new ArrayList<>();
+			JsonArray jsonbAttributes = body.getJsonArray("jsonb_fields");
+			List ja = (jsonbAttributes != null) ? jsonbAttributes.getList() : new ArrayList<>();
 			for (Object o : r) {
 				if (!(o instanceof JsonArray)) continue;
 				JsonArray a = (JsonArray) o;
 				JsonObject j = new JsonObject();
 				for (int i = 0; i < f.size(); i++) {
-					Object item = a.get(i);
+					Object item = a.getValue(i);
 					if (item instanceof Boolean) {
-						j.putBoolean((String) f.get(i), (Boolean) item);
+						j.put(f.getString(i), (Boolean) item);
 					} else if (item instanceof Number) {
-						j.putNumber((String) f.get(i), (Number) item);
+						j.put(f.getString(i), (Number) item);
 					} else if (item instanceof JsonArray) {
-						j.putArray((String) f.get(i), (JsonArray) item);
-					} else if (item != null && ja.contains(f.get(i))) {
+						j.put(f.getString(i), (JsonArray) item);
+					} else if (item != null && ja.contains(f.getValue(i))) {
 						String stringRepresentation = item.toString().trim();
 						if(stringRepresentation.startsWith("[")){
-							j.putArray((String) f.get(i), new JsonArray(item.toString()));
+							j.put(f.getString(i), new JsonArray(item.toString()));
 						} else {
-							j.putObject((String) f.get(i), new JsonObject(item.toString()));
+							j.put(f.getString(i), new JsonObject(item.toString()));
 						}
 					} else if (item != null) {
-						j.putString((String) f.get(i), item.toString());
+						j.put(f.getString(i), item.toString());
 					} else {
-						j.putValue((String) f.get(i), null);
+						j.put(f.getString(i), (String) null);
 					}
 				}
-				result.addObject(j);
+				result.add(j);
 			}
 		}
 		return result;
@@ -159,7 +155,7 @@ public class SqlResult {
 			long rows = body.getLong("rows", 0l);
 			JsonObject result = new JsonObject();
 			if(rows > 0){
-				result.putNumber("rows", rows);
+				result.put("rows", rows);
 			}
 			return new Either.Right<>(result);
 		} else {
@@ -169,9 +165,9 @@ public class SqlResult {
 
 	public static Either<String, JsonObject> validRowsResult(int idx, Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray a = res.body().getArray("results");
+			JsonArray a = res.body().getJsonArray("results");
 			if (a != null && idx < a.size()) {
-				return validRows(a.<JsonObject>get(idx));
+				return validRows(a.getJsonObject(idx));
 			} else {
 				return new Either.Left<>("missing.result");
 			}
@@ -206,7 +202,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validUniqueResult(event));
 			}
@@ -219,7 +215,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validUniqueResult(idx, event));
 			}
@@ -232,7 +228,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResult(idx, event));
 			}
@@ -245,7 +241,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResult(event));
 			}
@@ -258,7 +254,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().putArray("jsonb_fields", new JsonArray(jsonbFields));
+					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResults(event));
 			}
@@ -293,21 +289,21 @@ public class SqlResult {
 			String action = json.getString("action");
 			if (member != null && action != null) {
 				if (shared.containsKey(member)) {
-					shared.get(member).putBoolean(action, true);
+					shared.get(member).put(action, true);
 				} else {
-					JsonObject sj = new JsonObject().putBoolean(action, true);
+					JsonObject sj = new JsonObject().put(action, true);
 					if (m.contains(member)) {
-						sj.putString("groupId", member);
+						sj.put("groupId", member);
 					} else {
-						sj.putString("userId", member);
+						sj.put("userId", member);
 					}
 					shared.put(member, sj);
 					a.add(sj);
 				}
 			}
 		}
-		j.removeField("groups");
-		j.putArray("shared", a);
+		j.remove("groups");
+		j.put("shared", a);
 	}
 
 	public static Handler<Message<JsonObject>> parseShared(final Handler<Either<String, JsonArray>> handler) {

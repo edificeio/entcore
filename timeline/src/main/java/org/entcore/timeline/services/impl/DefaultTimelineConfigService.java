@@ -23,9 +23,9 @@ import static org.entcore.common.mongodb.MongoDbResult.*;
 
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.timeline.services.TimelineConfigService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
@@ -42,12 +42,12 @@ public class DefaultTimelineConfigService extends MongoDbCrudService implements 
 			handler.handle(new Either.Left<String, JsonObject>("invalid.key"));
 			return;
 		}
-		mongo.update(collection, new JsonObject().putString("key", key), data, true, false, validActionResultHandler(handler));
+		mongo.update(collection, new JsonObject().put("key", key), data, true, false, validActionResultHandler(handler));
 	}
 
 	@Override
 	public void list(Handler<Either<String, JsonArray>> handler) {
-		JsonObject sort = new JsonObject().putNumber("modified", -1);
+		JsonObject sort = new JsonObject().put("modified", -1);
 		mongo.find(collection, new JsonObject("{}"), sort, defaultListProjection, validResultsHandler(handler));
 	}
 

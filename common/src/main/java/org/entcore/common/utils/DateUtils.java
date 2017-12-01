@@ -20,7 +20,7 @@
 package org.entcore.common.utils;
 
 import fr.wseduc.mongodb.MongoDb;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 import javax.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
@@ -198,6 +198,6 @@ public final class DateUtils {
     }
 
     public static JsonObject getDateJsonObject(final Long date) {
-        return new JsonObject().putValue("$date", date);
+        return new JsonObject().put("$date", date);
     }
 }

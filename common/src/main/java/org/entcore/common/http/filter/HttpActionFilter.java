@@ -22,14 +22,15 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.http.HttpClientOptions;
 import org.entcore.common.http.response.DefaultPages;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Set;
 
@@ -50,10 +51,11 @@ public class HttpActionFilter extends AbstractActionFilter {
 			ResourcesProvider provider) {
 		super(bindings, provider);
 		this.vertx = vertx;
-		this.httpClient = vertx.createHttpClient()
-				.setHost("localhost")
-				.setPort(conf.getInteger("entcore.port", 8009))
+		HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost("localhost")
+				.setDefaultPort(conf.getInteger("entcore.port", 8009))
 				.setMaxPoolSize(16);
+		this.httpClient = vertx.createHttpClient(options);
 	}
 
 	public HttpActionFilter(Set<Binding> bindings, JsonObject conf, Vertx vertx) {

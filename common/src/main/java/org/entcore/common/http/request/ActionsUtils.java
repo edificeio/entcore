@@ -24,11 +24,11 @@ import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 import java.util.Set;
@@ -48,13 +48,13 @@ public class ActionsUtils {
 						if (bindings.containsKey(action.getName())) {
 							JsonArray b = new JsonArray();
 							for (Binding binding: bindings.get(action.getName())) {
-								b.addObject(new JsonObject()
-										.putString("verb", binding.getMethod().name())
-										.putString("path", binding.getUriPattern().pattern())
-										.putString("type", binding.getActionType().name())
+								b.add(new JsonObject()
+										.put("verb", binding.getMethod().name())
+										.put("path", binding.getUriPattern().pattern())
+										.put("type", binding.getActionType().name())
 								);
 							}
-							actions.putArray(action.getName(), b);
+							actions.put(action.getName(), b);
 						}
 					}
 				}

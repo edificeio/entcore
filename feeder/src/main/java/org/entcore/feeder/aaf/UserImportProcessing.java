@@ -20,11 +20,11 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Set;
 
@@ -55,7 +55,7 @@ public class UserImportProcessing extends BaseImportProcessing {
 	@Override
 	public void process(JsonObject object) {
 		if (resp.contains(object.getString("externalId"))) {
-			object.putArray("profiles", new JsonArray().add("Relative"));
+			object.put("profiles", new JsonArray().add("Relative"));
 			importer.createOrUpdateUser(object);
 		}
 	}

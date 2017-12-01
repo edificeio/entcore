@@ -23,15 +23,15 @@ import org.entcore.feeder.Feed;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.utils.ResultMessage;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -67,9 +67,9 @@ public class Aaf1dFeeder implements Feed {
 						log.error("Invalid importDirectories file.", e);
 						return;
 					}
-					vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> event) {
+						public void handle(AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
 								final List<String> importsDirs = new ArrayList<>();
 								for (String dir : event.result()) {

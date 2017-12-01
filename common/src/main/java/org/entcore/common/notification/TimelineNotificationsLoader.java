@@ -20,27 +20,27 @@
 package org.entcore.common.notification;
 
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 
+import fr.wseduc.webutils.data.FileResolver;
+import io.vertx.core.shareddata.AsyncMap;
+import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.Config;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.file.FileProps;
-import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
-import org.vertx.java.core.spi.cluster.ClusterManager;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class TimelineNotificationsLoader {
 
 	private final Vertx vertx;
-	private final static String notifyDir = "./view/notify";
+	private final static String notifyDir = FileResolver.absolutePath("view/notify");
 	private static final Logger log = LoggerFactory.getLogger(TimelineNotificationsLoader.class);
-	private final Map<String, String> sharedMap;
+	private AsyncMap<String, String> sharedMap;
 	private final static String sharedMapName = "notificationsMap";
 	private static TimelineNotificationsLoader instance = null;
 
@@ -74,32 +74,40 @@ public class TimelineNotificationsLoader {
 
 	private TimelineNotificationsLoader(Vertx vertx){
 		this.vertx = vertx;
-		scanNotifications();
-		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
-		Boolean cluster = (Boolean) server.get("cluster");
-		if (Boolean.TRUE.equals(cluster)) {
-			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-			sharedMap = cm.getSyncMap(sharedMapName);
-		} else {
-			sharedMap = vertx.sharedData().getMap(sharedMapName);
-		}
+		MapFactory.getClusterMap(sharedMapName, vertx, new Handler<AsyncMap<String, String>>() {
+			@Override
+			public void handle(AsyncMap<String, String> map) {
+				sharedMap = map;
+				scanNotifications();
+			}
+		});
 	}
 
-	public JsonObject getNotification(String name){
-		String stringResult = sharedMap.get(name.toLowerCase());
-		if(stringResult == null)
-			return new JsonObject();
-		return new JsonObject(stringResult);
+	public void getNotification(String name, Handler<JsonObject> handler){
+		sharedMap.get(name.toLowerCase(), new Handler<AsyncResult<String>>() {
+			@Override
+			public void handle(AsyncResult<String> stringResult) {
+				if(stringResult.failed() || stringResult.result() == null) {
+					handler.handle(new JsonObject());
+				} else {
+					handler.handle(new JsonObject(stringResult.result()));
+				}
+			}
+		});
 	}
 
 	private void registerNotification(String fullName, JsonObject notification){
 		log.info("Registering notification : " + fullName);
-		sharedMap.put(fullName, notification.encode());
+		sharedMap.put(fullName, notification.encode(), ar -> {
+			if (ar.failed()) {
+				log.error("Error registering notification : " + fullName, ar.cause());
+			}
+		});
 	}
 
 	private void scanNotifications(){
-		final Handler<AsyncResult<String[]>> notifyDirHandler = new Handler<AsyncResult<String[]>>(){
-			public void handle(AsyncResult<String[]> ar) {
+		final Handler<AsyncResult<List<String>>> notifyDirHandler = new Handler<AsyncResult<List<String>>>(){
+			public void handle(AsyncResult<List<String>> ar) {
 				if(ar.succeeded()) {
 					for(final String path : ar.result()) {
 						if(path == null)
@@ -157,13 +165,13 @@ public class TimelineNotificationsLoader {
 
 				//Default values
 				final JsonObject notificationJson = new JsonObject()
-						.putString("type", type.toUpperCase())
-						.putString("event-type", notificationName.toUpperCase())
-						.putString("app-name", Config.getConf().getString("app-name"))
-						.putString("app-address", Config.getConf().getString("app-address", "/"))
-						.putString("template", templateAsync.result().toString())
-						.putString("defaultFrequency", Frequencies.defaultFrequency())
-						.putString("restriction", Restrictions.defaultRestriction());
+						.put("type", type.toUpperCase())
+						.put("event-type", notificationName.toUpperCase())
+						.put("app-name", Config.getConf().getString("app-name"))
+						.put("app-address", Config.getConf().getString("app-address", "/"))
+						.put("template", templateAsync.result().toString())
+						.put("defaultFrequency", Frequencies.defaultFrequency())
+						.put("restriction", Restrictions.defaultRestriction());
 
 				vertx.fileSystem().exists(propsFilePath, new Handler<AsyncResult<Boolean>>() {
 					public void handle(AsyncResult<Boolean> ar) {
@@ -176,8 +184,8 @@ public class TimelineNotificationsLoader {
 
 											// Overrides
 											registerNotification(fullName, notificationJson
-												.putString("defaultFrequency", props.getString("default-frequency", notificationJson.getString("defaultFrequency")))
-												.putString("restriction", props.getString("restrict", notificationJson.getString("restriction")))
+												.put("defaultFrequency", props.getString("default-frequency", notificationJson.getString("defaultFrequency")))
+												.put("restriction", props.getString("restrict", notificationJson.getString("restriction")))
 											);
 										} else {
 											registerNotification(fullName, notificationJson);
@@ -197,8 +205,8 @@ public class TimelineNotificationsLoader {
 
 	private void processTypeFolder(final String path){
 		final String appName = new File(path).getName();
-		vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
-			public void handle(AsyncResult<String[]> ar) {
+		vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
+			public void handle(AsyncResult<List<String>> ar) {
 				if (ar.succeeded()) {
 					for(final String item : ar.result()) {
 						if(item == null)

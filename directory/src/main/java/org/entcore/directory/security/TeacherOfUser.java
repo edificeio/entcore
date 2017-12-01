@@ -24,11 +24,11 @@ import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 
 public class TeacherOfUser implements ResourcesProvider {
@@ -41,7 +41,7 @@ public class TeacherOfUser implements ResourcesProvider {
 			@Override
 			public void handle(JsonObject event) {
 				if (event != null) {
-					JsonArray userIds = event.getArray("users");
+					JsonArray userIds = event.getJsonArray("users");
 					if (userIds == null || userIds.size() == 0 || userIds.contains(user.getUserId()) ||
 							(!"Teacher".equals(user.getType()) && !"Personnel".equals(user.getType()))) {
 						handler.handle(false);
@@ -54,9 +54,9 @@ public class TeacherOfUser implements ResourcesProvider {
 									"WHERE u.id IN {userIds} " +
 									"RETURN count(distinct u) = {size} as exists ";
 					JsonObject params = new JsonObject()
-							.putArray("userIds", userIds)
-							.putString("teacherId", user.getUserId())
-							.putNumber("size", userIds.size());
+							.put("userIds", userIds)
+							.put("teacherId", user.getUserId())
+							.put("size", userIds.size());
 					validateQuery(resourceRequest, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -72,10 +72,10 @@ public class TeacherOfUser implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
-								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});

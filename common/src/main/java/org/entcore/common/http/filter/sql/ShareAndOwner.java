@@ -26,11 +26,11 @@ import org.entcore.common.sql.SqlConf;
 import org.entcore.common.sql.SqlConfs;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +56,7 @@ public class ShareAndOwner implements ResourcesProvider {
 					" LEFT JOIN " + conf.getSchema() + conf.getShareTable() + " ON id = resource_id " +
 					"WHERE ((member_id IN " + Sql.listPrepared(groupsAndUserIds) + " AND action = ?) " +
 					"OR owner = ?) AND id = ?";
-			JsonArray values = new JsonArray(groupsAndUserIds).add(sharedMethod)
+			JsonArray values = new JsonArray(gu).add(sharedMethod)
 					.add(user.getUserId()).add(Sql.parseId(id));
 			Sql.getInstance().prepared(query, values, new Handler<Message<JsonObject>>() {
 				@Override

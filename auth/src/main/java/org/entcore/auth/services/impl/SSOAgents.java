@@ -22,30 +22,29 @@ package org.entcore.auth.services.impl;
 import fr.wseduc.webutils.Either;
 import org.entcore.common.validation.StringValidation;
 import org.opensaml.saml2.core.Assertion;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonElement;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 public class SSOAgents extends AbstractSSOProvider {
 
 	@Override
-	public void execute(Assertion assertion, Handler<Either<String, JsonElement>> handler) {
+	public void execute(Assertion assertion, Handler<Either<String, Object>> handler) {
 		if (!validConditions(assertion, handler)) return;
 
 		String mail = getAttribute(assertion, "mail");
 		if (mail == null) {
 			mail = getAttribute(assertion, "ctemail");
 			if (mail == null) {
-				handler.handle(new Either.Left<String, JsonElement>("invalid.email"));
+				handler.handle(new Either.Left<String, Object>("invalid.email"));
 				return;
 			}
 		}
 
 		if (StringValidation.isEmail(mail)) { // PersEducNat
-			executeQuery("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().putString("email", mail),
+			executeQuery("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
 					assertion, handler);
 		} else {
-			handler.handle(new Either.Left<String, JsonElement>("invalid.email"));
+			handler.handle(new Either.Left<String, Object>("invalid.email"));
 		}
 	}
 

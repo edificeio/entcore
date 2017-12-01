@@ -19,7 +19,7 @@
 
 package org.entcore.common.utils;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 public class Config {
 

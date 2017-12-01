@@ -25,10 +25,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -53,10 +53,10 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 		}
 	}
 
-	private void addStringArray(String casLabel, String entLabel, JsonObject data, Document doc, List<Element> additionalAttributes, Mapper<String, String> mapper){
+	private void addArray(String casLabel, String entLabel, JsonObject data, Document doc, List<Element> additionalAttributes, Mapper<String, String> mapper){
 		Element root = createElement(casLabel+"s", doc);
-		if(data.containsField(entLabel)){
-			for(Object item: data.getArray(entLabel)){
+		if(data.containsKey(entLabel)){
+			for(Object item: data.getJsonArray(entLabel)){
 				root.appendChild(createTextElement(casLabel, mapper.map((String) item), doc));
 			}
 		}
@@ -79,7 +79,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					if("UAI".equals(key)){
 						String value = pair.substring(pair.indexOf('=') + 1);
 						additionalAttributes.add(createTextElement("ENTPersonStructRattachUAI", value, doc));
-						for (Object o : data.getArray("structureNodes", new JsonArray()).toList()) {
+						for (Object o : data.getJsonArray("structureNodes", new JsonArray()).getList()) {
 							@SuppressWarnings("unchecked")
 							Map<String, Object> structure = ((Map<String, Object>) o);
 							if(value.equals(structure.get("UAI"))){
@@ -113,15 +113,15 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			Element rootProfiles;
-			String profile = data.getArray("type", new JsonArray()).size() > 0 ? data.getArray("type").get(0).toString() : "";
+			String profile = data.getJsonArray("type", new JsonArray()).size() > 0 ? data.getJsonArray("type").getString(0) : "";
 			switch(profile) {
 				case "Student" :
 					rootProfiles = createElement("ENTPersonProfils", doc);
 					rootProfiles.appendChild(createTextElement("ENTPersonProfil", "National_ELV", doc));
 					additionalAttributes.add(rootProfiles);
 					additionalAttributes.add(createTextElement("ENTEleveMEF", data.getString("module", ""), doc));
-					addStringArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes, new DefaultMapper<String>());
-					addStringArray("ENTEleveClasse", "classes", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTEleveCodeEnseignement", "fieldOfStudy", data, doc, additionalAttributes, new DefaultMapper<String>());
+					addArray("ENTEleveClasse", "classes", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = classGroupPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
@@ -130,7 +130,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 							return input;
 						}
 					});
-					addStringArray("ENTEleveGroupe", "groups", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTEleveGroupe", "groups", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = classGroupPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
@@ -153,7 +153,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
 					additionalAttributes.add(createTextElement("ENTEleveClasses", "", doc));
 					additionalAttributes.add(createTextElement("ENTEleveGroupes", "", doc));
-					addStringArray("ENTAuxEnsClassesMatiere", "classesFieldOfStudy", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTAuxEnsClassesMatiere", "classesFieldOfStudy", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = matPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
@@ -162,7 +162,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 							return input;
 						}
 					});
-					addStringArray("ENTAuxEnsGroupe", "groups", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTAuxEnsGroupe", "groups", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = classGroupPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
@@ -171,7 +171,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 							return input;
 						}
 					});
-					addStringArray("ENTAuxEnsClasse", "classes", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTAuxEnsClasse", "classes", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = classGroupPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
@@ -180,7 +180,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 							return input;
 						}
 					});
-					addStringArray("ENTAuxEnsMEF", "modules", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTAuxEnsMEF", "modules", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = mefStatPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){

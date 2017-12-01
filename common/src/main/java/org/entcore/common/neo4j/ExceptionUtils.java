@@ -19,8 +19,8 @@
 
 package org.entcore.common.neo4j;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class ExceptionUtils {
 
@@ -30,10 +30,10 @@ public class ExceptionUtils {
 			stacktrace.add(s.toString());
 		}
 		return new JsonObject()
-			.putString("message", e.getMessage())
-			.putString("exception", e.getClass().getSimpleName())
-			.putString("fullname", e.getClass().getName())
-			.putArray("stacktrace", stacktrace);
+			.put("message", e.getMessage())
+			.put("exception", e.getClass().getSimpleName())
+			.put("fullname", e.getClass().getName())
+			.put("stacktrace", stacktrace);
 	}
 
 }

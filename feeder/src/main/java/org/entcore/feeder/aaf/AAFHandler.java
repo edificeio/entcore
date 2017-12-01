@@ -20,8 +20,8 @@
 package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.utils.JsonUtil;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -87,7 +87,7 @@ public final class AAFHandler extends DefaultHandler {
 				!"mobile".equals(currentAttribute) && !"ENTPersonMobileSMS".equals(currentAttribute))) {
 			return;
 		}
-		JsonObject j = mapping.getObject(currentAttribute);
+		JsonObject j = mapping.getJsonObject(currentAttribute);
 		if (j == null) {
 			throw new SAXException("Unknown attribute " + currentAttribute);
 		}
@@ -101,10 +101,10 @@ public final class AAFHandler extends DefaultHandler {
 			s = convertDate(s);
 		}
 		if (type != null && type.contains("array")) {
-			JsonArray a = currentStructure.getArray(attribute);
+			JsonArray a = currentStructure.getJsonArray(attribute);
 			if (a == null) {
 				a = new JsonArray();
-				currentStructure.putArray(attribute, a);
+				currentStructure.put(attribute, a);
 			}
 			if (!s.isEmpty()) {
 				a.add(JsonUtil.convert(s, type, (prefix ? processing.getAcademyPrefix() : null)));
@@ -112,14 +112,14 @@ public final class AAFHandler extends DefaultHandler {
 		} else {
 			Object v = JsonUtil.convert(s, type, (prefix ? processing.getAcademyPrefix() : null));
 			if (!(v instanceof JsonUtil.None)) {
-				currentStructure.putValue(attribute, v);
+				currentStructure.put(attribute, v);
 			}
 		}
 	}
 
 	private void addExternalId(String s) throws SAXException {
 		if (currentStructure != null) {
-			currentStructure.putString("externalId",
+			currentStructure.put("externalId",
 					(isNotEmpty(processing.getAcademyPrefix()) ? processing.getAcademyPrefix() + s : s));
 		} else {
 			throw new SAXException("Id is found but structure isn't defined.");

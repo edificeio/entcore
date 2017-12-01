@@ -24,8 +24,8 @@ import fr.wseduc.webutils.collections.Joiner;
 import org.entcore.common.service.SearchService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.sql.Sql;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,7 +102,7 @@ public final class SqlSearchService implements SearchService {
                 " GROUP BY " + resourceTable + ".id, " + displayNameField +
                 " ORDER BY modified DESC " +
                 " LIMIT ? OFFSET ?";
-        final JsonArray values = new JsonArray(groupsAndUserIds).add(userId);
+        final JsonArray values = new JsonArray(gu).add(userId);
         if (checkVisibility) {
             values.add(VisibilityFilter.PROTECTED.name()).add(VisibilityFilter.PUBLIC.name());
         }

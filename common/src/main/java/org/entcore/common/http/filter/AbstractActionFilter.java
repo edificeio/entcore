@@ -25,10 +25,10 @@ import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.List;
@@ -74,7 +74,7 @@ public abstract class AbstractActionFilter implements Filter {
 
 	private void authorizeWorkflowAction(JsonObject session, Binding binding,
 										 Handler<Boolean> handler) {
-		JsonArray actions = session.getArray("authorizedActions");
+		JsonArray actions = session.getJsonArray("authorizedActions");
 		if (binding != null && binding.getServiceMethod() != null
 				&& actions != null && actions.size() > 0) {
 			for (Object a: actions) {
@@ -85,7 +85,7 @@ public abstract class AbstractActionFilter implements Filter {
 				}
 			}
 		}
-		if (session.getObject("functions", new JsonObject()).containsField("SUPER_ADMIN")) {
+		if (session.getJsonObject("functions", new JsonObject()).containsKey("SUPER_ADMIN")) {
 			handler.handle(true);
 			return;
 		}
@@ -94,7 +94,7 @@ public abstract class AbstractActionFilter implements Filter {
 
 	private Binding requestBinding(HttpServerRequest request) {
 		for (Binding binding: bindings) {
-			if (!request.method().equals(binding.getMethod().name())) {
+			if (!request.method().name().equals(binding.getMethod().name())) {
 				continue;
 			}
 			Matcher m = binding.getUriPattern().matcher(request.path());

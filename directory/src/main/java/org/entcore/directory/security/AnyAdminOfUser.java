@@ -4,12 +4,13 @@ import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
@@ -38,18 +39,18 @@ public class AnyAdminOfUser implements ResourcesProvider {
                         "WHERE ANY(structId IN b.structureIds WHERE structId IN {ids}) " +
                         "RETURN count(*) > 0 as exists";
         JsonObject params = new JsonObject()
-                .putString("id", request.params().get("groupId"))
-                .putString("userId", userId)
-                .putArray("ids", new JsonArray(ids.toArray()));
+                .put("id", request.params().get("groupId"))
+                .put("userId", userId)
+                .put("ids", new JsonArray(new ArrayList<>(ids)));
         request.pause();
         Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> r) {
                 request.resume();
-                JsonArray res = r.body().getArray("result");
+                JsonArray res = r.body().getJsonArray("result");
                 if ("ok".equals(r.body().getString("status")) &&
-                        res.size() == 2 && (((JsonObject) res.get(0)).getBoolean("exists", false)
-                        || ((JsonObject) res.get(1)).getBoolean("exists", false))) {
+                        res.size() == 2 && (((JsonObject) res.getJsonObject(0)).getBoolean("exists", false)
+                        || ((JsonObject) res.getJsonObject(1)).getBoolean("exists", false))) {
                     handler.handle(true);
                 } else {
                     handler.handle(false);

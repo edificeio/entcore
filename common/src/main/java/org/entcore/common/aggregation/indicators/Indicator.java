@@ -27,9 +27,9 @@ import java.util.Date;
 import org.entcore.common.aggregation.AggregationTools;
 import org.entcore.common.aggregation.filters.IndicatorFilter;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 /**
  * An Indicator is an object used to aggregate into a single value multiple ent-core traces from Mongo and write the result as multiple Mongo documents.<br>

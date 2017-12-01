@@ -20,9 +20,9 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -34,7 +34,7 @@ public class GRRRegisteredService extends AbstractCas20ExtensionRegisteredServic
 
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
+	public void configure(io.vertx.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
 		super.configure(eb, conf);
 	};
 
@@ -46,9 +46,9 @@ public class GRRRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			additionnalAttributes.add(createTextElement("user_prenom_ldap", data.getString("firstName"), doc));
 			additionnalAttributes.add(createTextElement("user_mail_ldap", data.getString("email"), doc));
 			// Profile
-			if (data.getArray("type") != null && data.getArray("type").size() > 0){
-				additionnalAttributes.add(createTextElement("user_code_fonction_ldap", data.getArray("type").get(0).toString(), doc));
-				additionnalAttributes.add(createTextElement("user_libelle_fonction_ldap", data.getArray("type").get(0).toString(), doc));
+			if (data.getJsonArray("type") != null && data.getJsonArray("type").size() > 0){
+				additionnalAttributes.add(createTextElement("user_code_fonction_ldap", data.getJsonArray("type").getString(0), doc));
+				additionnalAttributes.add(createTextElement("user_libelle_fonction_ldap", data.getJsonArray("type").getString(0), doc));
 			}
 			} catch (Exception e) {
 			log.error("Failed to transform User for GRR CAS extension", e);

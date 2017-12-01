@@ -25,11 +25,11 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.workspace.Workspace;
 import org.entcore.workspace.controllers.QuotaController;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.Binding;
@@ -39,6 +39,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class WorkspaceResourcesProvider implements ResourcesProvider {
@@ -147,15 +148,15 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				"WHERE s.id IN {structures} " +
 				"RETURN count(*) > 0 as exists ";
 		JsonObject params = new JsonObject()
-				.putArray("structures", new JsonArray(adminLocal.getScope().toArray()))
-				.putString("userId", userId);
+				.put("structures", new JsonArray(adminLocal.getScope()))
+				.put("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				JsonArray res = message.body().getArray("result");
+				JsonArray res = message.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(message.body().getString("status")) && res != null && res.size() == 1 &&
-								res.<JsonObject>get(0).getBoolean("exists", false)
+								res.getJsonObject(0).getBoolean("exists", false)
 				);
 			}
 		});
@@ -171,17 +172,17 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 						"MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 						"WHERE s.id IN {structures} AND u.id IN {users} " +
 						"RETURN count(distinct u) as nb ";
-				final JsonArray users = object.getArray("users", new JsonArray());
+				final JsonArray users = object.getJsonArray("users", new JsonArray());
 				JsonObject params = new JsonObject()
-						.putArray("structures", new JsonArray(adminLocal.getScope().toArray()))
-						.putArray("users", users);
+						.put("structures", new JsonArray(adminLocal.getScope()))
+						.put("users", users);
 				Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {
-						JsonArray res = message.body().getArray("result");
+						JsonArray res = message.body().getJsonArray("result");
 						handler.handle(
 								"ok".equals(message.body().getString("status")) && res != null && res.size() == 1 &&
-								res.<JsonObject>get(0).getInteger("nb", -1).equals(users.size())
+								res.getJsonObject(0).getInteger("nb", -1).equals(users.size())
 						);
 					}
 				});
@@ -227,7 +228,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			String serviceMethod, Handler<Boolean> handler) {
 		String ids = request.params().get("ids");
 		if (ids != null && !ids.trim().isEmpty()) {
-			JsonArray idsArray = new JsonArray(ids.split(","));
+			JsonArray idsArray = new JsonArray(Arrays.asList(ids.split(",")));
 			String query = "{ \"_id\": { \"$in\" : " + idsArray.encode() + "}, "
 					+ "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user, serviceMethod) + "}}]}";

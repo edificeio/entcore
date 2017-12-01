@@ -25,15 +25,18 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import fr.wseduc.webutils.I18n;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultRegisteredService implements RegisteredService {
 
@@ -52,14 +55,14 @@ public class DefaultRegisteredService implements RegisteredService {
 	public void configure(final EventBus eb, final Map<String, Object> conf) {
 		this.eb = eb;
 		try {
-			List<String> patterns = (List<String>) conf.get(CONF_PATTERNS);
+			List<String> patterns = ((JsonArray) conf.get(CONF_PATTERNS)).getList();
 			if (patterns != null && !patterns.isEmpty()) {
 				addConfPatterns(patterns.toArray(new String[patterns.size()]));
 			}
 			this.principalAttributeName = String.valueOf(conf.get(CONF_PRINCIPAL_ATTR_NAME));
 		}
 		catch (Exception e) {
-			log.error("Failed to parse configuration");
+			log.error("Failed to parse configuration", e);
 		}
 	}
 
@@ -78,11 +81,11 @@ public class DefaultRegisteredService implements RegisteredService {
 	@Override
 	public void getUser(final String userId, final String service, final Handler<User> userHandler) {
 		JsonObject jo = new JsonObject();
-		jo.putString("action", directoryAction).putString("userId", userId);
-		eb.send("directory", jo, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+		jo.put("action", directoryAction).put("userId", userId);
+		eb.send("directory", jo, handlerToAsyncHandler(new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body().getObject("result");
+				JsonObject res = event.body().getJsonObject("result");
 				log.debug("res : " + res);
 				if ("ok".equals(event.body().getString("status")) && res != null) {
 					User user = new User();
@@ -92,7 +95,7 @@ public class DefaultRegisteredService implements RegisteredService {
 					userHandler.handle(null);
 				}
 			}
-		});
+		}));
 	}
 
 	@Override
@@ -134,9 +137,9 @@ public class DefaultRegisteredService implements RegisteredService {
 	public JsonObject getInfos(String acceptLanguage) {
 		String baseKey = getId();
 		return new JsonObject()
-				.putString("id", baseKey)
-				.putString("name", i18n.translate(baseKey + ".name", I18n.DEFAULT_DOMAIN, acceptLanguage))
-				.putString("description", i18n.translate(baseKey + ".description", I18n.DEFAULT_DOMAIN, acceptLanguage));
+				.put("id", baseKey)
+				.put("name", i18n.translate(baseKey + ".name", I18n.DEFAULT_DOMAIN, acceptLanguage))
+				.put("description", i18n.translate(baseKey + ".description", I18n.DEFAULT_DOMAIN, acceptLanguage));
 	}
 
 	@Override
@@ -147,15 +150,15 @@ public class DefaultRegisteredService implements RegisteredService {
 	protected void prepareUser(final User user, final String userId, String service, final JsonObject data) {
 		if (principalAttributeName != null) {
 			user.setUser(data.getString(principalAttributeName));
-			data.removeField(principalAttributeName);
+			data.remove(principalAttributeName);
 		}
 		else {
 			user.setUser(userId);
 		}
-		data.removeField("password");
+		data.remove("password");
 
 		Map<String, String> attributes = new HashMap<>();
-		for (String attr : data.getFieldNames()) {
+		for (String attr : data.fieldNames()) {
 			attributes.put(attr, data.getValue(attr).toString());
 		}
 		user.setAttributes(attributes);

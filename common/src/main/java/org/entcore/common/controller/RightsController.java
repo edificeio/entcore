@@ -24,13 +24,12 @@ import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecuredAction;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 import java.util.Arrays;
 import java.util.List;
@@ -43,8 +42,8 @@ public class RightsController extends BaseController {
 	private JsonObject rights;
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
 		initRights(securedActions);
 		get("/rights/sharing", "getRights");
 	}
@@ -53,10 +52,10 @@ public class RightsController extends BaseController {
 		rights = new JsonObject();
 		for (SecuredAction action: securedActions.values()) {
 			if (isSharingRight(action)) {
-				JsonArray a = rights.getArray(action.getDisplayName());
+				JsonArray a = rights.getJsonArray(action.getDisplayName());
 				if (a == null) {
 					a = new JsonArray();
-					rights.putArray(action.getDisplayName(), a);
+					rights.put(action.getDisplayName(), a);
 				}
 				a.add(action.getName().replaceAll("\\.", "-"));
 			}

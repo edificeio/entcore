@@ -21,8 +21,8 @@ package org.entcore.auth.adapter;
 
 
 import fr.wseduc.webutils.Utils;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,43 +52,43 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 	protected JsonObject getCommonFilteredInfos(JsonObject info, String clientId) {
 		JsonObject filteredInfos = info.copy();
 		String type = Utils.getOrElse(types.get(info.getString("type", "")), "");
-		filteredInfos.putString("type", type);
-		filteredInfos.removeField("cache");
+		filteredInfos.put("type", type);
+		filteredInfos.remove("cache");
 		if (filteredInfos.getString("level") == null) {
-			filteredInfos.putString("level", "");
+			filteredInfos.put("level", "");
 		} else if (filteredInfos.getString("level").contains("$")) {
 			String[] level = filteredInfos.getString("level").split("\\$");
-			filteredInfos.putString("level", level[level.length -1]);
+			filteredInfos.put("level", level[level.length -1]);
 		}
 		if (clientId != null && !clientId.trim().isEmpty()) {
-			JsonArray classNames = filteredInfos.getArray("classNames");
-			filteredInfos.removeField("classNames");
-			JsonArray structureNames = filteredInfos.getArray("structureNames");
-			filteredInfos.removeField("structureNames");
-			filteredInfos.removeField("federated");
+			JsonArray classNames = filteredInfos.getJsonArray("classNames");
+			filteredInfos.remove("classNames");
+			JsonArray structureNames = filteredInfos.getJsonArray("structureNames");
+			filteredInfos.remove("structureNames");
+			filteredInfos.remove("federated");
 			if (classNames != null && classNames.size() > 0) {
-				filteredInfos.putString("classId", classNames.<String>get(0));
+				filteredInfos.put("classId", classNames.getString(0));
 			}
 			if (structureNames != null && structureNames.size() > 0) {
-				filteredInfos.putString("schoolName", structureNames.<String>get(0));
+				filteredInfos.put("schoolName", structureNames.getString(0));
 			}
-			filteredInfos.removeField("functions");
-			filteredInfos.removeField("groupsIds");
-			filteredInfos.removeField("structures");
-			filteredInfos.removeField("classes");
-			filteredInfos.removeField("apps");
-			filteredInfos.removeField("authorizedActions");
-			filteredInfos.removeField("children");
+			filteredInfos.remove("functions");
+			filteredInfos.remove("groupsIds");
+			filteredInfos.remove("structures");
+			filteredInfos.remove("classes");
+			filteredInfos.remove("apps");
+			filteredInfos.remove("authorizedActions");
+			filteredInfos.remove("children");
 			JsonArray authorizedActions = new JsonArray();
-			for (Object o: info.getArray("authorizedActions")) {
+			for (Object o: info.getJsonArray("authorizedActions")) {
 				JsonObject j = (JsonObject) o;
 				String name = j.getString("name");
 				if (name != null && name.startsWith(clientId + "|")) {
-					authorizedActions.addObject(j);
+					authorizedActions.add(j);
 				}
 			}
 			if (authorizedActions.size() > 0) {
-				filteredInfos.putArray("authorizedActions", authorizedActions);
+				filteredInfos.put("authorizedActions", authorizedActions);
 			}
 		}
 		return filteredInfos;

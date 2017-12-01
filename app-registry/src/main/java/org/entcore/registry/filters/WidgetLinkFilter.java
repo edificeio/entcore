@@ -25,11 +25,11 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.http.Binding;
 
@@ -67,16 +67,16 @@ public class WidgetLinkFilter implements ResourcesProvider{
 			"WHERE s.id IN {adminScope} " +
 			"RETURN count(g) = 1 as exists";
 		JsonObject params = new JsonObject()
-			.putString("groupId", groupId)
-			.putArray("adminScope", new JsonArray(adminLocal.getScope().toArray()));
+			.put("groupId", groupId)
+			.put("adminScope", new JsonArray(adminLocal.getScope()));
 
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
-				JsonArray r = event.body().getArray("result");
+				JsonArray r = event.body().getJsonArray("result");
 				handler.handle(
 					"ok".equals(event.body().getString("status")) &&
 							r != null && r.size() == 1 &&
-							((JsonObject) r.get(0)).getBoolean("exists", false)
+							r.getJsonObject(0).getBoolean("exists", false)
 				);
 			}
 		});

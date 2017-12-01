@@ -23,11 +23,11 @@ import java.util.Map;
 
 import fr.wseduc.cas.entities.ServiceTicket;
 
-import org.vertx.java.core.eventbus.EventBus;
+import io.vertx.core.eventbus.EventBus;
 
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.User;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 public interface RegisteredService {
 

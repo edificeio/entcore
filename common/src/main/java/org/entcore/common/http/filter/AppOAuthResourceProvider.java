@@ -21,7 +21,7 @@ package org.entcore.common.http.filter;
 
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
-import org.vertx.java.core.eventbus.EventBus;
+import io.vertx.core.eventbus.EventBus;
 
 import java.util.regex.Pattern;
 

@@ -30,9 +30,9 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.directory.services.ProfileService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -97,7 +97,7 @@ public class ProfileController extends BaseController {
 		bodyToJson(request, pathPrefix + "createFunctionGroup", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				profileService.createFunctionGroup(event.getArray("functionsCodes"),
+				profileService.createFunctionGroup(event.getJsonArray("functionsCodes"),
 						event.getString("name"), event.getString("externalId"), notEmptyResponseHandler(request, 201));
 			}
 		});

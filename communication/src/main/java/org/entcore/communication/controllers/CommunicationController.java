@@ -35,11 +35,11 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
@@ -127,7 +127,7 @@ public class CommunicationController extends BaseController {
 		if (userId != null && !userId.trim().isEmpty()) {
 			String schoolId = request.params().get("schoolId");
 			List<String> expectedTypes = request.params().getAll("expectedType");
-			visibleUsers(userId, schoolId, new JsonArray(expectedTypes.toArray()), arrayResponseHandler(request));
+			visibleUsers(userId, schoolId, new JsonArray(expectedTypes), arrayResponseHandler(request));
 		} else {
 			renderJson(request, new JsonArray());
 		}
@@ -139,7 +139,7 @@ public class CommunicationController extends BaseController {
 		if (userId != null && !userId.trim().isEmpty()) {
 			String action = message.body().getString("action", "");
 			String schoolId = message.body().getString("schoolId");
-			JsonArray expectedTypes = message.body().getArray("expectedTypes");
+			JsonArray expectedTypes = message.body().getJsonArray("expectedTypes");
 			Handler<Either<String, JsonArray>> responseHandler = new Handler<Either<String, JsonArray>>() {
 
 				@Override
@@ -158,7 +158,7 @@ public class CommunicationController extends BaseController {
 			case "visibleUsers":
 				String preFilter = message.body().getString("preFilter");
 				String customReturn = message.body().getString("customReturn");
-				JsonObject ap = message.body().getObject("additionnalParams");
+				JsonObject ap = message.body().getJsonObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
 				boolean myGroup = message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
@@ -171,12 +171,12 @@ public class CommunicationController extends BaseController {
 			case "visibleProfilsGroups":
 				String pF = message.body().getString("preFilter");
 				String c = message.body().getString("customReturn");
-				JsonObject p = message.body().getObject("additionnalParams");
+				JsonObject p = message.body().getJsonObject("additionnalParams");
 				communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
 				break;
 			case "visibleManualGroups":
 				String cr = message.body().getString("customReturn");
-				JsonObject pa = message.body().getObject("additionnalParams");
+				JsonObject pa = message.body().getJsonObject("additionnalParams");
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 				break;
 			default:
@@ -205,8 +205,8 @@ public class CommunicationController extends BaseController {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
-				JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
-				JsonArray structures = body.getArray("structures");
+				JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
+				JsonArray structures = body.getJsonArray("structures");
 				if (structures != null && structures.size() > 0) {
 					communicationService.initDefaultRules(structures,
 							initDefaultRules, defaultResponseHandler(request));
@@ -225,7 +225,7 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getDefaultCommunicationRules(final HttpServerRequest request) {
-		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
+		JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
 		Renders.renderJson(request, initDefaultRules, 200);
 	}
 
@@ -243,7 +243,7 @@ public class CommunicationController extends BaseController {
 
 	@BusAddress("wse.communication")
 	public void communicationEventBusHandler(final Message<JsonObject> message) {
-		JsonObject initDefaultRules = container.config().getObject("initDefaultCommunicationRules");
+		JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
 		final Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
 
 			@Override
@@ -251,27 +251,27 @@ public class CommunicationController extends BaseController {
 				if (res.isRight()) {
 					message.reply(res.right().getValue());
 				} else {
-					message.reply(new JsonObject().putString("status", "error")
-							.putString("message", res.left().getValue()));
+					message.reply(new JsonObject().put("status", "error")
+							.put("message", res.left().getValue()));
 				}
 			}
 		};
 		switch (message.body().getString("action", "")) {
 			case "initDefaultCommunicationRules" :
-				communicationService.initDefaultRules(message.body().getArray("schoolIds"),
+				communicationService.initDefaultRules(message.body().getJsonArray("schoolIds"),
 						initDefaultRules, responseHandler);
 				break;
 			case "initAndApplyDefaultCommunicationRules" :
-				communicationService.initDefaultRules(message.body().getArray("schoolIds"),
+				communicationService.initDefaultRules(message.body().getJsonArray("schoolIds"),
 						initDefaultRules, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
 							communicationService.applyDefaultRules(
-									message.body().getArray("schoolIds"), responseHandler);
+									message.body().getJsonArray("schoolIds"), responseHandler);
 						} else {
-							message.reply(new JsonObject().putString("status", "error")
-									.putString("message", event.left().getValue()));
+							message.reply(new JsonObject().put("status", "error")
+									.put("message", event.left().getValue()));
 						}
 					}
 				});
@@ -282,15 +282,15 @@ public class CommunicationController extends BaseController {
 				break;
 			case "setMultipleDefaultCommunicationRules" :
 				communicationService.applyDefaultRules(
-						message.body().getArray("schoolIds"), responseHandler);
+						message.body().getJsonArray("schoolIds"), responseHandler);
 				break;
 			case "setCommunicationRules" :
 				communicationService.applyRules(
 						message.body().getString("groupId"), responseHandler);
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error")
-						.putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error")
+						.put("message", "invalid.action"));
 		}
 	}
 

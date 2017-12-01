@@ -21,10 +21,10 @@ package org.entcore.common.appregistry;
 
 import static org.entcore.common.appregistry.AppRegistryEvents.*;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public final class AppRegistryEventsHandler implements Handler<Message<JsonObject>> {
 
@@ -32,7 +32,7 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 
 	public AppRegistryEventsHandler(Vertx vertx, AppRegistryEventsService service) {
 		appRegistryEventsService = service;
-		vertx.eventBus().registerLocalHandler(APP_REGISTRY_PUBLISH_ADDRESS, this);
+		vertx.eventBus().localConsumer(APP_REGISTRY_PUBLISH_ADDRESS, this);
 	}
 
 	@Override
@@ -41,10 +41,10 @@ public final class AppRegistryEventsHandler implements Handler<Message<JsonObjec
 		if (type != null) {
 			switch (type) {
 				case PROFILE_GROUP_ACTIONS_UPDATED:
-					appRegistryEventsService.authorizedActionsUpdated(event.body().getArray("groups"));
+					appRegistryEventsService.authorizedActionsUpdated(event.body().getJsonArray("groups"));
 					break;
 				case USER_GROUP_UPDATED:
-					appRegistryEventsService.userGroupUpdated(event.body().getArray("users"), event);
+					appRegistryEventsService.userGroupUpdated(event.body().getJsonArray("users"), event);
 					break;
 				case IMPORT_SUCCEEDED:
 					appRegistryEventsService.importSucceeded();

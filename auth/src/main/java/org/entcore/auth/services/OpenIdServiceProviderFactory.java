@@ -21,7 +21,7 @@ package org.entcore.auth.services;
 
 
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerRequest;
 
 public interface OpenIdServiceProviderFactory {
 

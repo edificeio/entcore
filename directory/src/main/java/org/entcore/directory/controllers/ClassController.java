@@ -34,15 +34,18 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
@@ -87,7 +90,7 @@ public class ClassController extends BaseController {
 					public void handle(Either<String, JsonObject> r) {
 						if (r.isRight()) {
 							final String userId = r.right().getValue().getString("id");
-							boolean notify = container.config().getBoolean("createdUserEmail", false) &&
+							boolean notify = config.getBoolean("createdUserEmail", false) &&
 									request.params().contains("sendCreatedUserEmail");
 							initPostCreate(classId, new JsonArray().add(userId), notify, request);
 							if (notify) {
@@ -106,7 +109,7 @@ public class ClassController extends BaseController {
 							}
 							renderJson(request, r.right().getValue(), 201);
 						} else {
-							renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+							renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 						}
 					}
 				});
@@ -118,7 +121,7 @@ public class ClassController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
-		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
+		JsonArray types = new JsonArray(request.params().getAll("type"));
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
 			handler = new Handler<Either<String, JsonArray>>() {
@@ -126,7 +129,7 @@ public class ClassController extends BaseController {
 				public void handle(Either<String, JsonArray> r) {
 					if (r.isRight()) {
 						processTemplate(request, "text/export.txt",
-								new JsonObject().putArray("list", r.right().getValue()), new Handler<String>() {
+								new JsonObject().put("list", r.right().getValue()), new Handler<String>() {
 							@Override
 							public void handle(final String export) {
 								if (export != null) {
@@ -150,7 +153,7 @@ public class ClassController extends BaseController {
 							}
 						});
 					} else {
-						renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+						renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 					}
 				}
 			};
@@ -159,7 +162,6 @@ public class ClassController extends BaseController {
 		}
 		classService.findUsers(classId, types, handler);
 	}
-
 
 	@Put("/class/:classId/add/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -176,14 +178,14 @@ public class ClassController extends BaseController {
 							if (res.isRight()) {
 								String schoolId = res.right().getValue().getString("schoolId");
 								JsonObject j = new JsonObject()
-										.putString("action", "setDefaultCommunicationRules")
-										.putString("schoolId", schoolId);
+										.put("action", "setDefaultCommunicationRules")
+										.put("schoolId", schoolId);
 								eb.send("wse.communication", j);
-								JsonArray a = new JsonArray().addString(userId);
+								JsonArray a = new JsonArray().add(userId);
 								ApplicationUtils.publishModifiedUserGroup(eb, a);
 								renderJson(request, res.right().getValue());
 							} else {
-								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+								renderJson(request, new JsonObject().put("error", res.left().getValue()), 400);
 							}
 						}
 					});
@@ -201,7 +203,7 @@ public class ClassController extends BaseController {
 			@Override
 			public void handle(JsonObject body) {
 				final String classId = request.params().get("classId");
-				JsonArray userIds = body.getArray("userIds");
+				JsonArray userIds = body.getJsonArray("userIds");
 				if (userIds != null) {
 					ClassController.this.initPostCreate(classId, userIds);
 					request.response().end();
@@ -218,7 +220,7 @@ public class ClassController extends BaseController {
 
 	private void initPostCreate(final String classId, final JsonArray userIds, final boolean welcomeMessage,
 			final HttpServerRequest request) {
-		ApplicationUtils.sendModifiedUserGroup(eb, userIds, new Handler<Message<JsonObject>>() {
+		ApplicationUtils.sendModifiedUserGroup(eb, userIds, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				schoolService.getByClassId(classId, new Handler<Either<String, JsonObject>>() {
@@ -226,9 +228,9 @@ public class ClassController extends BaseController {
 					public void handle(Either<String, JsonObject> s) {
 						if (s.isRight()) {
 							JsonObject j = new JsonObject()
-									.putString("action", "setDefaultCommunicationRules")
-									.putString("schoolId", s.right().getValue().getString("id"));
-							eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
+									.put("action", "setDefaultCommunicationRules")
+									.put("schoolId", s.right().getValue().getString("id"));
+							eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 								public void handle(Message<JsonObject> event) {
 									if("error".equals(event.body().getString("status", ""))){
 										log.error("[initPostCreate] Set communication rules failed.");
@@ -245,13 +247,13 @@ public class ClassController extends BaseController {
 											});
 									}
 								}
-							});
+							}));
 						}
 					}
 				});
 
 		   }
-		});
+		}));
 	}
 
 	@Put("/class/:classId/link/:userId")
@@ -270,7 +272,7 @@ public class ClassController extends BaseController {
 						notFound(request);
 					}
 				} else {
-					renderJson(request, new JsonObject().putString("error", r.left().getValue()), 400);
+					renderJson(request, new JsonObject().put("error", r.left().getValue()), 400);
 				}
 			}
 		});

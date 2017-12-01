@@ -20,22 +20,23 @@
 package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public class BusEventStore extends GenericEventStore {
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
-		eventBus.send("event.store", event, new Handler<Message<JsonObject>>(){
+		eventBus.send("event.store", event, new Handler<AsyncResult<Message<JsonObject>>>(){
 			@Override
-			public void handle(Message<JsonObject> res) {
-				if ("ok".equals(res.body().getString("status"))) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
+				if (res.succeeded()) {
 					handler.handle(new Either.Right<String, Void>(null));
 				} else {
 					handler.handle(new Either.Left<String, Void>(
-							"Error : " + res.body().getString("message") + ", Event : " + event.encode()));
+							"Error : " + res.cause().getMessage() + ", Event : " + event.encode()));
 				}
 			}
 		});

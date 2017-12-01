@@ -32,7 +32,7 @@ public class BucketStats {
 		this.storageSize = storageSize;
 	}
 
-	public long getObjectNumber() {
+	public long getJsonObjectNumber() {
 		return objectNumber;
 	}
 

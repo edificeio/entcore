@@ -25,20 +25,18 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
-import org.entcore.infra.Starter;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
-import org.vertx.java.platform.Container;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,16 +49,10 @@ public class MonitoringController extends BaseController {
 	private long dbCheckTimeout;
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
-		dbCheckTimeout = container.config().getLong("dbCheckTimeout", 5000l);
-		for (Object o : container.config().getArray("pre-required-modules", new JsonArray())) {
-			if (!(o instanceof JsonObject)) continue;
-			if (((JsonObject) o).getString("name", "").startsWith("fr.wseduc~mod-postgresql")) {
-				postgresql = true;
-				break;
-			}
-		}
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+		dbCheckTimeout = config.getLong("dbCheckTimeout", 5000l);
+		postgresql = config.getBoolean("sql", true);
 	}
 
 	@Get("/monitoring/db")
@@ -71,7 +63,7 @@ public class MonitoringController extends BaseController {
 			@Override
 			public void handle(Long event) {
 				closed.set(true);
-				result.putString("status", "timeout");
+				result.put("status", "timeout");
 				renderError(request, result);
 			}
 		});
@@ -93,9 +85,9 @@ public class MonitoringController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void checkVersions(final HttpServerRequest request) {
 		final JsonArray versions = new JsonArray();
-		ConcurrentSharedMap<String, String> versionMap = vertx.sharedData().getMap("versions");
+		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		for (Map.Entry<String,String> entry : versionMap.entrySet()) {
-			versions.addObject(new JsonObject().putString(entry.getKey(), entry.getValue()));
+			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));
 		}
 		Renders.renderJson(request, versions);
 	}
@@ -105,11 +97,11 @@ public class MonitoringController extends BaseController {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				result.putString(module, event.body().getString("status"));
+				result.put(module, event.body().getString("status"));
 				if (count.decrementAndGet() <= 0 && !closed.get()) {
 					vertx.cancelTimer(timerId);
 					boolean error = false;
-					for (String element : result.getFieldNames()) {
+					for (String element : result.fieldNames()) {
 						if (!"ok".equals(result.getString(element))) {
 							error = true;
 							break;

@@ -23,10 +23,10 @@ import fr.wseduc.webutils.Either;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public interface AppRegistryService {
 

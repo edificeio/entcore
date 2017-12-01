@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL_PROFILE_EXTERNAL_ID;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
@@ -30,13 +30,13 @@ public final class DefaultFunctions {
 
 	public static final String ADMIN_LOCAL_EXTERNAL_ID = "ADMIN_LOCAL";
 	public static final JsonObject ADMIN_LOCAL = new JsonObject()
-			.putString("externalId", ADMIN_LOCAL_EXTERNAL_ID)
-			.putString("name", "AdminLocal");
+			.put("externalId", ADMIN_LOCAL_EXTERNAL_ID)
+			.put("name", "AdminLocal");
 
 	public static final String CLASS_ADMIN_EXTERNAL_ID = "CLASS_ADMIN";
 	public static final JsonObject CLASS_ADMIN = new JsonObject()
-			.putString("externalId", CLASS_ADMIN_EXTERNAL_ID)
-			.putString("name", "ClassAdmin");
+			.put("externalId", CLASS_ADMIN_EXTERNAL_ID)
+			.put("name", "ClassAdmin");
 
 	public static void createOrUpdateFunctions(Importer importer) {
 		Profile p = importer.getProfile(PERSONNEL_PROFILE_EXTERNAL_ID);

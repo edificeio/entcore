@@ -21,11 +21,11 @@ package org.entcore.common.http.response;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
@@ -46,7 +46,7 @@ public class DefaultResponseHandler {
 					Renders.renderJson(request, event.right().getValue(), successCode);
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
+							.put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -66,7 +66,7 @@ public class DefaultResponseHandler {
 					Renders.ok(request);
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
+							.put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -96,7 +96,7 @@ public class DefaultResponseHandler {
 					}
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
+							.put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -111,7 +111,7 @@ public class DefaultResponseHandler {
 					Renders.renderJson(request, event.right().getValue());
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("error", event.left().getValue());
+							.put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -127,7 +127,7 @@ public class DefaultResponseHandler {
 					Renders.renderJson(request, event.right().getValue(), 200);
 				} else {
 					JsonObject error = new JsonObject()
-							.putObject("errors", event.left().getValue());
+							.put("errors", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 				deleteImportPath(vertx, path);
@@ -137,7 +137,7 @@ public class DefaultResponseHandler {
 
 	public static void leftToResponse(HttpServerRequest request, Either.Left<String, ?> left) {
 		if (left != null) {
-			Renders.renderJson(request, new JsonObject().putString("error", left.getValue()), 400);
+			Renders.renderJson(request, new JsonObject().put("error", left.getValue()), 400);
 		} else {
 			request.response().setStatusCode(400).end();
 		}

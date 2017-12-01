@@ -22,20 +22,20 @@ package org.entcore.cas.http;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.http.ClientResponse;
 import fr.wseduc.cas.http.HttpClient;
-import org.vertx.java.core.http.HttpClientRequest;
-import org.vertx.java.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
 
 public class WrappedVertxHttpClient implements HttpClient {
 
-	private org.vertx.java.core.http.HttpClient httpClient;
+	private io.vertx.core.http.HttpClient httpClient;
 
-	public WrappedVertxHttpClient(org.vertx.java.core.http.HttpClient httpClient) {
+	public WrappedVertxHttpClient(io.vertx.core.http.HttpClient httpClient) {
 		this.httpClient = httpClient;
 	}
 
 	@Override
 	public void get(String uri, final Handler<ClientResponse> handler) {
-		HttpClientRequest req = httpClient.get(uri, new org.vertx.java.core.Handler<HttpClientResponse>() {
+		HttpClientRequest req = httpClient.get(uri, new io.vertx.core.Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse response) {
 				handler.handle(new ClientResponse() {
@@ -52,7 +52,7 @@ public class WrappedVertxHttpClient implements HttpClient {
 
 	@Override
 	public void post(String uri, String body, final  Handler<ClientResponse> handler) {
-		HttpClientRequest req = httpClient.post(uri, new org.vertx.java.core.Handler<HttpClientResponse>() {
+		HttpClientRequest req = httpClient.post(uri, new io.vertx.core.Handler<HttpClientResponse>() {
 			@Override
 			public void handle(final HttpClientResponse response) {
 				handler.handle(new ClientResponse() {

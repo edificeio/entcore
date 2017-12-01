@@ -19,11 +19,13 @@
 
 package org.entcore.common.http.response;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.MultiMap;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerResponse;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpFrame;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerResponse;
 
 public class JsonHttpResponse implements HttpServerResponse {
 
@@ -134,6 +136,11 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
+	public HttpServerResponse endHandler(Handler<Void> handler) {
+		return null;
+	}
+
+	@Override
 	public HttpServerResponse write(Buffer buffer) {
 		return null;
 	}
@@ -145,6 +152,11 @@ public class JsonHttpResponse implements HttpServerResponse {
 
 	@Override
 	public HttpServerResponse write(String s) {
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse writeContinue() {
 		return null;
 	}
 
@@ -174,7 +186,12 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String s, String s2) {
+	public HttpServerResponse sendFile(String filename, long offset) {
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse sendFile(String filename, long offset, long length) {
 		return null;
 	}
 
@@ -184,13 +201,87 @@ public class JsonHttpResponse implements HttpServerResponse {
 	}
 
 	@Override
-	public HttpServerResponse sendFile(String s, String s2, Handler<AsyncResult<Void>> asyncResultHandler) {
+	public HttpServerResponse sendFile(String filename, long offset, Handler<AsyncResult<Void>> resultHandler) {
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse sendFile(String filename, long offset, long length, Handler<AsyncResult<Void>> resultHandler) {
 		return null;
 	}
 
 	@Override
 	public void close() {
 
+	}
+
+	@Override
+	public boolean ended() {
+		return false;
+	}
+
+	@Override
+	public boolean closed() {
+		return false;
+	}
+
+	@Override
+	public boolean headWritten() {
+		return false;
+	}
+
+	@Override
+	public HttpServerResponse headersEndHandler(Handler<Void> handler) {
+		return null;
+	}
+
+	@Override
+	public HttpServerResponse bodyEndHandler(Handler<Void> handler) {
+		return null;
+	}
+
+	@Override
+	public long bytesWritten() {
+		return 0;
+	}
+
+	@Override
+	public int streamId() {
+		return 0;
+	}
+
+	@Override
+	public HttpServerResponse push(HttpMethod method, String path, MultiMap headers, Handler<AsyncResult<HttpServerResponse>> handler) {
+		return push(method, null, path, headers, handler);
+	}
+
+	@Override
+	public HttpServerResponse push(io.vertx.core.http.HttpMethod method, String host, String path, Handler<AsyncResult<HttpServerResponse>> handler) {
+		return push(method, path, handler);
+	}
+
+	@Override
+	public HttpServerResponse push(HttpMethod method, String path, Handler<AsyncResult<HttpServerResponse>> handler) {
+		return push(method, path, null, null, handler);
+	}
+
+	@Override
+	public HttpServerResponse push(HttpMethod method, String host, String path, MultiMap headers, Handler<AsyncResult<HttpServerResponse>> handler) {
+		return this;
+	}
+
+	@Override
+	public HttpServerResponse writeCustomFrame(HttpFrame frame) {
+		return this;
+	}
+
+	@Override
+	public void reset(long code) {
+	}
+
+	@Override
+	public HttpServerResponse writeCustomFrame(int type, int flags, Buffer payload) {
+		return this;
 	}
 
 	@Override

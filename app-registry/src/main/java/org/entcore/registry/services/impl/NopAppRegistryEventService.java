@@ -20,9 +20,9 @@
 package org.entcore.registry.services.impl;
 
 import org.entcore.common.appregistry.AppRegistryEventsService;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class NopAppRegistryEventService implements AppRegistryEventsService {
 
@@ -33,7 +33,7 @@ public class NopAppRegistryEventService implements AppRegistryEventsService {
 
 	@Override
 	public void userGroupUpdated(JsonArray users, Message<JsonObject> message) {
-		message.reply(new JsonObject().putString("status", "ok"));
+		message.reply(new JsonObject().put("status", "ok"));
 	}
 
 	@Override

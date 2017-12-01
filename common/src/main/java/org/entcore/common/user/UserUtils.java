@@ -23,25 +23,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class UserUtils {
 
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
 	private static final String SESSION_ADDRESS = "wse.session";
-	private static final JsonArray usersTypes = new JsonArray().addString("User");
+	private static final JsonArray usersTypes = new JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
-			.putString("action", "visibleProfilsGroups");
+			.put("action", "visibleProfilsGroups");
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
-	.putString("action", "visibleManualGroups");
+	.put("action", "visibleManualGroups");
 	private static final I18n i18n = I18n.getInstance();
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
@@ -63,12 +66,16 @@ public class UserUtils {
 	private static void findUsers(final EventBus eb, String userId,
 						  final JsonObject query, final Handler<JsonArray> handler) {
 		if (userId != null && !userId.trim().isEmpty()) {
-			query.putString("userId", userId);
-			eb.send(COMMUNICATION_USERS, query, new Handler<Message<JsonArray>>() {
+			query.put("userId", userId);
+			eb.send(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 				@Override
-				public void handle(Message<JsonArray> res) {
-					handler.handle(res.body());
+				public void handle(AsyncResult<Message<JsonArray>> res) {
+					if (res.succeeded()) {
+						handler.handle(res.result().body());
+					} else {
+						handler.handle(new JsonArray());
+					}
 				}
 			});
 		} else {
@@ -130,18 +137,18 @@ public class UserUtils {
 	private static JsonObject queryVisibleUsers(String preFilter, String customReturn,
 			JsonObject additionnalParams, boolean itSelf, boolean profile) {
 		JsonObject m = new JsonObject()
-				.putBoolean("itself", itSelf)
-				.putBoolean("profile", profile)
-				.putString("action", "visibleUsers")
-				.putArray("expectedTypes", usersTypes);
+				.put("itself", itSelf)
+				.put("profile", profile)
+				.put("action", "visibleUsers")
+				.put("expectedTypes", usersTypes);
 		if (preFilter != null) {
-			m.putString("preFilter", preFilter);
+			m.put("preFilter", preFilter);
 		}
 		if (customReturn != null) {
-			m.putString("customReturn", customReturn);
+			m.put("customReturn", customReturn);
 		}
 		if (additionnalParams != null) {
-			m.putObject("additionnalParams", additionnalParams);
+			m.put("additionnalParams", additionnalParams);
 		}
 		return m;
 	}
@@ -162,29 +169,33 @@ public class UserUtils {
 			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
 			final String acceptLanguage, String preFilter, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
-				.putBoolean("itself", itSelf)
-				.putBoolean("mygroup", myGroup)
-				.putBoolean("profile", profile)
-				.putString("action", "visibleUsers");
+				.put("itself", itSelf)
+				.put("mygroup", myGroup)
+				.put("profile", profile)
+				.put("action", "visibleUsers");
 		if (preFilter != null) {
-			m.putString("preFilter", preFilter);
+			m.put("preFilter", preFilter);
 		}
 		if (customReturn != null) {
-			m.putString("customReturn", customReturn);
+			m.put("customReturn", customReturn);
 		}
 		if (additionnalParams != null) {
-			m.putObject("additionnalParams", additionnalParams);
+			m.put("additionnalParams", additionnalParams);
 		}
-		m.putString("userId", userId);
-		eb.send(COMMUNICATION_USERS, m, new Handler<Message<JsonArray>>() {
+		m.put("userId", userId);
+		eb.send(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
-			public void handle(Message<JsonArray> res) {
-				JsonArray r = res.body();
-				if (acceptLanguage != null) {
-					translateGroupsNames(r, acceptLanguage);
+			public void handle(AsyncResult<Message<JsonArray>> res) {
+				if (res.succeeded()) {
+					JsonArray r = res.result().body();
+					if (acceptLanguage != null) {
+						translateGroupsNames(r, acceptLanguage);
+					}
+					handler.handle(r);
+				} else {
+					handler.handle(new JsonArray());
 				}
-				handler.handle(r);
 			}
 		});
 	}
@@ -208,7 +219,7 @@ public class UserUtils {
 		String displayName = group.getString("groupDisplayName", "group." + type);
 		String translatedName = i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
 		if(!translatedName.equals(displayName))
-			group.putString("name", translatedName);
+			group.put("name", translatedName);
 	}
 
 	public static String groupDisplayName(String name, String groupDisplayName, String acceptLanguage) {
@@ -225,7 +236,7 @@ public class UserUtils {
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,
 										 final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
-				.putString("action", "usersCanSeeMe");
+				.put("action", "usersCanSeeMe");
 		findUsers(eb, request, m, handler);
 	}
 
@@ -237,26 +248,26 @@ public class UserUtils {
 	public static void findVisibleProfilsGroups(final EventBus eb, HttpServerRequest request,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
-				.putString("customReturn", customReturn)
-				.putObject("additionnalParams", additionnalParams);
+				.put("customReturn", customReturn)
+				.put("additionnalParams", additionnalParams);
 		findUsers(eb, request, m, handler);
 	}
 
 	public static void findVisibleProfilsGroups(final EventBus eb, String userId,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
-				.putString("customReturn", customReturn)
-				.putObject("additionnalParams", additionnalParams);
+				.put("customReturn", customReturn)
+				.put("additionnalParams", additionnalParams);
 		findUsers(eb, userId, m, handler);
 	}
 
 	public static void findVisibleProfilsGroups(final EventBus eb, String userId, String preFilter,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
-				.putString("customReturn", customReturn)
-				.putObject("additionnalParams", additionnalParams);
+				.put("customReturn", customReturn)
+				.put("additionnalParams", additionnalParams);
 		if (preFilter != null) {
-			m.putString("preFilter", preFilter);
+			m.put("preFilter", preFilter);
 		}
 		findUsers(eb, userId, m, handler);
 	}
@@ -269,14 +280,18 @@ public class UserUtils {
 	public static void findUsersInProfilsGroups(String groupId, final EventBus eb, String userId,
 			boolean itSelf, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
-				.putString("action", "usersInProfilGroup")
-				.putString("userId", groupId)
-				.putBoolean("itself", itSelf)
-				.putString("excludeUserId", userId);
-		eb.send(DIRECTORY, m, new Handler<Message<JsonArray>>() {
+				.put("action", "usersInProfilGroup")
+				.put("userId", groupId)
+				.put("itself", itSelf)
+				.put("excludeUserId", userId);
+		eb.send(DIRECTORY, m, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
-			public void handle(Message<JsonArray> res) {
-				handler.handle(res.body());
+			public void handle(AsyncResult<Message<JsonArray>> res) {
+				if (res.succeeded()) {
+					handler.handle(res.result().body());
+				} else {
+					handler.handle(new JsonArray());
+				}
 			}
 		});
 	}
@@ -284,8 +299,8 @@ public class UserUtils {
 	public static void findVisibleManualGroups(final EventBus eb, HttpServerRequest request,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = QUERY_VISIBLE_MANUAL_GROUPS.copy()
-				.putString("customReturn", customReturn)
-				.putObject("additionnalParams", additionnalParams);
+				.put("customReturn", customReturn)
+				.put("additionnalParams", additionnalParams);
 		findUsers(eb, request, m, handler);
 	}
 
@@ -315,12 +330,12 @@ public class UserUtils {
 				}
 				JsonObject findSession = new JsonObject();
 				if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
-					findSession.putString("action", "find")
-							.putString("sessionId", oneSessionId);
+					findSession.put("action", "find")
+							.put("sessionId", oneSessionId);
 				} else { // remote user (oauth)
-					findSession.putString("action", "findByUserId")
-							.putString("userId", remoteUserId)
-							.putBoolean("allowDisconnectedUser", true);
+					findSession.put("action", "findByUserId")
+							.put("userId", remoteUserId)
+							.put("allowDisconnectedUser", true);
 				}
 				findSession(eb, request, findSession, paused, handler);
 			}
@@ -334,19 +349,23 @@ public class UserUtils {
 
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession, final boolean paused,
 			final Handler<JsonObject> handler) {
-		eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
+		eb.send(SESSION_ADDRESS, findSession, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> message) {
-				JsonObject session = message.body().getObject("session");
-				if (request != null && !paused) {
-					request.resume();
-				}
-				if ("ok".equals(message.body().getString("status")) && session != null) {
-					if (request instanceof SecureHttpServerRequest) {
-						((SecureHttpServerRequest) request).setSession(session);
+			public void handle(AsyncResult<Message<JsonObject>> message) {
+				if (message.succeeded()) {
+					JsonObject session = message.result().body().getJsonObject("session");
+					if (request != null && !paused) {
+						request.resume();
 					}
-					handler.handle(session);
+					if ("ok".equals(message.result().body().getString("status")) && session != null) {
+						if (request instanceof SecureHttpServerRequest) {
+							((SecureHttpServerRequest) request).setSession(session);
+						}
+						handler.handle(session);
+					} else {
+						handler.handle(null);
+					}
 				} else {
 					handler.handle(null);
 				}
@@ -356,16 +375,16 @@ public class UserUtils {
 
 	public static void getSessionByUserId(EventBus eb, final String userId, final Handler<JsonObject> handler) {
 		JsonObject findSession = new JsonObject()
-				.putString("action", "findByUserId")
-				.putString("userId", userId)
-				.putBoolean("allowDisconnectedUser", true);
+				.put("action", "findByUserId")
+				.put("userId", userId)
+				.put("allowDisconnectedUser", true);
 		findSession(eb, null, findSession, handler);
 	}
 
 	public static void getSession(EventBus eb, final String sessionId,  final Handler<JsonObject> handler) {
 		JsonObject findSession = new JsonObject()
-				.putString("action", "find")
-				.putString("sessionId", sessionId);
+				.put("action", "find")
+				.put("sessionId", sessionId);
 		findSession(eb, null, findSession, handler);
 	}
 
@@ -399,18 +418,18 @@ public class UserUtils {
 	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId,
 			final Handler<String> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "create")
-				.putString("userId", userId);
+				.put("action", "create")
+				.put("userId", userId);
 		if (sessionIndex != null && nameId != null && !sessionIndex.trim().isEmpty() && !nameId.trim().isEmpty()) {
-			json.putString("SessionIndex", sessionIndex).putString("NameID", nameId);
+			json.put("SessionIndex", sessionIndex).put("NameID", nameId);
 		}
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					if ("ok".equals(res.body().getString("status"))) {
-						handler.handle(res.body().getString("sessionId"));
+					if (res.succeeded() && "ok".equals(res.result().body().getString("status"))) {
+						handler.handle(res.result().body().getString("sessionId"));
 					} else {
 						handler.handle(null);
 					}
@@ -422,14 +441,14 @@ public class UserUtils {
 	public static void deleteSession(EventBus eb, String sessionId,
 									 final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "drop")
-				.putString("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "drop")
+				.put("sessionId", sessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					handler.handle("ok".equals(res.body().getString("status")));
+					handler.handle(res.succeeded() && "ok".equals(res.result().body().getString("status")));
 				}
 			}
 		});
@@ -438,16 +457,16 @@ public class UserUtils {
 	public static void deleteSessionWithMetadata(EventBus eb, String sessionId,
 			final Handler<JsonObject> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "drop")
-				.putBoolean("sessionMetadata", true)
-				.putString("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "drop")
+				.put("sessionMetadata", true)
+				.put("sessionId", sessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					if ("ok".equals(res.body().getString("status"))) {
-						handler.handle(res.body().getObject("sessionMetadata"));
+					if (res.succeeded() && "ok".equals(res.result().body().getString("status"))) {
+						handler.handle(res.result().body().getJsonObject("sessionMetadata"));
 					} else {
 						handler.handle(null);
 					}
@@ -459,15 +478,15 @@ public class UserUtils {
 	public static void deletePermanentSession(EventBus eb, String userId, String currentSessionId,
 			final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "dropPermanentSessions")
-				.putString("userId", userId)
-				.putString("currentSessionId", currentSessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "dropPermanentSessions")
+				.put("userId", userId)
+				.put("currentSessionId", currentSessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					handler.handle("ok".equals(res.body().getString("status")));
+					handler.handle(res.succeeded() && "ok".equals(res.result().body().getString("status")));
 				}
 			}
 		});
@@ -475,9 +494,9 @@ public class UserUtils {
 
 	public static void deleteCacheSession(EventBus eb, String userId, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "dropCacheSession")
-				.putString("userId", userId);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "dropCacheSession")
+				.put("userId", userId);
+		eb.send(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -485,22 +504,22 @@ public class UserUtils {
 					handler.handle("ok".equals(res.body().getString("status")));
 				}
 			}
-		});
+		}));
 	}
 
 	public static void addSessionAttribute(EventBus eb, String userId,
 			String key, Object value, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "addAttribute")
-				.putString("userId", userId)
-				.putString("key", key)
-				.putValue("value", value);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "addAttribute")
+				.put("userId", userId)
+				.put("key", key)
+				.put("value", value);
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					handler.handle("ok".equals(res.body().getString("status")));
+					handler.handle(res.succeeded() && "ok".equals(res.result().body().getString("status")));
 				}
 			}
 		});
@@ -509,15 +528,15 @@ public class UserUtils {
 	public static void removeSessionAttribute(EventBus eb, String userId,
 			String key, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
-				.putString("action", "removeAttribute")
-				.putString("userId", userId)
-				.putString("key", key);
-		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+				.put("action", "removeAttribute")
+				.put("userId", userId)
+				.put("key", key);
+		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
-			public void handle(Message<JsonObject> res) {
+			public void handle(AsyncResult<Message<JsonObject>> res) {
 				if (handler != null) {
-					handler.handle("ok".equals(res.body().getString("status")));
+					handler.handle(res.succeeded() && "ok".equals(res.result().body().getString("status")));
 				}
 			}
 		});

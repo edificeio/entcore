@@ -21,7 +21,7 @@ package org.entcore.auth.adapter;
 
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.request.RequestUtils;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerRequest;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 

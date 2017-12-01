@@ -24,11 +24,12 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.ProfileService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
@@ -45,37 +46,37 @@ public class DefaultProfileService implements ProfileService {
 	@Override
 	public void createFunction(String profile, JsonObject function, Handler<Either<String, JsonObject>> handler) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-create-function")
-				.putString("profile", profile)
-				.putObject("data", function);
-		eb.send(Directory.FEEDER, action, validUniqueResultHandler(0, handler));
+				.put("action", "manual-create-function")
+				.put("profile", profile)
+				.put("data", function);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
 	}
 
 	@Override
 	public void deleteFunction(String functionCode, Handler<Either<String, JsonObject>> handler) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-delete-function")
-				.putString("functionCode", functionCode);
-		eb.send(Directory.FEEDER, action, validEmptyHandler(handler));
+				.put("action", "manual-delete-function")
+				.put("functionCode", functionCode);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
 	}
 
 	@Override
 	public void createFunctionGroup(JsonArray functionsCodes, String name, String externalId,
 			Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-create-function-group")
-				.putArray("functions", functionsCodes)
-				.putString("externalId", externalId)
-				.putString("name", name);
-		eb.send(Directory.FEEDER, action, validUniqueResultHandler(0, result));
+				.put("action", "manual-create-function-group")
+				.put("functions", functionsCodes)
+				.put("externalId", externalId)
+				.put("name", name);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
 	@Override
 	public void deleteFunctionGroup(String functionGroupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-delete-function-group")
-				.putString("groupId", functionGroupId);
-		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
+				.put("action", "manual-delete-function-group")
+				.put("groupId", functionGroupId);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -98,9 +99,9 @@ public class DefaultProfileService implements ProfileService {
 	public void blockProfiles(JsonObject profiles, Handler<Either<String, JsonObject>> handler) {
 		final String query = "MATCH (p:Profile {name : {name}}) set p.blocked = {blocked}";
 		final StatementsBuilder sb =  new StatementsBuilder();
-		for (String profile : profiles.getFieldNames()) {
-			sb.add(query, new JsonObject().putString("name", profile)
-					.putBoolean("blocked", (profiles.getBoolean(profile, false) ? true : null)));
+		for (String profile : profiles.fieldNames()) {
+			sb.add(query, new JsonObject().put("name", profile)
+					.put("blocked", (profiles.getBoolean(profile, false) ? true : null)));
 		}
 		neo4j.executeTransaction(sb.build(), null, true, validEmptyHandler(handler));
 	}

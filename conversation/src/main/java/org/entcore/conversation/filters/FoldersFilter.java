@@ -25,10 +25,10 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
@@ -87,7 +87,7 @@ public class FoldersFilter implements ResourcesProvider {
 					"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
 					"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
 				JsonArray values = new JsonArray()
-					.addString(user.getUserId());
+					.add(user.getUserId());
 				for(String id : messageIds){
 					values.add(id);
 				}

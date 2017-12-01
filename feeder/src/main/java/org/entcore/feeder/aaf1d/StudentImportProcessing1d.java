@@ -22,8 +22,8 @@ package org.entcore.feeder.aaf1d;
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.StudentImportProcessing;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonArray;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 
 public class StudentImportProcessing1d extends StudentImportProcessing {
 

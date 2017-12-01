@@ -9,11 +9,11 @@ import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.user.UserInfos;
 import org.entcore.timeline.services.FlashMsgService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.core.logging.Logger;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.Logger;
 
 import fr.wseduc.webutils.Either;
 
@@ -36,7 +36,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void update(String id, JsonObject data, Handler<Either<String, JsonObject>> handler){
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
-		for (String attr : data.getFieldNames()) {
+		for (String attr : data.fieldNames()) {
 			if("startDate".equals(attr) || "endDate".equals(attr)){
 				sb.append("\"" + attr + "\"").append(" = ?::timestamptz, ");
 			} else if ("contents".equals(attr) || "profiles".equals(attr)) {
@@ -60,7 +60,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 		for(String id : ids){
 			try {
 				long idNb = Long.parseLong(id);
-				values.addNumber(idNb);
+				values.add(idNb);
 			} catch (NumberFormatException e) {
 				log.error("Bad id - not a number : " + id.toString());
 			}
@@ -75,7 +75,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			"SELECT *, \"startDate\"::text, \"endDate\"::text "+
 			"FROM " + resourceTable + " m  WHERE domain = ? ORDER BY modified DESC";
 
-		JsonArray values = new JsonArray().addString(domain);
+		JsonArray values = new JsonArray().add(domain);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 
@@ -97,8 +97,8 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void markAsRead(UserInfos user, String id, Handler<Either<String, JsonObject>> handler) {
 		JsonObject params = new JsonObject()
-			.putString("message_id", id)
-			.putString("user_id", user.getUserId());
+			.put("message_id", id)
+			.put("user_id", user.getUserId());
 
 		sql.insert(JOIN_TABLE, params, validUniqueResultHandler(handler));
 	}

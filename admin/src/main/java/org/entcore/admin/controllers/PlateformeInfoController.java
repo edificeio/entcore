@@ -3,8 +3,8 @@ package org.entcore.admin.controllers;
 import org.entcore.admin.filters.AdminStructureFilter;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
@@ -19,7 +19,7 @@ public class PlateformeInfoController extends BaseController {
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminStructureFilter.class)
 	public void moduleSms(HttpServerRequest request) {
-		renderJson(request, new JsonObject().putBoolean("activated", this.smsActivated), 200);
+		renderJson(request, new JsonObject().put("activated", this.smsActivated), 200);
 	}
 	
 	public boolean isSmsModule() {

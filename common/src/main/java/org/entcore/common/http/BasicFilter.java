@@ -22,10 +22,10 @@ package org.entcore.common.http;
 import fr.wseduc.webutils.collections.Joiner;
 import fr.wseduc.webutils.request.filter.AbstractBasicFilter;
 import org.entcore.common.neo4j.Neo4j;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class BasicFilter extends AbstractBasicFilter {
 
@@ -34,13 +34,13 @@ public class BasicFilter extends AbstractBasicFilter {
 		String query =
 				"MATCH (n:Application {name: {clientId}, secret: {secret}, grantType: 'Basic'}) " +
 				"RETURN n.scope as scope";
-		JsonObject params = new JsonObject().putString("clientId", clientId).putString("secret", secret);
+		JsonObject params = new JsonObject().put("clientId", clientId).put("secret", secret);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					handler.handle(Joiner.on(" ").join(res.<JsonObject>get(0).getArray("scope")));
+					handler.handle(Joiner.on(" ").join(res.getJsonObject(0).getJsonArray("scope")));
 				} else {
 					handler.handle(null);
 				}

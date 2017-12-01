@@ -24,9 +24,10 @@ import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,15 +49,15 @@ public class PersEducNat extends AbstractUser {
 				String[][] linkClasses, String[][] linkGroups, boolean nodeQueries, boolean relationshipQueries) {
 		final String error = personnelValidator.validate(object);
 		if (error != null) {
-			if (object.getArray("profiles") != null && object.getArray("profiles").size() == 1) {
-				report.addIgnored(object.getArray("profiles").<String>get(0), error, object);
+			if (object.getJsonArray("profiles") != null && object.getJsonArray("profiles").size() == 1) {
+				report.addIgnored(object.getJsonArray("profiles").getString(0), error, object);
 			} else {
 				report.addIgnored("Personnel", error, object);
 			}
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
-				object.putString("source", currentSource);
+				object.put("source", currentSource);
 				if (userImportedExternalId != null) {
 					userImportedExternalId.add(object.getString("externalId"));
 				}
@@ -80,41 +81,41 @@ public class PersEducNat extends AbstractUser {
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
-				JsonArray structures = getMappingStructures(object.getArray("structures"));
+				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
-					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					JsonObject p = new JsonObject().put("userExternalId", externalId);
 					if (structures.size() == 1) {
 						query = "MATCH (s:Structure {externalId : {structureAdmin}}), (u:User {externalId : {userExternalId}}) " +
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
-						p.putString("structureAdmin", (String) structures.get(0));
+						p.put("structureAdmin", structures.getString(0));
 					} else {
 						query = "MATCH (s:Structure), (u:User {externalId : {userExternalId}}) " +
 								"WHERE s.externalId IN {structuresAdmin} " +
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
-						p.putArray("structuresAdmin", structures);
+						p.put("structuresAdmin", structures);
 					}
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0) {
 					String query;
 					structuresByFunctions = getMappingStructures(structuresByFunctions);
-					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					JsonObject p = new JsonObject().put("userExternalId", externalId);
 					if (structuresByFunctions.size() == 1) {
 						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
 								"(u:User { externalId : {userExternalId}}) " +
 								"WHERE NOT(HAS(u.mergedWith)) " +
 								"MERGE u-[:IN]->g";
-						p.putString("structureAdmin", (String) structuresByFunctions.get(0))
-								.putString("profileExternalId", profileExternalId);
+						p.put("structureAdmin", structuresByFunctions.getString(0))
+								.put("profileExternalId", profileExternalId);
 					} else {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 								"(u:User { externalId : {userExternalId}}) " +
 								"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
 								"AND p.externalId = {profileExternalId} " +
 								"MERGE u-[:IN]->g ";
-						p.putArray("structuresAdmin", structuresByFunctions)
-								.putString("profileExternalId", profileExternalId);
+						p.put("structuresAdmin", structuresByFunctions)
+								.put("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
 					String qs =
@@ -122,9 +123,9 @@ public class PersEducNat extends AbstractUser {
 									"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 									"DELETE r";
 					JsonObject ps = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("structures", structuresByFunctions);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("structures", structuresByFunctions);
 					transactionHelper.add(qs, ps);
 				}
 				final JsonObject fosm = new JsonObject();
@@ -135,12 +136,12 @@ public class PersEducNat extends AbstractUser {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							classes.add(structClass[1]);
 							if (structClass.length > 2 && isNotEmpty(structClass[2])) {
-								JsonArray fClasses = fcm.getArray(structClass[2]);
+								JsonArray fClasses = fcm.getJsonArray(structClass[2]);
 								if (fClasses == null) {
 									fClasses = new JsonArray();
-									fcm.putArray(structClass[2], fClasses);
+									fcm.put(structClass[2], fClasses);
 								}
-								fClasses.addString(structClass[1]);
+								fClasses.add(structClass[1]);
 							}
 						}
 					}
@@ -151,21 +152,21 @@ public class PersEducNat extends AbstractUser {
 							"WHERE c.externalId IN {classes} AND NOT(HAS(u.mergedWith)) " +
 							"MERGE u-[:IN]->g";
 					JsonObject p0 = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("profileExternalId", profileExternalId)
-							.putArray("classes", classes);
+							.put("userExternalId", externalId)
+							.put("profileExternalId", profileExternalId)
+							.put("classes", classes);
 					transactionHelper.add(query, p0);
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("classes", classes);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("classes", classes);
 					fosm.mergeIn(fcm);
-					for (String fos: fcm.getFieldNames()) {
+					for (String fos: fcm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
 								"MERGE u-[r:TEACHES_FOS]->f " +
 								"SET r.classes = {classes} ";
-						transactionHelper.add(q2, p.copy().putArray("classes", fcm.getArray(fos)).putString("feId", fos));
+						transactionHelper.add(q2, p.copy().put("classes", fcm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
 				if (externalId != null) {
@@ -174,9 +175,9 @@ public class PersEducNat extends AbstractUser {
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("classes", classes);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("classes", classes);
 					transactionHelper.add(q, p);
 				}
 				final JsonArray groups = new JsonArray();
@@ -186,12 +187,12 @@ public class PersEducNat extends AbstractUser {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {
 							groups.add(structGroup[1]);
 							if (structGroup.length > 2 && isNotEmpty(structGroup[2])) {
-								JsonArray fGroups = fgm.getArray(structGroup[2]);
+								JsonArray fGroups = fgm.getJsonArray(structGroup[2]);
 								if (fGroups == null) {
 									fGroups = new JsonArray();
-									fgm.putArray(structGroup[2], fGroups);
+									fgm.put(structGroup[2], fGroups);
 								}
-								fGroups.addString(structGroup[1]);
+								fGroups.add(structGroup[1]);
 							}
 						}
 					}
@@ -200,8 +201,8 @@ public class PersEducNat extends AbstractUser {
 							"WHERE g.externalId IN {groups} " +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putArray("groups", groups);
+							.put("userExternalId", externalId)
+							.put("groups", groups);
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null) {
@@ -210,22 +211,22 @@ public class PersEducNat extends AbstractUser {
 									"WHERE NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 									"DELETE r";
 					final JsonObject pdfg = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("groups", groups);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("groups", groups);
 					transactionHelper.add(qdfg, pdfg);
 					fosm.mergeIn(fgm);
 					final String deleteOldFoslg =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
-					transactionHelper.add(deleteOldFoslg, pdfg.copy().putArray("fos", new JsonArray(fosm.getFieldNames().toArray())));
-					for (String fos: fgm.getFieldNames()) {
+					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fosm.fieldNames()))));
+					for (String fos: fgm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
 								"MERGE u-[r:TEACHES_FOS]->f " +
 								"SET r.groups = {groups} ";
-						transactionHelper.add(q2, pdfg.copy().putArray("groups", fgm.getArray(fos)).putString("feId", fos));
+						transactionHelper.add(q2, pdfg.copy().put("groups", fgm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
 			}
@@ -238,13 +239,13 @@ public class PersEducNat extends AbstractUser {
 
 	public void createAndLinkSubjects(String structureExternalId) {
 		final long now = System.currentTimeMillis();
-		final JsonObject params = new JsonObject().putNumber("now", now).putString("source", currentSource);
+		final JsonObject params = new JsonObject().put("now", now).put("source", currentSource);
 		String filter = "";
 		String filter2 = "";
 		if (isNotEmpty(structureExternalId)) {
 			filter = " {externalId : {structureExternalId}}";
 			filter2 = " (:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-";
-			params.putString("structureExternalId", structureExternalId);
+			params.put("structureExternalId", structureExternalId);
 		}
 		final String query =
 				"MATCH (f:FieldOfStudy)<-[r:TEACHES_FOS]-(u:User {source : {source}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure" + filter + ") " +

@@ -20,20 +20,23 @@
 package org.entcore.common.bus;
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Date;
+
+import static fr.wseduc.webutils.DefaultAsyncResult.handleAsyncError;
 
 public class WorkspaceHelper {
 
@@ -48,52 +51,52 @@ public class WorkspaceHelper {
 	}
 
 	public void addDocument(JsonObject uploaded, UserInfos userInfos, String name, String application,
-			boolean protectedContent, JsonArray thumbs, Handler<Message<JsonObject>> handler) {
+			boolean protectedContent, JsonArray thumbs, Handler<AsyncResult<Message<JsonObject>>> handler) {
 		if (userInfos == null) {
 			if (handler != null) {
-				handler.handle(new ErrorMessage("invalid.user"));
+				handleAsyncError("invalid.user", handler);
 			}
 			return;
 		}
 		JsonObject doc = new JsonObject();
 		String now = MongoDb.formatDate(new Date());
-		doc.putString("created", now);
-		doc.putString("modified", now);
-		doc.putString("owner", userInfos.getUserId());
-		doc.putString("ownerName", userInfos.getUsername());
+		doc.put("created", now);
+		doc.put("modified", now);
+		doc.put("owner", userInfos.getUserId());
+		doc.put("ownerName", userInfos.getUsername());
 		if (application != null && !application.trim().isEmpty() && protectedContent) {
-			doc.putBoolean("protected", true);
+			doc.put("protected", true);
 		}
 		JsonObject m = new JsonObject()
-				.putString("action", "addDocument")
-				.putObject("document", doc)
-				.putObject("uploaded", uploaded)
-				.putString("name", name)
-				.putString("application", application)
-				.putArray("thumbs", thumbs);
+				.put("action", "addDocument")
+				.put("document", doc)
+				.put("uploaded", uploaded)
+				.put("name", name)
+				.put("application", application)
+				.put("thumbs", thumbs);
 		eb.send(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	public void updateDocument(String id, JsonObject uploaded, String name, JsonArray thumbs,
-			Handler<Message<JsonObject>> handler) {
+			Handler<AsyncResult<Message<JsonObject>>> handler) {
 		if (id == null || id.trim().isEmpty()) {
 			if (handler != null) {
-				handler.handle(new ErrorMessage("invalid.document.id"));
+				handleAsyncError("invalid.document.id", handler);
 			}
 			return;
 		}
 		JsonObject m = new JsonObject()
-				.putString("action", "updateDocument")
-				.putString("id", id)
-				.putObject("uploaded", uploaded)
-				.putString("name", name)
-				.putArray("thumbs", thumbs);
+				.put("action", "updateDocument")
+				.put("id", id)
+				.put("uploaded", uploaded)
+				.put("name", name)
+				.put("thumbs", thumbs);
 		eb.send(WORKSPACE_ADDRESS, m, handler);
 	}
 
 	private void uploadDocument(final HttpServerRequest request, final String id,
 			final String name, final String application, final boolean protectedContent,
-			final JsonArray thumbs, final Handler<Message<JsonObject>> handler) {
+			final JsonArray thumbs, final Handler<AsyncResult<Message<JsonObject>>> handler) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos userInfos) {
@@ -103,11 +106,9 @@ public class WorkspaceHelper {
 						@Override
 						public void handle(final JsonObject up) {
 							if (up != null && !"error".equals(up.getString("status"))) {
-								Handler<Message<JsonObject>> h = new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> message) {
-										if (!"ok".equals(message.body().getString("status"))) {
-											storage.removeFile(up.getString("_id"), new Handler<JsonObject>() {
+								Handler<AsyncResult<Message<JsonObject>>> h = message -> {
+									if (message.failed()) {
+										storage.removeFile(up.getString("_id"), new Handler<JsonObject>() {
 												@Override
 												public void handle(JsonObject event) {
 													if (!"ok".equals(event.getString("status"))) {
@@ -116,10 +117,9 @@ public class WorkspaceHelper {
 													}
 												}
 											});
-										}
-										if (handler != null) {
-											handler.handle(message);
-										}
+									}
+									if (handler != null) {
+										handler.handle(message);
 									}
 								};
 								if (id != null && !id.trim().isEmpty()) {
@@ -129,14 +129,14 @@ public class WorkspaceHelper {
 								}
 							} else {
 								if (handler != null) {
-									handler.handle(new ErrorMessage("upload.error"));
+									handleAsyncError("upload.error", handler);
 								}
 							}
 						}
 					});
 				} else {
 					if (handler != null) {
-						handler.handle(new ErrorMessage("invalid.user"));
+						handleAsyncError("invalid.user", handler);
 					}
 				}
 			}
@@ -144,19 +144,19 @@ public class WorkspaceHelper {
 	}
 
 	public void createDocument(final HttpServerRequest request, final String name, final String application,
-			final boolean protectedContent, final JsonArray thumbs, final Handler<Message<JsonObject>> handler) {
+			final boolean protectedContent, final JsonArray thumbs, final Handler<AsyncResult<Message<JsonObject>>> handler) {
 		uploadDocument(request, null, name, application, protectedContent, thumbs, handler);
 	}
 
 	public void updateDocument(final HttpServerRequest request, final String id, final String name,
-			final JsonArray thumbs, final Handler<Message<JsonObject>> handler) {
+			final JsonArray thumbs, final Handler<AsyncResult<Message<JsonObject>>> handler) {
 		uploadDocument(request, id, name, null, false, thumbs, handler);
 	}
 
-	public void getDocument(String id, Handler<Message<JsonObject>> handler) {
+	public void getDocument(String id, Handler<AsyncResult<Message<JsonObject>>> handler) {
 		JsonObject m = new JsonObject()
-				.putString("action", "getDocument")
-				.putString("id", id);
+				.put("action", "getDocument")
+				.put("id", id);
 		eb.send(WORKSPACE_ADDRESS, m, handler);
 	}
 
@@ -165,12 +165,16 @@ public class WorkspaceHelper {
 	}
 
 	public void readDocument(String documentId, final Handler<Document> handler) {
-		getDocument(documentId, new Handler<Message<JsonObject>>() {
+		getDocument(documentId, new Handler<AsyncResult<Message<JsonObject>>>() {
 			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body();
+			public void handle(AsyncResult<Message<JsonObject>> event) {
+				if (event.failed()) {
+					handler.handle(null);
+					return;
+				}
+				JsonObject res = event.result().body();
 				String status = res.getString("status");
-				final JsonObject result = res.getObject("result");
+				final JsonObject result = res.getJsonObject("result");
 				if ("ok".equals(status) && result != null) {
 					String file = result.getString("file");
 					if (file != null && !file.trim().isEmpty()) {

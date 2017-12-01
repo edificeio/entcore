@@ -20,10 +20,10 @@
 package org.entcore.common.bus;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class BusResponseHandler {
 
@@ -34,12 +34,12 @@ public class BusResponseHandler {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
-					message.reply(new JsonObject().putString("status", "ok")
-							.putObject("result", event.right().getValue()));
+					message.reply(new JsonObject().put("status", "ok")
+							.put("result", event.right().getValue()));
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("status", "error")
-							.putString("message", event.left().getValue());
+							.put("status", "error")
+							.put("message", event.left().getValue());
 					message.reply(error);
 				}
 			}
@@ -51,12 +51,12 @@ public class BusResponseHandler {
 			@Override
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
-					message.reply(new JsonObject().putString("status", "ok")
-							.putArray("result", event.right().getValue()));
+					message.reply(new JsonObject().put("status", "ok")
+							.put("result", event.right().getValue()));
 				} else {
 					JsonObject error = new JsonObject()
-							.putString("status", "error")
-							.putString("message", event.left().getValue());
+							.put("status", "error")
+							.put("message", event.left().getValue());
 					message.reply(error);
 				}
 			}

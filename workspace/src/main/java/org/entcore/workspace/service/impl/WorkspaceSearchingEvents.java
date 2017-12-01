@@ -30,12 +30,12 @@ import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
@@ -65,9 +65,9 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                                final String locale, final Handler<Either<String, JsonArray>> handler) {
         if (appFilters.contains(WorkspaceSearchingEvents.class.getSimpleName())) {
 
-            final List<String> searchWordsLst = searchWords.toList();
+            final List<String> searchWordsLst = searchWords.getList();
 
-            final List<String> groupIdsLst = groupIds.toList();
+            final List<String> groupIdsLst = groupIds.getList();
             final List<DBObject> groups = new ArrayList<>();
             groups.add(QueryBuilder.start("userId").is(userId).get());
             for (String gpId: groupIdsLst) {
@@ -91,14 +91,14 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 
             final QueryBuilder query = new QueryBuilder().and(fileQuery.get(), rightsQuery.get(), worldsQuery.get());
 
-            JsonObject sort = new JsonObject().putNumber("modified", -1);
+            JsonObject sort = new JsonObject().put("modified", -1);
             final JsonObject projection = new JsonObject();
-            projection.putNumber("name", 1);
-            projection.putNumber("modified", 1);
-            projection.putNumber("folder", 1);
-            projection.putNumber("owner", 1);
-            projection.putNumber("ownerName", 1);
-            projection.putNumber("comments", 1);
+            projection.put("name", 1);
+            projection.put("modified", 1);
+            projection.put("folder", 1);
+            projection.put("owner", 1);
+            projection.put("ownerName", 1);
+            projection.put("comments", 1);
 
             final int skip = (0 == page) ? -1 : page * limit;
 
@@ -117,7 +117,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                         Boolean isFolderProcessing = false;
 
                         for (int i = 0; i < globalJa.size(); i++) {
-                            final JsonObject j = globalJa.get(i);
+                            final JsonObject j = globalJa.getJsonObject(i);
 
                             // processing only files that have a folder
                             if (j != null && !StringUtils.isEmpty(j.getString("folder"))) {
@@ -161,8 +161,8 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                                               final List<String> searchWordsLst, final String locale, final String userId,
                                               final Handler<Either<String, JsonArray>> handler) {
         final JsonObject projection = new JsonObject();
-        projection.putNumber("folder", 1);
-        projection.putNumber("owner", 1);
+        projection.put("folder", 1);
+        projection.put("owner", 1);
         mongo.find(collection, MongoQueryBuilder.build(queryFindFolderIds), null,
                 projection, new Handler<Message<JsonObject>>() {
                     @Override
@@ -173,7 +173,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                             final Map<String, Map<String, String>> mapOwnerMapNameFolderId = new HashMap<>();
                             // fill the map owner key with map folder name key, folder id value
                             for (int i = 0; i < folderJa.size(); i++) {
-                                final JsonObject j = folderJa.get(i);
+                                final JsonObject j = folderJa.getJsonObject(i);
                                 if (j != null) {
                                     final String owner = j.getString("owner", "");
                                     if (mapOwnerMapNameFolderId.containsKey(owner)) {
@@ -199,11 +199,11 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
     @SuppressWarnings("unchecked")
     private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, final List<String> words,
                                          final String locale, final String userId, final Map<String, Map<String, String>> mapOwnerMapNameFolderId) {
-        final List<String> aHeader = columnsHeader.toList();
+        final List<String> aHeader = columnsHeader.getList();
         final JsonArray traity = new JsonArray();
 
         for (int i=0;i<results.size();i++) {
-            final JsonObject j = results.get(i);
+            final JsonObject j = results.getJsonObject(i);
             final JsonObject jr = new JsonObject();
 
             if (j != null) {
@@ -216,13 +216,13 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                     log.error("Can't parse date from modified", e);
                 }
                 final String owner = j.getString("owner", "");
-                final Map<String, Object> map = formatDescription(j.getArray("comments", new JsonArray()),
+                final Map<String, Object> map = formatDescription(j.getJsonArray("comments", new JsonArray()),
                         words, modified, locale);
-                jr.putString(aHeader.get(0), j.getString("name"));
-                jr.putString(aHeader.get(1), map.get("description").toString());
-                jr.putObject(aHeader.get(2), new JsonObject().putValue("$date", ((Date) map.get("modified")).getTime()));
-                jr.putString(aHeader.get(3), j.getString("ownerName", ""));
-                jr.putString(aHeader.get(4), owner);
+                jr.put(aHeader.get(0), j.getString("name"));
+                jr.put(aHeader.get(1), map.get("description").toString());
+                jr.put(aHeader.get(2), new JsonObject().put("$date", ((Date) map.get("modified")).getTime()));
+                jr.put(aHeader.get(3), j.getString("ownerName", ""));
+                jr.put(aHeader.get(4), owner);
                 //default front route (no folder and the file belongs to the owner)
                 String resourceURI = "/workspace/workspace";
 
@@ -240,7 +240,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                         resourceURI += "#/shared";
                     }
                 }
-                jr.putString(aHeader.get(5), resourceURI);
+                jr.put(aHeader.get(5), resourceURI);
                 traity.add(jr);
             }
         }
@@ -262,7 +262,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 
         //get the last modified comment that match with searched words for create the description
         for(int i=0;i<ja.size();i++) {
-            final JsonObject jO = ja.get(i);
+            final JsonObject jO = ja.getJsonObject(i);
 
             final String commentTmp = jO.getString("comment", "");
             Date currentDate = null;

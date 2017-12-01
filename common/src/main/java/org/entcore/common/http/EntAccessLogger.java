@@ -21,11 +21,10 @@ package org.entcore.common.http;
 
 import fr.wseduc.webutils.request.AccessLogger;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 public class EntAccessLogger extends AccessLogger {
 
@@ -36,7 +35,7 @@ public class EntAccessLogger extends AccessLogger {
 	}
 
 	@Override
-	public void log(final HttpServerRequest request, final VoidHandler handler) {
+	public void log(final HttpServerRequest request, final Handler<Void> handler) {
 		request.pause();
 		UserUtils.getSession(eb, request, true, new Handler<JsonObject>() {
 			@Override

@@ -19,8 +19,8 @@
 package org.entcore.common.validation;
 
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 public abstract class AbstractValidator<S, T> {
 

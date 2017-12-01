@@ -24,11 +24,11 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 
@@ -57,13 +57,13 @@ public class CommunicationFilter implements ResourcesProvider {
 		String startGroupId = resourceRequest.params().get("startGroupId");
 		String endGroupId = resourceRequest.params().get("endGroupId");
 		JsonObject params = new JsonObject();
-		params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
+		params.put("structures", new JsonArray(adminLocal.getScope()));
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String query =
 					"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {groupId}}) " +
 					"WHERE s.id IN {structures} " +
 					"RETURN count(*) > 0 as exists ";
-			params.putString("groupId", groupId);
+			params.put("groupId", groupId);
 			check(query, params, handler);
 		} else if (startGroupId != null && endGroupId != null &&
 				!startGroupId.trim().isEmpty() && !endGroupId.trim().isEmpty()) {
@@ -72,8 +72,8 @@ public class CommunicationFilter implements ResourcesProvider {
 					"(s2:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {endGroupId}}) " +
 					"WHERE s1.id IN {structures} AND s2.id IN {structures} " +
 					"RETURN count(*) > 0 as exists ";
-			params.putString("startGroupId", startGroupId);
-			params.putString("endGroupId", endGroupId);
+			params.put("startGroupId", startGroupId);
+			params.put("endGroupId", endGroupId);
 			check(query, params, handler);
 		} else {
 			handler.handle(false);
@@ -84,11 +84,11 @@ public class CommunicationFilter implements ResourcesProvider {
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray r = event.body().getArray("result");
+				JsonArray r = event.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(event.body().getString("status")) &&
 								r != null && r.size() == 1 &&
-								((JsonObject) r.get(0)).getBoolean("exists", false)
+								(r.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});
