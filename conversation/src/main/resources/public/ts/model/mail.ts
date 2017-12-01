@@ -388,6 +388,12 @@ export class Mails {
         await http.put('move/userfolder/' + destinationFolder.id + '?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
         Conversation.instance.currentFolder.mails.refresh();
     }
+
+    async tagUnread() {
+        await http.post('/conversation/tagUnread?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
+        Conversation.instance.folders.inbox.mails.refresh();
+        quota.refresh();
+    }
 }
 
 let mailFormat = {

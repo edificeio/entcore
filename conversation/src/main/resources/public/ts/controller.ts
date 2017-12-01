@@ -260,6 +260,13 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.refreshFolders();
         };
 
+        $scope.tagUnreadSelection = async () => {
+            await Conversation.instance.folders.inbox.tagUnreadSelection();
+            Conversation.instance.currentFolder.sync();
+            Conversation.instance.folders.inbox.countUnread();
+            $scope.refreshFolders();
+        };
+
         $scope.allReceivers = function (mail) {
             var receivers = mail.to.slice(0);
             mail.toName && mail.toName.forEach(function (deletedReceiver) {
