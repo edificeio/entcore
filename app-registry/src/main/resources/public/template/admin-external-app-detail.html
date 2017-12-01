@@ -17,7 +17,7 @@
         <div class="leaf-menu" ng-class="{ selected: showPanel() === 'attribution' }">
             <a ng-click="showPanel('attribution')"><i18n>appregistry.groups.attribution</i18n></a>
         </div>
-        <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="school.children && scopeable(externalApp) && !externalApp.data.locked">
+        <div class="leaf-menu" ng-class="{ selected: showPanel() === 'massAttribution' }" ng-if="school.children && scopeable(externalApp) && !externalApp.data.locked && externalApp.data.inherits">
             <a ng-click="showPanel('massAttribution')"><i18n>appregistry.groups.massAttribution</i18n></a>
         </div>
     </div>
