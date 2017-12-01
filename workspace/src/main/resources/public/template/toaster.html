@@ -60,7 +60,7 @@
 					</button>
 				</resource-right>
 				<resource-right resource="selectedItems()" name="renameDocument">
-					<button ng-click="display.editImage = true"
+					<button ng-click="display.editImage = true; display.editedImage = selectedDocuments()[0]"
 							ng-if="selectedFolders().length === 0 && selectedDocuments().length == 1 && selectedDocuments()[0].isEditableImage && (currentTree.name === 'shared' || currentTree.name === 'documents' || currentTree.name === 'appDocuments')"
 							class="cell">
 						<i18n>editImage</i18n>

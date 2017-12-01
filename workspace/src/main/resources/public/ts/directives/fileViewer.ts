@@ -19,7 +19,7 @@ export const fileViewer = ng.directive('fileViewer', () => {
             
             scope.editImage = () => {
                 scope.$parent.openedFolder.content.forEach(d => d.selected = false);
-                scope.ngModel.selected = true;
+                scope.$parent.display.editedImage = scope.ngModel;
                 scope.$parent.display.editImage = true;
             }
 
