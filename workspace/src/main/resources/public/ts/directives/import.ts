@@ -1,5 +1,6 @@
 import { ng, Document, quota, template, DocumentStatus, $ } from 'entcore';
 import { folderToString } from '../model';
+import http from 'axios';
 
 export const importFiles = ng.directive('importFiles', () => {
     return {
@@ -16,7 +17,14 @@ export const importFiles = ng.directive('importFiles', () => {
             <lightbox>
         `,
         link: (scope, element, attributes) => {
-            template.open('import', 'directives/import/upload');
+			template.open('import', 'directives/import/upload');
+			
+			if(!(window as any).toBlobPolyfillLoaded){
+                http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
+                    eval(response.data);
+                    (window as any).toBlobPolyfillLoaded = true;
+                });
+            }
 
             const previousImage = () => {
 				const start = scope.upload.documents.indexOf(scope.display.editedDocument) - 1;
