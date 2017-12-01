@@ -687,6 +687,11 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void tagUnread(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		// Deprecated
+	}
+
+	@Override
 	public void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, folderName)) return;
 
