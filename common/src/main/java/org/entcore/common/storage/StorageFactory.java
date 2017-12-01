@@ -20,16 +20,14 @@
 package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.storage.impl.*;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
 import org.entcore.common.validation.QuotaFileSizeValidation;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -53,7 +51,7 @@ public class StorageFactory {
 
 	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
 		this.vertx = vertx;
-		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		String s = (String) server.get("swift");
 		if (s != null) {
 			this.swift = new JsonObject(s);
@@ -63,17 +61,17 @@ public class StorageFactory {
 			this.fs = new JsonObject(s);
 		}
 		this.gridfsAddress = (String) server.get("gridfsAddress");
-		if (config != null && config.getObject("swift") != null) {
-			this.swift = config.getObject("swift");
-		} else if (config != null && config.getObject("file-system") != null) {
-			this.fs = config.getObject("file-system");
+		if (config != null && config.getJsonObject("swift") != null) {
+			this.swift = config.getJsonObject("swift");
+		} else if (config != null && config.getJsonObject("file-system") != null) {
+			this.fs = config.getJsonObject("file-system");
 		} else if (config != null && config.getString("gridfs-address") != null) {
 			this.gridfsAddress = config.getString("gridfs-address");
 		}
 
 		if (applicationStorage != null) {
 			applicationStorage.setVertx(vertx);
-			vertx.eventBus().registerLocalHandler("storage", applicationStorage);
+			vertx.eventBus().localConsumer("storage", applicationStorage);
 		}
 	}
 
@@ -91,7 +89,7 @@ public class StorageFactory {
 			}
 		} else if (fs != null) {
 			storage = new FileStorage(vertx, fs.getString("path"), fs.getBoolean("flat", false));
-			JsonObject antivirus = fs.getObject("antivirus");
+			JsonObject antivirus = fs.getJsonObject("antivirus");
 			if (antivirus != null) {
 				final String h = antivirus.getString("host");
 				final String c = antivirus.getString("credential");
@@ -101,7 +99,7 @@ public class StorageFactory {
 				}
 			}
 			FileValidator fileValidator = new QuotaFileSizeValidation();
-			JsonArray blockedExtensions = fs.getArray("blockedExtensions");
+			JsonArray blockedExtensions = fs.getJsonArray("blockedExtensions");
 			if (blockedExtensions != null && blockedExtensions.size() > 0) {
 				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
 			}

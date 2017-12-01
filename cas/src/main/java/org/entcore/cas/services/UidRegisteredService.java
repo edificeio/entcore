@@ -21,9 +21,9 @@ package org.entcore.cas.services;
 
 import java.util.List;
 
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -36,7 +36,7 @@ public class UidRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	protected static final String UID = "uid";
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
+	public void configure(io.vertx.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
 		super.configure(eb, conf);
 	};
 
@@ -46,7 +46,7 @@ public class UidRegisteredService extends AbstractCas20ExtensionRegisteredServic
 
 		try {
 			// Uid
-			if (data.containsField("externalId")) {
+			if (data.containsKey("externalId")) {
 				additionnalAttributes.add(createTextElement(UID, data.getString("externalId"), doc));
 			}
 

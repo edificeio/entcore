@@ -8,20 +8,19 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.infra.services.EmbedService;
 import org.entcore.infra.services.impl.MongoDbEmbedService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.security.SecuredAction;
+import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.*;
 
@@ -33,16 +32,16 @@ public class EmbedController extends BaseController {
 	private final EmbedService service = new MongoDbEmbedService("embed");
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+		super.init(vertx, config, rm, securedActions);
 		this.refreshDefault();
 	}
 
 	private boolean refreshDefault() {
-		boolean exists = vertx.fileSystem().existsSync(defaultEmbedLocation);
+		boolean exists = vertx.fileSystem().existsBlocking(defaultEmbedLocation);
 		if(exists) {
-			Buffer buff = vertx.fileSystem().readFileSync(defaultEmbedLocation);
+			Buffer buff = vertx.fileSystem().readFileBlocking(defaultEmbedLocation);
 			try {
 				this.defaultEmbedProviders = new JsonArray(buff.toString("UTF-8"));
 			} catch (Exception e) {
@@ -72,7 +71,7 @@ public class EmbedController extends BaseController {
 	public void refreshDefaultEmbed(final HttpServerRequest request){
 		boolean success = this.refreshDefault();
 		if(success)
-			renderJson(request, new JsonObject().putString("status", "ok"));
+			renderJson(request, new JsonObject().put("status", "ok"));
 		else
 			renderError(request);
 

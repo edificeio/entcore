@@ -19,23 +19,22 @@
 
 package org.entcore.session;
 
-import com.hazelcast.core.BaseMap;
-import com.hazelcast.core.IMap;
-import com.hazelcast.nio.serialization.HazelcastSerializationException;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.eventbus.ResultMessage;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
 import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.shareddata.ConcurrentSharedMap;
-import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.Serializable;
 import java.util.*;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -63,7 +62,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	public void start() {
 		super.start();
-		ConcurrentSharedMap<Object, Object> server = vertx.sharedData().getMap("server");
+		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		String neo4jConfig = (String) server.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
 		neo4j.init(vertx, new JsonObject(neo4jConfig));
@@ -72,22 +71,22 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 		if (Boolean.TRUE.equals(cluster)) {
-			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
+			ClusterManager cm = ((VertxInternal) vertx).getClusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
-			if (config.getBoolean("inactivity", false)) {
+			if (getOrElse(config.getBoolean("inactivy"), false)) {
 				inactivity = cm.getSyncMap("inactivity");
 				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
 			}
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
-			if (config.getBoolean("inactivity", false)) {
+			if (getOrElse(config.getBoolean("inactivy"), false)) {
 				inactivity = new HashMap<>();
 			}
 		}
 		final String address = getOptionalStringConfig("address", "wse.session");
-		Number timeout = config.getNumber("session_timeout");
+		Object timeout = config.getValue("session_timeout");
 		if (timeout != null) {
 			if (timeout instanceof Long) {
 				this.sessionTimeout = (Long)timeout;
@@ -98,7 +97,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			this.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
 		}
 
-		eb.registerLocalHandler(address, this);
+		eb.localConsumer(address, this);
 	}
 
 	@Override
@@ -167,9 +166,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		JsonObject query = new JsonObject().putString("userId", userId);
+		JsonObject query = new JsonObject().put("userId", userId);
 		if (currentSessionId != null) {
-			query.putObject("_id", new JsonObject().putString("$ne", currentSessionId));
+			query.put("_id", new JsonObject().put("$ne", currentSessionId));
 		}
 		mongo.delete(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
 			@Override
@@ -191,7 +190,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		LoginInfo info = getLoginInfo(userId);
-		if (info == null && !message.body().getBoolean("allowDisconnectedUser", false)) {
+		if (info == null && !getOrElse(message.body().getBoolean("allowDisconnectedUser"), false)) {
 			sendError(message, "[doFindByUserId] info is null - Invalid userId : " + message.body().encode());
 			return;
 		} else if (info == null) {
@@ -200,8 +199,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				@Override
 				public void handle(JsonObject infos) {
 					if (infos != null) {
-						sendOK(message, new JsonObject().putString("status", "ok")
-								.putObject("session", infos));
+						sendOK(message, new JsonObject().put("status", "ok")
+								.put("session", infos));
 					} else {
 						sendError(message, "Invalid userId : " + userId);
 					}
@@ -212,14 +211,14 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		JsonObject session = null;
 		try {
 			session = unmarshal(sessions.get(info.sessionId));
-		} catch (HazelcastSerializationException e) {
+		} catch (Exception e) {
 			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
 		}
 		if (session == null) {
 			sendError(message, "Session not found. 6");
 			return;
 		}
-		sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+		sendOK(message, new JsonObject().put("status", "ok").put("session", session));
 	}
 
 	private LoginInfo getLoginInfo(String userId) {
@@ -247,25 +246,25 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		JsonObject session = null;
 		try {
 			session = unmarshal(sessions.get(sessionId));
-		} catch (HazelcastSerializationException e) {
+		} catch (Exception e) {
 			logger.warn("Error in deserializing hazelcast session " + sessionId);
 			try {
-				if (sessions instanceof BaseMap) {
-					((BaseMap) sessions).delete(sessionId);
-				} else {
+//				if (sessions instanceof BaseMap) {
+//					((BaseMap) sessions).delete(sessionId);
+//				} else {
 					sessions.remove(sessionId);
-				}
-			} catch (HazelcastSerializationException e1) {
+//				}
+			} catch (Exception e1) {
 				logger.warn("Error getting object after removing hazelcast session " + sessionId);
 			}
 		}
 
 		if (session == null) {
-			final JsonObject query = new JsonObject().putString("_id", sessionId);
+			final JsonObject query = new JsonObject().put("_id", sessionId);
 			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					JsonObject res = event.body().getObject("result");
+					JsonObject res = event.body().getJsonObject("result");
 					String userId;
 					if ("ok".equals(event.body().getString("status")) && res != null &&
 							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
@@ -278,13 +277,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 									try {
 										JsonObject s = unmarshal(sessions.get(sId));
 										if (s != null) {
-											JsonObject sessionResponse = new JsonObject().putString("status", "ok")
-													.putObject("session", s);
+											JsonObject sessionResponse = new JsonObject().put("status", "ok")
+													.put("session", s);
 											sendOK(message, sessionResponse);
 										} else {
 											sendError(message, "Session not found. 1");
 										}
-									} catch (HazelcastSerializationException e) {
+									} catch (Exception e) {
 										logger.warn("Error in deserializing new hazelcast session " + sId);
 										generateSessionInfos(uId, new Handler<JsonObject>() {
 
@@ -292,8 +291,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 											public void handle(JsonObject event) {
 												if (event != null) {
 													logger.info("Session with hazelcast problem : " + event.encode());
-													sendOK(message, new JsonObject().putString("status", "ok")
-															.putObject("session", event));
+													sendOK(message, new JsonObject().put("status", "ok")
+															.put("session", event));
 												} else {
 													sendError(message, "Session not found. 2");
 												}
@@ -311,7 +310,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			});
 		} else {
-			sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+			sendOK(message, new JsonObject().put("status", "ok").put("session", session));
 			if (inactivity != null) {
 				Long lastActivity = inactivity.get(sessionId);
 				String userId = sessions.get(sessionId);
@@ -336,8 +335,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			public void handle(String sessionId) {
 				if (sessionId != null) {
 					sendOK(message, new JsonObject()
-							.putString("status", "ok")
-							.putString("sessionId", sessionId));
+							.put("status", "ok")
+							.put("sessionId", sessionId));
 				} else {
 					sendError(message, "Invalid userId : " + userId);
 				}
@@ -357,29 +356,29 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					try {
 						sessions.put(sessionId, infos.encode());
 						addLoginInfo(userId, timerId, sessionId);
-					} catch (HazelcastSerializationException e) {
+					} catch (Exception e) {
 						logger.error("Error putting session in hazelcast map");
-						try {
-							if (sessions instanceof IMap) {
-								((IMap) sessions).putAsync(sessionId, infos.encode());
-							}
-							addLoginInfo(userId, timerId, sessionId);
-						} catch (HazelcastSerializationException e1) {
-							logger.error("Error putting async session in hazelcast map", e1);
-						}
+//						try {
+//							if (sessions instanceof IMap) {
+//								((IMap) sessions).putAsync(sessionId, infos.encode());
+//							}
+//							addLoginInfo(userId, timerId, sessionId);
+//						} catch (Exception e1) {
+//							logger.error("Error putting async session in hazelcast map", e1);
+//						}
 					}
 					final JsonObject now = MongoDb.now();
 					if (sId == null) {
 						JsonObject json = new JsonObject()
-								.putString("_id", sessionId).putString("userId", userId)
-								.putObject("created", now).putObject("lastUsed", now);
+								.put("_id", sessionId).put("userId", userId)
+								.put("created", now).put("lastUsed", now);
 						if (sessionIndex != null && nameId != null) {
-							json.putString("SessionIndex", sessionIndex).putString("NameID", nameId);
+							json.put("SessionIndex", sessionIndex).put("NameID", nameId);
 						}
 						mongo.save(SESSIONS_COLLECTION, json);
 					} else {
-						mongo.update(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId),
-								new JsonObject().putObject("$set", new JsonObject().putObject("lastUsed", now)));
+						mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
+								new JsonObject().put("$set", new JsonObject().put("lastUsed", now)));
 					}
 					handler.handle(sessionId);
 				} else {
@@ -431,18 +430,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	private void doDrop(final Message<JsonObject> message) {
 		final String sessionId = message.body().getString("sessionId");
-		boolean sessionMeta =  message.body().getBoolean("sessionMetadata", false);
+		boolean sessionMeta =  getOrElse(message.body().getBoolean("sessionMetadata"), false);
 		if (sessionId == null || sessionId.trim().isEmpty()) {
 			sendError(message, "Invalid sessionId.");
 			return;
 		}
 
 		if (sessionMeta) {
-			final JsonObject query = new JsonObject().putString("_id", sessionId);
+			final JsonObject query = new JsonObject().put("_id", sessionId);
 			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					JsonObject res = event.body().getObject("result");
+					JsonObject res = event.body().getJsonObject("result");
 					dropSession(message, sessionId, res);
 				}
 			});
@@ -452,18 +451,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta) {
-		mongo.delete(SESSIONS_COLLECTION, new JsonObject().putString("_id", sessionId));
+		mongo.delete(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId));
 		JsonObject session =  null;
 		try {
 			session = unmarshal(sessions.get(sessionId));
-		} catch (HazelcastSerializationException e) {
+		} catch (Exception e) {
 			try {
-				if (sessions instanceof BaseMap) {
-					((BaseMap) sessions).delete(sessionId);
-				} else {
+//				if (sessions instanceof BaseMap) {
+//					((BaseMap) sessions).delete(sessionId);
+//				} else {
 					sessions.remove(sessionId);
-				}
-			} catch (HazelcastSerializationException e1) {
+				//}
+			} catch (Exception e1) {
 				logger.error("In doDrop - Error getting object after removing hazelcast session " + sessionId, e);
 			}
 		}
@@ -472,8 +471,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			if (s != null) {
 				final String userId = s.getString("userId");
 				LoginInfo info = removeLoginInfo(sessionId, userId);
-				if (config.getBoolean("slo", false)) {
-					eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
+				if (getOrElse(config.getBoolean("slo"), false)) {
+					eb.send("cas", new JsonObject().put("action", "logout").put("userId", userId));
 				}
 				if (info != null) {
 					vertx.cancelTimer(info.timerId);
@@ -483,9 +482,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		if (inactivity != null) {
 			inactivity.remove(sessionId);
 		}
-		JsonObject res = new JsonObject().putString("status", "ok");
+		JsonObject res = new JsonObject().put("status", "ok");
 		if (meta != null) {
-			res.putObject("sessionMetadata", meta);
+			res.put("sessionMetadata", meta);
 		}
 		if (message != null) {
 			sendOK(message, res);
@@ -536,7 +535,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		session.getObject("cache").putValue(key, value);
+		session.getJsonObject("cache").put(key, value);
 
 		updateSessionByUserId(message, session);
 		sendOK(message);
@@ -557,7 +556,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		JsonObject session =  null;
 		try {
 			session = unmarshal(sessions.get(info.sessionId));
-		} catch (HazelcastSerializationException e) {
+		} catch (Exception e) {
 			logger.error("Error in deserializing hazelcast session " + info.sessionId, e);
 		}
 		if (session == null) {
@@ -582,7 +581,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		for (LoginInfo info : infos) {
 			try {
 				sessions.put(info.sessionId, session.encode());
-			} catch (HazelcastSerializationException e) {
+			} catch (Exception e) {
 				logger.error("Error putting session in hazelcast map : " + info.sessionId, e);
 			}
 		}
@@ -600,7 +599,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return;
 		}
 
-		session.getObject("cache").removeField(key);
+		session.getJsonObject("cache").remove(key);
 		updateSessionByUserId(message, session);
 		sendOK(message);
 	}
@@ -646,114 +645,115 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		final String query4 = "MATCH (s:Structure) return s.id as id, s.externalId as externalId";
 		final String query5 = "MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) RETURN uac AS preferences";
 		JsonObject params = new JsonObject();
-		params.putString("id", userId);
+		params.put("id", userId);
 		JsonArray statements = new JsonArray()
-				.add(new JsonObject().putString("statement", query).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query2).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query3).putObject("parameters", params))
-				.add(new JsonObject().putString("statement", query4))
-				.add(new JsonObject().putString("statement", query5).putObject("parameters", params));
+				.add(new JsonObject().put("statement", query).put("parameters", params))
+				.add(new JsonObject().put("statement", query2).put("parameters", params))
+				.add(new JsonObject().put("statement", query3).put("parameters", params))
+				.add(new JsonObject().put("statement", query4))
+				.add(new JsonObject().put("statement", query5).put("parameters", params));
 		neo4j.executeTransaction(statements, null, true, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
-				JsonArray results = message.body().getArray("results");
+				JsonArray results = message.body().getJsonArray("results");
 				if ("ok".equals(message.body().getString("status")) && results != null && results.size() == 5 &&
-						results.<JsonArray>get(0).size() > 0 && results.<JsonArray>get(1).size() > 0) {
-					JsonObject j = results.<JsonArray>get(0).get(0);
-					JsonObject j2 = results.<JsonArray>get(1).get(0);
-					JsonObject j3 = results.<JsonArray>get(2).get(0);
+						results.getJsonArray(0).size() > 0 && results.getJsonArray(1).size() > 0) {
+					JsonObject j = results.getJsonArray(0).getJsonObject(0);
+					JsonObject j2 = results.getJsonArray(1).getJsonObject(0);
+					JsonObject j3 = results.getJsonArray(2).getJsonObject(0);
 					JsonObject structureMapping = new JsonObject();
-					for (Object o : results.<JsonArray>get(3)) {
+					for (Object o : results.getJsonArray(3)) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject jsonObject = (JsonObject) o;
-						structureMapping.putString(jsonObject.getString("externalId"), jsonObject.getString("id"));
+						structureMapping.put(jsonObject.getString("externalId"), jsonObject.getString("id"));
 					}
-					j.putString("userId", userId);
+					j.put("userId", userId);
 					JsonObject functions = new JsonObject();
 					JsonArray actions = new JsonArray();
 					JsonArray apps = new JsonArray();
-					for (Object o : j2.getArray("authorizedActions", new JsonArray())) {
+					for (Object o : getOrElse(j2.getJsonArray("authorizedActions"), new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;
-						actions.addObject(new JsonObject()
-								.putString("name", (String) a.get(0))
-								.putString("displayName", (String) a.get(1))
-								.putString("type", (String) a.get(2)));
+						actions.add(new JsonObject()
+								.put("name", a.getString(0))
+								.put("displayName", a.getString(1))
+								.put("type", a.getString(2)));
 					}
-					for (Object o : j2.getArray("apps", new JsonArray())) {
+					for (Object o : getOrElse(j2.getJsonArray("apps"), new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;
-						apps.addObject(new JsonObject()
-								.putString("name", (String) a.get(0))
-								.putString("address", (String) a.get(1))
-								.putString("icon", (String) a.get(2))
-								.putString("target", (String) a.get(3))
-								.putString("displayName", (String) a.get(4))
-								.putBoolean("display", ((a.get(5) == null) || (boolean) a.get(5)))
-								.putString("prefix", (String) a.get(6))
+						apps.add(new JsonObject()
+										.put("name", (String) a.getString(0))
+										.put("address", (String) a.getString(1))
+										.put("icon", (String) a.getString(2))
+										.put("target", (String) a.getString(3))
+										.put("displayName", (String) a.getString(4))
+										.put("display", ((a.getValue(5) == null) || a.getBoolean(5)))
+										.put("prefix", (String) a.getString(6))
 						);
 					}
-					for (Object o : j.getArray("aafFunctions", new JsonArray())) {
+					for (Object o : getOrElse(j.getJsonArray("aafFunctions"), new JsonArray())) {
 						if (o == null) continue;
 						String [] sf = o.toString().split("\\$");
 						if (sf.length == 5) {
-							JsonObject jo = functions.getObject(sf[1]);
+							JsonObject jo = functions.getJsonObject(sf[1]);
 							if (jo == null) {
-								jo = new JsonObject().putString("code", sf[1])
-										.putString("functionName", sf[2])
-										.putArray("scope", new JsonArray())
-										.putArray("structureExternalIds", new JsonArray())
-										.putObject("subjects", new JsonObject());
-								functions.putObject(sf[1], jo);
+								jo = new JsonObject().put("code", sf[1])
+										.put("functionName", sf[2])
+										.put("scope", new JsonArray())
+										.put("structureExternalIds", new JsonArray())
+										.put("subjects", new JsonObject());
+								functions.put(sf[1], jo);
 							}
-							JsonObject subject = jo.getObject("subjects").getObject(sf[3]);
+							JsonObject subject = jo.getJsonObject("subjects").getJsonObject(sf[3]);
 							if (subject == null) {
 								subject = new JsonObject()
-										.putString("subjectCode", sf[3])
-										.putString("subjectName", sf[4])
-										.putArray("scope", new JsonArray())
-										.putArray("structureExternalIds", new JsonArray());
-								jo.getObject("subjects").putObject(sf[3], subject);
+										.put("subjectCode", sf[3])
+										.put("subjectName", sf[4])
+										.put("scope", new JsonArray())
+										.put("structureExternalIds", new JsonArray());
+								jo.getJsonObject("subjects").put(sf[3], subject);
 							}
-							jo.getArray("structureExternalIds").addString(sf[0]);
-							subject.getArray("structureExternalIds").addString(sf[0]);
+							jo.getJsonArray("structureExternalIds").add(sf[0]);
+							subject.getJsonArray("structureExternalIds").add(sf[0]);
 							String sid = structureMapping.getString(sf[0]);
 							if (sid != null) {
-								jo.getArray("scope").addString(sid);
-								subject.getArray("scope").addString(sid);
+								jo.getJsonArray("scope").add(sid);
+								subject.getJsonArray("scope").add(sid);
 							}
 						}
 					}
-					j.removeField("aafFunctions");
-					for (Object o : j.getArray("functions", new JsonArray())) {
+					j.remove("aafFunctions");
+					for (Object o : getOrElse(j.getJsonArray("functions"), new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray a = (JsonArray) o;
-						String code = a.get(0);
+						String code = a.getString(0);
 						if (code != null) {
-							functions.putObject(code, new JsonObject()
-									.putString("code", code)
-									.putArray("scope", (JsonArray) a.get(1))
+							functions.put(code, new JsonObject()
+									.put("code", code)
+									.put("scope", a.getJsonArray(1))
 							);
 						}
 					}
 					final JsonObject children = new JsonObject();
 					final List<String> childrenIds = new ArrayList<String>();
-					for (Object o : j.getArray("childrenInfo", new JsonArray())) {
+					for (Object o : getOrElse(j.getJsonArray("childrenInfo"), new JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						final JsonArray a = (JsonArray) o;
-						final String childId = a.get(0);
+						final String childId = a.getString(0);
 						if (childId != null) {
 							childrenIds.add(childId);
-							JsonObject jo = children.getObject(childId);
+							JsonObject jo = children.getJsonObject(childId);
 							if (jo == null) {
 								jo = new JsonObject()
-										.putString("lastName", (String) a.get(1))
-										.putString("firstName", (String) a.get(2));
-								children.putObject(childId, jo);
+										.put("lastName", a.getString(1))
+										.put("firstName", a.getString(2));
+								children.put(childId, jo);
 							}
 						}
 					}
+<<<<<<< HEAD
 					j.removeField("childrenInfo");
 					final List<String> classesIds = new ArrayList<String>();
 					final List<String> classesNames = new ArrayList<String>() ;
@@ -775,6 +775,19 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							results.<JsonArray>get(4).get(0) != null) ? results.<JsonArray>get(4).<JsonObject>get(0) : new JsonObject();
 					j.putObject("cache", cache);
 					j.putArray("widgets", j3.getArray("widgets", new JsonArray()));
+=======
+					j.remove("childrenInfo");
+
+					j.put("functions", functions);
+					j.put("authorizedActions", actions);
+					j.put("apps", apps);
+					j.put("childrenIds", new JsonArray(childrenIds));
+					j.put("children", children);
+					final JsonObject cache = (results.getJsonArray(4) != null && results.getJsonArray(4).size() > 0 &&
+							results.getJsonArray(4).getJsonObject(0) != null) ? results.getJsonArray(4).getJsonObject(0) : new JsonObject();
+					j.put("cache", cache);
+					j.put("widgets", getOrElse(j3.getJsonArray("widgets"), new JsonArray()));
+>>>>>>> [Evo] migration vertx3
 					handler.handle(j);
 				} else {
 					handler.handle(null);

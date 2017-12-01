@@ -25,15 +25,17 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.Bounce;
 import fr.wseduc.webutils.email.EmailSender;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.shareddata.AsyncMap;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 
@@ -44,10 +46,10 @@ public class HardBounceTask implements Handler<Long> {
 	private final EmailSender emailSender;
 	private final int relativeDay;
 	private final TimelineHelper timeline;
-	private final Map<Object, Object> invalidEmails;
+	private final AsyncMap<Object, Object> invalidEmails;
 	public static final String PLATEFORM_COLLECTION = "platform";
 
-	public HardBounceTask(EmailSender emailSender, int relativeDay, TimelineHelper timeline, Map<Object, Object> invalidEmails) {
+	public HardBounceTask(EmailSender emailSender, int relativeDay, TimelineHelper timeline, AsyncMap<Object, Object> invalidEmails) {
 		this.emailSender = emailSender;
 		this.relativeDay = relativeDay;
 		this.timeline = timeline;
@@ -68,7 +70,14 @@ public class HardBounceTask implements Handler<Long> {
 					for (Bounce b : r.right().getValue()) {
 						if (Utils.isNotEmpty(b.getEmail())) {
 							if (emails.add(b.getEmail())) {
-								invalidEmails.put(b.getEmail(), "");
+								invalidEmails.put(b.getEmail(), "", new Handler<AsyncResult<Void>>() {
+									@Override
+									public void handle(AsyncResult<Void> event) {
+										if (event.failed()) {
+											log.error("Error adding invalid email in map.", event.cause());
+										}
+									}
+								});
 							}
 						}
 					}
@@ -76,20 +85,20 @@ public class HardBounceTask implements Handler<Long> {
 						return;
 					}
 
-					JsonObject q = new JsonObject().putString("type", PLATFORM_ITEM_TYPE);
-					JsonObject modifier = new JsonObject().putObject("$addToSet", new JsonObject().putObject("invalid-emails",
-							new JsonObject().putArray("$each", new JsonArray(emails.toArray()))));
+					JsonObject q = new JsonObject().put("type", PLATFORM_ITEM_TYPE);
+					JsonObject modifier = new JsonObject().put("$addToSet", new JsonObject().put("invalid-emails",
+							new JsonObject().put("$each", new JsonArray(new ArrayList<>(emails)))));
 					MongoDb.getInstance().update(PLATEFORM_COLLECTION, q, modifier, true, false);
 
 					String query = "MATCH (u:User) WHERE u.email IN {emails} REMOVE u.email RETURN collect(distinct u.id) as ids";
-					JsonObject params = new JsonObject().putArray("emails", new JsonArray(emails.toArray()));
+					JsonObject params = new JsonObject().put("emails", new JsonArray(new ArrayList<>(emails)));
 					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
-								JsonArray res = event.body().getArray("result");
-								if (res != null && res.size() == 1 && res.get(0) != null) {
-									notifyOnTimeline(res.<JsonObject>get(0).getArray("ids"));
+								JsonArray res = event.body().getJsonArray("result");
+								if (res != null && res.size() == 1 && res.getJsonObject(0) != null) {
+									notifyOnTimeline(res.getJsonObject(0).getJsonArray("ids"));
 								}
 							} else {
 								log.error(event.body().getString("message"));
@@ -106,7 +115,7 @@ public class HardBounceTask implements Handler<Long> {
 	private void notifyOnTimeline(JsonArray userIds) {
 		if (userIds == null) return;
 
-		List<String> recipients = userIds.toList();
+		List<String> recipients = userIds.getList();
 		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject()),
 				"userbook.delete-email", null, recipients, null, new JsonObject());
 	}

@@ -19,11 +19,11 @@
 
 package org.entcore.common.user;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 
 public class RepositoryHandler implements Handler<Message<JsonObject>> {
@@ -51,31 +51,31 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				String path = message.body().getString("path", "");
 				final String locale = message.body().getString("locale", "fr");
 				final String host = message.body().getString("host", "");
-				JsonArray groupIds = message.body().getArray("groups", new JsonArray());
+				JsonArray groupIds = message.body().getJsonArray("groups", new JsonArray());
 				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale, host, new Handler<Boolean>() {
 					@Override
 					public void handle(Boolean isExported) {
 						JsonObject exported = new JsonObject()
-								.putString("action", "exported")
-								.putString("status", (isExported ? "ok" : "error"))
-								.putString("exportId", exportId)
-								.putString("locale", locale)
-								.putString("host", host);
+								.put("action", "exported")
+								.put("status", (isExported ? "ok" : "error"))
+								.put("exportId", exportId)
+								.put("locale", locale)
+								.put("host", host);
 						eb.publish("entcore.export", exported);
 					}
 				});
 				break;
 			case "delete-groups" :
-				JsonArray groups = message.body().getArray("old-groups", new JsonArray());
+				JsonArray groups = message.body().getJsonArray("old-groups", new JsonArray());
 				repositoryEvents.deleteGroups(groups);
 				break;
 			case "delete-users" :
-				JsonArray users = message.body().getArray("old-users", new JsonArray());
+				JsonArray users = message.body().getJsonArray("old-users", new JsonArray());
 				repositoryEvents.deleteUsers(users);
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error")
-						.putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error")
+						.put("message", "invalid.action"));
 		}
 	}
 

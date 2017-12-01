@@ -24,8 +24,8 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class Tenant {
 
@@ -71,8 +71,8 @@ public class Tenant {
 			query.append("ORDER BY externalId ASC " +
 					"SKIP {skip} " +
 					"LIMIT {limit} ");
-			params.putNumber("skip", skip);
-			params.putNumber("limit", limit);
+			params.put("skip", skip);
+			params.put("limit", limit);
 		}
 		transactionHelper.add(query.toString(), params);
 	}

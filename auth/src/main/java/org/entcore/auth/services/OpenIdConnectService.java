@@ -20,7 +20,8 @@
 package org.entcore.auth.services;
 
 
-import org.vertx.java.core.AsyncResultHandler;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 
 public interface OpenIdConnectService {
 
@@ -28,6 +29,6 @@ public interface OpenIdConnectService {
 
 	String getIss();
 
-	void generateIdToken(String userId, String clientId, AsyncResultHandler<String> handler);
+	void generateIdToken(String userId, String clientId, Handler<AsyncResult<String>> handler);
 
 }

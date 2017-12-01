@@ -25,10 +25,10 @@ import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.directory.services.UserBookService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Collections;
 
@@ -48,18 +48,18 @@ public class DefaultUserBookService implements UserBookService {
 				"MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub:UserBook) " +
 				"SET " + nodeSetPropertiesFromJson("ub", u);
 		if (u.size() > 0) {
-			b.add(query, u.putString("id", userId));
+			b.add(query, u.put("id", userId));
 		}
 		String q2 =
 				"MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub:UserBook)" +
 				"-[:PUBLIC|PRIVE]->(h:`Hobby` { category : {category}}) " +
 				"SET h.values = {values} ";
-		JsonArray hobbies = userBook.getArray("hobbies");
+		JsonArray hobbies = userBook.getJsonArray("hobbies");
 		if (hobbies != null) {
 			for (Object o : hobbies) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject j = (JsonObject) o;
-				b.add(q2, j.putString("id", userId));
+				b.add(q2, j.put("id", userId));
 			}
 		}
 		neo.executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
@@ -81,7 +81,7 @@ public class DefaultUserBookService implements UserBookService {
 				"MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub: UserBook)" +
 				"OPTIONAL MATCH ub-[:PUBLIC|PRIVE]->(h:Hobby) " +
 				"RETURN ub, COLLECT(h) as hobbies ";
-		neo.execute(query, new JsonObject().putString("id", userId),
+		neo.execute(query, new JsonObject().put("id", userId),
 				fullNodeMergeHandler("ub", result, "hobbies"));
 	}
 

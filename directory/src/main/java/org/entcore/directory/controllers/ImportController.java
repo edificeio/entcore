@@ -37,12 +37,11 @@ import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.security.TeacherOfClass;
 import org.entcore.directory.services.ImportService;
 import org.entcore.directory.services.SchoolService;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.http.HttpServerFileUpload;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
 
 import java.io.File;
 import java.util.UUID;
@@ -83,11 +82,11 @@ public class ImportController extends BaseController {
 	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
-		final String path = container.config().getString("wizard-path", "/tmp") + File.separator + importId;
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		final String path = config.getString("wizard-path", "/tmp") + File.separator + importId;
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final ImportInfos importInfos = new ImportInfos();
 				importInfos.setId(importId);
 				importInfos.setPath(path);
@@ -206,7 +205,7 @@ public class ImportController extends BaseController {
 			public void handle(Either<String, JsonObject> s) {
 				if (s.isRight()) {
 					final JsonObject structure = s.right().getValue();
-					request.expectMultiPart(true);
+					request.setExpectMultipart(true);
 					request.formAttributes().add("structureId", structure.getString("id"));
 					request.formAttributes().add("structureExternalId", structure.getString("externalId"));
 					request.formAttributes().add("predelete", "false");

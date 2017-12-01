@@ -24,12 +24,12 @@ import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,7 +109,7 @@ public class Importer {
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				final JsonArray res = event.body().getArray("result");
+				final JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null) {
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
@@ -173,7 +173,7 @@ public class Importer {
 	public Structure createOrUpdateStructure(JsonObject struct) {
 		JsonArray groups = null;
 		if (struct != null) {
-			groups = struct.getArray("groups");
+			groups = struct.getJsonArray("groups");
 		}
 		final String error = structureValidator.validate(struct);
 		Structure s = null;
@@ -181,7 +181,7 @@ public class Importer {
 			report.addIgnored("Structure", error, struct);
 			log.warn(error);
 		} else {
-			struct.putString("source", currentSource);
+			struct.put("source", currentSource);
 			final String externalId = struct.getString("externalId");
 			if (groups != null) {
 				for (Object gcMapping : groups) {
@@ -271,7 +271,7 @@ public class Importer {
 				params = object;
 			} else {
 				query = "CREATE (fos:FieldOfStudy {props}) ";
-				params = new JsonObject().putObject("props", object);
+				params = new JsonObject().put("props", object);
 			}
 			transactionHelper.add(query, params);
 		}
@@ -295,7 +295,7 @@ public class Importer {
 				params = object;
 			} else {
 				query = "CREATE (m:Module {props}) ";
-				params = new JsonObject().putObject("props", object);
+				params = new JsonObject().put("props", object);
 			}
 			transactionHelper.add(query, params);
 		}
@@ -315,7 +315,7 @@ public class Importer {
 			report.addIgnored("Relative", error, object);
 			log.warn(error);
 		} else {
-			object.putString("source", currentSource);
+			object.put("source", currentSource);
 			userImportedExternalId.add(object.getString("externalId"));
 			String query =
 					"MERGE (u:User { externalId : {externalId}}) " +
@@ -335,15 +335,15 @@ public class Importer {
 						"WHERE NOT(HAS(u.mergedWith)) " +
 						"MERGE u<-[:RELATED]-s ";
 				JsonObject p = new JsonObject()
-						.putString("externalId", object.getString("externalId"))
-						.putString("studentExternalIds",
+						.put("externalId", object.getString("externalId"))
+						.put("studentExternalIds",
 								"externalId:" + Joiner.on(" OR externalId:").join(linkStudent));
 				transactionHelper.add(query2, p);
 			} else if (linkRelativeWithoutChild) {
 				final String externalId = object.getString("externalId");
-				JsonArray structures = getMappingStructures(object.getArray("structures"));
+				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
-					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					JsonObject p = new JsonObject().put("userExternalId", externalId);
 					String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 							"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
 							"USING INDEX s:Structure(externalId) " +
@@ -351,8 +351,8 @@ public class Importer {
 							"WHERE s.externalId IN {structuresAdmin} " +
 							"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
 							"MERGE u-[:IN]->g";
-					p.putArray("structuresAdmin", structures)
-							.putString("profileExternalId", DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
+					p.put("structuresAdmin", structures)
+							.put("profileExternalId", DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
 					transactionHelper.add(q1, p);
 				}
 			}
@@ -365,7 +365,7 @@ public class Importer {
 			report.addIgnored("Guest", error, object);
 			log.warn(error);
 		} else {
-			object.putString("source", currentSource);
+			object.put("source", currentSource);
 			final String externalId = object.getString("externalId");
 			userImportedExternalId.add(externalId);
 			String query =
@@ -378,9 +378,9 @@ public class Importer {
 					"id", "externalId", "login", "activationCode", "displayName", "email", "created");
 			transactionHelper.add(query, object);
 			checkUpdateEmail(object);
-			JsonArray structures = getMappingStructures(object.getArray("structures"));
+			JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
 			if (externalId != null && structures != null && structures.size() > 0) {
-				JsonObject p = new JsonObject().putString("userExternalId", externalId);
+				JsonObject p = new JsonObject().put("userExternalId", externalId);
 				String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 							"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
 							"USING INDEX s:Structure(externalId) " +
@@ -388,17 +388,17 @@ public class Importer {
 							"WHERE s.externalId IN {structuresAdmin} " +
 							"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
 							"MERGE u-[:IN]->g";
-				p.putArray("structuresAdmin", structures)
-						.putString("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
+				p.put("structuresAdmin", structures)
+						.put("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
 				transactionHelper.add(q1, p);
 				String qs =
 						"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure) " +
 						"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 						"DELETE r";
 				JsonObject ps = new JsonObject()
-						.putString("userExternalId", externalId)
-						.putString("source", currentSource)
-						.putArray("structures", structures);
+						.put("userExternalId", externalId)
+						.put("source", currentSource)
+						.put("structures", structures);
 				transactionHelper.add(qs, ps);
 			}
 			if (externalId != null && linkClasses != null) {
@@ -415,10 +415,10 @@ public class Importer {
 										"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
 										"MERGE u-[:IN]->g";
 						JsonObject p = new JsonObject()
-								.putString("userExternalId", externalId)
-								.putString("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID)
-								.putString("structure", structClass[0])
-								.putString("class", structClass[1]);
+								.put("userExternalId", externalId)
+								.put("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID)
+								.put("structure", structClass[0])
+								.put("class", structClass[1]);
 						transactionHelper.add(q, p);
 						classes.add(structClass[1]);
 					}
@@ -428,9 +428,9 @@ public class Importer {
 						"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 						"DELETE r";
 				JsonObject p = new JsonObject()
-						.putString("userExternalId", externalId)
-						.putString("source", currentSource)
-						.putArray("classes", classes);
+						.put("userExternalId", externalId)
+						.put("source", currentSource)
+						.put("classes", classes);
 				transactionHelper.add(q, p);
 			}
 		}
@@ -463,7 +463,7 @@ public class Importer {
 			log.warn(error);
 		} else {
 			if (nodeQueries) {
-				object.putString("source", currentSource);
+				object.put("source", currentSource);
 				userImportedExternalId.add(object.getString("externalId"));
 				String query =
 					"MERGE (u:`User` { externalId : {externalId}}) " +
@@ -478,10 +478,10 @@ public class Importer {
 			}
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
-				JsonArray structures = getMappingStructures(object.getArray("structures"));
+				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
-					JsonObject p = new JsonObject().putString("userExternalId", externalId);
+					JsonObject p = new JsonObject().put("userExternalId", externalId);
 					if (structures.size() == 1) {
 						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
 								"(u:User { externalId : {userExternalId}}) " +
@@ -489,8 +489,8 @@ public class Importer {
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
 								"WITH u, g " +
 								"MERGE u-[:IN]->g";
-						p.putString("structureAdmin", (String) structures.get(0))
-								.putString("profileExternalId", profileExternalId);
+						p.put("structureAdmin", structures.getString(0))
+								.put("profileExternalId", profileExternalId);
 					} else {
 						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 								"(u:User { externalId : {userExternalId}})) " +
@@ -499,8 +499,8 @@ public class Importer {
 								"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
 								"WITH u, g " +
 								"MERGE u-[:IN]->g";
-						p.putArray("structuresAdmin", structures)
-								.putString("profileExternalId", profileExternalId);
+						p.put("structuresAdmin", structures)
+								.put("profileExternalId", profileExternalId);
 					}
 					transactionHelper.add(query, p);
 					String qs =
@@ -508,9 +508,9 @@ public class Importer {
 							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject ps = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("structures", structures);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("structures", structures);
 					transactionHelper.add(qs, ps);
 				}
 				if (externalId != null && linkClasses != null) {
@@ -527,18 +527,18 @@ public class Importer {
 							"WHERE c.externalId IN {classes} AND NOT(HAS(u.mergedWith))  " +
 							"MERGE u-[:IN]->g";
 					JsonObject p0 = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("profileExternalId", profileExternalId)
-							.putArray("classes", classes);
+							.put("userExternalId", externalId)
+							.put("profileExternalId", profileExternalId)
+							.put("classes", classes);
 					transactionHelper.add(query, p0);
 					String q =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("classes", classes);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("classes", classes);
 					transactionHelper.add(q, p);
 				}
 				final JsonArray groups = new JsonArray();
@@ -553,8 +553,8 @@ public class Importer {
 							"WHERE g.externalId IN {groups} AND NOT(HAS(u.mergedWith)) " +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putArray("groups", groups);
+							.put("userExternalId", externalId)
+							.put("groups", groups);
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null) {
@@ -563,9 +563,9 @@ public class Importer {
 							"WHERE NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					final JsonObject pdfg = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("source", currentSource)
-							.putArray("groups", groups);
+							.put("userExternalId", externalId)
+							.put("source", currentSource)
+							.put("groups", groups);
 					transactionHelper.add(qdfg, pdfg);
 				}
 
@@ -575,8 +575,8 @@ public class Importer {
 							"(m:Module {externalId:{moduleStudent}}) " +
 							"MERGE u-[:FOLLOW]->m";
 					JsonObject p = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putString("moduleStudent", module);
+							.put("userExternalId", externalId)
+							.put("moduleStudent", module);
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null && fieldOfStudy != null && fieldOfStudy.size() > 0) {
@@ -585,8 +585,8 @@ public class Importer {
 								"WHERE f.externalId IN {fieldOfStudyStudent} " +
 								"MERGE u-[:COURSE]->f";
 					JsonObject p = new JsonObject()
-								.putString("userExternalId", externalId)
-								.putArray("fieldOfStudyStudent", fieldOfStudy);
+								.put("userExternalId", externalId)
+								.put("fieldOfStudyStudent", fieldOfStudy);
 					transactionHelper.add(query, p);
 				}
 				if (externalId != null && relative != null && relative.size() > 0) {
@@ -595,8 +595,8 @@ public class Importer {
 							"WHERE NOT(p.externalId IN {relatives}) " +
 							"DELETE r ";
 					JsonObject p2 = new JsonObject()
-							.putString("userExternalId", externalId)
-							.putArray("relatives", relative);
+							.put("userExternalId", externalId)
+							.put("relatives", relative);
 					transactionHelper.add(query2, p2);
 					for (Object o : relative) {
 						if (!(o instanceof String)) continue;
@@ -608,8 +608,8 @@ public class Importer {
 								"WITH r, u " +
 								"SET u.relative = coalesce(FILTER(eId IN u.relative WHERE eId <> (r.externalId + '$1$1$1$1$0')), []) + (r.externalId + '$1$1$1$1$0') ";
 						JsonObject p = new JsonObject()
-								.putString("userExternalId", externalId)
-								.putString("user", (String) o);
+								.put("userExternalId", externalId)
+								.put("user", (String) o);
 						transactionHelper.add(query, p);
 					}
 				}
@@ -626,15 +626,15 @@ public class Importer {
 	}
 
 	public void linkRelativeToStructure(String profileExternalId, String prefix, String structureExternalId) {
-		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
+		JsonObject j = new JsonObject().put("profileExternalId", profileExternalId);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
-			j.putString("prefix", prefix);
+			j.put("prefix", prefix);
 		}
 		if (isNotEmpty(structureExternalId)) {
 			filter += "AND c.externalId = {structureExternalId} ";
-			j.putString("structureExternalId", structureExternalId);
+			j.put("structureExternalId", structureExternalId);
 		}
 		String query =
 				"MATCH (u:User)<-[:RELATED]-(s:User)-[:IN]->(scg:ProfileGroup)" +
@@ -653,11 +653,11 @@ public class Importer {
 	}
 
 	public void linkRelativeToClass(String profileExternalId, String prefix, String structureExternalId) {
-		JsonObject j = new JsonObject().putString("profileExternalId", profileExternalId);
+		JsonObject j = new JsonObject().put("profileExternalId", profileExternalId);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
-			j.putString("prefix", prefix);
+			j.put("prefix", prefix);
 		}
 		String filter3 = "(s:Structure) ";
 		String additionalMatch = "";
@@ -666,7 +666,7 @@ public class Importer {
 			additionalMatch = "MATCH (s:Structure {externalId : {structureExternalId}})<-[:BELONGS]-(c:Class) WITH c ";
 			additionalMatch2 = "-[:BELONGS]->(s:Structure {externalId : {structureExternalId}}) ";
 			filter3 = "(s:Structure {externalId : {structureExternalId}}) ";
-			j.putString("structureExternalId", structureExternalId);
+			j.put("structureExternalId", structureExternalId);
 		}
 		String query =
 				additionalMatch +
@@ -729,7 +729,7 @@ public class Importer {
 				"MATCH (u:User {source: {source}})-[:RELATED]->(u2:User) " +
 				"WHERE HEAD(u.profiles) = 'Student' AND NOT(HAS(u.relative)) " +
 				"SET u.relative = coalesce(u.relative, []) + (u2.externalId + '$1$1$1$1$0')";
-		transactionHelper.add(query, new JsonObject().putString("source", source));
+		transactionHelper.add(query, new JsonObject().put("source", source));
 	}
 
 	public Structure getStructure(String externalId) {
@@ -762,24 +762,24 @@ public class Importer {
 			final Set<String> userImportedExternalId, final TransactionHelper transactionHelper, String prefix,
 			final Handler<Void> handler) {
 		String query;
-		JsonObject params = new JsonObject().putString("currentSource", currentSource);
+		JsonObject params = new JsonObject().put("currentSource", currentSource);
 		String filter = "";
 		if (isNotEmpty(prefix)) {
 			filter = "AND u.externalId STARTS WITH {prefix} ";
-			params.putString("prefix", prefix);
+			params.put("prefix", prefix);
 		}
 		if (structureExternalId != null) {
 			query = "MATCH (:Structure {externalId : {externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 					"WHERE u.source = {currentSource} " + filter +
 					"RETURN u.externalId as externalId";
-			params.putString("externalId", structureExternalId);
+			params.put("externalId", structureExternalId);
 		} else {
 			query = "MATCH (u:User) WHERE u.source = {currentSource} " + filter + "RETURN u.externalId as externalId";
 		}
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				JsonArray res = message.body().getArray("result");
+				JsonArray res = message.body().getJsonArray("result");
 				if ("ok".equals(message.body().getString("status")) && res != null) {
 					Set<String> existingUser = new TreeSet<>();
 					for (Object o : res) {
@@ -795,16 +795,16 @@ public class Importer {
 									"WHERE NOT(HAS(u.disappearanceDate)) " +
 									"SET u.disappearanceDate = {date} ";
 					JsonObject p = new JsonObject()
-							.putNumber("date", System.currentTimeMillis());
+							.put("date", System.currentTimeMillis());
 					for (String eId : existingUser) {
-						transactionHelper.add(q, p.copy().putString("externalId", eId));
+						transactionHelper.add(q, p.copy().put("externalId", eId));
 					}
 					String q2 = // remove mark of imported users
 							"START u=node:node_auto_index(externalId={externalId}) " +
 									"WHERE HAS(u.disappearanceDate) " +
 									"REMOVE u.disappearanceDate ";
 					for (String eId : userImportedExternalId) {
-						transactionHelper.add(q2, new JsonObject().putString("externalId", eId));
+						transactionHelper.add(q2, new JsonObject().put("externalId", eId));
 					}
 				}
 				handler.handle(null);
@@ -825,7 +825,7 @@ public class Importer {
 //				"MATCH (g:Group), u-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
 //				"WHERE g.id IN b.IN_OUTGOING " +
 //				"DELETE r, r2, b";
-		transactionHelper.add(query, new JsonObject().putString("source", currentSource));
+		transactionHelper.add(query, new JsonObject().put("source", currentSource));
 		String query2 =
 				"MATCH (u:User)-[r:IN]->(:DeleteGroup) " +
 				"WHERE not(has(u.deleteDate)) " +

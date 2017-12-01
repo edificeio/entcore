@@ -23,15 +23,16 @@ import org.entcore.feeder.dictionary.structures.Tenant;
 import org.entcore.feeder.utils.Function;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
+import java.util.ArrayList;
 
 public class PorteurENTExportProcessing extends BaseExportProcessing {
 
@@ -43,7 +44,7 @@ public class PorteurENTExportProcessing extends BaseExportProcessing {
 		super("dictionary/export/eliot/PorteurENT.json", 5000,
 				path + File.separator + "Complet_" + date + "_PorteurENT_", concat);
 		this.basePath = path;
-		attributes = new JsonArray(exportMapping.getFieldNames().toArray()).add("externalId");
+		attributes = new JsonArray(new ArrayList<>(exportMapping.fieldNames())).add("externalId");
 		this.date = date;
 	}
 
@@ -70,11 +71,11 @@ public class PorteurENTExportProcessing extends BaseExportProcessing {
 
 			@Override
 			public void handle(Message<JsonObject> result) {
-				JsonArray r = result.body().getArray("results");
+				JsonArray r = result.body().getJsonArray("results");
 				if ("ok".equals(result.body().getString("status")) && r != null && r.size() == 1) {
-					JsonArray rs = r.get(0);
+					JsonArray rs = r.getJsonArray(0);
 					if (rs != null && rs.size() == 1) {
-						JsonObject row = rs.get(0);
+						JsonObject row = rs.getJsonObject(0);
 						handler.handle(row.getInteger("nb", 0));
 						return;
 					}
@@ -94,9 +95,9 @@ public class PorteurENTExportProcessing extends BaseExportProcessing {
 
 			@Override
 			public void handle(Message<JsonObject> result) {
-				JsonArray r = result.body().getArray("results");
+				JsonArray r = result.body().getJsonArray("results");
 				if ("ok".equals(result.body().getString("status")) && r != null && r.size() == 1) {
-					JsonArray rs = r.get(0);
+					JsonArray rs = r.getJsonArray(0);
 					handler.handle(rs);
 				} else {
 					handler.handle(null);

@@ -26,12 +26,11 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class AuthResourcesProvider implements ResourcesProvider {
 
@@ -90,16 +89,16 @@ public class AuthResourcesProvider implements ResourcesProvider {
 					"RETURN count(*) >= 1 as exists ";
 		}
 		JsonObject params = new JsonObject()
-				.putString("id", id)
-				.putString("teacherId", user.getUserId());
+				.put("id", id)
+				.put("teacherId", user.getUserId());
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				request.resume();
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
-								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});
@@ -107,10 +106,10 @@ public class AuthResourcesProvider implements ResourcesProvider {
 
 	private void isClassTeacherByUserLogin(final HttpServerRequest request,
 			final UserInfos user, final Handler<Boolean> handler) {
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
 					handler.handle(true);
 					return;
@@ -135,15 +134,15 @@ public class AuthResourcesProvider implements ResourcesProvider {
 						"RETURN count(*) >= 1 as exists ";
 				}
 				JsonObject params = new JsonObject()
-						.putString("login", login)
-						.putString("teacherId", user.getUserId());
+						.put("login", login)
+						.put("teacherId", user.getUserId());
 				neo.execute(query, params, new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> r) {
-						JsonArray res = r.body().getArray("result");
+						JsonArray res = r.body().getJsonArray("result");
 						handler.handle(
 								"ok".equals(r.body().getString("status")) &&
-										res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 						);
 					}
 				});

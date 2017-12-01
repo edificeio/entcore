@@ -31,7 +31,7 @@ object QuotaScenario {
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
       104857600l == res.toLong || 512144000l == res.toLong)).is(true),
-      jsonPath("$.storage").find.is("97080")))
+      jsonPath("$.storage").find.is("136725")))
 
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${teacherId}""")
@@ -67,7 +67,7 @@ object QuotaScenario {
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.transformOption(_.map(res =>
     104857600l == res.toLong || 512144000l == res.toLong)).is(true),
-      jsonPath("$.storage").find.is("97080")))
+      jsonPath("$.storage").find.is("136725")))
 
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${teacherId}""")
@@ -105,7 +105,7 @@ object QuotaScenario {
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.quota").find.is("1073741823"),
-      jsonPath("$.storage").find.is("97080")))
+      jsonPath("$.storage").find.is("136725")))
 
     .exec(http("Get quota and storage")
     .get("""/workspace/quota/user/${teacherId}""")

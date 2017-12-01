@@ -25,13 +25,14 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.GroupService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
@@ -71,13 +72,13 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {structures} ";
-				params.putArray("structures", new JsonArray(scope.toArray()));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			condition += " AND s.id = {structure} ";
-			params.putString("structure", structureId);
+			params.put("structure", structureId);
 		}
 		String query =
 				"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
@@ -93,21 +94,21 @@ public class DefaultGroupService implements GroupService {
 	@Override
 	public void createOrUpdateManual(JsonObject group, String structureId, String classId,
 			Handler<Either<String, JsonObject>> result) {
-		group.putString("groupDisplayName", group.getString("name"));
+		group.put("groupDisplayName", group.getString("name"));
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-create-group")
-				.putString("structureId", structureId)
-				.putString("classId", classId)
-				.putObject("group", group);
-		eventBus.send(Directory.FEEDER, action, validUniqueResultHandler(0, result));
+				.put("action", "manual-create-group")
+				.put("structureId", structureId)
+				.put("classId", classId)
+				.put("group", group);
+		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
 	@Override
 	public void deleteManual(String groupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-delete-group")
-				.putString("groupId", groupId);
-		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+				.put("action", "manual-delete-group")
+				.put("groupId", groupId);
+		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -116,7 +117,7 @@ public class DefaultGroupService implements GroupService {
 		JsonObject params = new JsonObject();
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			condition = "WHERE s.id = {structureId} ";
-			params.putString("structureId", structureId);
+			params.put("structureId", structureId);
 		}
 		if (type == null || type.trim().isEmpty()) {
 			type = "Group";
@@ -134,19 +135,19 @@ public class DefaultGroupService implements GroupService {
 	@Override
 	public void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-add-group-users")
-				.putString("groupId", groupId)
-				.putArray("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+				.put("action", "manual-add-group-users")
+				.put("groupId", groupId)
+				.put("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 	
 	@Override
 	public void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
-				.putString("action", "manual-remove-group-users")
-				.putString("groupId", groupId)
-				.putArray("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+				.put("action", "manual-remove-group-users")
+				.put("groupId", groupId)
+				.put("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 }

@@ -21,9 +21,9 @@ package org.entcore.cas.services;
 
 import java.util.List;
 
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -37,7 +37,7 @@ public class GepiRegisteredService extends AbstractCas20ExtensionRegisteredServi
     protected static final String GP_PROFILES = "ENTPersonProfils";
     
     @Override
-    public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf){
+    public void configure(io.vertx.core.eventbus.EventBus eb, java.util.Map<String,Object> conf){
         super.configure(eb, conf);
         this.directoryAction = "getUserInfos";
     }
@@ -47,7 +47,7 @@ public class GepiRegisteredService extends AbstractCas20ExtensionRegisteredServi
         user.setUser(data.getString(principalAttributeName));
         try{
             //uid
-            if (data.containsField("externalId")) {
+            if (data.containsKey("externalId")) {
                 additionnalAttributes.add(createTextElement(GP_ID, data.getString("externalId"), doc));
             }
             

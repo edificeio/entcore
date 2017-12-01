@@ -20,9 +20,9 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -37,7 +37,7 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 	private static final Logger log = LoggerFactory.getLogger(AcademicSuffixRegisteredService.class);
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
+	public void configure(io.vertx.core.eventbus.EventBus eb, java.util.Map<String,Object> conf) {
 		super.configure(eb, conf);
 		if (conf.containsKey("academicSuffix") && conf.containsKey("academicPattern")) {
 			ACADEMIC_SUFFIX.clear();
@@ -94,7 +94,7 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 
 		try {
 			// Define attribute : cas:user
-			if (data.containsField("externalId")) {
+			if (data.containsKey("externalId")) {
 				String initialExternalId = data.getString("externalId");
 
 				log.debug("PrepareUserCas20 : ExternalId Initial : " + initialExternalId);

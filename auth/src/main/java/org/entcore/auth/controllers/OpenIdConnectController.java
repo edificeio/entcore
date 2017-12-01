@@ -28,11 +28,9 @@ import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonElement;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import java.util.UUID;
 
@@ -83,17 +81,17 @@ public class OpenIdConnectController extends AbstractFederateController {
 			public void handle(final JsonObject payload) {
 				if (payload != null) {
 					log.info("payload : " + payload.encode());
-					openIdConnectServiceProvider.executeFederate(payload, new Handler<Either<String, JsonElement>>() {
+					openIdConnectServiceProvider.executeFederate(payload, new Handler<Either<String, Object>>() {
 						@Override
-						public void handle(Either<String, JsonElement> res) {
-							if (res.isRight() && res.right().getValue().isObject()) {
-								authenticate(res.right().getValue().asObject(), "_", payload.getString("id_token_hint"), request);
+						public void handle(Either<String, Object> res) {
+							if (res.isRight() && res.right().getValue() instanceof JsonObject) {
+								authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), request);
 							} else if (subMapping && res.isLeft() && OpenIdConnectServiceProvider.UNRECOGNIZED_USER_IDENTITY
 									.equals(res.left().getValue())) {
 								final String p = payload.encode();
 								try {
-									JsonObject params = new JsonObject().putString("payload", p)
-											.putString("key", HmacSha1.sign(p, signKey));
+									JsonObject params = new JsonObject().put("payload", p)
+											.put("key", HmacSha1.sign(p, signKey));
 									renderView(request, params, "mappingFederatedUser.html", null);
 								} catch (Exception e) {
 									log.error("Error loading mapping openid connect identity.", e);
@@ -119,10 +117,10 @@ public class OpenIdConnectController extends AbstractFederateController {
 			forbidden(request, "unauthorized.sub.mapping");
 			return;
 		}
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final String login = request.formAttributes().get("login");
 				final String password = request.formAttributes().get("password");
 				final String payload = request.formAttributes().get("payload");
@@ -135,11 +133,11 @@ public class OpenIdConnectController extends AbstractFederateController {
 					}
 					final JsonObject p = new JsonObject(payload);
 					openIdConnectServiceProvider.mappingUser(login, password, p,
-							new Handler<Either<String, JsonElement>>() {
+							new Handler<Either<String, Object>>() {
 						@Override
-						public void handle(Either<String, JsonElement> event) {
+						public void handle(Either<String, Object> event) {
 							if (event.isRight()) {
-								authenticate(event.right().getValue().asObject(), "_", p.getString("id_token_hint"), request);
+								authenticate((JsonObject) event.right().getValue(), "_", p.getString("id_token_hint"), request);
 							} else {
 								forbidden(request, "invalid.sub.mapping");
 							}
@@ -163,9 +161,9 @@ public class OpenIdConnectController extends AbstractFederateController {
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
 		if (oic != null && meta != null && isNotEmpty(meta.getString("NameID"))) {
 			String callback = oic.logoutUri(UUID.randomUUID().toString(), meta.getString("NameID"), c);
-			AuthController.logoutCallback(request, callback, container, eb);
+			AuthController.logoutCallback(request, callback, config, eb);
 		} else {
-			AuthController.logoutCallback(request, c, container, eb);
+			AuthController.logoutCallback(request, c, config, eb);
 		}
 	}
 

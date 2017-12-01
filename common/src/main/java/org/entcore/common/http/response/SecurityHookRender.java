@@ -23,13 +23,12 @@ import fr.wseduc.webutils.http.HookProcess;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +50,7 @@ public class SecurityHookRender implements HookProcess {
 	}
 
 	@Override
-	public void execute(final HttpServerRequest request, final VoidHandler handler) {
+	public void execute(final HttpServerRequest request, final Handler<Void> handler) {
 		if (request instanceof SecureHttpServerRequest) {
 			final JsonObject session = ((SecureHttpServerRequest) request).getSession();
 			if (session == null) {
@@ -69,10 +68,10 @@ public class SecurityHookRender implements HookProcess {
 	private void contentSecurityPolicyHeader(HttpServerRequest request, JsonObject session) {
 		if (contentSecurityPolicy == null) return;
 		final String csp;
-		if (session != null && session.getObject("cache") != null &&
-				session.getObject("cache").getString("content-security-policy") != null) {
-			csp = session.getObject("cache").getString("content-security-policy");
-		} else if (session != null && session.getArray("apps") != null) {
+		if (session != null && session.getJsonObject("cache") != null &&
+				session.getJsonObject("cache").getString("content-security-policy") != null) {
+			csp = session.getJsonObject("cache").getString("content-security-policy");
+		} else if (session != null && session.getJsonArray("apps") != null) {
 			final StringBuilder sb = new StringBuilder(contentSecurityPolicy);
 			if (!contentSecurityPolicy.contains("frame-src")) {
 				if (!contentSecurityPolicy.trim().endsWith(";")) {
@@ -80,7 +79,7 @@ public class SecurityHookRender implements HookProcess {
 				}
 				sb.append("frame-src 'self'");
 			}
-			for (Object o : session.getArray("apps")) {
+			for (Object o : session.getJsonArray("apps")) {
 				if (!(o instanceof JsonObject)) continue;
 				String address = ((JsonObject) o).getString("address");
 				if (address != null && address.contains("adapter#")) {
@@ -103,7 +102,7 @@ public class SecurityHookRender implements HookProcess {
 		request.response().putHeader("Content-Security-Policy", csp);
 	}
 
-	private void csrfToken(final HttpServerRequest request, final VoidHandler handler, JsonObject session) {
+	private void csrfToken(final HttpServerRequest request, final Handler<Void> handler, JsonObject session) {
 		if (!csrf || request.path().contains("preview") ||
 				"XMLHttpRequest".equals(request.headers().get("X-Requested-With"))) {
 			handler.handle(null);
@@ -113,8 +112,8 @@ public class SecurityHookRender implements HookProcess {
 		String token = null;
 		final String xsrfToken;
 		final String userId = session.getString("userId");
-		if (session.getObject("cache") != null) {
-			token = session.getObject("cache").getString("xsrf-token");
+		if (session.getJsonObject("cache") != null) {
+			token = session.getJsonObject("cache").getString("xsrf-token");
 			if (token == null) { // TODO remove when support session cache persistence
 				String t = CookieHelper.get("XSRF-TOKEN", request);
 				xsrfToken = ((t != null) ? t : UUID.randomUUID().toString());

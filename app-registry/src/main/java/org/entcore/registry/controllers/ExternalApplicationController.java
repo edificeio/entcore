@@ -40,11 +40,11 @@ import org.entcore.registry.filters.SuperAdminFilter;
 import org.entcore.registry.services.ExternalApplicationService;
 import org.entcore.registry.services.impl.DefaultAppRegistryService;
 import org.entcore.registry.services.impl.DefaultExternalApplicationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -74,7 +74,7 @@ public class ExternalApplicationController extends BaseController {
 				if (r.isRight()) {
 					JsonArray list = r.right().getValue();
 					for (Object res : list) {
-						UserUtils.translateGroupsNames(((JsonObject) res).getArray("groups"), I18n.acceptLanguage(request));
+						UserUtils.translateGroupsNames(((JsonObject) res).getJsonArray("groups"), I18n.acceptLanguage(request));
 					}
 					renderJson(request, list);
 				} else {
@@ -114,7 +114,7 @@ public class ExternalApplicationController extends BaseController {
 						public void handle(Either<String, JsonObject> event) {
 							if (event.isLeft()) {
 								JsonObject error = new JsonObject()
-										.putString("error", event.left().getValue());
+										.put("error", event.left().getValue());
 								Renders.renderJson(request, error, 400);
 								return;
 							}
@@ -126,14 +126,14 @@ public class ExternalApplicationController extends BaseController {
 										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
 									}
 									Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
-											.putString("action", "add-patterns")
-											.putString("service", casType)
-											.putArray("patterns", new JsonArray().add(pattern)));
+											.put("action", "add-patterns")
+											.put("service", casType)
+											.put("patterns", new JsonArray().add(pattern)));
 								}
 								Renders.renderJson(request, event.right().getValue(), 201);
 							} else {
 								JsonObject error = new JsonObject()
-										.putString("error", "appregistry.failed.app");
+										.put("error", "appregistry.failed.app");
 								Renders.renderJson(request, error, 400);
 							}
 						}
@@ -191,7 +191,7 @@ public class ExternalApplicationController extends BaseController {
 				externalAppService.listExternalApps(structureId, busArrayHandler(message));
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
 	}
 

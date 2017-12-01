@@ -19,9 +19,9 @@
 
 package org.entcore.portal.utils;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 
 import java.io.File;
 import java.util.*;
@@ -31,19 +31,19 @@ public class ThemeUtils {
 
 	public static void availableThemes(final Vertx vertx, String themeDirectory, final boolean fullPath,
 			final Handler<List<String>> themes) {
-		vertx.fileSystem().readDir(themeDirectory, new Handler<AsyncResult<String[]>>() {
+		vertx.fileSystem().readDir(themeDirectory, new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<String[]> event) {
-				if (event.succeeded() && event.result().length > 0) {
+			public void handle(AsyncResult<List<String>> event) {
+				if (event.succeeded() && event.result().size() > 0) {
 					if (fullPath) {
-						themes.handle(Arrays.asList(event.result()));
+						themes.handle(event.result());
 					} else {
-						final String[] files = event.result();
-						final int idx = files[0].lastIndexOf(File.separatorChar);
+						final List<String> files = event.result();
+						final int idx = files.get(0).lastIndexOf(File.separatorChar);
 						List<String> t = new ArrayList<>();
-						for (int i = 0; i < files.length; i++) {
-							String file = files[i];
-							if(vertx.fileSystem().propsSync(file).isDirectory()) {
+						for (int i = 0; i < files.size(); i++) {
+							String file = files.get(i);
+							if(vertx.fileSystem().propsBlocking(file).isDirectory()) {
 								if (idx > -1 && file.length() > idx + 1) {
 									file = file.substring(idx + 1);
 								}

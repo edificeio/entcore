@@ -20,10 +20,10 @@
 package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.common.neo4j.Neo4j;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -54,14 +54,14 @@ public class GraphData {
 				neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {
-						JsonArray res = message.body().getArray("result");
+						JsonArray res = message.body().getJsonArray("result");
 						if ("ok".equals(message.body().getString("status")) && res != null) {
 							for (Object o : res) {
 								if (!(o instanceof JsonObject)) continue;
 								JsonObject r = (JsonObject) o;
-								JsonObject p = r.getObject("p", new JsonObject()).getObject("data");
+								JsonObject p = r.getJsonObject("p", new JsonObject()).getJsonObject("data");
 								profiles.putIfAbsent(p.getString("externalId"),
-										new Profile(p, r.getArray("functions")));
+										new Profile(p, r.getJsonArray("functions")));
 							}
 						}
 						if (handler != null && count.decrementAndGet() == 0) {
@@ -69,20 +69,20 @@ public class GraphData {
 						}
 					}
 				});
-				JsonArray res = message.body().getArray("result");
+				JsonArray res = message.body().getJsonArray("result");
 				if ("ok".equals(message.body().getString("status")) && res != null) {
 					for (Object o : res) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject r = (JsonObject) o;
-						JsonObject s = r.getObject("s", new JsonObject()).getObject("data");
-						Structure structure = new Structure(s, r.getArray("groups"), r.getArray("classes"));
+						JsonObject s = r.getJsonObject("s", new JsonObject()).getJsonObject("data");
+						Structure structure = new Structure(s, r.getJsonArray("groups"), r.getJsonArray("classes"));
 						String externalId = s.getString("externalId");
 						structures.putIfAbsent(externalId, structure);
 						String UAI = s.getString("UAI");
 						if (UAI != null && !UAI.trim().isEmpty()) {
 							structuresByUAI.putIfAbsent(UAI, structure);
 						}
-						JsonArray joinKeys = s.getArray("joinKey");
+						JsonArray joinKeys = s.getJsonArray("joinKey");
 						if (joinKeys != null && joinKeys.size() > 0) {
 							for (Object key : joinKeys) {
 								externalIdMapping.putIfAbsent(key.toString(), externalId);

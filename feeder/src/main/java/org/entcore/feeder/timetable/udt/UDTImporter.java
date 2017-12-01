@@ -32,13 +32,12 @@ import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -88,8 +87,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	@Override
-	public void launch(final AsyncResultHandler<Report> handler) throws Exception {
-		init(new AsyncResultHandler<Void>() {
+	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception {
+		init(new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.failed()) {
@@ -113,10 +112,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_11.xml");
 					parse(basePath + "UDCal_12.xml");
 					generateCourses(startDateWeek1.getWeekOfWeekyear());
-					vertx.fileSystem().readDir(basePath, "UDCal_12_[0-9]+.xml", new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(basePath, "UDCal_12_[0-9]+.xml", new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> event) {
-							if (event.succeeded() && event.result().length > 0) {
+						public void handle(AsyncResult<List<String>> event) {
+							if (event.succeeded() && event.result().size() > 0) {
 								try {
 									for (String p : event.result()) {
 										Matcher m = filenameWeekPatter.matcher(p);
@@ -187,7 +186,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	void initPeriods(JsonObject currentEntity) {
-		JsonArray weeks = currentEntity.getArray("semaine");
+		JsonArray weeks = currentEntity.getJsonArray("semaine");
 		if (weeks != null && weeks.size() > 0) {
 			int oldWeek = startDateWeek1.getWeekOfWeekyear();
 			for (Object o : weeks) {
@@ -237,11 +236,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String id = currentEntity.getString(CODE);
 			String externalId = currentEntity.getString("epj");
 			JsonObject p = persEducNat.applyMapping(currentEntity);
-			p.putArray("profiles", new JsonArray().addString("Teacher"));
+			p.put("profiles", new JsonArray().add("Teacher"));
 			if (isEmpty(externalId)) {
 				externalId = JsonUtil.checksum(p, JsonUtil.HashAlgorithm.MD5);
 			}
-			p.putString("externalId", externalId);
+			p.put("externalId", externalId);
 			userImportedExternalId.add(externalId);
 			final String[] teacherId = teachersMapping.get(externalId);
 			if (teacherId != null && isNotEmpty(teacherId[0])) {
@@ -251,7 +250,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				}
 			} else {
 				final String userId = UUID.randomUUID().toString();
-				p.putString("id", userId);
+				p.put("id", userId);
 				persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 				teachers.put(id, userId);
 			}
@@ -262,7 +261,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	void addSubject(JsonObject s) {
 		final String code = s.getString(CODE);
-		super.addSubject(code, new JsonObject().putString("Code", code).putString("Libelle", s.getString("libelle")));
+		super.addSubject(code, new JsonObject().put("Code", code).put("Libelle", s.getString("libelle")));
 	}
 
 	void addClasse(JsonObject currentEntity) {
@@ -270,9 +269,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 		classes.put(id, currentEntity);
 		final String ocn = getOrElse(currentEntity.getString("libelle"), id, false);
 		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
-		currentEntity.putString("className", className);
+		currentEntity.put("className", className);
 		if (className != null) {
-			txXDT.add(UNKNOWN_CLASSES, new JsonObject().putString("UAI", UAI).putString("className", className));
+			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
 		}
 	}
 
@@ -283,10 +282,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (isEmpty(name)) {
 			name = id;
 		}
-		txXDT.add(CREATE_GROUPS, new JsonObject().putString("structureExternalId", structureExternalId)
-				.putString("name", name).putString("displayNameSearchField", Validator.sanitize(name))
-				.putString("externalId", structureExternalId + "$" + name)
-				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
+		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+				.put("externalId", structureExternalId + "$" + name)
+				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 	}
 
 	void addGroup2(JsonObject currentEntity) {
@@ -299,10 +298,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 				report.addError("unknown.group.mapping");
 				return;
 			}
-			JsonArray groups = group.getArray("groups");
+			JsonArray groups = group.getJsonArray("groups");
 			if (groups == null) {
 				groups = new JsonArray();
-				group.putArray("groups", groups);
+				group.put("groups", groups);
 			}
 			groups.add(name);
 		} else {
@@ -312,18 +311,18 @@ public class UDTImporter extends AbstractTimetableImporter {
 				report.addError("unknown.class.mapping");
 				return;
 			}
-			JsonArray groups = classe.getArray("groups");
+			JsonArray groups = classe.getJsonArray("groups");
 			if (groups == null) {
 				groups = new JsonArray();
-				classe.putArray("groups", groups);
+				classe.put("groups", groups);
 			}
 			groups.add(name);
 		}
 		regroup.put(currentEntity.getString(CODE), name);
-		txXDT.add(CREATE_GROUPS, new JsonObject().putString("structureExternalId", structureExternalId)
-				.putString("name", name).putString("displayNameSearchField", Validator.sanitize(name))
-				.putString("externalId", structureExternalId + "$" + name)
-				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
+		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
+				.put("externalId", structureExternalId + "$" + name)
+				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
 	}
 
 	void eleveMapping(JsonObject currentEntity) {
@@ -352,16 +351,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			final String name = group.getString("code_div") + " Gr " + group.getString(CODE);
 			txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-					.putString("firstName", eleve.getString("prenom", "").toLowerCase())
-					.putString("lastName", eleve.getString("nom", "").toLowerCase())
-					.putString("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
-					.putString("externalId", structureExternalId + "$" + name)
-					.putString("structureExternalId", structureExternalId)
-					.putString("source", UDT)
-					.putNumber("inDate", importTimestamp)
-					.putNumber("outDate", endStudents)
-					.putNumber("now", importTimestamp));
-			groups = group.getArray("groups");
+					.put("firstName", eleve.getString("prenom", "").toLowerCase())
+					.put("lastName", eleve.getString("nom", "").toLowerCase())
+					.put("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
+					.put("externalId", structureExternalId + "$" + name)
+					.put("structureExternalId", structureExternalId)
+					.put("source", UDT)
+					.put("inDate", importTimestamp)
+					.put("outDate", endStudents)
+					.put("now", importTimestamp));
+			groups = group.getJsonArray("groups");
 
 		} else {
 			JsonObject classe = classes.get(codeDiv);
@@ -369,20 +368,20 @@ public class UDTImporter extends AbstractTimetableImporter {
 				report.addError("unknown.class.mapping");
 				return;
 			}
-			groups = classe.getArray("groups");
+			groups = classe.getJsonArray("groups");
 		}
 		if (groups != null) {
 			for (Object o2: groups) {
 				txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
-						.putString("firstName", eleve.getString("prenom", "").toLowerCase())
-						.putString("lastName", eleve.getString("nom", "").toLowerCase())
-						.putString("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
-						.putString("externalId", structureExternalId + "$" + o2.toString())
-						.putString("structureExternalId", structureExternalId)
-						.putString("source", UDT)
-						.putNumber("inDate", importTimestamp)
-						.putNumber("outDate", endStudents)
-						.putNumber("now", importTimestamp));
+						.put("firstName", eleve.getString("prenom", "").toLowerCase())
+						.put("lastName", eleve.getString("nom", "").toLowerCase())
+						.put("birthDate", StringValidation.convertDate(eleve.getString("naissance", "")))
+						.put("externalId", structureExternalId + "$" + o2.toString())
+						.put("structureExternalId", structureExternalId)
+						.put("source", UDT)
+						.put("inDate", importTimestamp)
+						.put("outDate", endStudents)
+						.put("now", importTimestamp));
 			}
 		}
 	}
@@ -517,7 +516,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final Set<String> ce = coens.get(start);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {
-			teacherIds = new JsonArray(ce.toArray());
+			teacherIds = new JsonArray(new ArrayList<>(ce));
 		} else {
 			teacherIds = new JsonArray();
 		}
@@ -527,28 +526,28 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 
 		final JsonObject c = new JsonObject()
-				.putString("structureId", structureId)
-				.putString("startDate", startDate.toString())
-				.putString("endDate", endDate.toString())
-				.putNumber("dayOfWeek", day)
-				.putArray("teacherIds", teacherIds);
+				.put("structureId", structureId)
+				.put("startDate", startDate.toString())
+				.put("endDate", endDate.toString())
+				.put("dayOfWeek", day)
+				.put("teacherIds", teacherIds);
 		final String sId = subjects.get(entity.getString("mat"));
 		if (isNotEmpty(sId)) {
-			c.putString("subjectId", sId);
+			c.put("subjectId", sId);
 		}
 		final String rId = rooms.get(entity.getString("salle"));
 		if (isNotEmpty(rId)) {
-			c.putArray("roomLabels", new JsonArray().add(rId));
+			c.put("roomLabels", new JsonArray().add(rId));
 		}
 		final JsonObject cId = classes.get(entity.getString("div"));
 		if (cId != null && isNotEmpty(cId.getString("className"))) {
-			c.putArray("classes", new JsonArray().add(cId.getString("className")));
+			c.put("classes", new JsonArray().add(cId.getString("className")));
 		}
 
 		JsonArray groups;
 		if (isNotEmpty(entity.getString("rgpmt")) || isNotEmpty(entity.getString("gpe"))) {
 			groups = new JsonArray();
-			c.putArray("groups", groups);
+			c.put("groups", groups);
 			String name = regroup.get(entity.getString("rgpmt"));
 			if (isNotEmpty(name)) {
 				groups.add(name);
@@ -559,7 +558,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 		}
 		try {
-			c.putString("_id", JsonUtil.checksum(c));
+			c.put("_id", JsonUtil.checksum(c));
 		} catch (NoSuchAlgorithmException e) {
 			log.error("Error generating course checksum", e);
 		}
@@ -584,7 +583,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final String acceptLanguage = message.body().getString("language", "fr");
 
 		if (Utils.isEmpty(uai) || Utils.isEmpty(path) || Utils.isEmpty(acceptLanguage)) {
-			JsonObject json = new JsonObject().putString("status", "error").putString("message",
+			JsonObject json = new JsonObject().put("status", "error").put("message",
 					i18n.translate("invalid.params", I18n.DEFAULT_DOMAIN, acceptLanguage));
 			message.reply(json);
 		}
@@ -592,19 +591,19 @@ public class UDTImporter extends AbstractTimetableImporter {
 		try {
 			final String parentPath = FileUtils.getParentPath(path);
 			FileUtils.unzip(path, parentPath);
-			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage).launch(new AsyncResultHandler<Report>() {
+			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
-						message.reply(new JsonObject().putString("status", "ok")
-								.putObject("result", event.result().getResult()));
+						message.reply(new JsonObject().put("status", "ok")
+								.put("result", event.result().getResult()));
 						if (postImport != null) {
 							postImport.execute();
 						}
 					} else {
 						log.error(event.cause().getMessage(), event.cause());
-						JsonObject json = new JsonObject().putString("status", "error")
-								.putString("message",
+						JsonObject json = new JsonObject().put("status", "error")
+								.put("message",
 										i18n.translate(event.cause().getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 						message.reply(json);
 					}
@@ -612,7 +611,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			});
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			JsonObject json = new JsonObject().putString("status", "error").putString("message",
+			JsonObject json = new JsonObject().put("status", "error").put("message",
 					i18n.translate(e.getMessage(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 			message.reply(json);
 		}

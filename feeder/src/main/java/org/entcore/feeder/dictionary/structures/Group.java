@@ -25,10 +25,8 @@ import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -42,10 +40,10 @@ public class Group {
 			final boolean create = (object.getString("id") == null || object.getString("id").trim().isEmpty());
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
 			if (create) {
-				object.putString("id", id);
+				object.put("id", id);
 			}
 			if (isNotEmpty(object.getString("name"))) {
-				object.putString("displayNameSearchField", Validator.sanitize(object.getString("name")));
+				object.put("displayNameSearchField", Validator.sanitize(object.getString("name")));
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
@@ -58,8 +56,8 @@ public class Group {
 							"MATCH (s:Structure {id : {structureId}}), (g:Group {id : {groupId}}) " +
 							"CREATE UNIQUE s<-[:DEPENDS]-g";
 					JsonObject ps = new JsonObject()
-							.putString("groupId", id)
-							.putString("structureId", structureId);
+							.put("groupId", id)
+							.put("structureId", structureId);
 					transactionHelper.add(qs, ps);
 				}
 				if (classId != null && !classId.trim().isEmpty()) {
@@ -67,8 +65,8 @@ public class Group {
 							"MATCH (s:Class {id : {classId}}), (g:Group {id : {groupId}}) " +
 							"CREATE UNIQUE s<-[:DEPENDS]-g";
 					JsonObject ps = new JsonObject()
-							.putString("groupId", id)
-							.putString("classId", classId);
+							.put("groupId", id)
+							.put("classId", classId);
 					transactionHelper.add(qs, ps);
 				}
 			}
@@ -80,7 +78,7 @@ public class Group {
 				"MATCH (g:ManualGroup {id : {id}}) " +
 				"OPTIONAL MATCH g-[r]-() " +
 				"DELETE g, r";
-		transactionHelper.add(query, new JsonObject().putString("id", id));
+		transactionHelper.add(query, new JsonObject().put("id", id));
 	}
 	
 	public static void addUsers(String groupId, JsonArray userIds, TransactionHelper transactionHelper) {
@@ -94,8 +92,8 @@ public class Group {
 				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> g.externalId) + g.externalId ";
 		
 		JsonObject params = new JsonObject()
-				.putString("groupId", groupId)
-				.putArray("userIds", userIds);
+				.put("groupId", groupId)
+				.put("userIds", userIds);
 		
 		transactionHelper.add(query, params);
 	}
@@ -109,8 +107,8 @@ public class Group {
 				"DELETE r ";
 				
 		JsonObject params = new JsonObject()
-				.putString("groupId", groupId)
-				.putArray("userIds", userIds);
+				.put("groupId", groupId)
+				.put("userIds", userIds);
 		
 		transactionHelper.add(query, params);
 	}

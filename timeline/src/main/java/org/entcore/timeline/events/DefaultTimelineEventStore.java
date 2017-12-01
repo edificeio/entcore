@@ -24,10 +24,10 @@ import fr.wseduc.webutils.Either;
 
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -48,10 +48,10 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public void add(JsonObject event, final Handler<JsonObject> result) {
 		JsonObject doc = validAndGet(event);
 		if (doc != null) {
-			if (!doc.containsField("date")) {
-				doc.putObject("date", MongoDb.now());
+			if (!doc.containsKey("date")) {
+				doc.put("date", MongoDb.now());
 			}
-			doc.putObject("created", doc.getObject("date"));
+			doc.put("created", doc.getJsonObject("date"));
 			mongo.save(TIMELINE_COLLECTION, doc, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -62,7 +62,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public void delete(String resource, Handler<JsonObject> result) {
 		if (resource != null && !resource.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-					.putString("resource", resource);
+					.put("resource", resource);
 			mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -76,57 +76,57 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		final String externalId = user.getExternalId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
 			final JsonObject query = new JsonObject()
-					.putObject("deleted", new JsonObject()
-						.putBoolean("$exists", false))
-					.putObject("date", new JsonObject().putObject("$lt", MongoDb.now()));
+					.put("deleted", new JsonObject()
+						.put("$exists", false))
+					.put("date", new JsonObject().put("$lt", MongoDb.now()));
 			if (externalId == null || externalId.trim().isEmpty()) {
-				query.putString(mine ? "sender" : "recipients.userId", recipient);
+				query.put(mine ? "sender" : "recipients.userId", recipient);
 			} else {
-				query.putObject(mine ? "sender" : "recipients.userId", new JsonObject()
-						.putArray("$in", new JsonArray().add(recipient).add(externalId)));
+				query.put(mine ? "sender" : "recipients.userId", new JsonObject()
+						.put("$in", new JsonArray().add(recipient).add(externalId)));
 			}
-			query.putObject("reportAction.action", new JsonObject().putString("$ne", "DELETE"));
+			query.put("reportAction.action", new JsonObject().put("$ne", "DELETE"));
 			if (types != null && !types.isEmpty()) {
 				if (types.size() == 1) {
-					query.putString("type", types.get(0));
+					query.put("type", types.get(0));
 				} else {
 					JsonArray typesFilter = new JsonArray();
 					for (String t: types) {
-						typesFilter.addObject(new JsonObject().putString("type", t));
+						typesFilter.add(new JsonObject().put("type", t));
 					}
-					query.putArray("$or", typesFilter);
+					query.put("$or", typesFilter);
 				}
 			}
 			if(restrictionFilter != null && restrictionFilter.size() > 0){
 				JsonArray nor = new JsonArray();
-				for(String type : restrictionFilter.toMap().keySet()){
-					for(Object eventType : restrictionFilter.getArray(type, new JsonArray())){
+				for(String type : restrictionFilter.getMap().keySet()){
+					for(Object eventType : restrictionFilter.getJsonArray(type, new JsonArray())){
 						nor.add(new JsonObject()
-							.putString("type", type)
-							.putString("event-type", eventType.toString()));
+							.put("type", type)
+							.put("event-type", eventType.toString()));
 					}
-					query.putArray("$nor", nor);
+					query.put("$nor", nor);
 				}
 			}
-			JsonObject sort = new JsonObject().putNumber("created", -1);
+			JsonObject sort = new JsonObject().put("created", -1);
 			JsonObject keys = new JsonObject()
-				.putNumber("message", 1)
-				.putNumber("params", 1)
-				.putNumber("date", 1)
-				.putNumber("sender", 1)
-				.putNumber("comments", 1)
-				.putNumber("type", 1)
-				.putNumber("event-type", 1)
-				.putNumber("resource", 1)
-				.putNumber("sub-resource", 1)
-				.putNumber("add-comment", 1);
+				.put("message", 1)
+				.put("params", 1)
+				.put("date", 1)
+				.put("sender", 1)
+				.put("comments", 1)
+				.put("type", 1)
+				.put("event-type", 1)
+				.put("resource", 1)
+				.put("sub-resource", 1)
+				.put("add-comment", 1);
 			if(!mine){
-				keys.putObject("recipients", new JsonObject()
-						.putObject("$elemMatch", new JsonObject()
-							.putString("userId", user.getUserId())));
-				keys.putObject("reporters", new JsonObject()
-						.putObject("$elemMatch", new JsonObject()
-							.putString("userId", user.getUserId())));
+				keys.put("recipients", new JsonObject()
+						.put("$elemMatch", new JsonObject()
+							.put("userId", user.getUserId())));
+				keys.put("reporters", new JsonObject()
+						.put("$elemMatch", new JsonObject()
+							.put("userId", user.getUserId())));
 			}
 
 			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
@@ -145,7 +145,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	public void deleteSubResource(String resource, Handler<JsonObject> result) {
 		if (resource != null && !resource.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-					.putString("sub-resource", resource);
+					.put("sub-resource", resource);
 			mongo.delete(TIMELINE_COLLECTION, query, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -158,7 +158,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
-					result.handle(event.body().getArray("values", new JsonArray()));
+					result.handle(event.body().getJsonArray("values", new JsonArray()));
 				} else {
 					result.handle(new JsonArray());
 				}
@@ -169,12 +169,12 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	private JsonObject validAndGet(JsonObject json) {
 		if (json != null) {
 			JsonObject e = json.copy();
-			for (String attr: json.getFieldNames()) {
+			for (String attr: json.fieldNames()) {
 				if (!FIELDS.contains(attr) || e.getValue(attr) == null) {
-					e.removeField(attr);
+					e.remove(attr);
 				}
 			}
-			if (e.toMap().keySet().containsAll(REQUIRED_FIELDS)) {
+			if (e.getMap().keySet().containsAll(REQUIRED_FIELDS)) {
 				return e;
 			}
 		}
@@ -182,8 +182,8 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	private JsonObject invalidArguments() {
-		return new JsonObject().putString("status", "error")
-				.putString("message", "Invalid arguments.");
+		return new JsonObject().put("status", "error")
+				.put("message", "Invalid arguments.");
 	}
 
 
@@ -198,33 +198,33 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	}
 
 	private void markEventsAsRead(Message<JsonObject> message, String recipient) {
-		JsonArray events = message.body().getArray("results");
+		JsonArray events = message.body().getJsonArray("results");
 		if (events != null && "ok".equals(message.body().getString("status"))) {
 			JsonArray ids = new JsonArray();
 			for (Object o : events) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject json = (JsonObject) o;
-				ids.addString(json.getString("_id"));
+				ids.add(json.getString("_id"));
 			}
 			JsonObject q = new JsonObject()
-					.putObject("_id", new JsonObject().putArray("$in", ids))
-					.putObject("recipients", new JsonObject().putObject("$elemMatch",
-							new JsonObject().putString("userId", recipient).putNumber("unread", 1)
+					.put("_id", new JsonObject().put("$in", ids))
+					.put("recipients", new JsonObject().put("$elemMatch",
+							new JsonObject().put("userId", recipient).put("unread", 1)
 					));
-			mongo.update(TIMELINE_COLLECTION, q, new JsonObject().putObject("$set",
-					new JsonObject().putNumber("recipients.$.unread", 0)), false, true);
+			mongo.update(TIMELINE_COLLECTION, q, new JsonObject().put("$set",
+					new JsonObject().put("recipients.$.unread", 0)), false, true);
 		}
 	}
 
 	@Override
 	public void delete(String id, String sender, Handler<Either<String, JsonObject>> result) {
 		JsonObject matcher = new JsonObject()
-			.putString("_id", id)
-			.putString("sender", sender);
+			.put("_id", id)
+			.put("sender", sender);
 
-		JsonObject objNew = new JsonObject().putObject("$set", new JsonObject()
-			.putArray("recipients", new JsonArray())
-			.putNumber("deleted", 1));
+		JsonObject objNew = new JsonObject().put("$set", new JsonObject()
+			.put("recipients", new JsonArray())
+			.put("deleted", 1));
 
 		mongo.update(TIMELINE_COLLECTION, matcher, objNew, MongoDbResult.validActionResultHandler(result));
 	}
@@ -232,12 +232,12 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	@Override
 	public void discard(String id, String recipient, Handler<Either<String, JsonObject>> result) {
 		JsonObject criteria = new JsonObject()
-			.putString("_id", id);
+			.put("_id", id);
 
 		JsonObject objNew = new JsonObject()
-			.putObject("$pull", new JsonObject()
-					.putObject("recipients", new JsonObject()
-						.putString("userId", recipient)));
+			.put("$pull", new JsonObject()
+					.put("recipients", new JsonObject()
+						.put("userId", recipient)));
 
 		mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
 	}
@@ -247,19 +247,19 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		String now = mongoFormat.format(Calendar.getInstance().getTime());
 
 		JsonObject criteria = new JsonObject()
-			.putString("_id", id)
-			.putObject("reporters.userId", new JsonObject()
-				.putString("$ne", user.getUserId()));
+			.put("_id", id)
+			.put("reporters.userId", new JsonObject()
+				.put("$ne", user.getUserId()));
 
 		JsonObject objNew = new JsonObject()
-			.putObject("$addToSet", new JsonObject()
-				.putObject("reportedStructures", new JsonObject()
-					.putArray("$each", new JsonArray(user.getStructures())))
-				.putObject("reporters", new JsonObject()
-					.putString("userId", user.getUserId())
-					.putString("firstName", user.getFirstName())
-					.putString("lastName", user.getLastName())
-					.putString("date", now)));
+			.put("$addToSet", new JsonObject()
+				.put("reportedStructures", new JsonObject()
+					.put("$each", new JsonArray(user.getStructures())))
+				.put("reporters", new JsonObject()
+					.put("userId", user.getUserId())
+					.put("firstName", user.getFirstName())
+					.put("lastName", user.getLastName())
+					.put("date", now)));
 
 		mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
 	}
@@ -267,18 +267,18 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	@Override
 	public void listReported(String structure, boolean pending, int offset, int limit, Handler<Either<String, JsonArray>> result) {
 		JsonObject matcher = new JsonObject()
-				.putString("reportedStructures", structure);
+				.put("reportedStructures", structure);
 		JsonObject sort = new JsonObject();
-		JsonObject keys = new JsonObject().putNumber("recipients", 0);
+		JsonObject keys = new JsonObject().put("recipients", 0);
 
 		if(pending){
-			matcher.putObject("reportAction", new JsonObject()
-				.putBoolean("$exists", false));
-			sort.putNumber("reporters.date", -1);
+			matcher.put("reportAction", new JsonObject()
+				.put("$exists", false));
+			sort.put("reporters.date", -1);
 		} else {
-			matcher.putObject("reportAction", new JsonObject()
-				.putBoolean("$exists", true));
-			sort.putNumber("reportAction.date", -1);
+			matcher.put("reportAction", new JsonObject()
+				.put("$exists", true));
+			sort.put("reportAction.date", -1);
 		}
 
 		mongo.find(TIMELINE_COLLECTION, matcher, sort, keys, offset, limit, 100, MongoDbResult.validResultsHandler(result));
@@ -289,22 +289,22 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		String now = mongoFormat.format(Calendar.getInstance().getTime());
 
 		JsonObject criteria = new JsonObject()
-			.putString("_id", id)
-			.putString("reportedStructures", structureId)
-			.putObject("reportAction", new JsonObject()
-				.putString("$ne", AdminAction.DELETE.name()));
+			.put("_id", id)
+			.put("reportedStructures", structureId)
+			.put("reportAction", new JsonObject()
+				.put("$ne", AdminAction.DELETE.name()));
 
 		JsonObject objSet = new JsonObject()
-			.putObject("reportAction", new JsonObject()
-					.putString("action", action.name())
-					.putString("userId", user.getUserId())
-					.putString("firstName", user.getFirstName())
-					.putString("lastName", user.getLastName())
-					.putString("date", now));
-		JsonObject objNew = new JsonObject().putObject("$set", objSet);
+			.put("reportAction", new JsonObject()
+					.put("action", action.name())
+					.put("userId", user.getUserId())
+					.put("firstName", user.getFirstName())
+					.put("lastName", user.getLastName())
+					.put("date", now));
+		JsonObject objNew = new JsonObject().put("$set", objSet);
 
 		if(action == AdminAction.DELETE) {
-			objSet.putArray("recipients", new JsonArray());
+			objSet.put("recipients", new JsonArray());
 		}
 
 		mongo.update(TIMELINE_COLLECTION, criteria, objNew, MongoDbResult.validActionResultHandler(result));
@@ -313,9 +313,9 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	@Override
 	public void deleteReportNotification(String resourceId, Handler<Either<String, JsonObject>> result) {
 		JsonObject matcher = new JsonObject()
-			.putString("type", "TIMELINE")
-			.putString("event-type", "NOTIFY-REPORT")
-			.putString("resource", resourceId);
+			.put("type", "TIMELINE")
+			.put("event-type", "NOTIFY-REPORT")
+			.put("resource", resourceId);
 
 		mongo.delete(TIMELINE_COLLECTION, matcher, MongoDbResult.validActionResultHandler(result));
 	}

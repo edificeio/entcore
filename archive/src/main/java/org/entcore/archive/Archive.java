@@ -33,7 +33,7 @@ public class Archive extends BaseServer {
 	public static final String ARCHIVES = "archives";
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		setResourceProvider(new ArchiveFilter());
 		super.start();
 		addController(new ArchiveController());
@@ -43,8 +43,8 @@ public class Archive extends BaseServer {
 			try {
 				new CronTrigger(vertx, purgeArchivesCron).schedule(
 						new DeleteOldExports(
-								new StorageFactory(vertx, container.config()).getStorage(),
-								container.config().getInteger("deleteDelay", 24)
+								new StorageFactory(vertx, config).getStorage(),
+								config.getInteger("deleteDelay", 24)
 						));
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);

@@ -25,13 +25,12 @@ import fr.wseduc.webutils.data.ZLib;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.Sha256;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.json.impl.Base64;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -46,6 +45,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
+import java.util.Base64;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
@@ -92,7 +92,7 @@ public class EDTUtils {
 		}
 		final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
-		final byte[] decryptedKey = cipher.doFinal(Base64.decode(encryptedKey));
+		final byte[] decryptedKey = cipher.doFinal(Base64.getDecoder().decode(encryptedKey));
 		final byte[] key = Arrays.copyOfRange(decryptedKey, 0, 16);
 		final byte[] iv = Arrays.copyOfRange(decryptedKey, 16, 32);
 		final byte[] sum = Arrays.copyOfRange(decryptedKey, 32, 48);

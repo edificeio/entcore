@@ -24,11 +24,11 @@ import java.util.regex.PatternSyntaxException;
 
 import org.entcore.cas.services.RegisteredService;
 import org.entcore.cas.services.RegisteredServices;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.cas.data.DataHandler;
 import fr.wseduc.cas.data.DataHandlerFactory;
@@ -46,10 +46,10 @@ public class EntCoreDataHandlerFactory implements DataHandlerFactory {
 	public EntCoreDataHandlerFactory(EventBus eb, JsonObject conf) {
 		this.eb = eb;
 
-		JsonArray confServices = conf.getArray(CONF_SERVICES, new JsonArray());
-		for (Object confObject : confServices.toList()) {
+		JsonArray confServices = conf.getJsonArray(CONF_SERVICES, new JsonArray());
+		for (Object confObject : confServices) {
 			try {
-				Map<String, Object> confService = (Map<String, Object>) confObject;
+				Map<String, Object> confService = ((JsonObject) confObject).getMap();
 				String className = String.valueOf(confService.get(CONF_SERVICE_CLASS));
 				if (className != null) {
 					RegisteredService service = (RegisteredService) Class.forName(className).newInstance();

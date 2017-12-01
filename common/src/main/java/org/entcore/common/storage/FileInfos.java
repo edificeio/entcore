@@ -20,7 +20,7 @@
 package org.entcore.common.storage;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -92,22 +92,22 @@ public class FileInfos {
 		}
 		final JsonObject j = new JsonObject();
 		if (isNotEmpty(id)) {
-			j.putString(mapping.getString("id", "id"), id);
+			j.put(mapping.getString("id", "id"), id);
 		}
 		if (isNotEmpty(name)) {
-			j.putString(mapping.getString("name", "name"), name);
+			j.put(mapping.getString("name", "name"), name);
 		}
 		if (isNotEmpty(application)) {
-			j.putString(mapping.getString("application", "application"), application);
+			j.put(mapping.getString("application", "application"), application);
 		}
 		if (isNotEmpty(owner)) {
-			j.putString(mapping.getString("owner", "owner"), owner);
+			j.put(mapping.getString("owner", "owner"), owner);
 		}
 		if (isNotEmpty(contentType)) {
-			j.putString(mapping.getString("contentType", "contentType"), contentType);
+			j.put(mapping.getString("contentType", "contentType"), contentType);
 		}
 		if (size != null) {
-			j.putNumber(mapping.getString("size", "size"), size);
+			j.put(mapping.getString("size", "size"), size);
 		}
 		return j;
 	}

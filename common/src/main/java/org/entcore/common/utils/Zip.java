@@ -19,14 +19,16 @@
 
 package org.entcore.common.utils;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.zip.Deflater;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class Zip {
 
@@ -55,11 +57,11 @@ public class Zip {
 
 	public void zipFolder(String path, String zipPath, boolean deletePath, int level, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
-				.putString("path", path)
-				.putString("zipFile", zipPath)
-				.putBoolean("deletePath", deletePath)
-				.putNumber("level", level);
-		eb.send(address, j, handler);
+				.put("path", path)
+				.put("zipFile", zipPath)
+				.put("deletePath", deletePath)
+				.put("level", level);
+		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
 }

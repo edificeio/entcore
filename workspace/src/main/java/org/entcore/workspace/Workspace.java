@@ -19,6 +19,8 @@
 
 package org.entcore.workspace;
 
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.http.HttpServerOptions;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.workspace.controllers.AudioRecorderHandler;
@@ -39,7 +41,7 @@ public class Workspace extends BaseServer {
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		setResourceProvider(new WorkspaceResourcesProvider());
 		super.start();
 
@@ -47,7 +49,7 @@ public class Workspace extends BaseServer {
 				new MongoDBApplicationStorage("documents", Workspace.class.getSimpleName())).getStorage();
 		WorkspaceService service = new WorkspaceService();
 
-		final boolean neo4jPlugin = container.config().getBoolean("neo4jPlugin", false);
+		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
 
 		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
@@ -66,8 +68,9 @@ public class Workspace extends BaseServer {
 		addController(quotaController);
 
 		if (config.getInteger("wsPort") != null) {
-			container.deployWorkerVerticle(AudioRecorderWorker.class.getName(), config);
-			vertx.createHttpServer().setMaxWebSocketFrameSize(1024 * 1024)
+			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
+			HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1024 * 1024);
+			vertx.createHttpServer(options)
 					.websocketHandler(new AudioRecorderHandler(vertx)).listen(config.getInteger("wsPort"));
 		}
 

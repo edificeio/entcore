@@ -24,9 +24,9 @@ import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.rs.Get;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.cas.http.WrappedRequest;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 public class CredentialController extends BaseController {
 
@@ -45,8 +45,8 @@ public class CredentialController extends BaseController {
 				credential.logout(message.body().getString("userId"));
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error")
-						.putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error")
+						.put("message", "invalid.action"));
 		}
 	}
 

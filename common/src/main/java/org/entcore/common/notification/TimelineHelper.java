@@ -19,49 +19,52 @@
 
 package org.entcore.common.notification;
 
+import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
 
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.file.FileProps;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.platform.Container;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class TimelineHelper {
 
 	private static final String TIMELINE_ADDRESS = "wse.timeline";
-	private final static String messagesDir = "./i18n/timeline";
+	private final static String messagesDir = FileResolver.absolutePath("i18n/timeline");
 	private final EventBus eb;
 	private final Renders render;
 	private final Vertx vertx;
+	private final JsonObject config;
 	private final TimelineNotificationsLoader notificationsLoader;
-	private final Container container;
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
 
-	public TimelineHelper(Vertx vertx, EventBus eb, Container container) {
+	public TimelineHelper(Vertx vertx, EventBus eb, JsonObject config) {
 		this.eb = eb;
-		this.render = new Renders(vertx, container);
+		this.render = new Renders(vertx, config);
 		this.vertx = vertx;
-		this.container = container;
+		this.config = config;
 		this.notificationsLoader = TimelineNotificationsLoader.getInstance(vertx);
 		loadTimelineI18n();
 		loadAssetsTimelineDirectory();
@@ -79,56 +82,59 @@ public class TimelineHelper {
 							   UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params) {
 		notifyTimeline(request, notificationName, sender, recipients, resource, subResource, params, false);
 	}
-	public void notifyTimeline(HttpServerRequest request, final String notificationName,
+	public void notifyTimeline(final HttpServerRequest req, final String notificationName,
 			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
-		final JsonObject notification = notificationsLoader.getNotification(notificationName);
-
-		JsonArray r = new JsonArray();
-		for (String userId: recipients) {
-			r.addObject(new JsonObject().putString("userId", userId).putNumber("unread", 1));
-		}
-		final JsonObject event = new JsonObject()
-				.putString("action", "add")
-				.putString("type", notification.getString("type"))
-				.putString("event-type", notification.getString("event-type"))
-				.putArray("recipients", r)
-				.putArray("recipientsIds", new JsonArray(recipients.toArray()));
-		if (resource != null) {
-			event.putString("resource", resource);
-		}
-		if (sender != null) {
-			event.putString("sender", sender.getUserId());
-		}
-		if (subResource != null && !subResource.trim().isEmpty()) {
-			event.putString("sub-resource", subResource);
-		}
-		if (disableAntiFlood || params.getBoolean("disableAntiFlood", false)) {
-			event.putBoolean("disableAntiFlood", true);
-		}
-		Long date = params.getLong("timeline-publish-date");
-		if (date != null) {
-			event.putObject("date", new JsonObject().putNumber("$date", date));
-			params.removeField("timeline-publish-date");
-		}
-		if (request == null) {
-			request = new JsonHttpServerRequest(new JsonObject());
-		}
-		event.putObject("params", params)
-			.putString("notificationName", notificationName)
-			.putObject("notification", notification)
-			.putObject("request", new JsonObject().putObject("headers",
-					new JsonObject()
-						.putString("Host", Renders.getHost(request))
-						.putString("X-Forwarded-Proto", Renders.getScheme(request))
-						.putString("Accept-Language", request.headers().get("Accept-Language"))
-			));
-		eb.send(TIMELINE_ADDRESS, event, new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				JsonObject result = event.body();
-				if("error".equals(result.getString("status", "error"))){
-					log.error("Error in timeline notification : " + result.getString("message"));
-				}
+		notificationsLoader.getNotification(notificationName, notification -> {
+			JsonArray r = new JsonArray();
+			for (String userId: recipients) {
+				r.add(new JsonObject().put("userId", userId).put("unread", 1));
 			}
+			final JsonObject event = new JsonObject()
+					.put("action", "add")
+					.put("type", notification.getString("type"))
+					.put("event-type", notification.getString("event-type"))
+					.put("recipients", r)
+					.put("recipientsIds", new JsonArray(recipients));
+			if (resource != null) {
+				event.put("resource", resource);
+			}
+			if (sender != null) {
+				event.put("sender", sender.getUserId());
+			}
+			if (subResource != null && !subResource.trim().isEmpty()) {
+				event.put("sub-resource", subResource);
+			}
+			if (disableAntiFlood || params.getBoolean("disableAntiFlood", false)) {
+				event.put("disableAntiFlood", true);
+			}
+			Long date = params.getLong("timeline-publish-date");
+			if (date != null) {
+				event.put("date", new JsonObject().put("$date", date));
+				params.remove("timeline-publish-date");
+			}
+			HttpServerRequest request;
+			if (req == null) {
+				request = new JsonHttpServerRequest(new JsonObject());
+			} else {
+				request = req;
+			}
+			event.put("params", params)
+				.put("notificationName", notificationName)
+				.put("notification", notification)
+				.put("request", new JsonObject().put("headers",
+						new JsonObject()
+								.put("Host", Renders.getHost(request))
+								.put("X-Forwarded-Proto", Renders.getScheme(request))
+								.put("Accept-Language", request.headers().get("Accept-Language"))
+				));
+			eb.send(TIMELINE_ADDRESS, event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				public void handle(Message<JsonObject> event) {
+					JsonObject result = event.body();
+					if("error".equals(result.getString("status", "error"))){
+						log.error("Error in timeline notification : " + result.getString("message"));
+					}
+				}
+			}));
 		});
 	}
 
@@ -150,32 +156,32 @@ public class TimelineHelper {
 			List<String> recipients, String resource, String subResource, String template, JsonObject params) {
 		JsonArray r = new JsonArray();
 		for (String userId: recipients) {
-			r.addObject(new JsonObject().putString("userId", userId).putNumber("unread", 1));
+			r.add(new JsonObject().put("userId", userId).put("unread", 1));
 		}
 		final JsonObject event = new JsonObject()
-				.putString("action", "add")
-				.putString("type", type)
-				.putString("event-type", eventType)
-				.putArray("recipients", r);
+				.put("action", "add")
+				.put("type", type)
+				.put("event-type", eventType)
+				.put("recipients", r);
 		if (resource != null) {
-			event.putString("resource", resource);
+			event.put("resource", resource);
 		}
 		if (sender != null) {
-			event.putString("sender", sender.getUserId());
+			event.put("sender", sender.getUserId());
 		}
 		if (subResource != null && !subResource.trim().isEmpty()) {
-			event.putString("sub-resource", subResource);
+			event.put("sub-resource", subResource);
 		}
 		Long date = params.getLong("timeline-publish-date");
 		if (date != null) {
-			event.putObject("date", new JsonObject().putNumber("$date", date));
-			params.removeField("timeline-publish-date");
+			event.put("date", new JsonObject().put("$date", date));
+			params.remove("timeline-publish-date");
 		}
 		render.processTemplate(request, template, params, new Handler<String>() {
 			@Override
 			public void handle(String message) {
 				if (message != null) {
-					event.putString("message", message);
+					event.put("message", message);
 					eb.send(TIMELINE_ADDRESS, event);
 				} else {
 					log.error("Unable to send timeline " + eventType + " notification.");
@@ -190,9 +196,9 @@ public class TimelineHelper {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
 				if (ar.succeeded() && ar.result()) {
-					vertx.fileSystem().readDir(messagesDir, new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(messagesDir, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> ar) {
+						public void handle(AsyncResult<List<String>> ar) {
 							if (ar.succeeded()) {
 								readI18nTimeline(ar);
 							}
@@ -205,9 +211,9 @@ public class TimelineHelper {
 		});
 	}
 
-	private void readI18nTimeline(AsyncResult<String[]> ar) {
+	private void readI18nTimeline(AsyncResult<List<String>> ar) {
 		final Map<String, JsonObject> messages = new HashMap<>();
-		final AtomicInteger count = new AtomicInteger(ar.result().length);
+		final AtomicInteger count = new AtomicInteger(ar.result().size());
 		for(final String path : ar.result()) {
 			vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
 				@Override
@@ -238,17 +244,17 @@ public class TimelineHelper {
 	}
 
 	private void loadAssetsTimelineDirectory() {
-		final String[] app = container.config().getString("main", "").split("\\.");
-		final String assetsDirectory = container.config().getString("assets-path", "../..") + File.separator + "assets";
+		final String[] app = Utils.loadFromResource("mod.json").getString("main").split("\\.");
+		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String i18nDirectory = assetsDirectory + File.separator + "i18n" + File.separator + app[app.length - 1] +
 				File.separator + "timeline";
 		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
 				if (ar.succeeded() && ar.result()) {
-					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(i18nDirectory, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> asyncResult) {
+						public void handle(AsyncResult<List<String>> asyncResult) {
 							if (asyncResult.succeeded()) {
 								readI18nTimeline(asyncResult);
 							} else {
@@ -264,7 +270,7 @@ public class TimelineHelper {
 	}
 
 	private void appendTimelineEventsI18n(Map<String, JsonObject> i18ns) {
-		ConcurrentMap<String, String> eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
+		LocalMap<String, String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		for (Map.Entry<String, JsonObject> e: i18ns.entrySet()) {
 			String json = e.getValue().encode();
 			if (StringUtils.isEmpty(json) || "{}".equals(StringUtils.stripSpaces(json))) continue;

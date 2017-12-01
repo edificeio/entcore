@@ -19,15 +19,15 @@
 
 package org.entcore.common.neo4j;
 
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class Neo4jUtils {
 		} else {
 			i = Collections.emptyList();
 		}
-		for (String a: json.getFieldNames()) {
+		for (String a: json.fieldNames()) {
 			String attr = a.replaceAll("\\W+", "");
 			if (i.contains(attr)) continue;
 			sb.append(", ").append(nodeAlias).append(".").append(attr).append(" = {").append(attr).append("}");
@@ -62,13 +62,13 @@ public class Neo4jUtils {
 
 	public static void loadScripts(final String appName, final Vertx vertx, final String path) {
 		String query = "MATCH (n:System) WHERE n.name = {appName} RETURN n.scripts as scripts";
-		Neo4j.getInstance().execute(query, new JsonObject().putString("appName", appName), new Handler<Message<JsonObject>>() {
+		Neo4j.getInstance().execute(query, new JsonObject().put("appName", appName), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				JsonArray scripts;
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
-					scripts = res.<JsonObject>get(0).getArray("scripts", new JsonArray());
+					scripts = res.getJsonObject(0).getJsonArray("scripts", new JsonArray());
 				} else {
 					scripts = new JsonArray();
 				}
@@ -81,15 +81,15 @@ public class Neo4jUtils {
 	private static void loadAndExecute(final String schema, final Vertx vertx, final String path,
 			final boolean index, final JsonArray excludeFileNames) {
 		final String pattern = index ? ".*?-index\\.cypher$" : "^(?!.*-index).*?\\.cypher$";
-		vertx.fileSystem().readDir(path, pattern, new Handler<AsyncResult<String[]>>() {
+		vertx.fileSystem().readDir(path, pattern, new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<String[]> asyncResult) {
+			public void handle(AsyncResult<List<String>> asyncResult) {
 				if (asyncResult.succeeded()) {
-					final String [] files = asyncResult.result();
-					Arrays.sort(files);
+					final List<String> files = asyncResult.result();
+					Collections.sort(files);
 					final StatementsBuilder s = new StatementsBuilder();
 					final JsonArray newFiles = new JsonArray();
-					final AtomicInteger count = new AtomicInteger(files.length);
+					final AtomicInteger count = new AtomicInteger(files.size());
 					for (final String f : files) {
 						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);
 						if (!excludeFileNames.contains(filename)) {
@@ -101,7 +101,7 @@ public class Neo4jUtils {
 										for (String q : script.replaceAll("(\r|\n)", " ").split(";")) {
 											s.add(q);
 										}
-										newFiles.addString(filename);
+										newFiles.add(filename);
 									} else {
 										log.error("Error reading file : " + f, bufferAsyncResult.cause());
 									}
@@ -120,7 +120,7 @@ public class Neo4jUtils {
 			}
 
 			private void commit(final String schema, StatementsBuilder s, final JsonArray newFiles, final boolean index) {
-				final JsonObject params = new JsonObject().putString("appName", schema).putArray("newFiles", newFiles);
+				final JsonObject params = new JsonObject().put("appName", schema).put("newFiles", newFiles);
 				if (!index) {
 					s.add(UPDATE_SCRIPTS, params);
 				}

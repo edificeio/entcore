@@ -21,23 +21,20 @@ package org.entcore.feeder.utils;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.http.response.JsonHttpResponse;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,7 +58,7 @@ public class Report {
 		final JsonObject errors = new JsonObject();
 		final JsonObject files = new JsonObject();
 		JsonObject ignored = new JsonObject();
-		result = new JsonObject().putObject("errors", errors).putObject("files", files).putObject("ignored", ignored);
+		result = new JsonObject().put("errors", errors).put("files", files).put("ignored", ignored);
 	}
 
 	public Report addError(String error) {
@@ -79,70 +76,70 @@ public class Report {
 
 	public void addFailedUser(String filename, String key, JsonObject props, String... errors) {
 		final String file = "error." + filename;
-		JsonArray f = result.getObject("errors").getArray(file);
+		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
 			f = new JsonArray();
-			result.getObject("errors").putArray(file, f);
+			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
-		props.putString("error", error);
-		f.addObject(props);
+		props.put("error", error);
+		f.add(props);
 		log.error(error + " :\n" + Arrays.asList(props));
 	}
 
 	public void addErrorByFile(String filename, String key, String... errors) {
 		final String file = "error." + filename;
-		JsonArray f = result.getObject("errors").getArray(file);
+		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
 			f = new JsonArray();
-			result.getObject("errors").putArray(file, f);
+			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
-		f.addString(error);
+		f.add(error);
 		log.error(error);
 	}
 
 	public void addSoftErrorByFile(String file, String key, String... errors) {
-		JsonObject softErrors = result.getObject("softErrors");
+		JsonObject softErrors = result.getJsonObject("softErrors");
 		if (softErrors == null) {
 			softErrors = new JsonObject();
-			result.putObject("softErrors", softErrors);
+			result.put("softErrors", softErrors);
 		}
-		JsonArray f = softErrors.getArray(file);
+		JsonArray f = softErrors.getJsonArray(file);
 		if (f == null) {
 			f = new JsonArray();
-			softErrors.putArray(file, f);
+			softErrors.put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
-		f.addString(error);
+		f.add(error);
 		log.error(error);
 	}
 
 	public void addUser(String file, JsonObject props) {
-		JsonArray f = result.getObject("files").getArray(file);
+		JsonArray f = result.getJsonObject("files").getJsonArray(file);
 		if (f == null) {
 			f = new JsonArray();
-			result.getObject("files").putArray(file, f);
+			result.getJsonObject("files").put(file, f);
 		}
-		f.addObject(props);
+		f.add(props);
 	}
 
 	public void addProfile(String profile) {
-		JsonArray f = result.getArray(PROFILES);
+		JsonArray f = result.getJsonArray(PROFILES);
 		if (f == null) {
 			f = new JsonArray();
-			result.putArray(PROFILES, f);
+			result.put(PROFILES, f);
 		}
-		f.addString(profile);
+		f.add(profile);
 	}
 
 	public void addIgnored(String file, String reason, JsonObject object) {
-		JsonArray f = result.getObject("ignored").getArray(file);
+		JsonArray f = result.getJsonObject("ignored").getJsonArray(file);
 		if (f == null) {
 			f = new JsonArray();
-			result.getObject("ignored").putArray(file, f);
+			result.getJsonObject("ignored").put(file, f);
 		}
-		f.addObject(new JsonObject().putString("reason", reason).putObject("object", object));
+		f.add(new JsonObject().put("reason", reason).put("object", object));
 	}
 
 	public String translate(String key, String... params) {
@@ -154,19 +151,19 @@ public class Report {
 	}
 
 	public void setUsersExternalId(JsonArray usersExternalIds) {
-		result.putArray("usersExternalIds", usersExternalIds);
+		result.put("usersExternalIds", usersExternalIds);
 	}
 
 	public JsonArray getUsersExternalId() {
 		final JsonArray res = new JsonArray();
-		for (String f : result.getObject("files").getFieldNames()) {
-			JsonArray a = result.getObject("files").getArray(f);
+		for (String f : result.getJsonObject("files").fieldNames()) {
+			JsonArray a = result.getJsonObject("files").getJsonArray(f);
 			if (a != null) {
 				for (Object o : a) {
 					if (!(o instanceof JsonObject)) continue;
 					final String externalId = ((JsonObject) o).getString("externalId");
 					if (externalId != null) {
-						res.addString(externalId);
+						res.add(externalId);
 					}
 				}
 			}
@@ -175,7 +172,7 @@ public class Report {
 	}
 
 	public boolean containsErrors() {
-		return result.getObject("errors", new JsonObject()).size() > 0;
+		return result.getJsonObject("errors", new JsonObject()).size() > 0;
 	}
 
 	public void persist(Handler<Message<JsonObject>> handler) {
@@ -201,14 +198,14 @@ public class Report {
 		loadedFiles.add(file);
 	}
 
-	public void countDiff(final VoidHandler handler) {
+	public void countDiff(final Handler<Void> handler) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 			JsonObject params = new JsonObject()
-					.putString("source", source)
-					.putNumber("start", startTime).putNumber("end", endTime)
-					.putString("startTime", new DateTime(startTime).toString())
-					.putString("endTime", new DateTime(endTime).toString());
+					.put("source", source)
+					.put("start", startTime).put("end", endTime)
+					.put("startTime", new DateTime(startTime).toString())
+					.put("endTime", new DateTime(endTime).toString());
 			tx.add(
 					"MATCH (u:User {source:{source}}) " +
 					"WHERE HAS(u.created) AND u.created >= {startTime} AND u.created < {endTime} " +
@@ -224,21 +221,21 @@ public class Report {
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
-					JsonArray results = event.body().getArray("results");
+					JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() == 3) {
 						try {
-							int created = results.<JsonArray>get(0).<JsonObject>get(0).getInteger("createdCount");
-							int modified = results.<JsonArray>get(1).<JsonObject>get(0).getInteger("modifiedCount");
-							int disappearance = results.<JsonArray>get(2).<JsonObject>get(0).getInteger("disappearanceCount");
-							result.putObject("userCount", new JsonObject()
-									.putNumber("created", created)
-									.putNumber("modified", (modified - created))
-									.putNumber("disappearance", disappearance)
+							int created = results.getJsonArray(0).getJsonObject(0).getInteger("createdCount");
+							int modified = results.getJsonArray(1).getJsonObject(0).getInteger("modifiedCount");
+							int disappearance = results.getJsonArray(2).getJsonObject(0).getInteger("disappearanceCount");
+							result.put("userCount", new JsonObject()
+									.put("created", created)
+									.put("modified", (modified - created))
+									.put("disappearance", disappearance)
 							);
-							result.putString("source", source);
-							result.putString("startTime", new DateTime(startTime).toString());
-							result.putString("endTime", new DateTime(endTime).toString());
-							result.putArray("loadedFiles", new JsonArray(loadedFiles.toArray()));
+							result.put("source", source);
+							result.put("startTime", new DateTime(startTime).toString());
+							result.put("endTime", new DateTime(endTime).toString());
+							result.put("loadedFiles", new JsonArray(new ArrayList<>(loadedFiles)));
 //							persist(new Handler<Message<JsonObject>>() {
 //								@Override
 //								public void handle(Message<JsonObject> event) {
@@ -266,32 +263,29 @@ public class Report {
 		}
 	}
 
-	public void emailReport(final Vertx vertx, final Container container) {
-		final JsonObject sendReport = container.config().getObject("sendReport");
-		if (sendReport == null || sendReport.getArray("to") == null || sendReport.getArray("to").size() == 0 ||
-				sendReport.getArray("sources") == null || !sendReport.getArray("sources").contains(source) ) {
+	public void emailReport(final Vertx vertx, final JsonObject config) {
+		final JsonObject sendReport = config.getJsonObject("sendReport");
+		if (sendReport == null || sendReport.getJsonArray("to") == null || sendReport.getJsonArray("to").size() == 0 ||
+				sendReport.getJsonArray("sources") == null || !sendReport.getJsonArray("sources").contains(source) ) {
 			return;
 		}
 
 		final JsonObject reqParams = new JsonObject()
-				.putObject("headers", new JsonObject().putString("Accept-Language", acceptLanguage));
-		EmailFactory emailFactory = new EmailFactory(vertx, container, container.config());
+				.put("headers", new JsonObject().put("Accept-Language", acceptLanguage));
+		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		emailFactory.getSender().sendEmail(
 				new JsonHttpServerRequest(reqParams),
-				sendReport.getArray("to").toList(),
-				sendReport.getArray("cc") != null ? sendReport.getArray("cc").toList() : null,
-				sendReport.getArray("bcc") != null ? sendReport.getArray("bcc").toList() : null,
+				sendReport.getJsonArray("to").getList(),
+				sendReport.getJsonArray("cc") != null ? sendReport.getJsonArray("cc").getList() : null,
+				sendReport.getJsonArray("bcc") != null ? sendReport.getJsonArray("bcc").getList() : null,
 				sendReport.getString("project", "") + i18n.translate("import.report", I18n.DEFAULT_DOMAIN, acceptLanguage) +
 						" - " + DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd")),
 				"email/report.html",
 				result,
 				false,
-				new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-						if (!"ok".equals(event.body().getString("status"))) {
-							log.error("Error sending report email : " + event.body().getString("message"));
-						}
+				ar -> {
+					if (ar.failed()) {
+						log.error("Error sending report email.", ar.cause());
 					}
 				}
 		);

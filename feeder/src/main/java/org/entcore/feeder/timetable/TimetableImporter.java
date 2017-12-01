@@ -19,11 +19,12 @@
 
 package org.entcore.feeder.timetable;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import org.entcore.feeder.utils.Report;
-import org.vertx.java.core.AsyncResultHandler;
 
 public interface TimetableImporter {
 
-	public void launch(final AsyncResultHandler<Report> handler) throws Exception;
+	public void launch(final Handler<AsyncResult<Report>> handler) throws Exception;
 
 }

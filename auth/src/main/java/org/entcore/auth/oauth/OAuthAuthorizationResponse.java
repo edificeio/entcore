@@ -19,7 +19,7 @@
 
 package org.entcore.auth.oauth;
 
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerRequest;
 
 public class OAuthAuthorizationResponse {
 

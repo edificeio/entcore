@@ -31,11 +31,13 @@ import fr.wseduc.webutils.http.Renders;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 
 public class ConfigurationController extends BaseController {
@@ -47,48 +49,48 @@ public class ConfigurationController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void reloadPatterns(HttpServerRequest request) {
 		loadPatterns();
-		Renders.renderJson(request, new JsonObject().putString("result", "done"), 200);
+		Renders.renderJson(request, new JsonObject().put("result", "done"), 200);
 	}
 
 	public void loadPatterns() {
-		eb.send("wse.app.registry.bus", new JsonObject().putString("action", "list-cas-connectors"),
-				new Handler<Message<JsonObject>>() {
+		eb.send("wse.app.registry.bus", new JsonObject().put("action", "list-cas-connectors"),
+				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
 					services.cleanPatterns();
-					JsonArray externalApps = event.body().getArray("result");
+					JsonArray externalApps = event.body().getJsonArray("result");
 					for (Object o: externalApps) {
 						if (!(o instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) o;
 						String service = j.getString("service");
-						JsonArray patterns = j.getArray("patterns");
+						JsonArray patterns = j.getJsonArray("patterns");
 						if (service != null && !service.trim().isEmpty() && patterns != null && patterns.size() > 0) {
-							services.addPatterns(service,Arrays.copyOf(patterns.toArray(), patterns.size(), String[].class));
+							services.addPatterns(service,Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class));
 						}
 					}
 				} else {
 					log.error(event.body().getString("message"));
 				}
 			}
-		});
+		}));
 	}
 
 	@BusAddress(value = "cas.configuration", local = false)
 	public void cas(Message<JsonObject> message) {
 		switch (message.body().getString("action", "")) {
 			case "list-services" :
-				message.reply(new JsonObject().putString("status", "ok")
-						.putArray("result", services.getInfos(message.body().getString("accept-language", "fr"))));
+				message.reply(new JsonObject().put("status", "ok")
+						.put("result", services.getInfos(message.body().getString("accept-language", "fr"))));
 				break;
 			case "add-patterns" :
 				String service = message.body().getString("service");
-				JsonArray patterns = message.body().getArray("patterns");
-				message.reply(new JsonObject().putString("status",
-						services.addPatterns(service, Arrays.copyOf(patterns.toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
+				JsonArray patterns = message.body().getJsonArray("patterns");
+				message.reply(new JsonObject().put("status",
+						services.addPatterns(service, Arrays.copyOf(patterns.getList().toArray(), patterns.size(), String[].class)) ? "ok" : "error"));
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
 	}
 

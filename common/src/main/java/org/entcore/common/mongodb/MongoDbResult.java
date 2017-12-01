@@ -20,17 +20,17 @@
 package org.entcore.common.mongodb;
 
 import fr.wseduc.webutils.Either;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class MongoDbResult {
 
 
 	public static Either<String, JsonObject> validActionResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			res.body().removeField("status");
+			res.body().remove("status");
 			return new Either.Right<>(res.body());
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
@@ -39,7 +39,7 @@ public class MongoDbResult {
 
 	public static Either<String, JsonObject> validResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonObject r = res.body().getObject("result", new JsonObject());
+			JsonObject r = res.body().getJsonObject("result", new JsonObject());
 			return new Either.Right<>(r);
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
@@ -48,7 +48,7 @@ public class MongoDbResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return new Either.Right<>(res.body().getArray("results", new JsonArray()));
+			return new Either.Right<>(res.body().getJsonArray("results", new JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}

@@ -1,29 +1,55 @@
-apply from: "gradle/setup.gradle"
 import groovy.json.JsonSlurper
 import groovy.json.JsonOutput
 
-subprojects {
-  apply plugin: 'eclipse'
-  apply plugin: 'java'
+plugins {
+  id 'java'
+  id 'com.github.johnrengelman.shadow' version '2.0.1'
+}
 
-  apply from: "$rootDir/gradle/vertx.gradle"
+if (!hasProperty('odeUsername')) {
+  ext.odeUsername = ''
+}
+if (!hasProperty('odePassword')) {
+  ext.odePassword = ''
+}
+
+subprojects {
+  apply plugin:'java'
+  apply plugin:'maven'
+  apply plugin:'maven-publish'
+  apply plugin:'com.github.johnrengelman.shadow'
 
 	repositories {
-		maven {
-			credentials {
-				username 'admin'
-				password 'admin'
-			}
-			url "http://maven.web-education.net/nexus/content/groups/public"
-		}
+  mavenLocal()
+  maven {
+    url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
+  }
+  mavenCentral()
+  jcenter()
+  maven {
+    url "https://oss.sonatype.org/content/repositories/iovertx-3720/"
+  }
+  maven {
+    url "https://oss.sonatype.org/content/repositories/snapshots"
+  }
+  maven { url "https://plugins.gradle.org/m2/" }
 	}
+
+  configurations {
+    provided
+    runtime.exclude module: 'vertx-core'
+  }
+
+  sourceSets {
+    main { compileClasspath += configurations.provided }
+  }
 
   configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
   }
 
-  sourceCompatibility = 1.7
-  targetCompatibility = 1.7
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
 
   compileJava {
     sourceCompatibility = project.sourceCompatibility
@@ -34,13 +60,71 @@ subprojects {
     sourceCompatibility = project.sourceCompatibility
     targetCompatibility = project.targetCompatibility
   }
-
   dependencies {
-    provided "io.vertx:vertx-core:$vertxVersion"
-    provided "io.vertx:vertx-platform:$vertxVersion"
-
+    compileOnly "io.vertx:vertx-core:$vertxVersion"
     testCompile "junit:junit:$junitVersion"
-    testCompile "io.vertx:testtools:$toolsVersion"
+  }
+
+  jar {
+    manifest {
+      attributes(
+          "Main-Verticle": "service:mod"
+      )
+    }
+  }
+
+  shadowJar {
+    classifier = 'fat'
+    archiveName = "${modowner}~${project.name}~$version-$classifier.$extension"
+      mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+      }
+  }
+
+  install {
+    repositories.mavenInstaller {
+      pom.version = "$version"
+        pom.artifactId = "${project.name}"
+        pom.groupId = "${modowner}"
+    }
+  }
+
+  publishing {
+    repositories {
+      if (version.endsWith("SNAPSHOT")) {
+        maven {
+          name 'Snapshots'
+            url 'https://maven.opendigitaleducation.com/nexus/content/repositories/snapshots/'
+            credentials {
+              username "${odeUsername}"
+                password "${odePassword}"
+            }
+        }
+      } else {
+        maven {
+          name 'Releases'
+            url 'https://maven.opendigitaleducation.com/nexus/content/repositories/releases/'
+            credentials {
+              username "${odeUsername}"
+                password "${odePassword}"
+            }
+        }
+      }
+    }
+    publications {
+      if (!"common".equals(project.name) && !"tests".equals(project.name)) {
+        maven(MavenPublication) {
+          groupId "${modowner}"
+            artifact("build/libs/${modowner}~${project.name}~$version-fat.jar") { classifier "fat" }
+        }
+      }
+      if ("common".equals(project.name) || "tests".equals(project.name)) {
+        mavenJava(MavenPublication) {
+          from components.java
+          groupId "${modowner}"
+        }
+      }
+    }
   }
 
   javadoc {
@@ -50,41 +134,16 @@ subprojects {
   }
 
 	afterEvaluate { project ->
-		project.tasks['copyMod'].doLast {
+		project.tasks['shadowJar'].doLast {
 			copy {
 				into 'mods'
-				from "${project.name}/build/mods"
+				from "${project.name}/build/libs/$archiveName"
 			}
 		}
 		project.tasks['clean'].doLast {
-			rootProject.delete "mods/${project.ext.moduleName}"
+			rootProject.delete "mods"
 		}
 	}
-}
-
-def generateMissingI18n() {
-  JsonSlurper jsonSlurper = new JsonSlurper()
-  File rootDir = new File(".")
-  rootDir.eachFileRecurse {
-    if (it.isDirectory() && ("i18n".equals(it.getName()) || ("timeline".equals(it.getName()) && it.getParent().endsWith("i18n")))) {
-      Map i18n = [:]
-      it.eachFileMatch(~/.+.json/) { file ->
-        def t = file.text
-        i18n.put(file.getName(), (Map) jsonSlurper.parseText((t != null && !t.empty) ? t : "{}"))
-      }
-      Map fr = i18n.remove("fr.json")
-      new File(it, "fr.json").withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(fr.sort())) }
-      i18n.each { key, lang ->
-        Map out = fr.findAll({true})
-        out.putAll(lang)
-        new File(it, key).withWriter{ it << JsonOutput.prettyPrint(JsonOutput.toJson(out.sort())) }
-      }
-    }
-  }
-}
-
-task generateI18n(description:'Generate missing keys in i18n files') << {
-  generateMissingI18n()
 }
 
 project(':common') {
@@ -120,6 +179,7 @@ project(':auth') {
     compile "jp.eisbahn:oauth2-server:1.2.0"
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
+    compile "joda-time:joda-time:$jodaTimeVersion"
   }
 }
 
@@ -136,6 +196,7 @@ project(':directory') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    compile "joda-time:joda-time:$jodaTimeVersion"
   }
 }
 
@@ -180,6 +241,7 @@ project(':feeder') {
     compile "com.opencsv:opencsv:$opencsvVersion"
     compile "com.googlecode.juniversalchardet:juniversalchardet:$juniversalchardetVersion"
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
+    compile "joda-time:joda-time:$jodaTimeVersion"
   }
 }
 
@@ -211,23 +273,25 @@ project(':session') {
   }
 }
 
+
 project(':tests') {
   apply plugin: 'scala'
 
   dependencies {
-    compile 'io.gatling.highcharts:gatling-charts-highcharts:2.0.3'
+    compile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
     compile 'net.minidev:json-smart:1.1.1'
   }
 
   task gatling(dependsOn: 'compileTestScala') << {
-    def simulations =  new java.io.File(sourceSets.test.output.classesDir.getPath() + File.separator + 'org' + File.separator + 'entcore' + File.separator + 'test' + File.separator + 'simulations')
+    def classesDir = sourceSets.test.output.classesDir.getPath().replace("java", "scala")
+    def simulations =  new java.io.File(classesDir + File.separator + 'org' + File.separator + 'entcore' + File.separator + 'test' + File.separator + 'simulations')
 
     logger.lifecycle(" ---- Executing all Gatling scenarios from: ${simulations} ----")
     simulations.eachFileRecurse { file ->
       if (file.isFile()) {
         //Remove the full path, .class and replace / with a .
         logger.debug("Tranformed file ${file} into")
-          def gatlingScenarioClass = (file.getPath() - (sourceSets.test.output.classesDir.getPath() + File.separator) - '.class')
+          def gatlingScenarioClass = (file.getPath() - (classesDir + File.separator) - '.class')
           .replace(File.separator, '.')
 
           logger.debug("Tranformed file ${file} into scenario class ${gatlingScenarioClass}")
@@ -236,9 +300,7 @@ project(':tests') {
             main = 'io.gatling.app.Gatling'
               classpath = sourceSets.test.output + sourceSets.test.runtimeClasspath
             args  '-bf',
-            sourceSets.test.output.classesDir,
-            '-rbf',
-            sourceSets.test.output.classesDir,
+            classesDir,
             '-s',
             gatlingScenarioClass,
             '-rf',
@@ -252,6 +314,7 @@ project(':tests') {
 
 }
 
+/*
 task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
   workingDir '.'
 
@@ -299,3 +362,5 @@ gradle.taskGraph.afterTask { task, TaskState state ->
         tasks.stopEnt.execute()
     }
 }
+*/
+

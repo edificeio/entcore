@@ -22,9 +22,9 @@ package org.entcore.directory.security;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.http.filter.CsrfFilter;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 
 import java.util.Set;
 

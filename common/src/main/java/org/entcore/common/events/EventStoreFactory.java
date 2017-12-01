@@ -20,15 +20,13 @@
 package org.entcore.common.events;
 
 import org.entcore.common.events.impl.MongoDbEventStoreFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Vertx;
 
 import java.util.ServiceLoader;
 
 public abstract class EventStoreFactory {
 
 	protected Vertx vertx;
-	protected Container container;
 
 	private static class EventStoreFactoryHolder {
 
@@ -52,10 +50,6 @@ public abstract class EventStoreFactory {
 
 	public void setVertx(Vertx vertx) {
 		this.vertx = vertx;
-	}
-
-	public void setContainer(Container container) {
-		this.container = container;
 	}
 
 }

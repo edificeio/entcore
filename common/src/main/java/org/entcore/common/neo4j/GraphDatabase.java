@@ -19,9 +19,9 @@
 
 package org.entcore.common.neo4j;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public interface GraphDatabase {
 

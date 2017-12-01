@@ -21,10 +21,10 @@ package org.entcore.cas.services;
 
 import java.util.List;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,12 +43,12 @@ public class WebclasseursRegisteredService extends AbstractCas20ExtensionRegiste
 
 		try {
 			// Lastname
-			if (data.containsField("login")) {
+			if (data.containsKey("login")) {
 				additionnalAttributes.add(createTextElement(WEBCLASSEURS_LOGIN, data.getString("login"), doc));
 			}
 
 			// Profile
-			JsonArray profiles = data.getArray("type");
+			JsonArray profiles = data.getJsonArray("type");
 			if (profiles.contains("Teacher") || profiles.contains("Personnel")) {
 				// Teacher and Personnel seen alike for Webclasseurs
 				additionnalAttributes.add(createTextElement(WEBCLASSEURS_PROFILE, "National_3", doc));

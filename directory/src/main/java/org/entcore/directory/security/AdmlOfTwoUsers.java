@@ -23,10 +23,10 @@ import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.AdmlResourcesProvider;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 
 public class AdmlOfTwoUsers extends AdmlResourcesProvider {
@@ -41,10 +41,10 @@ public class AdmlOfTwoUsers extends AdmlResourcesProvider {
 				"WHERE s.id IN {structures} " +
 				"RETURN count(*) > 0 as exists ";
 
-		JsonObject params = new JsonObject().putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
+		JsonObject params = new JsonObject().put("structures", new JsonArray(adminLocal.getScope()));
 		StatementsBuilder statements = new StatementsBuilder()
-				.add(query, params.copy().putString("userId", userId1))
-				.add(query, params.copy().putString("userId", userId2));
+				.add(query, params.copy().put("userId", userId1))
+				.add(query, params.copy().put("userId", userId2));
 
 		validateQueries(resourceRequest, handler, statements);
 	}

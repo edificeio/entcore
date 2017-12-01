@@ -23,11 +23,11 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,8 +41,8 @@ public class DefaultOpenIdServiceProviderFactory implements OpenIdServiceProvide
 	private final Map<String, OpenIdConnectClient> openIdConnectClients = new HashMap<>();
 
 	public DefaultOpenIdServiceProviderFactory(Vertx vertx, JsonObject domains) {
-		for (String domain : domains.getFieldNames()) {
-			JsonObject c = domains.getObject(domain);
+		for (String domain : domains.fieldNames()) {
+			JsonObject c = domains.getJsonObject(domain);
 			OpenIdConnectServiceProvider provider;
 			if ("France-Connect".equals(c.getString("provider"))) {
 				provider = new FranceConnectServiceProvider(c.getString("iss"));

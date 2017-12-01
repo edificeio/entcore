@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import io.vertx.core.http.*;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -26,19 +27,18 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
-import org.vertx.java.core.*;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientRequest;
-import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 
 public class PostImport {
@@ -65,22 +65,22 @@ public class PostImport {
 
 	public void execute(String source) {
 		storeImportedEvent();
-		if (source == null || config.getArray("exclude-mark-duplicates-by-source") == null ||
-				!config.getArray("exclude-mark-duplicates-by-source").contains(source)) {
+		if (source == null || config.getJsonArray("exclude-mark-duplicates-by-source") == null ||
+				!config.getJsonArray("exclude-mark-duplicates-by-source").contains(source)) {
 			duplicateUsers.markDuplicates(new Handler<JsonObject>() {
 				@Override
 				public void handle(final JsonObject event) {
-					duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+					duplicateUsers.autoMergeDuplicatesInStructure(new Handler<AsyncResult<JsonArray>>() {
 						@Override
 						public void handle(AsyncResult<JsonArray> mergedUsers) {
-							applyComRules(new VoidHandler() {
+							applyComRules(new Handler<Void>() {
 								@Override
-								protected void handle() {
+								public void handle(Void v) {
 									if (config.getBoolean("notify-apps-after-import", true)) {
 										ApplicationUtils.afterImport(eb);
 									}
-									if (config.getObject("ws-call-after-import") != null) {
-										wsCall(config.getObject("ws-call-after-import"));
+									if (config.getJsonObject("ws-call-after-import") != null) {
+										wsCall(config.getJsonObject("ws-call-after-import"));
 									}
 								}
 							});
@@ -89,14 +89,14 @@ public class PostImport {
 				}
 			});
 		} else {
-			applyComRules(new VoidHandler() {
+			applyComRules(new Handler<Void>() {
 				@Override
-				protected void handle() {
+				public void handle(Void v) {
 					if (config.getBoolean("notify-apps-after-import", true)) {
 						ApplicationUtils.afterImport(eb);
 					}
-					if (config.getObject("ws-call-after-import") != null) {
-						wsCall(config.getObject("ws-call-after-import"));
+					if (config.getJsonObject("ws-call-after-import") != null) {
+						wsCall(config.getJsonObject("ws-call-after-import"));
 					}
 				}
 			});
@@ -104,31 +104,34 @@ public class PostImport {
 	}
 
 	private void wsCall(JsonObject object) {
-		for (String url : object.getFieldNames()) {
-			final JsonArray endpoints = object.getArray(url);
+		for (String url : object.fieldNames()) {
+			final JsonArray endpoints = object.getJsonArray(url);
 			if (endpoints == null || endpoints.size() < 1) continue;
 			try {
 				final URI uri = new URI(url);
-				final HttpClient client = vertx.createHttpClient().setHost(uri.getHost())
-						.setPort(uri.getPort()).setMaxPoolSize(16)
-						.setSSL("https".equals(uri.getScheme()))
+				HttpClientOptions options = new HttpClientOptions()
+						.setDefaultHost(uri.getHost())
+						.setDefaultPort(uri.getPort()).setMaxPoolSize(16)
+						.setSsl("https".equals(uri.getScheme()))
 						.setConnectTimeout(10000)
 						.setKeepAlive(false);
-				final VoidHandler[] handlers = new VoidHandler[endpoints.size() + 1];
-				handlers[handlers.length -1] = new VoidHandler() {
+				final HttpClient client = vertx.createHttpClient(options);
+
+				final Handler[] handlers = new Handler[endpoints.size() + 1];
+				handlers[handlers.length -1] = new Handler<Void>() {
 					@Override
-					protected void handle() {
+					public void handle(Void v) {
 						client.close();
 					}
 				};
 				for (int i = endpoints.size() - 1; i >= 0; i--) {
 					final int ji = i;
-					handlers[i] = new VoidHandler() {
+					handlers[i] = new Handler<Void>() {
 						@Override
-						protected void handle() {
-							final JsonObject j = endpoints.get(ji);
+						public void handle(Void v) {
+							final JsonObject j = endpoints.getJsonObject(ji);
 							logger.info("endpoint : " + j.encode());
-							final HttpClientRequest req = client.request(j.getString("method"), j.getString("uri"), new Handler<HttpClientResponse>() {
+							final HttpClientRequest req = client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"), new Handler<HttpClientResponse>() {
 								@Override
 								public void handle(HttpClientResponse resp) {
 									if (resp.statusCode() >= 300) {
@@ -137,9 +140,9 @@ public class PostImport {
 									handlers[ji + 1].handle(null);
 								}
 							});
-							JsonObject headers = j.getObject("headers");
+							JsonObject headers = j.getJsonObject("headers");
 							if (headers != null && headers.size() > 0) {
-								for (String h : headers.getFieldNames()) {
+								for (String h : headers.fieldNames()) {
 									req.putHeader(h, headers.getString(h));
 								}
 							}
@@ -166,10 +169,10 @@ public class PostImport {
 		neo4j.execute(countQuery, (JsonObject) null, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
 					eventStore.createAndStoreEvent(Feeder.FeederEvent.IMPORT.name(),
-							(UserInfos) null, res.<JsonObject>get(0));
+							(UserInfos) null, res.getJsonObject(0));
 				} else {
 					logger.error(event.body().getString("message"));
 				}
@@ -177,20 +180,20 @@ public class PostImport {
 		});
 	}
 
-	private void applyComRules(final VoidHandler handler) {
+	private void applyComRules(final Handler<Void> handler) {
 		if (config.getBoolean("apply-communication-rules", false)) {
 			String q = "MATCH (s:Structure) return COLLECT(s.id) as ids";
 			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getArray("result", new JsonArray());
+					JsonArray ids = message.body().getJsonArray("result", new JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						JsonObject j = new JsonObject()
-								.putString("action", "initAndApplyDefaultCommunicationRules")
-								.putArray("schoolIds", ((JsonObject) ids.get(0))
-										.getArray("ids", new JsonArray()));
-						eb.send("wse.communication", j, new Handler<Message<JsonObject>>() {
+								.put("action", "initAndApplyDefaultCommunicationRules")
+								.put("schoolIds", (ids.getJsonObject(0))
+										.getJsonArray("ids", new JsonArray()));
+						eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
@@ -200,7 +203,7 @@ public class PostImport {
 								}
 								handler.handle(null);
 							}
-						});
+						}));
 					} else {
 						logger.error(message.body().getString("message"));
 						handler.handle(null);

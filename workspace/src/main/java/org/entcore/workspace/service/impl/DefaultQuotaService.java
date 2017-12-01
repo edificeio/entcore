@@ -24,12 +24,12 @@ import fr.wseduc.webutils.collections.Joiner;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.workspace.service.QuotaService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +51,8 @@ public class DefaultQuotaService implements QuotaService {
 	public void incrementStorage(String userId, Long size, int threshold,
 			final Handler<Either<String, JsonObject>> handler) {
 		JsonObject params = new JsonObject()
-				.putNumber("size", size)
-				.putNumber("threshold", threshold);
+				.put("size", size)
+				.put("threshold", threshold);
 		if (!neo4jPlugin) {
 			String query =
 					"MATCH (u:UserBook { userid : {userId}}) " +
@@ -60,7 +60,7 @@ public class DefaultQuotaService implements QuotaService {
 					"WITH u, u.alertSize as oldAlert " +
 					"SET u.alertSize = ((100.0 * u.storage / u.quota) > {threshold}) " +
 					"RETURN u.storage as storage, (u.alertSize = true AND oldAlert <> u.alertSize) as notify ";
-			params.putString("userId", userId);
+			params.put("userId", userId);
 			neo4j.execute(query, params, validUniqueResultHandler(handler));
 		} else {
 			neo4j.unmanagedExtension("put", "/entcore/quota/storage/" + userId, params.encode(),
@@ -88,7 +88,7 @@ public class DefaultQuotaService implements QuotaService {
 		String query =
 				"MATCH (u:UserBook { userid : {userId}}) " +
 				"RETURN u.quota as quota, u.storage as storage ";
-		JsonObject params = new JsonObject().putString("userId", userId);
+		JsonObject params = new JsonObject().put("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
@@ -98,7 +98,7 @@ public class DefaultQuotaService implements QuotaService {
 				"MATCH (s:Structure {id : {structureId}})<-[:DEPENDS]-(:ProfileGroup)" +
 				"<-[:IN]-(:User)-[:USERBOOK]->(u:UserBook) " +
 				"RETURN sum(u.quota) as quota, sum(u.storage) as storage ";
-		JsonObject params = new JsonObject().putString("structureId", structureId);
+		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 
 	}
@@ -121,8 +121,8 @@ public class DefaultQuotaService implements QuotaService {
 				"SET u.quota = {quota}, u.alertSize = false " +
 				"RETURN u.userid as id ";
 		JsonObject params = new JsonObject()
-				.putArray("users", users)
-				.putNumber("quota", quota);
+				.put("users", users)
+				.put("quota", quota);
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
@@ -134,15 +134,15 @@ public class DefaultQuotaService implements QuotaService {
 			return;
 		}
 		JsonObject params = new JsonObject()
-				.putString("profile", profile);
+				.put("profile", profile);
 		List<String> p = new ArrayList<>();
 		if (maxQuota != null) {
 			p.add("p.maxQuota = {maxQuota}");
-			params.putNumber("maxQuota", maxQuota);
+			params.put("maxQuota", maxQuota);
 		}
 		if (defaultQuota != null) {
 			p.add("p.defaultQuota = {defaultQuota}");
-			params.putNumber("defaultQuota", defaultQuota);
+			params.put("defaultQuota", defaultQuota);
 		}
 		String query =
 				"MATCH (p:Profile { name : {profile}}) " +
@@ -166,7 +166,7 @@ public class DefaultQuotaService implements QuotaService {
 				"SET m.quota = quota, m.storage = 0, m.alertSize = false " +
 				"WITH m, n "+
 				"CREATE UNIQUE n-[:USERBOOK]->m";
-		JsonObject params = new JsonObject().putString("userId", userId);
+		JsonObject params = new JsonObject().put("userId", userId);
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {

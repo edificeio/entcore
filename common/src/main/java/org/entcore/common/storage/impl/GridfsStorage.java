@@ -23,33 +23,35 @@ import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import fr.wseduc.webutils.FileUtils;
 import fr.wseduc.webutils.http.ETag;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.HttpServerFileUpload;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageException;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.FileProps;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.WriteStream;
 import org.entcore.common.validation.FileValidator;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.file.AsyncFile;
-import org.vertx.java.core.file.FileProps;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.HttpServerResponse;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.core.streams.WriteStream;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class GridfsStorage implements Storage {
 
@@ -67,7 +69,7 @@ public class GridfsStorage implements Storage {
 
 	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress, String bucket) {
 		this.eb = eb;
-		String node = (String) vertx.sharedData().getMap("server").get("node");
+		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 		if (node == null) {
 			node = "";
 		}
@@ -76,37 +78,106 @@ public class GridfsStorage implements Storage {
 		this.vertx = vertx;
 	}
 
+	public static JsonObject metadata(HttpServerFileUpload upload) {
+		JsonObject metadata = new JsonObject();
+		metadata.put("name", upload.name());
+		metadata.put("filename", upload.filename());
+		metadata.put("content-type", upload.contentType());
+		metadata.put("content-transfer-encoding", upload.contentTransferEncoding());
+		metadata.put("charset", upload.charset());
+		metadata.put("size", upload.size());
+		return metadata;
+	}
+
 	@Override
 	public void writeUploadFile(HttpServerRequest request, Handler<JsonObject> handler) {
-		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, handler);
+		writeUploadFile(request, null, handler);
 	}
 
 	@Override
 	public void writeUploadFile(HttpServerRequest request, Long maxSize, Handler<JsonObject> handler) {
-		FileUtils.gridfsWriteUploadFile(request, eb, gridfsAddress, maxSize, handler);
+		request.setExpectMultipart(true);
+		request.uploadHandler(new Handler<HttpServerFileUpload>() {
+			@Override
+			public void handle(final HttpServerFileUpload event) {
+				final Buffer buff = Buffer.buffer();
+				event.handler(new Handler<Buffer>() {
+					@Override
+					public void handle(Buffer event) {
+						buff.appendBuffer(event);
+					}
+				});
+				event.endHandler(new Handler<Void>() {
+					@Override
+					public void handle(Void end) {
+						writeBuffer(null, buff, maxSize,
+								event.contentType(), event.filename(), metadata(event), handler);
+					}
+				});
+			}
+		});
 	}
 
 	@Override
 	public void writeBuffer(Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-		FileUtils.gridfsWriteBuffer(buff, contentType, filename, eb, handler, gridfsAddress);
+		writeBuffer(null, buff, contentType, filename, handler);
 	}
 
 	@Override
 	public void writeBuffer(String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-		FileUtils.gridfsWriteBuffer(id, buff, contentType, filename, eb, handler, gridfsAddress);
+		writeBuffer(null, id, buff, contentType, filename, handler);
 	}
 
 	@Override
 	public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-		FileUtils.gridfsWriteBuffer(id, buff, contentType, filename, eb, handler, gridfsAddress);
+		writeBuffer(id, buff, null, contentType, filename, null, handler);
+	}
+
+	private void writeBuffer(String id, Buffer buff, Long maxSize, String contentType, String filename, final JsonObject m, Handler<JsonObject> handler) {
+		JsonObject save = new JsonObject();
+		save.put("action", "save");
+		save.put("content-type", contentType);
+		save.put("filename", filename);
+		if (id != null && !id.trim().isEmpty()) {
+			save.put("_id", id);
+		}
+		final JsonObject metadata = (m != null) ? m : new JsonObject()
+				.put("content-type", contentType)
+				.put("filename", filename);
+		if (metadata.getLong("size", 0l).equals(0l)) {
+			metadata.put("size", buff.length());
+		}
+		if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+			handler.handle(new JsonObject().put("status", "error")
+					.put("message", "file.too.large"));
+			return;
+		}
+		byte [] header = null;
+		try {
+			header = save.toString().getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			JsonObject json = new JsonObject().put("status", "error")
+					.put("message", e.getMessage());
+			handler.handle(json);
+		}
+		if (header != null) {
+			buff.appendBytes(header).appendInt(header.length);
+			eb.send(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> message) {
+					handler.handle(message.body()
+							.put("metadata", metadata));
+				}
+			}));
+		}
 	}
 
 	@Override
 	public void writeFsFile(final String id, final String filePath, final Handler<JsonObject> handler) {
 		if (id == null || id.trim().isEmpty() || filePath == null ||
 				filePath.trim().isEmpty() || filePath.endsWith(File.separator)) {
-			handler.handle(new JsonObject().putString("status", "error")
-					.putString("message", "invalid.parameter"));
+			handler.handle(new JsonObject().put("status", "error")
+					.put("message", "invalid.parameter"));
 			return;
 		}
 		final String filename = filePath.contains(File.separator) ?
@@ -117,7 +188,7 @@ public class GridfsStorage implements Storage {
 			public void handle(AsyncResult<FileProps> event) {
 				if (event.succeeded()) {
 					final long fileSize = event.result().size();
-					vertx.fileSystem().open(filePath, new Handler<AsyncResult<AsyncFile>>() {
+					vertx.fileSystem().open(filePath, new OpenOptions(), new Handler<AsyncResult<AsyncFile>>() {
 						@Override
 						public void handle(AsyncResult<AsyncFile> event) {
 							if (event.succeeded()) {
@@ -129,8 +200,8 @@ public class GridfsStorage implements Storage {
 									@Override
 									public void handle(AsyncResult<Buffer> asyncResult) {
 										if (asyncResult.failed()) {
-											handler.handle(new JsonObject().putString("status", "error")
-													.putString("message", asyncResult.cause().getMessage()));
+											handler.handle(new JsonObject().put("status", "error")
+													.put("message", asyncResult.cause().getMessage()));
 											return;
 										}
 										Buffer buff = asyncResult.result();
@@ -145,8 +216,8 @@ public class GridfsStorage implements Storage {
 										@Override
 										public void handle(AsyncResult<Buffer> asyncResult) {
 											if (asyncResult.failed()) {
-												handler.handle(new JsonObject().putString("status", "error")
-														.putString("message", asyncResult.cause().getMessage()));
+												handler.handle(new JsonObject().put("status", "error")
+														.put("message", asyncResult.cause().getMessage()));
 												return;
 											}
 											Buffer buff = asyncResult.result();
@@ -154,7 +225,7 @@ public class GridfsStorage implements Storage {
 												@Override
 												public void handle(JsonObject message) {
 													if ("ok".equals(message.getString("status"))) {
-														asyncFile.read(new Buffer((int) BUFFER_SIZE), 0,
+														asyncFile.read(Buffer.buffer((int) BUFFER_SIZE), 0,
 																(j + 1) * BUFFER_SIZE, (int) BUFFER_SIZE, handlers[j + 1]);
 													} else {
 														handler.handle(message);
@@ -165,17 +236,17 @@ public class GridfsStorage implements Storage {
 									};
 								}
 
-								asyncFile.read(new Buffer((int) BUFFER_SIZE), 0, 0, (int) BUFFER_SIZE, handlers[0]);
+								asyncFile.read(Buffer.buffer((int) BUFFER_SIZE), 0, 0, (int) BUFFER_SIZE, handlers[0]);
 
 							} else {
-								handler.handle(new JsonObject().putString("status", "error")
-										.putString("message", event.cause().getMessage()));
+								handler.handle(new JsonObject().put("status", "error")
+										.put("message", event.cause().getMessage()));
 							}
 						}
 					});
 				} else {
-					handler.handle(new JsonObject().putString("status", "error")
-							.putString("message", event.cause().getMessage()));
+					handler.handle(new JsonObject().put("status", "error")
+							.put("message", event.cause().getMessage()));
 				}
 			}
 		});
@@ -192,35 +263,57 @@ public class GridfsStorage implements Storage {
 
 	public void saveChunk(String id, Buffer buff, int n, String contentType, String filename, long fileSize, final Handler<JsonObject> handler) {
 		JsonObject save = new JsonObject();
-		save.putString("action", "saveChunk");
-		save.putString("content-type", contentType);
-		save.putString("filename", filename);
-		save.putString("_id", id);
-		save.putNumber("n", n);
-		save.putNumber("length", fileSize);
+		save.put("action", "saveChunk");
+		save.put("content-type", contentType);
+		save.put("filename", filename);
+		save.put("_id", id);
+		save.put("n", n);
+		save.put("length", fileSize);
 
 		byte [] header = null;
 		try {
 			header = save.toString().getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			JsonObject json = new JsonObject().putString("status", "error")
-					.putString("message", e.getMessage());
+			JsonObject json = new JsonObject().put("status", "error")
+					.put("message", e.getMessage());
 			handler.handle(json);
 		}
 		if (header != null) {
 			buff.appendBytes(header).appendInt(header.length);
-			eb.send(gridfsAddress, buff, new Handler<Message<JsonObject>>() {
+			eb.send(gridfsAddress, buff, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					handler.handle(event.body());
 				}
-			});
+			}));
 		}
 	}
 
 	@Override
 	public void readFile(String id, Handler<Buffer> handler) {
-		FileUtils.gridfsReadFile(id, eb, gridfsAddress, handler);
+		JsonObject find = new JsonObject();
+		find.put("action", "findone");
+		find.put("query", new JsonObject("{ \"_id\": \"" + id + "\"}"));
+		byte [] header = null;
+		try {
+			header = find.toString().getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			handler.handle(Buffer.buffer());
+		}
+		if (header != null) {
+			Buffer buf = Buffer.buffer(header);
+			buf.appendInt(header.length);
+			eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
+			@Override
+			public void handle(AsyncResult<Message<Buffer>> res) {
+				if (res.succeeded()) {
+					handler.handle(res.result().body());
+				} else {
+					handler.handle(null);
+				}
+			}
+		});
+		}
 	}
 
 	@Override
@@ -237,8 +330,8 @@ public class GridfsStorage implements Storage {
 	private static void gridfsReadChunkFile(final String id, final EventBus eb, final String gridfsAddress,
 			final WriteStream writeStream, final Handler<Chunk> handler) {
 		JsonObject find = new JsonObject();
-		find.putString("action", "countChunks");
-		find.putString("files_id", id);
+		find.put("action", "countChunks");
+		find.put("files_id", id);
 		byte [] header = null;
 		try {
 			header = find.toString().getBytes("UTF-8");
@@ -247,13 +340,13 @@ public class GridfsStorage implements Storage {
 			handler.handle(null);
 		}
 		if (header != null) {
-			Buffer buf = new Buffer(header);
+			Buffer buf = Buffer.buffer(header);
 			buf.appendInt(header.length);
-			eb.send(gridfsAddress, buf, new  Handler<Message>() {
+			eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Object>>>() {
 				@Override
-				public void handle(Message res) {
-					if (res.body() instanceof Long) {
-						Long number = (Long) res.body();
+				public void handle(AsyncResult<Message<Object>> res) {
+					if (res.succeeded() && res.result().body() instanceof Long) {
+						Long number = (Long) res.result().body();
 						if (number == null || number == 0l) {
 							handler.handle(null);
 						} else {
@@ -309,22 +402,22 @@ public class GridfsStorage implements Storage {
 
 	public static void getChunk(String id, final int j, EventBus eb, String gridfsAddress, final Handler<Chunk> handler) {
 		JsonObject find = new JsonObject();
-		find.putString("action", "getChunk");
-		find.putString("files_id", id);
-		find.putNumber("n", j);
+		find.put("action", "getChunk");
+		find.put("files_id", id);
+		find.put("n", j);
 		byte [] header = null;
 		try {
 			header = find.toString().getBytes("UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			handler.handle(null);
 		}
-		Buffer buf = new Buffer(header);
+		Buffer buf = Buffer.buffer(header);
 		buf.appendInt(header.length);
-		eb.send(gridfsAddress, buf, new Handler<Message>() {
+		eb.send(gridfsAddress, buf, new Handler<AsyncResult<Message<Buffer>>>() {
 			@Override
-			public void handle(Message res) {
-				if (res.body() instanceof Buffer) {
-					handler.handle(new Chunk(j, (Buffer) res.body()));
+			public void handle(AsyncResult<Message<Buffer>> res) {
+				if (res.succeeded()) {
+					handler.handle(new Chunk(j, res.result().body()));
 				} else {
 					handler.handle(null);
 
@@ -380,17 +473,44 @@ public class GridfsStorage implements Storage {
 
 	@Override
 	public void removeFile(String id, Handler<JsonObject> handler) {
-		FileUtils.gridfsRemoveFile(id, eb, gridfsAddress, handler);
+		JsonArray ids = new JsonArray().add(id);
+		JsonObject find = new JsonObject();
+		find.put("action", "remove");
+		JsonObject query = new JsonObject();
+		if (ids != null && ids.size() == 1) {
+			query.put("_id", ids.getString(0));
+		} else {
+			query.put("_id", new JsonObject().put("$in", ids));
+		}
+		find.put("query", query);
+		byte [] header = null;
+		try {
+			header = find.toString().getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			handler.handle(new JsonObject().put("status", "error"));
+		}
+		if (header != null) {
+			Buffer buf = Buffer.buffer(header);
+			buf.appendInt(header.length);
+			eb.send(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> res) {
+					if (handler != null) {
+						handler.handle(res.body());
+					}
+				}
+			}));
+		}
 	}
 
 	@Override
 	public void removeFiles(final JsonArray ids, final Handler<JsonObject> handler) {
-		final JsonObject filesQuery = new JsonObject().putObject("_id", new JsonObject().putArray("$in", ids));
+		final JsonObject filesQuery = new JsonObject().put("_id", new JsonObject().put("$in", ids));
 		mongoDb.delete(getBucket() + ".files", filesQuery, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
-					final JsonObject chunksQuery = new JsonObject().putObject("files_id", new JsonObject().putArray("$in", ids));
+					final JsonObject chunksQuery = new JsonObject().put("files_id", new JsonObject().put("$in", ids));
 					mongoDb.delete(getBucket() + ".chunks", chunksQuery, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> eventChunks) {
@@ -411,7 +531,25 @@ public class GridfsStorage implements Storage {
 
 	@Override
 	public void copyFile(String id, Handler<JsonObject> handler) {
-		FileUtils.gridfsCopyFile(id, eb, gridfsAddress, handler);
+		JsonObject find = new JsonObject();
+		find.put("action", "copy");
+		find.put("query", new JsonObject("{ \"_id\": \"" + id + "\"}"));
+		byte [] header = null;
+		try {
+			header = find.toString().getBytes("UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			handler.handle(new JsonObject().put("status", "error"));
+		}
+		if (header != null) {
+			Buffer buf = Buffer.buffer(header);
+			buf.appendInt(header.length);
+			eb.send(gridfsAddress, buf, handlerToAsyncHandler(new  Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> res) {
+					handler.handle(res.body());
+				}
+			}));
+		}
 	}
 
 	@Override
@@ -419,16 +557,16 @@ public class GridfsStorage implements Storage {
 			final Handler<JsonObject> handler) {
 		QueryBuilder q = QueryBuilder.start("_id").in(ids);
 		JsonObject e = new JsonObject()
-				.putString("action", "write")
-				.putString("path", destinationPath)
-				.putObject("alias", alias)
-				.putObject("query", MongoQueryBuilder.build(q));
-		eb.send(gridfsAddress + ".json", e, new Handler<Message<JsonObject>>() {
+				.put("action", "write")
+				.put("path", destinationPath)
+				.put("alias", alias)
+				.put("query", MongoQueryBuilder.build(q));
+		eb.send(gridfsAddress + ".json", e, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle(event.body());
 			}
-		});
+		}));
 	}
 
 	@Override
@@ -442,19 +580,19 @@ public class GridfsStorage implements Storage {
 	}
 
 	@Override
-	public void stats(final AsyncResultHandler<BucketStats> handler) {
-		mongoDb.command(new JsonObject().putString("collStats", bucket + ".chunks").encode(), new Handler<Message<JsonObject>>() {
+	public void stats(final Handler<AsyncResult<BucketStats>> handler) {
+		mongoDb.command(new JsonObject().put("collStats", bucket + ".chunks").encode(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				final JsonObject chunksStats = event.body().getObject("result");
+				final JsonObject chunksStats = event.body().getJsonObject("result");
 				if ("ok".equals(event.body().getString("status")) && chunksStats != null) {
 					final BucketStats bucketStats = new BucketStats();
 					bucketStats.setStorageSize(chunksStats.getLong("size"));
-					mongoDb.command(new JsonObject().putString("collStats", bucket + ".files").encode(),
+					mongoDb.command(new JsonObject().put("collStats", bucket + ".files").encode(),
 							new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
-							final JsonObject filesStats = event.body().getObject("result");
+							final JsonObject filesStats = event.body().getJsonObject("result");
 							if ("ok".equals(event.body().getString("status")) && filesStats != null) {
 								bucketStats.setObjectNumber(filesStats.getLong("count"));
 								handler.handle(new DefaultAsyncResult<>(bucketStats));

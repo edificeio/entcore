@@ -19,7 +19,7 @@
 
 package org.entcore.workspace.dao;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.mongodb.MongoDb;
 

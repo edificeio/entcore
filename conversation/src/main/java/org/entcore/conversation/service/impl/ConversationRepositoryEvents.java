@@ -24,12 +24,12 @@ import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.webutils.Either;
 
@@ -101,7 +101,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 		JsonArray userIds = new JsonArray();
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
-			userIds.addString(((JsonObject) o).getString("id"));
+			userIds.add(((JsonObject) o).getString("id"));
 		}
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
@@ -110,7 +110,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			"WITH unusedAtts AS (" +
 				"SELECT DISTINCT attachment_id AS id FROM conversation.usermessagesattachments uma " +
 				"GROUP BY attachment_id " +
-				"HAVING every(user_id IN "+ Sql.listPrepared(userIds.toArray()) +") " +
+				"HAVING every(user_id IN "+ Sql.listPrepared(userIds.getList()) +") " +
 			") SELECT " +
 			"CASE WHEN COUNT(id) = 0 THEN '[]' ELSE json_agg(distinct id) END AS attachmentIds "+
 			"FROM unusedAtts u";
@@ -118,12 +118,12 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 		String deleteFolder =
 			"DELETE FROM conversation.folders f " +
-			"WHERE f.user_id IN " + Sql.listPrepared(userIds.toArray());
+			"WHERE f.user_id IN " + Sql.listPrepared(userIds.getList());
 		builder.prepared(deleteFolder, userIds);
 
 		String deleteUserMessages =
 			"DELETE FROM conversation.usermessages um " +
-			"WHERE um.user_id IN " + Sql.listPrepared(userIds.toArray());
+			"WHERE um.user_id IN " + Sql.listPrepared(userIds.getList());
 		builder.prepared(deleteUserMessages, userIds);
 
 		String setFrom =
@@ -180,8 +180,8 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 
 				JsonArray results = event.right().getValue();
 				JsonArray attachmentIds =
-					((JsonArray) results.get(0)).size() > 0 ?
-						new JsonArray(((JsonObject) ((JsonArray) results.get(0)).get(0)).getString("attachmentIds", "[]")) :
+					results.getJsonArray(0).size() > 0 ?
+						new JsonArray(results.getJsonArray(0).getJsonObject(0).getString("attachmentIds", "[]")) :
 						new JsonArray();
 
 				for(Object attachmentObj: attachmentIds){

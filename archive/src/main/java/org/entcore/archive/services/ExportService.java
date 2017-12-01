@@ -21,8 +21,8 @@ package org.entcore.archive.services;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 
 public interface ExportService {
 

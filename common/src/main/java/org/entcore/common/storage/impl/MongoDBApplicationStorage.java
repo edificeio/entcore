@@ -21,12 +21,12 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import io.vertx.core.AsyncResult;
 import org.entcore.common.storage.FileInfos;
 import org.entcore.common.storage.StorageException;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 
@@ -44,26 +44,26 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 		this.collection = collection;
 		this.application = application;
 		this.mapping = new JsonObject()
-				.putString("title", "name")
-				.putString("name", "metadata.filename")
-				.putString("size", "metadata.size")
-				.putString("contentType", "metadata.content-type");
+				.put("title", "name")
+				.put("name", "metadata.filename")
+				.put("size", "metadata.size")
+				.put("contentType", "metadata.content-type");
 		if (mapping != null) {
 			this.mapping.mergeIn(mapping);
 		}
 		this.keys = new JsonObject()
-				.putNumber(this.mapping.getString("owner", "owner"), 1)
-				.putNumber(this.mapping.getString("title", "title"), 1);
+				.put(this.mapping.getString("owner", "owner"), 1)
+				.put(this.mapping.getString("title", "title"), 1);
 	}
 
 	@Override
-	public void getInfo(final String fileId, final AsyncResultHandler<FileInfos> handler) {
-		final JsonObject query = new JsonObject().putString(mapping.getString("file", "file"), fileId);
+	public void getInfo(final String fileId, final Handler<AsyncResult<FileInfos>> handler) {
+		final JsonObject query = new JsonObject().put(mapping.getString("file", "file"), fileId);
 		mongo.findOne(collection, query, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
-					JsonObject res = event.body().getObject("result");
+					JsonObject res = event.body().getJsonObject("result");
 					if (res != null) {
 						final FileInfos fi = new FileInfos();
 						fi.setApplication(application);
@@ -83,9 +83,9 @@ public class MongoDBApplicationStorage extends AbstractApplicationStorage {
 	}
 
 	@Override
-	public void updateInfo(String fileId, FileInfos fileInfos, final AsyncResultHandler<Integer> handler) {
-		final JsonObject query = new JsonObject().putString(mapping.getString("file", "file"), fileId);
-		final JsonObject modifier = new JsonObject().putObject("$set", fileInfos.toJsonExcludeEmpty(mapping));
+	public void updateInfo(String fileId, FileInfos fileInfos, final Handler<AsyncResult<Integer>> handler) {
+		final JsonObject query = new JsonObject().put(mapping.getString("file", "file"), fileId);
+		final JsonObject modifier = new JsonObject().put("$set", fileInfos.toJsonExcludeEmpty(mapping));
 		mongo.update(collection, query, modifier, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {

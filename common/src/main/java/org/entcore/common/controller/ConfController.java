@@ -23,21 +23,20 @@ import java.util.Map;
 
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.SecuredAction;
+import org.vertx.java.core.http.RouteMatcher;
 
 public class ConfController extends BaseController {
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
 		get("/conf/public", "getPublicConf");
 	}
 
@@ -46,7 +45,7 @@ public class ConfController extends BaseController {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					renderJson(request, container.config().getObject("publicConf", new JsonObject()));
+					renderJson(request, config.getJsonObject("publicConf", new JsonObject()));
 				} else {
 					unauthorized(request);
 				}

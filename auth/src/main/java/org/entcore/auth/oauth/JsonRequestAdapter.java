@@ -22,7 +22,7 @@ package org.entcore.auth.oauth;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 import jp.eisbahn.oauth2.server.models.Request;
 
@@ -36,19 +36,19 @@ public class JsonRequestAdapter implements Request {
 
 	@Override
 	public String getHeader(String name) {
-		return request.getObject("headers").getString(name);
+		return request.getJsonObject("headers").getString(name);
 	}
 
 	@Override
 	public String getParameter(String name) {
-		return request.getObject("params").getString(name);
+		return request.getJsonObject("params").getString(name);
 	}
 
 	@Override
 	public Map<String, String> getParameterMap() {
 		Map<String, String> params = new HashMap<>();
-		for (String attr: request.getObject("params").getFieldNames()) {
-			Object v = request.getObject("params").getValue("attr");
+		for (String attr: request.getJsonObject("params").fieldNames()) {
+			Object v = request.getJsonObject("params").getValue("attr");
 			if (v instanceof String) {
 				params.put(attr, (String) v);
 			}

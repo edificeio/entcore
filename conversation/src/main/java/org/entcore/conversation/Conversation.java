@@ -35,12 +35,12 @@ public class Conversation extends BaseServer {
 	public final static int DEFAULT_FOLDER_DEPTH = 3;
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 
 		Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 
-		final String exportPath = container.config()
+		final String exportPath = config
 				.getString("export-path", System.getProperty("java.io.tmpdir"));
 
 		addController(new ConversationController(storage, exportPath));

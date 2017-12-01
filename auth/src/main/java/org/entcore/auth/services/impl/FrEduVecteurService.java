@@ -22,9 +22,9 @@ import fr.wseduc.webutils.Either;
 import org.entcore.auth.services.SamlVectorService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
@@ -39,7 +39,7 @@ public class FrEduVecteurService implements SamlVectorService {
 
     public void getVectors(final String userId, final Handler<Either<String, JsonArray>> handler) {
         String queryGetUserProfile ="MATCH (u:User) WHERE u.id = {userId} RETURN u.profiles";
-        neo4j.execute(queryGetUserProfile, new JsonObject().putString("userId", userId), Neo4jResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+        neo4j.execute(queryGetUserProfile, new JsonObject().put("userId", userId), Neo4jResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(final Either<String, JsonObject> event) {
                 if(event.isRight()) {
@@ -47,7 +47,7 @@ public class FrEduVecteurService implements SamlVectorService {
                     if(value == null) {
                         handler.handle(new Either.Left<String, JsonArray>("error : user not found"));
                     } else {
-                        JsonArray profiles = value.getArray("u.profiles");
+                        JsonArray profiles = value.getJsonArray("u.profiles");
                         if (profiles != null && profiles.size() > 0) {
                             if (profiles.contains("Student")) {
                                 // Get student vectors for saml response : "4|"+u.lastName+"|"+u.firstName+"|"+u.externalId+"|"+s.UAI
@@ -55,14 +55,14 @@ public class FrEduVecteurService implements SamlVectorService {
                                         "WHERE u.id = {userId} " +
                                         "RETURN DISTINCT '4|'+u.lastName+'|'+u.firstName+'|'+u.attachmentId+'|'+s.UAI as FrEduVecteur";
 
-                                neo4j.execute(query, new JsonObject().putString("userId", userId), validResultHandler(handler));
+                                neo4j.execute(query, new JsonObject().put("userId", userId), validResultHandler(handler));
                             } else if (profiles.contains("Relative")) {
                                 // Get parent vectors for saml response : '2|'+u.lastName+'|'+u.firstName+'|'+ child.externalId+'|'+s.UAI"
                                 String query = "MATCH (child: User)-[:RELATED]->u-[:IN]->()-[:DEPENDS]->(s:Structure) " +
                                         "WHERE u.id = {userId} " +
                                         "RETURN DISTINCT '2|'+u.lastName+'|'+u.firstName+'|'+ child.attachmentId+'|'+s.UAI as FrEduVecteur";
 
-                                neo4j.execute(query, new JsonObject().putString("userId", userId), validResultHandler(handler));
+                                neo4j.execute(query, new JsonObject().put("userId", userId), validResultHandler(handler));
                             } else {
                                 // We return null for others profiles
                                 handler.handle(new Either.Left<String, JsonArray>("error : profil not supported"));

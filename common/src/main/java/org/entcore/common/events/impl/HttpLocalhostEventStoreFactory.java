@@ -20,19 +20,21 @@
 package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Server;
+import io.vertx.core.http.HttpClientOptions;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.vertx.java.core.http.HttpClient;
+import io.vertx.core.http.HttpClient;
 
 public class HttpLocalhostEventStoreFactory extends EventStoreFactory {
 
 	@Override
 	public EventStore getEventStore(String module) {
-		HttpClient httpClient = vertx.createHttpClient()
-				.setSSL(false)
-				.setHost("localhost")
-				.setPort(container.config().getInteger("infra-port", 8001))
+		final HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost("localhost")
+				.setDefaultPort(8001)
 				.setKeepAlive(false);
+		HttpClient httpClient = vertx.createHttpClient(options);
+
 		HttpLocalhostEventStore eventStore = new HttpLocalhostEventStore(httpClient);
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);

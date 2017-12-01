@@ -21,9 +21,9 @@ package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
 import org.entcore.directory.pojo.ImportInfos;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 public interface ImportService {
 

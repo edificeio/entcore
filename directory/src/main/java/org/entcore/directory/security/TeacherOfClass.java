@@ -20,15 +20,16 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 
@@ -49,17 +50,17 @@ public class TeacherOfClass implements ResourcesProvider {
 						"WHERE s2.id IN {ids} " +
 						"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("classId", classId)
-				.putString("userId", request.params().get("userId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("classId", classId)
+				.put("userId", request.params().get("userId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+						res.size() == 1 && ((JsonObject) res.getJsonObject(0)).getBoolean("exists", false)) {
 					handler.handle(true);
 				} else if ("Teacher".equals(user.getType()) || "Personnel".equals(user.getType())) {
 					String query =
@@ -67,8 +68,8 @@ public class TeacherOfClass implements ResourcesProvider {
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
 									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
-							.putString("classId", classId)
-							.putString("teacherId", user.getUserId());
+							.put("classId", classId)
+							.put("teacherId", user.getUserId());
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -83,10 +84,10 @@ public class TeacherOfClass implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
-								res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+								res.size() == 1 && ((JsonObject) res.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});

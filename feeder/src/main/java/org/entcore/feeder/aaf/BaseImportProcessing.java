@@ -21,14 +21,13 @@ package org.entcore.feeder.aaf;
 
 import org.apache.commons.lang3.text.translate.*;
 import org.entcore.feeder.dictionary.structures.Importer;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -38,7 +37,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class BaseImportProcessing implements ImportProcessing {
 
@@ -64,23 +64,23 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 
 	protected void parse(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
 		initAcademyPrefix(path);
-		final String [] files = vertx.fileSystem()
-				.readDirSync(path, getFileRegex());
-		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
-		handlers[handlers.length -1] = new VoidHandler() {
+		final List<String> files = vertx.fileSystem()
+				.readDirBlocking(path, getFileRegex());
+		final Handler[] handlers = new Handler[files.size() + 1];
+		handlers[handlers.length -1] = new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				next(handler, importProcessing);
 			}
 		};
-		Arrays.sort(files);
-		for (int i = files.length - 1; i >= 0; i--) {
+		Collections.sort(files);
+		for (int i = files.size() - 1; i >= 0; i--) {
 			final int j = i;
-			handlers[i] = new VoidHandler() {
+			handlers[i] = new Handler<Void>() {
 				@Override
-				protected void handle() {
+				public void handle(Void v) {
 					try {
-						String file = files[j];
+						String file = files.get(j);
 						log.info("Parsing file : " + file);
 						importer.getReport().loadedFile(file);
 						byte[] encoded = Files.readAllBytes(Paths.get(file));
@@ -172,13 +172,13 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected void initAcademyPrefix(String file) {
 		if (academyPrefix != null) return;
 		if (file != null && file.contains(File.separator) && vertx.fileSystem()
-				.existsSync(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON)) {
+				.existsBlocking(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON)) {
 			if (file.endsWith(File.separator)) {
 				file = file.substring(0, file.length() - 1);
 			}
 			try {
 				JsonArray importDirectories = new JsonArray(vertx.fileSystem()
-						.readFileSync(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON).toString());
+						.readFileBlocking(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON).toString());
 				final String[] a = file.split(File.separator);
 				final String dirName = a[a.length - 1];
 				if (a.length > 1 && importDirectories.contains(dirName)) {

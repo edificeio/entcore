@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.utils.User;
@@ -31,22 +32,23 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Zip;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.file.FileSystem;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
 import java.util.zip.Deflater;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class FileSystemExportService implements ExportService {
 
@@ -83,7 +85,7 @@ public class FileSystemExportService implements ExportService {
 					final String exportId = now + "_" +user.getUserId();
 					userExportInProgress.put(user.getUserId(), now);
 					final String exportDirectory = exportPath + File.separator + exportId;
-					fs.mkdir(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>() {
 						@Override
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
@@ -92,15 +94,15 @@ public class FileSystemExportService implements ExportService {
 								User.getOldGroups(user.getUserId(), new Handler<JsonArray>() {
 									@Override
 									public void handle(JsonArray objects) {
-										g.addAll(objects.toList());
+										g.addAll(objects.getList());
 										JsonObject j = new JsonObject()
-												.putString("action", "export")
-												.putString("exportId", exportId)
-												.putString("userId", user.getUserId())
-												.putArray("groups", new JsonArray(g.toArray()))
-												.putString("path", exportDirectory)
-												.putString("locale", locale)
-												.putString("host", Renders.getScheme(request) + "://" + request.headers().get("Host"));
+												.put("action", "export")
+												.put("exportId", exportId)
+												.put("userId", user.getUserId())
+												.put("groups", new JsonArray(new ArrayList<>(g)))
+												.put("path", exportDirectory)
+												.put("locale", locale)
+												.put("host", Renders.getScheme(request) + "://" + request.headers().get("Host"));
 										eb.publish("user.repository", j);
 										handler.handle(new Either.Right<String, String>(exportId));
 									}
@@ -165,10 +167,10 @@ public class FileSystemExportService implements ExportService {
 		if (!"ok".equals(status)) {
 			log.error("Error in export " + exportId);
 			JsonObject j = new JsonObject()
-					.putString("status", "error")
-					.putString("message", "export.error");
+					.put("status", "error")
+					.put("message", "export.error");
 			eb.publish("export." + exportId, j);
-			fs.delete(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+			fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.failed()) {
@@ -184,15 +186,15 @@ public class FileSystemExportService implements ExportService {
 		}
 
 		log.debug("Read export directory");
-		fs.readDir(exportDirectory, new Handler<AsyncResult<String[]>>() {
+		fs.readDir(exportDirectory, new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<String[]> event) {
+			public void handle(AsyncResult<List<String>> event) {
 				if (event.succeeded()) {
 					if (log.isDebugEnabled()) {
 						log.debug("read export directory : ok - Result length : "
-								+ event.result().length + ", expected " + expectedExports.size());
+								+ event.result().size() + ", expected " + expectedExports.size());
 					}
-					if (event.result().length == expectedExports.size()) {
+					if (event.result().size() == expectedExports.size()) {
 						Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
 								Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>() {
 							@Override
@@ -200,14 +202,14 @@ public class FileSystemExportService implements ExportService {
 								if (!"ok".equals(event.body().getString("status"))) {
 									log.error("Zip export " + exportId + " error : " +
 											event.body().getString("message"));
-									event.body().putString("message", "zip.export.error");
+									event.body().put("message", "zip.export.error");
 									userExportInProgress.remove(getUserId(exportId));
-									fs.delete(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+									fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
 										@Override
 										public void handle(AsyncResult<Void> event) {
-										if (event.failed()) {
-											log.error("Error deleting directory : " + exportDirectory, event.cause());
-										}
+											if (event.failed()) {
+												log.error("Error deleting directory : " + exportDirectory, event.cause());
+											}
 										}
 									});
 									publish(event);
@@ -223,14 +225,14 @@ public class FileSystemExportService implements ExportService {
 										if (!"ok".equals(res.getString("status"))) {
 											log.error("Zip storage " + exportId + " error : "
 													+ res.getString("message"));
-											event.body().putString("message", "zip.saving.error");
+											event.body().put("message", "zip.saving.error");
 											userExportInProgress.remove(getUserId(exportId));
 											publish(event);
 										} else {
 											userExportInProgress.put(getUserId(exportId), -1l);
 											MongoDb.getInstance().save(Archive.ARCHIVES, new JsonObject()
-													.putString("file_id", exportId)
-													.putObject("date", MongoDb.now()), new Handler<Message<JsonObject>>() {
+													.put("file_id", exportId)
+													.put("date", MongoDb.now()), new Handler<Message<JsonObject>>() {
 												@Override
 												public void handle(Message<JsonObject> res) {
 													publish(event);
@@ -256,7 +258,7 @@ public class FileSystemExportService implements ExportService {
 
 							private void publish(final Message<JsonObject> event) {
 								final String address = "export." + exportId;
-								eb.sendWithTimeout(address, event.body(), 5000l,
+								eb.send(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
 										new Handler<AsyncResult<Message<JsonObject>>>() {
 
 									@Override
@@ -291,7 +293,7 @@ public class FileSystemExportService implements ExportService {
 				}
 			}
 		});
-		MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().putString("file_id", exportId));
+		MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().put("file_id", exportId));
 		String userId = getUserId(exportId);
 		userExportInProgress.remove(userId);
 	}
@@ -320,33 +322,33 @@ public class FileSystemExportService implements ExportService {
 		List<String> recipients = new ArrayList<>();
 		recipients.add(userId);
 		final JsonObject params = new JsonObject()
-				.putString("resourceUri", "/archive/export/" + exportId)
-				.putString("resourceName", exportId + ".zip");
+				.put("resourceUri", "/archive/export/" + exportId)
+				.put("resourceName", exportId + ".zip");
 
-		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject().putObject("headers", new JsonObject().putString("Accept-Language", locale))),
+		timeline.notifyTimeline(new JsonHttpServerRequest(new JsonObject().put("headers", new JsonObject().put("Accept-Language", locale))),
 				"archive.archives" +  "_" + status, null, recipients, params);
 	}
 
 	private void sendExportEmail(final String exportId, final String locale, final String status, final String host) {
 		final String userId = getUserId(exportId);
 		String query = "MATCH (u:User {id : {userId}}) RETURN u.email as email ";
-		JsonObject params = new JsonObject().putString("userId", userId);
+		JsonObject params = new JsonObject().put("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					JsonObject e = res.get(0);
+					JsonObject e = res.getJsonObject(0);
 					String email = e.getString("email");
 					if (email != null && !email.trim().isEmpty()) {
 						HttpServerRequest r = new JsonHttpServerRequest(new JsonObject()
-								.putObject("headers", new JsonObject().putString("Accept-Language", locale)));
+								.put("headers", new JsonObject().put("Accept-Language", locale)));
 						String subject, template;
 						JsonObject p = new JsonObject();
 						if ("ok".equals(status)) {
 							subject = "email.export.ok";
 							template = "email/export.ok.html";
-							p.putString("download", host + "/archive/export/" + exportId);
+							p.put("download", host + "/archive/export/" + exportId);
 							if (log.isDebugEnabled()) {
 								log.debug(host + "/archive/export/" + exportId);
 							}
@@ -355,14 +357,14 @@ public class FileSystemExportService implements ExportService {
 							template = "email/export.ko.html";
 						}
 						notification.sendEmail(r, email, null, null, subject, template, p, true,
-								new Handler<Message<JsonObject>>() {
+								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (event == null || !"ok".equals(event.body().getString("status"))) {
 									log.error("Error sending export email for user " + userId);
 								}
 							}
-						});
+						}));
 					} else {
 						log.info("User " + userId + " hasn't email.");
 					}

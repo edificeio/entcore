@@ -21,14 +21,15 @@ package org.entcore.feeder.utils;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.file.AsyncFile;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -48,27 +49,27 @@ public class CSVUtil {
 		JsonObject structure = new JsonObject();
 		int idx = n[0].indexOf("@");
 		if (idx >= 0) {
-			structure.putString("name", n[0].substring(0, idx));
-			structure.putString("externalId", n[0].substring(idx + 1));
+			structure.put("name", n[0].substring(0, idx));
+			structure.put("externalId", n[0].substring(idx + 1));
 		} else {
-			structure.putString("name", n[0]);
-			structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
+			structure.put("name", n[0]);
+			structure.put("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
 		}
 		if (n.length > 1 && isNotEmpty(n[1])) {
-			structure.putString("UAI", n[1]);
+			structure.put("UAI", n[1]);
 		}
 		if (n.length > 2 && isNotEmpty(n[2])) {
-			structure.putString("overrideClass", n[2]);
+			structure.put("overrideClass", n[2]);
 		}
 		return structure;
 	}
 
 	public static void getCharset(Vertx vertx, String path, final Handler<String> handler) {
-		vertx.fileSystem().open(path, new Handler<AsyncResult<AsyncFile>>() {
+		vertx.fileSystem().open(path, new OpenOptions(), new Handler<AsyncResult<AsyncFile>>() {
 			@Override
 			public void handle(final AsyncResult<AsyncFile> event) {
 				if (event.succeeded()) {
-					event.result().read(new Buffer(4), 0, 0, 4, new Handler<AsyncResult<Buffer>>() {
+					event.result().read(Buffer.buffer(4), 0, 0, 4, new Handler<AsyncResult<Buffer>>() {
 						@Override
 						public void handle(AsyncResult<Buffer> ar) {
 							event.result().close();

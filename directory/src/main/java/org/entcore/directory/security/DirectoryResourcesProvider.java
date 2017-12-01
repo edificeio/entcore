@@ -26,17 +26,13 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.controllers.*;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -204,9 +200,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE s.id IN {ids} AND s2.id IN {ids} " +
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("id", request.params().get("groupId"))
-				.putString("userId", request.params().get("userId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("id", request.params().get("groupId"))
+				.put("userId", request.params().get("userId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -218,8 +214,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE s.id IN {ids} " +
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("id", request.params().get("groupId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("id", request.params().get("groupId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -229,10 +225,10 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)
+						res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
 			}
 		});
@@ -291,8 +287,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 							"WHERE s.id IN {ids} " +
 							"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
-							.putString("classId", classId)
-							.putArray("ids", new JsonArray(adminLocal.getScope().toArray()));
+							.put("classId", classId)
+							.put("ids", new JsonArray(adminLocal.getScope()));
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -315,11 +311,11 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final String classId = request.formAttributes().get("classId");
 				final String structureId = request.formAttributes().get("structureId");
 				if ((adminLocal != null && adminLocal.getScope() != null &&
@@ -333,8 +329,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 									"WHERE s.id IN {ids} " +
 									"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
-							.putString("classId", classId)
-							.putArray("ids", new JsonArray(adminLocal.getScope().toArray()));
+							.put("classId", classId)
+							.put("ids", new JsonArray(adminLocal.getScope()));
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -370,8 +366,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					"WHERE s.id IN {ids} " +
 					"RETURN count(*) > 0 as exists";
 			JsonObject params = new JsonObject()
-					.putString("classId", classId)
-					.putArray("ids", new JsonArray(adminLocal.getScope().toArray()));
+					.put("classId", classId)
+					.put("ids", new JsonArray(adminLocal.getScope()));
 			validateQuery(request, handler, query, params);
 		} else {
 			handler.handle(false);
@@ -409,17 +405,17 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE s2.id IN {ids} " +
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("id", request.params().get("groupId"))
-				.putString("userId", request.params().get("userId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("id", request.params().get("groupId"))
+				.put("userId", request.params().get("userId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+						res.size() == 1 && ( res.getJsonObject(0)).getBoolean("exists", false)) {
 					handler.handle(true);
 				} else {
 					isTeacherOf(request, user, handler);
@@ -442,9 +438,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE u.id IN {userIds} " +
 				"RETURN count(distinct u) = {size} as exists ";
 		JsonObject params = new JsonObject()
-				.putArray("userIds", new JsonArray(userIds.toArray()))
-				.putString("teacherId", user.getUserId())
-				.putNumber("size", userIds.size());
+				.put("userIds", new JsonArray(userIds))
+				.put("teacherId", user.getUserId())
+				.put("size", userIds.size());
 		validateQuery(request, handler, query, params);
 	}
 
@@ -461,17 +457,17 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 						"WHERE s2.id IN {ids} " +
 						"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("classId", classId)
-				.putString("userId", request.params().get("userId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("classId", classId)
+				.put("userId", request.params().get("userId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+						res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)) {
 					handler.handle(true);
 				} else if ("Teacher".equals(user.getType()) || "Personnel".equals(user.getType())) {
 					String query =
@@ -479,8 +475,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
 									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
-							.putString("classId", classId)
-							.putString("teacherId", user.getUserId());
+							.put("classId", classId)
+							.put("teacherId", user.getUserId());
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -502,17 +498,17 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE s2.id IN {ids} " +
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
-				.putString("classId", classId)
-				.putString("userId", request.params().get("userId"))
-				.putArray("ids", new JsonArray(ids.toArray()));
+				.put("classId", classId)
+				.put("userId", request.params().get("userId"))
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
-				JsonArray res = r.body().getArray("result");
+				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) &&
-						res.size() == 1 && ((JsonObject) res.get(0)).getBoolean("exists", false)) {
+						res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)) {
 					handler.handle(true);
 				} else {
 					String query =
@@ -520,8 +516,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
 									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
-							.putString("classId", classId)
-							.putString("teacherId", user.getUserId());
+							.put("classId", classId)
+							.put("teacherId", user.getUserId());
 					validateQuery(request, handler, query, params);
 				}
 			}
@@ -545,8 +541,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 						"<-[:IN]-(t:`User` { id : {teacherId}}) " +
 						"RETURN count(*) > 0 as exists ";
 		JsonObject params = new JsonObject()
-				.putString("structureId", structureId)
-				.putString("teacherId", user.getUserId());
+				.put("structureId", structureId)
+				.put("teacherId", user.getUserId());
 		validateQuery(request, handler, query, params);
 	}
 

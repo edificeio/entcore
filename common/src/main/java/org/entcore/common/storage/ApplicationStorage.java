@@ -19,15 +19,15 @@
 
 package org.entcore.common.storage;
 
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 public interface ApplicationStorage extends Handler<Message<JsonObject>> {
 
-	void getInfo(String fileId, AsyncResultHandler<FileInfos> handler);
+	void getInfo(String fileId, Handler<AsyncResult<FileInfos>> handler);
 
-	void updateInfo(String fileId, FileInfos fileInfos, AsyncResultHandler<Integer> handler);
+	void updateInfo(String fileId, FileInfos fileInfos, Handler<AsyncResult<Integer>> handler);
 
 }
