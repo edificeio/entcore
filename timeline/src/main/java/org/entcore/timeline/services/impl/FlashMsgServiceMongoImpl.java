@@ -12,9 +12,9 @@ import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.timeline.services.FlashMsgService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import com.mongodb.QueryBuilder;
 
@@ -33,7 +33,7 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	@Override
 	public void create(JsonObject data, Handler<Either<String, JsonObject>> handler) {
 		JsonObject now = MongoDb.now();
-		data.putObject("created", now).putObject("modified", now).putNumber("readCount", 0).putArray("markedAsRead", new JsonArray());
+		data.put("created", now).put("modified", now).put("readCount", 0).put("markedAsRead", new JsonArray());
 		mongo.save(collection, data,
 				MongoDbResult.validActionResultHandler(handler));
 	}
@@ -46,9 +46,9 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 
 	@Override
 	public void list(String domain, Handler<Either<String, JsonArray>> handler) {
-		JsonObject match = new JsonObject().putString("domain", domain);
-		JsonObject sort = new JsonObject().putNumber("modified", -1);
-		JsonObject keys = new JsonObject().putNumber("markedAsRead", 0);
+		JsonObject match = new JsonObject().put("domain", domain);
+		JsonObject sort = new JsonObject().put("modified", -1);
+		JsonObject keys = new JsonObject().put("markedAsRead", 0);
 
 		mongo.find(collection, match, sort, keys, validResultsHandler(handler));
 	}
@@ -66,11 +66,11 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 		query.put("endDate").greaterThan(now);
 		query.put("domain").is(domain);
 
-		JsonObject sort = new JsonObject().putNumber("modified", -1);
+		JsonObject sort = new JsonObject().put("modified", -1);
 		JsonObject keys = new JsonObject()
-			.putNumber("contents", 1)
-			.putNumber("color", 1)
-			.putNumber("customColor", 1);
+			.put("contents", 1)
+			.put("color", 1)
+			.put("customColor", 1);
 
 		//Eventually add a limit.
 
@@ -83,12 +83,12 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 		JsonObject queryParam = new JsonObject();
 		JsonObject updateParam = new JsonObject();
 
-		queryParam.putString("_id", id).putObject("markedAsRead", new JsonObject().putString("$ne", userId));
+		queryParam.put("_id", id).put("markedAsRead", new JsonObject().put("$ne", userId));
 		updateParam
-			.putObject("$push", new JsonObject()
-				.putString("markedAsRead", userId))
-			.putObject("$inc", new JsonObject()
-				.putNumber("readCount", 1));
+			.put("$push", new JsonObject()
+				.put("markedAsRead", userId))
+			.put("$inc", new JsonObject()
+				.put("readCount", 1));
 
 		mongo.update(collection, queryParam, updateParam, MongoDbResult.validActionResultHandler(handler));
 

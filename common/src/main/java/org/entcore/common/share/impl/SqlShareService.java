@@ -24,11 +24,11 @@ import fr.wseduc.webutils.security.SecuredAction;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
@@ -70,21 +70,21 @@ public class SqlShareService extends GenericShareService {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
-					JsonArray r = message.body().getArray("results");
+					JsonArray r = message.body().getJsonArray("results");
 					JsonObject groupCheckedActions = new JsonObject();
 					JsonObject userCheckedActions = new JsonObject();
 					for (Object o : r) {
 						if (!(o instanceof JsonArray)) continue;
 						JsonArray row = (JsonArray) o;
-						final String memberId = row.get(0);
+						final String memberId = row.getString(0);
 						if (memberId == null || memberId.equals(userId)) continue;
-						final JsonObject checkedActions = (row.get(2) != null) ? groupCheckedActions : userCheckedActions;
-						JsonArray m = checkedActions.getArray(memberId);
+						final JsonObject checkedActions = (row.getValue(2) != null) ? groupCheckedActions : userCheckedActions;
+						JsonArray m = checkedActions.getJsonArray(memberId);
 						if (m == null) {
 							m = new JsonArray();
-							checkedActions.putArray(memberId, m);
+							checkedActions.put(memberId, m);
 						}
-						m.add(row.get(1));
+						m.add(row.getValue(1));
 					}
 					getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage, search, new Handler<JsonObject>() {
 						@Override
@@ -182,7 +182,7 @@ public class SqlShareService extends GenericShareService {
 		if (actions != null && actions.size() > 0) {
 			Object[] a = actions.toArray();
 			actionFilter = "action IN " + Sql.listPrepared(a) + " AND ";
-			values = new JsonArray(a);
+			values = new JsonArray(actions);
 		} else {
 			actionFilter = "";
 			values = new JsonArray();
@@ -221,8 +221,8 @@ public class SqlShareService extends GenericShareService {
 						Either<String, JsonObject> r = SqlResult.validUniqueResult(2, res);
 						if (r.isRight() && nb == 0) {
 							JsonObject notify = new JsonObject();
-							notify.putString(membersTable.substring(0, membersTable.length() - 1) + "Id", shareId);
-							r.right().getValue().putObject("notify-timeline", notify);
+							notify.put(membersTable.substring(0, membersTable.length() - 1) + "Id", shareId);
+							r.right().getValue().put("notify-timeline", notify);
 						}
 						handler.handle(r);
 					}

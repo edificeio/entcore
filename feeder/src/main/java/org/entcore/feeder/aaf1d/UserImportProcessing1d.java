@@ -21,7 +21,7 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.UserImportProcessing;
-import org.vertx.java.core.Vertx;
+import io.vertx.core.Vertx;
 
 import java.util.Set;
 

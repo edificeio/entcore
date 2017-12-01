@@ -28,9 +28,9 @@ import java.util.UUID;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.registry.services.WidgetService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
@@ -46,13 +46,13 @@ public class DefaultWidgetService implements WidgetService {
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
 
 		JsonObject params = new JsonObject()
-			.putObject("props", widget.putString("id", UUID.randomUUID().toString()))
-			.putString("widgetName", widget.getString("name"));
+			.put("props", widget.put("id", UUID.randomUUID().toString()))
+			.put("widgetName", widget.getString("name"));
 		String linkApp = " ";
 
 		if(applicationName != null && !applicationName.trim().isEmpty()){
 			linkApp = "WITH w MATCH (a:Application {name: {applicationName}}) CREATE UNIQUE w<-[:HAS_WIDGET]-a ";
-			params.putString("applicationName", applicationName);
+			params.put("applicationName", applicationName);
 		}
 
 		String query =
@@ -88,8 +88,8 @@ public class DefaultWidgetService implements WidgetService {
 			"WITH w, a, COLLECT({id: g.id, mandatory: coalesce(rel.mandatory, false)}) as groups " +
 			"RETURN w, a, groups ";
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putString("structureId", structureId);
+				.put("widgetId", widgetId)
+				.put("structureId", structureId);
 
 		neo.execute(query, params, Neo4jResult.fullNodeMergeHandler("w", handler, "a"));
 	}
@@ -104,7 +104,7 @@ public class DefaultWidgetService implements WidgetService {
 			"MATCH (w:Widget {id: {widgetId}}) "+
 			"OPTIONAL MATCH w-[any]-() " +
 			"DELETE any, w";
-		JsonObject params = new JsonObject().putString("widgetId", widgetId);
+		JsonObject params = new JsonObject().put("widgetId", widgetId);
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -119,7 +119,7 @@ public class DefaultWidgetService implements WidgetService {
 				"MATCH (w:Widget {id: {widgetId}}) "+
 				"SET w.locked = NOT coalesce(w.locked, false) " +
 				"RETURN w.locked as locked";
-			JsonObject params = new JsonObject().putString("widgetId", widgetId);
+			JsonObject params = new JsonObject().put("widgetId", widgetId);
 
 			neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
 	}
@@ -136,8 +136,8 @@ public class DefaultWidgetService implements WidgetService {
 			"AND COALESCE(w.locked ,false) = false " +
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putArray("groupIds", new JsonArray(groupIds.toArray()));
+				.put("widgetId", widgetId)
+				.put("groupIds", new JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -154,8 +154,8 @@ public class DefaultWidgetService implements WidgetService {
 			"AND COALESCE(w.locked ,false) = false " +
 			"DELETE rel";
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putArray("groupIds", new JsonArray(groupIds.toArray()));
+				.put("widgetId", widgetId)
+				.put("groupIds", new JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -172,8 +172,8 @@ public class DefaultWidgetService implements WidgetService {
 			"AND COALESCE(w.locked ,false) = false " +
 			"SET rel.mandatory = true";
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putArray("groupIds", new JsonArray(groupIds.toArray()));
+				.put("widgetId", widgetId)
+				.put("groupIds", new JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -189,8 +189,8 @@ public class DefaultWidgetService implements WidgetService {
 			"WHERE g.id IN {groupIds} " +
 			"REMOVE rel.mandatory";
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putArray("groupIds", new JsonArray(groupIds.toArray()));
+				.put("widgetId", widgetId)
+				.put("groupIds", new JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -209,9 +209,9 @@ public class DefaultWidgetService implements WidgetService {
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putString("structureId", structureId)
-				.putArray("profiles", new JsonArray(profiles.toArray()));
+				.put("widgetId", widgetId)
+				.put("structureId", structureId)
+				.put("profiles", new JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -230,9 +230,9 @@ public class DefaultWidgetService implements WidgetService {
 			"DELETE rel";
 
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putString("structureId", structureId)
-				.putArray("profiles", new JsonArray(profiles.toArray()));
+				.put("widgetId", widgetId)
+				.put("structureId", structureId)
+				.put("profiles", new JsonArray(profiles));
 
 			neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -251,9 +251,9 @@ public class DefaultWidgetService implements WidgetService {
 			"SET rel.mandatory = true";
 
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putString("structureId", structureId)
-				.putArray("profiles", new JsonArray(profiles.toArray()));
+				.put("widgetId", widgetId)
+				.put("structureId", structureId)
+				.put("profiles", new JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -273,9 +273,9 @@ public class DefaultWidgetService implements WidgetService {
 			"REMOVE rel.mandatory";
 
 		JsonObject params = new JsonObject()
-				.putString("widgetId", widgetId)
-				.putString("structureId", structureId)
-				.putArray("profiles", new JsonArray(profiles.toArray()));
+				.put("widgetId", widgetId)
+				.put("structureId", structureId)
+				.put("profiles", new JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}

@@ -19,10 +19,10 @@
 
 package org.entcore.infra.services.impl;
 
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -35,7 +35,7 @@ public class ExecCommandWorker extends BusModBase implements Handler<Message<Jso
 	@Override
 	public void start() {
 		super.start();
-		vertx.eventBus().registerLocalHandler("exec.command", this);
+		vertx.eventBus().localConsumer("exec.command", this);
 	}
 
 	@Override
@@ -55,7 +55,7 @@ public class ExecCommandWorker extends BusModBase implements Handler<Message<Jso
 			while ((line = reader.readLine())!= null) {
 				sb.append(line).append("\n");
 			}
-			sendOK(event, new JsonObject().putString("result", sb.toString()));
+			sendOK(event, new JsonObject().put("result", sb.toString()));
 		} catch (Exception e) {
 			sendError(event, "Error executing command : " + command, e);
 		}

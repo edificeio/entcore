@@ -24,11 +24,11 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 
@@ -60,13 +60,13 @@ public abstract class AbstractFilter implements ResourcesProvider {
 		}
 		String roleId = resourceRequest.params().get("id");
 		JsonObject params = new JsonObject();
-		params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
+		params.put("structures", new JsonArray(adminLocal.getScope()));
 		if (roleId != null && !roleId.trim().isEmpty()) {
 			String query =
 					"MATCH (r:" + label + " {id : {id}}) " +
 					"WHERE HAS(r.structureId) AND r.structureId IN {structures} " +
 					"RETURN count(*) > 0 as exists ";
-			params.putString("id", roleId);
+			params.put("id", roleId);
 			check(resourceRequest, query, params, handler);
 		} else {
 			handler.handle(false);
@@ -79,11 +79,11 @@ public abstract class AbstractFilter implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				request.resume();
-				JsonArray r = event.body().getArray("result");
+				JsonArray r = event.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(event.body().getString("status")) &&
 								r != null && r.size() == 1 &&
-								((JsonObject) r.get(0)).getBoolean("exists", false)
+								r.getJsonObject(0).getBoolean("exists", false)
 				);
 			}
 		});

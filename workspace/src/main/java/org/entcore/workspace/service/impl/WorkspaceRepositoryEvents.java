@@ -32,20 +32,17 @@ import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.dao.RackDao;
 import org.entcore.common.storage.Storage;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class WorkspaceRepositoryEvents implements RepositoryEvents {
@@ -81,14 +78,14 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				QueryBuilder.start("old_shared").elemMatch(
 						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
 				).get()).put("file").exists(true);
-		final JsonObject keys = new JsonObject().putNumber("file", 1).putNumber("name", 1);
+		final JsonObject keys = new JsonObject().put("file", 1).put("name", 1);
 		final JsonObject query = MongoQueryBuilder.build(b);
 		mongo.find(DocumentDao.DOCUMENTS_COLLECTION, query, null,
 				keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final AtomicBoolean exported = new AtomicBoolean(false);
-				final JsonArray documents = event.body().getArray("results");
+				final JsonArray documents = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && documents != null) {
 					QueryBuilder b = QueryBuilder.start("to").is(userId).put("file").exists(true);
 					final JsonObject q = MongoQueryBuilder.build(b);
@@ -96,35 +93,35 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 							new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
-							JsonArray racks = event.body().getArray("results");
+							JsonArray racks = event.body().getJsonArray("results");
 							if ("ok".equals(event.body().getString("status")) && racks != null) {
 								final Set<String> usedFileName = new HashSet<>();
 								final JsonObject alias = new JsonObject();
 								final String [] ids = new String[racks.size() + documents.size()];
 								for (int i = 0; i < documents.size(); i++) {
-									JsonObject j = documents.get(i);
+									JsonObject j = documents.getJsonObject(i);
 									ids[i] = j.getString("file");
 									String fileName = j.getString("name");
 									if (fileName != null && fileName.contains("/")) {
 										fileName = fileName.replaceAll("/", "-");
 									}
 									if (usedFileName.add(fileName)) {
-										alias.putString(ids[i], fileName);
+										alias.put(ids[i], fileName);
 									} else {
-										alias.putString(ids[i], ids[i] + "_" + fileName);
+										alias.put(ids[i], ids[i] + "_" + fileName);
 									}
 								}
 								for (int i = 0; i < racks.size(); i++) {
-									JsonObject j = racks.get(i);
+									JsonObject j = racks.getJsonObject(i);
 									ids[i] = j.getString("file");
 									String fileName = j.getString("name");
 									if (fileName != null && fileName.contains("/")) {
 										fileName = fileName.replaceAll("/", "-");
 									}
 									if (usedFileName.add(fileName)) {
-										alias.putString(ids[i], fileName);
+										alias.put(ids[i], fileName);
 									} else {
-										alias.putString(ids[i], ids[i] + "_" + fileName);
+										alias.put(ids[i], ids[i] + "_" + fileName);
 									}
 								}
 								exportFiles(alias, ids, exportPath, locale, exported, handler);
@@ -159,7 +156,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								exported.set(true);
 								handler.handle(exported.get());
 							} else {
-								JsonArray errors = event.getArray("errors", new JsonArray());
+								JsonArray errors = event.getJsonArray("errors", new JsonArray());
 								boolean ignoreErrors = errors.size() > 0;
 								for (Object o : errors) {
 									if (!(o instanceof JsonObject)) continue;
@@ -174,7 +171,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 									exported.set(true);
 									handler.handle(exported.get());
 								} else {
-									log.error("Write to fs : " + new JsonArray(ids).encode() + " - " + event.encode());
+									log.error("Write to fs : " + new JsonArray(Arrays.asList(ids)).encode() + " - " + event.encode());
 									handler.handle(exported.get());
 								}
 							}
@@ -224,22 +221,22 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			};
 			if (shareOldGroupsToUsers) {
 				JsonArray userShare = new JsonArray();
-				for (Object u : j.getArray("users")) {
+				for (Object u : j.getJsonArray("users")) {
 					JsonObject share = new JsonObject()
-							.putString("userId", u.toString())
-							.putBoolean("org-entcore-workspace-service-WorkspaceService|copyDocuments", true)
-							.putBoolean("org-entcore-workspace-service-WorkspaceService|getDocument", true);
-					userShare.addObject(share);
+							.put("userId", u.toString())
+							.put("org-entcore-workspace-service-WorkspaceService|copyDocuments", true)
+							.put("org-entcore-workspace-service-WorkspaceService|getDocument", true);
+					userShare.add(share);
 				}
 				JsonObject update = new JsonObject()
-						.putObject("$addToSet",
-								new JsonObject().putObject("shared",
-										new JsonObject().putArray("$each", userShare)));
+						.put("$addToSet",
+								new JsonObject().put("shared",
+										new JsonObject().put("$each", userShare)));
 				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, handler);
 			} else {
 				final MongoUpdateBuilder update = new MongoUpdateBuilder()
-						.pull("shared", new JsonObject().putString("groupId", j.getString("group")))
-						.addToSet("old_shared", new JsonObject().putString("groupId", j.getString("group")));
+						.pull("shared", new JsonObject().put("groupId", j.getString("group")))
+						.addToSet("old_shared", new JsonObject().put("groupId", j.getString("group")));
 				mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update.build(), false, true, handler);
 			}
 		}
@@ -249,7 +246,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	public void deleteUsers(JsonArray users) {
 		String [] userIds = new String[users.size()];
 		for (int i = 0; i < users.size(); i++) {
-			JsonObject j = users.get(i);
+			JsonObject j = users.getJsonObject(i);
 			String id = j.getString("id");
 			userIds[i] = id;
 		}
@@ -261,8 +258,8 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 		final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
 		JsonObject update = new JsonObject()
-				.putObject("$pull", new JsonObject()
-						.putObject("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))));
+				.put("$pull", new JsonObject()
+						.put("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds))));
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, update, false, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -275,16 +272,16 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	private void deleteFiles(final JsonObject query, final String collection) {
 		mongo.find(collection, query, null,
-				new JsonObject().putNumber("file", 1), new Handler<Message<JsonObject>>() {
+				new JsonObject().put("file", 1), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				String status = res.body().getString("status");
-				JsonArray results = res.body().getArray("results");
+				JsonArray results = res.body().getJsonArray("results");
 				if ("ok".equals(status) && results != null && results.size() > 0) {
 					JsonArray fileIds = new JsonArray();
 					for (Object o : results) {
 						if (o instanceof JsonObject) {
-							fileIds.addString(((JsonObject) o).getString("file"));
+							fileIds.add(((JsonObject) o).getString("file"));
 						}
 					}
 					storage.removeFiles(fileIds, new Handler<JsonObject>() {

@@ -28,12 +28,11 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.Bounce;
 import fr.wseduc.webutils.email.BusMailSender;
 import fr.wseduc.webutils.email.EmailSender;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -45,9 +44,9 @@ public class SmtpSender extends BusMailSender implements EmailSender {
 
 	private final ObjectMapper mapper;
 
-	public SmtpSender(Vertx vertx, Container container) {
-		super(vertx, container);
-		String node = (String) vertx.sharedData().getMap("server").get("node");
+	public SmtpSender(Vertx vertx) {
+		super(vertx, null);
+		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
 		if (node == null) {
 			node = "";
 		}
@@ -70,15 +69,15 @@ public class SmtpSender extends BusMailSender implements EmailSender {
 	@Override
 	public void hardBounces(Date startDate, Date endDate, final Handler<Either<String, List<Bounce>>> handler) {
 		final JsonObject query = new JsonObject()
-				.putObject("date", new JsonObject()
-						.putObject("$gte", new JsonObject().putNumber("$date", removeTime(startDate).getTime()))
-						.putObject("$lt", new JsonObject().putNumber("$date", removeTime(endDate).getTime())));
+				.put("date", new JsonObject()
+						.put("$gte", new JsonObject().put("$date", removeTime(startDate).getTime()))
+						.put("$lt", new JsonObject().put("$date", removeTime(endDate).getTime())));
 		MongoDb.getInstance().find("bounces", query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				try {
 					if ("ok".equals(event.body().getString("status"))) {
-						JsonArray l = event.body().getArray("results");
+						JsonArray l = event.body().getJsonArray("results");
 						if (l == null || l.size() == 0) {
 							handler.handle(new Either.Right<String, List<Bounce>>(
 									Collections.<Bounce>emptyList()));

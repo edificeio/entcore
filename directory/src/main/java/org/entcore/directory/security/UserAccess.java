@@ -1,9 +1,9 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
 
 public class UserAccess extends AnyAdminOfUser {
 

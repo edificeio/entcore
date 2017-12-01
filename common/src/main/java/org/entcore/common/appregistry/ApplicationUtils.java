@@ -19,11 +19,12 @@
 
 package org.entcore.common.appregistry;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
 import static org.entcore.common.appregistry.AppRegistryEvents.IMPORT_SUCCEEDED;
@@ -56,17 +57,21 @@ public final class ApplicationUtils {
 	private static void applicationInfos(EventBus eb, String action, String application,
 			JsonArray users, JsonArray groups, final Handler<JsonArray> handler) {
 		JsonObject json = new JsonObject();
-		json.putString("action", action).putString("application", application);
+		json.put("action", action).put("application", application);
 		if (users != null) {
-			json.putArray("users", users);
+			json.put("users", users);
 		}
 		if (groups != null) {
-			json.putArray("groups", groups);
+			json.put("groups", groups);
 		}
-		eb.send(APP_REGISTRY_ADDRESS, json, new Handler<Message<JsonArray>>() {
+		eb.send(APP_REGISTRY_ADDRESS, json, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
-			public void handle(Message<JsonArray> event) {
-				handler.handle(event.body());
+			public void handle(AsyncResult<Message<JsonArray>> event) {
+				if (event.succeeded()) {
+					handler.handle(event.result().body());
+				} else {
+					handler.handle(null);
+				}
 			}
 		});
 	}
@@ -74,27 +79,27 @@ public final class ApplicationUtils {
 
 	public static void publishModifiedUserGroup(EventBus eb, JsonArray a) {
 		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS,
-				new JsonObject().putString("type", USER_GROUP_UPDATED)
-						.putArray("users", a)
+				new JsonObject().put("type", USER_GROUP_UPDATED)
+						.put("users", a)
 		);
 	}
 
-	public static void sendModifiedUserGroup(EventBus eb, JsonArray a, Handler<Message<JsonObject>> res) {
+	public static void sendModifiedUserGroup(EventBus eb, JsonArray a, Handler<AsyncResult<Message<JsonObject>>> res) {
 		eb.send(APP_REGISTRY_PUBLISH_ADDRESS,
-				new JsonObject().putString("type", USER_GROUP_UPDATED)
-						.putArray("users", a), res
+				new JsonObject().put("type", USER_GROUP_UPDATED)
+						.put("users", a), res
 		);
 	}
 
-	public static void setDefaultClassRoles(EventBus eb, String classId, Handler<Message<JsonObject>> handler) {
+	public static void setDefaultClassRoles(EventBus eb, String classId, Handler<AsyncResult<Message<JsonObject>>> handler) {
 		JsonObject json = new JsonObject();
-		json.putString("action", "setDefaultClassRoles").putString("classId", classId);
+		json.put("action", "setDefaultClassRoles").put("classId", classId);
 		eb.send(APP_REGISTRY_BUS_ADDRESS, json, handler);
 	}
 
 	public static void afterImport(EventBus eb) {
 		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS,
-				new JsonObject().putString("type", IMPORT_SUCCEEDED)
+				new JsonObject().put("type", IMPORT_SUCCEEDED)
 		);
 	}
 

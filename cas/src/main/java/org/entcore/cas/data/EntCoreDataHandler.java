@@ -29,11 +29,11 @@ import org.entcore.cas.http.WrappedRequest;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,7 +82,7 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	protected void getAuthByProxyGrantingTicket(String pgt, Handler<AuthCas> handler) {
 		JsonObject query = new JsonObject()
-				.putString("serviceTickets.pgt.pgtId", pgt);
+				.put("serviceTickets.pgt.pgtId", pgt);
 		getAuth(handler, query);
 	}
 
@@ -94,20 +94,20 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	protected void getAuth(String ticket, final Handler<AuthCas> handler) {
 		JsonObject query = new JsonObject()
-				.putString("serviceTickets.ticket", ticket);
+				.put("serviceTickets.ticket", ticket);
 		getAuth(handler, query);
 	}
 
 	private void getAuth(final Handler<AuthCas> handler, JsonObject query) {
 		JsonObject keys = new JsonObject()
-				.putNumber("_id", 0)
-				.putNumber("id", 1)
-				.putNumber("serviceTickets", 1)
-				.putNumber("user", 1);
-		mongoDb.findOne(COLLECTION, query, keys, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+				.put("_id", 0)
+				.put("id", 1)
+				.put("serviceTickets", 1)
+				.put("user", 1);
+		mongoDb.findOne(COLLECTION, query, keys, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonObject res = event.body().getObject("result");
+				JsonObject res = event.body().getJsonObject("result");
 				if ("ok".equals(event.body().getString("status")) && res != null) {
 					handler.handle(deserialize(res));
 				} else {
@@ -121,14 +121,14 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	protected void getAuthByProxyTicket(String ticket, final Handler<AuthCas> handler) {
 		JsonObject query = new JsonObject()
-				.putString("serviceTickets.pgt.proxyTickets.pgId", ticket);
+				.put("serviceTickets.pgt.proxyTickets.pgId", ticket);
 		getAuth(handler, query);
 	}
 
 	@Override
 	public void getOrCreateAuth(Request request, final Handler<AuthCas> handler) {
 		UserUtils.getUserInfos(eb, ((WrappedRequest)request).getServerRequest(),
-				new org.vertx.java.core.Handler<UserInfos>() {
+				new io.vertx.core.Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos userInfos) {
 				AuthCas authCas = new AuthCas();
@@ -143,14 +143,14 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	public void persistAuth(AuthCas authCas, final Handler<Boolean> handler) {
-		JsonObject query = new JsonObject().putString("id", authCas.getId());
+		JsonObject query = new JsonObject().put("id", authCas.getId());
 		JsonObject doc = serialize(authCas);
 		if (doc == null) {
 			handler.handle(false);
 			return;
 		}
-		doc.putObject("updatedAt", MongoDb.now());
-		mongoDb.update(COLLECTION, query, doc, true, false, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+		doc.put("updatedAt", MongoDb.now());
+		mongoDb.update(COLLECTION, query, doc, true, false, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				handler.handle("ok".equals(event.body().getString("status")));
@@ -161,11 +161,11 @@ public class EntCoreDataHandler extends DataHandler {
 	@Override
 	public void getAndDestroyAuth(Request request, final Handler<AuthCas> handler) {
 		UserUtils.getUserInfos(eb, ((WrappedRequest)request).getServerRequest(),
-				new org.vertx.java.core.Handler<UserInfos>() {
+				new io.vertx.core.Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
 				if (user != null) {
-					final JsonObject query = new JsonObject().putString("user", user.getUserId());
+					final JsonObject query = new JsonObject().put("user", user.getUserId());
 					getAuth(new Handler<AuthCas>() {
 						@Override
 						public void handle(AuthCas authCas) {
@@ -182,7 +182,7 @@ public class EntCoreDataHandler extends DataHandler {
 
 	@Override
 	public void getAndDestroyAuth(String user, final Handler<AuthCas> handler) {
-		final JsonObject query = new JsonObject().putString("user", user);
+		final JsonObject query = new JsonObject().put("user", user);
 		getAuth(new Handler<AuthCas>() {
 			@Override
 			public void handle(AuthCas authCas) {
@@ -208,7 +208,7 @@ public class EntCoreDataHandler extends DataHandler {
 		if (res == null) {
 			return null;
 		}
-		res.removeField("updatedAt");
+		res.remove("updatedAt");
 		try {
 			return mapper.readValue(res.encode(), AuthCas.class);
 		} catch (IOException e) {

@@ -31,14 +31,12 @@ import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,9 +53,9 @@ public abstract class ControllerHelper extends BaseController {
 	protected CrudService crudService;
 
 	@Override
-	public void init(Vertx vertx, Container container, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
-		this.notification = new TimelineHelper(vertx, eb, container);
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+		this.notification = new TimelineHelper(vertx, eb, config);
 	}
 
 	protected void shareJson(final HttpServerRequest request) {
@@ -113,10 +111,10 @@ public abstract class ControllerHelper extends BaseController {
 			badRequest(request);
 			return;
 		}
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final List<String> actions = request.formAttributes().getAll("actions");
 				final String groupId = request.formAttributes().get("groupId");
 				final String userId = request.formAttributes().get("userId");
@@ -155,7 +153,7 @@ public abstract class ControllerHelper extends BaseController {
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
 							JsonObject n = event.right().getValue()
-									.getObject("notify-timeline");
+									.getJsonObject("notify-timeline");
 							if (n != null && notificationName != null) {
 								notifyShare(request, id, user, new JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
@@ -163,7 +161,7 @@ public abstract class ControllerHelper extends BaseController {
 							renderJson(request, event.right().getValue());
 						} else {
 							JsonObject error = new JsonObject()
-									.putString("error", event.left().getValue());
+									.put("error", event.left().getValue());
 							renderJson(request, error, 400);
 						}
 					}
@@ -190,10 +188,10 @@ public abstract class ControllerHelper extends BaseController {
 			return;
 		}
 
-		request.expectMultiPart(true);
-		request.endHandler(new VoidHandler() {
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				final List<String> actions = request.formAttributes().getAll("actions");
 				final String groupId = request.formAttributes().get("groupId");
 				final String userId = request.formAttributes().get("userId");
@@ -282,9 +280,9 @@ public abstract class ControllerHelper extends BaseController {
 			JsonObject p, final String resourceNameAttribute) {
 		if (p == null) {
 			p = new JsonObject()
-				.putString("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-				.putString("username", user.getUsername())
-				.putString("resourceUri", pathPrefix + "/" + resource);
+				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.put("username", user.getUsername())
+				.put("resourceUri", pathPrefix + "/" + resource);
 		}
 		final JsonObject params = p;
 		crudService.retrieve(resource, new Handler<Either<String, JsonObject>>() {
@@ -293,7 +291,7 @@ public abstract class ControllerHelper extends BaseController {
 				if (r.isRight()) {
 					String attr = (resourceNameAttribute != null && !resourceNameAttribute.trim().isEmpty()) ?
 							resourceNameAttribute : "name";
-					params.putString("resourceName", r.right().getValue().getString(attr, ""));
+					params.put("resourceName", r.right().getValue().getString(attr, ""));
 					notification.notifyTimeline(request, notificationName, user, recipients, params);
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);

@@ -27,11 +27,11 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.infra.services.EventStoreService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.voidResponseHandler;
 
@@ -41,7 +41,7 @@ public class EventStoreController extends BaseController {
 	private JsonArray userBlackList;
 
 	public EventStoreController (JsonObject eventConfig) {
-        this.userBlackList = eventConfig.getArray("user-blacklist", new JsonArray());
+        this.userBlackList = eventConfig.getJsonArray("user-blacklist", new JsonArray());
 	}
 
 	@Post("/event/store")
@@ -61,7 +61,7 @@ public class EventStoreController extends BaseController {
 
 	@Post("/event/localhost/store")
 	public void storeLocalhost(final HttpServerRequest request) {
-		if (("localhost:"+ container.config().getInteger("port", 8001))
+		if (("localhost:"+ config.getInteger("port", 8001))
 				.equalsIgnoreCase(request.headers().get("Host"))) {
 			store(request);
 		} else {
@@ -72,16 +72,16 @@ public class EventStoreController extends BaseController {
 	@BusAddress("event.store")
 	public void eventStore(final Message<JsonObject> message) {
 		if (!authorizedUser(message.body())) {
-			message.reply(new JsonObject().putString("status", "ok"));
+			message.reply(new JsonObject().put("status", "ok"));
 		} else {
 			eventStoreService.store(message.body(), new Handler<Either<String, Void>>() {
 				@Override
 				public void handle(Either<String, Void> event) {
 					if (event.isRight()) {
-						message.reply(new JsonObject().putString("status", "ok"));
+						message.reply(new JsonObject().put("status", "ok"));
 					} else {
-						message.reply(new JsonObject().putString("status", "error")
-								.putString("message", event.left().getValue()));
+						message.reply(new JsonObject().put("status", "error")
+								.put("message", event.left().getValue()));
 					}
 				}
 			});

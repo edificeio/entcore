@@ -30,7 +30,7 @@ object CasScenario {
 	val scn = exec(http("Login cas")
     .get("""/cas/login?service=http%3A%2F%2Fperdu.com""")
     .check(status.is(302),
-      header("Location").find.is("/auth/login?callback=/cas/login?service=http%3A%2F%2Fperdu.com")))
+      header("Location").find.is("/auth/login?callback=%2Fcas%2Flogin%3Fservice%3Dhttp%253A%252F%252Fperdu.com")))
     .exec(http("User login for Cas")
     .post("""/auth/login""")
     .formParam("""email""", """${teacherLogin}""")

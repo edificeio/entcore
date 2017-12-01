@@ -36,12 +36,12 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.service.FolderService;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.common.storage.Storage;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
@@ -77,9 +77,9 @@ public class DefaultFolderService implements FolderService {
 		mongo.findOne(DOCUMENTS_COLLECTION,  MongoQueryBuilder.build(parentFolderQuery), new Handler<Message<JsonObject>>(){
 			@Override
 			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) && event.body().containsField("result")){
-					JsonObject parent = event.body().getObject("result");
-					JsonArray parentSharedRights = parent != null ? parent.getArray("shared", null) : null;
+				if ("ok".equals(event.body().getString("status")) && event.body().containsKey("result")){
+					JsonObject parent = event.body().getJsonObject("result");
+					JsonArray parentSharedRights = parent != null ? parent.getJsonArray("shared", null) : null;
 
 					result.handle(new Either.Right<String, JsonArray>(parentSharedRights));
 				} else {
@@ -102,19 +102,19 @@ public class DefaultFolderService implements FolderService {
 		}
 		final JsonObject doc = new JsonObject();
 		String now = MongoDb.formatDate(new Date());
-		doc.putString("created", now);
-		doc.putString("modified", now);
-		doc.putString("owner", owner.getUserId());
-		doc.putString("ownerName", owner.getUsername());
-		doc.putString("name", name);
+		doc.put("created", now);
+		doc.put("modified", now);
+		doc.put("owner", owner.getUserId());
+		doc.put("ownerName", owner.getUsername());
+		doc.put("name", name);
 		String folder;
 		if (path != null && !path.trim().isEmpty()) {
 			folder = path + "_" + name;
 		} else {
 			folder = name;
 		}
-		doc.putString("folder", folder);
-		doc.putString("application", getOrElse(application, WorkspaceService.WORKSPACE_NAME));
+		doc.put("folder", folder);
+		doc.put("application", getOrElse(application, WorkspaceService.WORKSPACE_NAME));
 		QueryBuilder alreadyExist = QueryBuilder.start("owner").is(owner.getUserId()).put("folder").is(folder);
 		mongo.count(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(alreadyExist),
 				new Handler<Message<JsonObject>>() {
@@ -142,7 +142,7 @@ public class DefaultFolderService implements FolderService {
 												null : event.right().getValue();
 
 										if(parentSharedRights != null)
-											doc.putArray("shared", parentSharedRights);
+											doc.put("shared", parentSharedRights);
 
 										mongo.save(DOCUMENTS_COLLECTION, doc, new Handler<Message<JsonObject>>() {
 											@Override
@@ -173,13 +173,13 @@ public class DefaultFolderService implements FolderService {
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+		JsonObject keys = new JsonObject().put("folder", 1).put("name", 1);
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
-						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
-						final String name = event.body().getObject("result", new JsonObject()).getString("name");
+						final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
+						final String name = event.body().getJsonObject("result", new JsonObject()).getString("name");
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty() && name != null && !name.trim().isEmpty()) {
 							if (path != null && path.startsWith(folder)) {
@@ -235,7 +235,7 @@ public class DefaultFolderService implements FolderService {
 					new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> d) {
-							JsonArray directories = d.body().getArray("values", new JsonArray());
+							JsonArray directories = d.body().getJsonArray("values", new JsonArray());
 							if ("ok".equals(d.body().getString("status")) && directories.size() > 0) {
 								final AtomicInteger remaining = new AtomicInteger(directories.size());
 								final AtomicInteger count = new AtomicInteger(0);
@@ -264,7 +264,7 @@ public class DefaultFolderService implements FolderService {
 										public void handle(Message<JsonObject> res) {
 											count.getAndAdd(res.body().getInteger("number", 0));
 											if (remaining.decrementAndGet() == 0) {
-												res.body().putNumber("number", count.get());
+												res.body().put("number", count.get());
 												result.handle(Utils.validResult(res));
 											}
 										}
@@ -306,14 +306,14 @@ public class DefaultFolderService implements FolderService {
 						null : event.right().getValue();
 
 				QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-				JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+				JsonObject keys = new JsonObject().put("folder", 1).put("name", 1);
 
 				mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 						new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
-						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
-						final String n1 = event.body().getObject("result", new JsonObject()).getString("name");
+						final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
+						final String n1 = event.body().getJsonObject("result", new JsonObject()).getString("name");
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty() && n1 != null && !n1.trim().isEmpty()) {
 							final String folderAttr = "folder";
@@ -323,12 +323,12 @@ public class DefaultFolderService implements FolderService {
 									new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> src) {
-									final JsonArray origs = src.body().getArray("results", new JsonArray());
+									final JsonArray origs = src.body().getJsonArray("results", new JsonArray());
 									if ("ok".equals(src.body().getString("status")) && origs.size() > 0) {
 										long size = 0;
 										for (Object o: origs) {
 											if (!(o instanceof JsonObject)) continue;
-											JsonObject metadata = ((JsonObject) o).getObject("metadata");
+											JsonObject metadata = ((JsonObject) o).getJsonObject("metadata");
 											if (metadata != null) {
 												size += metadata.getLong("size", 0l);
 											}
@@ -360,12 +360,12 @@ public class DefaultFolderService implements FolderService {
 													JsonObject orig = (JsonObject) o;
 													final JsonObject dest = orig.copy();
 													String now = MongoDb.formatDate(new Date());
-													dest.removeField("_id");
-													dest.putString("created", now);
-													dest.putString("modified", now);
-													dest.putString("folder", dest.getString("folder", "")
+													dest.remove("_id");
+													dest.put("created", now);
+													dest.put("modified", now);
+													dest.put("folder", dest.getString("folder", "")
 															.replaceFirst("^" + Pattern.quote(folder),  Matcher.quoteReplacement(destFolder)));
-													dest.putArray("shared", parentSharedRights);
+													dest.put("shared", parentSharedRights);
 													insert.add(dest);
 													String filePath = orig.getString("file");
 													if (filePath != null) {
@@ -374,7 +374,7 @@ public class DefaultFolderService implements FolderService {
 															@Override
 															public void handle(JsonObject event) {
 																if (event != null && "ok".equals(event.getString("status"))) {
-																	dest.putString("file", event.getString("_id"));
+																	dest.put("file", event.getString("_id"));
 																	persist(insert, number.decrementAndGet());
 																}
 															}
@@ -442,14 +442,14 @@ public class DefaultFolderService implements FolderService {
 
 		final QueryBuilder query = new QueryBuilder().and(resourceQuery.get(), rightQuery.get());
 
-		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1).putNumber("owner", 1);
+		JsonObject keys = new JsonObject().put("folder", 1).put("name", 1).put("owner", 1);
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
-						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
-						final String name = event.body().getObject("result", new JsonObject()).getString("name");
-						final String owner = event.body().getObject("result", new JsonObject()).getString("owner");
+						final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
+						final String name = event.body().getJsonObject("result", new JsonObject()).getString("name");
+						final String owner = event.body().getJsonObject("result", new JsonObject()).getString("owner");
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty()) {
 							QueryBuilder q = QueryBuilder.start("owner").is(owner).put("folder")
@@ -485,22 +485,22 @@ public class DefaultFolderService implements FolderService {
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-		JsonObject keys = new JsonObject().putNumber("folder", 1);
+		JsonObject keys = new JsonObject().put("folder", 1);
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+				String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
 				if ("ok".equals(event.body().getString("status")) && folder != null && !folder.trim().isEmpty()) {
 					QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
 							.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
-					JsonObject keys = new JsonObject().putNumber("metadata", 1)
-							.putNumber("owner", 1).putNumber("name", 1).putNumber("file", 1);
+					JsonObject keys = new JsonObject().put("metadata", 1)
+							.put("owner", 1).put("name", 1).put("file", 1);
 					final JsonObject query = MongoQueryBuilder.build(q);
 					mongo.find(DOCUMENTS_COLLECTION, query, null, keys, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> message) {
-							final JsonArray results = message.body().getArray("results");
+							final JsonArray results = message.body().getJsonArray("results");
 							if ("ok".equals(message.body().getString("status")) && results != null) {
 								mongo.delete(DOCUMENTS_COLLECTION, query, new Handler<Message<JsonObject>>() {
 									@Override
@@ -599,12 +599,12 @@ public class DefaultFolderService implements FolderService {
 			return;
 		}
 		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-		JsonObject keys = new JsonObject().putNumber("folder", 1);
+		JsonObject keys = new JsonObject().put("folder", 1);
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
-						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+						final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty()) {
 							QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
@@ -655,12 +655,12 @@ public class DefaultFolderService implements FolderService {
 			managerCheck
 		);
 
-		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+		JsonObject keys = new JsonObject().put("folder", 1).put("name", 1);
 
 		Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>(){
 			@Override
 			public void handle(Message<JsonObject> event) {
-				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+				final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
 
 				QueryBuilder q = QueryBuilder.start().or(
 						QueryBuilder.start("owner").is(owner.getUserId()).get(),
@@ -672,7 +672,7 @@ public class DefaultFolderService implements FolderService {
 
 					public void handle(Message<JsonObject> d) {
 
-						JsonArray files = d.body().getArray("results", new JsonArray());
+						JsonArray files = d.body().getJsonArray("results", new JsonArray());
 
 						if ("ok".equals(d.body().getString("status"))) {
 
@@ -695,8 +695,8 @@ public class DefaultFolderService implements FolderService {
 
 									if (remaining.decrementAndGet() == 0) {
 										JsonObject response = new JsonObject();
-										response.putNumber("number", count);
-										response.putNumber("number-errors", errorcount);
+										response.put("number", count);
+										response.put("number-errors", errorcount);
 										result.handle(new Either.Right<String, JsonObject>(response));
 									}
 								}
@@ -742,12 +742,12 @@ public class DefaultFolderService implements FolderService {
 		}
 
 		final QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId()).and("file").exists(false);
-		final JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+		final JsonObject keys = new JsonObject().put("folder", 1).put("name", 1);
 
 		Handler<Message<JsonObject>> folderHandler = new Handler<Message<JsonObject>>(){
 			@Override
 			public void handle(Message<JsonObject> event) {
-				final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
+				final String folder = event.body().getJsonObject("result", new JsonObject()).getString("folder");
 				final String newFolderPath = folder.lastIndexOf("_") < 0 ? newName : folder.substring(0, folder.lastIndexOf("_") + 1) + newName;
 
 				//3 - Find & rename children
@@ -768,7 +768,7 @@ public class DefaultFolderService implements FolderService {
 						mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(targetQuery), new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> d) {
-								JsonArray children = d.body().getArray("results", new JsonArray());
+								JsonArray children = d.body().getJsonArray("results", new JsonArray());
 								if ("ok".equals(d.body().getString("status")) && children.size() > 0) {
 									final AtomicInteger remaining = new AtomicInteger(children.size());
 									final AtomicInteger count = new AtomicInteger(0);
@@ -778,7 +778,7 @@ public class DefaultFolderService implements FolderService {
 										public void handle(Message<JsonObject> res) {
 											count.getAndAdd(res.body().getInteger("number", 0));
 											if (remaining.decrementAndGet() == 0) {
-												res.body().putNumber("number", count.get());
+												res.body().put("number", count.get());
 												result.handle(Utils.validResult(res));
 											}
 										}

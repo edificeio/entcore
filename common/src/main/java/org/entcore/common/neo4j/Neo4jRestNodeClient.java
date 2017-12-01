@@ -19,13 +19,15 @@
 
 package org.entcore.common.neo4j;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.impl.HttpClientImpl;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.util.Random;
@@ -46,11 +48,12 @@ public class Neo4jRestNodeClient {
 		this.vertx = vertx;
 		clients = new HttpClient[uris.length];
 		for (int i = 0; i < uris.length; i++) {
-			clients[i] = vertx.createHttpClient()
-					.setHost(uris[i].getHost())
-					.setPort(uris[i].getPort())
+			final HttpClientOptions options = new HttpClientOptions()
+					.setDefaultHost(uris[i].getHost())
+					.setDefaultPort(uris[i].getPort())
 					.setMaxPoolSize(poolSize)
 					.setKeepAlive(keepAlive);
+			clients[i] = vertx.createHttpClient(options);
 		}
 
 		if (uris.length > 1) {
@@ -104,7 +107,7 @@ public class Neo4jRestNodeClient {
 		if (oldMaster != idx) {
 			slaves.remove(Integer.valueOf(idx));
 			if (logger.isDebugEnabled()) {
-				logger.debug("Neo4j new master node " + idx + " (" + clients[idx].getHost() + ").");
+				logger.debug("Neo4j new master node " + idx + " (" + ((HttpClientImpl) clients[idx]).getOptions().getDefaultHost() + ").");
 			}
 		}
 	}
@@ -113,7 +116,7 @@ public class Neo4jRestNodeClient {
 		master.compareAndSet(idx, -1);
 		final boolean newSlave = slaves.addIfAbsent(idx);
 		if (logger.isDebugEnabled() && newSlave) {
-			logger.debug("Neo4j new slave node " + idx + " (" + clients[idx].getHost() + ").");
+			logger.debug("Neo4j new slave node " + idx + " (" + ((HttpClientImpl) clients[idx]).getOptions().getDefaultHost() + ").");
 		}
 	}
 

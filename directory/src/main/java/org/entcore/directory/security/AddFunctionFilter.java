@@ -21,9 +21,9 @@ package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 

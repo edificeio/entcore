@@ -23,10 +23,10 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
@@ -54,9 +54,9 @@ public class MessageOwnerFilter implements ResourcesProvider {
 			"WHERE um.user_id = ? AND um.message_id = ? AND m.from = ?";
 
 		JsonArray values = new JsonArray()
-			.addString(user.getUserId())
-			.addString(messageId)
-			.addString(user.getUserId());
+			.add(user.getUserId())
+			.add(messageId)
+			.add(user.getUserId());
 
 		request.pause();
 

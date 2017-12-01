@@ -23,10 +23,10 @@ package org.entcore.archive.services.impl;
 import fr.wseduc.mongodb.MongoDb;
 import org.entcore.archive.Archive;
 import org.entcore.common.storage.Storage;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -48,13 +48,13 @@ public class DeleteOldExports implements Handler<Long> {
 		c.setTime(new Date());
 		c.add(Calendar.HOUR, - delay);
 		final JsonObject query = new JsonObject()
-				.putObject("date", new JsonObject()
-						.putObject("$lt", new JsonObject()
-								.putNumber("$date", c.getTime().getTime())));
+				.put("date", new JsonObject()
+						.put("$lt", new JsonObject()
+								.put("$date", c.getTime().getTime())));
 		mongo.find(Archive.ARCHIVES, query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("results");
+				JsonArray res = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
 					JsonArray ids = new JsonArray();
 					for (Object object: res) {

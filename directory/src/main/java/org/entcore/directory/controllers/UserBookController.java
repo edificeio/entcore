@@ -30,22 +30,20 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 
+import io.vertx.core.http.HttpClientOptions;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo;
@@ -58,6 +56,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.security.SecuredAction;
+import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -79,31 +78,32 @@ public class UserBookController extends BaseController {
 	private Map<String, Map<String, String>> activationWelcomeMessage;
 
 	@Override
-	public void init(final Vertx vertx, Container container, RouteMatcher rm,
+	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		pathPrefix = "/userbook";
-		super.init(vertx, container, rm, securedActions);
+		super.init(vertx, config, rm, securedActions);
 		this.neo = new Neo(vertx, Server.getEventBus(vertx),log);
-		this.config = container.config();
-		userBookData= config.getObject("user-book-data");
-		client = vertx.createHttpClient()
-						.setHost(config.getString("workspace-url"))
-						.setPort(config.getInteger("workspace-port"))
-						.setMaxPoolSize(16)
-						.setKeepAlive(false);
+		this.config = config;
+		userBookData= config.getJsonObject("user-book-data");
+		final HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost(config.getString("workspace-url"))
+				.setDefaultPort(config.getInteger("workspace-port"))
+				.setMaxPoolSize(16)
+				.setKeepAlive(false);
+		client = vertx.createHttpClient(options);
 		getWithRegEx(".*", "proxyDocument");
 		eventStore = EventStoreFactory.getFactory().getEventStore(ANNUAIRE_MODULE);
 		if (config.getBoolean("activation-welcome-message", false)) {
 			activationWelcomeMessage = new HashMap<>();
-			String assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath");
-			Map<String, String> skins = vertx.sharedData().getMap("skins");
+			String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
+			Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 			if (skins != null) {
 				activationWelcomeMessage = new HashMap<>();
 				for (final Map.Entry<String, String> e: skins.entrySet()) {
 					String path = assetsPath + "/assets/themes/" + e.getValue() + "/template/directory/welcome/";
-					vertx.fileSystem().readDir(path, new AsyncResultHandler<String[]>() {
+					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(AsyncResult<String[]> event) {
+						public void handle(AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
 								final Map<String, String> messages = new HashMap<>();
 								activationWelcomeMessage.put(e.getKey(), messages);
@@ -169,14 +169,14 @@ public class UserBookController extends BaseController {
 		}
 		if(profile != null && !profile.trim().isEmpty()){
 			filter += "AND HEAD(m.profiles) = {profile} ";
-			params.putString("profile", profile);
+			params.put("profile", profile);
 		}
 		if(structure != null && !structure.trim().isEmpty()){
 			filter += "AND (m)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure {id: {structureId}}) ";
-			params.putString("structureId", structure);
+			params.put("structureId", structure);
 		}
 		String preFilter = "AND m.displayNameSearchField CONTAINS {search} " + filter;
-		params.putString("search", StringValidation.removeAccents(name.trim()).toLowerCase());
+		params.put("search", StringValidation.removeAccents(name.trim()).toLowerCase());
 		String customReturn =
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
@@ -315,7 +315,7 @@ public class UserBookController extends BaseController {
 				"visibles.displayName as displayName, u.mood as mood, " +
 				"u.picture as photo " +
 				"ORDER BY type DESC, displayName ";
-		final JsonObject params = new JsonObject().putString("structId", structureId);
+		final JsonObject params = new JsonObject().put("structId", structureId);
 		UserUtils.findVisibleUsers(eb, request, true, customReturn, params, new Handler<JsonArray>() {
 
 			@Override
@@ -336,10 +336,10 @@ public class UserBookController extends BaseController {
 							@Override
 							public void handle(JsonArray manualGroups) {
 								JsonObject result = new JsonObject()
-									.putArray("users", personnel)
-									.putArray("classes", ((JsonObject) classesAndProfileGroups.get(0)).getArray("classes", new JsonArray()))
-									.putArray("profileGroups", ((JsonObject) classesAndProfileGroups.get(0)).getArray("profileGroups", new JsonArray()))
-									.putArray("manualGroups", manualGroups);
+									.put("users", personnel)
+									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new JsonArray()))
+									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new JsonArray()))
+									.put("manualGroups", manualGroups);
 								renderJson(request, result);
 							}
 						});
@@ -363,7 +363,7 @@ public class UserBookController extends BaseController {
 				"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
 				"visibles.displayName as displayName, visibles.login as login " +
 				"ORDER BY type DESC, displayName ";
-		final JsonObject params = new JsonObject().putString("groupId", groupId);
+		final JsonObject params = new JsonObject().put("groupId", groupId);
 		UserUtils.findVisibleUsers(eb, request, true, false, customReturn, params, new Handler<JsonArray>() {
 
 			@Override
@@ -384,7 +384,7 @@ public class UserBookController extends BaseController {
 					"WITH c, profile, visibles MATCH";
 		} else {
 			matchClass = "(c:Class {id : {classId}}),";
-			params.putString("classId", classId);
+			params.put("classId", classId);
 		}
 		String query =
 				"MATCH " + matchClass + " visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
@@ -462,8 +462,8 @@ public class UserBookController extends BaseController {
 		log.debug(defaultImg);
 		if (defaultImg != null) {
 			defaultContent = new JsonObject()
-			.putString("type", "file")
-			.putString("content", defaultImg);
+			.put("type", "file")
+			.put("content", defaultImg);
 		}
 		HttpClientUtils.proxy(request, client, "\\" + pathPrefix,
 				config.getString("workspace-prefix"), defaultContent);
@@ -478,9 +478,9 @@ public class UserBookController extends BaseController {
 	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
 		JsonObject params = new JsonObject();
-		params.putString("userId", message.body().getString("userId"));
-		params.putString("avatar", userBookData.getString("default-avatar"));
-		params.putString("theme", userBookData.getString("default-theme", ""));
+		params.put("userId", message.body().getString("userId"));
+		params.put("avatar", userBookData.getString("default-avatar"));
+		params.put("theme", userBookData.getString("default-theme", ""));
 		JsonArray queries = new JsonArray();
 		String query =
 				"MERGE (m:UserBook { userid : {userId}}) " +
@@ -499,14 +499,14 @@ public class UserBookController extends BaseController {
 					"MERGE (u)-[:PREFERS]->(uac:UserAppConf) " +
 					"SET uac.theme = {theme} ";
 			JsonObject paramsTheme = new JsonObject()
-					.putString("userId", message.body().getString("userId"))
-					.putString("theme", message.body().getString("theme"));
+					.put("userId", message.body().getString("userId"))
+					.put("theme", message.body().getString("theme"));
 			queries.add(Neo.toJsonObject(query3, paramsTheme));
 		}
-		for (Object hobby : userBookData.getArray("hobbies")) {
+		for (Object hobby : userBookData.getJsonArray("hobbies")) {
 			JsonObject j = params.copy();
-			j.putString("category", (String)hobby);
-			j.putString("values", "");
+			j.put("category", (String)hobby);
+			j.put("values", "");
 			queries.add(Neo.toJsonObject(query2, j));
 		}
 		neo.sendBatch(queries, (Handler<Message<JsonObject>>) null);
@@ -517,7 +517,7 @@ public class UserBookController extends BaseController {
 	@BusAddress("send.welcome.message")
 	public void welcomeMessage(Message<JsonObject> message) {
 		if (activationWelcomeMessage != null) {
-			final HttpServerRequest request = new JsonHttpServerRequest(message.body().getObject("request"));
+			final HttpServerRequest request = new JsonHttpServerRequest(message.body().getJsonObject("request"));
 			Map<String, String> messages = activationWelcomeMessage.get(getHost(request));
 			if (messages != null) {
 				String welcomeMessage = messages.get(message.body().getString("profile"));
@@ -543,14 +543,14 @@ public class UserBookController extends BaseController {
 
 	@BusAddress("userbook.preferences")
 	public void getUserPreferences(final Message<JsonObject> message){
-		final HttpServerRequest request = new JsonHttpServerRequest(message.body().getObject("request"));
+		final HttpServerRequest request = new JsonHttpServerRequest(message.body().getJsonObject("request"));
 		final String application = message.body().getString("application");
 		final String action = message.body().getString("action");
 
 		if (action == null) {
 			log.warn("[@BusAddress](userbook.preferences) Invalid action.");
-			message.reply(new JsonObject().putString("status", "error")
-					.putString("message", "Invalid action."));
+			message.reply(new JsonObject().put("status", "error")
+					.put("message", "Invalid action."));
 			return;
 		}
 
@@ -562,12 +562,12 @@ public class UserBookController extends BaseController {
 							public void handle(Either<String, JsonObject> result) {
 								if(result.isLeft()){
 									message.reply(new JsonObject()
-										.putString("status", "error")
-										.putString("message", result.left().getValue()));
+										.put("status", "error")
+										.put("message", result.left().getValue()));
 								} else {
 									message.reply(new JsonObject()
-										.putString("status", "ok")
-										.putObject("value", result.right().getValue()));
+										.put("status", "ok")
+										.put("value", result.right().getValue()));
 								}
 							}
 						});
@@ -575,7 +575,7 @@ public class UserBookController extends BaseController {
 				});
 				break;
 			case "get.userlist":
-				final JsonArray userIds = message.body().getArray("userIds", new JsonArray());
+				final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
 				String query =
 						"MATCH (u:User) " +
 						message.body().getString("additionalMatch", "") +
@@ -586,34 +586,34 @@ public class UserBookController extends BaseController {
 						message.body().getString("additionalCollectFields", "") +
 						"}) AS preferences";
 				neo.execute(query,
-					new JsonObject().putArray("userIds", userIds),
+					new JsonObject().put("userIds", userIds),
 					Neo4jResult.validResultHandler(new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> event) {
 							if(event.isLeft()){
-								message.reply(new JsonObject().putString("status", "error")
-									.putString("message", event.left().getValue()));
+								message.reply(new JsonObject().put("status", "error")
+									.put("message", event.left().getValue()));
 								return;
 							}
-							JsonArray results = ((JsonObject) event.right().getValue().get(0)).getArray("preferences", new JsonArray());
+							JsonArray results = (event.right().getValue().getJsonObject(0)).getJsonArray("preferences", new JsonArray());
 							for(Object resultObj : results){
 								JsonObject result = (JsonObject) resultObj;
 								JsonObject prefs = new JsonObject();
 								try {
-									prefs = new JsonObject(result.getObject("preferences", new JsonObject())
-											.getObject("data", new JsonObject()).getString(application, "{}"));
+									prefs = new JsonObject(result.getJsonObject("preferences", new JsonObject())
+											.getJsonObject("data", new JsonObject()).getString(application, "{}"));
 								} catch(Exception e) {
 									log.error("UserId [" + result.getString("userId", "") + "] - Bad application preferences format");
 								}
-								result.putObject("preferences", prefs);
+								result.put("preferences", prefs);
 							}
-							message.reply(new JsonObject().putString("status", "ok")
-								.putArray("results", results));
+							message.reply(new JsonObject().put("status", "ok")
+								.put("results", results));
 						}
 					}));
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error")
-						.putString("message", "Invalid action."));
+				message.reply(new JsonObject().put("status", "error")
+						.put("message", "Invalid action."));
 				break;
 		}
 
@@ -624,8 +624,8 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
 		String id = request.params().get("id");
-		final String assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath") +
-				"/assets/themes/" + vertx.sharedData().getMap("skins").get(getHost(request));
+		final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
+				"/assets/themes/" + vertx.sharedData().getLocalMap("skins").get(getHost(request));
 		final String defaultAvatarPath = assetsPath + "/img/illustrations/no-avatar.svg";
 
 		if (id != null && !id.trim().isEmpty()) {
@@ -639,18 +639,26 @@ public class UserBookController extends BaseController {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
-						String photo = event.body().getObject("result", new JsonObject())
-								.getObject("0", new JsonObject()).getString("photo");
+						String photo = event.body().getJsonObject("result", new JsonObject())
+								.getJsonObject("0", new JsonObject()).getString("photo");
 						if (StringValidation.isAbsoluteDocumentUri(photo)) {
 							redirectPermanent(request, photo + "?" + request.query());
 							return;
 						}
 					}
-					request.response().sendFile(defaultAvatarPath);
+					request.response().sendFile(defaultAvatarPath, ar -> {
+						if (ar.failed() && !request.response().ended()) {
+							notFound(request);
+						}
+					});
 				}
 			});
 		} else {
-			request.response().sendFile(defaultAvatarPath);
+			request.response().sendFile(defaultAvatarPath, ar -> {
+				if (ar.failed() && !request.response().ended()) {
+					notFound(request);
+				}
+			});
 		}
 	}
 
@@ -669,7 +677,7 @@ public class UserBookController extends BaseController {
 				"RETURN distinct visibles.id as id, visibles.displayName as username, " +
 				"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
 		JsonObject params = new JsonObject();
-		params.putString("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
+		params.put("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
 		UserUtils.findVisibleUsers(eb, request, true, true, query, params, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray users) {
@@ -765,11 +773,11 @@ public class UserBookController extends BaseController {
 		if (user != null) {
 			UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 				public void handle(JsonObject session) {
-					final JsonObject cache = session.getObject("cache");
+					final JsonObject cache = session.getJsonObject("cache");
 
-					if(cache.containsField("preferences")){
+					if(cache.containsKey("preferences")){
 						handler.handle(new Either.Right<String, JsonObject>(
-								new JsonObject().putString("preference", cache.getObject("preferences").getString(application))));
+								new JsonObject().put("preference", cache.getJsonObject("preferences").getString(application))));
 					} else {
 						refreshPreferences(user, request, new Handler<Either<String, JsonObject>>(){
 							public void handle(Either<String, JsonObject> event) {
@@ -778,7 +786,7 @@ public class UserBookController extends BaseController {
 									handler.handle(new Either.Left<String, JsonObject>("refresh.preferences.failed"));
 								} else {
 									handler.handle(new Either.Right<String, JsonObject>(
-										new JsonObject().putString("preference", event.right().getValue().getString(application))));
+										new JsonObject().put("preference", event.right().getValue().getString(application))));
 								}
 							}
 						});
@@ -796,7 +804,7 @@ public class UserBookController extends BaseController {
 						+" RETURN uac AS preferences";
 
 		neo.execute(query,
-			new JsonObject().putString("userId", user.getUserId()),
+			new JsonObject().put("userId", user.getUserId()),
 			Neo4jResult.fullNodeMergeHandler("preferences", new Handler<Either<String, JsonObject>>() {
 				@Override
 				public void handle(final Either<String, JsonObject> result) {
@@ -821,12 +829,12 @@ public class UserBookController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					final JsonObject params = new JsonObject().putString("userId", user.getUserId());
+					final JsonObject params = new JsonObject().put("userId", user.getUserId());
 					final String application = request.params().get("application").replaceAll("\\W+", "");
 					request.bodyHandler(new Handler<Buffer>() {
 						@Override
 						public void handle(Buffer body) {
-							params.putString("conf", body.toString("UTF-8"));
+							params.put("conf", body.toString("UTF-8"));
 							String query =
 									"MATCH (u:User {id:{userId}})"
 											+"MERGE (u)-[:PREFERS]->(uac:UserAppConf)"
@@ -840,13 +848,13 @@ public class UserBookController extends BaseController {
 
 										UserUtils.getSession(eb, request, new Handler<JsonObject>() {
 											public void handle(JsonObject session) {
-												final JsonObject cache = session.getObject("cache");
+												final JsonObject cache = session.getJsonObject("cache");
 
-												if(cache.containsField("preferences")){
-													JsonObject prefs = cache.getObject("preferences");
-													prefs.putString(application, params.getString("conf"));
+												if(cache.containsKey("preferences")){
+													JsonObject prefs = cache.getJsonObject("preferences");
+													prefs.put(application, params.getString("conf"));
 													if ("theme".equals(application)) {
-														prefs.removeField(THEME_ATTRIBUTE + getHost(request));
+														prefs.remove(THEME_ATTRIBUTE + getHost(request));
 													}
 													UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", prefs, new Handler<Boolean>() {
 														public void handle(Boolean event) {

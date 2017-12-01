@@ -23,7 +23,7 @@ import fr.wseduc.cas.endpoint.Validator;
 import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.cas.http.WrappedRequest;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.http.HttpServerRequest;
 
 public class SamlValidatorController extends BaseController {
 

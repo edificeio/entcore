@@ -21,14 +21,14 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.FileInfos;
 import org.entcore.common.storage.StorageException;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.sql.SqlResult.validResult;
 
@@ -56,11 +56,11 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 	}
 
 	@Override
-	public void getInfo(final String fileId, final AsyncResultHandler<FileInfos> handler) {
+	public void getInfo(final String fileId, final Handler<AsyncResult<FileInfos>> handler) {
 		getInfoProcess(fileId, handler);
 	}
 
-	protected void getInfoProcess(final String fileId, final AsyncResultHandler<FileInfos> handler) {
+	protected void getInfoProcess(final String fileId, final Handler<AsyncResult<FileInfos>> handler) {
 		sql.prepared(getInfoQuery(), new JsonArray().add(fileId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -68,7 +68,7 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 				if (r.isRight()) {
 					final JsonArray result = r.right().getValue();
 					if (result.size() == 1) {
-						final JsonObject res = result.get(0);
+						final JsonObject res = result.getJsonObject(0);
 						final FileInfos fi = new FileInfos();
 						fi.setApplication(application);
 						fi.setId(fileId);
@@ -92,7 +92,7 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 	}
 
 	@Override
-	public void updateInfo(String fileId, FileInfos fileInfos, final AsyncResultHandler<Integer> handler) {
+	public void updateInfo(String fileId, FileInfos fileInfos, final Handler<AsyncResult<Integer>> handler) {
 		JsonArray params = new JsonArray();
 		final String query =
 				"update " + table +
@@ -115,7 +115,7 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 
 	private String generateColumns(JsonObject j, JsonArray params) {
 		StringBuilder sb = new StringBuilder();
-		for (String attr : j.getFieldNames()) {
+		for (String attr : j.fieldNames()) {
 			sb.append(attr).append("= ?, ");
 			params.add(j.getValue(attr));
 		}

@@ -21,10 +21,10 @@ package org.entcore.cas.services;
 
 import java.util.HashMap;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.cas.entities.User;
 
@@ -51,8 +51,8 @@ public class PronoteRegisteredService extends DefaultRegisteredService {
 			}
 
 			String category = null;
-			JsonArray types = data.getArray("type");
-			for (Object type : types.toList()) {
+			JsonArray types = data.getJsonArray("type");
+			for (Object type : types.getList()) {
 			    switch(type.toString()) {
 	                case "Student" :
 	                    category = checkProfile(category,"National_1");

@@ -20,8 +20,8 @@
 package org.entcore.feeder.utils;
 
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 
@@ -35,11 +35,11 @@ public class StatementsBuilder {
 
 	public StatementsBuilder add(String query, JsonObject params) {
 		if (query != null && !query.trim().isEmpty()) {
-			JsonObject statement = new JsonObject().putString("statement", query);
+			JsonObject statement = new JsonObject().put("statement", query);
 			if (params != null) {
-				statement.putObject("parameters", params);
+				statement.put("parameters", params);
 			}
-			statements.addObject(statement);
+			statements.add(statement);
 		}
 		return this;
 	}

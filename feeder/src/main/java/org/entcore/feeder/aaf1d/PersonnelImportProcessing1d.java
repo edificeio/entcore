@@ -21,12 +21,13 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.PersonnelImportProcessing;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -46,7 +47,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
 	@Override
 	protected String detectProfile(JsonObject object) {
-		JsonArray functions = object.getArray("functions");
+		JsonArray functions = object.getJsonArray("functions");
 		if (functions != null && functions.size() > 0) {
 			for (Object f : functions) {
 				if (!(f instanceof String)) continue;
@@ -62,13 +63,13 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 	@Override
 	public void process(JsonObject object) {
 		String profile = detectProfile(object);
-		object.putArray("profiles", new JsonArray()
+		object.put("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
 		if (email != null && !email.trim().isEmpty()) {
-			object.putString("emailAcademy", email);
+			object.put("emailAcademy", email);
 		}
-		JsonArray functions = object.getArray("functions");
+		JsonArray functions = object.getJsonArray("functions");
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {
 			Set<String> s = new HashSet<>();
@@ -76,7 +77,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 				if (!(o instanceof String) || !o.toString().contains("$")) continue;
 				s.add(o.toString().substring(0, o.toString().indexOf('$')));
 			}
-			structuresByFunctions = new JsonArray(s.toArray());
+			structuresByFunctions = new JsonArray(new ArrayList<>(s));
 		}
 		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, null, true, true);
 	}

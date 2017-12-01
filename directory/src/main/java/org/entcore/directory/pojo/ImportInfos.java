@@ -23,12 +23,12 @@ import static fr.wseduc.webutils.Utils.*;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.collections.Joiner;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.file.FileSystem;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.file.FileSystem;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.Arrays;
@@ -141,11 +141,11 @@ public class ImportInfos {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.name"));
 		} else if (ImportType.CSV == type) {
 			final FileSystem fs = vertx.fileSystem();
-			fs.readDir(path, new Handler<AsyncResult<String[]>>() {
+			fs.readDir(path, new Handler<AsyncResult<List<String>>>() {
 				@Override
-				public void handle(AsyncResult<String[]> list) {
+				public void handle(AsyncResult<List<String>> list) {
 					if (list.succeeded()) {
-						if (list.result().length > 0) {
+						if (list.result().size() > 0) {
 							moveFiles(list.result(), fs, handler);
 						} else {
 							handler.handle(new DefaultAsyncResult<>("missing.csv.files"));
@@ -160,7 +160,7 @@ public class ImportInfos {
 		}
 	}
 
-	private void moveFiles(final String [] l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {
+	private void moveFiles(final List<String> l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {
 		final String p = path + File.separator + structureName +
 				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") + "_" +
 				(isNotEmpty(UAI) ? UAI : "") + "_" + (isNotEmpty(overrideClass) ? overrideClass : "");
@@ -168,7 +168,7 @@ public class ImportInfos {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.succeeded()) {
-					final AtomicInteger count = new AtomicInteger(l.length);
+					final AtomicInteger count = new AtomicInteger(l.size());
 					for (String f: l) {
 						fs.move(f, p + File.separator + f.substring(path.length() + 1), new Handler<AsyncResult<Void>>() {
 							@Override

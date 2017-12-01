@@ -19,22 +19,22 @@
 
 package org.entcore.conversation.service.impl;
 
+import io.vertx.core.AsyncResult;
 import org.entcore.common.storage.FileInfos;
 import org.entcore.common.storage.impl.PostgresqlApplicationStorage;
 import org.entcore.conversation.Conversation;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 
 public class ConversationStorage extends PostgresqlApplicationStorage {
 
 	public ConversationStorage() {
 		super("conversation.attachments", Conversation.class.getSimpleName(),
-				new JsonObject().putString("name", "filename").putString("contentType", "\"contentType\""));
+				new JsonObject().put("name", "filename").put("contentType", "\"contentType\""));
 	}
 
 	@Override
-	public void getInfo(final String fileId, final AsyncResultHandler<FileInfos> handler) {
+	public void getInfo(final String fileId, final Handler<AsyncResult<FileInfos>> handler) {
 		vertx.setTimer(1000l, new Handler<Long>() {
 			@Override
 			public void handle(Long event) {

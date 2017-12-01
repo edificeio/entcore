@@ -22,7 +22,7 @@ package org.entcore.cas.services;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 public class EliotRegisteredService extends DefaultRegisteredService {
 
@@ -42,7 +42,7 @@ public class EliotRegisteredService extends DefaultRegisteredService {
 	protected void prepareUser(final User user, final String userId, String service, final JsonObject data) {
 		if (principalAttributeName != null) {
 			user.setUser(data.getString(principalAttributeName));
-			data.removeField(principalAttributeName);
+			data.remove(principalAttributeName);
 		} else {
 			user.setUser(userId);
 		}

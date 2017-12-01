@@ -30,13 +30,12 @@ import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonElement;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,10 +69,10 @@ public class MongoDbCrudService implements CrudService {
 	@Override
 	public void create(JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		JsonObject now = MongoDb.now();
-		data.putObject("owner", new JsonObject()
-				.putString("userId", user.getUserId())
-				.putString("displayName", user.getUsername())
-		).putObject("created", now).putObject("modified", now);
+		data.put("owner", new JsonObject()
+				.put("userId", user.getUserId())
+				.put("displayName", user.getUsername())
+		).put("created", now).put("modified", now);
 		addPlainField(data);
 		mongo.save(collection, data, validActionResultHandler(handler));
 	}
@@ -105,7 +104,7 @@ public class MongoDbCrudService implements CrudService {
 		QueryBuilder query = QueryBuilder.start("_id").is(id);
 		addPlainField(data);
 		MongoUpdateBuilder modifier = new MongoUpdateBuilder();
-		for (String attr: data.getFieldNames()) {
+		for (String attr: data.fieldNames()) {
 			modifier.set(attr, data.getValue(attr));
 		}
 		modifier.set("modified", MongoDb.now());
@@ -126,7 +125,7 @@ public class MongoDbCrudService implements CrudService {
 
 	@Override
 	public void list(Handler<Either<String, JsonArray>> handler) {
-		JsonObject sort = new JsonObject().putNumber("modified", -1);
+		JsonObject sort = new JsonObject().put("modified", -1);
 		mongo.find(collection, new JsonObject(), sort, defaultListProjection, validResultsHandler(handler));
 	}
 
@@ -173,7 +172,7 @@ public class MongoDbCrudService implements CrudService {
 		} else {
 			query = QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name());
 		}
-		JsonObject sort = new JsonObject().putNumber("modified", -1);
+		JsonObject sort = new JsonObject().put("modified", -1);
 		mongo.find(collection, MongoQueryBuilder.build(query), sort,
 				defaultListProjection, validResultsHandler(handler));
 	}
@@ -198,20 +197,20 @@ public class MongoDbCrudService implements CrudService {
 					if (decomposition.size() == 2) {
 						//not an object or array
 						final String label = decomposition.get(1);
-						if (data.containsField(label)) {
-							data.putString(label + plainSuffixField, StringUtils.stripHtmlTag(data.getString(label)));
+						if (data.containsKey(label)) {
+							data.put(label + plainSuffixField, StringUtils.stripHtmlTag(data.getString(label)));
 						}
 					} else if (decomposition.size() == 3) {
 						final String label = decomposition.get(1);
 						final String deepLabel = decomposition.get(2);
-						final JsonElement element = data.getValue(label);
-						if (element.isArray()) {
+						final Object element = data.getValue(label);
+						if (element instanceof JsonArray) {
 							//not processed yet
 							log.error("the plain duplication d'ont support Json Array");
-						} else if (element.isObject()) {
-							final JsonObject jo = element.asObject();
-							if (jo.containsField(deepLabel)) {
-								jo.putString(deepLabel + plainSuffixField,
+						} else if (element instanceof JsonObject) {
+							final JsonObject jo = (JsonObject) element;
+							if (jo.containsKey(deepLabel)) {
+								jo.put(deepLabel + plainSuffixField,
 										StringUtils.stripHtmlTag(jo.getString(deepLabel)));
 							}
 						}

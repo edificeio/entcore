@@ -24,22 +24,15 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Controller;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 
 import org.entcore.workspace.service.QuotaService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
-
-import java.util.Map;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
@@ -74,7 +67,7 @@ public class QuotaController extends BaseController {
 		RequestUtils.bodyToJson(request, pathPrefix + "updateQuota", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject object) {
-				quotaService.update(object.getArray("users"), object.getLong("quota"), arrayResponseHandler(request));
+				quotaService.update(object.getJsonArray("users"), object.getLong("quota"), arrayResponseHandler(request));
 			}
 		});
 	}
@@ -114,8 +107,8 @@ public class QuotaController extends BaseController {
 				if (res.isRight()) {
 					message.reply(res.right().getValue());
 				} else {
-					message.reply(new JsonObject().putString("status", "error")
-							.putString("message", res.left().getValue()));
+					message.reply(new JsonObject().put("status", "error")
+							.put("message", res.left().getValue()));
 				}
 			}
 		};
@@ -132,7 +125,7 @@ public class QuotaController extends BaseController {
 				quotaService.incrementStorage(userId, size, threshold, responseHandler);
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error").putString("message", "invalid.action"));
+				message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
 	}
 

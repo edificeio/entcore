@@ -20,11 +20,10 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
-import org.entcore.common.utils.StringUtils;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -39,7 +38,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 	private static final Logger log = LoggerFactory.getLogger(LabomepRegisteredService.class);
 
 	@Override
-	public void configure(org.vertx.java.core.eventbus.EventBus eb, Map<String,Object> conf) {
+	public void configure(io.vertx.core.eventbus.EventBus eb, Map<String,Object> conf) {
 		super.configure(eb, conf);
 		this.directoryAction = "getUserInfos";
 	};
@@ -50,14 +49,14 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 
 		try {
 			// Uid
-			if (data.containsField("externalId")) {
+			if (data.containsKey("externalId")) {
 				additionnalAttributes.add(createTextElement("uid", data.getString("externalId"), doc));
 			}
 
 			// administratives Structures first
 			final List<String> uaiList = new ArrayList<>();
 
-			for (Object o : data.getArray("administratives", new JsonArray())) {
+			for (Object o : data.getJsonArray("administratives", new JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				final String uai = structure.getString("UAI");
 				if (!StringUtils.isEmpty(uai)) {
@@ -66,7 +65,8 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 				}
 			}
 
-			for (Object o : data.getArray("structures", new JsonArray())) {
+			// Structures
+			for (Object o : data.getJsonArray("structures", new JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				final String uai = structure.getString("UAI");
 				if (!StringUtils.isEmpty(uai) && !uaiList.contains(uai)) {
@@ -75,7 +75,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// classes
-			for (Object o : data.getArray("classes", new JsonArray())) {
+			for (Object o : data.getJsonArray("classes", new JsonArray())) {
 				JsonObject classe = (JsonObject) o;
 				additionnalAttributes.add(createTextElement("classes", classe.getString("name"), doc));
 			}
@@ -97,17 +97,17 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// Lastname
-			if (data.containsField("lastName")) {
+			if (data.containsKey("lastName")) {
 				additionnalAttributes.add(createTextElement("nom", data.getString("lastName"), doc));
 			}
 
 			// Firstname
-			if (data.containsField("firstName")) {
+			if (data.containsKey("firstName")) {
 				additionnalAttributes.add(createTextElement("prenom", data.getString("firstName"), doc));
 			}
 
 			// Email
-			if (data.containsField("email")) {
+			if (data.containsKey("email")) {
 				additionnalAttributes.add(createTextElement("email", data.getString("email"), doc));
 			}
 

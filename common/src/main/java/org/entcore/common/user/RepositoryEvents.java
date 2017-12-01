@@ -19,8 +19,8 @@
 
 package org.entcore.common.user;
 
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.json.JsonArray;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 
 public interface RepositoryEvents {
 

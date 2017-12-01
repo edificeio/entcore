@@ -38,13 +38,13 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.UserInStructure;
 import org.entcore.directory.services.TimetableService;
 import org.joda.time.DateTime;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerFileUpload;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.util.List;
@@ -164,8 +164,8 @@ public class TimetableController extends BaseController {
 	public void importTimetable(final HttpServerRequest request) {
 		request.pause();
 		final String importId = UUID.randomUUID().toString();
-		final String path = container.config().getString("timetable-path", "/tmp") + File.separator + importId;
-		request.expectMultiPart(true);
+		final String path = config.getString("timetable-path", "/tmp") + File.separator + importId;
+		request.setExpectMultipart(true);
 		request.exceptionHandler(new Handler<Throwable>() {
 			@Override
 			public void handle(Throwable event) {
@@ -207,8 +207,8 @@ public class TimetableController extends BaseController {
 
 		if (action == null) {
 			log.warn("[@BusAddress](timetable) Invalid action.");
-			message.reply(new JsonObject().putString("status", "error")
-					.putString("message", "Invalid action."));
+			message.reply(new JsonObject().put("status", "error")
+					.put("message", "Invalid action."));
 			return;
 		}
 
@@ -227,12 +227,12 @@ public class TimetableController extends BaseController {
 					timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupName, beginDate, endDate, getBusResultHandler(message));
 				} else {
 					message.reply(new JsonObject()
-							.putString("status", "error")
-							.putString("message", "timetable.invalid.dates"));
+							.put("status", "error")
+							.put("message", "timetable.invalid.dates"));
 				}
 				break;
 			case "get.subjects":
-				final List<String> teachers = message.body().getArray("teacherIds", new JsonArray()).toList();
+				final List<String> teachers = message.body().getJsonArray("teacherIds", new JsonArray()).getList();
 				final String externalGroupId = message.body().getString("externalGroupId");
 				final boolean classes = message.body().getBoolean("classes", false);
 				final boolean groups = message.body().getBoolean("groups", false);
@@ -245,8 +245,8 @@ public class TimetableController extends BaseController {
 
 				break;
 			default:
-				message.reply(new JsonObject().putString("status", "error")
-						.putString("message", "Invalid action."));
+				message.reply(new JsonObject().put("status", "error")
+						.put("message", "Invalid action."));
 				break;
 		}
 	}
@@ -257,12 +257,12 @@ public class TimetableController extends BaseController {
             public void handle(Either<String, JsonArray> result) {
                 if (result.isRight()) {
                     message.reply(new JsonObject()
-                            .putString("status", "ok")
-                            .putArray("results", result.right().getValue()));
+                            .put("status", "ok")
+                            .put("results", result.right().getValue()));
                 } else {
                     message.reply(new JsonObject()
-                            .putString("status", "error")
-                            .putString("message", result.left().getValue()));
+                            .put("status", "error")
+                            .put("message", result.left().getValue()));
                 }
             }
         };

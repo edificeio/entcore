@@ -25,11 +25,11 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.*;
 import fr.wseduc.webutils.security.SecuredAction;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
@@ -60,38 +60,38 @@ public class MongoDbShareService extends GenericShareService {
 		}
 		final JsonArray actions = getResoureActions(securedActions);
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
-		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		JsonObject keys = new JsonObject().put("shared", 1);
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys,
 			new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
-						JsonArray shared = event.body().getObject("result", new JsonObject())
-								.getArray("shared", new JsonArray());
+						JsonArray shared = event.body().getJsonObject("result", new JsonObject())
+								.getJsonArray("shared", new JsonArray());
 						JsonObject gs = new JsonObject();
 						JsonObject us = new JsonObject();
 						for (Object o : shared) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject userShared = (JsonObject) o;
 							JsonArray a = new JsonArray();
-							for (String attrName : userShared.getFieldNames()) {
+							for (String attrName : userShared.fieldNames()) {
 								if ("userId".equals(attrName) || "groupId".equals(attrName)) {
 									continue;
 								}
 								if (groupedActions != null && groupedActions.containsKey(attrName)) {
 									for (String action: groupedActions.get(attrName)) {
-										a.addString(action.replaceAll("\\.", "-"));
+										a.add(action.replaceAll("\\.", "-"));
 									}
 								} else {
-									a.addString(attrName);
+									a.add(attrName);
 								}
 							}
 							final String g = userShared.getString("groupId");
 							String u;
 							if (g != null) {
-								gs.putArray(g, a);
+								gs.put(g, a);
 							} else if ((u = userShared.getString("userId")) != null && !u.equals(userId)){
-								us.putArray(u, a);
+								us.put(u, a);
 							}
 						}
 						getShareInfos(userId, actions, gs, us, acceptLanguage, search, new Handler<JsonObject>() {
@@ -158,27 +158,27 @@ public class MongoDbShareService extends GenericShareService {
 			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
-		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		JsonObject keys = new JsonObject().put("shared", 1);
 		final JsonObject q = MongoQueryBuilder.build(query);
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) &&
-						event.body().getObject("result") != null) {
-					JsonArray actual = event.body().getObject("result")
-							.getArray("shared", new JsonArray());
+						event.body().getJsonObject("result") != null) {
+					JsonArray actual = event.body().getJsonObject("result")
+							.getJsonArray("shared", new JsonArray());
 					boolean exist = false;
 					for (int i = 0; i < actual.size(); i++) {
-						JsonObject s = actual.get(i);
+						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);
 						if (groupShareId.equals(id)) {
 							for (String action: actions) {
-								s.putBoolean(action, true);
+								s.put(action, true);
 							}
 							if (groupedActions != null) {
 								for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
 									if (actions.containsAll(ga.getValue())) {
-										s.putBoolean(ga.getKey(), true);
+										s.put(ga.getKey(), true);
 									}
 								}
 							}
@@ -188,15 +188,15 @@ public class MongoDbShareService extends GenericShareService {
 					}
 					final AtomicBoolean notifyTimeline = new AtomicBoolean(false);
 					if (!exist) {
-						JsonObject t = new JsonObject().putString(shareIdAttr, groupShareId);
+						JsonObject t = new JsonObject().put(shareIdAttr, groupShareId);
 						actual.add(t);
 						for (String action: actions) {
-							t.putBoolean(action, true);
+							t.put(action, true);
 						}
 						if (groupedActions != null) {
 							for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
 								if (actions.containsAll(ga.getValue())) {
-									t.putBoolean(ga.getKey(), true);
+									t.put(ga.getKey(), true);
 								}
 							}
 						}
@@ -208,8 +208,8 @@ public class MongoDbShareService extends GenericShareService {
 						public void handle(Message<JsonObject> res) {
 							if (notifyTimeline.get()) {
 								JsonObject notify = new JsonObject();
-								notify.putString(shareIdAttr, groupShareId);
-								res.body().putObject("notify-timeline", notify);
+								notify.put(shareIdAttr, groupShareId);
+								res.body().put("notify-timeline", notify);
 							}
 							handler.handle(Utils.validResult(res));
 						}
@@ -263,23 +263,23 @@ public class MongoDbShareService extends GenericShareService {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
 		final List<String> actions = findRemoveActions(removeActions);
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
-		JsonObject keys = new JsonObject().putNumber("shared", 1);
+		JsonObject keys = new JsonObject().put("shared", 1);
 		final JsonObject q = MongoQueryBuilder.build(query);
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) &&
-						event.body().getObject("result") != null) {
-					JsonArray actual = event.body().getObject("result")
-							.getArray("shared", new JsonArray());
+						event.body().getJsonObject("result") != null) {
+					JsonArray actual = event.body().getJsonObject("result")
+							.getJsonArray("shared", new JsonArray());
 					JsonArray shared = new JsonArray();
 					for (int i = 0; i < actual.size(); i++) {
-						JsonObject s = actual.get(i);
+						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);
 						if (shareId.equals(id)) {
 							if (actions != null) {
 								for (String action: actions) {
-									s.removeField(action);
+									s.remove(action);
 								}
 								if (s.size() > 1) {
 									shared.add(s);

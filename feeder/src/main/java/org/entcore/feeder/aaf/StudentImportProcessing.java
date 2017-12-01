@@ -21,11 +21,11 @@ package org.entcore.feeder.aaf;
 
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,13 +53,13 @@ public class StudentImportProcessing extends BaseImportProcessing {
 
 	@Override
 	public void process(JsonObject object) {
-		createClasses(object.getArray("classes"));
-		createGroups(object.getArray("groups"));
-		JsonArray r = parseRelativeField(object.getArray("relative"));
+		createClasses(object.getJsonArray("classes"));
+		createGroups(object.getJsonArray("groups"));
+		JsonArray r = parseRelativeField(object.getJsonArray("relative"));
 		if (r != null) {
-			resp.addAll(r.toList());
+			resp.addAll(r.getList());
 		}
-		object.putArray("profiles", new JsonArray().add("Student"));
+		object.put("profiles", new JsonArray().add("Student"));
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
 				null, null, null, null, null, true, false);
 	}

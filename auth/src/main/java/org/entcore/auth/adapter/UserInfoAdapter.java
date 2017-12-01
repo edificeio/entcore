@@ -19,7 +19,7 @@
 
 package org.entcore.auth.adapter;
 
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonObject;
 
 public interface UserInfoAdapter {
 

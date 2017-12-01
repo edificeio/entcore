@@ -24,8 +24,8 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 
 public class OwnerOnly implements ResourcesProvider {
 

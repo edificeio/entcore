@@ -23,10 +23,10 @@ import fr.wseduc.webutils.http.Binding;
 import org.entcore.common.http.filter.AdmlResourcesProvider;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 
 public class AdmlOfUser extends AdmlResourcesProvider {
@@ -53,8 +53,8 @@ public class AdmlOfUser extends AdmlResourcesProvider {
 						"RETURN count(*) > 0 as exists ";
 
 				JsonObject params = new JsonObject()
-						.putArray("structures", new JsonArray(adminLocal.getScope().toArray()))
-						.putString("userId", userId);
+						.put("structures", new JsonArray(adminLocal.getScope()))
+						.put("userId", userId);
 				validateQuery(resourceRequest, handler, query, params);
 			}
 		});

@@ -19,15 +19,16 @@
 
 package org.entcore.common.storage.impl;
 
+import io.vertx.core.http.HttpClientOptions;
 import org.entcore.common.storage.AntivirusClient;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.HttpClient;
-import org.vertx.java.core.http.HttpClientRequest;
-import org.vertx.java.core.http.HttpClientResponse;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class HttpAntivirusClient implements AntivirusClient {
 
@@ -36,12 +37,13 @@ public class HttpAntivirusClient implements AntivirusClient {
 	private String credential;
 
 	public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
-		this.httpClient = vertx.createHttpClient()
-				.setHost(host)
-				.setPort(8001)
+		HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost(host)
+				.setDefaultPort(8001)
 				.setMaxPoolSize(16)
 				.setConnectTimeout(10000)
 				.setKeepAlive(true);
+		this.httpClient = vertx.createHttpClient(options);
 		this.credential = cretential;
 	}
 
@@ -57,7 +59,7 @@ public class HttpAntivirusClient implements AntivirusClient {
 		});
 		req.putHeader("Content-Type", "application/json");
 		req.putHeader("Authorization", "Basic " + credential);
-		req.end(new JsonObject().putString("file", path).encode());
+		req.end(new JsonObject().put("file", path).encode());
 	}
 
 }

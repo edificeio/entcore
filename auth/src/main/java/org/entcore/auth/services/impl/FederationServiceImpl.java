@@ -24,12 +24,11 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.SecuredAction;
 import org.entcore.auth.services.FederationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.platform.Container;
 
 import java.util.Map;
 
@@ -38,15 +37,15 @@ public class FederationServiceImpl extends BaseController implements FederationS
 	private MongoDb mongo = MongoDb.getInstance();
 	private static final String SESSIONS_COLLECTION = "sessions";
 
-	public void init(Vertx vertx, Container container, RouteMatcher rm,
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, SecuredAction> securedActions) {
-		super.init(vertx, container, rm, securedActions);
+		super.init(vertx, config, rm, securedActions);
 		mongo = MongoDb.getInstance();
 	}
 
 	@Override
 	public void getMongoDbSession(final String sessionId, Handler<Message<JsonObject>> handler) {
-		final JsonObject query = new JsonObject().putString("_id", sessionId);
+		final JsonObject query = new JsonObject().put("_id", sessionId);
 		mongo.findOne(SESSIONS_COLLECTION, query, handler);
 	}
 }

@@ -21,11 +21,11 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.StudentImportProcessing2;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 

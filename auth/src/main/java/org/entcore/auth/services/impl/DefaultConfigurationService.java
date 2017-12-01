@@ -23,9 +23,9 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import org.entcore.auth.services.ConfigurationService;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.mongodb.MongoDbResult.validActionResultHandler;
@@ -39,33 +39,33 @@ public class DefaultConfigurationService implements ConfigurationService {
 	@Override
 	public void editWelcomeMessage(String domain, JsonObject messages, Handler<Either<String, JsonObject>> handler) {
 		if (Utils.defaultValidationParamsNull(handler, domain, messages)) return;
-		final JsonObject q = new JsonObject().putString("type", WELCOME_MESSAGE_TYPE);
-		final JsonObject modifier = new JsonObject().putObject("$set", new JsonObject().putObject(domain.replaceAll("\\.", "_"), messages));
+		final JsonObject q = new JsonObject().put("type", WELCOME_MESSAGE_TYPE);
+		final JsonObject modifier = new JsonObject().put("$set", new JsonObject().put(domain.replaceAll("\\.", "_"), messages));
 		mongoDb.update(PLATEFORM_COLLECTION, q, modifier, true, false, validActionResultHandler(handler));
 	}
 
 	@Override
 	public void getWelcomeMessage(String domain, String language, final Handler<Either<String, JsonObject>> handler) {
-		final JsonObject q = new JsonObject().putString("type", WELCOME_MESSAGE_TYPE);
+		final JsonObject q = new JsonObject().put("type", WELCOME_MESSAGE_TYPE);
 		JsonObject keys = null;
 		if (isNotEmpty(domain) && isNotEmpty(language)) {
 			keys = new JsonObject();
-			keys.putNumber("_id", 0);
-			keys.putNumber(domain.replaceAll("\\.", "_") + "." + language, 1);
-			keys.putNumber(domain.replaceAll("\\.", "_") + ".enabled", 1);
+			keys.put("_id", 0);
+			keys.put(domain.replaceAll("\\.", "_") + "." + language, 1);
+			keys.put(domain.replaceAll("\\.", "_") + ".enabled", 1);
 		} else if (isNotEmpty(domain)) {
 			keys = new JsonObject();
-			keys.putNumber("_id", 0);
-			keys.putNumber(domain.replaceAll("\\.", "_"), 1);
+			keys.put("_id", 0);
+			keys.put(domain.replaceAll("\\.", "_"), 1);
 		}
 		mongoDb.findOne(PLATEFORM_COLLECTION, q, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
-					JsonObject r = res.body().getObject("result", new JsonObject());
+					JsonObject r = res.body().getJsonObject("result", new JsonObject());
 					JsonObject j = new JsonObject();
-					for (String attr : r.getFieldNames()) {
-						j.putValue(attr.replaceAll("_", "."), r.getValue(attr));
+					for (String attr : r.fieldNames()) {
+						j.put(attr.replaceAll("_", "."), r.getValue(attr));
 					}
 					handler.handle(new Either.Right<String, JsonObject>(j));
 				} else {

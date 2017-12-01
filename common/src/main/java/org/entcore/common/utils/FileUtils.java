@@ -20,11 +20,11 @@
 package org.entcore.common.utils;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -57,7 +57,7 @@ public final class FileUtils {
 			public void handle(AsyncResult<Boolean> event) {
 				if (event.succeeded()) {
 					if (Boolean.TRUE.equals(event.result())) {
-						vertx.fileSystem().delete(path, true, handler);
+						vertx.fileSystem().deleteRecursive(path, true, handler);
 					} else {
 						handler.handle(new DefaultAsyncResult<>((Void) null));
 					}

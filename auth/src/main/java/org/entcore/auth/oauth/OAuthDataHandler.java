@@ -34,17 +34,18 @@ import jp.eisbahn.oauth2.server.models.Request;
 
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.neo4j.Neo4j;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import fr.wseduc.webutils.security.BCrypt;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class OAuthDataHandler extends DataHandler {
 	private final Neo4j neo;
@@ -77,13 +78,13 @@ public class OAuthDataHandler extends DataHandler {
 		params.put("clientId", clientId);
 		params.put("secret", clientSecret);
 		params.put("grantType", grantType);
-		neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+		neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
-				JsonArray a = res.body().getArray("result");
+				JsonArray a = res.body().getJsonArray("result");
 				if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
-					JsonObject r = a.get(0);
+					JsonObject r = a.getJsonObject(0);
 					handler.handle(r != null && r.getInteger("nb") == 1);
 				} else {
 					handler.handle(false);
@@ -109,16 +110,16 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
-			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonArray result = res.body().getArray("result");
+					JsonArray result = res.body().getJsonArray("result");
 					if ("ok".equals(res.body().getString("status")) &&
 							result != null && result.size() == 1) {
-						JsonObject r = result.get(0);
+						JsonObject r = result.getJsonObject(0);
 						String dbPassword;
-						if (r != null && (dbPassword = r.getString("password")) != null && !r.getBoolean("blockedProfile", false)) {
+						if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
 							boolean success = false;
 							String hash = null;
 							try {
@@ -164,23 +165,23 @@ public class OAuthDataHandler extends DataHandler {
 				"MATCH (u:User {login: {login}}) SET u.password = {password} " +
 				"RETURN u.id as id, HEAD(u.profiles) as profile ";
 		JsonObject params = new JsonObject()
-				.putString("login", username)
-				.putString("password", BCrypt.hashpw(password, BCrypt.gensalt()));
-		neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+				.put("login", username)
+				.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
+		neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error updating old password for user " + username + " : " + event.body().getString("message"));
-				} else if (event.body().getArray("result") != null && event.body().getArray("result").size() == 1) {
+				} else if (event.body().getJsonArray("result") != null && event.body().getJsonArray("result").size() == 1) {
 					// welcome message
 					JsonObject message = new JsonObject()
-							.putString("userId", event.body().getArray("result").<JsonObject>get(0).getString("id"))
-							.putString("profile", event.body().getArray("result").<JsonObject>get(0).getString("profile"))
-							.putObject("request", new JsonObject()
-									.putObject("headers", new JsonObject()
-													.putString("Accept-Language", getRequest().getHeader("Accept-Language"))
-													.putString("Host", getRequest().getHeader("Host"))
-													.putString("X-Forwarded-Host", getRequest().getHeader("X-Forwarded-Host"))
+							.put("userId", event.body().getJsonArray("result").getJsonObject(0).getString("id"))
+							.put("profile", event.body().getJsonArray("result").getJsonObject(0).getString("profile"))
+							.put("request", new JsonObject()
+									.put("headers", new JsonObject()
+													.put("Accept-Language", getRequest().getHeader("Accept-Language"))
+													.put("Host", getRequest().getHeader("Host"))
+													.put("X-Forwarded-Host", getRequest().getHeader("X-Forwarded-Host"))
 									)
 							);
 					neo.getEventBus().publish("send.welcome.message", message);
@@ -201,17 +202,17 @@ public class OAuthDataHandler extends DataHandler {
 				!clientId.trim().isEmpty() && !userId.trim().isEmpty()) {
 			if (scope != null && !scope.trim().isEmpty()) {
 				String query = "MATCH (app:`Application` {name:{clientId}}) RETURN app.scope as scope";
-				neo.execute(query, new JsonObject().putString("clientId", clientId),
-						new org.vertx.java.core.Handler<Message<JsonObject>>() {
+				neo.execute(query, new JsonObject().put("clientId", clientId),
+						new io.vertx.core.Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> res) {
-						JsonArray r = res.body().getArray("result");
+						JsonArray r = res.body().getJsonArray("result");
 
 						if ("ok".equals(res.body().getString("status")) &&
 								r != null && r.size() == 1) {
-							JsonObject j = r.get(0);
+							JsonObject j = r.getJsonObject(0);
 							if (j != null &&
-								Arrays.asList(j.getArray("scope", new JsonArray()).toArray())
+								j.getJsonArray("scope", new JsonArray()).getList()
 										.containsAll(Arrays.asList(scope.split("\\s")))) {
 								createAuthInfo(clientId, userId, scope, redirectUri, handler);
 							} else {
@@ -233,22 +234,22 @@ public class OAuthDataHandler extends DataHandler {
 	private void createAuthInfo(String clientId, String userId, String scope,
 			String redirectUri, final Handler<AuthInfo> handler) {
 		final JsonObject auth = new JsonObject()
-		.putString("clientId", clientId)
-		.putString("userId", userId)
-		.putString("scope", scope)
-		.putObject("createdAt", MongoDb.now());
+		.put("clientId", clientId)
+		.put("userId", userId)
+		.put("scope", scope)
+		.put("createdAt", MongoDb.now());
 		if (redirectUri != null) {
-			auth.putString("redirectUri", redirectUri)
-			.putString("code", UUID.randomUUID().toString())
-			.putString("refreshToken", UUID.randomUUID().toString());
+			auth.put("redirectUri", redirectUri)
+			.put("code", UUID.randomUUID().toString())
+			.put("refreshToken", UUID.randomUUID().toString());
 		}
-		mongo.save(AUTH_INFO_COLLECTION, auth, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+		mongo.save(AUTH_INFO_COLLECTION, auth, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
-					auth.putString("id", res.body().getString("_id"));
-					auth.removeField("createdAt");
+					auth.put("id", res.body().getString("_id"));
+					auth.remove("createdAt");
 					ObjectMapper mapper = new ObjectMapper();
 					try {
 						handler.handle(mapper.readValue(auth.encode(), AuthInfo.class));
@@ -265,25 +266,25 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void createOrUpdateAccessToken(final AuthInfo authInfo, final Handler<AccessToken> handler) {
 		if (authInfo != null) {
-			final JsonObject query = new JsonObject().putString("authId", authInfo.getId());
+			final JsonObject query = new JsonObject().put("authId", authInfo.getId());
 			mongo.count(ACCESS_TOKEN_COLLECTION, query,
-					new org.vertx.java.core.Handler<Message<JsonObject>>() {
+					new io.vertx.core.Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status")) &&
 							event.body().getInteger("count", 1) == 0) {
 						final JsonObject token = new JsonObject()
-								.putString("authId", authInfo.getId())
-								.putString("token", UUID.randomUUID().toString())
-								.putObject("createdOn", MongoDb.now())
-								.putNumber("expiresIn", 3600);
+								.put("authId", authInfo.getId())
+								.put("token", UUID.randomUUID().toString())
+								.put("createdOn", MongoDb.now())
+								.put("expiresIn", 3600);
 						if (openIdConnectService != null && authInfo.getScope() != null && authInfo.getScope().contains("openid")) {
 						//"2.0".equals(RequestUtils.getAcceptVersion(getRequest().getHeader("Accept")))) {
-							openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(), new AsyncResultHandler<String>() {
+							openIdConnectService.generateIdToken(authInfo.getUserId(), authInfo.getClientId(), new io.vertx.core.Handler<AsyncResult<String>>() {
 								@Override
 								public void handle(AsyncResult<String> ar) {
 									if (ar.succeeded()) {
-										token.putString("id_token", ar.result());
+										token.put("id_token", ar.result());
 										persistToken(token);
 									} else {
 										log.error("Error generating id_token.", ar.cause());
@@ -297,14 +298,14 @@ public class OAuthDataHandler extends DataHandler {
 					} else { // revoke existing token and code with same authId
 						mongo.delete(ACCESS_TOKEN_COLLECTION, query);
 						mongo.delete(AUTH_INFO_COLLECTION,
-								new JsonObject().putString("_id", authInfo.getId()));
+								new JsonObject().put("_id", authInfo.getId()));
 						handler.handle(null);
 					}
 				}
 
 				private void persistToken(final JsonObject token) {
 					mongo.save(ACCESS_TOKEN_COLLECTION, token,
-							new org.vertx.java.core.Handler<Message<JsonObject>>() {
+							new io.vertx.core.Handler<Message<JsonObject>>() {
 
 						@Override
 						public void handle(Message<JsonObject> res) {
@@ -312,9 +313,9 @@ public class OAuthDataHandler extends DataHandler {
 								AccessToken t = new AccessToken();
 								t.setAuthId(authInfo.getId());
 								t.setToken(token.getString("token"));
-								t.setCreatedOn(new Date(token.getObject("createdOn").getLong("$date")));
+								t.setCreatedOn(new Date(token.getJsonObject("createdOn").getLong("$date")));
 								t.setExpiresIn(3600);
-								if (token.containsField("id_token")) {
+								if (token.containsKey("id_token")) {
 									t.setIdToken(token.getString("id_token"));
 								}
 								handler.handle(t);
@@ -334,19 +335,19 @@ public class OAuthDataHandler extends DataHandler {
 	public void getAuthInfoByCode(String code, final Handler<AuthInfo> handler) {
 		if (code != null && !code.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-			.putString("code", code)
-			.putObject("createdAt", new JsonObject()
-					.putObject("$gte",
-							new JsonObject().putNumber("$date", System.currentTimeMillis() - CODE_EXPIRES)));
-			mongo.findOne(AUTH_INFO_COLLECTION, query, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			.put("code", code)
+			.put("createdAt", new JsonObject()
+					.put("$gte",
+							new JsonObject().put("$date", System.currentTimeMillis() - CODE_EXPIRES)));
+			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonObject r = res.body().getObject("result");
+					JsonObject r = res.body().getJsonObject("result");
 					if ("ok".equals(res.body().getString("status")) && r != null && r.size() > 0) {
-						r.putString("id", r.getString("_id"));
-						r.removeField("_id");
-						r.removeField("createdAt");
+						r.put("id", r.getString("_id"));
+						r.remove("_id");
+						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
 							handler.handle(mapper.readValue(r.encode(), AuthInfo.class));
@@ -384,13 +385,13 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("clientId", clientId);
-			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonArray a = res.body().getArray("result");
+					JsonArray a = res.body().getJsonArray("result");
 					if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
-						JsonObject r = a.get(0);
+						JsonObject r = a.getJsonObject(0);
 						handler.handle(r != null && r.getInteger("nb") == 1);
 					} else {
 						handler.handle(false);
@@ -411,13 +412,13 @@ public class OAuthDataHandler extends DataHandler {
 					"RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("userId", userId);
-			neo.execute(query, params, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonArray a = res.body().getArray("result");
+					JsonArray a = res.body().getJsonArray("result");
 					if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
-						JsonObject r = a.get(0);
+						JsonObject r = a.getJsonObject(0);
 						handler.handle(r != null && r.getInteger("nb") == 1);
 					} else {
 						handler.handle(false);
@@ -433,18 +434,18 @@ public class OAuthDataHandler extends DataHandler {
 	public void getAccessToken(String token, final Handler<AccessToken> handler) {
 		if (token != null && !token.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-			.putString("token", token);
-			mongo.findOne(ACCESS_TOKEN_COLLECTION, query, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			.put("token", token);
+			mongo.findOne(ACCESS_TOKEN_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonObject r = res.body().getObject("result");
+					JsonObject r = res.body().getJsonObject("result");
 					if ("ok".equals(res.body().getString("status")) &&
 							r != null && r.size() > 0) {
 						AccessToken t = new AccessToken();
 						t.setAuthId(r.getString("authId"));
 						t.setToken(r.getString("token"));
-						t.setCreatedOn(MongoDb.parseIsoDate(r.getObject("createdOn")));
+						t.setCreatedOn(MongoDb.parseIsoDate(r.getJsonObject("createdOn")));
 						t.setExpiresIn(r.getInteger("expiresIn"));
 						handler.handle(t);
 					} else {
@@ -461,16 +462,16 @@ public class OAuthDataHandler extends DataHandler {
 	public void getAuthInfoById(String id, final Handler<AuthInfo> handler) {
 		if (id != null && !id.trim().isEmpty()) {
 			JsonObject query = new JsonObject()
-			.putString("_id", id);
-			mongo.findOne(AUTH_INFO_COLLECTION, query, new org.vertx.java.core.Handler<Message<JsonObject>>() {
+			.put("_id", id);
+			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
-						JsonObject r = res.body().getObject("result");
-						r.putString("id", r.getString("_id"));
-						r.removeField("_id");
-						r.removeField("createdAt");
+						JsonObject r = res.body().getJsonObject("result");
+						r.put("id", r.getString("_id"));
+						r.remove("_id");
+						r.remove("createdAt");
 						ObjectMapper mapper = new ObjectMapper();
 						try {
 							handler.handle(mapper.readValue(r.encode(), AuthInfo.class));

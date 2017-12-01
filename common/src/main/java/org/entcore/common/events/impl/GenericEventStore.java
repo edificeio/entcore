@@ -21,18 +21,19 @@ package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.CookieHelper;
+import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 
 public abstract class GenericEventStore implements EventStore {
@@ -78,14 +79,14 @@ public abstract class GenericEventStore implements EventStore {
 				"OPTIONAL MATCH n-[:IN]->()-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN distinct n.id as userId,  p.name as type, COLLECT(distinct gp.id) as profilGroupsIds, " +
 				"COLLECT(distinct c.id) as classes, COLLECT(distinct s.id) as structures";
-		Neo4j.getInstance().execute(query, new JsonObject().putString("login", login),
+		Neo4j.getInstance().execute(query, new JsonObject().put("login", login),
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("result");
+				JsonArray res = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && res.size() == 1) {
 					execute(UserUtils.sessionToUserInfos(
-							res.<JsonObject>get(0)), eventType, null, null);
+							res.getJsonObject(0)), eventType, null, null);
 				} else {
 					logger.error("Error : user " + login + " not found.");
 				}
@@ -114,25 +115,25 @@ public abstract class GenericEventStore implements EventStore {
 		if (customAttributes != null && customAttributes.size() > 0) {
 			event.mergeIn(customAttributes);
 		}
-		event.putString("event-type", eventType)
-				.putString("module", module)
-				.putNumber("date", System.currentTimeMillis());
+		event.put("event-type", eventType)
+				.put("module", module)
+				.put("date", System.currentTimeMillis());
 		if (user != null) {
-			event.putString("userId", user.getUserId())
-					.putString("profil", user.getType());
+			event.put("userId", user.getUserId())
+					.put("profil", user.getType());
 			if (user.getStructures() != null) {
-				event.putArray("structures", new JsonArray(user.getStructures().toArray()));
+				event.put("structures", new JsonArray(user.getStructures()));
 			}
 			if (user.getClasses() != null) {
-				event.putArray("classes", new JsonArray(user.getClasses().toArray()));
+				event.put("classes", new JsonArray(user.getClasses()));
 			}
 			if (user.getGroupsIds() != null) {
-				event.putArray("groups", new JsonArray(user.getGroupsIds().toArray()));
+				event.put("groups", new JsonArray(user.getGroupsIds()));
 			}
 		}
 		if (request != null) {
-			event.putString("referer", request.headers().get("Referer"));
-			event.putString("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
+			event.put("referer", request.headers().get("Referer"));
+			event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
 		}
 		return event;
 	}
@@ -140,10 +141,14 @@ public abstract class GenericEventStore implements EventStore {
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
 
 	private void initBlacklist() {
-		eventBus.send("event.blacklist", new JsonObject(), new Handler<Message<JsonArray>>() {
+		eventBus.send("event.blacklist", new JsonObject(), new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
-			public void handle(Message<JsonArray> message) {
-				userBlacklist = message.body();
+			public void handle(AsyncResult<Message<JsonArray>> message) {
+				if (message.succeeded()) {
+					userBlacklist = message.result().body();
+				} else {
+					userBlacklist = new JsonArray();
+				}
 			}
 		});
 	}

@@ -22,8 +22,8 @@ package org.entcore.cas.http;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
 
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.http.Request;
@@ -65,7 +65,7 @@ public class WrappedRequest implements Request {
 
 	@Override
 	public void getFormAttributesMap(final Handler<Map<String, String>> handler) {
-		request.endHandler(new org.vertx.java.core.Handler<Void>() {
+		request.endHandler(new io.vertx.core.Handler<Void>() {
 			@Override
 			public void handle(Void event) {
 				Map<String, String> params = new HashMap<>();
@@ -79,7 +79,7 @@ public class WrappedRequest implements Request {
 
 	@Override
 	public void getBody(final Handler<String> handler, final String encoding) {
-		request.bodyHandler(new org.vertx.java.core.Handler<Buffer>(){
+		request.bodyHandler(new io.vertx.core.Handler<Buffer>(){
 			@Override
 			public void handle(Buffer event) {
 				handler.handle(event != null ? event.toString(encoding != null ? encoding : "UTF-8") : null);

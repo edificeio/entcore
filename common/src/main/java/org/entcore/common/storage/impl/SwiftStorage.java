@@ -24,15 +24,14 @@ import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.validation.FileValidator;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.AsyncResultHandler;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.File;
 import java.net.URI;
@@ -46,7 +45,7 @@ public class SwiftStorage implements Storage {
 	public SwiftStorage(Vertx vertx, URI uri, String container, String user, String password) {
 		this.container = container;
 		this.swiftClient = new SwiftClient(vertx, uri, container);
-		this.swiftClient.authenticate(user, password, new AsyncResultHandler<Void>() {
+		this.swiftClient.authenticate(user, password, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.failed()) {
@@ -91,16 +90,16 @@ public class SwiftStorage implements Storage {
 	}
 
 	private void writeStorageObject(final Handler<JsonObject> handler, final StorageObject o) {
-		swiftClient.writeFile(o, new AsyncResultHandler<String>() {
+		swiftClient.writeFile(o, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				JsonObject j = new JsonObject();
 				if (event.succeeded()) {
-					final JsonObject metadata = new JsonObject().putString("content-type", o.getContentType())
-							.putString("filename", o.getFilename()).putNumber("size", o.getBuffer().length());
-					j.putString("status", "ok").putString("_id", event.result()).putObject("metadata", metadata);
+					final JsonObject metadata = new JsonObject().put("content-type", o.getContentType())
+							.put("filename", o.getFilename()).put("size", o.getBuffer().length());
+					j.put("status", "ok").put("_id", event.result()).put("metadata", metadata);
 				} else {
-					j.putString("status", "error").putString("message", event.cause().getMessage());
+					j.put("status", "error").put("message", event.cause().getMessage());
 				}
 				handler.handle(j);
 			}
@@ -109,7 +108,7 @@ public class SwiftStorage implements Storage {
 
 	@Override
 	public void readFile(String id, final Handler<Buffer> handler) {
-		swiftClient.readFile(id, new AsyncResultHandler<StorageObject>() {
+		swiftClient.readFile(id, new Handler<AsyncResult<StorageObject>>() {
 			@Override
 			public void handle(AsyncResult<StorageObject> event) {
 				if (event.succeeded()) {
@@ -134,14 +133,14 @@ public class SwiftStorage implements Storage {
 
 	@Override
 	public void removeFile(String id, final Handler<JsonObject> handler) {
-		swiftClient.deleteFile(id, new AsyncResultHandler<Void>() {
+		swiftClient.deleteFile(id, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				JsonObject j = new JsonObject();
 				if (event.succeeded()) {
-					j.putString("status", "ok");
+					j.put("status", "ok");
 				} else {
-					j.putString("status", "error").putString("message", event.cause().getMessage());
+					j.put("status", "error").put("message", event.cause().getMessage());
 				}
 				handler.handle(j);
 			}
@@ -153,19 +152,19 @@ public class SwiftStorage implements Storage {
 		final AtomicInteger count = new AtomicInteger(ids.size());
 		final JsonArray errors = new JsonArray();
 		for (final Object o: ids) {
-			swiftClient.deleteFile(o.toString(), new AsyncResultHandler<Void>() {
+			swiftClient.deleteFile(o.toString(), new Handler<AsyncResult<Void>>() {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.failed()) {
-						errors.add(new JsonObject().putString("id", o.toString())
-								.putString("message", event.cause().getMessage()));
+						errors.add(new JsonObject().put("id", o.toString())
+								.put("message", event.cause().getMessage()));
 					}
 					if (count.decrementAndGet() <= 0) {
 						JsonObject j = new JsonObject();
 						if (errors.size() == 0) {
-							handler.handle(j.putString("status", "ok"));
+							handler.handle(j.put("status", "ok"));
 						} else {
-							handler.handle(j.putString("status", "error").putArray("errors", errors));
+							handler.handle(j.put("status", "error").put("errors", errors));
 						}
 					}
 				}
@@ -175,14 +174,14 @@ public class SwiftStorage implements Storage {
 
 	@Override
 	public void copyFile(String id, final Handler<JsonObject> handler) {
-		swiftClient.copyFile(id, new AsyncResultHandler<String>() {
+		swiftClient.copyFile(id, new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				JsonObject j = new JsonObject();
 				if (event.succeeded()) {
-					j.putString("status", "ok").putString("_id", event.result());
+					j.put("status", "ok").put("_id", event.result());
 				} else {
-					j.putString("status", "error").putString("message", event.cause().getMessage());
+					j.put("status", "error").put("message", event.cause().getMessage());
 				}
 				handler.handle(j);
 			}
@@ -200,20 +199,20 @@ public class SwiftStorage implements Storage {
 				continue;
 			}
 			String d = destinationPath + File.separator + alias.getString(id, id);
-			swiftClient.writeToFileSystem(id, d, new AsyncResultHandler<String>() {
+			swiftClient.writeToFileSystem(id, d, new Handler<AsyncResult<String>>() {
 				@Override
 				public void handle(AsyncResult<String> event) {
 					if (event.failed()) {
-						errors.add(new JsonObject().putString("id", id)
-								.putString("message", event.cause().getMessage()));
+						errors.add(new JsonObject().put("id", id)
+								.put("message", event.cause().getMessage()));
 					}
 					if (count.decrementAndGet() <= 0) {
 						JsonObject j = new JsonObject();
 						if (errors.size() == 0) {
-							handler.handle(j.putString("status", "ok"));
+							handler.handle(j.put("status", "ok"));
 						} else {
-							handler.handle(j.putString("status", "error").putArray("errors", errors)
-									.putString("message", errors.encode()));
+							handler.handle(j.put("status", "error").put("errors", errors)
+									.put("message", errors.encode()));
 						}
 					}
 				}
@@ -232,8 +231,8 @@ public class SwiftStorage implements Storage {
 	}
 
 	@Override
-	public void stats(final AsyncResultHandler<BucketStats> handler) {
-		swiftClient.headContainer(container, new AsyncResultHandler<JsonObject>() {
+	public void stats(final Handler<AsyncResult<BucketStats>> handler) {
+		swiftClient.headContainer(container, new Handler<AsyncResult<JsonObject>>() {
 			@Override
 			public void handle(AsyncResult<JsonObject> event) {
 				if (event.succeeded()) {

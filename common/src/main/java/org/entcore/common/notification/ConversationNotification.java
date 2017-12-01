@@ -25,16 +25,17 @@ import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
-import org.vertx.java.platform.Container;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class ConversationNotification {
 
@@ -46,11 +47,11 @@ public class ConversationNotification {
 	private static final Logger log = LoggerFactory.getLogger(TimelineHelper.class);
 	private static final String CONVERSATION_ADDRESS = "org.entcore.conversation";
 
-	public ConversationNotification(Vertx vertx, EventBus eb, Container container) {
-		this.render = new Renders(vertx, container);
+	public ConversationNotification(Vertx vertx, EventBus eb, JsonObject config) {
+		this.render = new Renders(vertx, config);
 		this.neo = new Neo(vertx, eb, log);
 		this.eb = eb;
-		this.host = container.config().getString("host", "http://localhost:8009");
+		this.host = config.getString("host", "http://localhost:8009");
 	}
 
 	public void notify(final HttpServerRequest request, final String from, final JsonArray to, final JsonArray cc,
@@ -94,19 +95,19 @@ public class ConversationNotification {
 		}
 		String displayName = i18n.translate("no-reply", Renders.getHost(request), language);
 		final JsonObject m = new JsonObject()
-				.putObject("message", new JsonObject()
-					.putArray("to", to)
-					.putArray("cc", cc)
-					.putString("subject", subject)
-					.putString("body", message)
+				.put("message", new JsonObject()
+					.put("to", to)
+					.put("cc", cc)
+					.put("subject", subject)
+					.put("body", message)
 				)
-				.putString("action", "send")
-				.putString("userId", "no-reply-" + language)
-				.putString("username", displayName)
-				.putObject("request", new JsonObject()
-					.putString("path", request.path())
-					.putObject("headers", new JsonObject()
-							.putString("Accept-Language", I18n.acceptLanguage(request)))
+				.put("action", "send")
+				.put("userId", "no-reply-" + language)
+				.put("username", displayName)
+				.put("request", new JsonObject()
+					.put("path", request.path())
+					.put("headers", new JsonObject()
+							.put("Accept-Language", I18n.acceptLanguage(request)))
 				);
 		String query =
 				"MATCH (u:User { id : {noReplyId}}) " +
@@ -114,8 +115,8 @@ public class ConversationNotification {
 				"WHERE exists = 0 " +
 				"CREATE (u:User:Visible {id : {noReplyId}, displayName : {noReplyName}})";
 		JsonObject params = new JsonObject()
-				.putString("noReplyName", displayName)
-				.putString("noReplyId", "no-reply-" + language).putArray("dest", dest);
+				.put("noReplyName", displayName)
+				.put("noReplyId", "no-reply-" + language).put("dest", dest);
 		StatementsBuilder sb = new StatementsBuilder()
 				.add(query, params);
 		sb.add(
@@ -128,7 +129,7 @@ public class ConversationNotification {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
-					eb.send(CONVERSATION_ADDRESS, m, Neo4jResult.validUniqueResultHandler(result));
+					eb.send(CONVERSATION_ADDRESS, m, handlerToAsyncHandler(Neo4jResult.validUniqueResultHandler(result)));
 				} else {
 					result.handle(new Either.Left<String, JsonObject>(message.body().getString("message")));
 				}

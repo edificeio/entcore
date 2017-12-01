@@ -26,10 +26,10 @@ import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,7 +93,7 @@ public class SqlCrudService implements CrudService {
 //		s.raw(userQuery);
 		String userQuery = "SELECT " + schema + "merge_users(?,?)";
 		s.prepared(userQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
-		data.putString("owner", user.getUserId());
+		data.put("owner", user.getUserId());
 		s.insert(resourceTable, data, "id");
 		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
 	}
@@ -132,7 +132,7 @@ public class SqlCrudService implements CrudService {
 	public void update(String id, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
-		for (String attr : data.getFieldNames()) {
+		for (String attr : data.fieldNames()) {
 			sb.append(attr).append(" = ?, ");
 			values.add(data.getValue(attr));
 		}
@@ -190,13 +190,13 @@ public class SqlCrudService implements CrudService {
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
 							" LEFT JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) + " OR owner = ?";
-					values = new JsonArray(groupsAndUserIds).add(user.getUserId());
+					values = new JsonArray(gu).add(user.getUserId());
 					break;
 				case SHARED:
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
 							" INNER JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds);
-					values = new JsonArray(groupsAndUserIds);
+					values = new JsonArray(gu);
 					break;
 				case PROTECTED:
 					query = "SELECT " + expectedListValues() + " FROM " + resourceTable + " WHERE visibility = ?";
@@ -215,7 +215,7 @@ public class SqlCrudService implements CrudService {
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) +
 							" OR owner = ? OR visibility IN (?,?) " +
 							" GROUP BY " + resourceTable + ".id";
-					values = new JsonArray(groupsAndUserIds).add(user.getUserId())
+					values = new JsonArray(gu).add(user.getUserId())
 						.add(VisibilityFilter.PROTECTED.name())
 						.add(VisibilityFilter.PUBLIC.name());
 					break;

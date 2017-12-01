@@ -19,8 +19,8 @@
 
 package org.entcore.feeder.utils;
 
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -31,7 +31,7 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 public class AAFUtil {
 
 	private static final Pattern datePatter = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
-	private static final JsonObject functionCodes = new JsonObject().putString("ADMIN_LOCAL", "AL");
+	private static final JsonObject functionCodes = new JsonObject().put("ADMIN_LOCAL", "AL");
 	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 
 	public static Object convert(Object value, String type) {
@@ -48,7 +48,7 @@ public class AAFUtil {
 					res = ((boolean) value) ? "O" : "N";
 					break;
 				case "head-array" :
-					res = ((JsonArray) value).get(0);
+					res = ((JsonArray) value).getValue(0);
 					break;
 				case "date" :
 					Matcher m = datePatter.matcher(value.toString());
@@ -93,10 +93,10 @@ public class AAFUtil {
 		for (Object o : value) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray a = (JsonArray) o;
-			final String c = a.get(0);
+			final String c = a.getString(0);
 			if (c != null) {
 				final String code = functionCodes.getString(c, c);
-				for (Object s : (JsonArray) a.get(1)) {
+				for (Object s : a.getJsonArray(1)) {
 					res.add("EtabEducNat$" + s + "$" + code);
 				}
 			}
@@ -127,7 +127,7 @@ public class AAFUtil {
 			}
 			JsonArray tmpArray = new JsonArray();
 			for (Map.Entry<String, String> e : tmp.entrySet()) {
-				tmpArray.addString(e.getKey() + "$" + e.getValue());
+				tmpArray.add(e.getKey() + "$" + e.getValue());
 			}
 			value = tmpArray;
 		}
@@ -194,12 +194,12 @@ public class AAFUtil {
 		if (!ENTEleveAutoriteParentale2.isEmpty() && !ENTEleveAutoriteParentale.contains(ENTEleveAutoriteParentale2)) {
 			ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale2);
 		}
-		res.putArray("ENTEleveParents", ENTEleveParents);
-		res.putArray("ENTEleveAutoriteParentale", new JsonArray(ENTEleveAutoriteParentale.toArray()));
-		res.putString("ENTElevePersRelEleve1", ENTElevePersRelEleve1);
-		res.putString("ENTEleveQualitePersRelEleve1", ENTEleveQualitePersRelEleve1);
-		res.putString("ENTElevePersRelEleve2", ENTElevePersRelEleve2);
-		res.putString("ENTEleveQualitePersRelEleve2", ENTEleveQualitePersRelEleve2);
+		res.put("ENTEleveParents", ENTEleveParents);
+		res.put("ENTEleveAutoriteParentale", new JsonArray(ENTEleveAutoriteParentale.toArray());
+		res.put("ENTElevePersRelEleve1", ENTElevePersRelEleve1);
+		res.put("ENTEleveQualitePersRelEleve1", ENTEleveQualitePersRelEleve1);
+		res.put("ENTElevePersRelEleve2", ENTElevePersRelEleve2);
+		res.put("ENTEleveQualitePersRelEleve2", ENTEleveQualitePersRelEleve2);
 		return res;
 	}
 

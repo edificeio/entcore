@@ -28,7 +28,7 @@ import org.entcore.common.http.BaseServer;
 import fr.wseduc.cas.endpoint.CasValidator;
 import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.cas.endpoint.SamlValidator;
-import org.vertx.java.core.Handler;
+import io.vertx.core.Handler;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -36,7 +36,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Cas extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);

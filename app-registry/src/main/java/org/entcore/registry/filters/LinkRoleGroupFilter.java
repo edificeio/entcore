@@ -25,11 +25,11 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.util.Map;
 
@@ -61,19 +61,19 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 		bodyToJson(resourceRequest, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject body) {
-				final JsonArray roleIds = body.getArray("roleIds");
+				final JsonArray roleIds = body.getJsonArray("roleIds");
 				final String groupId = body.getString("groupId");
 				JsonObject params = new JsonObject();
-				params.putArray("structures", new JsonArray(adminLocal.getScope().toArray()));
+				params.put("structures", new JsonArray(adminLocal.getScope()));
 				if (roleIds != null && groupId != null &&
 						roleIds.size() > 0 && !groupId.trim().isEmpty()) {
 					String query =
 							"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(:Group {id : {groupId}}), (r:Role) " +
 							"WHERE s.id IN {structures} AND r.id IN {roles} AND (NOT(HAS(r.structureId)) OR r.structureId IN {structures}) " +
 							"RETURN count(distinct r) = {nb} as exists ";
-					params.putString("groupId", groupId);
-					params.putArray("roles", roleIds);
-					params.putNumber("nb", roleIds.size());
+					params.put("groupId", groupId);
+					params.put("roles", roleIds);
+					params.put("nb", roleIds.size());
 					check(resourceRequest, query, params, handler);
 				} else {
 					handler.handle(false);
@@ -88,11 +88,11 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				request.resume();
-				JsonArray r = event.body().getArray("result");
+				JsonArray r = event.body().getJsonArray("result");
 				handler.handle(
 						"ok".equals(event.body().getString("status")) &&
 								r != null && r.size() == 1 &&
-								((JsonObject) r.get(0)).getBoolean("exists", false)
+								r.getJsonObject(0).getBoolean("exists", false)
 				);
 			}
 		});

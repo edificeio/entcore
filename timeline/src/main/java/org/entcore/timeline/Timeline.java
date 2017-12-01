@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
 import org.entcore.timeline.services.impl.DefaultTimelineMailerService;
@@ -37,30 +39,23 @@ import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
-import org.vertx.java.core.impl.VertxInternal;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.spi.cluster.ClusterManager;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.cluster.ClusterManager;
 
 public class Timeline extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 
-		final Map<String, String> registeredNotifications;
-		Boolean cluster = (Boolean) vertx.sharedData().getMap("server").get("cluster");
-		if (Boolean.TRUE.equals(cluster)) {
-			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-			registeredNotifications = cm.getSyncMap("notificationsMap");
-		} else {
-			registeredNotifications = vertx.sharedData().getMap("notificationsMap");
-		}
-		final ConcurrentMap<String, String> eventsI18n = vertx.sharedData().getMap("timelineEventsI18n");
+		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
+		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final TimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
 
-		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, container);
+		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, config);
 		mailerService.setConfigService(configService);
 		mailerService.setRegisteredNotifications(registeredNotifications);
 		mailerService.setEventsI18n(eventsI18n);
@@ -79,10 +74,10 @@ public class Timeline extends BaseServer {
 
 		addController(timelineController);
 
-		final String dailyMailingCron = container.config().getString("daily-mailing-cron", "0 0 2 * * ?");
-		final String weeklyMailingCron = container.config().getString("weekly-mailing-cron", "0 0 5 ? * MON");
-		final int dailyDayDelta = container.config().getInteger("daily-day-delta", -1);
-		final int weeklyDayDelta = container.config().getInteger("weekly-day-delta", -1);
+		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
+		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");
+		final int dailyDayDelta = config.getInteger("daily-day-delta", -1);
+		final int weeklyDayDelta = config.getInteger("weekly-day-delta", -1);
 
 		try {
 			new CronTrigger(vertx, dailyMailingCron).schedule(new DailyMailingCronTask(mailerService, dailyDayDelta));

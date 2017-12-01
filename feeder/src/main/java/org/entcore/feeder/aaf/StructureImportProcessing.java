@@ -22,10 +22,10 @@ package org.entcore.feeder.aaf;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
 

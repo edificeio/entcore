@@ -26,7 +26,7 @@ import org.entcore.communication.filters.CommunicationFilter;
 public class Communication extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start() throws Exception {
 		super.start();
 		addController(new CommunicationController());
 		setDefaultResourceFilter(new CommunicationFilter());

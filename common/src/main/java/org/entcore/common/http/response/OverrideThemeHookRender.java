@@ -24,11 +24,9 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.EventBus;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpServerRequest;
 
 import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
@@ -43,7 +41,7 @@ public class OverrideThemeHookRender implements HookProcess {
 	}
 
 	@Override
-	public void execute(final HttpServerRequest request, final VoidHandler handler) {
+	public void execute(final HttpServerRequest request, final Handler<Void> handler) {
 		if (theme.isEmpty()) {
 			if (CookieHelper.get("theme", request) != null) {
 				CookieHelper.set("theme", "", 0l, request);

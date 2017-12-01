@@ -26,15 +26,14 @@ import org.entcore.feeder.dictionary.structures.DefaultFunctions;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
 import org.entcore.feeder.utils.*;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.Vertx;
-import org.vertx.java.core.VoidHandler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -82,11 +81,11 @@ public class CsvFeeder implements Feed {
 	}
 
 	private void parse(final Importer importer, final String p, final Handler<Message<JsonObject>> handler) {
-		vertx.fileSystem().readDir(p, new Handler<AsyncResult<String[]>>() {
+		vertx.fileSystem().readDir(p, new Handler<AsyncResult<List<String>>>() {
 			@Override
-			public void handle(AsyncResult<String[]> event) {
-				if (event.succeeded() && event.result().length == 1) {
-					final String path = event.result()[0];
+			public void handle(AsyncResult<List<String>> event) {
+				if (event.succeeded() && event.result().size() == 1) {
+					final String path = event.result().get(0);
 					final Structure s;
 					try {
 						JsonObject structure = CSVUtil.getStructure(path);
@@ -106,9 +105,9 @@ public class CsvFeeder implements Feed {
 						handler.handle(new ResultMessage().error("structure.error"));
 						return;
 					}
-					vertx.fileSystem().readDir(path, new Handler<AsyncResult<String[]>>() {
+					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
 						@Override
-						public void handle(final AsyncResult<String[]> event) {
+						public void handle(final AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
 								checkNotModifiableExternalId(event.result(), new Handler<Message<JsonObject>>() {
 									@Override
@@ -132,24 +131,24 @@ public class CsvFeeder implements Feed {
 		});
 	}
 
-	private void launchFiles(final String path, final String[] files, final Structure structure,
+	private void launchFiles(final String path, final List<String> files, final Structure structure,
 			final Importer importer, final Handler<Message<JsonObject>> handler) {
-		Arrays.sort(files, Collections.reverseOrder());
+		Collections.sort(files, Collections.reverseOrder());
 		final Set<String> parsedFiles = new HashSet<>();
-		final VoidHandler[] handlers = new VoidHandler[files.length + 1];
-		handlers[handlers.length -1] = new VoidHandler() {
+		final Handler[] handlers = new Handler[files.size() + 1];
+		handlers[handlers.length -1] = new Handler<Void>() {
 			@Override
-			protected void handle() {
+			public void handle(Void v) {
 				importer.restorePreDeletedUsers();
 				importer.persist(handler);
 			}
 		};
-		for (int i = files.length - 1; i >= 0; i--) {
+		for (int i = files.size() - 1; i >= 0; i--) {
 			final int j = i;
-			handlers[i] = new VoidHandler() {
+			handlers[i] = new Handler<Void>() {
 				@Override
-				protected void handle() {
-					final String file = files[j];
+				public void handle(Void v) {
+					final String file = files.get(j);
 					if (!parsedFiles.add(file)) {
 						return;
 					}
@@ -190,11 +189,11 @@ public class CsvFeeder implements Feed {
 		return "CSV";
 	}
 
-	private void checkNotModifiableExternalId(String[] files, final Handler<Message<JsonObject>> handler) {
+	private void checkNotModifiableExternalId(List<String> files, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
-		final AtomicInteger count = new AtomicInteger(files.length);
+		final AtomicInteger count = new AtomicInteger(files.size());
 		for (final String file: files) {
 			CSVUtil.getCharset(vertx, file, new Handler<String>() {
 				@Override
@@ -240,15 +239,15 @@ public class CsvFeeder implements Feed {
 					"MATCH (u:User) where u.externalId IN {ids} AND u.source IN ['AAF', 'AAF1D'] " +
 					"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
 					"RETURN COLLECT(u.externalId) as ids";
-			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().putArray("ids", externalIds),
+			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("ids", externalIds),
 					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
-						JsonArray res = event.body().getArray("result");
+						JsonArray res = event.body().getJsonArray("result");
 						JsonArray ids;
-						if (res != null && res.size() > 0 && res.<JsonObject>get(0) != null &&
-								(ids = res.<JsonObject>get(0).getArray("ids")) != null && ids.size() > 0) {
+						if (res != null && res.size() > 0 && res.getJsonObject(0) != null &&
+								(ids = res.getJsonObject(0).getJsonArray("ids")) != null && ids.size() > 0) {
 							handler.handle(new ResultMessage().error("unmodifiable.externalId-" + ids.encode()));
 						} else {
 							handler.handle(new ResultMessage());
@@ -299,8 +298,8 @@ public class CsvFeeder implements Feed {
 						strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
 					}
 					JsonObject user = new JsonObject();
-					user.putArray("structures", new JsonArray().add(structure.getExternalId()));
-					user.putArray("profiles", new JsonArray().add(profile));
+					user.put("structures", new JsonArray().add(structure.getExternalId()));
+					user.put("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
 
 					// Class Admin
@@ -324,19 +323,19 @@ public class CsvFeeder implements Feed {
 								if ("birthDate".equals(c)) {
 									Matcher m = frenchDatePatter.matcher(v);
 									if (m.find()) {
-										user.putString(c, m.group(3) + "-" + m.group(2) + "-" + m.group(1));
+										user.put(c, m.group(3) + "-" + m.group(2) + "-" + m.group(1));
 									} else {
-										user.putString(c, v);
+										user.put(c, v);
 									}
 								} else {
-									user.putString(c, v);
+									user.put(c, v);
 								}
 								break;
 							case "array-string":
-								JsonArray a = user.getArray(c);
+								JsonArray a = user.getJsonArray(c);
 								if (a == null) {
 									a = new JsonArray();
-									user.putArray(c, a);
+									user.put(c, a);
 								}
 								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
 										!v.startsWith(structure.getExternalId() + "$")) {
@@ -346,7 +345,7 @@ public class CsvFeeder implements Feed {
 								}
 								break;
 							case "boolean":
-								user.putBoolean(c, "true".equals(v.toLowerCase()));
+								user.put(c, "true".equals(v.toLowerCase()));
 								break;
 							default:
 								Object o = user.getValue(c);
@@ -362,10 +361,10 @@ public class CsvFeeder implements Feed {
 									} else {
 										JsonArray array = new JsonArray();
 										array.add(o).add(v2);
-										user.putArray(c, array);
+										user.put(c, array);
 									}
 								} else {
-									user.putString(c, v2);
+									user.put(c, v2);
 								}
 						}
 						if ("classes".equals(c)) {
@@ -398,7 +397,7 @@ public class CsvFeeder implements Feed {
 					}
 					if ("Student".equals(profile) && classesA != null && classesA.size() == 1) {
 						seed = defaultStudentSeed;
-						ca = classesA.get(0);
+						ca = classesA.getString(0);
 					} else {
 						ca = String.valueOf(i);
 						seed = System.currentTimeMillis();
@@ -410,12 +409,12 @@ public class CsvFeeder implements Feed {
 					switch (profile) {
 						case "Teacher":
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
-									user.getArray("structures"), classes.toArray(new String[classes.size()][2]),
+									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									null, true, true);
 							break;
 						case "Personnel":
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
-									user.getArray("structures"), classes.toArray(new String[classes.size()][2]),
+									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									null, true, true);
 							break;
 						case "Student":
@@ -429,7 +428,7 @@ public class CsvFeeder implements Feed {
 								break csvParserWhile;
 							}
 							JsonArray linkStudents = new JsonArray();
-							for (String attr : user.getFieldNames()) {
+							for (String attr : user.fieldNames()) {
 								if ("childExternalId".equals(attr)) {
 									Object o = user.getValue(attr);
 									if (o instanceof JsonArray) {
@@ -452,10 +451,10 @@ public class CsvFeeder implements Feed {
 											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
 										for (int j = 0; j < ((JsonArray) childUsername).size(); j++) {
 											String mapping = structure.getExternalId() +
-													((JsonArray) childUsername).<String>get(j).trim() +
-													((JsonArray) childLastName).<String>get(j).trim() +
-													((JsonArray) childFirstName).<String>get(j).trim() +
-													((JsonArray) childClasses).<String>get(j).trim() +
+													((JsonArray) childUsername).getString(j).trim() +
+													((JsonArray) childLastName).getString(j).trim() +
+													((JsonArray) childFirstName).getString(j).trim() +
+													((JsonArray) childClasses).getString(j).trim() +
 													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										}
@@ -471,7 +470,7 @@ public class CsvFeeder implements Feed {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
 										return;
 									}
-								} else if ("childLastName".equals(attr) && !user.getFieldNames().contains("childUsername")) {
+								} else if ("childLastName".equals(attr) && !user.fieldNames().contains("childUsername")) {
 									Object childLastName = user.getValue(attr);
 									Object childFirstName = user.getValue("childFirstName");
 									Object childClasses = user.getValue("childClasses");
@@ -481,9 +480,9 @@ public class CsvFeeder implements Feed {
 											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
 										for (int j = 0; j < ((JsonArray) childLastName).size(); j++) {
 											String mapping = structure.getExternalId() +
-													((JsonArray) childLastName).<String>get(j).trim() +
-													((JsonArray) childFirstName).<String>get(j).trim() +
-													((JsonArray) childClasses).<String>get(j).trim() + defaultStudentSeed;
+													((JsonArray) childLastName).getString(j).trim() +
+													((JsonArray) childFirstName).getString(j).trim() +
+													((JsonArray) childClasses).getString(j).trim() + defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										}
 									} else if (childLastName instanceof String && childFirstName instanceof String &&
@@ -538,7 +537,7 @@ public class CsvFeeder implements Feed {
 			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
 			String childId = studentExternalIdMapping.get(hash);
 			if (childId != null) {
-				linkStudents.addString(childId);
+				linkStudents.add(childId);
 			}
 		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 			log.error(e.getMessage(), e);
@@ -552,7 +551,7 @@ public class CsvFeeder implements Feed {
 		}
 		String hash = getHashMapping(props, c, structure, seed);
 		if (hash != null) {
-			props.putString("externalId", hash);
+			props.put("externalId", hash);
 		}
 	}
 

@@ -25,7 +25,6 @@ import static org.entcore.common.aggregation.MongoConstants.TRACE_FIELD_TYPE;
 
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.entcore.common.aggregation.MongoConstants.COLLECTIONS;
@@ -34,12 +33,12 @@ import org.entcore.common.aggregation.filters.dbbuilders.MongoDBBuilder;
 import org.entcore.common.aggregation.filters.mongo.IndicatorFilterMongoImpl;
 import org.entcore.common.aggregation.groups.IndicatorGroup;
 import org.entcore.common.aggregation.indicators.Indicator;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -117,7 +116,7 @@ public class IndicatorMongoImpl extends Indicator{
 				if (!"ok".equals(message.body().getString("status"))){
 					String groupstr = group == null ? "Global" : group.toString();
 					log.error("[Aggregation][Error]{"+writtenIndicatorKey+"} ("+ groupstr +") writeStats : "+message.body().toString());
-					log.info(criteriaQuery.toString());
+					//log.info(criteriaQuery.toString());
 				}
 
 				if(countDown.decrementAndGet() == 0){
@@ -143,7 +142,7 @@ public class IndicatorMongoImpl extends Indicator{
 				//Adding the group ids values
 				IndicatorGroup g = group;
 				while(g != null){
-					criteriaQuery.and(g.getKey()+"_id").is(result.getObject("_id").getString(g.getKey()));
+					criteriaQuery.and(g.getKey()+"_id").is(result.getJsonObject("_id").getString(g.getKey()));
 					g = g.getParent();
 				}
 			}
@@ -178,7 +177,7 @@ public class IndicatorMongoImpl extends Indicator{
 
 		addUnwindPipeline(pipeline, group.getParent());
 		if(group.isArray())
-			pipeline.addObject(new JsonObject().putString("$unwind", "$"+group.getKey()));
+			pipeline.add(new JsonObject().put("$unwind", "$"+group.getKey()));
 	}
 
 	//Building the $group _id object
@@ -186,7 +185,7 @@ public class IndicatorMongoImpl extends Indicator{
 		if(group == null)
 			return accumulator;
 
-		return getGroupByObject(accumulator, group.getParent()).putString(group.getKey(), "$"+group.getKey());
+		return getGroupByObject(accumulator, group.getParent()).put(group.getKey(), "$"+group.getKey());
 	}
 
 	/**
@@ -212,16 +211,16 @@ public class IndicatorMongoImpl extends Indicator{
 		final JsonObject aggregation = new JsonObject();
 		JsonArray pipeline = new JsonArray();
 		aggregation
-			.putString("aggregate", COLLECTIONS.events.name())
-			.putBoolean("allowDiskUse", true)
-			.putArray("pipeline", pipeline);
+			.put("aggregate", COLLECTIONS.events.name())
+			.put("allowDiskUse", true)
+			.put("pipeline", pipeline);
 
-		pipeline.addObject(new JsonObject().putObject("$match", MongoQueryBuilder.build(filteringQuery)));
+		pipeline.add(new JsonObject().put("$match", MongoQueryBuilder.build(filteringQuery)));
 		addUnwindPipeline(pipeline, group);
-		JsonObject groupBy = new JsonObject().putObject("$group", new JsonObject()
-			.putObject("_id", getGroupByObject(new JsonObject(), group))
-			.putObject("count", new JsonObject().putNumber("$sum", 1)));
-		pipeline.addObject(groupBy);
+		JsonObject groupBy = new JsonObject().put("$group", new JsonObject()
+			.put("_id", getGroupByObject(new JsonObject(), group))
+			.put("count", new JsonObject().put("$sum", 1)));
+		pipeline.add(groupBy);
 
 		//Customize the request if needed
 		customizeGroupBy(groupBy);
@@ -230,8 +229,8 @@ public class IndicatorMongoImpl extends Indicator{
 		mongo.command(aggregation.toString(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
-				if ("ok".equals(message.body().getString("status")) && message.body().getObject("result", new JsonObject()).getInteger("ok") == 1){
-					JsonArray result = message.body().getObject("result").getArray("result");
+				if ("ok".equals(message.body().getString("status")) && message.body().getJsonObject("result", new JsonObject()).getInteger("ok") == 1){
+					JsonArray result = message.body().getJsonObject("result").getJsonArray("result");
 					writeStats(result, group, finalHandler);
 				} else {
 					String groupstr = group == null ? "Global" : group.toString();
@@ -278,7 +277,7 @@ public class IndicatorMongoImpl extends Indicator{
 				if(totalCalls.decrementAndGet() == 0){
 					final Date end = new Date();
 					log.info("[Aggregation]{"+writtenIndicatorKey+"} Took ["+(end.getTime() - start.getTime())+"] ms");
-					callBack.handle(new JsonObject().putString("status", "ok"));
+					callBack.handle(new JsonObject().put("status", "ok"));
 				}
 			}
 		};

@@ -25,12 +25,12 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.user.RepositoryEvents;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
-import org.vertx.java.core.logging.Logger;
-import org.vertx.java.core.logging.impl.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 
@@ -62,7 +62,7 @@ public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 
 		final String[] groupIds = new String[groups.size()];
 		for (int i = 0; i < groups.size(); i++) {
-			JsonObject j = groups.get(i);
+			JsonObject j = groups.getJsonObject(i);
 			groupIds[i] = j.getString("group");
 		}
 
@@ -95,7 +95,7 @@ public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 
 		final String[] userIds = new String[users.size()];
 		for (int i = 0; i < users.size(); i++) {
-			JsonObject j = users.get(i);
+			JsonObject j = users.getJsonObject(i);
 			userIds[i] = j.getString("id");
 		}
 
@@ -139,13 +139,13 @@ public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder.start("shared." + managerRight).notEquals(true).put("owner.deleted").is(true));
 
-		JsonObject projection = new JsonObject().putNumber("_id", 1);
+		JsonObject projection = new JsonObject().put("_id", 1);
 
 		// Get ids of objects who have no manager and no owner (owner has just been deleted, or has been deleted previously)
 		mongo.find(collection, matcher, null, projection, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray res = event.body().getArray("results");
+				JsonArray res = event.body().getJsonArray("results");
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error when finding objects who have no manager and no owner : " +
 							event.body().getString("message"));
@@ -154,7 +154,7 @@ public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 				} else {
 					final String[] objectIds = new String[res.size()];
 					for (int i = 0; i < res.size(); i++) {
-						JsonObject j = res.get(i);
+						JsonObject j = res.getJsonObject(i);
 						objectIds[i] = j.getString("_id");
 					}
 					JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("_id").in(objectIds));

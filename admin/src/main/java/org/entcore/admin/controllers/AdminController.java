@@ -5,8 +5,8 @@ import org.entcore.admin.services.AdminService;
 import org.entcore.admin.services.impl.AdminNeoService;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonObject;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 import fr.wseduc.rs.Get;

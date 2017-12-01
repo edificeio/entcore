@@ -22,6 +22,7 @@ package org.entcore.workspace.service.impl;
 import com.sun.jna.Platform;
 import fr.wseduc.webutils.collections.PersistantBuffer;
 import fr.wseduc.webutils.data.ZLib;
+import io.vertx.core.eventbus.MessageConsumer;
 import net.sf.lamejb.BladeCodecFactory;
 import net.sf.lamejb.LamejbCodec;
 import net.sf.lamejb.LamejbCodecFactory;
@@ -33,13 +34,13 @@ import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserUtils;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.vertx.java.busmods.BusModBase;
-import org.vertx.java.core.AsyncResult;
-import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
-import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -49,13 +50,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+
 
 public class AudioRecorderWorker extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private Storage storage;
 	private WorkspaceHelper workspaceHelper;
 	private final Map<String, PersistantBuffer> buffers = new HashMap<>();
-	private final Map<String, Handler<Message<byte[]>>> handlers = new HashMap<>();
+	private final Map<String, MessageConsumer<byte[]>> consumers = new HashMap<>();
 	private final Set<String> disabledCompression = new HashSet<>();
 
 	@Override
@@ -63,7 +66,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 		super.start();
 		storage = new StorageFactory(vertx, config).getStorage();
 		workspaceHelper = new WorkspaceHelper(vertx.eventBus(), storage);
-		vertx.eventBus().registerLocalHandler(AudioRecorderWorker.class.getSimpleName(), this);
+		vertx.eventBus().localConsumer(AudioRecorderWorker.class.getSimpleName(), this);
 	}
 
 	@Override
@@ -92,7 +95,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	}
 
 	private void save(final String id, final Message<JsonObject> message) {
-		final JsonObject session = message.body().getObject("session");
+		final JsonObject session = message.body().getJsonObject("session");
 		final String name = message.body().getString("name", "Capture " + System.currentTimeMillis()) + ".mp3";
 		final PersistantBuffer buffer = buffers.get(id);
 		if (buffer != null) {
@@ -106,7 +109,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 								if ("ok".equals(f.getString("status"))) {
 									workspaceHelper.addDocument(f,
 											UserUtils.sessionToUserInfos(session), name, "mediaLibrary",
-											true, new JsonArray(), new Handler<Message<JsonObject>>() {
+											true, new JsonArray(), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 												@Override
 												public void handle(Message<JsonObject> event) {
 													if ("ok".equals(event.body().getString("status"))) {
@@ -115,7 +118,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 														sendError(message, "workspace.add.error");
 													}
 												}
-											});
+											}));
 								} else {
 									sendError(message, "write.file.error");
 								}
@@ -140,9 +143,9 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 		if (buffer != null) {
 			buffer.clear();
 		}
-		Handler<Message<byte[]>> handler = handlers.remove(id);
-		if (handler != null) {
-			vertx.eventBus().unregisterHandler(AudioRecorderWorker.class.getSimpleName() + id, handler);
+		MessageConsumer<byte[]> consumer = consumers.remove(id);
+		if (consumer != null) {
+			consumer.unregister();
 		}
 		if (message != null) {
 			sendOK(message);
@@ -157,9 +160,9 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 					final PersistantBuffer buf = buffers.get(id);
 					final Buffer tmp;
 					if (disabledCompression.contains(id)) {
-						tmp = new Buffer(chunk.body());
+						tmp = Buffer.buffer(chunk.body());
 					} else {
-						tmp = new Buffer(ZLib.decompress(chunk.body()));
+						tmp = Buffer.buffer(ZLib.decompress(chunk.body()));
 					}
 					if (buf != null) {
 						buf.appendBuffer(tmp);
@@ -173,22 +176,22 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 						});
 						buffers.put(id, pb);
 					}
-					chunk.reply(new JsonObject().putString("status", "ok"));
+					chunk.reply(new JsonObject().put("status", "ok"));
 				} catch (Exception e) {
 					logger.error("Error receiving chunk.", e);
-					chunk.reply(new JsonObject().putString("status", "error")
-							.putString("message", "audioworker.chunk.error"));
+					chunk.reply(new JsonObject().put("status", "error")
+							.put("message", "audioworker.chunk.error"));
 				}
 			}
 		};
-		handlers.put(id, handler);
-		vertx.eventBus().registerLocalHandler(AudioRecorderWorker.class.getSimpleName() + id, handler);
+		MessageConsumer<byte[]> consumer = vertx.eventBus().localConsumer(AudioRecorderWorker.class.getSimpleName() + id, handler);
+		consumers.put(id, consumer);
 		sendOK(message);
 	}
 
 
 	private static Buffer toWav(Buffer data) {
-		Buffer wav = new Buffer();
+		Buffer wav = Buffer.buffer();
 		wav.appendString("RIFF");
 		wav.appendBytes(intToByteArray(44 + data.length()));
 		wav.appendString("WAVE");
@@ -232,7 +235,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 			conf.setMode(config.getMpegMode().lameMode());
 			encoder.encode(new BufferedOutputStream(baos));
 		}
-		return new Buffer(baos.toByteArray());
+		return Buffer.buffer(baos.toByteArray());
 	}
 
 }

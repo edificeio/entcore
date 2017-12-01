@@ -14,7 +14,6 @@ class ConfigureSimulation extends Simulation {
 		.acceptHeader("*/*")
 		.acceptEncodingHeader("gzip, deflate")
 		.acceptLanguageHeader("fr-fr,pt-br;q=0.8,en-us;q=0.6,fr;q=0.4,en;q=0.2")
-		.connection("keep-alive")
 		.userAgentHeader("Mozilla/5.0 (X11; Linux x86_64; rv:24.0) Gecko/20140319 Firefox/24.0 Iceweasel/24.4.0")
 
 	val scn = scenario("Configure plateform")
