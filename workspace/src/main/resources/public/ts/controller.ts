@@ -162,6 +162,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	$scope.viewFile = function(document){
+		$scope.openedFolder.content.forEach(f => f.selected = false);
 		$scope.display.viewFile = document;
 		template.open('documents', 'viewer');
 	};
