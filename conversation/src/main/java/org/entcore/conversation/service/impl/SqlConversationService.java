@@ -434,6 +434,24 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public void tagUnread(List<String> messagesIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if (validationParamsError(user, result))
+			return;
+
+		JsonArray values = new JsonArray();
+		String query = "UPDATE " + userMessageTable + " " +
+				"SET unread = true " +
+				"WHERE user_id = ? AND message_id IN "  + Sql.listPrepared(messagesIds.toArray());
+
+		values.add(user.getUserId());
+		for(String id : messagesIds){
+			values.add(id);
+		}
+
+		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+	}
+
+	@Override
 	public void createFolder(final String folderName, final String parentFolderId, final UserInfos user,
 			final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, folderName))

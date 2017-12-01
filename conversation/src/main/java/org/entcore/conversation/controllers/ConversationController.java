@@ -607,6 +607,28 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	//Mark messages as unread
+	@Post("tagUnread")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
+	public void tagUnread(final HttpServerRequest request) {
+		final List<String> ids = request.params().getAll("id");
+		if (ids == null || ids.isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					conversationService.tagUnread(ids, user, defaultResponseHandler(request));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	//Get max folder depth
 	@Get("max-depth")
 	@SecuredAction(value="conversation.max.depth", type=ActionType.AUTHENTICATED)
