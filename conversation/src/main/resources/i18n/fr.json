@@ -59,6 +59,7 @@
     "mail.move": "Déplacer le(s) message(s)",
     "mail.sent": "Message envoyé",
     "message": "le message",
+    "message.draft.saved": "Message enregistré en brouillon",
     "messages": "Messages",
     "ml.sent": "Message envoyé",
     "modify": "Modifier",
