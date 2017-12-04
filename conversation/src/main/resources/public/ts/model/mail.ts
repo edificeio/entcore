@@ -170,6 +170,7 @@ export class Mail implements Selectable {
             Conversation.instance.folders['draft'].mails.refresh();
 
             if (parseInt(result.sent) > 0) {
+                this.state = "SENT";
                 notify.info('mail.sent');
             }
             var undelivered = result.undelivered.join(', ');
