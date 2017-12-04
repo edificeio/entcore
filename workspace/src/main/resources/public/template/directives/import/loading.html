@@ -53,7 +53,7 @@
                 <a class="cell to-list" ng-click="closeCompression()">
                     <i class="back"></i><i18n>medialibrary.backtolist</i18n>
                 </a>
-                <h2 class="document-title"><i class="back" ng-click="display.editedDocument = undefined"></i>[[display.editedDocument.name]]</h2>
+                <h2 class="document-title"><i class="back" ng-click="display.editedDocument = undefined"></i>[[display.editedDocument.name || display.editedDocument.title ]]</h2>
                 <button type="button" class="cancel right-magnet" ng-click="editImage()"><i18n>medialibrary.editImage</i18n></button>
                 <i class="back nav-arrow" ng-if="!isEditedFirst()" ng-click="previousImage()"></i>
                 <i class="forward nav-arrow" ng-if="!isEditedLast()" ng-click="nextImage()"></i>
