@@ -389,8 +389,11 @@ export class Mails {
         Conversation.instance.currentFolder.mails.refresh();
     }
 
-    async tagUnread() {
-        await http.post('/conversation/tagUnread?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
+    async toggleUnread(unread) {
+        var paramsIds = toFormData({ id: _.pluck(this.selection.selected, 'id') });
+        var paramUnread = `unread=${unread}`;
+
+        await http.post(`/conversation/toggleUnread?${paramsIds}&${paramUnread}`);
         Conversation.instance.folders.inbox.mails.refresh();
         quota.refresh();
     }

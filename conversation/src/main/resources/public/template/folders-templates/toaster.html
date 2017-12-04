@@ -13,7 +13,10 @@
             <button ng-click="removeFromUserFolder()" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.id">
                 <i18n>remove.from.folder</i18n>
             </button>
-            <button ng-click="tagUnreadSelection()" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.folderName === 'inbox'">
+            <button ng-click="toggleUnreadSelection(false)" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.folderName === 'inbox'">
+                <i18n>tag.read</i18n>
+            </button>
+            <button ng-click="toggleUnreadSelection(true)" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.folderName === 'inbox'">
                 <i18n>tag.unread</i18n>
             </button>
         </div>
