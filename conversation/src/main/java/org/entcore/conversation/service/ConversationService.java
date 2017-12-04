@@ -73,7 +73,7 @@ public interface ConversationService {
 	void findVisibleRecipients(String parentMessageId, UserInfos user,
 		String acceptLanguage, String search, Handler<Either<String, JsonObject>> result);
 
-	void tagUnread(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void toggleUnread(List<String> messagesId, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	//Folders
 	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);

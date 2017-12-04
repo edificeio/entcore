@@ -607,13 +607,14 @@ public class ConversationController extends BaseController {
 		});
 	}
 
-	//Mark messages as unread
-	@Post("tagUnread")
+	//Mark messages as unread / read
+	@Post("toggleUnread")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(MessageUserFilter.class)
-	public void tagUnread(final HttpServerRequest request) {
+	public void toggleUnread(final HttpServerRequest request) {
 		final List<String> ids = request.params().getAll("id");
-		if (ids == null || ids.isEmpty()) {
+		final String unread = request.params().get("unread");
+		if (ids == null || ids.isEmpty() || unread == null || (!unread.equals("true") && !unread.equals("false"))) {
 			badRequest(request);
 			return;
 		}
@@ -621,7 +622,7 @@ public class ConversationController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					conversationService.tagUnread(ids, user, defaultResponseHandler(request));
+					conversationService.toggleUnread(ids, Boolean.valueOf(unread), user, defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}

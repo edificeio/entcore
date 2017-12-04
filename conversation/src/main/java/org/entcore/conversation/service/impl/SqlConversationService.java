@@ -434,15 +434,16 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void tagUnread(List<String> messagesIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
+	public void toggleUnread(List<String> messagesIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result))
 			return;
 
 		JsonArray values = new JsonArray();
 		String query = "UPDATE " + userMessageTable + " " +
-				"SET unread = true " +
+				"SET unread = ? " +
 				"WHERE user_id = ? AND message_id IN "  + Sql.listPrepared(messagesIds.toArray());
 
+		values.add(unread);
 		values.add(user.getUserId());
 		for(String id : messagesIds){
 			values.add(id);

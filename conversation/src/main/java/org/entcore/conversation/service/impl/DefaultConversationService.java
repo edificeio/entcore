@@ -687,7 +687,7 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void tagUnread(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+	public void toggleUnread(List<String> messagesId, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		// Deprecated
 	}
 
