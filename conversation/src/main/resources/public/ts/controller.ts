@@ -34,6 +34,7 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('page', 'folders');
                 await Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
+                await Conversation.instance.folders.draft.sync();
                 $scope.$apply();
             }
         });
@@ -47,6 +48,7 @@ export let conversationController = ng.controller('ConversationController', [
         template.open('main', 'folders-templates/inbox');
         template.open('toaster', 'folders-templates/toaster');
         $scope.formatFileType = Document.role;
+        $scope.sending = false;
 
         $scope.clearSearch = function () {
             $scope.users.found = [];
@@ -229,9 +231,23 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.saveDraft = async () => {
             notify.info('draft.saved');
-            await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
+            if(!$scope.draftSavingFlag)
+                await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
             $scope.state.newItem = new Mail();
             await $scope.openFolder(Conversation.instance.folders.draft.folderName);
+        };
+
+        $scope.saveDraftAuto = async () => {
+            if(!$scope.draftSavingFlag) {
+                $scope.draftSavingFlag = true;
+                var temp = $scope.state.newItem;
+                setTimeout(async function () {
+                    if (!$scope.sending && temp.state != "SENT") {
+                        await Conversation.instance.folders.draft.saveDraft(temp);
+                    }
+                    $scope.draftSavingFlag=false;
+                }, 5000)
+            }
         };
 
         $scope.inactives = [];
@@ -240,9 +256,9 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.sending = true; //Blocks submit button while message hasn't been send
             const mail: Mail = $scope.state.newItem;
             $scope.inactives = await mail.send();
-            delete $scope.sending;
             $scope.state.newItem = new Mail();
             await $scope.openFolder(Conversation.instance.folders.inbox.folderName);
+            $scope.sending = false;
         };
 
         $scope.clearInactives = () => {
@@ -320,10 +336,12 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.state.newItem.currentReceiver = user;
             }
             $scope.state.newItem.to.push($scope.state.newItem.currentReceiver);
+            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
         };
 
         $scope.removeUser = function (user) {
             $scope.state.newItem.to = _.reject($scope.state.newItem.to, function (item) { return item === user; });
+            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
         };
 
         $scope.addCCUser = function (user) {
@@ -334,10 +352,12 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.state.newItem.currentCCReceiver = user;
             }
             $scope.state.newItem.cc.push($scope.state.newItem.currentCCReceiver);
+            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
         };
 
         $scope.removeCCUser = function (user) {
             $scope.state.newItem.cc = _.reject($scope.state.newItem.cc, function (item) { return item === user; });
+            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
         };
 
         $scope.template = template
