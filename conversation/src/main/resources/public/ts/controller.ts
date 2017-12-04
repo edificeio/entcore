@@ -131,7 +131,9 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.removeFromUserFolder = async (event, mail) => {
             if(Conversation.instance.currentFolder instanceof UserFolder){
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
-                $scope.$apply();
+                await Conversation.instance.folders.draft.mails.refresh();
+                await Conversation.instance.folders.inbox.countUnread();
+                $scope.refreshFolders();
             }
         };
 
@@ -338,19 +340,20 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.restore = async () => {
             await Conversation.instance.folders.trash.restore();
+            await Conversation.instance.folders.draft.mails.refresh();
+            await Conversation.instance.folders.inbox.countUnread();
             $scope.refreshFolders();
         };
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
-            Conversation.instance.currentFolder.sync();
+            await Conversation.instance.folders.inbox.countUnread();
             $scope.refreshFolders();
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
             await Conversation.instance.folders.inbox.toggleUnreadSelection(unread);
-            Conversation.instance.currentFolder.sync();
-            Conversation.instance.folders.inbox.countUnread();
+            await Conversation.instance.folders.inbox.countUnread();
             $scope.refreshFolders();
         };
 
@@ -477,10 +480,13 @@ export let conversationController = ng.controller('ConversationController', [
             }, 10);
         }
 
-        $scope.moveMessages = function (folderTarget) {
-            $scope.lightbox.show = false
-            template.close('lightbox')
-            Conversation.instance.currentFolder.mails.moveSelection(folderTarget)
+        $scope.moveMessages = async (folderTarget) => {
+            $scope.lightbox.show = false;
+            template.close('lightbox');
+            await Conversation.instance.currentFolder.mails.moveSelection(folderTarget);
+            await Conversation.instance.folders.draft.mails.refresh();
+            await Conversation.instance.folders.inbox.countUnread();
+            $scope.refreshFolders();
         }
 
         $scope.openNewFolderView = function () {
