@@ -134,8 +134,8 @@ export class Inbox extends SystemFolder {
         await quota.refresh();
     }
 
-    async tagUnreadSelection(){
-        await this.mails.tagUnread();
+    async toggleUnreadSelection(unread){
+        await this.mails.toggleUnread(unread);
         await quota.refresh();
     }
 
