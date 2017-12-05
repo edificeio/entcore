@@ -589,7 +589,7 @@ a.old-console {
 }
 
 /* Light box component */
-light-box {
+lightbox {
     div[content] {
         border-radius: 3px;
         box-shadow: 0px 0px 5px white;
@@ -620,7 +620,7 @@ light-box {
             padding-top: 0px;
         }
 
-        list-component {
+        list {
             ul {
                 max-height: 46vh;
                 overflow-y: auto;
@@ -629,7 +629,7 @@ light-box {
     }
 }
 
-confirm-light-box {
+lightbox-confirm {
     h2 {
         padding-left: 40px;
     }
@@ -887,7 +887,7 @@ div.panel-message {
 /*** Lists ***/
 
 /* Generic lists component */
-list-component {
+list {
     li {
         &:hover {
             background-color: $accent-light;
@@ -915,7 +915,7 @@ list-component {
 }
 
 user-list, group-users-list, group-input-users, group-output-users {
-    list-component {
+    list {
         li {
             position: relative;
             display: flex;
@@ -1047,7 +1047,7 @@ services-list-with-companion {
 }
 
 /* Portal component */
-ux-portal {
+portal {
     > header {
         color: white;
         position: fixed !important;
@@ -1473,7 +1473,7 @@ groups-root {
 
 groups-type-view {
     div.side-card {
-        list-component {
+        list {
             .list-wrapper {
                 max-height: 40vh;
                 overflow-y: auto;
@@ -1483,7 +1483,7 @@ groups-type-view {
 }
 
 group-detail {
-    light-box {
+    lightbox {
         section {
             div[content] {
                 min-width: 90% !important;
@@ -1494,7 +1494,7 @@ group-detail {
 }
 
 group-users-list {
-    list-component {
+    list {
         div.toolbar {
             border-bottom: 1px solid #ccc;
             padding: 15px;
@@ -1589,8 +1589,8 @@ group-manage-users {
             display: flex;
             flex-flow: row wrap;
             align-items: center;
-
-            list-component {
+            
+            list {
                 min-height: 60vh;
                 max-height: 60vh;
                 flex: 1;
@@ -1695,7 +1695,7 @@ group-manage-users {
                 }
             }
 
-            list-component {
+            list {
                 li {
                     &:hover {
                         background-color: $main-lighter;

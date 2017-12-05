@@ -62,14 +62,14 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                         </span>
                     </div>
                     <div *ngIf="function[0] == 'ADMIN_LOCAL'">
-                        <confirm-light-box
+                        <lightbox-confim
                             [show]="showConfirmation"
                             [title]="'warning'"
                             (onConfirm)="removeAdml()"
                             (onCancel)="showConfirmation = false">
                             <p>{{ 'user.remove.adml.disclaimer.info' | translate:{ username: user.displayName } }}</p>
                             <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
-                        </confirm-light-box>
+                        </lightbox-confirm>
                     </div>
                 </div>
             </div>

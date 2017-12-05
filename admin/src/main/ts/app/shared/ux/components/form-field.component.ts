@@ -14,6 +14,6 @@ import { Component, Input } from '@angular/core'
         div.form-field > *:first-child { flex: 0 0 150px; }
     `]
 })
-export class FormField{
+export class FormFieldComponent {
     @Input() label: string
 }

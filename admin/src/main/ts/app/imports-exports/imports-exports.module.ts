@@ -1,4 +1,3 @@
-import { InfraComponentsModule } from 'infra-components'
 import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
@@ -19,7 +18,6 @@ import { UserlistFiltersService } from '../core/services'
         FormsModule,
         UxModule,
         SijilModule.forChild(),
-        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

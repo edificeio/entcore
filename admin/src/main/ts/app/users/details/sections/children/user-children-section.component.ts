@@ -13,11 +13,11 @@ import { UserModel } from '../../../../core/store/models/user.model'
             <button (click)="showChildrenLightbox = true">
                 <s5l>add.child</s5l><i class="fa fa-plus-circle"></i>
             </button>
-            <light-box class="inner-list"
+            <lightbox class="inner-list"
                     [show]="showChildrenLightbox" (onClose)="showChildrenLightbox = false">
                 <div class="padded">
                     <h3><s5l>add.child</s5l></h3>
-                    <list-component class="inner-list"
+                    <list class="inner-list"
                         [model]="structure?.users?.data"
                         [inputFilter]="userListService.filterByInput"
                         [filters]="filterChildren"
@@ -31,9 +31,9 @@ import { UserModel } from '../../../../core/store/models/user.model'
                                 {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
                             </span>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </div>
-            </light-box>
+            </lightbox>
             <ul class="actions-list">
                 <li *ngFor="let child of details?.children">
                     <div *ngIf="child.id">
