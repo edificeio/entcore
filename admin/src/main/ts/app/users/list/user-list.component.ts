@@ -10,7 +10,7 @@ import { UsersStore } from '../users.store';
 @Component({
     selector: 'user-list',
     template: `
-    <list-component
+    <list
         [model]="userlist"
         [filters]="listFiltersService.getFormattedFilters()"
         [inputFilter]="userListService.filterByInput"
@@ -67,7 +67,7 @@ import { UsersStore } from '../users.store';
             </span>
             <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
         </ng-template>
-    </list-component>
+    </list>
     `,
     styles: [`
         .user-toolbar {

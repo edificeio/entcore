@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core'
 
 @Component({
-    selector: 'confirm-light-box',
+    selector: 'lightbox-confirm',
     template: `
-        <light-box [show]="show" (onClose)="onCancel.emit()">
+        <lightbox [show]="show" (onClose)="onCancel.emit()">
             <h2>{{ title | translate }}</h2>
             <div class="content">
                 <ng-content></ng-content>
@@ -12,10 +12,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core'
                 <button (click)="onConfirm.emit()" class="confirm">{{ 'confirm' | translate }}</button>
                 <button (click)="onCancel.emit()" class="cancel">{{ 'cancel' | translate }}</button>
             </div>
-        </light-box>
+        </lightbox>
     `
 })
-export class ConfirmationLightbox {
+export class LightboxConfirmComponent {
 
     @Input('title') title: string;
     @Input('show') show: boolean;

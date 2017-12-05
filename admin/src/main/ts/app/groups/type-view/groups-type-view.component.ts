@@ -11,7 +11,7 @@ import { SpinnerService } from '../../core/services'
     template: `
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion()">
             <div side-card>
-                <list-component
+                <list
                     [model]="groupsStore.structure?.groups.data"
                     [filters]="{type: groupType}"
                     [inputFilter]="filterByInput"
@@ -24,7 +24,7 @@ import { SpinnerService } from '../../core/services'
                     <ng-template let-item>
                         {{ item.name }}
                     </ng-template>
-                </list-component>
+                </list>
             </div>
             <div side-companion>
                 <router-outlet></router-outlet>

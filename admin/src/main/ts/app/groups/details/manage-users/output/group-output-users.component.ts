@@ -18,7 +18,7 @@ import { UserModel } from '../../../../core/store/models'
                 class="remove"
                 [title]="'group.manage.users.button.remove' | translate">-</button>
 
-            <list-component
+            <list
                 [model]="model"
                 [sort]="userLS.sorts"
                 [inputFilter]="userLS.filterByInput"
@@ -63,7 +63,7 @@ import { UserModel } from '../../../../core/store/models'
                     </span>
                     <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
                 </ng-template>
-            </list-component>
+            </list>
         </div>
     `,
     providers: [ UserListService ],
@@ -73,7 +73,7 @@ export class GroupOutputUsers {
     @Input() model: UserModel[] = []
     @Output() onDelete: EventEmitter<any> = new EventEmitter()
 
-    // list elements stored by store pipe in list-component 
+    // list elements stored by store pipe in list component 
     // (takes filters in consideration)
     storedElements: UserModel[] = []
 

@@ -8,7 +8,7 @@ import { SpinnerService } from '../../core/services/spinner.service'
 import { StructureModel, UserModel } from '../../core/store'
 import { MassMailService } from './mass-mail.service'
 import { BundlesService } from 'sijil'
-import { FilterPipe } from 'infra-components'
+import { FilterPipe } from '../../shared/ux/pipes'
 
 @Component({
     selector: 'mass-mail',

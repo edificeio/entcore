@@ -28,7 +28,7 @@ import { Component, Input } from '@angular/core'
         }
     `]
 })
-export class PanelSection {
+export class PanelSectionComponent {
     @Input("section-title") sectionTitle : string
     @Input() folded : boolean = null
 }

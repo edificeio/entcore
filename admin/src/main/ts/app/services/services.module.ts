@@ -2,7 +2,6 @@ import { NgModule } from "@angular/core";
 import { CommonModule, NgSwitch } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { InfraComponentsModule } from 'infra-components';
 import { SijilModule } from 'sijil';
 
 import { UxModule } from '../shared/ux/ux.module';
@@ -27,7 +26,6 @@ import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRole
         FormsModule,
         UxModule,
         SijilModule.forChild(),
-        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

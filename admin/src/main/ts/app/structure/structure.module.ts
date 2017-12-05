@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 
-import { InfraComponentsModule } from 'infra-components'
 import { SijilModule } from 'sijil'
 
 import { CoreModule } from "../core/core.module";
@@ -21,7 +20,6 @@ import { UserSearchCard } from './cards/user-search-card.component'
     imports: [
         CommonModule,
         FormsModule,
-        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes),
         SijilModule.forChild(),
         UxModule

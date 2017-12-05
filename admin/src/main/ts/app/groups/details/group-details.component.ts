@@ -18,10 +18,10 @@ import { GroupsStore } from '../groups.store'
                 <s5l>group.details.add.users</s5l>
             </button>
 
-            <light-box class="inner-list" [show]="showAddUsersLightBox" 
+            <lightbox class="inner-list" [show]="showAddUsersLightBox" 
                 (onClose)="closeLightBox()">
                 <group-manage-users (close)="closeLightBox()"></group-manage-users>
-            </light-box>
+            </lightbox>
 
             <group-users-list [users]="groupsStore.group?.users">
                 <strong class="badge">
