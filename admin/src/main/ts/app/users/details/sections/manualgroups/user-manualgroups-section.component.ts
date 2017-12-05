@@ -11,10 +11,10 @@ import { GroupModel, UserModel, StructureModel } from '../../../../core/store/mo
             <button (click)="showGroupLightbox = true">
                 <s5l>add.group</s5l><i class="fa fa-plus-circle"></i>
             </button>
-            <light-box class="inner-list" [show]="showGroupLightbox" (onClose)="showGroupLightbox = false">
+            <lightbox class="inner-list" [show]="showGroupLightbox" (onClose)="showGroupLightbox = false">
                 <div class="padded">
                     <h3><s5l>add.group</s5l></h3>
-                    <list-component class="inner-list"
+                    <list class="inner-list"
                         [model]="listGroupModel"
                         [inputFilter]="filterByInput"
                         [filters]="filterGroups"
@@ -28,9 +28,9 @@ import { GroupModel, UserModel, StructureModel } from '../../../../core/store/mo
                                 {{ item?.name }}
                             </span>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </div>
-            </light-box>
+            </lightbox>
     
             <ul class="actions-list">
                 <li *ngFor="let mg of listUserGroup">

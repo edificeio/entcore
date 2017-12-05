@@ -1,1 +1,2 @@
-export * from './anchor.directive'
+export { AnchorDirective } from './anchor.directive'
+export { DynamicTemplateDirective } from './dynamictemplate.directive'

@@ -31,7 +31,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core'
         }
     `]
 })
-export class SideLayout {
+export class SideLayoutComponent {
     @Input() showCompanion : boolean = false
     @Output("closeCompanion") close : EventEmitter<void> = new EventEmitter<void>()
 }

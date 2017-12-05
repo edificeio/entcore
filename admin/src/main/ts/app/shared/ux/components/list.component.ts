@@ -1,10 +1,9 @@
-import { Component, Input, Output, ChangeDetectionStrategy,
-    ChangeDetectorRef, EventEmitter, AfterViewInit,
-    TemplateRef, ContentChild } from '@angular/core'
+import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, 
+    AfterViewInit, TemplateRef, ContentChild } from '@angular/core'
 import { Subject } from 'rxjs/Subject'
 
 @Component({
-    selector: 'list-component',
+    selector: 'list',
     template: `
         <search-input [attr.placeholder]="searchPlaceholder | translate" (onChange)="inputChange.emit($event)"></search-input>
         <div class="toolbar">

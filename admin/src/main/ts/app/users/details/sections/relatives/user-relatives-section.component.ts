@@ -12,11 +12,11 @@ import { UserModel } from '../../../../core/store/models'
             <button (click)="showRelativesLightbox = true">
                 <s5l>add.relative</s5l><i class="fa fa-plus-circle"></i>
             </button>
-            <light-box class="inner-list"
+            <lightbox class="inner-list"
                     [show]="showRelativesLightbox" (onClose)="showRelativesLightbox = false">
                 <div class="padded">
                     <h3><s5l>add.relative</s5l></h3>
-                    <list-component class="inner-list"
+                    <list class="inner-list"
                         [model]="structure?.users?.data"
                         [inputFilter]="userListService.filterByInput"
                         [filters]="filterRelatives"
@@ -30,9 +30,9 @@ import { UserModel } from '../../../../core/store/models'
                                 {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
                             </span>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </div>
-            </light-box>
+            </lightbox>
             <ul class="actions-list">
                 <li *ngFor="let parent of details.parents">
                     <div *ngIf="parent.id">

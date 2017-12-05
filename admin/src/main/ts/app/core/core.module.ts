@@ -2,12 +2,13 @@ import { NgModule, Optional, SkipSelf } from '@angular/core'
 import { CommonModule } from '@angular/common'
 import { RouterModule } from '@angular/router'
 
-import { InfraComponentsModule, LabelsService } from 'infra-components'
 import { SijilModule } from 'sijil'
 
 import { UxModule } from '../shared/ux/ux.module'
+import { LabelsService } from  '../shared/ux/services'
+
 import { NavComponent } from './nav/nav.component'
-import { SpinnerService, SijilLabelsService, NotifyService } from './services'
+import { SijilLabelsService, NotifyService, SpinnerService } from './services'
 import { I18nResolver } from './resolvers/i18n.resolver'
 import { SessionResolver } from './resolvers/session.resolver'
 import { StructuresResolver } from './resolvers/structures.resolver'
@@ -17,12 +18,11 @@ import { throwIfAlreadyLoaded } from './module-import.guard'
     imports: [
         CommonModule,
         SijilModule.forRoot(),
-        InfraComponentsModule.forRoot({
+        UxModule.forRoot({
             provide: LabelsService,
             useExisting: SijilLabelsService
         }),
-        RouterModule,
-        UxModule
+        RouterModule
     ],
     exports: [NavComponent],
     declarations: [NavComponent],

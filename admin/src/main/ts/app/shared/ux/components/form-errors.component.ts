@@ -1,6 +1,8 @@
 import { Component, Input } from '@angular/core'
 import { AbstractControl } from '@angular/forms'
 
+import { LabelsService } from '../services/labels.service';
+
 @Component({
     selector: 'form-errors',
     template: `
@@ -18,8 +20,8 @@ import { AbstractControl } from '@angular/forms'
         }
     `]
 })
-export class FormErrors {
-    constructor(){}
+export class FormErrorsComponent {
+    constructor(private labelsService: LabelsService){}
 
     @Input("control")
     ref : AbstractControl
@@ -30,5 +32,9 @@ export class FormErrors {
             errorsArray.push({ name: prop, value: this.ref.errors[prop]})
         }
         return errorsArray
+    }
+
+    labels(label){
+        return this.labelsService.getLabel(label)
     }
 }

@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common'
 import { FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router'
 import { NgModule } from '@angular/core'
-import { InfraComponentsModule } from 'infra-components'
 import { SijilModule } from 'sijil'
 
 import { UxModule } from '../shared/ux/ux.module'
@@ -28,7 +27,6 @@ import { GroupsTypeView} from './type-view/groups-type-view.component'
         FormsModule,
         UxModule,
         SijilModule.forChild(),
-        InfraComponentsModule.forChild(),
         RouterModule.forChild(routes)
     ],
     declarations: [

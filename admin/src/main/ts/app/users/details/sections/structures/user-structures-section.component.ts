@@ -13,11 +13,11 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             <button (click)="showStructuresLightbox = true">
                 <s5l>add.structure</s5l><i class="fa fa-plus-circle"></i>
             </button>
-            <light-box class="inner-list"
+            <lightbox class="inner-list"
                     [show]="showStructuresLightbox" (onClose)="showStructuresLightbox = false">
                 <div class="padded">
                     <h3><s5l>add.structure</s5l></h3>
-                    <list-component class="inner-list"
+                    <list class="inner-list"
                         [model]="structureCollection.data"
                         [inputFilter]="filterByInput"
                         [filters]="filterStructures"
@@ -31,9 +31,9 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
                                 {{ item?.name }}
                             </span>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </div>
-            </light-box>
+            </lightbox>
             <ul class="actions-list">
                 <li *ngFor="let structure of user.visibleStructures()">
                     <span>{{ structure.name }}</span>

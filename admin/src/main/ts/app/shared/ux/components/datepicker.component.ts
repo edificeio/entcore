@@ -1,15 +1,16 @@
 import { Component, forwardRef, ViewChild, ElementRef, Input, OnDestroy, AfterViewInit, Renderer } from '@angular/core'
 
 import { NgModel } from '@angular/forms';
-
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
+
+import { LabelsService } from '../services'
 
 // access ngmodel
 const NOOP = () => {
 };
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => Datepicker),
+    useExisting: forwardRef(() => DatepickerComponent),
     multi: true
 };
 
@@ -20,13 +21,13 @@ import Flatpickr from 'flatpickr';
     template: `
         <div class="flatpickr" #datePickerElement>
             <input type="date" [(ngModel)]="value" [ngClass]="{ 'cursor-default': disabled }" placeholder="{{ placeholder }}" #inputRef>
-            <a *ngIf="!disabled" data-toggle [tooltip]="'datepicker.open' | translate"><i class="fa fa-calendar open" aria-hidden="true"></i></a>
-            <a *ngIf="!disabled" data-clear [tooltip]="'datepicker.delete' | translate"><i class="fa fa-times delete" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-toggle [tooltip]="labels('datepicker.open')"><i class="fa fa-calendar open" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-clear [tooltip]="labels('datepicker.delete')"><i class="fa fa-times delete" aria-hidden="true"></i></a>
         </div>
     `,
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ]
 })
-export class Datepicker implements OnDestroy, AfterViewInit, ControlValueAccessor {
+export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlValueAccessor {
 
     private innerValue: any = ''
 
@@ -57,7 +58,8 @@ export class Datepicker implements OnDestroy, AfterViewInit, ControlValueAccesso
     @Input()
     maxDate
 
-    constructor(private renderer: Renderer) {}
+    constructor(private renderer: Renderer, 
+        private labelsService: LabelsService) {}
 
     get value(): any {
         return this.innerValue
@@ -116,4 +118,8 @@ export class Datepicker implements OnDestroy, AfterViewInit, ControlValueAccesso
 
     private onChangeCallback: (_: any) => void = NOOP
     private onTouchedCallback: () => void = NOOP
+
+    labels(label){
+        return this.labelsService.getLabel(label)
+    }
 }

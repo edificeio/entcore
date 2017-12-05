@@ -1,44 +1,114 @@
-import { SijilModule } from 'sijil'
-import { InfraComponentsModule } from 'infra-components'
-import { FormsModule } from '@angular/forms'
 import { CommonModule } from '@angular/common'
-import { NgModule } from '@angular/core'
+import { ModuleWithProviders, NgModule, Provider } from '@angular/core'
+import { FormsModule } from '@angular/forms'
 
-import { FormErrors, FormField, ListComponent, PanelSection, SideLayout, SpinnerComponent, Datepicker, ConfirmationLightbox } from './components'
-import { AnchorDirective } from './directives'
-import { MapToArrayPipe } from './pipes'
+import { SijilModule } from 'sijil';
+
+import { DatepickerComponent, 
+    FormErrorsComponent, 
+    FormFieldComponent, 
+    ItemTreeComponent,
+    LightBoxComponent,
+    LightboxConfirmComponent, 
+    ListComponent, 
+    MultiComboComponent,
+    PanelSectionComponent, 
+    PortalComponent,
+    PushPanelComponent, 
+    SearchInputComponent,
+    SideLayoutComponent, 
+    SidePanelComponent, 
+    SpinnerCubeComponent,
+    StepComponent,
+    TooltipComponent,
+    WizardComponent } from './components'
+import { AnchorDirective, DynamicTemplateDirective } from './directives'
+import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe } from './pipes'
+import { DynamicModuleImportsService, LabelsService } from './services';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-        SijilModule.forChild(),
-        InfraComponentsModule
+        SijilModule.forChild()
     ],
     declarations: [
-        SpinnerComponent,
-        SideLayout,
-        PanelSection,
+        // components
+        DatepickerComponent,
+        FormErrorsComponent,
+        FormFieldComponent,
+        ItemTreeComponent,
+        LightBoxComponent,
+        LightboxConfirmComponent,
         ListComponent,
-        FormField,
-        FormErrors,
+        MultiComboComponent,
+        PanelSectionComponent,
+        PortalComponent,
+        PushPanelComponent,
+        SearchInputComponent,
+        SideLayoutComponent,
+        SidePanelComponent,
+        SpinnerCubeComponent,
+        StepComponent,
+        TooltipComponent,
+        WizardComponent,
+        // directives
         AnchorDirective,
-        Datepicker,
-        ConfirmationLightbox,
-        MapToArrayPipe
-
+        DynamicTemplateDirective,
+        // pipes
+        FilterPipe,
+        FlattenObjectArrayPipe,
+        LimitPipe,
+        OrderPipe,
+        StorePipe
     ],
     exports: [
-        SpinnerComponent,
-        SideLayout,
-        PanelSection,
+        //components
+        DatepickerComponent,
+        FormErrorsComponent,
+        FormFieldComponent,
+        ItemTreeComponent,
+        LightBoxComponent,
+        LightboxConfirmComponent,
         ListComponent,
-        FormField,
-        FormErrors,
+        MultiComboComponent,
+        PanelSectionComponent,
+        PortalComponent,
+        PushPanelComponent,
+        SearchInputComponent,
+        SideLayoutComponent,
+        SidePanelComponent,
+        SpinnerCubeComponent,
+        StepComponent,
+        TooltipComponent,
+        WizardComponent,
+        // directives
         AnchorDirective,
-        Datepicker,
-        ConfirmationLightbox,
-        MapToArrayPipe
-    ]
+        DynamicTemplateDirective,
+        // pipes
+        FilterPipe,
+        FlattenObjectArrayPipe,
+        LimitPipe,
+        OrderPipe,
+        StorePipe
+    ],
+    providers: []
 })
-export class UxModule{}
+export class UxModule {
+    static forRoot(labelsProvider: Provider): ModuleWithProviders {
+        return {
+            ngModule: UxModule,
+            providers: [
+                DynamicModuleImportsService,
+                labelsProvider || LabelsService
+            ]
+        };
+    }
+
+    static forChild() : ModuleWithProviders {
+        return {
+            ngModule: UxModule,
+            providers: []
+        }
+    }
+}

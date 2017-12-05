@@ -10,11 +10,11 @@ import { SpinnerService } from '../../../../core/services'
             <button (click)="showClassesLightbox = true">
                 <s5l>add.class</s5l><i class="fa fa-plus-circle"></i>
             </button>
-            <light-box class="inner-list" [show]="showClassesLightbox" 
+            <lightbox class="inner-list" [show]="showClassesLightbox" 
                 (onClose)="showClassesLightbox = false">
                 <div class="padded">
                     <h3><s5l>add.class</s5l></h3>
-                    <list-component class="inner-list"
+                    <list class="inner-list"
                         [model]="structure.classes"
                         [inputFilter]="filterByInput"
                         [filters]="filterClasses"
@@ -28,9 +28,9 @@ import { SpinnerService } from '../../../../core/services'
                                 {{ item?.name }}
                             </span>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </div>
-            </light-box>
+            </lightbox>
             
             <ul class="actions-list">
                 <li *ngFor="let c of user?.classes">

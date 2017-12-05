@@ -20,7 +20,7 @@ import { UserModel, StructureModel, globalStore } from '../../../../core/store'
         </div>  
 
         <div class="flex-row-wrap">
-            <list-component
+            <list
                 [model]="model"
                 [filters]="listFilters.getFormattedFilters()"
                 [inputFilter]="userLS.filterByInput"
@@ -66,7 +66,7 @@ import { UserModel, StructureModel, globalStore } from '../../../../core/store'
                     </span>
                     <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
                 </ng-template>
-            </list-component>
+            </list>
 
             <button (click)="addUsers()"
                 [disabled]="selectedUsers.length === 0"
@@ -82,7 +82,7 @@ export class GroupInputUsers implements OnInit {
 
     private filtersUpdatesSubscriber: Subscription
 
-    // list elements stored by store pipe in list-component 
+    // list elements stored by store pipe in list component 
     // (takes filters in consideration)
     storedElements: UserModel[] = []
     

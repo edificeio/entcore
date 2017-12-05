@@ -9,7 +9,7 @@ import { Subscription } from 'rxjs/Subscription'
 @Component({
     selector: 'app-nav',
     template: `
-        <ux-portal>
+        <portal>
             <div header-left>
                 <i class="fa" aria-hidden="true"
                 [ngClass]="{'fa-times': openside, 'fa-bars': !openside}"
@@ -90,7 +90,7 @@ import { Subscription } from 'rxjs/Subscription'
                     <router-outlet></router-outlet>
                 </div>
             </div>
-        </ux-portal>`,
+        </portal>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NavComponent implements OnInit, OnDestroy {

@@ -9,7 +9,7 @@ import { ServicesStore } from '../../services/services.store';
 @Component({
     selector: 'services-role-attribution',
     template: `
-        <light-box [show]="show" (onClose)="doOnClose()" class="inner-list">
+        <lightbox [show]="show" (onClose)="doOnClose()" class="inner-list">
             <div class="padded">
                 <h3>{{ 'services.roles.groups.add' | translate }}</h3>
                 
@@ -31,7 +31,7 @@ import { ServicesStore } from '../../services/services.store';
                 </div>
 
                 <form>
-                    <list-component
+                    <list
                         [model]="groupList"
                         [sort]="sort"
                         [filters]="filterGroups"
@@ -43,10 +43,10 @@ import { ServicesStore } from '../../services/services.store';
                         <ng-template let-item>
                             <div>{{ item.name }}</div>
                         </ng-template>
-                    </list-component>
+                    </list>
                 </form>
             </div>
-        </light-box>`
+        </lightbox>`
 })
 export class ServicesRoleAttributionComponent implements OnInit {
     

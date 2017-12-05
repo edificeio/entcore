@@ -13,7 +13,7 @@ import { SessionModel } from '../../core/store'
     template: `
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
             <div side-card>
-                <list-component
+                <list
                     [model]="collectionRef[serviceName].collection"
                     sort="name"
                     [inputFilter]="filterByInput"
@@ -32,7 +32,7 @@ import { SessionModel } from '../../core/store'
                             {{ item.name }}
                         </div>
                     </ng-template>
-                </list-component>
+                </list>
             </div>
             <div side-companion>
                 <router-outlet></router-outlet>

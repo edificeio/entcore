@@ -1,8 +1,7 @@
-import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef,
-    OnInit, OnDestroy } from '@angular/core'
+import { Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core'
 import { Subscription } from 'rxjs/Subscription'
     
-import { SpinnerService } from '../../../../core/services/spinner.service'
+import { SpinnerService } from '../../../core/services'
 
 @Component({
     selector: 'spinner-cube',
@@ -104,7 +103,7 @@ import { SpinnerService } from '../../../../core/services/spinner.service'
         }
     `]
 })
-export class SpinnerComponent implements OnInit, OnDestroy {
+export class SpinnerCubeComponent implements OnInit, OnDestroy {
 
     @Input("waitingFor")
     set loadingProp(prop: string) {

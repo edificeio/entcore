@@ -8,7 +8,7 @@ import { UserListService } from '../../../core/services'
 @Component({
     selector: 'group-users-list',
     template: `
-        <list-component
+        <list
             [model]="users"
             [inputFilter]="userLS.filterByInput"
             [sort]="userLS.sorts"
@@ -46,7 +46,7 @@ import { UserListService } from '../../../core/services'
                     </ul>
                 </span>
             </ng-template>
-        </list-component>
+        </list>
     ` ,
     styles: [``],
     providers: [ UserListService ],

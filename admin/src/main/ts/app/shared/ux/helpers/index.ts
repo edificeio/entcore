@@ -1,0 +1,1 @@
+export { removeAccents } from './accents.helper'
