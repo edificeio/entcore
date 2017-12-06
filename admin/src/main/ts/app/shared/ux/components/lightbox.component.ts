@@ -8,7 +8,7 @@ import { Component, ViewChild, ElementRef,
         <section *ngIf="_show" #section>
             <div overlay #overlay></div>
             <div content>
-                <i (click)="close()"></i>
+                <i (click)="close()" *ngIf="showCloseButton == true"></i>
                 <ng-content></ng-content>
             </div>
         </section>
@@ -89,21 +89,20 @@ export class LightBoxComponent {
         }
     }
     get show(): boolean { 
-        return this._show 
+        return this._show
     }
     _show: boolean = false
 
-    /* Outputs */
+    @Input() showCloseButton: boolean = true;
 
+    /* Outputs */
     @Output() onClose = new EventEmitter<any>()
 
     /* View */
-
     @ViewChild("section") section : ElementRef
     @ViewChild("overlay") overlay : ElementRef
 
     /* Internal logic */
-
     private timer : number
 
     onClick(event: MouseEvent) {
