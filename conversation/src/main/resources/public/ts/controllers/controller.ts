@@ -1,5 +1,5 @@
 import { ng, notify, idiom as lang, template, skin, Document, $, _ } from 'entcore';
-import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from './model';
+import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -50,14 +50,12 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.formatFileType = Document.role;
         $scope.sending = false;
 
-        $scope.clearSearch = function () {
-            $scope.users.found = [];
-            $scope.users.search = '';
-        };
+        $scope.addUser = (user) => {
+            if (!$scope.state.newItem.to) {
+                $scope.state.newItem.to = [];
+            }
 
-        $scope.clearCCSearch = function () {
-            $scope.users.foundCC = [];
-            $scope.users.searchCC = '';
+            $scope.state.newItem.to.push(user);
         };
 
         $scope.resetScope = function () {
@@ -286,10 +284,14 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.$apply();
         };
 
+        $scope.quickSaveDraft = async () => {
+            await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
+        };
+
         $scope.saveDraft = async () => {
             notify.info('draft.saved');
             if(!$scope.draftSavingFlag)
-                await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
+                await $scope.quickSaveDraft();
             $scope.state.newItem = new Mail();
             $scope.state.newItem.setMailSignature($scope.getSignature());
             await $scope.openFolder(Conversation.instance.folders.draft.folderName);
@@ -378,60 +380,17 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.updateFoundCCUsers = async () => {
+        $scope.updateFoundUsers = async (search, model, founds) => {
             var include = [];
-            var exclude = $scope.state.newItem.cc || [];
+            var exclude = model || [];
             if ($scope.mail) {
                 include = _.map($scope.mail.displayNames, function (item) {
                     return new User(item[0], item[1]);
                 });
             }
-            $scope.users.foundCC = await Conversation.instance.users.findUser($scope.users.searchCC, include, exclude);
+            var users = await Conversation.instance.users.findUser(search, include, exclude);
+            Object.assign(founds, users, { length: users.length });
             $scope.$apply();
-        };
-
-        $scope.updateFoundUsers = async () => {
-            var include = [];
-            var exclude = $scope.state.newItem.to || [];
-            if ($scope.mail) {
-                include = _.map($scope.mail.displayNames, function (item) {
-                    return new User(item[0], item[1]);
-                });
-            }
-            $scope.users.found = await Conversation.instance.users.findUser($scope.users.search, include, exclude);
-            $scope.$apply();
-        };
-
-        $scope.addUser = function (user) {
-            if (!$scope.state.newItem.to) {
-                $scope.state.newItem.to = [];
-            }
-            if (user) {
-                $scope.state.newItem.currentReceiver = user;
-            }
-            $scope.state.newItem.to.push($scope.state.newItem.currentReceiver);
-            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
-        };
-
-        $scope.removeUser = function (user) {
-            $scope.state.newItem.to = _.reject($scope.state.newItem.to, function (item) { return item === user; });
-            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
-        };
-
-        $scope.addCCUser = function (user) {
-            if (!$scope.state.newItem.cc) {
-                $scope.state.newItem.cc = [];
-            }
-            if (user) {
-                $scope.state.newItem.currentCCReceiver = user;
-            }
-            $scope.state.newItem.cc.push($scope.state.newItem.currentCCReceiver);
-            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
-        };
-
-        $scope.removeCCUser = function (user) {
-            $scope.state.newItem.cc = _.reject($scope.state.newItem.cc, function (item) { return item === user; });
-            Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
         };
 
         $scope.template = template

@@ -1,5 +1,5 @@
 import { ng, template } from 'entcore';
-import { Mail } from './model';
+import { Mail } from '../model';
 
 export let printController = ng.controller('PrintController', [
     '$scope', 'route', 'model',
