@@ -4,6 +4,8 @@
     "attachments.loading": "En cours de chargement",
     "cancel": "Annuler",
     "cc": "Copie à",
+    "chip.more1": "et",
+    "chip.more2": "de plus",
     "clickhere": "Cliquez ici pour ",
     "content": "Objet",
     "conversation.send.error": "Aucun destinataire n'a pu recevoir le messsage.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
