@@ -78,6 +78,12 @@
 	</div>
 	<div class="row info" ng-if="state.newItem.id" ><i18n>message.draft.saved</i18n></div>
 	<div class="row">
+		<i class="arrow"></i>
+		<strong ng-click="signatureShow = !signatureShow"> Ajouter une signature </strong>
+		<input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/>
+		<textarea ng-if="signatureShow" ng-model="conversation.preference.signature" ng-blur="conversation.putPreference()"></textarea>
+	</div>
+	<div class="row">
 		<div class="row">
 			<h3 class="cell" ng-if="state.newItem.attachments.length"><i18n>attachments</i18n></h3>
 			<div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">

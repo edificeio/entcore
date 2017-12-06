@@ -64,6 +64,14 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.openInbox();
         };
 
+        $scope.getSignature = () => {
+            if(Conversation.instance.preference.useSignature)
+                return Conversation.instance.preference.signature.replace(new RegExp('\n', 'g'),'<br>');
+            return '';
+        }
+
+        $scope.state.newItem.setMailSignature($scope.getSignature());
+
         $scope.openFolder = async folderName => {
             if (!folderName) {
                 if (Conversation.instance.currentFolder instanceof UserFolder) {
@@ -73,6 +81,7 @@ export let conversationController = ng.controller('ConversationController', [
                 folderName = (Conversation.instance.currentFolder as SystemFolder).folderName;
             }
             $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailSignature($scope.getSignature());
             template.open('main', 'folders-templates/' + folderName);
             await Conversation.instance.folders.openFolder(folderName);
             $scope.$apply();
@@ -171,7 +180,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail, 'transfer', $compile, $sanitize, $scope);
+            await mail.setMailContent($scope.mail, 'transfer', $compile, $sanitize, $scope, $scope.getSignature());
             await Conversation.instance.folders.draft.transfer(mail.parentConversation, $scope.state.newItem);
             $scope.$apply();
         };
@@ -180,7 +189,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope);
+            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, $scope.getSignature());
             $scope.addUser($scope.mail.sender());
             $scope.$apply();
         };
@@ -189,7 +198,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, true);
+            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, $scope.getSignature(), true);
             mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
             mail.cc = _.filter($scope.state.newItem.cc, function (user) {
                 return user.id !== model.me.userId && !_.findWhere($scope.state.newItem.to, { id: user.id })
@@ -204,7 +213,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, true);
+            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, $scope.getSignature(), true);
             mail.cc = [];
             mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
             $scope.$apply();
@@ -214,7 +223,7 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, true);
+            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, $scope.getSignature(), true);
             mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
             mail.cc = _.filter($scope.state.newItem.cc, function (user) {
                 return user.id !== model.me.userId && !_.findWhere($scope.state.newItem.to, { id: user.id })
@@ -234,6 +243,7 @@ export let conversationController = ng.controller('ConversationController', [
             if(!$scope.draftSavingFlag)
                 await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
             $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailSignature($scope.getSignature());
             await $scope.openFolder(Conversation.instance.folders.draft.folderName);
         };
 
@@ -250,6 +260,20 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
+        $scope.refreshSignature = async(use: boolean) => {
+            Conversation.instance.putPreference();
+            var body = $($scope.state.newItem.body);
+            var signature = $scope.getSignature();
+            if(body.filter('.new-signature').length > 0){
+                body.filter('.new-signature').text('');
+                if (use)
+                    body.filter('.new-signature').append(signature);
+                $scope.state.newItem.body = _.map(body, function(el){ return el.outerHTML; }).join('');
+            }else{
+                $scope.state.newItem.setMailSignature(signature);
+            }
+        }
+
         $scope.inactives = [];
 
         $scope.sendMail = async () => {
@@ -257,6 +281,7 @@ export let conversationController = ng.controller('ConversationController', [
             const mail: Mail = $scope.state.newItem;
             $scope.inactives = await mail.send();
             $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailSignature($scope.getSignature());
             await $scope.openFolder(Conversation.instance.folders.inbox.folderName);
             $scope.sending = false;
         };
