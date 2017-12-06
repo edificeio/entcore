@@ -131,8 +131,10 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.nextPage = async () => {
-            await Conversation.instance.currentFolder.nextPage();
-            $scope.$apply();
+            if(template.containers.main.indexOf('mail-actions') < 0) {
+                await Conversation.instance.currentFolder.nextPage();
+                $scope.$apply();
+            }
         };
 
         $scope.switchSelectAll = function () {
