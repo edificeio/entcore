@@ -42,6 +42,7 @@ import { UsersStore } from '../users.store';
             <i class="fa fa-filter toolbar-right" aria-hidden="true"
                 [tooltip]="'filters' | translate" position="top"
                 (click)="companionChange.emit('filter')"></i>
+            <strong class="badge">{{ userlist.length }} <s5l>list.results.users</s5l></strong>
         </div>
 
         <ng-template let-item>
