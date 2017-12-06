@@ -8,7 +8,7 @@ var revReplace = require("gulp-rev-replace");
 var clean = require('gulp-clean');
 var sourcemaps = require('gulp-sourcemaps');
 var typescript = require('typescript');
-var argv = require('argv');
+var argv = require('yargs').argv;
 var fs = require('fs');
 
 var apps = ['auth', 'timeline', 'conversation', 'archive', 'workspace', 'directory', 'portal'];
@@ -118,16 +118,17 @@ function getModName(fileContent, app){
     return getProp('modowner') + '~' + app + '~' + getProp('version');
 }
 
+var springboard = argv.springboard;
+if(!springboard){
+    springboard = '../springboard-open-ent/';
+}
+if(springboard[springboard.length - 1] !== '/'){
+    springboard += '/';
+}
+
+console.log('Using springboard at ' + springboard);
 apps.forEach((app) => {
     rootGulp.task('watch-' + app, () => {
-        var springboard = argv.springboard;
-        if(!springboard){
-            springboard = '../springboard-open-ent/';
-        }
-        if(springboard[springboard.length - 1] !== '/'){
-            springboard += '/';
-        }
-    
         rootGulp.watch('./' + app + '/src/main/resources/public/ts/**/*.ts', () => startWebpack('dev'));
     
         fs.readFile("./gradle.properties", "utf8", function(error, content){
