@@ -139,11 +139,19 @@ Behaviours.register('workspace', {
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
 				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + MediaLibrary.thumbnails, formData).done(function(data){
-					if(typeof callback === 'function'){
-                        data.metadata = file.metadata;
-                        data.name = file.metadata.filename;
-						callback(data);
-					}
+					http().putJson('/workspace/rename/document/' + data._id, { 
+						legend: file.legend, 
+						alt: file.alt, 
+						name: file.name.replace('.' + file.metadata.extension, '')
+					}).done(function(){
+						if(typeof callback === 'function'){
+							data.metadata = file.metadata;
+							data.name = file.metadata.filename;
+							data.alt = file.alt;
+							data.legend = file.legend;
+							callback(data);
+						}
+					});
 				});
 			}
 		};
