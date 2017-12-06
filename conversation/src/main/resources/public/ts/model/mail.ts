@@ -74,7 +74,13 @@ export class Mail implements Selectable {
         return '';
     }
 
-    setMailContent(origin: Mail, mailType: string, compile, sanitize, $scope, copyReceivers?: boolean): Promise<any> {
+    setMailSignature(signature: string){
+        if(!this.body)
+            this.body='';
+        this.body = this.body + '<br><br><div class="signature new-signature">' + signature + '</div>'
+    }
+
+    setMailContent(origin: Mail, mailType: string, compile, sanitize, $scope, signature, copyReceivers?: boolean): Promise<any> {
         if (origin.subject.indexOf(format[mailType].prefix) === -1) {
             this.subject = lang.translate(format[mailType].prefix) + origin.subject;
         }
@@ -88,7 +94,8 @@ export class Mail implements Selectable {
         }
 
         return new Promise((resolve, reject) => {
-            this.body = format[mailType].content + '<blockquote>' + origin.body + '</blockquote>';
+            this.body = '<br><br><div class="signature new-signature">' + signature + '</div>' +
+                format[mailType].content + '<blockquote>' + origin.body + '</blockquote>';
             const tempElement = compile(format[mailType].content)($scope);
             setTimeout(function(){
                 this.body = $(document.createElement('div')).append(tempElement)[0].outerHTML + '<blockquote>' + this.body + '</blockquote>';
