@@ -67,6 +67,7 @@ export class Conversation {
     currentFolder: Folder;
     maxFolderDepth: number;
     eventer = new Eventer();
+    preference = {useSignature: false, signature: ""};
 
     static _instance: Conversation;
     static get instance(): Conversation{
@@ -88,8 +89,23 @@ export class Conversation {
         let response = await http.get('max-depth')
         this.maxFolderDepth = parseInt(response.data['max-depth']);
         this.eventer.trigger('change');
-
+        await this.getPreference();
         await this.userFolders.sync();
         await quota.refresh();
+    }
+
+    async getPreference() {
+        try{
+            let response = await http.get('/userbook/preference/conversation')
+            if(response.data.preference)
+                this.preference = JSON.parse(response.data.preference)
+        }
+        catch(e){
+            notify.error(e.response.data.error);
+        }
+    }
+
+    async putPreference() {
+        await http.put('/userbook/preference/conversation', this.preference);
     }
 }
