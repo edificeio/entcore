@@ -33,7 +33,10 @@ import { UserListService } from '../../../core/services'
                     }"
                     [tooltip]="'sort.profile' | translate" position="top"
                     (click)="userLS.changeSorts('profile')"></i>
-                <ng-content></ng-content>
+                <strong class="badge">
+                    {{ users.length }}
+                    {{ 'members' | translate:{ count: users.length } | lowercase }}
+                </strong>
             </div>
 
             <ng-template let-item>
@@ -61,7 +64,7 @@ export class GroupUsersList {
 
     // Model
     @Input()
-    users : GroupModel
+    users : UserModel[]
 
     selectUser(user: UserModel) {
         if(user.structures.length > 0){

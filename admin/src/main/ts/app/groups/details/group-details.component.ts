@@ -24,10 +24,6 @@ import { GroupsStore } from '../groups.store'
             </lightbox>
 
             <group-users-list [users]="groupsStore.group?.users">
-                <strong class="badge">
-                    {{ groupsStore.group?.users?.length }}
-                    {{ 'members' | translate:{ count: groupsStore.group?.users?.length } | lowercase }}
-                </strong>
             </group-users-list>
         </div>
     `,
