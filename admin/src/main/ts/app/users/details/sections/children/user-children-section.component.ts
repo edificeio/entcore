@@ -3,7 +3,7 @@ import { Component, Input, ViewChild, ChangeDetectorRef,
 import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
-import { UserListService, SpinnerService } from '../../../../core/services'
+import { UserListService, SpinnerService, NotifyService } from '../../../../core/services'
 import { UserModel } from '../../../../core/store/models/user.model'
 
 @Component({
@@ -25,7 +25,7 @@ import { UserModel } from '../../../../core/store/models/user.model'
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableChild"
-                        (onSelect)="spinner.perform($event.id, details?.addChild($event), 0)">
+                        (onSelect)="addChild($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
@@ -38,9 +38,9 @@ import { UserModel } from '../../../../core/store/models/user.model'
                 <li *ngFor="let child of details?.children">
                     <div *ngIf="child.id">
                         <a class="action" [routerLink]="['..', child.id]">
-                        {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
+                            {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
                         </a>
-                        <i  class="fa fa-times action" (click)="spinner.perform(child.id, details?.removeChild(child), 0)"
+                        <i  class="fa fa-times action" (click)="removeChild(child)"
                             [tooltip]="'delete.this.child' | translate"
                             [ngClass]="{ disabled: spinner.isLoading(child.id)}"></i>
                     </div>
@@ -49,7 +49,8 @@ import { UserModel } from '../../../../core/store/models/user.model'
         </panel-section>
     `,
     inputs: ['user', 'structure'],
-    providers: [ UserListService ]
+    providers: [ UserListService ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserChildrenSection extends AbstractSection {
     @ViewChild("codeInput") 
@@ -58,6 +59,7 @@ export class UserChildrenSection extends AbstractSection {
     constructor(
             private userListService: UserListService,
             protected spinner: SpinnerService,
+            private ns: NotifyService,
             protected cdRef: ChangeDetectorRef) {
         super()
     }
@@ -78,5 +80,53 @@ export class UserChildrenSection extends AbstractSection {
 
     disableChild = (child) => {
         return this.spinner.isLoading(child.id)
+    }
+
+    addChild = (child) => {
+        console.log(child);
+        this.spinner.perform('portal-content', this.details.addChild(child))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.child.content', 
+                        parameters: {
+                            child:  child.displayName
+                        } 
+                    }, 'notify.user.add.child.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.child.error.content',
+                        parameters: {
+                            child:  child.displayName
+                        }
+                    }, 'notify.user.add.child.error.title', err);
+            });
+    }
+
+    removeChild = (child) => {
+        console.log(child);
+        this.spinner.perform('portal-content', this.details.removeChild(child))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.child.content', 
+                        parameters: {
+                            child:  child.displayName
+                        } 
+                    }, 'notify.user.remove.child.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.child.error.content',
+                        parameters: {
+                            child:  child.displayName
+                        }
+                    }, 'notify.user.remove.child.error.title', err);
+            });
     }
 }

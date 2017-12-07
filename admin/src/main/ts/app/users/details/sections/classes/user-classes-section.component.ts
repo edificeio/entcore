@@ -1,7 +1,7 @@
-import { Component } from '@angular/core'
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService } from '../../../../core/services'
+import { SpinnerService, NotifyService } from '../../../../core/services'
 
 @Component({
     selector: 'user-classes-section',
@@ -22,7 +22,7 @@ import { SpinnerService } from '../../../../core/services'
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableClass"
-                        (onSelect)="spinner.perform($event.id, user.addClass($event), 0)">
+                        (onSelect)="addClass($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -36,22 +36,25 @@ import { SpinnerService } from '../../../../core/services'
                 <li *ngFor="let c of user?.classes">
                     <span>{{ c.name }}</span>
                     <i  class="fa fa-times action" 
-                        (click)="spinner.perform(c.id, user.removeClass(c.id), 0)"
+                        (click)="removeClass(c)"
                         [tooltip]="'delete.this.class' | translate"
-                        [ngClass]="{ disabled: spinner.isLoading(c.id)}">
+                        [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
                     </i>
                 </li>
             </ul>
         </panel-section>
     `,
-    inputs: ['user', 'structure']
+    inputs: ['user', 'structure'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserClassesSection extends AbstractSection {
     
     showClassesLightbox: boolean = false
 
     constructor(
-        public spinner: SpinnerService) {
+        public spinner: SpinnerService,
+        private ns: NotifyService,
+        private cdRef: ChangeDetectorRef) {
         super()
     }
 
@@ -74,6 +77,52 @@ export class UserClassesSection extends AbstractSection {
     
     disableClass = (c) => {
         return this.spinner.isLoading(c.id)
+    }
+
+    addClass = (event) => {
+        this.spinner.perform('portal-content', this.user.addClass(event))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.class.content', 
+                        parameters: {
+                            classe:  event.name
+                        } 
+                    }, 'notify.user.add.class.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.class.error.content',
+                        parameters: {
+                            classe:  event.name
+                        }
+                    }, 'notify.user.add.class.error.title', err);
+            });
+    }
+
+    removeClass = (classe) => {
+        this.spinner.perform('portal-content', this.user.removeClass(classe.id))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.class.content', 
+                        parameters: {
+                            classe:  classe.name
+                        } 
+                    }, 'notify.user.remove.class.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.class.error.content',
+                        parameters: {
+                            classe:  classe.name
+                        }
+                    }, 'notify.user.remove.class.error.title', err);
+            });
     }
 
     protected onUserChange() {}

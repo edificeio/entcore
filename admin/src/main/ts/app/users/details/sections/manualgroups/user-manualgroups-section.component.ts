@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges } from '@angular/core'
 
-import { AbstractSection } from '../abstract.section'
-import { SpinnerService } from '../../../../core/services'
 import { GroupModel, UserModel, StructureModel } from '../../../../core/store/models'
+import { SpinnerService, NotifyService } from '../../../../core/services'
+import { AbstractSection } from '../abstract.section'
 
 @Component({
     selector: 'user-manualgroups-section',
@@ -55,18 +55,19 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
     @Input() user: UserModel;
     @Input() structure: StructureModel;
     
+    constructor(
+        public spinner: SpinnerService,
+        private ns: NotifyService,
+        private cdRef: ChangeDetectorRef) {
+        super()
+    }
+    
     private _inputFilter = "";
     set inputFilter(filter: string) {
         this._inputFilter = filter;
     }
     get inputFilter() {
         return this._inputFilter;
-    }
-
-    constructor(
-        public spinner: SpinnerService,
-        private cdRef: ChangeDetectorRef) {
-        super();
     }
 
     ngOnInit() {
@@ -110,19 +111,49 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit {
         return this.spinner.isLoading(mg.id);
     }
 
-    addGroup(group: GroupModel) {
+    addGroup = (group) => {
         this.spinner.perform('portal-content', this.user.addManualGroup(group))
             .then(() => {
-                this.listUserGroup.push(group);
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.group.content', 
+                        parameters: {
+                            group:  group.name
+                        } 
+                    }, 'notify.user.add.group.title');
                 this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.group.error.content',
+                        parameters: {
+                            group:  group.name
+                        }
+                    }, 'notify.user.add.group.error.title', err);
             });
     }
 
-    removeGroup(group: GroupModel) {
+    removeGroup = (group) => {
         this.spinner.perform('portal-content', this.user.removeManualGroup(group))
             .then(() => {
-                this.listUserGroup.splice(this.listUserGroup.indexOf(group), 1);
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.group.content', 
+                        parameters: {
+                            group:  group.name
+                        } 
+                    }, 'notify.user.remove.group.title');
                 this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.group.error.content',
+                        parameters: {
+                            group:  group.name
+                        }
+                    }, 'notify.user.remove.group.error.title', err);
             });
     }
 
