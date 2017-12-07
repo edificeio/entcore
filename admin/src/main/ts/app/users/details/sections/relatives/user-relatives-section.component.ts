@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy
 import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
-import { UserListService, SpinnerService } from '../../../../core/services'
+import { UserListService, SpinnerService, NotifyService } from '../../../../core/services'
 import { UserModel } from '../../../../core/store/models'
 
 @Component({
@@ -24,7 +24,7 @@ import { UserModel } from '../../../../core/store/models'
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
                         [isDisabled]="disableRelative"
-                        (onSelect)="spinner.perform($event.id, details?.addRelative($event), 0)">
+                        (onSelect)="addRelative($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item.displayName?.split(' ')[1] | uppercase }} {{ item.displayName?.split(' ')[0] }}
@@ -39,7 +39,7 @@ import { UserModel } from '../../../../core/store/models'
                         <a class="action" [routerLink]="['..', parent.id]">
                             {{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}
                         </a>
-                        <i  class="fa fa-times action" (click)="spinner.perform(parent.id, details?.removeRelative(parent), 0)"
+                        <i  class="fa fa-times action" (click)="removeRelative(parent)"
                             [tooltip]="'delete.this.relative' | translate"
                             [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
                     </div>
@@ -48,7 +48,8 @@ import { UserModel } from '../../../../core/store/models'
         </panel-section>
     `,
     inputs: ['user', 'structure'],
-    providers: [ UserListService ]
+    providers: [ UserListService ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserRelativesSection extends AbstractSection {
     @ViewChild("codeInput") 
@@ -56,7 +57,9 @@ export class UserRelativesSection extends AbstractSection {
 
     constructor(
         public userListService: UserListService,
-        public spinner: SpinnerService) {
+        public spinner: SpinnerService,
+        private ns: NotifyService,
+        protected cdRef: ChangeDetectorRef) {
         super()
     }
 
@@ -78,4 +81,49 @@ export class UserRelativesSection extends AbstractSection {
         return this.spinner.isLoading(relative.id)
     }
 
+    addRelative = (relative) => {
+        this.spinner.perform('portal-content', this.details.addRelative(relative))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.relative.content', 
+                        parameters: {
+                            relative:  relative.displayName
+                        } 
+                    }, 'notify.user.add.relative.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.relative.error.content',
+                        parameters: {
+                            relative:  relative.displayName
+                        }
+                    }, 'notify.user.add.relative.error.title', err);
+            });
+    }
+
+    removeRelative = (relative) => {
+        this.spinner.perform('portal-content', this.details.removeRelative(relative))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.relative.content', 
+                        parameters: {
+                            relative:  relative.displayName
+                        } 
+                    }, 'notify.user.remove.relative.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.relative.error.content',
+                        parameters: {
+                            relative:  relative.displayName
+                        }
+                    }, 'notify.user.remove.relative.error.title', err);
+            });
+    }
 }

@@ -60,9 +60,8 @@ import { UsersStore } from '../../../users.store'
             
             <button (click)="updateDetails()" 
                 class="is-pulled-right"
-                [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('user.update')"
+                [disabled]="administrativeForm.pristine || administrativeForm.invalid || spinner.isLoading('portal-content')"
                 *ngIf="user.deleteDate == null">
-                    <spinner-cube class="button-spinner" waitingFor="user.update"></spinner-cube>
                     <s5l>save.modifications</s5l>
                     <i class="fa fa-floppy-o"></i>
             </button>
@@ -96,7 +95,7 @@ export class UserAdministrativeSection extends AbstractSection {
     }
 
     updateDetails() {
-        this.spinner.perform('user.update', this.details.update())
+        this.spinner.perform('portal-content', this.details.update())
             .then(() => {
                 if (this.firstNameInput && this.firstNameInput.dirty) {
                     this.user.firstName = this.details.firstName

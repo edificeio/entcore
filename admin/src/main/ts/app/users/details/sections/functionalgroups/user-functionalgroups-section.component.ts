@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService } from '../../../../core/services'
 import { GroupModel, UserModel, StructureModel } from '../../../../core/store/models'
+import { SpinnerService, NotifyService } from '../../../../core/services'
 
 @Component({
     selector: 'user-functionalgroups-section',
@@ -65,8 +65,9 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
     
     constructor(
         public spinner: SpinnerService,
+        private ns: NotifyService,
         private cdRef: ChangeDetectorRef) {
-        super();
+        super()
     }
     
     ngOnInit() {
@@ -108,19 +109,49 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
         return this.spinner.isLoading(g.id)
     }
 
-    addGroup(group: GroupModel) {
+    addGroup = (group) => {
         this.spinner.perform('portal-content', this.user.addFunctionalGroup(group))
             .then(() => {
-                this.listUserGroup.push(group);
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.group.content', 
+                        parameters: {
+                            group:  group.name
+                        } 
+                    }, 'notify.user.add.group.title');
                 this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.group.error.content',
+                        parameters: {
+                            group:  group.name
+                        }
+                    }, 'notify.user.add.group.error.title', err);
             });
     }
 
-    removeGroup(group: GroupModel) {
+    removeGroup = (group) => {
         this.spinner.perform('portal-content', this.user.removeFunctionalGroup(group))
             .then(() => {
-                this.listUserGroup.splice(this.listUserGroup.indexOf(group), 1);
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.group.content', 
+                        parameters: {
+                            group:  group.name
+                        } 
+                    }, 'notify.user.remove.group.title');
                 this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.group.error.content',
+                        parameters: {
+                            group:  group.name
+                        }
+                    }, 'notify.user.remove.group.error.title', err);
             });
     }
 

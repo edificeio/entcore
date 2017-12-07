@@ -3,7 +3,7 @@ import { AbstractControl } from '@angular/forms'
 import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService } from '../../../../core/services'
+import { SpinnerService, NotifyService } from '../../../../core/services'
 import { globalStore, StructureCollection, UserModel } from '../../../../core/store'
 
 @Component({
@@ -25,7 +25,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableStructure"
-                        (onSelect)="spinner.perform($event.id, user?.addStructure($event.id), 0)">
+                        (onSelect)="addStructure($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -37,7 +37,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             <ul class="actions-list">
                 <li *ngFor="let structure of user.visibleStructures()">
                     <span>{{ structure.name }}</span>
-                    <i  class="fa fa-times action" (click)="spinner.perform(structure.id, user?.removeStructure(structure.id), 0)"
+                    <i  class="fa fa-times action" (click)="removeStructure(structure)"
                         [tooltip]="'delete.this.structure' | translate"
                         [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
                 </li>
@@ -47,7 +47,8 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             </ul>
         </panel-section>
     `,
-    inputs: ['user', 'structure']
+    inputs: ['user', 'structure'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserStructuresSection extends AbstractSection {
     @ViewChild("codeInput")
@@ -56,7 +57,9 @@ export class UserStructuresSection extends AbstractSection {
     structureCollection : StructureCollection = globalStore.structures
 
     constructor(private router: Router,
-        public spinner: SpinnerService) {
+        public spinner: SpinnerService,
+        private ns: NotifyService,
+        protected cdRef: ChangeDetectorRef) {
         super()
     }
 
@@ -81,5 +84,51 @@ export class UserStructuresSection extends AbstractSection {
     
     filterStructures = (s: {id: string, name: string}) => {
         return !this.user.structures.find(struct => s.id === struct.id)
+    }
+
+    addStructure = (structure) => {
+        this.spinner.perform('portal-content', this.user.addStructure(structure.id))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.add.structure.content', 
+                        parameters: {
+                            structure:  structure.name
+                        } 
+                    }, 'notify.user.add.structure.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.add.structure.error.content',
+                        parameters: {
+                            structure:  structure.name
+                        }
+                    }, 'notify.user.add.structure.error.title', err);
+            });
+    }
+
+    removeStructure = (structure) => {
+        this.spinner.perform('portal-content', this.user.removeStructure(structure.id))
+            .then(() => {
+                this.ns.success(
+                    { 
+                        key: 'notify.user.remove.structure.content', 
+                        parameters: {
+                            structure:  structure.name
+                        } 
+                    }, 'notify.user.remove.structure.title');
+                this.cdRef.markForCheck();
+            })
+            .catch(err => {
+                this.ns.error(
+                    {
+                        key: 'notify.user.remove.structure.error.content',
+                        parameters: {
+                            structure:  structure.name
+                        }
+                    }, 'notify.user.remove.structure.error.title', err);
+            });
     }
 }
