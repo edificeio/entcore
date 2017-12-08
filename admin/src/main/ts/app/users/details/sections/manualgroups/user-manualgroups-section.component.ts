@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnChanges } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
 import { SpinnerService } from '../../../../core/services'
-import { GroupModel } from '../../../../core/store/models'
+import { GroupModel, UserModel, StructureModel } from '../../../../core/store/models'
 
 @Component({
     selector: 'user-manualgroups-section',
@@ -22,7 +22,7 @@ import { GroupModel } from '../../../../core/store/models'
                         sort="name"
                         (inputChange)="inputFilter = $event"
                         [isDisabled]="disableGroup"
-                        (onSelect)="spinner.perform($event.id, user.addManualGroup($event), 0)">
+                        (onSelect)="addGroup($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -33,10 +33,10 @@ import { GroupModel } from '../../../../core/store/models'
             </light-box>
     
             <ul class="actions-list">
-                <li *ngFor="let mg of details.manualGroups">
+                <li *ngFor="let mg of listUserGroup">
                     <div *ngIf="mg.id">
                         <span>{{ mg.name }}</span>
-                        <i  class="fa fa-times action" (click)="spinner.perform(mg.id, user.removeManualGroup(mg), 0)"
+                        <i  class="fa fa-times action" (click)="removeGroup(mg)"
                             [tooltip]="'delete.this.group' | translate"
                             [ngClass]="{ disabled: spinner.isLoading(mg.id)}">
                         </i>
@@ -45,45 +45,85 @@ import { GroupModel } from '../../../../core/store/models'
             </ul>
         </panel-section>
     `,
-    inputs: ['user', 'structure']
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManualGroupsSection extends AbstractSection implements OnInit {
-    listGroupModel: GroupModel[] = []
-    showGroupLightbox: boolean = false
+    listGroupModel: GroupModel[] = [];
+    listUserGroup: GroupModel[];
+    showGroupLightbox: boolean = false;
 
-    constructor(
-        public spinner: SpinnerService) {
-        super()
-    }
+    @Input() user: UserModel;
+    @Input() structure: StructureModel;
     
-    private _inputFilter = ""
+    private _inputFilter = "";
     set inputFilter(filter: string) {
-        this._inputFilter = filter
+        this._inputFilter = filter;
     }
     get inputFilter() {
-        return this._inputFilter
+        return this._inputFilter;
+    }
+
+    constructor(
+        public spinner: SpinnerService,
+        private cdRef: ChangeDetectorRef) {
+        super();
     }
 
     ngOnInit() {
+        this.refreshListGroupModel();
+        this.refreshListUserGroup();
+    }
+
+    // Hack refresh data when structure change
+    ngOnChanges() {
+        this.refreshListGroupModel();
+        this.refreshListUserGroup();
+    }
+
+    private refreshListGroupModel = () => {
         if (this.structure.groups.data && this.structure.groups.data.length > 0) {
-            this.listGroupModel = this.structure.groups.data.filter(g => g.type === 'ManualGroup')
+            this.listGroupModel = this.structure.groups.data.filter(g => g.type === 'ManualGroup');
+        }
+    }
+
+    private refreshListUserGroup = () => {
+        if (this.details.manualGroups) {
+            this.listUserGroup = this.details.manualGroups.filter(ug => this.listGroupModel.find(g => g.id == ug.id));
         }
     }
 
     filterByInput = (mg: {id: string, name: string}) => {
-        if (!this.inputFilter) return true
-        return `${mg.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
+        if (!this.inputFilter) {
+            return true;
+        }
+        return `${mg.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0;
     }
 
     filterGroups = (mg: {id: string, name: string}) => {
         if (this.details.manualGroups) {
-            return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id)
+            return !this.details.manualGroups.find(manualGroup => mg.id === manualGroup.id);
         }
-        return true
+        return true;
     }
     
     disableGroup = (mg) => {
-        return this.spinner.isLoading(mg.id)
+        return this.spinner.isLoading(mg.id);
+    }
+
+    addGroup(group: GroupModel) {
+        this.spinner.perform('portal-content', this.user.addManualGroup(group))
+            .then(() => {
+                this.listUserGroup.push(group);
+                this.cdRef.markForCheck();
+            });
+    }
+
+    removeGroup(group: GroupModel) {
+        this.spinner.perform('portal-content', this.user.removeManualGroup(group))
+            .then(() => {
+                this.listUserGroup.splice(this.listUserGroup.indexOf(group), 1);
+                this.cdRef.markForCheck();
+            });
     }
 
     protected onUserChange() {}
