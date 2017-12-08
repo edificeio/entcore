@@ -74,7 +74,10 @@ export class StructureModel extends Model<StructureModel> {
                 .then(res => {
                     if (res.data && res.data.length > 0 
                         && res.data[0]['aafFunctions'] && res.data[0]['aafFunctions'].length > 0) {
-                        this.aafFunctions = res.data[0]['aafFunctions'].reduce((a, b) => a.concat(b))
+                        // remove duplicated functions
+                        // functions array is like: [['Gestion comptable'], ['Gestion comptable', 'Enseignant']]
+                        this.aafFunctions = res.data[0]['aafFunctions'].reduce((accu, curr) => 
+                            accu.concat(Array.from(new Set(curr)).filter(f => !accu.includes(f))));
                     }
                 })
         }
