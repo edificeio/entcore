@@ -105,6 +105,7 @@
     "send.reset.password.email.placeholder": "Courriel",
     "send.reset.password.mobile.placeholder": "Téléphone portable",
     "administration": "Administration",
+    "functions": "Fonctions",
     "ADMIN_LOCAL": "Administrateur local",
     "SUPER_ADMIN": "Administrateur central",
     "structure.or.more": "{{ rest ? $head et $rest établissement(s) : $head }}",

@@ -82,7 +82,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.post(`/directory/user/function/${this.id}`, {
             functionCode: "ADMIN_LOCAL",
             inherit: "s",
-            scope: this.functions[0][1] == null ? [structureId] : this.functions[0][1].concat(structureId)
+            scope:  this.functions.find((f) => f[0] == "ADMIN_LOCAL") == null ? [structureId] : this.functions.find((f) => f[0] == "ADMIN_LOCAL")[1].concat(structureId)
         }).then(async (res) => {
             await this.http.get(`/directory/user/${this.id}/functions`).then((res) => {
                 this.functions = res.data[0].functions;
@@ -92,15 +92,20 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     removeAdml() {
         return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
-            this.functions[0] = ["", []]
+            this.functions.splice(this.functions.findIndex((f) => f[0] == "ADMIN_LOCAL"), 1);
         })
     }
 
     isAdml(structureId?: string) {
-        return this.functions && this.functions.length > 0 
-            && this.functions[0] && this.functions[0].length > 0 
-            && this.functions[0][0] === 'ADMIN_LOCAL'
-            && this.functions[0][1].includes(structureId)
+        if (this.functions && this.functions.length > 0) {
+            let admlIndex = this.functions.findIndex((f) => f[0] == "ADMIN_LOCAL");
+            if (admlIndex >= 0)
+                return this.functions[admlIndex][1].includes(structureId);
+        }
+    }
+
+    isAdmc() {
+        return this.functions && this.functions.find((f) => f[0] == 'SUPER_ADMIN');
     }
 
     generateMergeKey() {

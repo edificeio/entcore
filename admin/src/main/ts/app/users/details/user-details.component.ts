@@ -199,7 +199,10 @@ export class UserDetails implements OnInit, OnDestroy{
                     this.structure = this.usersStore.structure
                     this.user = this.usersStore.user
                 }
-                this.cdRef.markForCheck()
+            }
+            else if (field == 'structure') {
+                this.structure = this.usersStore.structure;
+                this.cdRef.markForCheck();
             }
         })
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
@@ -226,9 +229,11 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     isContextAdml() {
-        return this.details && this.details.functions &&
-            this.details.functions[0][0] &&
-            this.details.functions[0][1].find(id => this.structure.id === id)
+        if (this.details && this.details.functions && this.details.functions.length > 0) {
+            let admlIndex = this.details.functions.findIndex((f) => f[0] == "ADMIN_LOCAL");
+            if (admlIndex >= 0)
+                return this.details.functions[admlIndex][1].includes(this.structure.id);
+        }
     }
 
     hasDuplicates() {

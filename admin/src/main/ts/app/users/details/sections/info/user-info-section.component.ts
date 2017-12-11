@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ChangeDetectorRef, OnInit } from '@angular/core'
+import { Component, Input, ViewChild, ChangeDetectorRef, OnInit, ChangeDetectionStrategy } from '@angular/core'
 import { NgModel } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
@@ -36,36 +36,42 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                 <i class="fa fa-cog"></i>
             </button>
         </form-field>
-        <form-field label="administration" *ngIf="!user.deleteDate">
-            <button class= "noflex"
-                *ngIf="!details.isAdml(this.structure.id)" 
-                (click)="addAdml()">
-                <s5l>adml.add</s5l>
-                <i class="fa fa-cog"></i>
-            </button>
-            <div *ngFor="let function of details.functions">
-                <div class="adml-listing">
-                    {{ function[0] | translate }}
-                    <span *ngIf="function[1] && function[1].length > 0 && getStructure(function[1][0])">
-                        ({{ getStructures(function[1]) }})
-                    </span>
-                    <span *ngIf="function[1] && function[1].length > 0 && !getStructure(function[1][0])">
-                        ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
-                    </span>
+        <form-field label="functions" *ngIf="!user.deleteDate">
+            <div>
+                <div class="adml-buttons" *ngIf="!details.isAdmc()">
+                    <button class= "noflex"
+                        *ngIf="!details.isAdml(this.structure.id)" 
+                        (click)="addAdml()">
+                        <s5l>adml.add</s5l>
+                        <i class="fa fa-cog"></i>
+                    </button>
+                    <button *ngIf="details.isAdml(this.structure.id)" 
+                        (click)="showConfirmation = true">
+                        <s5l>adml.remove</s5l>
+                        <i class="fa fa-cog"></i>
+                    </button>
                 </div>
-                <button *ngIf="details.isAdml(this.structure.id)" 
-                    (click)="showConfirmation = true">
-                    <s5l>adml.remove</s5l>
-                    <i class="fa fa-cog"></i>
-                </button>
-                <confirm-light-box
-                    [show]="showConfirmation"
-                    [title]="'warning'"
-                    (onConfirm)="removeAdml()"
-                    (onCancel)="showConfirmation = false">
-                    <p>{{ 'user.remove.adml.disclaimer.info' | translate:{ username: user.displayName } }}</p>
-                    <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
-                </confirm-light-box>
+                <div *ngFor="let function of details.functions" class="function">
+                    <div class="adml-listing">
+                        {{ function[0] | translate }}
+                        <span *ngIf="function[1] && function[1].length > 0 && getStructure(function[1][0])">
+                            ({{ getStructures(function[1]) }})
+                        </span>
+                        <span *ngIf="function[1] && function[1].length > 0 && !getStructure(function[1][0])">
+                            ({{ 'member.of.n.structures' | translate:{ count: function[1].length } }})
+                        </span>
+                    </div>
+                    <div *ngIf="function[0] == 'ADMIN_LOCAL'">
+                        <confirm-light-box
+                            [show]="showConfirmation"
+                            [title]="'warning'"
+                            (onConfirm)="removeAdml()"
+                            (onCancel)="showConfirmation = false">
+                            <p>{{ 'user.remove.adml.disclaimer.info' | translate:{ username: user.displayName } }}</p>
+                            <p>{{ 'user.remove.adml.disclaimer.confirm' | translate }}</p>
+                        </confirm-light-box>
+                    </div>
+                </div>
             </div>
         </form-field>
         <form-field label="send.reset.password" *ngIf="!details.activationCode">
@@ -96,7 +102,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
         </form-field>
     </panel-section>
     `,
-    inputs: ['user', 'structure']
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserInfoSection extends AbstractSection implements OnInit {
     passwordResetMail: string
@@ -104,10 +110,14 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     smsModule: boolean
     showConfirmation: boolean = false;
 
+    @Input() structure;
+    @Input() user;
+
     constructor(
         private ns: NotifyService,
         private spinner: SpinnerService,
-        private cdRef: ChangeDetectorRef) {
+        private cdRef: ChangeDetectorRef
+    ) {
         super()
     }
 
@@ -150,7 +160,8 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                 this.ns.success({
                         key: 'notify.user.remove.adml.content',
                         parameters: {user: this.user.firstName + ' ' + this.user.lastName}
-                    }, 'notify.user.remove.adml.title')
+                    }, 'notify.user.remove.adml.title');
+                this.cdRef.markForCheck();
             }).catch(err => {
                 this.ns.error({
                         key: 'notify.user.remove.adml.error.content',
