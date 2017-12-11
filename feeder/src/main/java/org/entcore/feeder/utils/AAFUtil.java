@@ -81,7 +81,9 @@ public class AAFUtil {
 		JsonArray res = new JsonArray();
 		if (value != null) {
 			for (Object o : value) {
-				res.add(o.toString() + "$-$SANS OBJET$-$SANS OBJET");
+				if (o != null && !o.toString().isEmpty()) {
+					res.add("EtabEducNat$" + o.toString() + "$UI");
+				}
 			}
 		}
 		return res;
