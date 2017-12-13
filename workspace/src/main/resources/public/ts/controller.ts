@@ -73,6 +73,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	    nbFiles: 50
 	};
 	$scope.template = template;
+	$scope.quota = quota;
+	quota.refresh();
 	template.open('documents', 'icons');
 	template.open('lightboxes', 'lightboxes');
 	template.open('toaster', 'toaster');
@@ -290,8 +292,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				return item === document;
 			});
 			http().delete('document/' + document._id)
-				.done(function(){
-					quota.refresh();
+				.done(async function(){
+					await quota.refresh();
+					$scope.$apply();
 				})
 		});
 
@@ -1171,10 +1174,11 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			$scope.revisionInProgress = {}
 		});
 
-		http().putFile("document/" + $scope.targetDocument._id + "?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(function(){
+		http().putFile("document/" + $scope.targetDocument._id + "?thumbnail=120x120&thumbnail=290x290", data, {requestName: 'add-revision'}).done(async function(){
 			delete $scope.revisionInProgress;
 			$scope.openFolder($scope.openedFolder.folder);
-			quota.refresh();
+			await quota.refresh();
+			$scope.$apply();
 			template.close('lightbox');
 			//$scope.refreshHistory($scope.targetDocument);
 		}).e400(function(e){
@@ -1185,10 +1189,11 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	}
 
 	$scope.deleteRevision = function(revision){
-		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(function(){
+		http().delete("document/"+revision.documentId+"/revision/"+revision._id).done(async function(){
 			$('.tooltip').remove()
 			$scope.openHistory($scope.targetDocument)
-			quota.refresh();
+			await quota.refresh();
+			$scope.$apply();
 		})
 	}
 }]);
