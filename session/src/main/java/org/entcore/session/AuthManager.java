@@ -74,13 +74,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
-			if (config.getBoolean("inactivy", false)) {
+			if (config.getBoolean("inactivity", false)) {
 				inactivity = cm.getSyncMap("inactivity");
 			}
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
-			if (config.getBoolean("inactivy", false)) {
+			if (config.getBoolean("inactivity", false)) {
 				inactivity = new HashMap<>();
 			}
 		}
