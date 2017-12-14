@@ -172,9 +172,10 @@ input:invalid {
 
 form-errors {
     flex: none !important;
+    line-height: 1.5em;
 
     > .form-errors {
-        margin-right: 10px;
+        margin: 0 10px;
     }
 }
 
@@ -1929,6 +1930,10 @@ multi-combo {
 }
 
 /* Datepicker component */
+date-picker {
+    flex: none !important;
+}
+
 div.flatpickr {
     a {
         cursor: pointer;
