@@ -53,12 +53,27 @@
 		<editor ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
 	</div>
 	<div class="row info" ng-if="state.newItem.id" ><i18n>message.draft.saved</i18n></div>
-	<div class="row">
-		<i class="arrow"></i>
-		<strong ng-click="signatureShow = !signatureShow"> Ajouter une signature </strong>
-		<input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/>
-		<textarea ng-if="signatureShow" ng-model="conversation.preference.signature" ng-blur="conversation.putPreference()"></textarea>
+	<div class="row drop-down-block" ng-class="{slided: signatureShow}">
+		<div class="drop-down-label">
+			<div class="twelve cell" pulsar-highlight="7">
+				<label ng-click="signatureShow = !signatureShow">
+					<i class="arrow"></i>
+					<label
+						ng-click="signatureShow = !signatureShow"
+						pulsar="{ index: 7, position: 'bottom center'}">
+						<strong><i18n>add.signature</i18n></strong>
+					</label>
+				</label>
+				<input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/>
+			</div>
+		</div>
+
+		<div class="drop-down-content" slide="signatureShow">
+			<textarea ng-if="signatureShow" ng-model="conversation.preference.signature" ng-blur="conversation.putPreference()"></textarea>
+		</div>
 	</div>
+
+
 	<div class="row">
 		<div class="row">
 			<h3 class="cell" ng-if="state.newItem.attachments.length"><i18n>attachments</i18n></h3>
