@@ -62,7 +62,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                         </span>
                     </div>
                     <div *ngIf="function[0] == 'ADMIN_LOCAL'">
-                        <lightbox-confim
+                        <lightbox-confirm
                             [show]="showConfirmation"
                             [title]="'warning'"
                             (onConfirm)="removeAdml()"
