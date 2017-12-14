@@ -108,7 +108,7 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         // Session is already fetched in nav.component and must be shared instead of being requested again
         SessionModel.getSession().then(session => { 
             if (!session.functions['SUPER_ADMIN']) {
-                this.filteredApps.push('Admin', 'Administration', 'ABSENCES','NOTES','SCOLARITE','TEXTES');
+                this.filteredApps.push('Admin', 'Administration', 'ABSENCES','NOTES','SCOLARITE','TEXTES','AGENDA');
             }
             if (!this.serviceName) {
                 throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
