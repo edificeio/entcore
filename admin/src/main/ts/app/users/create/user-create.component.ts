@@ -19,21 +19,33 @@ import { SpinnerService, NotifyService, UserListService, UserChildrenListService
         <panel-section class="thin">
             <form #createForm="ngForm" (ngSubmit)="createNewUser()">
                 <form-field label="firstName">
-                    <input type="text" [(ngModel)]="newUser.firstName" name="firstName" 
-                        required pattern=".*\\S+.*" #firstNameInput="ngModel"
+                    <input type="text" 
+                        [(ngModel)]="newUser.firstName" 
+                        name="firstName" 
+                        required 
+                        pattern=".*\\S+.*" 
+                        #firstNameInput="ngModel"
                         (blur)="newUser.firstName = trim(newUser.firstName)">
                     <form-errors [control]="firstNameInput"></form-errors>
                 </form-field>
+
                 <form-field label="lastName">
-                    <input type="text" [(ngModel)]="newUser.lastName" name="lastName" 
-                        required pattern=".*\\S+.*" #lastNameInput="ngModel"
-                        (blur)="newUser.lastName = trim(newUser.lastName)">
+                    <input type="text" 
+                        [(ngModel)]="newUser.lastName" 
+                        name="lastName" 
+                        required 
+                        pattern=".*\\S+.*" 
+                        (blur)="newUser.lastName = trim(newUser.lastName)"
+                        #lastNameInput="ngModel">
                     <form-errors [control]="lastNameInput"></form-errors>
                 </form-field>
 
                 <form-field label="birthDate">
                     <date-picker [(ngModel)]="newUser.userDetails.birthDate" 
-                        name="birthDate" minDate="1900-01-01" maxDate="today" 
+                        name="birthDate" 
+                        minDate="1900-01-01" 
+                        maxDate="today" 
+                        [required]="newUser.type == 'Student' ? true : false"
                         #birthDateInput="ngModel">
                     </date-picker>
                     <form-errors [control]="birthDateInput"></form-errors>
