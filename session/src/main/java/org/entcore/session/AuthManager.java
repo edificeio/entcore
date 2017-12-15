@@ -39,6 +39,7 @@ import java.util.*;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
+	private static final long LAST_ACTIVITY_DELAY = 30000l;
 	protected Map<String, String> sessions;
 	protected Map<String, List<LoginInfo>> logins;
 	protected Map<String, Long> inactivity;
@@ -76,6 +77,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			logins = cm.getSyncMap("logins");
 			if (config.getBoolean("inactivity", false)) {
 				inactivity = cm.getSyncMap("inactivity");
+				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
 			}
 		} else {
 			sessions = new HashMap<>();
@@ -311,11 +313,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		} else {
 			sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
 			if (inactivity != null) {
-				Long timer = inactivity.get(sessionId);
+				Long lastActivity = inactivity.get(sessionId);
 				String userId = sessions.get(sessionId);
-				if (timer != null && userId != null) {
-					vertx.cancelTimer(timer);
-					setTimer(userId, sessionId);
+				if (userId != null && (lastActivity == null || (lastActivity + LAST_ACTIVITY_DELAY) < System.currentTimeMillis())) {
+					inactivity.put(sessionId, System.currentTimeMillis());
 				}
 			}
 		}
@@ -389,21 +390,34 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	protected long setTimer(final String userId, final String sessionId) {
-		Long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
+		if (inactivity != null) {
+			inactivity.put(sessionId, System.currentTimeMillis());
+		}
+		return setTimer(userId, sessionId, sessionTimeout);
+	}
+
+	protected long setTimer(final String userId, final String sessionId, final long sessionTimeout) {
+		return vertx.setTimer(sessionTimeout, new Handler<Long>() {
 							public void handle(Long timerId) {
 								if (inactivity != null) {
-									inactivity.remove(sessionId);
-									dropSession(new ResultMessage(), sessionId, null);
+									final Long lastActivity = inactivity.get(sessionId);
+									if(lastActivity != null) {
+										final long timeoutTimestamp = lastActivity + AuthManager.this.sessionTimeout;
+										final long now = System.currentTimeMillis();
+										if (timeoutTimestamp > now) {
+											setTimer(userId, sessionId, (timeoutTimestamp - now));
+										} else {
+											dropSession(new ResultMessage(), sessionId, null);
+										}
+									} else {
+										dropSession(new ResultMessage(), sessionId, null);
+									}
 								} else {
 									logins.remove(userId);
 									sessions.remove(sessionId);
 								}
 							}
 						});
-		if (inactivity != null) {
-			inactivity.put(sessionId, timerId);
-		}
-		return timerId;
 	}
 
 	private void addLoginInfo(String userId, long timerId, String sessionId) {
@@ -461,13 +475,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				if (config.getBoolean("slo", false)) {
 					eb.send("cas", new JsonObject().putString("action", "logout").putString("userId", userId));
 				}
-				Long timerId;
-				if (inactivity != null && (timerId = inactivity.remove(sessionId)) != null) {
-					vertx.cancelTimer(timerId);
-				} else if (info != null) {
+				if (info != null) {
 					vertx.cancelTimer(info.timerId);
 				}
 			}
+		}
+		if (inactivity != null) {
+			inactivity.remove(sessionId);
 		}
 		JsonObject res = new JsonObject().putString("status", "ok");
 		if (meta != null) {
