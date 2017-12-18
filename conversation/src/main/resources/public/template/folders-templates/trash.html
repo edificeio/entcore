@@ -13,7 +13,11 @@
 	<table class="twelve">
 		<thead>
 			<tr>
-				<th class="icon"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /></th>
+				<th class="icon">
+					<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+						<i18n></i18n>
+					</label>
+				</th>
 				<th class="icon"></th>
 				<th ng-click="setSort(folders.trash, sortBy.name)"><i18n>from</i18n></th>
 				<th ng-click="setSort(folders.trash, sortBy.subject)"><i18n>content</i18n></th>
@@ -35,12 +39,26 @@
 			</tr>
 			<tr ng-repeat="folder in folders.trash.userFolders.all | orderBy: 'name'"
 			    ng-class="{ checked: folder.selected }">
-				<td class="icon"><input type="checkbox" ng-model="folder.selected" /></td>
+				<td>
+					<div class="avatar">
+						<i class="sticker app type folder"></i>
+						<label class="checkbox cell"><input type="checkbox" ng-model="folder.selected" />
+							<i18n></i18n>
+						</label>
+					</div>
+				</td>
 				<td class="user" colspan="2"><i class="folder"></i></td>
 				<td class="content" colspan="3">[[folder.name]]</td>
 			</tr>
 			<tr ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse" ng-class="{ checked: mail.selected }">
-				<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
+				<td>
+					<div class="avatar">
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+						<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
+							<i18n></i18n>
+						</label>
+					</div>
+				</td>
 				<td class="zero-mobile"></td>
 				<td class="user"><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
 				<td class="content"><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>

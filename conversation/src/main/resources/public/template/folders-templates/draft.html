@@ -13,7 +13,11 @@
 	<table class="twelve">
 		<thead>
 		<tr>
-			<th class="icon"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /></th>
+			<th class="icon">
+				<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+					<i18n></i18n>
+				</label>
+			</th>
 			<th class="user" ng-click="setSort(folders.draft, sortBy.name)"><i18n>to</i18n></th>
 			<th class="content" ng-click="setSort(folders.draft, sortBy.subject)"><i18n>subject</i18n></th>
 			<th class="icon"></th>
@@ -34,7 +38,16 @@
 		</tr>
 		<tr ng-repeat="mail in folders.draft.mails.all | orderBy : folders.draft.sort : folders.draft.reverse"
 		    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
-			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
+			<td>
+				<div class="avatar">
+					<i class="sticker app type messagerie" ng-if="mail.to.length > 1"></i>
+					<i class="sticker app type community" ng-if="mail.to.length == 0"></i>
+					<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+					<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
+						<i18n></i18n>
+					</label>
+				</div>
+			</td>
 			<td class="user">
 				<span ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
 					<a ng-if="!users.list.isGroup(receiver)" ng-click="editDraft(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
