@@ -87,6 +87,11 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.$apply();
         };
 
+        $scope.openUserFolderOnDragover = async (folder: UserFolder, obj) => {
+            if((Conversation.instance.currentFolder as UserFolder).id != folder.id)
+                await $scope.openUserFolder(folder, obj);
+        }
+
         $scope.openUserFolder = async (folder: UserFolder, obj) => {
             $scope.mail = undefined;
             await folder.open();
@@ -177,6 +182,34 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('page', 'errors/e404');
             }
         };
+
+        $scope.nextMail = async () => {
+            var mails = Conversation.instance.currentFolder.mails.all;
+            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
+            var nextMail = null;
+            if(idx > -1 && idx < mails.length-1)
+                nextMail =mails[idx+1];
+            if(nextMail){
+                setCurrentMail(nextMail, true);
+                nextMail.open();
+            }
+            if(idx === mails.length-2 && nextMail.count > mails.length){
+                await Conversation.instance.currentFolder.nextPage();
+                $scope.$apply();
+            }
+        }
+
+        $scope.previousMail = () => {
+            var mails = Conversation.instance.currentFolder.mails.all;
+            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
+            var nextMail = null;
+            if(idx > -1 && idx > 0)
+                nextMail =mails[idx-1];
+            if(nextMail){
+                setCurrentMail(nextMail, true);
+                nextMail.open();
+            }
+        }
 
         $scope.transfer = async () => {
             template.open('main', 'mail-actions/write-mail');
