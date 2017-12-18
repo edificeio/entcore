@@ -5,51 +5,59 @@
 			   ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="ten cell"
 			   i18n-placeholder="search" required autofocus/>
 		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-			<i class="add"></i><i18n>create</i18n>
+			<i class="add"></i><i18n>new.message</i18n>
 		</button>
 	</div>
 	<div class="display-buttons">
 		<i class="refresh" ng-click="refresh()"></i>
 	</div>
 </nav>
-<article class="list list-view twelve cell mailbox">
-	<table class="twelve">
-		<thead>
-		<tr>
-			<th class="icon"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /></th>
-			<th class="" ng-click="setSort(folders.inbox, sortBy.unread)"><i18n>unread</i18n></th>
-			<th class="user" ng-click="setSort(folders.inbox, sortBy.name)"><i18n>from</i18n></th>
-			<th class="content" ng-click="setSort(folders.inbox, sortBy.subject)"><i18n>subject</i18n></th>
-			<th class="icon"></th>
-			<th class="date" ng-click="setSort(folders.inbox, sortBy.date)"><i18n>date</i18n></th>
-		</tr>
-		</thead>
-		<tbody ng-if="isLoading()">
-		<tr>
-			<td>
-				<h1 class="nomargin"><i18n>loading</i18n></h1>
-			</td>
-		</tr>
-		</tbody>
-		<tbody ng-if="!isLoading()">
-			<tr ng-if="conversation.currentFolder.mails.empty()">
-				<td colspan="4">
-					<i18n>folder.empty</i18n>
-				</td>
-			</tr>
-			<tr ng-repeat="mail in folders.inbox.mails.all | orderBy : folders.inbox.sort : folders.inbox.reverse"
-				ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
-				dragstart="drag(mail, $originalEvent)">
-				<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
-				<td class=""><i class="arrow" ng-if="mail.response"></i><i class="mail" ng-if="mail.unread"></i></td>
-				<td class="user"><a ng-click="readMail(mail)">[[mail.sender().displayName]][[mail.fromName]]</a></td>
-				<td class="content"><a ng-click="readMail(mail)">[[mail.subject]]</a></td>
-				<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
-				<td class="date">[[mail.sentDate()]]</td>
-			</tr>
-		</tbody>
-	</table>
-</article>
+
+<div ng-if="folders.inbox.mails.all.length == 0">
+	<i18n>folder.empty</i18n>
+</div>
+<div ng-if="folders.inbox.mails.all.length > 0">
+	<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+		<i18n></i18n>
+	</label>
+	<article class="list list-view twelve cell mailbox">
+		<div ng-if="isLoading()">
+			<h1 class="nomargin"><i18n>loading</i18n></h1>
+		</div>
+		<div class="row notification" ng-if="!isLoading()" 
+			ng-repeat="mail in folders.inbox.mails.all | orderBy : folders.inbox.sort : folders.inbox.reverse"
+			ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
+			dragstart="drag(mail, $originalEvent)">
+			<article ng-click="readMail(mail);$event.stopPropagation();">
+				<div class="flex-row align-center">
+					<div class="avatar horizontal-spacing" ng-click="$event.stopPropagation();">
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+						<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected"/>
+							<i18n></i18n>
+						</label>
+					</div>
+					<div class="states horizontal-spacing">
+						<i class="undo" ng-if="mail.response"></i>
+						<span ng-if="mail.response && mail.unread"></span>
+						<i class="mail-large" ng-if="mail.unread"></i>
+					</div>
+					<div class="horizontal-spacing">
+						<div>
+							<a>[[mail.sender().displayName]][[mail.fromName]]</a>
+						</div>
+						[[mail.subject]]
+					</div>
+				</div>
+				<div class="notification-date">
+					<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
+				</div>
+				<div class="notification-attachment">
+					<i class="attachment" ng-if="mail.attachments.length"></i>
+				</div>
+			</article>
+		</div>
+	</article>
+</div>
 
 <lightbox show="inactives.length > 0" on-close="clearInactives()">
 	<h2><i18n>warning.title</i18n></h2>
