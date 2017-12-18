@@ -13,9 +13,13 @@
 	<table class="twelve">
 		<thead>
 		<tr>
-			<th class="icon"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /></th>
-			<th class="user" ng-click="setSort(folders.outbox, sortBy.name)"><i18n>to</i18n></th>
-			<th class="content" ng-click="setSort(folders.outbox, sortBy.subject)"><i18n>subject</i18n></th>
+			<th class="icon">
+				<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+					<i18n></i18n>
+				</label>
+			</th>
+			<th class="unread"></th>
+			<th class="content" ng-click="setSort(folders.outbox, sortBy.subject)"><i18n>to</i18n></th>
 			<th class="icon"></th>
 			<th class="date" ng-click="setSort(folders.outbox, sortBy.date)"><i18n>date</i18n></th>
 		</tr>
@@ -35,14 +39,29 @@
 		</tr>
 		<tr ng-repeat="mail in folders.outbox.mails.all | orderBy : folders.outbox.sort : folders.outbox.reverse"
 		    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
-			<td class="icon"><input type="checkbox" ng-model="mail.selected" /></td>
-			<td class="user" ng-init="recs = allReceivers(mail)">
-				<span ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
-					<a ng-if="!receiver.deleted && !users.list.isGroup(receiver)" ng-click="viewMail(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="!receiver.deleted &&  users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="receiver.deleted">[[receiver.displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
-				</span>
-				<span ng-if="receivers.length > 2">...</span>
+			<td>
+				<div class="avatar">
+					<i class="sticker app type messagerie" ng-if="mail.to.length != 1"></i>
+					<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+					<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
+						<i18n></i18n>
+					</label>
+				</div>
 			</td>
-			<td class="content"><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
+			<td class="unread"></td>
+			<td class="content"
+				ng-init="recs = allReceivers(mail)"
+				ng-click="viewMail(mail)">
+					<div>
+						<span class="medium-text">
+							<span ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
+								<a ng-if="!receiver.deleted && !users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</a><span ng-if="!receiver.deleted &&  users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="receiver.deleted">[[receiver.displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
+							</span>
+							<span ng-if="receivers.length > 2">...</span>
+						</span>
+					</div>
+					[[mail.subject]]
+			</td>
 			<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
 			<td class="date">[[mail.sentDate()]]</td>
 		</tr>
