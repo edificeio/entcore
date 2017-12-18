@@ -8,6 +8,18 @@
 		</plus>
 		<button class="right-magnet" ng-click="reply()">
 			<i18n>reply</i18n>
+
+		</button>
+		<button class="" ng-click="previousMail()">
+			<i18n><</i18n>
+		</button>
+		<button>
+			<span>[[conversation.currentFolder.mails.all.indexOf(state.current)+1]] </span>
+			<i18n>mail.count.of</i18n>
+			<span> [[state.current.count]]</span>
+		</button>
+		<button class="" ng-click="nextMail()">
+			<i18n>></i18n>
 		</button>
 	</div>
 
