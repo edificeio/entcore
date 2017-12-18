@@ -11,14 +11,14 @@ export const importFiles = ng.directive('importFiles', () => {
                     <image-editor document="display.editedDocument" show="display.editDocument" inline></image-editor>
                 </div>
 				<div class="row media-library" ng-if="!display.editDocument">
-					<h2 class="zero-mobile"><i18n>medialibrary.title</i18n></h2>
+					<h2><i18n>medialibrary.title</i18n></h2>
                     <container template="import"></container>
                 </div>
             <lightbox>
         `,
         link: (scope, element, attributes) => {
 			template.open('import', 'directives/import/upload');
-			
+
 			if(!(window as any).toBlobPolyfillLoaded){
                 http.get('/infra/public/js/toBlob-polyfill.js').then((response) => {
                     eval(response.data);
@@ -66,7 +66,7 @@ export const importFiles = ng.directive('importFiles', () => {
                 }
                 scope.upload.files = undefined;
             }
-        
+
             scope.openCompression = (doc: Document) => {
                 if(!doc.isEditableImage){
                     return;
@@ -86,7 +86,7 @@ export const importFiles = ng.directive('importFiles', () => {
 			scope.upload = {
 				documents: []
 			};
-			
+
 			$('body').on('dragenter', '.icons-view', (e) => e.preventDefault());
 			$('body').on('dragover', '.icons-view', (e) => e.preventDefault());
             element.on('dragenter', (e) => e.preventDefault());
@@ -128,7 +128,7 @@ export const importFiles = ng.directive('importFiles', () => {
 					template.open('import', 'directives/import/upload');
 				}
 			};
-            
+
             const cancelAll = async () => {
                 template.open('import', 'directives/import/upload');
 				scope.display.editedDocument = undefined;
@@ -144,7 +144,7 @@ export const importFiles = ng.directive('importFiles', () => {
                 scope.openFolder(scope.openedFolder.folder);
 				scope.upload.documents = [];
             }
-            
+
             scope.confirmImport = async () => {
                 template.open('import', 'directives/import/upload');
 				scope.upload.documents.forEach(doc => doc.applyBlob());
@@ -160,7 +160,7 @@ export const importFiles = ng.directive('importFiles', () => {
                 scope.display.importFiles = false;
 				cancelAll();
             };
-            
+
             scope.editImage = () => scope.display.editDocument = true;
         }
     }
