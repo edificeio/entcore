@@ -22,10 +22,10 @@
     <div class="split-screen" ng-class="{ split: display.editedDocument !== undefined }">
         <div class="loading-list drop-zone">
             <ul>
-                <li ng-repeat="doc in upload.documents" 
-                    ng-click="openCompression(doc)" 
-                    ng-class="{ 
-                        'image-file': doc.isEditableImage && doc.status === 'loaded', 
+                <li ng-repeat="doc in upload.documents"
+                    ng-click="openCompression(doc)"
+                    ng-class="{
+                        'image-file': doc.isEditableImage && doc.status === 'loaded',
                         'loading': doc.status === 'loading',
                         selected: doc === display.editedDocument
                     }"
@@ -38,7 +38,7 @@
                     <div class="right-magnet size">
                         [[doc.size]]
                     </div>
-                    <i class="right-magnet" ng-class="{ 
+                    <i class="right-magnet" ng-class="{
                         loading: doc.status === 'loading',
                         loaded: doc.status === 'loaded',
                         failed: doc.status === 'failed'
@@ -47,7 +47,7 @@
                 </li>
             </ul>
         </div>
-        
+
         <div ng-if="display.editedDocument" class="compression">
             <div class="compression-view">
                 <a class="cell to-list" ng-click="closeCompression()">
@@ -62,6 +62,7 @@
         </div>
     </div>
     <div class="row">
+        <em class="six cell small-text"><i18n>medialibrary.images.editable.formats</i18n></em>
         <button class="right-magnet" ng-click="confirmImport()"><i18n>import</i18n></button>
         <button class="right-magnet cancel" ng-click="cancelUpload()"><i18n>cancel</i18n></button>
     </div>
