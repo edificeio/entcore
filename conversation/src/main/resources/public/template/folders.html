@@ -5,7 +5,7 @@
 	   ng-class="{ selected: conversation.currentFolder.id === folder.id, opened: conversation.currentFolder.id === folder.id || isParentOf(folder, conversation.currentFolder) }"
 	   dragdrop="dropTo(folder, $originalEvent)"
 	   dropcondition="dropCondition(folder)"
-       on-dragover   ="openUserFolder(folder, obj)"
+       on-dragover   ="openUserFolderOnDragover(folder, obj)"
        class="folder-list-item">
 		<i class="arrow" ng-if="folder.userFolders.length()"></i>
 		[[folder.name]]
