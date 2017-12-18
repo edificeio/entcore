@@ -101,6 +101,9 @@ export const importFiles = ng.directive('importFiles', () => {
 			});
 
 			const dropFiles = async (e) => {
+				if(!e.originalEvent.dataTransfer.files.length){
+					return;
+				}
 				element.find('.drop-zone').removeClass('dragover');
 				e.preventDefault();
 				const files = e.originalEvent.dataTransfer.files;

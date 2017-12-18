@@ -147,8 +147,8 @@ apps.forEach((app) => {
 
             rootGulp.watch(['./' + app + '/src/main/resources/public/dist/**/*.js', '!./' + app + '/src/main/resources/public/dist/entcore/**/*.js'], () => {
                 console.log('Copying resources to ' + springboard + 'mods/' + modName);
-                rootGulp.src('./' + app + '/src/main/resources/public/dist/**/*')
-                    .pipe(rootGulp.dest(springboard + 'mods/' + modName + '/public/dist'));
+                rootGulp.src('./' + app + '/src/main/resources/**/*')
+                    .pipe(rootGulp.dest(springboard + 'mods/' + modName));
             });
 
             rootGulp.watch('./' + app + '/rev-manifest.json', () => {
