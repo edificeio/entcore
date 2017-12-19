@@ -29,13 +29,14 @@
                         'loading': doc.status === 'loading',
                         selected: doc === display.editedDocument
                     }"
+                    tooltip-check="doc.isEditableImage && doc.status === 'loaded'"
+                    tooltip="medialibrary.editImage.tooltip"
                 >
                     <div class="icon">
                         <i class="[[doc.role()]]"></i>
                         <i class="edit" ng-if="doc.isEditableImage && doc.status === 'loaded'"></i>
                     </div>
                     <div class="title">[[doc.name || doc.title]]</div>
-
                     <div class="status-infos">
                         <span class="small-text horizontal-margin">
                             [[doc.size]]
