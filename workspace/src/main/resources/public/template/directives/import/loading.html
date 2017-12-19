@@ -30,19 +30,22 @@
                         selected: doc === display.editedDocument
                     }"
                 >
-                    <div class="cell icon">
+                    <div class="icon">
                         <i class="[[doc.role()]]"></i>
                         <i class="edit" ng-if="doc.isEditableImage && doc.status === 'loaded'"></i>
                     </div>
                     <div class="title">[[doc.name || doc.title]]</div>
-                    <div class="right-magnet size">
-                        [[doc.size]]
+
+                    <div class="status-infos">
+                        <span class="small-text horizontal-margin">
+                            [[doc.size]]
+                        </span>
+                        <i ng-class="{
+                            loading: doc.status === 'loading',
+                            loaded: doc.status === 'loaded',
+                            failed: doc.status === 'failed'
+                        }"></i>
                     </div>
-                    <i class="right-magnet" ng-class="{
-                        loading: doc.status === 'loading',
-                        loaded: doc.status === 'loaded',
-                        failed: doc.status === 'failed'
-                    }"></i>
                     <i class="close" ng-click="abortOrDelete(doc)"></i>
                 </li>
             </ul>
