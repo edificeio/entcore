@@ -57,12 +57,12 @@
 						<span><i class="bell"></i><i18n>panel.notifications.set</i18n></span>
 					</a>
 				</header>
-				<header class="horizontal-spacing-twice" workflow="directory.historyView">
+				<header class="horizontal-spacing-twice" workflow="directory.historyView" ng-if="me.userId === account.id">
 					<a href="/timeline/historyView">
 						<span><i class="history"></i><i18n>panel.user.history</i18n></span>
 					</a>
 				</header>
-				<header class="horizontal-spacing-twice" ng-if="display.pickTheme" workflow="directory.switchTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
+				<header class="horizontal-spacing-twice" ng-if="me.userId === account.id && display.pickTheme" workflow="directory.switchTheme" ng-class="{ selected: template.contains('account/main', 'account/themes') }">
 					<a href="/userbook/mon-compte#/themes">
 						<span><i class="desktop"></i><i18n>panel.user.pickTheme</i18n></span>
 					</a>
