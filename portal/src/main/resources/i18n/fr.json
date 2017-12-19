@@ -90,6 +90,7 @@
   "library.upload.import": "Importer",
   "library.upload.title": "Sélectionner les fichiers",
   "medialibrary.editImage": "Retoucher",
+  "medialibrary.editImage.tooltip": "Retoucher l'image",
   "imagecompression.pngwarning": "La modification de la qualité de l'image n'est disponible que pour les fichiers JPEG.",
   "media.library.compression.min": "Fichier léger",
   "media.library.compression.max": "Fichier lourd",
