@@ -106,6 +106,8 @@ export class UserAdministrativeSection extends AbstractSection {
                 this.updateInStructures()
                 this.userListService.updateSubject.next();
 
+                this.administrativeForm.reset(this.details && this.details.toJSON())
+
                 this.ns.success(
                     { 
                         key: 'notify.user.update.content', 
