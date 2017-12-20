@@ -19,39 +19,53 @@
 		</button>
 	</div>
 
-	<article class="twelve cell vertical-spacing">
+	<article class="twelve cell vertical-spacing mail">
 		<div class="row">
 			<div class="twelve cell line">
+				<span class="cell right-magnet">
+					[[mail.sentDate()]]
+				</span>
 				<div class="row">
-					<span class="cell right-magnet">
-						[[mail.sentDate()]]
-					</span>
-					<a class="eight cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
+					<div class="strong-title">[[mail.subject]]</div>
 				</div>
 				<div class="row">
-					<strong class="medium-text">[[mail.subject]]</strong>
+					<hr />
 				</div>
 				<div class="row">
-					<em class="medium-importance medium-text" ng-if="(mail.to.length + mail.toName.length) > 0">
-						<span translate key="to"></span>
-						<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
-							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
-						</span>
-					</em>
-                    <span ng-repeat="receiverName in mail.toName">
-						[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
-					</span>
-				</div>
-				<div class="row">
-					<em class="medium-importance medium-text" ng-if="(mail.cc.length + mail.ccName.length) > 0">
-						<span translate key="cc"></span>
-						<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
-							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
-						</span>
-                        <span ng-repeat="receiverName in mail.ccName">
-    						[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
-    					</span>
-					</em>
+					<div class="avatar">
+							<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+					</div>
+					<div class="text-flow">
+						<div>
+							<a href="/userbook/annuaire#[[mail.sender().id]]">
+								<strong>[[mail.sender().displayName]]</strong>
+							</a>
+						</div>
+						<div>
+							<em class="medium-importance medium-text" ng-if="(mail.to.length + mail.toName.length) > 0">
+								<strong><span translate key="to"></span></strong>
+								<span> : </span>
+								<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
+									<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
+								</span>
+								<span ng-repeat="receiverName in mail.toName">
+									[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
+								</span>
+							</em>
+						</div>
+						<div>
+							<em class="medium-importance medium-text" ng-if="(mail.cc.length + mail.ccName.length) > 0">
+								<strong><span translate key="cc"></span></strong>
+								<span> : </span>
+								<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
+									<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1">,</span>
+								</span>
+								<span ng-repeat="receiverName in mail.ccName">
+									[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
+								</span>
+							</em>
+						</div>
+					</div>
 				</div>
 				<div class="row">
 					<hr />
