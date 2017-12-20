@@ -69,6 +69,7 @@
     "outbox": "Mensagens enviados",
     "progress": "Progression",
     "put.trash": "Mettre à la corbeille",
+    "recipient": "Destinataire",
     "remove.attachment": "Supprimer la pièce jointe",
     "remove.from.folder": "Retirer du dossier",
     "remove.link": "supprimer",
@@ -79,6 +80,7 @@
     "replyall": "esponder a todos",
     "restore": "restabelecer",
     "save": "Salvar",
+    "sender": "Expéditeur",
     "size": "Taille",
     "sniplet.ml.content.placeholder": "Contenu du message",
     "sniplet.ml.description": "La liste de diffusion vous permet d'envoyer un message à l'ensemble des visiteurs du site.",
@@ -101,5 +103,6 @@
     "used.space": "Espace utilisé",
     "user.folders": "Dossiers",
     "widget.empty": "Vous n'avez aucun message",
-    "widget.title": "messages"
+    "widget.title": "messages",
+    "you.answered": "Vous avez répondu à ce message"
 }

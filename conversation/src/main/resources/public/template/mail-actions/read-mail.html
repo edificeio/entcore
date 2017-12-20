@@ -23,42 +23,58 @@
 		</button>
 	</div>
 
-	<article class="twelve cell vertical-spacing">
+	<article class="twelve cell vertical-spacing mail">
 		<div class="row">
 			<div class="twelve cell line">
+				<span class="cell right-magnet">
+					[[mail.sentDate()]]
+				</span>
 				<div class="row">
-					<span class="cell right-magnet">
-						[[mail.sentDate()]]
-					</span>
-					<a class="cell" href="/userbook/annuaire#[[mail.sender().id]]"><strong class="small-header">[[mail.sender().displayName]]</strong></a>
-					<strong class="small-header cell">[[mail.fromName]]</strong>
+					<div class="strong-title">[[mail.subject]]</div>
+				</div>
+				<h5 class="row" ng-if="mail.response">
+					<em class="indication"><i class="undo"></i><i18n>you.answered</i18n></em>
+				</h5>
+				<div class="row">
+					<hr />
 				</div>
 				<div class="row">
-					<strong class="medium-text">[[mail.subject]]</strong>
-				</div>
-				<div class="row">
-					<em class="medium-importance medium-text">
-						<span translate key="to"></span>
-						<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
-							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
-							<span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span>
-							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
-						</span>
-    					<span ng-repeat="receiverName in mail.toName">
-    						[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
-    					</span>
-					</em>
-				</div>
-				<div class="row">
-					<em class="medium-importance medium-text" ng-if="(mail.cc.length + mail.ccName.length) > 0">
-						<span translate key="cc"></span>
-						<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
-							<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
-						</span>
-    					<span ng-repeat="receiverName in mail.ccName">
-    						[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
-    					</span>
-					</em>
+					<div class="avatar">
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+					</div>
+					<div class="text-flow">
+						<div>
+							<a href="/userbook/annuaire#[[mail.sender().id]]">
+								<strong>[[mail.sender().displayName]]</strong>
+							</a>
+						</div>
+						<div>
+							<em class="medium-importance medium-text">
+								<strong><span translate key="to"></span></strong>
+								<span> : </span>
+								<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
+									<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
+									<span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span>
+									<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+								</span>
+								<span ng-repeat="receiverName in mail.toName">
+									[[receiverName]]<span ng-if="$index !== mail.toName.length - 1">,</span>
+								</span>
+							</em>
+						</div>
+						<div>
+							<em class="medium-importance medium-text" ng-if="(mail.cc.length + mail.ccName.length) > 0">
+								<strong><span translate key="cc"></span></strong>
+								<span> : </span>
+								<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
+									<a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+								</span>
+								<span ng-repeat="receiverName in mail.ccName">
+									[[receiverName]]<span ng-if="$index !== mail.ccName.length - 1">,</span>
+								</span>
+							</em>
+						</div>
+					</div>
 				</div>
 				<div class="row">
 					<hr />
