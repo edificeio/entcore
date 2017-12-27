@@ -64,7 +64,6 @@
       }
     },
     {
-<<<<<<< HEAD
       "name": "org.entcore~admin~1.30-SNAPSHOT",
       "config": {
         "host" : "http://localhost:8089",
