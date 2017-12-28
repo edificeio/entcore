@@ -44,7 +44,6 @@
     "pixi.js": "^4.5.4",
     "source-map-loader": "^0.1.5",
     "ts-loader": "^3.1.1",
-    "typescript": "2.3.2",
     "underscore": "^1.8.3",
     "webpack-stream": "^3.2.0",
     "@angular/common": "4.1.0",
