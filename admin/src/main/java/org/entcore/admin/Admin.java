@@ -17,6 +17,8 @@ public class Admin extends BaseServer {
 		 
 		 addController(new AdminController());
 		 
+		 final PlateformeInfoController plateformeInfoController = new PlateformeInfoController();
+		 
 		 // check if sms module activated
 		 String smsAddress = "";
 		 String smsProvider = "";
@@ -37,7 +39,6 @@ public class Admin extends BaseServer {
 				new Handler<AsyncResult<Message<JsonObject>>>() {
 					@Override
 					public void handle(AsyncResult<Message<JsonObject>> res) {
-						PlateformeInfoController plateformeInfoController = new PlateformeInfoController();
 						if (res != null && res.succeeded()) {
 							if ("ok".equals(res.result().body().getString("status"))) {
 								plateformeInfoController.setSmsModule(true);
