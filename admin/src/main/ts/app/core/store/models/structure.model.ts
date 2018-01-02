@@ -1,4 +1,4 @@
-import { UserCollection, GroupCollection, ApplicationCollection, ConnectorCollection, RoleCollection } from '..';
+import { UserCollection, GroupCollection, ApplicationCollection, ConnectorCollection } from '..';
 import { Model } from 'entcore-toolkit'
 
 export class StructureModel extends Model<StructureModel> {
@@ -36,7 +36,7 @@ export class StructureModel extends Model<StructureModel> {
     aafFunctions: string[] = []
 
     quickSearchUsers(input: string) {
-        return this.http.get(`/admin/api/structure/${this.id}/quicksearch/users`, {
+        return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {
             params: { input: input }
         })
     }
