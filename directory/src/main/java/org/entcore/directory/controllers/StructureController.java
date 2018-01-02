@@ -36,6 +36,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Ent;
+import org.entcore.directory.security.AdminStructureFilter;
 import org.entcore.directory.services.SchoolService;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -459,6 +460,29 @@ public class StructureController extends BaseController {
 	public void listAafFunctions(final HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		this.structureService.listAafFunctions(structureId, arrayResponseHandler(request));
+	}
+
+	@Get("/structure/:id/quicksearch/users")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminStructureFilter.class)
+	public void quickSearchUsers(HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		String input = request.params().get("input");
+
+		if(input == null || input.trim().length() == 0){
+			badRequest(request);
+			return;
+		}
+
+		this.structureService.quickSearchUsers(structureId, input, arrayResponseHandler(request));
+	}
+
+	@Get("/structure/:id/users")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminStructureFilter.class)
+	public void userList(HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		this.structureService.userList(structureId, arrayResponseHandler(request));
 	}
 	
 	public void setStructureService(SchoolService structureService) {

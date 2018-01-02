@@ -62,4 +62,8 @@ public interface SchoolService {
 	void listSources(String structureId, Handler<Either<String, JsonArray>> result);
 	
 	void listAafFunctions(String structureId, Handler<Either<String, JsonArray>> result);
+	
+	void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler);
+	
+	void userList(String structureId, Handler<Either<String, JsonArray>> handler);
 }

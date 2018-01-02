@@ -1,5 +1,5 @@
 import { RoleModel } from '.';
-import { RoleCollection, globalStore } from '..';
+import { globalStore } from '..';
 
 import { Model, Mix } from 'entcore-toolkit';
 
