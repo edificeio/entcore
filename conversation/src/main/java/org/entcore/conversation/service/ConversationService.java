@@ -60,6 +60,10 @@ public interface ConversationService {
 
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 
+	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
+
+	void listThreadMessages(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results);
+
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);

@@ -68,10 +68,7 @@ import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.platform.Container;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
@@ -457,6 +454,97 @@ public class ConversationController extends BaseController {
 				d2.addString(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
 			}
 		}
+	}
+
+	@Get("threads/list")
+	@SecuredAction(value = "conversation.threads.list")
+	public void listThreads(final HttpServerRequest request){
+		final String p = Utils.getOrElse(request.params().get("page"), "0", false);
+		getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					int page;
+					try {
+						page = Integer.parseInt(p);
+					} catch (NumberFormatException e) { page = 0; }
+					conversationService.listThreads( user, page, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								for (Object o : r.right().getValue()) {
+									if (!(o instanceof JsonObject)) {
+										continue;
+									}
+									translateGroupsNames((JsonObject) o, request);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Get("thread/previous-messages/:id")
+	@SecuredAction(value = "conversation.threads.previous")
+	@ResourceFilter(MessageUserFilter.class)
+	public void listPreviousMessages(final HttpServerRequest request){
+		final String parentId = request.params().get("id");
+		if (parentId == null || parentId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		listMessages(request, parentId, true);
+	}
+
+	@Get("thread/new-messages/:id")
+	@SecuredAction(value = "conversation.threads.new")
+	@ResourceFilter(MessageUserFilter.class)
+	public void listNewMessages(final HttpServerRequest request){
+		final String messageId = request.params().get("id");
+		if (messageId == null || messageId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		listMessages(request, messageId, false);
+	}
+
+	private void listMessages(final HttpServerRequest request, final String messageId, final boolean listPrevious){
+		getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					conversationService.listThreadMessages(messageId, listPrevious, user, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								for (Object o : r.right().getValue()) {
+									if (!(o instanceof JsonObject)) {
+										continue;
+									}
+									translateGroupsNames((JsonObject) o, request);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 	@Get("count/:folder")
