@@ -22,7 +22,7 @@ import { UserModel } from '../../../../core/store/models'
                 [model]="model"
                 [sort]="userLS.sorts"
                 [inputFilter]="userLS.filterByInput"
-                [ngClass]="setUserListStyles"
+                [isSelected]="isSelected"
                 (inputChange)="userLS.inputFilter = $event"
                 (onSelect)="selectUser($event)"
                 (listChange)="storedElements = $event"
@@ -94,8 +94,8 @@ export class GroupOutputUsers {
         }
     }
 
-    setUserListStyles = (user: UserModel) => {
-        return { selected: this.selectedUsers.indexOf(user) > -1 }
+    isSelected = (user: UserModel) => {
+        return this.selectedUsers.indexOf(user) > -1;
     }
 
     selectAll(): void {
