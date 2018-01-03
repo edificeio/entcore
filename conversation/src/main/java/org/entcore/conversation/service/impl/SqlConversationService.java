@@ -252,6 +252,68 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
+		int skip = page * LIST_LIMIT/4;
+		int maxMessageInThread = 7;
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
+		JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		values.add(user.getUserId());
+		String query = " WITH RECURSIVE messagesThred AS ( " +
+				" (SELECT "+messagesFields+", um.unread as unread , m.parent_id as conversation, 1 AS nb FROM " + userMessageTable + " um " +
+				" JOIN "+messageTable+" m ON um.message_id = m.id " +
+				" LEFT JOIN "+messageTable+" r ON m.id = r.parent_id AND r.state= 'SENT' " +
+				" WHERE um.user_id = ? AND r.id IS NULL " +
+				" AND m.state = 'SENT' AND um.trashed = false " +
+				" ORDER BY m.date	 DESC LIMIT "+ LIST_LIMIT/4 +" OFFSET "+ skip+") " +
+				" UNION ALL " +
+				" (SELECT DISTINCT "+messagesFields+",  um.unread as unread, messagesThred.conversation as conversation, messagesThred.nb+1 as nb FROM messagesThred, " + userMessageTable + " as um " +
+				" JOIN "+messageTable+" m ON um.message_id = m.id  " +
+				" WHERE um.user_id = ? and " +
+				" m.id = messagesThred.parent_id AND m.state = 'SENT' AND um.trashed = false and " +
+				" nb+1 < "+maxMessageInThread+")" +
+				")" +
+				"SELECT * FROM messagesThred ORDER BY conversation, nb";
+
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+	}
+
+	@Override
+	public void listThreadMessages(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
+		int maxMessageInThread = 7;
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
+		String noRecusiveConditions, recusiveConditions, limit;
+		JsonArray values = new JsonArray();
+
+		if(previous){
+			noRecusiveConditions = "m.id = ?";
+			recusiveConditions = " m.id = messagesThred.parent_id ";
+			limit = " AND nb+1 < "+ maxMessageInThread;
+		}else{
+			noRecusiveConditions = "m.parent_id = ? ";
+			recusiveConditions = " m.parent_id = messagesThred.id ";
+			limit = "";
+		}
+		values.add(messageId);
+		values.add(user.getUserId());
+		values.add(user.getUserId());
+
+		String query = "WITH RECURSIVE messagesThred AS (" +
+				" SELECT "+messagesFields+", um.unread as unread, 1 AS nb FROM  " + userMessageTable + " um " +
+				" JOIN " + messageTable + " m ON um.message_id = m.id " +
+				" WHERE "+noRecusiveConditions+" and um.user_id = ? AND m.state = 'SENT' AND um.trashed = false " +
+				" UNION ALL " +
+				" SELECT "+messagesFields+", um.unread as unread, messagesThred.nb+1 as nb FROM messagesThred, " + userMessageTable + " um " +
+				" JOIN " + messageTable + " as m ON um.message_id = m.id " +
+				" WHERE um.user_id = ? AND " +
+				recusiveConditions +" AND m.state = 'SENT' AND um.trashed = false " +
+				limit + " ) SELECT * FROM messagesThred ORDER BY date";
+
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+	}
+
+
+	@Override
 	public void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result))
 			return;
