@@ -9,7 +9,11 @@ import { Subject } from 'rxjs/Subject'
         <div class="toolbar">
             <ng-content select="[toolbar]"></ng-content>
         </div>
-        <div class="list-wrapper" (scroll)="listScroll($event, model, cdRef)">
+        <div class="list-wrapper"
+            infiniteScroll
+            [scrollWindow]="false"
+            (scrolled)="scrolledDown.emit()"
+            [infiniteScrollThrottle]="50">
             <ul>
                 <li *ngFor="let item of model | filter: filters | filter: inputFilter | orderBy: sort | slice: 0:limit | store:self:'storedElements'"
                     (click)="onSelect.emit(item)"
@@ -41,7 +45,8 @@ import { Subject } from 'rxjs/Subject'
         ul li.disabled {
             pointer-events: none;
         }
-    `]
+    `],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ListComponent implements AfterViewInit {
 
@@ -62,19 +67,16 @@ export class ListComponent implements AfterViewInit {
     @Input() inputFilter
     @Input() sort
     @Input() limit: number
-
     @Input() searchPlaceholder = "search"
     @Input() isSelected = () => false
     @Input() isDisabled = () => false
     @Input() ngClass = () => ({})
-
-    @Input() listScroll = (event, list, cdRef) => {}
-
     @Input() noResultsLabel = "list.results.no.items"
-
-    @Output("inputChange") inputChange: EventEmitter<string> = new EventEmitter<string>()
-    @Output("onSelect") onSelect: EventEmitter<{}> = new EventEmitter()
-    @Output("listChange") listChange: EventEmitter<any> = new EventEmitter()
+    
+    @Output() inputChange: EventEmitter<string> = new EventEmitter<string>()
+    @Output() onSelect: EventEmitter<{}> = new EventEmitter()
+    @Output() listChange: EventEmitter<any> = new EventEmitter()
+    @Output() scrolledDown: EventEmitter<{}> = new EventEmitter()
 
     @ContentChild(TemplateRef) templateRef:TemplateRef<any>;
 
