@@ -445,6 +445,16 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
+
+	}
+
+	@Override
+	public void listThreadMessages(String message, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
+
+	}
+
+	@Override
 	public void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
 
