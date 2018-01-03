@@ -20,7 +20,7 @@ import { SpinnerService } from '../../core/services'
                     noResultsLabel="list.results.no.groups"
                     [isSelected]="isSelected"
                     (inputChange)="groupInputFilter = $event"
-                    (onSelect)="routeToGroup($event)">
+                    (onSelect)="selectedGroup = $event; routeToGroup($event)">
                     <ng-template let-item>
                         {{ item.name }}
                     </ng-template>
@@ -36,8 +36,8 @@ import { SpinnerService } from '../../core/services'
 export class GroupsTypeView implements OnInit, OnDestroy {
 
     groupType : string
-
     groupInputFilter : string
+    selectedGroup: GroupModel;
 
     private typeSubscriber : Subscription
     private dataSubscriber : Subscription
@@ -82,7 +82,7 @@ export class GroupsTypeView implements OnInit, OnDestroy {
     }
 
     isSelected = (group: GroupModel) => {
-        return this.groupsStore.group === group
+        return this.selectedGroup && group && this.selectedGroup.id === group.id;
     }
 
     filterByInput = (group: GroupModel) => {
