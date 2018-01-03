@@ -59,35 +59,15 @@ export class UserListService {
     }
 
     // Limit
-    DEFAULT_INCREMENT: number = 40
-    limit = this.DEFAULT_INCREMENT
+    DEFAULT_INCREMENT: number = 100;
+    limit = this.DEFAULT_INCREMENT;
+    
     resetLimit() {
-        this.limit = this.DEFAULT_INCREMENT
-    }
-    addPage(max?: number) {
-        if(max){
-            this.limit = Math.min(this.limit + this.DEFAULT_INCREMENT, max)
-        } else {
-            this.limit = this.limit + this.DEFAULT_INCREMENT
-        }
+        this.limit = this.DEFAULT_INCREMENT;
     }
 
-    // Scroll
-    private ticking = false
-    listScroll = (event, list, cdRef) => {
-        let divElem = event.target
-
-        if (!this.ticking) {
-            window.requestAnimationFrame(() => {
-                // add users when user scroll until 70% of visbile div list
-                if ((divElem.offsetHeight + divElem.scrollTop) >= (divElem.scrollHeight * 0.7)) {
-                    this.addPage(list.length)
-                    cdRef.markForCheck()
-                }
-                this.ticking = false;
-            });
-        }
-        this.ticking = true;
+    addPageDown() {
+        this.limit = this.limit + this.DEFAULT_INCREMENT;
     }
 }
 
