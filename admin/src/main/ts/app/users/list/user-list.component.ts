@@ -17,7 +17,7 @@ import { UsersStore } from '../users.store';
         [sort]="userListService.sorts"
         searchPlaceholder="search.user"
         noResultsLabel="list.results.no.users"
-        [ngClass]="setStyles"
+        [isSelected]="isSelected"
         [limit]="userListService.limit"
         (inputChange)="userListService.inputFilter = $event"
         (onSelect)="selectedUser = $event; onselect.emit($event)"
@@ -119,9 +119,7 @@ export class UserList implements OnInit, OnDestroy {
         this.storeSubscriber.unsubscribe();
     }
 
-    setStyles = (user: UserModel) => {
-        return {
-            selected: this.selectedUser && user && this.selectedUser.id === user.id
-        }
+    isSelected = (user: UserModel) => {
+        return this.selectedUser && user && this.selectedUser.id === user.id;
     }
 }

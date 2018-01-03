@@ -25,7 +25,7 @@ import { UserModel, StructureModel, globalStore } from '../../../../core/store'
                 [filters]="listFilters.getFormattedFilters()"
                 [inputFilter]="userLS.filterByInput"
                 [sort]="userLS.sorts"
-                [ngClass]="setUserListStyles"
+                [isSelected]="isSelected"
                 (inputChange)="userLS.inputFilter = $event"
                 (onSelect)="selectUser($event)"
                 (listChange)="storedElements = $event"
@@ -120,8 +120,8 @@ export class GroupInputUsers implements OnInit {
         }
     }
 
-    setUserListStyles = (user: UserModel) => {
-        return { selected: this.selectedUsers.indexOf(user) > -1 }
+    isSelected = (user: UserModel) => {
+        return this.selectedUsers.indexOf(user) > -1;
     }
 
     selectAll(): void {

@@ -21,8 +21,7 @@ import { SessionModel } from '../../core/store'
                     [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
                     [isSelected]="isSelected"
                     (inputChange)="itemInputFilter = $event"
-                    (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})"
-                    [ngClass]="setStylesListItem">
+                    (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})">
                     <ng-template let-item>
                         <div class="service-icon">
                             <img src="{{ item.icon }}" *ngIf="isIconWorkspaceImg(item.icon)" />
@@ -136,7 +135,7 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     }
 
     isSelected = (item) => {
-        return this.collectionRef[this.serviceName].model == item;
+        return this.selectedItem && item && this.selectedItem.id === item.id;
     }
 
     showCompanion = (): boolean => {
@@ -145,12 +144,6 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
             return this.router.isActive(`${basePath}\\${this.collectionRef[this.serviceName].model.id}`  , true);
         else 
             return false;
-    }
-
-    setStylesListItem = (item) => {
-        return {
-            selected: this.selectedItem && item && this.selectedItem.id === item.id
-        }
     }
 
     private isIconWorkspaceImg(src: String) {
