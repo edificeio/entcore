@@ -19,9 +19,9 @@ import { UsersStore } from '../users.store';
         noResultsLabel="list.results.no.users"
         [ngClass]="setStyles"
         [limit]="userListService.limit"
-        [listScroll]="userListService.listScroll"
         (inputChange)="userListService.inputFilter = $event"
-        (onSelect)="selectedUser = $event; onselect.emit($event)">
+        (onSelect)="selectedUser = $event; onselect.emit($event)"
+        (scrolledDown)="userListService.addPageDown()">
         <div toolbar class="user-toolbar">
              <i class="fa" aria-hidden="true"
                 [ngClass]="{
@@ -29,7 +29,7 @@ import { UsersStore } from '../users.store';
                     'fa-sort-alpha-desc': userListService.sortsMap.alphabetical.sort === '-',
                     'selected': userListService.sortsMap.alphabetical.selected
                 }"
-                [tooltip]="'sort.alphabetical' | translate" position="top"
+                [title]="'sort.alphabetical' | translate" position="top"
                 (click)="userListService.changeSorts('alphabetical')"></i>
             <i class="fa" aria-hidden="true"
                 [ngClass]="{
@@ -37,10 +37,10 @@ import { UsersStore } from '../users.store';
                     'fa-sort-amount-desc': userListService.sortsMap.profile.sort === '-',
                     'selected': userListService.sortsMap.profile.selected
                 }"
-                [tooltip]="'sort.profile' | translate" position="top"
+                [title]="'sort.profile' | translate" position="top"
                 (click)="userListService.changeSorts('profile')"></i>
             <i class="fa fa-filter toolbar-right" aria-hidden="true"
-                [tooltip]="'filters' | translate" position="top"
+                [title]="'filters' | translate" position="top"
                 (click)="companionChange.emit('filter')"></i>
             <strong class="badge">{{ userlist.length }} <s5l>list.results.users</s5l></strong>
         </div>
@@ -52,19 +52,19 @@ import { UsersStore } from '../users.store';
             <span class="icons">
                 <i class="fa fa-lock" 
                     *ngIf="item.code && item.code?.length > 0"
-                    [tooltip]="'user.icons.tooltip.inactive' | translate"></i>
+                    [title]="'user.icons.tooltip.inactive' | translate"></i>
                 <i class="fa fa-ban" 
                     *ngIf="item.blocked"
-                    [tooltip]="'user.icons.tooltip.blocked' | translate"></i>
+                    [title]="'user.icons.tooltip.blocked' | translate"></i>
                 <i class="fonticon duplicates" 
                     *ngIf="item.duplicates && item.duplicates?.length > 0"
-                    [tooltip]="'user.icons.tooltip.duplicated' | translate"></i>
+                    [title]="'user.icons.tooltip.duplicated' | translate"></i>
                 <i class="fa fa-times-circle" 
                     *ngIf="item.deleteDate"
-                    [tooltip]="'user.icons.tooltip.deleted' | translate"></i>
+                    [title]="'user.icons.tooltip.deleted' | translate"></i>
                 <i class="fonticon waiting-predelete" 
                     *ngIf="!item.deleteDate && item.disappearanceDate"
-                    [tooltip]="'user.icons.tooltip.disappeared' | translate"></i>
+                    [title]="'user.icons.tooltip.disappeared' | translate"></i>
             </span>
             <i class="profile" [ngClass]="item.type">{{item.type | translate}}</i>
         </ng-template>
@@ -116,6 +116,7 @@ export class UserList implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.filtersUpdatesSubscriber.unsubscribe();
         this.userUpdatesSubscriber.unsubscribe();
+        this.storeSubscriber.unsubscribe();
     }
 
     setStyles = (user: UserModel) => {

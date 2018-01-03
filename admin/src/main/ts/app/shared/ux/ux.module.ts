@@ -25,12 +25,14 @@ import { DatepickerComponent,
 import { AnchorDirective, DynamicTemplateDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe } from './pipes'
 import { DynamicModuleImportsService, LabelsService } from './services';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
-        SijilModule.forChild()
+        SijilModule.forChild(),
+        InfiniteScrollModule
     ],
     declarations: [
         // components
