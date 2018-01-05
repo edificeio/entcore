@@ -109,7 +109,7 @@ button {
         background-color: $accent;
         color: white;
     }
-    
+
     &.confirm:hover {
         background-color: $accent-dark !important;
     }
@@ -184,7 +184,7 @@ table{
     word-break: break-word;
     font-size: 0.9em;
     border-collapse: collapse;
-    
+
     th {
         text-align: left;
 
@@ -193,7 +193,7 @@ table{
             padding: 10px !important;
         }
     }
-    
+
     tr {
         &:hover {
             cursor: pointer;
@@ -212,7 +212,7 @@ table{
                 white-space: nowrap;
             }
         }
-        
+
     }
 
     td {
@@ -247,9 +247,9 @@ i.group_add {
     }
 }
 
-/* generic style 
+/* generic style
 * TODO : replacce by using a css framework
-* here a bulma.io semantic is used 
+* here a bulma.io semantic is used
 */
 .container {
     background-color: white;
@@ -372,8 +372,8 @@ i.group_add {
             border-bottom-color: $accent;
         }
 
-        &[disabled] { 
-            background-color: #eee; 
+        &[disabled] {
+            background-color: #eee;
             color: graytext;
             cursor: not-allowed;
             border-bottom-color: grey;
@@ -666,8 +666,8 @@ body > div.tooltip.shown {
 /* Side panel component */
 
 side-panel {
-    > div { 
-        background-color: $main; 
+    > div {
+        background-color: $main;
         overflow-y: auto !important;
     }
 
@@ -851,7 +851,7 @@ div.panel-message {
             font-size: 1.5em;
 
             &::before {
-                content: '\e92b';
+                content: '\e936';
             }
         }
     }
@@ -901,7 +901,7 @@ list-component {
         &.disabled {
             color: #CCC;
         }
-        
+
         &.no-results {
             text-align: center;
             font-style: italic;
@@ -935,7 +935,7 @@ user-list, group-users-list, group-input-users, group-output-users {
                     padding: 5px;
                     min-width: 80px;
                     text-align: center;
-                    
+
                     &.Student {
                         background-color: rgba(0, 0, 0, 0.2);
                     }
@@ -981,7 +981,7 @@ user-list, group-users-list, group-input-users, group-output-users {
                     color: $contrast;
 
                     &::before {
-                        content: '\e92b';
+                        content: '\e936';
                     }
                 }
             }
@@ -1212,11 +1212,11 @@ user-detail {
             padding-top: 0px !important;
             font-size: 0.7em;
 
-            & > span {    
+            & > span {
                 i {
                     font-size: 0.9em;
                 }
-                
+
                 &.user-admin {
                     color: $accent;
                 }
@@ -1291,7 +1291,7 @@ user-info-section {
             }
 
             div.sendPassword {
-                display: flex; 
+                display: flex;
                 flex-flow: row wrap;
                 padding-bottom: 5px;
 
@@ -1401,7 +1401,7 @@ user-create {
         }
 
         div.action {
-            display: flex; 
+            display: flex;
             justify-content: flex-end;
 
             button {
@@ -1533,7 +1533,7 @@ group-users-list {
 group-create {
     panel-section {
        div.action {
-            display: flex; 
+            display: flex;
             justify-content: flex-end;
 
             button {
@@ -1589,7 +1589,7 @@ group-manage-users {
             display: flex;
             flex-flow: row wrap;
             align-items: center;
-            
+
             list-component {
                 min-height: 60vh;
                 max-height: 60vh;
@@ -1648,7 +1648,7 @@ group-manage-users {
                 & > i {
                     font-size: 1.5em;
                     padding-left: 20px;
-                    
+
                     &:hover {
                         cursor: pointer;
                         color: $accent;
@@ -1719,7 +1719,7 @@ app-details {
 
         >.flex-item {
             flex: none;
-            margin: 5px 10px 5px 10px; 
+            margin: 5px 10px 5px 10px;
         }
     }
 }
@@ -1754,9 +1754,9 @@ mass-mail{
         min-width: 550px;
         box-shadow: 0px 0px 20px #AAA;
     }
-    
+
     .close{
-        display: flex; 
+        display: flex;
         justify-content: flex-end;
         &:hover {
            cursor: pointer;
