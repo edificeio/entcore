@@ -81,6 +81,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.newItem = new Mail();
             $scope.state.newItem.setMailSignature($scope.getSignature());
             template.open('main', 'folders-templates/' + folderName);
+            $scope.state.selectAll = false;
             await Conversation.instance.folders.openFolder(folderName);
             $scope.$apply();
         };
@@ -95,6 +96,7 @@ export let conversationController = ng.controller('ConversationController', [
             await folder.open();
             obj.template = '';
             obj.template = 'folder-content';
+            $scope.state.selectAll = false;
             $scope.$apply();
             template.open('main', 'folders-templates/user-folder');
 
@@ -400,6 +402,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.refreshFolders = async () => {
             await $scope.userFolders.sync();
             await Conversation.instance.currentFolder.sync();
+            $scope.state.selectAll = false;
             if(Conversation.instance.currentFolder instanceof UserFolder){
                 $scope.openUserFolder(Conversation.instance.currentFolder, {});
             }
