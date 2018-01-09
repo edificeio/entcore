@@ -1,7 +1,10 @@
 <h3 whereami></h3>
 <nav class="contextual-buttons twelve cell">
-	<div class="action-buttons">
-		<button class="cell" ng-click="template.open('main', 'mail-actions/write-mail')">
+	<div class="">
+		<input type="text" name="searchField.words" ng-model="searchField.words"
+			   ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="ten cell"
+			   i18n-placeholder="search" required autofocus/>
+		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
 			<i class="add"></i><i18n>create</i18n>
 		</button>
 	</div>
@@ -17,7 +20,14 @@
 			<th class="date" ng-click="setSort(folders.draft, sortBy.date)"><i18n>date</i18n></th>
 		</tr>
 		</thead>
-		<tbody>
+		<tbody ng-if="isLoading()">
+		<tr>
+			<td>
+				<h1 class="nomargin"><i18n>loading</i18n></h1>
+			</td>
+		</tr>
+		</tbody>
+		<tbody ng-if="!isLoading()">
 		<tr ng-if="conversation.currentFolder.mails.empty()">
 			<td colspan="5" translate key="folder.empty">
 			</td>

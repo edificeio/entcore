@@ -183,6 +183,17 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
+        $scope.search = async (text: string) => {
+            if(text.trim().length > 3) {
+                await Conversation.instance.currentFolder.search(text);
+                $scope.$apply();
+            }
+        }
+
+        $scope.isLoading = () => {
+            return Conversation.instance.currentFolder.mails.loading;
+        };
+
         $scope.nextMail = async () => {
             var mails = Conversation.instance.currentFolder.mails.all;
             var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
