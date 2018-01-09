@@ -22,6 +22,7 @@ package org.entcore.conversation.service.impl;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -201,14 +202,21 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, String restrain, UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, String restrain, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
 
 		String additionalWhere = "";
-		JsonArray values = new JsonArray()
-			.add("SENT")
-			.add(user.getUserId());
-
+		String orderBy = "";
+		String additionalSelect = "";
+		boolean search = searchText != null;
+		List<String> words = null;
+		JsonArray values = new JsonArray();
+		if(search){
+			words = checkAndComposeWordFromSearchText(searchText);
+			additionalSelect = " ts_rank(m.text_searchable, to_tsquery(m.language::regconfig, unaccent(?))) as rank, ";
+			values.addString(String.join(" & ", words));
+		}
+		values.add("SENT").add(user.getUserId());
 		if(restrain != null){
 			additionalWhere = "AND um.folder_id = ? AND um.trashed = false";
 			values.add(folder);
@@ -216,18 +224,43 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere = addFolderCondition(folder, values, user.getUserId());
 		}
 
-		String query = "SELECT m.*, um.unread as unread, r.id as response," +
-			"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
-			"FROM " + userMessageTable + " um LEFT JOIN " +
-			userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
-			messageTable + " m ON um.message_id = m.id LEFT JOIN " +
-			messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? LEFT JOIN " +
-			attachmentTable + " att ON uma.attachment_id = att.id " +
-			"WHERE um.user_id = ? " + additionalWhere + " " +
-			"GROUP BY m.id, unread, response " +
-			"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
+		if(search){
+			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
+			values.addString(String.join(" | ", words));
+			orderBy = " ORDER BY rank ";
+		}else{
+			orderBy = "ORDER BY m.date";
+		}
+			String query = "SELECT m.*, um.unread as unread, " +
+				"CASE when COUNT(distinct r) = 0 THEN false ELSE true END AS response," +
+				" COUNT(*) OVER() as count, " + additionalSelect +
+				"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
+				"FROM " + userMessageTable + " um LEFT JOIN " +
+				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
+				messageTable + " m ON um.message_id = m.id LEFT JOIN " +
+				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? LEFT JOIN " +
+				attachmentTable + " att ON uma.attachment_id = att.id " +
+				"WHERE um.user_id = ? " + additionalWhere + " " +
+				"GROUP BY m.id, unread " +
+				orderBy + " DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "displayNames"));
+	}
+
+	//TODO : add to utils (similar function in SearchEngineController)
+	private List<String> checkAndComposeWordFromSearchText(final String searchText) {
+		List<String> searchWords = new ArrayList<>();
+		final String searchTextTreaty = searchText.replaceAll("\\s+", " ").trim();
+		if (!searchTextTreaty.isEmpty()) {
+			String[] words = searchTextTreaty.split(" ");
+			String tmp;
+			for (String w : words) {
+				tmp = w.replaceAll("(?!')\\p{Punct}", "");
+				if(tmp.length() > 0)
+					searchWords.add(tmp);
+			}
+		}
+		return  searchWords;
 	}
 
 	@Override

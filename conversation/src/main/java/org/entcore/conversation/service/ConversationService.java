@@ -58,7 +58,7 @@ public interface ConversationService {
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
 
-	void list(String folder, String restrain, UserInfos user, int page, Handler<Either<String, JsonArray>> results);
+	void list(String folder, String restrain, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 

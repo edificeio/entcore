@@ -16,6 +16,7 @@ export abstract class Folder implements Selectable {
     selected: boolean;
     sort: (mail1: Mail, mail2: Mail) => number;
     reverse: boolean;
+    searchText: string;
     abstract removeSelection();
     abstract sync();
     abstract selectAll();
@@ -30,8 +31,14 @@ export abstract class Folder implements Selectable {
     async nextPage() {
         if (!this.mails.full) {
             this.pageNumber++;
-            await this.mails.sync({ pageNumber: this.pageNumber, emptyList: false });
+            await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false });
         }
+    }
+
+    async search(text : string) {
+        this.searchText = text;
+        this.sort = sorts.rank;
+        await this.mails.sync({ pageNumber: 0, searchText: this.searchText, emptyList: true });
     }
 }
 
@@ -68,7 +75,7 @@ export class Trash extends SystemFolder {
     }
 
     async sync(){
-        await this.mails.sync();
+        await this.mails.sync({searchText: this.searchText});
         await this.syncUsersFolders();
     }
 
@@ -126,7 +133,7 @@ export class Inbox extends SystemFolder {
     }
 
     async sync(){
-        await this.mails.sync();
+        await this.mails.sync({ searchText: this.searchText});
     }
 
     async removeSelection(){
@@ -171,7 +178,7 @@ export class Draft extends SystemFolder {
     }
 
     async sync(){
-        await this.mails.sync();
+        await this.mails.sync({ searchText: this.searchText});
     }
 
     async removeSelection(){
@@ -217,7 +224,7 @@ export class Outbox extends SystemFolder {
     }
 
     async sync(){
-        await this.mails.sync();
+        await this.mails.sync({ searchText: this.searchText});
     }
 
     async removeSelection(){
@@ -248,12 +255,14 @@ export class UserFolder extends Folder {
     async open(){
         this.mails.full = false;
         this.pageNumber = 0;
+        this.searchText = null;
+        this.sort = sorts.date;
         Conversation.instance.currentFolder = this;
         await this.sync();
     }
 
     async sync(){
-        await this.mails.sync();
+        await this.mails.sync({ searchText: this.searchText});
         await this.syncUserFolders();
     }
 
@@ -360,6 +369,8 @@ export class SystemFolders {
     
     async openFolder (folderName) {
         Conversation.instance.currentFolder = this[folderName];
+        Conversation.instance.currentFolder.searchText = null;
+        Conversation.instance.currentFolder.sort = sorts.date;
         await Conversation.instance.currentFolder.sync();
         Conversation.instance.currentFolder.pageNumber = 0;
         Conversation.instance.currentFolder.mails.full = false;

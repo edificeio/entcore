@@ -56,6 +56,9 @@ export const sorts = {
     },
     unread: function(mail){
         return mail.unread;
+    },
+    rank: function(mail){
+        return mail.rank ? mail.rank : 0;
     }
 }
 
