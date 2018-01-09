@@ -53,6 +53,8 @@
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
     "inbox": "Boîte de réception",
     "invalid": " recevra le message après avoir activé son compte",
+    "loading": "Chargement...",
+    "mail.count.of": " sur ",
     "mail-in": "Message de la boîte de réception",
     "mail-new": "Message brouillon",
     "mail-out": "Message de la boîte d'envoi",

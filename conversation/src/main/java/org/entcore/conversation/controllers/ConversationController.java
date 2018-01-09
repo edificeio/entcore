@@ -367,6 +367,11 @@ public class ConversationController extends BaseController {
 	public void list(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
 		final String restrain = request.params().get("restrain");
+		final String search = request.params().get("search");
+		if(search != null  && search.trim().length() < 3){
+			badRequest(request);
+			return;
+		}
 		final String p = Utils.getOrElse(request.params().get("page"), "0", false);
 		if (folder == null || folder.trim().isEmpty()) {
 			badRequest(request);
@@ -380,7 +385,7 @@ public class ConversationController extends BaseController {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.list(folder, restrain, user, page, new Handler<Either<String, JsonArray>>() {
+					conversationService.list(folder, restrain, user, page, search, new Handler<Either<String, JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {

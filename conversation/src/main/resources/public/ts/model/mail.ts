@@ -214,7 +214,6 @@ export class Mail implements Selectable {
         ));
        if(!forPrint) {
            Conversation.instance.folders['inbox'].countUnread();
-           Conversation.instance.currentFolder.mails.refresh();
        }
     };
 
@@ -298,6 +297,7 @@ export class Mails {
     full: boolean;
     selection: Selection<Mail>;
     userFolder: UserFolder;
+    loading: boolean;
 
     push(item: Mail){
         this.all.push(item);
@@ -314,7 +314,7 @@ export class Mails {
         else{
             this.api = api;
         }
-        
+        this.loading = false;
         this.selection = new Selection<Mail>([]);
     }
 
@@ -331,23 +331,30 @@ export class Mails {
         }
     }
 
-    async sync(data?: { pageNumber?: number, emptyList?: boolean }){
+    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }){
+        this.loading = !data || !data.pageNumber || data.pageNumber == 0;
         if(this.userFolder){
             await this.userFolderSync(data);
         }
         else{
             await this.apiSync(data);
         }
+        this.loading = false;
     }
 
-    async userFolderSync(data?: { pageNumber?: number, emptyList?: boolean }){
+    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }){
         if(!data){
             data = {};
         }
         if (!data.pageNumber) {
             data.pageNumber = 0;
         }
-        const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber);
+        if(!data.searchText){
+            data.searchText = "";
+        }else {
+            data.searchText += "&search=" + data.searchText;
+        }
+        const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }
@@ -357,15 +364,19 @@ export class Mails {
         }
     }
 
-    async apiSync(data?: { pageNumber?: number, emptyList?: boolean }): Promise<void>{
+    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }): Promise<void>{
         if (!data) {
             data = {};
         }
         if (!data.pageNumber) {
             data.pageNumber = 0;
         }
-
-        let response = await http.get(this.api.get + '?page=' + data.pageNumber);
+        if(!data.searchText){
+            data.searchText = "";
+        }else {
+            data.searchText = "&search=" + data.searchText;
+        }
+        let response = await http.get(this.api.get + '?page=' + data.pageNumber + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }

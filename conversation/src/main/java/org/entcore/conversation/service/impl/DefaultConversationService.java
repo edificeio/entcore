@@ -402,7 +402,7 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void list(String folder, String restrain, UserInfos user, int page, final Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, String restrain, UserInfos user, int page, String searchWords, final Handler<Either<String, JsonArray>> results) {
 		if (validationError(user, results, folder)) return;
 		int skip = page * LIST_LIMIT;
 
