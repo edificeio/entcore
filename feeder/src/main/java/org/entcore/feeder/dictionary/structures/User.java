@@ -541,21 +541,28 @@ public class User {
 		String query =
 				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
 				"WITH DISTINCT r " +
-				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
-				"s-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
-				"c<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"MATCH (s:User {id : {studentId}})-[:IN]->(spg:ProfileGroup)-[:DEPENDS]->(st:Structure), " +
+				"(spg)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
+				"(st)<-[:DEPENDS]-(rspg:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
 				"MERGE s-[:RELATED]->r " +
-				"WITH s, r, st, rspg, rcpg " +
+				"WITH s, r, st, rspg " +
 				"MERGE r-[:IN]->rspg " +
-				"WITH s, r, st, rcpg " +
-				"MERGE r-[:IN]->rcpg " +
+				"WITH s, r, st " +
 				"SET s.relative = CASE WHEN r.externalId IN s.relative THEN " +
 				"s.relative ELSE coalesce(s.relative, []) + (r.externalId + '$1$1$1$1$0') END " +
-				"RETURN COLLECT(st.id) as structures ";
+				"RETURN COLLECT(st.id) as structures "; 
+		String query2 =
+				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"WITH DISTINCT r " +
+				"MATCH (s:User {id : {studentId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(st:Structure), " +
+				"(s)-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Student'}), " +
+				"(c)<-[:DEPENDS]-(rcpg:ProfileGroup)-[:DEPENDS]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
+				"MERGE r-[:IN]->rcpg";
 		JsonObject params = new JsonObject()
 				.put("relativeId", relativeId)
 				.put("studentId", studentId);
 		tx.add(query, params);
+		tx.add(query2, params);
 	}
 
 	public static void unlinkRelativeStudent(String relativeId, String studentId, TransactionHelper tx){
