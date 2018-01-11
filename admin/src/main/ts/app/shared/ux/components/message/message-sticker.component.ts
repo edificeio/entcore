@@ -1,5 +1,5 @@
 import { Component, Input,ChangeDetectorRef, ViewChild, OnInit } from '@angular/core'
-import { ComponentDescriptor, DynamicComponent } from '../../directives/dynamic-component'
+import { ComponentDescriptor, DynamicComponentDirective } from '../../directives'
 import { BundlesService } from 'sijil'
 import { MessageBoxComponent, MessageType, icons } from './message-box.component'
 
@@ -29,7 +29,7 @@ export class MessageStickerComponent implements OnInit {
     @Input() type: MessageType;
     @Input() header:string;
     @Input() messages:(string | [string,Object])[];
-    @ViewChild(DynamicComponent) dComponent: DynamicComponent;
+    @ViewChild(DynamicComponentDirective) dComponent: DynamicComponentDirective;
 
     readonly icons = icons;
     
