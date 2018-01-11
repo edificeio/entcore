@@ -15,7 +15,7 @@ import { Messages } from './messages.model'
 @Component({
     selector: 'import-csv',
     template : `
-        <light-box [show]="confirmCancel" (onClose)="confirmCancel = false">
+        <lightbox [show]="confirmCancel" (onClose)="confirmCancel = false">
             <div class="container">
                 <h2>{{'import.cancel.header' | translate}}</h2>
                 <article class="message is-warning">
@@ -32,7 +32,7 @@ import { Messages } from './messages.model'
                         {{'import.cancel.confirm'  | translate}}
                     </button>
             </div>
-        </light-box>
+        </lightbox>
         <wizard
             (cancel)="confirmCancel=true"
             (finish)="finish()"
