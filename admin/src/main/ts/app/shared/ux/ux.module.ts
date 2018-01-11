@@ -25,7 +25,9 @@ import { DatepickerComponent,
     SimpleSelectComponent,
     MessageStickerComponent,
     MessageBoxComponent } from './components'
-import { AnchorDirective, DynamicTemplateDirective } from './directives'
+import { AnchorDirective, 
+    DynamicTemplateDirective,
+    DynamicComponentDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe } from './pipes'
 import { DynamicModuleImportsService, LabelsService } from './services';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
@@ -63,6 +65,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
+        DynamicComponentDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
@@ -95,6 +98,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
+        DynamicComponentDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
