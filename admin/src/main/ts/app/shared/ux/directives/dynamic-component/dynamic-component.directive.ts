@@ -7,7 +7,7 @@ import { ComponentDescriptor } from './component-descriptor.model'
 @Directive({
     selector: '[dynamic-component]',
 })
-export class DynamicComponent {
+export class DynamicComponentDirective {
     constructor(
         private vcr: ViewContainerRef,
         private cfr: ComponentFactoryResolver
