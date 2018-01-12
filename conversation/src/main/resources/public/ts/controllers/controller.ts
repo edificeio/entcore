@@ -192,6 +192,11 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
+        $scope.cancelSearch = async () => {
+            await Conversation.instance.currentFolder.search("");
+            $scope.$apply();
+        }
+
         $scope.isLoading = () => {
             return Conversation.instance.currentFolder.mails.loading;
         };
