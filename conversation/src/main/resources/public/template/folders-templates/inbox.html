@@ -1,16 +1,20 @@
 <h3 whereami></h3>
-<nav class="contextual-buttons twelve cell">
+<nav class="twelve cell">
 	<div class="">
-		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-			<i class="add"></i><i18n>new.message</i18n>
-		</button>
+		<switch-search
+			ng-model="searchField.words"
+			ng-change="search(words)">
+			<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i class="add"></i><i18n>new.message</i18n>
+			</button>
+		</switch-search>
 	</div>
 	<div class="display-buttons">
 		<i class="refresh" ng-click="refresh()"></i>
 	</div>
 </nav>
 
-<div class="twelve cell flex-row align-center centered-text">
+<div class="twelve cell flex-row align-center centered-text zero-mobile">
 	<div class="one cell">
 		<label class="checkbox"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
 			<i18n></i18n>
@@ -20,15 +24,20 @@
 		<label class="chip">
 			<i class="messagerie type"></i>
 			<span ng-model="folders.inbox.nbUnread">([[folders.inbox.nbUnread]])</span>
+			<!--
 			<input type="checkbox" ng-model="" ng-change="" />
+			-->
 		</label>
 	</div>
-	<div class="ten cell">
-		<input type="text" name="searchField.words" ng-model="searchField.words"
-		ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="cell twelve"
+	<div class="search-pagination ten cell">
+		<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
+		ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
 		i18n-placeholder="search"/>
+		<i class="search" ng-click="search(searchField.words)"></i>
 	</div>
+	<a><i ng-if="searchField.words.length > 0" class="close-2x horizontal-spacing" ng-click='searchField.words="";cancelSearch()'></i></a>
 </div>
+
 <article class="twelve cell mailbox">
 	<div ng-if="isLoading()">
 		<h1 class="nomargin"><i18n>loading</i18n></h1>
