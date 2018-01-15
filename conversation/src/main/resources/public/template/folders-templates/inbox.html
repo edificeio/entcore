@@ -16,19 +16,22 @@
 
 
 
-<div class="notification twelve flex-row align-center centered-text zero-mobile no-margin">
-	<div class="two">
-		<label class="checkbox"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
+	<div class="check-col">
+		<!-- <label class="checkbox"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
 			<i18n></i18n>
+		</label> -->
+		<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+	</div>
+	<div class="status-filter">
+		<label class="chip">
+			<i class="mail"></i>
+			<span ng-model="folders.inbox.nbUnread">([[folders.inbox.nbUnread]])</span>
+			<!--
+			<input type="checkbox" ng-model="" ng-change="" />
+			-->
 		</label>
 	</div>
-	<label class="chip horizontal-margin">
-		<i class="mail"></i>
-		<span ng-model="folders.inbox.nbUnread">([[folders.inbox.nbUnread]])</span>
-		<!--
-		<input type="checkbox" ng-model="" ng-change="" />
-		-->
-	</label>
 	<div class="flex-all-remains cell horizontal-margin">
 		<div class="search-pagination">
 			<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
@@ -40,8 +43,6 @@
 	</div>
 </div>
 
-
-
 <div class="mailbox">
 
 	<div ng-if="isLoading()">
@@ -51,7 +52,6 @@
 		<i18n>folder.empty</i18n>
 	</div>
 
-
 	<div class="notification relative no-margin" ng-if="!isLoading()"
 		ng-repeat="mail in folders.inbox.mails.all | orderBy : folders.inbox.sort : folders.inbox.reverse"
 		ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
@@ -59,31 +59,30 @@
 
 		<article ng-click="readMail(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
-
-				<div class="avatar two" ng-click="$event.stopPropagation();">
+				<div class="avatar" ng-click="$event.stopPropagation();">
 					<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
-					<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected"/>
+
+					<!-- <label class="checkbox cell"><input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
-					</label>
+					</label> -->
+
 				</div>
-				<div class="states horizontal-margin">
+				<div class="states">
 					<i class="undo" ng-if="mail.response"></i>
 					<i class="mail-large" ng-if="mail.unread"></i>
 				</div>
-				<div class="flex-all-remains horizontal-margin">
+				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>
 					<br>
 					<span class="small-text">[[mail.subject]]</span>
 				</div>
 			</div>
-
 			<div class="notification-date">
 				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
 			</div>
 			<div class="notification-attachment">
 				<i class="attachment" ng-if="mail.attachments.length"></i>
 			</div>
-
 		</article>
 	</div>
 </div>
@@ -113,7 +112,6 @@
 	<div class="row">
 		<button type="button" class="cancel right-magnet" ng-click="clearInactives()"><i18n>warning.close</i18n></button>
 	</div>
-
 </lightbox>
 
 <container template="toaster"></container>
