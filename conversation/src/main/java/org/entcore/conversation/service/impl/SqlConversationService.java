@@ -32,6 +32,7 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
@@ -214,7 +215,7 @@ public class SqlConversationService implements ConversationService{
 		if(search){
 			words = checkAndComposeWordFromSearchText(searchText);
 			additionalSelect = " ts_rank(m.text_searchable, to_tsquery(m.language::regconfig, unaccent(?))) as rank, ";
-			values.addString(String.join(" & ", words));
+			values.addString(StringUtils.join(words, " & "));
 		}
 		values.add("SENT").add(user.getUserId());
 		if(restrain != null){
@@ -226,7 +227,7 @@ public class SqlConversationService implements ConversationService{
 
 		if(search){
 			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
-			values.addString(String.join(" | ", words));
+			values.addString(StringUtils.join(words, " | "));
 			orderBy = " ORDER BY rank ";
 		}else{
 			orderBy = "ORDER BY m.date";
