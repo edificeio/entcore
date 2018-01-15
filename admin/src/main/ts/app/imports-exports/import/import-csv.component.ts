@@ -219,7 +219,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         Personnel:false, 
         Guest:false ,
         inputFiles : {}, // Use to keep reference of profile's inputFile to clean FileList's attribute when inputFile is hidden
-        asArray(all = false) { 
+        asArray(all = false) {
             let arr = [];
             for (let p in this) {
                 if (typeof this[p] == 'boolean') {
@@ -228,6 +228,13 @@ export class ImportCSV implements OnInit, OnDestroy {
                 }
             }
             return arr; 
+        },
+        cleanInputFile() {
+            for (let p in this) {
+                if (typeof this[p] == 'boolean' && !!this.inputFiles[p] ) {
+                    this.inputFiles[p].value = null; // Set value to null empty the FileList. 
+                }
+            }
         }
     };
 
@@ -411,6 +418,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             p =>
             { this.importInfos[p] = null }); // Flush loaded CSV files
         
+        this.profiles.cleanInputFile();
         Object.assign(this.profiles,
             { Teacher:false, Student:false, Relative:false, Personnel:false, Guest:false, inputFiles : {}}
         );
