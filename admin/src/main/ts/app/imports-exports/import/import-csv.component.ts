@@ -213,11 +213,11 @@ export class ImportCSV implements OnInit, OnDestroy {
     confirmCancel : boolean;
 
     profiles = { 
-        Teacher:false, 
         Student:false, 
-        Relative:false, 
+        Relative:false,
+        Teacher:false,  
         Personnel:false, 
-        Guest:false ,
+        Guest:false,
         inputFiles : {}, // Use to keep reference of profile's inputFile to clean FileList's attribute when inputFile is hidden
         asArray(all = false) {
             let arr = [];
@@ -453,14 +453,18 @@ export class ImportCSV implements OnInit, OnDestroy {
     */
     private async getColumsMapping() {
         this.globalError.reset();
+        for (let p of this.profiles.asArray()) {
+            if (!this.profiles.inputFiles[p]) {
+                this.globalError.message = 'missing.csv.files';
+                return;
+            }
+        }
         let data = await ImportCSVService.getColumnsMapping(this.importInfos);
         if (data.error) {
             this.globalError.message = data.error;
         } else if (data.errors) {
             this.globalError.message = 'import.error.malformedFiles';
             this.globalError.profile = data.errors.errors; // TODO Fix server API. serve only {errors:{...}}
-        } else if (!data.mappings || !data.availableFields) {
-            this.globalError.message = "import.error.noColumnsMappingFound" // TODO : check if possible 
         } else {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
