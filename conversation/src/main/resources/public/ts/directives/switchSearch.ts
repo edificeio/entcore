@@ -5,32 +5,39 @@ export const switchSearch = ng.directive('switchSearch', () => {
         restrict: 'E',
         transclude: true,
         template: `
-            <div ng-class="{'hide-search': hide}" class="search-pagination flex-row justify-start mobile-justify-center horizontal-spacing-twicen">
+            <div ng-class="{'hide-search': hide}" class="search-pagination flex-row align-center horizontal-spacing-twicen">
+                <a class="zero-mobile" ng-click='cancelSearch()'><i class="close-2x horizontal-spacing hidden-desktop"></i></a>
                 <div class="cell">
-                    <input class="twelve" type="text" ng-model="ngModel"
+                    <input class="twelve hidden-desktop" type="text" ng-model="ngModel"
                     ng-keyup="$event.keyCode == 13 ? ngChange({words: ngModel}) : null"
                     i18n-placeholder="search"/>
-                    <i class="search flex-row align-center justify-center" ng-click="hide ? extend() : ngChange({words: ngModel});"></i>
+                    <i class="search flex-row align-center justify-center hidden-desktop" ng-click="hide ? extend() : ngChange({words: ngModel});"></i>
                 </div>
-                <a><i class="close-2x horizontal-spacing" ng-click=''></i></a>
                 <ng-transclude></ng-transclude>
             </div>
         `,
 
         scope: { 
             ngModel: '=',
-            ngChange: '&'
+            ngChange: '&',
+            cancel: '&'
         },
 
         link: (scope, element, attributes) => {
             scope.hide = true;
-            //element.find('input').
-            //twelve twelve-mobile 
-            // <div class="cell vertical-spacing">
 
             scope.extend = () => {
                 scope.hide = false;
-                element.find('.cell').addClass("twelve twelve-mobile");
+                element.find('.cell').addClass("twelve-mobile");
+                element.find('a').removeClass("zero-mobile");
+            }
+
+            scope.cancelSearch = () => {
+                scope.hide = true;
+                scope.ngModel = "";
+                element.find('.cell').removeClass("twelve-mobile");
+                element.find('a').addClass("zero-mobile");
+                scope.cancel();
             }
         }
     };
