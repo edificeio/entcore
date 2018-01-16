@@ -52,10 +52,6 @@ public class Directory extends BaseServer {
     @Override
     public void start() {
         final EventBus eb = getEventBus(vertx);
-        clearFilters();
-        setOauthClientGrant(true);
-        addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb), new BasicFilter()));
-        addFilter(new UserbookCsrfFilter(eb, securedUriBinding));
         super.start();
         MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
         setDefaultResourceFilter(new DirectoryResourcesProvider());
