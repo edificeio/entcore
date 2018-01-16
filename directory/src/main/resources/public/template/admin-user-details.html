@@ -17,6 +17,7 @@
     <button ng-if="targetUser.isRemovable()" ng-click="deleteUser(targetUser)" class="text-flow" style="margin-bottom:5px">[[lang.translate("directory.predelete")]]</button>
     <button ng-if="!targetUser.blocked" ng-click="targetUser.block(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.block")]]</button>
     <button ng-if="targetUser.blocked" ng-click="targetUser.unblock(refreshScope)" class="text-flow" style="margin-bottom:5px">[[lang.translate("admin.unblock")]]</button>
+    <button ng-if="targetUser.type == 'Relative' && !targetUser.mergeKey" ng-click="targetUser.generateMergeKey(refreshScope)"  class="text-flow" style="margin-bottom:5px">[[lang.translate("userBook.profile.generate.mergeKey")]]</button>
     <div class="twelve cell warning" ng-if="userDetailsForm.$invalid">
         <strong ng-repeat="(fieldName, status) in userDetailsForm.$error">
             <div ng-if="status">[[lang.translate('directory.form.'+ fieldName)]]</div>
@@ -32,6 +33,7 @@
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+targetUser.type)]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[targetUser.login]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
+<div  class="twelve cell" ng-if="targetUser.mergeKey"><strong class="four cell">[[lang.translate("userBook.profile.mergeKey")]]:</strong> [[targetUser.mergeKey]]</div>
 <div class="twelve cell" ng-show="targetUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[targetUser.code]]</div>
 <div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]">
     <strong class="four cell">[[lang.translate("directory.functions")]]</strong>

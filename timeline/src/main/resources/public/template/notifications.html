@@ -12,7 +12,7 @@
 			<div bind-html="message.contents[currentLanguage]"></div>
 		</div>
 	</div>
-	<div data-ng-controller="Timeline" class="twelve cell">
+	<div data-ng-controller="Timeline" class="twelve cell" bottom-scroll="loadPage()">
 
 		<div class="row drop-down-block" ng-class="{slided: display.slide}">
 
@@ -62,7 +62,7 @@
 		<b><span><i class="sad-face"></i><i18n>timeline.empty</i18n></span></b>
 	</div>
 
-		<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]" bottom-scroll="loadPage()">
+		<div data-ng-repeat="notification in notifications.all track by notification._id" class="row notification [[notification.type.toLowerCase()]]">
 			<article ng-class="{ 'unread': isUnRead(notification) }">
 				<div class="row">
 					<div class="avatar">

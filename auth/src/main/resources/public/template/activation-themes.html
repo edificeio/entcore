@@ -1,0 +1,27 @@
+<div class="centered container row">
+	<section class="main">
+		<div class="panel activation">
+			<h1 translate content="auth.activation.header"></h1>
+			<p class="warning" translate content="[[error]]" ng-if="error"></p>
+
+			<form method="post" ng-submit="activate()" name="activationForm" novalidate>
+                <div>
+                    <h4><i18n>themes.title</i18n></h4>
+                </div>
+
+                <div ng-repeat="theme in themes" class="themes-list">
+					<label class="theme">
+						<input type="checkbox" ng-model="user.themes[theme.child]" value="[[theme.child]]" tabindex="6" />
+						<span translate content="[[theme.parent]]"></span>
+						<br /><img skin-src="/img/illustrations/[[theme.parent]].png" />
+					</label>
+                </div>
+				<div class="row">
+					<button ng-disabled="noThemePicked()" tabindex="6" class="right-magnet"><i18n>validate</i18n></button>
+                	<a ng-click="template.open('main', 'activation-form')" class="right cell"><i18n>auth.cancel</i18n></a>
+				</div>
+                
+			</form>
+		</div>
+	</section>
+</div>

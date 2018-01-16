@@ -26,7 +26,6 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.notification.ConversationNotification;
@@ -36,9 +35,7 @@ import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.http.HttpServerFileUpload;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -163,71 +160,6 @@ public class ClassController extends BaseController {
 		classService.findUsers(classId, types, handler);
 	}
 
-	@Post("/csv/:userType/class/:classId")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void csv(final HttpServerRequest request) {
-		request.expectMultiPart(true);
-		final String classId = request.params().get("classId");
-		final String userType = request.params().get("userType");
-		if (classId == null || classId.trim().isEmpty() ||
-				(!"Student".equalsIgnoreCase(userType) && !"Relative".equalsIgnoreCase(userType))) {
-			badRequest(request);
-			return;
-		}
-		request.uploadHandler(new Handler<HttpServerFileUpload>() {
-			@Override
-			public void handle(final HttpServerFileUpload event) {
-				final Buffer buff = new Buffer();
-				if (!csvMimeTypes.contains(event.contentType())) {
-					renderJson(request, new JsonObject().putString("message", "invalid.file"), 400);
-					return;
-				}
-				event.dataHandler(new Handler<Buffer>() {
-					@Override
-					public void handle(Buffer event) {
-						buff.appendBuffer(event);
-					}
-				});
-				event.endHandler(new Handler<Void>() {
-					@Override
-					public void handle(Void end) {
-						JsonObject j = new JsonObject()
-								.putString("action", "manual-csv-class-" + userType.toLowerCase())
-								.putString("classId", classId)
-								.putString("csv", buff.toString("ISO-8859-1"));
-						Server.getEventBus(vertx).send(container.config().getString("feeder",
-								"entcore.feeder"), j, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> message) {
-								JsonArray r = message.body().getArray("results");
-								if ("ok".equals(message.body().getString("status")) && r != null) {
-									JsonArray users = new JsonArray();
-									for (int i = 0; i < r.size(); i++) {
-										JsonArray s = r.get(i);
-										if (s != null && s.size() == 1) {
-											String u = ((JsonObject) s.get(0)).getString("id");
-											if (u != null) {
-												users.addString(u);
-											}
-										}
-									}
-									if (users.size() > 0) {
-										ClassController.this.initPostCreate(classId, users);
-										request.response().end();
-									} else {
-										renderJson(request, new JsonObject()
-												.putString("message", "import.invalid." + userType.toLowerCase()), 400);
-									}
-								} else {
-									renderJson(request, message.body(), 400);
-								}
-							}
-						});
-					}
-				});
-			}
-		});
-	}
 
 	@Put("/class/:classId/add/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

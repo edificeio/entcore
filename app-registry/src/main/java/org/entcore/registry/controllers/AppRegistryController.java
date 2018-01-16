@@ -31,9 +31,11 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.registry.filters.ApplicationFilter;
 import org.entcore.registry.filters.LinkRoleGroupFilter;
 import org.entcore.registry.filters.RoleFilter;
@@ -54,7 +56,6 @@ import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
 import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class AppRegistryController extends BaseController {
@@ -100,6 +101,27 @@ public class AppRegistryController extends BaseController {
 		String structureId = request.params().get("structureId");
 		String actionType = request.params().get("actionType");
 		appRegistryService.listApplicationsWithActions(structureId, actionType, arrayResponseHandler(request));
+	}
+	
+	@Get("structure/:structureId/application/:appId/groups/roles")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	public void listApplicationRolesWithGroups(final HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		String appId = request.params().get("appId");
+		appRegistryService.listApplicationRolesWithGroups(structureId, appId, new Handler<Either<String, JsonArray>>() {
+			@Override
+			public void handle(Either<String, JsonArray> r) {
+				if (r.isRight()) {
+					JsonArray list = r.right().getValue();
+					for (Object res : list) {
+						UserUtils.translateGroupsNames(((JsonObject)res).getArray("groups"), I18n.acceptLanguage(request));
+					}
+					renderJson(request, list);
+				} else {
+					leftToResponse(request, r.left());
+				}
+			}
+		});
 	}
 
 	@Post("/role")
@@ -241,11 +263,53 @@ public class AppRegistryController extends BaseController {
 	public void createApplication(final HttpServerRequest request){
 		bodyToJson(request, pathPrefix + "createApplication", new Handler<JsonObject>() {
 			@Override
-			public void handle(JsonObject body) {
+			public void handle(final JsonObject body) {
 				String structureId = request.params().get("structureId");
-				appRegistryService.createApplication(structureId, body, null, notEmptyResponseHandler(request, 201, 409));
+				final String casType = body.getString("casType", "");
+				final String address = body.getString("address", "");
+				final boolean updateCas = !StringUtils.isEmpty(casType);
+				final URL addressURL = DefaultAppRegistryService.checkCasUrl(address);
+
+				// don't check url for standard app or oauth connector
+				if (!updateCas || addressURL != null) {
+					appRegistryService.createApplication(structureId, body, null, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> event) {
+							if (event.isLeft()) {
+								JsonObject error = new JsonObject()
+										.putString("error", event.left().getValue());
+								Renders.renderJson(request, error, 400);
+								return;
+							}
+
+							if (event.right().getValue() != null && event.right().getValue().size() > 0) {
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType);
+								Renders.renderJson(request, event.right().getValue(), 201);
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", "appregistry.failed.app");
+								Renders.renderJson(request, error, 400);
+							}
+						}
+					});
+				} else {
+					badRequest(request, "appregistry.failed.app.url");
+				}
 			}
 		});
+	}
+
+	private void sendPatternToCasConfiguration(boolean updateCas, JsonObject body, URL addressURL, String casType) {
+		if (updateCas && addressURL != null) {
+            String pattern = body.getString("pattern", "");
+            if (pattern.isEmpty()) {
+                pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
+            }
+            Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
+                    .putString("action", "add-patterns")
+                    .putString("service", casType)
+                    .putArray("patterns", new JsonArray().add(pattern)));
+        }
 	}
 
 	@Get("/application/conf/:id")
@@ -270,35 +334,31 @@ public class AppRegistryController extends BaseController {
 				String applicationId = request.params().get("id");
 				final String casType = body.getString("casType","");
 				final String address = body.getString("address", "");
-				final boolean updateCas = !casType.trim().isEmpty();
+				final boolean updateCas = !StringUtils.isEmpty(casType);
+
 				if (applicationId != null && !applicationId.trim().isEmpty()) {
-					appRegistryService.updateApplication(applicationId, body, new Handler<Either<String,JsonObject>>() {
-						public void handle(Either<String, JsonObject> event) {
-							if(event.isRight() && updateCas){
-								String pattern = body.getString("pattern", "");
-								if(pattern.isEmpty() && !address.isEmpty()){
-									try {
-										URL addressURL;
-										if(address.startsWith("/adapter#")){
-											addressURL = new URL(address.substring(address.indexOf("#") + 1));
-										} else {
-											addressURL = new URL(address);
-										}
-										pattern = "^\\Q" + addressURL.getProtocol() + "://" + addressURL.getHost() + (addressURL.getPort() > 0 ? ":" + addressURL.getPort() : "") + "\\E.*";
-									} catch (MalformedURLException e) {
-										pattern = "";
-									}
+					final URL addressURL = DefaultAppRegistryService.checkCasUrl(address);
+
+					// don't check url for standard app or oauth connector
+					if (!updateCas ||  addressURL != null) {
+						appRegistryService.updateApplication(applicationId, body, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> event) {
+								if (event.isLeft()) {
+									JsonObject error = new JsonObject()
+											.putString("error", event.left().getValue());
+									Renders.renderJson(request, error, 400);
+									return;
 								}
-								Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
-									.putString("action", "add-patterns")
-									.putString("service",casType)
-									.putArray("patterns", new JsonArray().add(pattern)));
+
+								sendPatternToCasConfiguration(updateCas, body, addressURL, casType);
+								Renders.renderJson(request, event.right().getValue());
 							}
-							notEmptyResponseHandler(request).handle(event);;
-						}
-					});
+						});
+					} else {
+						badRequest(request, "appregistry.failed.app.url");
+					}
 				} else {
-					badRequest(request, "invalid.application.id");
+					badRequest(request, "appregistry.failed.app");
 				}
 			}
 		});

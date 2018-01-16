@@ -1,0 +1,18 @@
+<section class="toggle-buttons" ng-class="{ hide: conversation.currentFolder.mails.selection.length === 0 && (!conversation.currentFolder.userFolders || conversation.currentFolder.userFolders.selected.length === 0) }">
+    <div class="toggle">
+        <div class="row">
+            <button ng-click="removeSelection()" ng-if="conversation.currentFolder.mails.selection.length || conversation.currentFolder.userFolders.selected.length">
+                <i18n>remove</i18n>
+            </button>
+            <button ng-click="restore()" ng-if="(conversation.currentFolder.mails.selection.length || conversation.currentFolder.userFolders.selected.length) && conversation.currentFolder.folderName === 'trash'">
+                <i18n>restore</i18n>
+            </button>
+            <button ng-click="moveSelection()" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.folderName !== 'trash'">
+                <i18n>move.inside.folder</i18n>
+            </button>
+            <button ng-click="removeFromUserFolder()" ng-if="conversation.currentFolder.mails.selection.length && conversation.currentFolder.id">
+                <i18n>remove.from.folder</i18n>
+            </button>
+        </div>
+    </div>
+</section>

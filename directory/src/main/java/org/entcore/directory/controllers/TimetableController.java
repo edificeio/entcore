@@ -85,18 +85,19 @@ public class TimetableController extends BaseController {
 	}
 
 	@Get("/timetable/courses/:structureId/:begin/:end")
-	@ApiDoc("Get courses for a structure between two dates by optional teacher id.")
+	@ApiDoc("Get courses for a structure between two dates by optional teacher id and/or optional group name.")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(UserInStructure.class)
 	public void listCoursesBetweenTwoDates(final HttpServerRequest request) {
 		final String structureId = request.params().get("structureId");
 		final String teacherId = request.params().get("teacherId");
+		final String groupName = request.params().get("group");
 		final String beginDate = request.params().get("begin");
 		final String endDate = request.params().get("end");
 
 		if (beginDate!=null && endDate != null &&
 				beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
-			timetableService.listCoursesBetweenTwoDates(structureId, teacherId, beginDate, endDate, arrayResponseHandler(request));
+			timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupName, beginDate, endDate, arrayResponseHandler(request));
 		} else {
 			badRequest(request, "timetable.invalid.dates");
 		}
@@ -216,13 +217,14 @@ public class TimetableController extends BaseController {
 		switch(action){
 			case "get.course":
 				final String teacherId = message.body().getString("teacherId");
+				final String groupName = message.body().getString("group");
 				final String beginDate = message.body().getString("begin");
 				final String endDate = message.body().getString("end");
 
 				if (beginDate!=null && endDate != null &&
 						beginDate.matches("\\d{4}-\\d{2}-\\d{2}") && endDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
 
-					timetableService.listCoursesBetweenTwoDates(structureId, teacherId, beginDate, endDate, getBusResultHandler(message));
+					timetableService.listCoursesBetweenTwoDates(structureId, teacherId, groupName, beginDate, endDate, getBusResultHandler(message));
 				} else {
 					message.reply(new JsonObject()
 							.putString("status", "error")

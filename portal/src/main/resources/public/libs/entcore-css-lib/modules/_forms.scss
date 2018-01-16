@@ -1,0 +1,98 @@
+
+
+[contenteditable=true]:focus{
+	outline: none
+}
+
+
+em[contenteditable=true]{
+	display: block;
+	border-bottom: 1px dashed;
+	line-height: 30px;
+	height: 30px;
+	font-size: 14px;
+}
+
+.editable{
+	height: 20px;
+}
+
+textarea{
+	max-width: 100%;
+	border: 1px solid $medium-grey;
+    width: 100%;
+    height: 130px;
+    overflow: auto;
+    box-sizing: border-box;
+}
+
+textarea.inline-editing{
+	box-sizing: content-box;
+}
+
+input[type=text], input[type=password], input[type=search], input[type=tel], input[type=email]{
+	border: none;
+}
+
+input-password{
+	input{
+		width: calc(100% - 50px);
+		height: 32px;
+		margin: 0px;
+		box-sizing: border-box;
+		display: inline-block;
+		float: none;
+		border-right: none;
+	}
+	button{
+		width: 50px;
+		height: 32px;
+		margin: 0px;
+		box-sizing: border-box;
+  		display: inline-block;
+		float: none;
+  		vertical-align: middle;
+		border-left: none;
+	}
+}
+
+
+
+
+.lightbox-window form{
+	input, label{
+		display: block;
+		float: left;
+	}
+}
+.panel form{
+	width: 415px;
+	max-width: 100%;
+	margin-left:auto;
+	margin-right: auto;
+	border-radius: 5px;
+	padding: 15px;
+
+	input[type=text], input[type=password], input[type=tel], input[type=email]{
+		width: 200px;
+		float: right;
+		line-height: 20px;
+	}
+	a{
+		display: block;
+		clear: both;
+	}
+	h1 img{
+		display: none;
+	}
+
+	input[type=submit]{
+		float: right;
+	}
+}
+
+.panel.login form{
+	label{
+		width: 150px;
+	}
+}

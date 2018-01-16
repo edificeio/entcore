@@ -1,30 +1,95 @@
 
+////////    BREAKPOINTS
+
+
+$tablette: 800px;
+$small-tablette: 650px;
+$fat-mobile: 550px;
+$small-mobile: 420px;
+
+
+
 ////////    COLORS
 
 
-// also bootsrap-adapter
-$black: #000 !default;
-$grayLight: #ccc !default;
-$grayLighter: #eee !default;
-$white: #fff !default;
-$accent: turquoise !default;
-$alter-accent: darken($accent, 30%) !default;
+// ONE COLORS -> for wayf module
+
+$cyan: 							#46afe6 !default;
+$green: 						#6fbe2e !default;
+$yellow: 						#eac403 !default;
+$orange: 						#ff8d2e !default;
+$red: 							#ff3a55 !default;
+$pink: 							#ff61c0 !default;
+$purple: 						#a348c0 !default;
+$indigo: 						#4f2691 !default;
+
+//////////
+
+$white: 						#FFFFFF !default;
+$lightest-grey: 				#F6F6F6 !default;
+$light-grey:					#EEEEEE !default;
+$neutral-grey: 					#DDDDDD !default;
+$medium-grey: 					#CCCCCC !default;
+$solid-grey: 					#B7B8BA !default;
+$grey: 							#9F9F9F !default;
+$darkest-grey: 					#333333 !default;
+$black:							#000000 !default;
+
+$shadow-light: 		rgba(0, 0, 0, 0.1) !default;
+$shadow: 			rgba(0, 0, 0, 0.26) !default;
+$shadow-dark: 		rgba(0, 0, 0, 0.4) !default;
+$shadow-darker: 	rgba(0, 0, 0, 0.6) !default;
+
+///////
+$primary:                     blueviolet !default;
+$primary-darkest:             saturate(darken($primary, 40%), 10%) !default;
+$primary-dark:                saturate(darken($primary, 9%), 3%) !default;
+$primary-light:               saturate(lighten($primary, 17%), 85%) !default;
+$primary-lighter:             desaturate(lighten($primary-light, 15%), 10%) !default;
+
+
+$accent: 			aqua !default;
+$hover: 			$accent !default;
+$dark-accent: 		darken($accent, 20%) !default;
+
+
+$warning-color: 		$red;
+$warning-color-hover: 	darken($warning-color, 35%);
+$forewarn-color: 		$orange;
+$valid-color: 			$green;
 
 
 
-$btnPrimaryBackground: $grayLight !default;
+$text-light:                  $grey !default;
+$text-lightest: 			  $white !default;
+// $text-color: ;
+// $title-color: ;
+// $button-color: ;
 
-$shadow-light: rgba(0, 0, 0, 0.1) !default;
-$shadow: rgba(0, 0, 0, 0.26) !default;
-$shadow-dark: rgba(0, 0, 0, 0.4) !default;
-$shadow-darker: rgba(0, 0, 0, 0.6) !default;
+
+//////
+
+$background: 					darken($white, 2.5%) !default;	//#F9F9F9
+$disabled-color: 				$grey !default;
+$block-disabled-color: 			$primary-lighter !default;
+
+
+
+$colorz: $cyan, $green, $yellow, $orange, $pink, $purple, $indigo;
+
+
+
 
 
 ////////    FONTS
 
 
-//bootsrap-adapter
-$baseFontSize: 12px !default;
+@font-face {
+	font-family: EcritureA;
+	src: url(/public/fonts/EcritureA-Romain-Orne.otf);
+	font-size-adjust: 80;
+}
+
 
 
 ////////    SIZES
@@ -34,3 +99,11 @@ $icon-list-size: 117px !default;
 $icon-list-padding: 7px !default;
 
 $header-height: 150px !default;
+
+$font-size: 12px !default;
+
+////////
+
+
+//datePicker
+$btnPrimaryBackground: $medium-grey !default;

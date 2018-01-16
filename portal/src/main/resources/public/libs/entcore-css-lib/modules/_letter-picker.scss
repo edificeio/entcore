@@ -1,0 +1,32 @@
+
+.letter-picker{
+	i.close-2x{
+		display: none;
+	}
+	.content{
+		background: transparent;
+	}
+	.lightbox-view, .lightbox{
+		h2{
+			color: #fff;
+			margin: 1px;
+			width: 86px;
+			height: 86px;
+			line-height: 86px;
+			text-align: center;
+			font-size: 24px;
+		}
+		h2.disabled{
+			color: #ddd;
+		}
+	}
+}
+
+h1.letter-picker{
+	clear: both;
+	height: 60px;
+	width: 60px;
+	line-height: 60px;
+	text-align: center;
+	margin: 40px auto -9px;
+}

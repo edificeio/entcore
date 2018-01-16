@@ -62,7 +62,7 @@ public abstract class UserExportProcessing extends BaseExportProcessing {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				User.count(profiles, value);
+				User.count(EliotExporter.ELIOT, profiles, value);
 			}
 
 			@Override
@@ -86,7 +86,7 @@ public abstract class UserExportProcessing extends BaseExportProcessing {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				User.list(profiles, attributes, skip, limit, value);
+				User.list(EliotExporter.ELIOT, profiles, attributes, skip, limit, value);
 			}
 
 			@Override
@@ -96,7 +96,7 @@ public abstract class UserExportProcessing extends BaseExportProcessing {
 					JsonArray rs = r.get(0);
 					handler.handle(rs);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(null);
 				}
 			}
 		});

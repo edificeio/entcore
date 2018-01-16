@@ -31,6 +31,7 @@ import fr.wseduc.webutils.http.Renders;
 
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -252,6 +253,20 @@ public class StructureController extends BaseController {
 		});
 	}
 
+	@Get("/structure/:structureId/massMail/allUsers")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getMassMailUsersList(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos infos) {
+				final String structureId = request.params().get("structureId");
+
+				structureService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
+			}
+		});
+	}
+
+
 	@Get("/structure/:structureId/massMail/process/:type")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void performMassmail(final HttpServerRequest request){
@@ -365,7 +380,7 @@ public class StructureController extends BaseController {
 
 									StringReader reader = new StringReader(result.result().toString("UTF-8"));
 									final JsonArray mailHeaders = new JsonArray().addObject(
-											new JsonObject().putString("name", "Content-Type").putString("value", "text/plain; charset=\"UTF-8\""));
+											new JsonObject().putString("name", "Content-Type").putString("value", "text/html; charset=\"UTF-8\""));
 
 									for(Object userObj : users){
 										final JsonObject user = (JsonObject) userObj;
@@ -431,7 +446,23 @@ public class StructureController extends BaseController {
 	public void metrics(final HttpServerRequest request){
 		structureService.getMetrics(request.params().get("structureId"), defaultResponseHandler(request));
 	}
+	
+	@Get("/structure/:id/sources")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listSources(final HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		this.structureService.listSources(structureId, arrayResponseHandler(request));
+	}
 
+	@Get("/structure/:id/aaffunctions")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listAafFunctions(final HttpServerRequest request) {
+		String structureId = request.params().get("id");
+		this.structureService.listAafFunctions(structureId, arrayResponseHandler(request));
+	}
+	
 	public void setStructureService(SchoolService structureService) {
 		this.structureService = structureService;
 	}

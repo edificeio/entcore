@@ -204,6 +204,14 @@ User.prototype.isRemovable = function (){
     return (user.disappearanceDate || (user.source !== 'AAF' && user.source !== "AAF1D"));
 }
 
+User.prototype.generateMergeKey = function(hook){
+    var user = this
+    http().postJson('/directory/duplicate/generate/mergeKey/' + user.id).done(function(mergeKey){
+        user.mergeKey = mergeKey.mergeKey;
+        hookCheck(hook)
+    })
+}
+
 function Classe(){
     this.sync = function(hook){
         var that = this

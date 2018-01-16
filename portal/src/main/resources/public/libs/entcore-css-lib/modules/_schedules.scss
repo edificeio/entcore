@@ -1,0 +1,188 @@
+
+.schedule{
+	.previous-timeslots{
+		width: 100%;
+		position: absolute;
+		left: 0;
+		top: 40px;
+		z-index: 800;
+	}
+	.next-timeslots{
+		width: 100%;
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		z-index: 800;
+		height: 27px;
+	}
+	.hidden-schedule-items {
+		&.after{
+			bottom: -24px;
+			top: initial;
+		}
+		position: absolute;
+		top: -27px;
+		z-index: 801;
+		font-size: 10px;
+		left: 50%;
+		width: 22px;
+		margin-left: -7px;
+		background: #fff;
+		border-radius: 15px;
+		text-align: center;
+		color: #666;
+		pointer-events: none;
+	}
+	width: 100%;
+	height: auto;
+	margin-left: 115px;
+	padding-right: 115px;
+	box-sizing: border-box;
+	overflow: visible;
+	legend.timeslots{
+		width: 115px;
+		background: #D9F1F1;
+		color: #777;
+		position: absolute;
+		left: -115px;
+		margin-top: 60px;
+	}
+	.timeslot{
+		height: 40px;
+		line-height: 40px;
+		text-align: center;
+		box-sizing: border-box;
+	}
+	.days{
+		width: 100%;
+		padding-top: 60px;
+		overflow: hidden;
+		position: relative;
+		height: 546px;
+		.day{
+			float: left;
+			width: 100% / 7;
+			position: relative;
+			legend{
+				width: 100%;
+				text-align: center;
+				height: 40px;
+				line-height: 40px;
+				color: #777;
+				background: #D9F1F1;
+				box-sizing: border-box;
+				position: absolute;
+				top: -60px;
+				z-index: 800;
+			}
+			.timeslots{
+				height: auto;
+				.timeslot{
+					background: #fdfdfd;
+					border-bottom: 1px solid #eee;
+					border-right: 1px solid #eee;
+					width: 100%;
+					box-sizing: border-box;
+				}
+			}
+		}
+	}
+
+	.schedule-items{
+		box-sizing: border-box;
+		.schedule-item{
+			@include run-transition(top);
+			width: 100%;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			position: absolute;
+			border: 1px solid transparent;
+			border-radius: 5px;
+			box-sizing: border-box;
+			z-index: 500;
+			container{
+				@include run-transition(all);
+			}
+			.schedule-item-content{
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				font-size: 12px;
+				text-align: left;
+				padding: 5px;
+				color: #fff;
+				line-height: 17px;
+				.pending-status::before{
+					position: absolute;
+					bottom: 12px;
+					right: 12px;
+					z-index: 510;
+				}
+				.suspended-status{
+					position: absolute;
+					bottom: 14px;
+					right: 13px;
+					z-index: 510;
+				}
+				.validated-status{
+					position: absolute;
+					bottom: 14px;
+					right: 12px;
+					z-index: 510;
+				}
+				.refused-status{
+					position: absolute;
+					bottom: 15px;
+					right: 14px;
+					z-index: 510;
+				}
+				.periodic-status{
+					position: absolute;
+					bottom: 15px;
+					right: 36px;
+					z-index: 510;
+				}
+			}
+		}
+		.schedule-item.one{
+			@include grid-cell-width(1);
+		}
+		.schedule-item.two{
+			@include grid-cell-width(2);
+		}
+		.schedule-item.three{
+			@include grid-cell-width(3);
+		}
+		.schedule-item.four{
+			@include grid-cell-width(4);
+		}
+		.schedule-item.six{
+			@include grid-cell-width(6);
+		}
+	}
+}
+
+.week-switcher{
+	z-index: 30;
+	font-size: 12px;
+	top: 15px;
+	.date-picker-icon{
+		margin-right: 8px;
+	}
+}
+
+
+.calendar-current-week{
+	position: absolute;
+	top: -63px;
+	height: 45px;
+	background: #efefef;
+	width: 100%;
+	text-align: right;
+	font-weight: bold;
+	line-height: 45px;
+	padding-right: 8px;
+	box-sizing: border-box;
+}

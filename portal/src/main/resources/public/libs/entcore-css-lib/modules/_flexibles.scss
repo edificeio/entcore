@@ -1,0 +1,25 @@
+
+
+.flexible{
+	@include run-transition(width);
+	.small-hidden{
+		display: none;
+	}
+}
+
+.flexible:empty{
+	width: 0 !important;
+}
+
+.empty-neighbour, .flexible.content:empty + .flexible.navigation{
+	width: 100% !important;
+	.patchwork{
+		padding-right: 0;
+	}
+	.small-hidden{
+		display: block;
+	}
+	.big-hidden{
+		display: none;
+	}
+}

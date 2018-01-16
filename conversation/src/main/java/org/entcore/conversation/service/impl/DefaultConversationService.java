@@ -610,7 +610,7 @@ public class DefaultConversationService implements ConversationService {
 
 	@Override
 	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
-			final String acceptLanguage, final Handler<Either<String, JsonObject>> result) {
+			final String acceptLanguage, String search, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
 		final JsonObject visible = new JsonObject();
 		String replyGroupQuery;

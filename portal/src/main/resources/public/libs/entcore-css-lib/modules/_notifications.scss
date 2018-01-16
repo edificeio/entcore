@@ -1,0 +1,177 @@
+.notification {
+    width: auto;
+    height: auto;
+    padding: 7px;
+    margin-bottom: 25px;
+    background: $white;
+    article {
+        margin: 0;
+        padding: 0;
+        height: auto;
+        width: calc(100% - 30px);
+        .notification-date {
+            position: absolute;
+            right: 35px;
+            top: 8px;
+            text-align: right;
+        }
+        >.row {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            &:after {
+                width: auto;
+            }
+        }
+		.avatar {
+			align-self: center;
+			width: auto;
+			height: auto;
+			margin: 15px 20px 15px 10px;
+
+			img, i.system-avatar {
+				height: 75px;
+                width: 75px;
+                max-width: none;
+                display: block;
+                border-radius: 50%;
+                object-fit: cover;
+			}
+		}
+    }
+    .content {
+        float: none;
+        width: 100%;
+		padding: 0;
+		margin: 20px 0;
+    }
+	i.sticker.app {
+		position: absolute;
+		bottom: 10px;
+		left: 60px;
+		width: 30px;
+		height: 30px;
+		line-height: 30px;
+		border-radius: 50%;
+		text-align: center;
+		font-size: 12px;
+
+	}
+    i.type {
+        float: left;
+    }
+    hr.underlined{
+        border-top: 1px solid $light-grey;
+        margin-left: 20px;
+        width: 95%;
+        padding: 0;
+    }
+}
+.notification div.notification-actions {
+    position: absolute;
+    overflow: hidden;
+    top: 0;
+    right: 0;
+    height: 100%;
+}
+.notification div.notification-actions:not(.opened) {
+    display: none;
+}
+.notification:hover div.notification-actions {
+    display: block;
+    width: 30px;
+}
+.notification div.notification-actions>.opener {
+    position: relative;
+    height: 100%;
+    display: table;
+    text-align: center;
+    width: 30px;
+    float: left;
+}
+.notification div.notification-actions>.opener>.left-open {
+    font-size: 13px;
+    display: table-cell;
+    vertical-align: middle;
+}
+.notification div.notification-actions>.actions {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    i {
+        margin-right: 10px;
+    }
+}
+.notification div.notification-actions>.actions>.action {
+    margin: 5px auto 5px 15%;
+    width: 90%;
+}
+.notification div.notification-actions.opened>.opener>.left-open {
+    transform: rotate(180deg);
+}
+.notification div.notification-actions.opened {
+    width: 55%;
+}
+
+@media screen and (max-width: $tablette) {
+    body {
+        .notification article .notification-date {
+            right: 10px;
+            top: 8px;
+        }
+        .notification div.notification-actions {
+            display: block !important;
+            width: 30px;
+        }
+        .notification div.notification-date {
+            margin-right: 30px;
+        }
+    }
+}
+
+@media screen and (max-width: $fat-mobile) {
+    body {
+        .notification article{
+            min-height: 95px;
+            .avatar {
+                width: 50px;
+                height: 50px;
+                margin: 10px 10px 20px 5px;
+                i.system-avatar,
+                img {
+                    width: 50px;
+                    height: 50px;
+                }
+
+                i.sticker.app {
+                    top: auto;
+                    bottom: -10px;
+                    left: 30px;
+                    width: 25px!important;
+                    height: 25px!important;
+                    line-height: 25px;
+                    font-size: 10px;
+                }
+            }
+            .content {
+                margin: 15px 10px 5px;
+            }
+            .notification-date em {
+                font-size: 10px!important;
+                line-height: 7px;
+            }
+        }
+        .notification div.notification-actions>.actions>.action {
+            margin-left: 15px;
+            width: auto;
+            font-size: 12px;
+        }
+    }
+}
+@media screen and (max-width: $small-mobile) {
+    .notification div.notification-actions.opened {
+        width: 80%;
+    }
+}

@@ -1,0 +1,112 @@
+a{
+	color: $accent;
+	@include run-transition(color);
+}
+
+span.no-style{
+	background: none !important;
+	display: inline !important;
+	padding: 0 !important;
+	border: none !important;
+	border-radius: 0 !important;
+	margin: 0 !important;
+}
+
+em.low-importance{
+	font-size: 12px !important;
+	height: 16px;
+	line-height: 16px;
+	text-align: right;
+}
+
+em.medium-importance{
+	font-style: normal;
+	color: #666;
+}
+
+em.high-importance{
+	font-style: normal;
+	font-weight: bold;
+	color: #666;
+}
+
+label{
+    line-height: 24px
+}
+
+.centered-text{
+	text-align: center !important;
+}
+.left-text{
+	text-align: left !important;
+}
+.strong-text{
+	font-size: $font-size + 8px;
+}
+.upper-title{
+	margin-bottom: 0;
+}
+
+.comment{
+	padding: 10px;
+	margin-top: 15px;
+	margin-bottom: 15px;
+}
+
+.user-content{
+	white-space: pre-line;
+}
+
+
+.inline{
+	margin: 0;
+}
+
+
+.text-flow{
+	display: inline-block !important;
+	float: none !important;
+	vertical-align: middle;
+}
+
+.cell-ellipsis{
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+strong.cell-ellipsis{
+	display: block;
+}
+
+.inline-editing{
+	color: darken($medium-grey, 40%);
+}
+
+.tiny-text{
+	font-size: 8px !important;
+}
+
+.smaller-text{
+	font-size: 10px !important;
+}
+
+.small-text{
+	font-size: 12px !important;
+	a, em, label, span{
+		font-size: 12px;
+	}
+	input.inline-editing{
+		margin-top: 0px;
+	}
+}
+
+.medium-text{
+	font-size: 14px !important;
+	a{
+		font-size: 14px;
+	}
+}
+
+.single-line{
+
+}

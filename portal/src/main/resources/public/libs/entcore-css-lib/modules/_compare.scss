@@ -1,0 +1,12 @@
+
+
+.compare{
+	max-width: 100%;
+	table-layout: fixed;
+	> tbody > tr > td, > thead > tr > td {
+		width: 50%;
+		*{
+			max-width: 100%;
+		}
+	}
+}

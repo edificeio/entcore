@@ -157,7 +157,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	template.open('userDetails', 'admin-user-details')
     $scope.structures = model.structures.structures
     $scope.lang = lang
-	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$")
+	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$")
     $scope.loadingWrapper = httpWrapper.wrap
 
 	$scope.DEFAULT_QUOTA_UNIT = 1048576
@@ -1159,21 +1159,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			translatedProfile: '',
 			classesStr: ''
 		},
-		userToString: function(u){
-			var result = ""
-			var stringProperties = ["lastName", "firstName", "profile", "login", "activationCode", "email"]
-			var arrayProperties = ["classes"]
-			var i
-			for(i = 0; i < stringProperties.length; i++){
-				if(i > 0)
-					result += ";"
-				result += u[stringProperties[i]]
-			}
-			for(i = 0; i < arrayProperties.length; i++){
-				result += ";" + u[arrayProperties[i]].join(',')
-			}
-			return result
-		},
+        userToString: function(u){
+            return u["lastName"] +";"+ u["firstName"] +";"+lang.translate(u["profile"])+";"+u["login"]+";"+u["activationCode"]+";"+(u["email"] === null ? "" : u["email"])+ ";" + u["classes"].join(',');
+        },
 		exportCSV: function(){
 			var csvHeader = ""
 			var bom = "\ufeff"

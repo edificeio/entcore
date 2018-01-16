@@ -29,10 +29,16 @@ import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.*;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.http.HttpClient;
+import org.vertx.java.core.http.HttpClientRequest;
+import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 
 public class PostImport {
@@ -43,8 +49,10 @@ public class PostImport {
 	private final DuplicateUsers duplicateUsers;
 	private final Neo4j neo4j = TransactionManager.getNeo4jHelper();
 	private final JsonObject config;
+	private final Vertx vertx;
 
 	public PostImport(Vertx vertx, DuplicateUsers duplicateUsers, JsonObject config) {
+		this.vertx = vertx;
 		this.eb = vertx.eventBus();
 		eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 		this.duplicateUsers = duplicateUsers;
@@ -52,25 +60,102 @@ public class PostImport {
 	}
 
 	public void execute() {
+		execute(null);
+	}
+
+	public void execute(String source) {
 		storeImportedEvent();
-		duplicateUsers.markDuplicates(new Handler<JsonObject>() {
-			@Override
-			public void handle(final JsonObject event) {
-			duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+		if (source == null || config.getArray("exclude-mark-duplicates-by-source") == null ||
+				!config.getArray("exclude-mark-duplicates-by-source").contains(source)) {
+			duplicateUsers.markDuplicates(new Handler<JsonObject>() {
 				@Override
-				public void handle(AsyncResult<JsonArray> mergedUsers) {
-				applyComRules(new VoidHandler() {
-					@Override
-					protected void handle() {
+				public void handle(final JsonObject event) {
+					duplicateUsers.autoMergeDuplicatesInStructure(new AsyncResultHandler<JsonArray>() {
+						@Override
+						public void handle(AsyncResult<JsonArray> mergedUsers) {
+							applyComRules(new VoidHandler() {
+								@Override
+								protected void handle() {
+									if (config.getBoolean("notify-apps-after-import", true)) {
+										ApplicationUtils.afterImport(eb);
+									}
+									if (config.getObject("ws-call-after-import") != null) {
+										wsCall(config.getObject("ws-call-after-import"));
+									}
+								}
+							});
+						}
+					});
+				}
+			});
+		} else {
+			applyComRules(new VoidHandler() {
+				@Override
+				protected void handle() {
 					if (config.getBoolean("notify-apps-after-import", true)) {
 						ApplicationUtils.afterImport(eb);
 					}
+					if (config.getObject("ws-call-after-import") != null) {
+						wsCall(config.getObject("ws-call-after-import"));
 					}
-				});
 				}
 			});
+		}
+	}
+
+	private void wsCall(JsonObject object) {
+		for (String url : object.getFieldNames()) {
+			final JsonArray endpoints = object.getArray(url);
+			if (endpoints == null || endpoints.size() < 1) continue;
+			try {
+				final URI uri = new URI(url);
+				final HttpClient client = vertx.createHttpClient().setHost(uri.getHost())
+						.setPort(uri.getPort()).setMaxPoolSize(16)
+						.setSSL("https".equals(uri.getScheme()))
+						.setConnectTimeout(10000)
+						.setKeepAlive(false);
+				final VoidHandler[] handlers = new VoidHandler[endpoints.size() + 1];
+				handlers[handlers.length -1] = new VoidHandler() {
+					@Override
+					protected void handle() {
+						client.close();
+					}
+				};
+				for (int i = endpoints.size() - 1; i >= 0; i--) {
+					final int ji = i;
+					handlers[i] = new VoidHandler() {
+						@Override
+						protected void handle() {
+							final JsonObject j = endpoints.get(ji);
+							logger.info("endpoint : " + j.encode());
+							final HttpClientRequest req = client.request(j.getString("method"), j.getString("uri"), new Handler<HttpClientResponse>() {
+								@Override
+								public void handle(HttpClientResponse resp) {
+									if (resp.statusCode() >= 300) {
+										logger.warn("Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+									}
+									handlers[ji + 1].handle(null);
+								}
+							});
+							JsonObject headers = j.getObject("headers");
+							if (headers != null && headers.size() > 0) {
+								for (String h : headers.getFieldNames()) {
+									req.putHeader(h, headers.getString(h));
+								}
+							}
+							if (j.getString("body") != null) {
+								req.end(j.getString("body"));
+							} else {
+								req.end();
+							}
+						}
+					};
+				}
+				handlers[0].handle(null);
+			} catch (URISyntaxException e) {
+				logger.error("Invalid uri in ws call after import : " + url, e);
 			}
-		});
+		}
 	}
 
 	private void storeImportedEvent() {

@@ -38,21 +38,21 @@ object TimelineScenario {
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("clientCredentialsToken")))
     .exec(http("MyExternalApp publish on Timeline")
-      .post("/timeline/publish")
-      .header("Authorization", "Bearer ${clientCredentialsToken}")
-      .body(StringBody(
-        """{"message":"Lorem ipsum", "recipients" : [
-            {"userId" : "${teacherId}", "unread" : 1},
-            {"userId" : "${studentId}", "unread" : 1}
-            ],
-            "type" : "MY_EXTERNAL_APP_EVENT",
-            "params": {}
-        }"""))
-      .check(status.is(201)))
+       .post("/timeline/publish")
+       .header("Authorization", "Bearer ${clientCredentialsToken}")
+       .body(StringBody(
+         """{"message":"Lorem ipsum", "recipients" : [
+             {"userId" : "${teacherId}", "unread" : 1},
+             {"userId" : "${studentId}", "unread" : 1}
+             ],
+             "type" : "MY_EXTERNAL_APP_EVENT",
+             "params": {}
+         }"""))
+       .check(status.is(201)))
     .exec(http("MyExternalApp list events on Timeline")
     .get("/timeline/lastNotifications")
-      .header("Authorization", "Bearer ${clientCredentialsToken}")
-      .check(status.is(401)))
+       .header("Authorization", "Bearer ${clientCredentialsToken}")
+       .check(status.is(401)))
     .exec(http("Login teacher")
     .post("""/auth/login""")
       .formParam("""email""", """${teacherLogin}""")
@@ -60,7 +60,7 @@ object TimelineScenario {
       .check(status.is(302)))
     .exec(http("MyExternalApp list events on Timeline")
     .get("/timeline/lastNotifications")
-      .check(status.is(200), jsonPath("$.results[0].message").find.is("Lorem ipsum")))
+       .check(status.is(200), jsonPath("$.results[0].message").find.is("Lorem ipsum")))
     .exec(http("Logout teacher user")
       .get("""/auth/logout""")
       .check(status.is(302)))

@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
@@ -63,7 +64,7 @@ public class DefaultSchoolService implements SchoolService {
 	public void getByClassId(String classId, Handler<Either<String, JsonObject>> result) {
 		String query =
 				"match (c:`Class` {id : {id}})-[:BELONGS]->(s:`Structure`) " +
-				"return s.id as id, s.UAI as UAI, s.name as name";
+				"return s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId ";
 		neo.execute(query, new JsonObject().putString("id", classId), validUniqueResultHandler(result));
 	}
 
@@ -340,6 +341,77 @@ public class DefaultSchoolService implements SchoolService {
 		String query = filter + condition + optional + withStr + returnStr + sort;
 
 		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
+	@Override
+	public void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
+		String filter =
+				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
+						"(g)-[:HAS_PROFILE]-(p: Profile) ";
+		String condition = "";
+		String optional =
+				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+
+		//Admin check
+		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+				!userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			results.handle(new Either.Left<String, JsonArray>("forbidden"));
+			return;
+		} else if (userInfos.getFunctions().containsKey(ADMIN_LOCAL)) {
+			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
+			List<String> scope = f.getScope();
+			if (scope != null && !scope.isEmpty()) {
+				condition += "WHERE s.id IN {scope} ";
+				params.putArray("scope", new JsonArray(scope.toArray()));
+			}
+		}
+
+		//With clause
+		String withStr =
+				"WITH u, p ";
+
+		//Return clause
+		String returnStr =
+				"RETURN distinct collect(p.name)[0] as type, " +
+						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+						"u.email as email, u.login as login, u.activationCode as code ";
+
+		withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+		returnStr += ", classes, classname, isInClass ";
+
+		withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
+		returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
+
+		String sort = "ORDER BY lastName";
+
+		String query = filter + condition + optional + withStr + returnStr + sort;
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+	
+	@Override
+	public void listSources(String structureId, Handler<Either<String, JsonArray>> result) {
+		String query = 
+			"MATCH (u:User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE s.id = {structureId} " + 
+			"RETURN collect(distinct u.source) as sources";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(result));
+	}
+	
+	@Override
+	public void listAafFunctions(String structureId, Handler<Either<String, JsonArray>> result) {
+		String query = 
+			"MATCH (u:User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE s.id = {structureId} " + 
+			"RETURN collect(DISTINCT EXTRACT(function IN u.functions | last(split(function, \"$\")))) as aafFunctions";
+
+		JsonObject params = new JsonObject().putString("structureId", structureId);
+		neo.execute(query, params, Neo4jResult.validResultHandler(result));
 	}
 
 	@Override

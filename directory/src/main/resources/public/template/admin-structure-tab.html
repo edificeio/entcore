@@ -38,7 +38,7 @@
             <strong class="four cell padding-top-5">[[lang.translate("directory.structure.parents")]]</strong>
             <nav class="eight cell">
                 <ul class="angle-list small" style="margin: 0">
-                    <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name'">
+                    <li ng-repeat="parent in structures.all | filter : filterOnlyParentStructures | orderBy: 'name' track by parent.id">
                         [[parent.name]] <button ng-if="isCentralAdmin()" class="right-magnet close" ng-click="structure.detachParent(parent, refreshScope)"></button>
                     </li>
                 </ul>
@@ -88,7 +88,7 @@
             <nav class="vertical search-container-left three cell" style="min-height: 380px; height: 380px">
                 <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="filterStructures"/>
                 <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
-                    <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | filter: filterExcludeDoubles(structure.children) | orderBy: 'name'"
+                    <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | filter: filterExcludeDoubles(structure.children) | orderBy: 'name' track by potentialChild.id"
                         ng-click="potentialChild.attachParent(structure, refreshScope)"
                         style="padding-left: 0">
                         <span>[[potentialChild.name]]</span>
@@ -98,7 +98,7 @@
             <div class="eight cell">
                 <h5 style="text-align: center">[[lang.translate("directory.structure.children")]]</h5>
                 <ul class="angle-list small" style="padding-left: 20px">
-                    <li ng-repeat="child in structures.all | filter: filterOnlyChildStructures | orderBy: 'name'">
+                    <li ng-repeat="child in structures.all | filter: filterOnlyChildStructures | orderBy: 'name' track by child.id">
                         [[child.name]]
                         <button class="close right-magnet" ng-click="child.detachParent(structure, refreshScope)"></button>
                     </li>

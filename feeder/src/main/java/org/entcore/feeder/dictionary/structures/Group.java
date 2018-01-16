@@ -19,13 +19,18 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import java.util.UUID;
+
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
+import org.entcore.feeder.utils.Validator;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.UUID;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Group {
 
@@ -38,6 +43,9 @@ public class Group {
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
 			if (create) {
 				object.putString("id", id);
+			}
+			if (isNotEmpty(object.getString("name"))) {
+				object.putString("displayNameSearchField", Validator.sanitize(object.getString("name")));
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
@@ -74,5 +82,36 @@ public class Group {
 				"DELETE g, r";
 		transactionHelper.add(query, new JsonObject().putString("id", id));
 	}
-
+	
+	public static void addUsers(String groupId, JsonArray userIds, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User), (g:Group) " +
+				"WHERE g.id = {groupId} AND u.id IN {userIds} " +
+				"AND ('ManualGroup' IN labels(g) OR 'FunctionalGroup' IN labels(g)) " +
+				"CREATE UNIQUE (u)-[:IN {source:'MANUAL'}]->(g) " +
+				"WITH g, u " +
+				"WHERE 'FunctionalGroup' IN labels(g) " +
+				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> g.externalId) + g.externalId ";
+		
+		JsonObject params = new JsonObject()
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		
+		transactionHelper.add(query, params);
+	}
+	
+	public static void removeUsers(String groupId, JsonArray userIds, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User)-[r:IN|COMMUNIQUE]->(g:Group) " +
+				"WHERE g.id = {groupId} AND u.id IN {userIds} " +
+				"AND ('ManualGroup' IN labels(g) OR 'FunctionalGroup' IN labels(g)) " +
+				"SET u.groups = FILTER(gId IN coalesce(u.groups, []) WHERE gId <> g.externalId) " +
+				"DELETE r ";
+				
+		JsonObject params = new JsonObject()
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		
+		transactionHelper.add(query, params);
+	}
 }

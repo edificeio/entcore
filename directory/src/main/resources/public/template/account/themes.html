@@ -1,0 +1,15 @@
+<div class="row">
+    <article class="twelve cell vertical-spacing">
+        <div>
+            <h4><i18n>themes.title</i18n></h4>
+        </div>
+
+        <div ng-repeat="theme in themes" class="themes-list">
+            <label class="theme">
+                <input type="checkbox" ng-model="account.themes[theme.child]" value="[[theme.child]]" ng-change="setThemePreferences(theme.child)" />
+                <span translate content="[[theme.parent]]"></span>
+                <br /><img skin-src="/img/illustrations/[[theme.parent]].png" />
+            </label>
+        </div>
+    </article>
+</div>

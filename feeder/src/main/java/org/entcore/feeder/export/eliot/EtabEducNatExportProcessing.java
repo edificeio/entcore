@@ -65,7 +65,7 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				Structure.count(value);
+				Structure.count(EliotExporter.ELIOT, value);
 			}
 
 			@Override
@@ -89,7 +89,7 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				Structure.list(attributes, skip, limit, value);
+				Structure.list(EliotExporter.ELIOT, attributes, skip, limit, value);
 			}
 
 			@Override
@@ -99,7 +99,7 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 					JsonArray rs = r.get(0);
 					handler.handle(rs);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(null);
 				}
 			}
 		});

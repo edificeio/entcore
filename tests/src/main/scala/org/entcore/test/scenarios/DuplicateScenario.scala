@@ -92,7 +92,7 @@ object DuplicateScenario {
     .get("""/directory/duplicates""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
-    }).is(1)))
+    }).is(9)))
 
     .exec(Authenticate.authenticateUser("${teacherLogin}", "blipblop"))
     .exec(http("List duplicates")
@@ -106,7 +106,7 @@ object DuplicateScenario {
     .exec(http("List duplicates")
     .get("""/directory/duplicates?structure=${parent-structure-id}&inherit=true""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
-      JSONValue.parse(j).asInstanceOf[JSONArray].size()}).is(1),
+      JSONValue.parse(j).asInstanceOf[JSONArray].size()}).is(9),
       jsonPath("$").find.transformOption(_.map{ j =>
         JSONValue.parse(j).asInstanceOf[JSONArray].asScala.toList
           .filter{i =>

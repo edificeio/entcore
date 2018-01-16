@@ -18,13 +18,14 @@
  ~
  -->
 
-<p class="row info tuto">
-	<b><i18n>tuto.title</i18n></b><br>
-	<b><i18n>tuto.action.select</i18n></b> <i18n>tuto.text.select</i18n><br>
-	<b><i18n>tuto.action.open</i18n></b> <i18n>tuto.text.open</i18n>
-</p>
+<infotip name="workspace-explorer-tutorial" class="info">
+	<strong><i18n>tuto.title</i18n></strong>
+	<br /><strong><i18n>tuto.action.select</i18n></strong> <i18n>tuto.text.select</i18n>
+	<br /><strong><i18n>tuto.action.open</i18n></strong> <i18n>tuto.text.open</i18n>
+</infotip>
 
-<article class="icons-view" drop-files="newFile.files" on-drop="setFilesName();addLoadingFiles();">
+
+<article class="icons-view">
 	<header>&nbsp;</header>
 	<div>
 		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }">
@@ -74,24 +75,13 @@
 				</div>
 			</explorer>
 
-		</div><!--
-		--><div ng-repeat="file in loadingFiles | filter:{loading:true}" class="element loading">
-			<a class="container cell">
-				<i class="loading-panel"></i>
-			</a>
-
-			<legend>
-				<a ng-href="[[file.file.name]]">
-				</a>
-				<a><strong>[[me.username]]</strong></a>
-			</legend>
-		</div><!--
-		--><div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		</div>
+		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<explorer ng-model="document.selected" on-open="viewFile(document)">
-				<a class="[[document.metadata.contentType]] container cell">
-					<i class="[[document.metadata.contentType]]-large" ng-if="document.metadata.contentType !== 'img'">
+				<a class="[[document.metadata.role]] container cell">
+					<i class="[[document.metadata.role]]-large" ng-if="document.metadata.role !== 'img'">
 					</i>
-					<div ng-if="document.metadata.contentType === 'img'" class="twelve cell">
+					<div ng-if="document.metadata.role === 'img'" class="twelve cell">
 						<div class="clip">
 							<img ng-src="[[document.icon]]?thumbnail=120x120&v=[[document.version]]" alt="thumbnail" />
 						</div>

@@ -44,6 +44,15 @@ public class GenericDao {
 		});
 	}
 
+	public void findById(String id, JsonObject keys, final Handler<JsonObject> handler) {
+		mongo.findOne(collection,  idMatcher(id), keys, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> res) {
+				handler.handle(res.body());
+			}
+		});
+	}
+
 	private JsonObject idMatcher(String id) {
 		String query = "{ \"_id\": \"" + id + "\"}";
 		return new JsonObject(query);

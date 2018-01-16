@@ -39,7 +39,6 @@ import static org.vertx.testtools.VertxAssert.*;
 
 public class FeederTest extends TestVerticle {
 
-	public static final String NEO4J_PERSISTOR = "neo4j.persistor";
 	public static final String ENTCORE_FEEDER = "entcore.feeder";
 	private String neo4jDeploymentId;
 	private TemporaryFolder neo4jTmpFolder;
@@ -59,46 +58,33 @@ public class FeederTest extends TestVerticle {
 			return;
 		}
 		vertx.fileSystem().copySync(FeederTest.class.getClassLoader().getResource("aaf-test").getPath(),
-				importTmpFolder.getRoot().getAbsolutePath(), true);
-		JsonObject neo4jConfig = new JsonObject()
-			.putString("address", NEO4J_PERSISTOR)
-			.putString("datastore-path", neo4jTmpFolder.getRoot().getAbsolutePath())
-			.putObject("neo4j", new JsonObject()
-					.putString("node_keys_indexable", "externalId")
-					.putString("node_auto_indexing", "true"));
-		container.deployModule("fr.wseduc~mod-neo4j-persistor~1.6.0", neo4jConfig, 1,
-				new AsyncResultHandler<String>() {
-			@Override
-			public void handle(AsyncResult<String> event) {
-				JsonObject config = new JsonObject()
-						.putString("neo4j-address", NEO4J_PERSISTOR)
-						.putString("feeder", "AAF")
-						.putString("import-files", importTmpFolder.getRoot().getAbsolutePath())
-						.putNumber("delete-user-delay", 10000l)
-						.putNumber("pre-delete-user-delay", 1000l)
-						.putString("delete-cron", "0 */1 * * * ? *")
-						.putString("pre-delete-cron", "0 */1 * * * ? *");
-				container.deployModule(System.getProperty("vertx.modulename"), config, 1,
-						new AsyncResultHandler<String>() {
-							public void handle(AsyncResult<String> ar) {
-								if (ar.succeeded()) {
-									eb = vertx.eventBus();
-									neo4j = new Neo4j(eb, NEO4J_PERSISTOR);
-									neo4jDeploymentId = ar.result();
-									neo4j.execute("CREATE (n:DeleteGroup {externalId :'DeleteGroup'})", null,
-											new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> event) {
-											FeederTest.super.start();
-										}
-									});
-								} else {
-									ar.cause().printStackTrace();
-								}
+			importTmpFolder.getRoot().getAbsolutePath(), true);
+			JsonObject config = new JsonObject()
+					.putString("feeder", "AAF")
+					.putString("import-files", importTmpFolder.getRoot().getAbsolutePath())
+					.putNumber("delete-user-delay", 10000l)
+					.putNumber("pre-delete-user-delay", 1000l)
+					.putString("delete-cron", "0 */1 * * * ? *")
+					.putString("pre-delete-cron", "0 */1 * * * ? *");
+			container.deployModule(System.getProperty("vertx.modulename"), config, 1,
+					new AsyncResultHandler<String>() {
+						public void handle(AsyncResult<String> ar) {
+							if (ar.succeeded()) {
+								eb = vertx.eventBus();
+								neo4j = Neo4j.getInstance();
+								neo4jDeploymentId = ar.result();
+								neo4j.execute("CREATE (n:DeleteGroup {externalId :'DeleteGroup'})", new JsonObject(),
+										new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										FeederTest.super.start();
+									}
+								});
+							} else {
+								ar.cause().printStackTrace();
 							}
-						});
-			}
-		});
+						}
+					});
 	}
 
 	@Override

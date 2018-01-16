@@ -1,0 +1,10 @@
+<lightbox show="!template.isEmpty('lightbox')" on-close="template.close('lightbox')">
+    <container template="lightbox"></container>
+</lightbox>
+<lightbox show="display.share">
+    <container template="share"></container>
+</lightbox>
+<div ng-if="display.editImage">
+    <image-editor document="display.editedImage" show="display.editImage"></image-editor>
+</div>
+<import-files show="display.importFiles"></import-files>

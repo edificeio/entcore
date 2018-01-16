@@ -85,7 +85,8 @@ public class DefaultGroupService implements GroupService {
 				"WITH g, collect({name: c.name, id: c.id}) as classes, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, type, "+
-				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes";
+				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
+				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
 		neo.execute(query, params, validResultHandler(results));
 	}
 
@@ -128,6 +129,24 @@ public class DefaultGroupService implements GroupService {
 				"MATCH (s:Structure)<-[:DEPENDS" + sub + "]-(g:" + type + ") " + condition +
 				"RETURN g.id as id, g.name as name, g.displayName as displayName ";
 		neo.execute(query, params, validResultHandler(results));
+	}
+	
+	@Override
+	public void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-add-group-users")
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
+	}
+	
+	@Override
+	public void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.putString("action", "manual-remove-group-users")
+				.putString("groupId", groupId)
+				.putArray("userIds", userIds);
+		eventBus.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
 }

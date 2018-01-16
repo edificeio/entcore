@@ -77,10 +77,16 @@ var ui = (function() {
         },
         setStyle: function(stylePath) {
             if ($('#theme').length === 0) {
+                var version = 'dev';
+                if(window.springboardBuildDate){
+                    version = window.springboardBuildDate;
+                    console.log('Springboard built on ' + version);
+                }
+    
                 var style = $('<link>', {
                     rel: 'stylesheet',
                     type: 'text/css',
-                    href: stylePath + 'theme.css',
+                    href: stylePath + 'theme.css?version=' + version,
                     id: 'theme'
                 });
                 var favicon = $('<link>', {

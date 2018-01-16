@@ -96,6 +96,13 @@ project(':common') {
   }
 }
 
+project(':admin') {
+  dependencies {
+    compile project(':common')
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
+  }
+}
+
 project(':app-registry') {
   dependencies {
     compile project(':common')
@@ -104,12 +111,13 @@ project(':app-registry') {
   }
 }
 
+
 project(':auth') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-    compile "jp.eisbahn:oauth2-server:1.2-SNAPSHOT"
+    compile "jp.eisbahn:oauth2-server:1.2.0"
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
   }
@@ -151,6 +159,8 @@ project(':workspace') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    compile "com.sun.jna:jna:$jnaVersion"
+    compile "net.sf:lamejb:$lamejbVersion"
   }
 }
 
@@ -159,6 +169,7 @@ project(':conversation') {
     compile project(':common')
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
+    compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
   }
 }
 
@@ -166,7 +177,7 @@ project(':feeder') {
   dependencies {
     compile project(':common')
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
-    compile "net.sf.opencsv:opencsv:$opencsvVersion"
+    compile "com.opencsv:opencsv:$opencsvVersion"
     compile "com.googlecode.juniversalchardet:juniversalchardet:$juniversalchardetVersion"
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
   }

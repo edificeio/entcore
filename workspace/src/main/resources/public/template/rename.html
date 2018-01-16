@@ -1,7 +1,7 @@
 <h2 translate content="workspace.rename"></h2>
 
 <div class="row">
-    <label class="two cell" translate content="workspace.name"></label>
+    <label class="two cell">[[renameTarget.folder ? translate("workspace.folder.name") : translate("workspace.document.name")]]</label>
     <input class="ten cell" type="text" ng-model="renameTarget.newName" placeholder="[[renameTarget.name]]" autofocus />
     <hr />
 </div>

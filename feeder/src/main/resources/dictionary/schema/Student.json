@@ -146,6 +146,10 @@
 			"type" : "string",
 			"validator" : "notEmpty"
 		},
+		"ine" : {
+		  "type" : "string",
+		  "validator" : "notEmpty"
+		},
 		"fieldOfStudy" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
@@ -159,7 +163,11 @@
 		"id" : {"generator":"uuid4", "args":[]},
 		"login" : {"generator":"login", "args":["firstName", "lastName"]},
 		"displayName" : {"generator":"displayName", "args":["firstName", "lastName"]},
-		"activationCode" : {"generator":"activationCode", "args":["password"]}
+		"activationCode" : {"generator":"activationCode", "args":["password"]},
+		"created" : { "generator" : "nowDate", "args":[]},
+		"modified" : { "generator" : "nowDate", "args":[]},
+		"firstNameSearchField" : { "generator" : "sanitize", "args" : ["firstName"]},
+		"lastNameSearchField" : { "generator" : "sanitize", "args" : ["lastName"]}
 	},
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName", "birthDate"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",

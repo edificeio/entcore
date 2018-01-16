@@ -1,0 +1,1 @@
+alter table conversation.messages alter column "fromName" type varchar(255);

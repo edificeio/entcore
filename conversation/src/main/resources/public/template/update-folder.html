@@ -27,7 +27,7 @@
 	<hr />
 </div>
 
-<div class="lightbox-buttons fluid centered">
-    <input type="submit" i18n-value="modify" ng-click="updateFolder()" ng-disabled="!targetFolder.name"/>
-    <input type="button" class="cancel button" i18n-value="cancel" ng-click="lightbox.show = false"/>
+<div class="row">
+    <button ng-click="updateFolder()" class="right-magnet" ng-disabled="!targetFolder.name"><i18n>modify</i18n></button>
+    <button type="button" class="cancel right-magnet" ng-click="lightbox.show = false"><i18n>cancel</i18n></button>
 </div>

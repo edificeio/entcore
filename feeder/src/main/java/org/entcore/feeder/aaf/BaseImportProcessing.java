@@ -82,6 +82,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 					try {
 						String file = files[j];
 						log.info("Parsing file : " + file);
+						importer.getReport().loadedFile(file);
 						byte[] encoded = Files.readAllBytes(Paths.get(file));
 						String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
 						InputSource in = new InputSource(new StringReader(content));

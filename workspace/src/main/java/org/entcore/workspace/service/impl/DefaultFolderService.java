@@ -200,7 +200,7 @@ public class DefaultFolderService implements FolderService {
 									public void handle(Message<JsonObject> event) {
 										if ("ok".equals(event.body().getString("status")) &&
 												event.body().getInteger("count") == 0) {
-											recursiveMove(folder, name, owner, path, result);
+											recursiveMove(folder, name, owner.getUserId(), path, result);
 										} else {
 											result.handle(new Either.Left<String, JsonObject>(
 													"workspace.folder.already.exists"));
@@ -215,10 +215,10 @@ public class DefaultFolderService implements FolderService {
 				});
 	}
 
-	private void recursiveMove(final String folder, final String name, final UserInfos owner,
+	private void recursiveMove(final String folder, final String name, final String owner,
 				final String path, final Handler<Either<String, JsonObject>> result) {
 		final String folderAttr = "Trash".equals(path) ? "old-folder" : "folder";
-		final QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put(folderAttr)
+		final QueryBuilder q = QueryBuilder.start("owner").is(owner).put(folderAttr)
 				.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 
 		//If the folder has a parent folder, replicate sharing rights
@@ -248,7 +248,7 @@ public class DefaultFolderService implements FolderService {
 								for (Object o : directories) {
 									if (!(o instanceof String)) continue;
 									String dir = (String) o;
-									QueryBuilder qf = QueryBuilder.start("owner").is(owner.getUserId())
+									QueryBuilder qf = QueryBuilder.start("owner").is(owner)
 											.put(folderAttr).is(dir);
 									MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 									modifier.set("folder", dir.replaceFirst("^" + Pattern.quote(folder), Matcher.quoteReplacement(dest)));
@@ -426,17 +426,33 @@ public class DefaultFolderService implements FolderService {
 			result.handle(new Either.Left<String, JsonObject>("workspace.folder.not.found"));
 			return;
 		}
-		QueryBuilder query = QueryBuilder.start("_id").is(id).put("owner").is(owner.getUserId());
-		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1);
+		final QueryBuilder resourceQuery = QueryBuilder.start("_id").is(id);
+
+		final List<DBObject> groups = new ArrayList<>();
+		groups.add(QueryBuilder.start("userId").is(owner.getUserId()).get());
+		for (String gpId: owner.getGroupsIds()) {
+			groups.add(QueryBuilder.start("groupId").is(gpId).get());
+		}
+
+		final QueryBuilder rightQuery = new QueryBuilder().or(
+				QueryBuilder.start("owner").is(owner.getUserId()).get(),
+				QueryBuilder.start("shared").elemMatch(
+						new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
+				).get());
+
+		final QueryBuilder query = new QueryBuilder().and(resourceQuery.get(), rightQuery.get());
+
+		JsonObject keys = new JsonObject().putNumber("folder", 1).putNumber("name", 1).putNumber("owner", 1);
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys,
 				new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						final String folder = event.body().getObject("result", new JsonObject()).getString("folder");
 						final String name = event.body().getObject("result", new JsonObject()).getString("name");
+						final String owner = event.body().getObject("result", new JsonObject()).getString("owner");
 						if ("ok".equals(event.body().getString("status")) &&
 								folder != null && !folder.trim().isEmpty()) {
-							QueryBuilder q = QueryBuilder.start("owner").is(owner.getUserId()).put("folder")
+							QueryBuilder q = QueryBuilder.start("owner").is(owner).put("folder")
 									.regex(Pattern.compile("^" + Pattern.quote(folder) + "($|_)"));
 							MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 							modifier.rename("folder", "old-folder");

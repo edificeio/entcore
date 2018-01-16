@@ -1,30 +1,9 @@
 ﻿var gulp = require('gulp');
-var less = require('gulp-less');
-var sass = require('gulp-sass');
-var rename = require("gulp-rename");
-var merge = require('merge2');
 
-var localCSSLibPath = '../entcore-css-lib'
+require('./gulpfile-admin.js');
+require('./gulpfile-ts.js');
+require('./admin/gulpfile.admin.js')
+var loader = require('./gulpfile-loader');
 
-gulp.task('copy-csslib', () => {
-    var lib = gulp.src(localCSSLibPath + '/**/*')
-        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'));
-    var editorTemplates = gulp.src(localCSSLibPath + '/editor-resources/img/**/*')
-        .pipe(gulp.dest('./portal/src/main/resources/public/entcore-css-lib/editor-resources/img'));
-
-    return merge([lib, editorTemplates]);
-});
-
-gulp.task('sass', ['copy-csslib'], () => {
-    return gulp.src('./portal/src/main/resources/public/libs/entcore-css-lib/_css-lib.scss')
-        .pipe(rename("css-lib.scss"))
-        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib'))
-        .pipe(sass())
-        .pipe(gulp.dest('./portal/src/main/resources/public/libs/entcore-css-lib/entcore-css-lib'))
-});
-
-gulp.task('admin-theme', ['sass'], () => {
-    return gulp.src('./portal/src/main/resources/public/admin/**/theme.less')
-        .pipe(less())
-        .pipe(gulp.dest('./portal/src/main/resources/public/admin'));
-});
+gulp.task('build', loader().buildList(), () => {});
+gulp.task('build-local', loader().buildLocalList(), () => {})

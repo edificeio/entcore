@@ -21,6 +21,7 @@ package org.entcore.feeder.utils;
 
 import fr.wseduc.webutils.I18n;
 import org.entcore.common.neo4j.Neo4j;
+import org.joda.time.DateTime;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -39,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class Validator {
 
 	private static final Logger log = LoggerFactory.getLogger(Validator.class);
@@ -53,7 +56,7 @@ public class Validator {
 		patterns.put("email", Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$"));
 		patterns.put("zipCode", Pattern.compile("^[A-Za-z0-9\\-\\s]{4,9}$")); // ^[0-9]{5}$
 		patterns.put("phone", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$")); // "^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$"
-		patterns.put("mobile", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$"));
+		patterns.put("mobile", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$"));
 		patterns.put("notEmpty", Pattern.compile("^(?=\\s*\\S).*$"));
 		patterns.put("birthDate", Pattern.compile("^((19|20)\\d\\d)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"));
 		patterns.put("BCrypt", Pattern.compile("^\\$2a\\$\\d{2}\\$([A-Za-z0-9+\\\\./]{22})"));
@@ -206,6 +209,10 @@ public class Validator {
 		if (generatedAttributes != null) {
 			object.mergeIn(generatedAttributes);
 		}
+		JsonObject g = generate.getObject("modified");
+		if (g != null) {
+			nowDate("modified", object);
+		}
 		return (object.size() > 0) ? null : "Empty object.";
 	}
 
@@ -245,6 +252,12 @@ public class Validator {
 				case "activationCode" :
 					activationCodeGenerator(attr, object, getParameter(object, j));
 					break;
+				case "nowDate" :
+					nowDate(attr, object);
+					break;
+				case "sanitize" :
+					sanitizeGenerator(attr, object, getParameter(object, j));
+					break;
 				default:
 			}
 		}
@@ -269,6 +282,24 @@ public class Validator {
 			v = object.getString((String) args.get(0));
 		}
 		return v;
+	}
+
+	private void nowDate(String attr, JsonObject object) {
+		object.putString(attr, DateTime.now().toString());
+	}
+
+	private void sanitizeGenerator(String attr, JsonObject object, String field) {
+		if (isNotEmpty(field)) {
+			object.putString(attr, sanitize(field));
+		}
+	}
+
+	public static String sanitize(String field) {
+		return removeAccents(field)
+				.replaceAll("\\s+", "")
+				.replaceAll("\\-","")
+				.replaceAll("'","")
+				.toLowerCase();
 	}
 
 	private void activationCodeGenerator(String attr, JsonObject object, String password) {
@@ -298,8 +329,8 @@ public class Validator {
 			String firstName = in[0];
 			String lastName = in[1];
 			if (firstName != null && lastName != null) {
-				String login = (removeAccents(firstName).replaceAll("\\s+", "-").toLowerCase()
-						+ "." + removeAccents(lastName).replaceAll("\\s+", "-").toLowerCase())
+				String login = (removeAccents(firstName).replaceAll("\\s+", "").toLowerCase()
+						+ "." + removeAccents(lastName).replaceAll("\\s+", "").toLowerCase())
 						.replaceAll("'", "");
 				int i = 2;
 				String l = login + "";
@@ -368,6 +399,10 @@ public class Validator {
 		if (p == null) {
 			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
 		}
+		// hack #16883
+		if ("mobile".equals(validator) && value instanceof String && ((String) value).isEmpty()) {
+			return null;
+		}
 		if (value instanceof String && p.matcher((String) value).matches()) {
 			if ("email".equals(validator) && !"emailAcademy".equals(attr) &&
 					invalidEmails != null && invalidEmails.containsKey(value)) {
@@ -408,18 +443,18 @@ public class Validator {
 				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
 					JsonArray l = ((JsonObject) r.get(0)).getArray("logins");
 					if (l != null) {
+						final Set<Object> tmp = new HashSet<>(l.toList());
 						if (remove) {
-							Set<Object> tmp = new HashSet<>(l.toList());
 							for (Object key : logins.keySet()) {
 								if (!tmp.contains(key)) {
 									logins.remove(key);
+								} else {
+									tmp.remove(key);
 								}
 							}
-						} else {
-							for (Object o : l) {
-								if (!(o instanceof String)) continue;
-								logins.putIfAbsent(o, "");
-							}
+						}
+						for (Object o : tmp) {
+							logins.putIfAbsent(o, "");
 						}
 						log.info("Init delay : " + (System.currentTimeMillis() - startInit));
 					}

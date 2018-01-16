@@ -1,0 +1,52 @@
+
+popover{
+	position: relative;
+	display: inline-block;
+	z-index: 10002;
+	popover-content{
+		&::before{
+			font-family: none;  //unicode not from generic icon font
+			content: "\25b2";
+			display: block;
+			position: absolute;
+			top: -18px;
+            width: 40px;
+			font-size: 20px;
+			left: 50%;
+			margin-left: -21px;
+			color: #fff;
+			z-index: 0;
+		}
+		&.right{
+			left: -240px;
+			&::before{
+				left: 100%;
+				margin-left: -33px;
+			}
+		}
+		position: absolute;
+		min-height: 100px;
+		background: #eee;
+		width: 250px;
+		top: 100%;
+		opacity: 1;
+		@include run-transition(opacity);
+		left: -125px;
+		margin-left: 50%;
+		text-align: center;
+		border: 1px solid #ccc;
+		.content{
+			z-index: 1;
+			position: relative;
+			.more{
+				a{
+					display: block;
+				}
+			}
+		}
+	}
+	popover-content.hidden{
+		opacity: 0;
+		pointer-events: none;
+	}
+}

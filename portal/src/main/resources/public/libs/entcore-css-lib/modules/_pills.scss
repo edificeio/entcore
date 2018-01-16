@@ -1,0 +1,26 @@
+.pills{
+    padding: 0;
+    margin-top: 0;
+    li{
+        cursor: pointer;
+        background: $medium-grey;
+        color: $white;
+        border-radius: 25px;
+        list-style-type: none;
+        display: inline-block;
+        transition: all 250ms ease;
+        margin: 1px;
+        &:hover{
+            background: darken($medium-grey, 20%);
+        }
+        &.selected{
+            background: $accent;
+        }
+        label{
+            padding: 10px;
+            display: block;
+            padding-left: 16px;
+            padding-right: 16px;
+        }
+    }
+}

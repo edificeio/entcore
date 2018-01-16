@@ -26,10 +26,13 @@ import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 public class RegisteredServices {
 
 	private final Set<RegisteredService> services = new LinkedHashSet<>();
+	private static final Logger log = LoggerFactory.getLogger(RegisteredServices.class);
 
 	public void add(RegisteredService service) {
 		services.add(service);
@@ -38,6 +41,7 @@ public class RegisteredServices {
 	public RegisteredService matches(String service) {
 		for (RegisteredService registeredService : services) {
 			if (registeredService.matches(service)) {
+				if (log.isDebugEnabled()) log.debug("service + |" + service + "| matches with registered service : " + registeredService.getClass().getSimpleName());
 				return registeredService;
 			}
 		}

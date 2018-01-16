@@ -1,0 +1,4 @@
+"Id";"Id Siecle";"Type";"Nom";"Prénom";"Login"
+{{#list}}
+"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}"
+{{/list}}

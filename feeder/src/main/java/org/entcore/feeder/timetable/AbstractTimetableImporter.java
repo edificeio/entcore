@@ -83,7 +83,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected static final String CREATE_GROUPS =
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
 			"MERGE (fg:FunctionalGroup:Group {externalId:{externalId}}) " +
-			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source} " +
+			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source}, fg.displayNameSearchField = {displayNameSearchField} " +
 			"MERGE (fg)-[:DEPENDS]->(s) ";
 	private static final String PERSEDUCNAT_TO_GROUPS =
 			"MATCH (u:User {id : {id}}), (fg:FunctionalGroup) " +
@@ -203,7 +203,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							try {
 								final JsonObject cmn = cm.get(0);
 								log.info(cmn.encode());
-								if (cmn.containsField("mapping")) {
+								if (isNotEmpty(cmn.getString("mapping"))) {
 									classesMapping = new JsonObject(cmn.getString("mapping"));
 									log.info("classMapping : " + classesMapping.encodePrettily());
 								} else {
@@ -472,15 +472,10 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	public static void updateMergedUsers(JsonArray mergedUsers) {
 		if (mergedUsers == null) return;
 		long now = System.currentTimeMillis();
-		for (Object o: mergedUsers) {
-			if (o instanceof JsonObject) {
-				final JsonObject j = (JsonObject) o;
-				updateMergedUsers(j, now);
-			} else if (o instanceof JsonArray) {
-				final JsonArray a = (JsonArray) o;
-				if (a.size() > 0) {
-					updateMergedUsers(a.<JsonObject>get(0), now);
-				}
+		for (int i=1; i < mergedUsers.size(); i+=2) {
+			final JsonArray a = mergedUsers.get(i);
+			if (a.size() > 0) {
+				updateMergedUsers(a.<JsonObject>get(0), now);
 			}
 		}
 	}

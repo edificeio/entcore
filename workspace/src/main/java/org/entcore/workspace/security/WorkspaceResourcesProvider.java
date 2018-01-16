@@ -53,6 +53,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			String method = serviceMethod
 					.substring(WorkspaceService.class.getName().length() + 1);
 			switch (method) {
+				case "getDocumentProperties":
 			case "getDocument":
 				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 				break;

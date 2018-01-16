@@ -1,0 +1,53 @@
+
+img.text-sized{
+	height: 20px;
+	vertical-align: top;
+	display: inline-block;
+}
+
+.clip{
+	overflow: hidden;
+}
+
+.cell{
+	img{
+		max-width: 100%;
+	}
+}
+
+image-select.loading-panel{
+	img{
+		visibility: hidden;
+	}
+}
+
+image-select > div > img{
+	width: 100%
+}
+
+.illustration{
+	display: flex;
+	height: 100%;
+	width: 100%;
+	position: absolute;
+	top: 0;
+	overflow: hidden;
+	left: 0;
+	img{
+		align-self: center;
+	}
+	input[type=checkbox]{
+		position: absolute;
+		bottom: 5px;
+		right: 5px;
+	}
+}
+
+.smileys{
+	img.smiley{
+        height: 40px;
+        width: 40px;
+        display: inline-block !important;
+        vertical-align: middle;
+    }
+}

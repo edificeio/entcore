@@ -1,0 +1,142 @@
+embedder{
+    .lightbox > .content {
+        overflow: hidden;
+    }
+
+    .embedder-help {
+        color: #444;
+        font-size: 14px;
+        margin-bottom: 30px;
+    }
+
+    .provider {
+        display: none;
+        width: 100%;
+
+        i.copy {
+            position: absolute;
+            top: -4px;
+            left: 10px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            float: left;
+
+            &::before {
+                content: '\e820';
+                display: block;
+                height: 30px;
+                font-size: 30px;
+                color: #666;
+                transition: color 250ms ease;
+            }
+        }
+
+        label {
+            pointer-events: none;
+            position: absolute;
+            top: 26px;
+            left: 60px;
+            font-size: 14px;
+            color: #aaa;
+            transition: all 250ms ease;
+
+            &.move {
+                top: -20px;
+                font-size: 12px;
+            }
+        }
+
+        textarea {
+            height: 58px;
+            margin-left: 60px;
+            width: 662px;
+            border: none;
+            border-bottom: 1px solid #888;
+            padding: 0;
+        }
+
+        .others {
+            @include editor-icon;
+            display: block;
+            position: relative;
+            font-size: 35px;
+            height: 80px;
+            width: 80px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            float: none;
+            box-shadow: 3px 3px 0px rgba(200,200,200,1);
+            background-color: #eee;
+            transition: all 200ms ease;
+            line-height: 80px;
+            border-radius: 5px;
+            color: #888;
+
+            &:hover {
+                box-shadow: none;
+            }
+
+            &::before {
+                content: '\e815';
+            }
+        }
+
+        .invalid-preview {
+            font-size: 35px;
+            color: #d6d6d6;
+            font-weight: bold;
+            background: #eee;
+            height: 315px;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 350px;
+            border-radius: 5px;
+        }
+
+        .preview {
+            iframe {
+                margin-left: auto;
+                margin-right: auto;
+                display: block;
+                margin-top: 30px;
+                margin-bottom: 30px;
+                max-width: 100%;
+            }
+        }
+
+        &.visible {
+            display: block;
+        }
+    }
+
+    .provider-content {
+        width: 100%;
+        min-width: 300px;
+    }
+
+    .pick {
+        ul {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            width: 80%;
+            margin: auto;
+        }
+        li{
+            opacity: 0.7;
+            list-style-type: none;
+            max-width: 20%;
+            display: inline-block;
+            padding: 10px;
+            box-sizing: border-box;
+            transition: opacity 500ms ease;
+            &:hover{
+                opacity: 1;
+            }
+        }
+    }
+}

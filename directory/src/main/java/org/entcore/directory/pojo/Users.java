@@ -21,11 +21,7 @@ package org.entcore.directory.pojo;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 
 
 /**
@@ -119,6 +115,15 @@ public class Users {
 	 *         &lt;element name="login" type="{http://www.w3.org/2001/XMLSchema}string"/>
 	 *         &lt;element name="firstName" type="{http://www.w3.org/2001/XMLSchema}string"/>
 	 *         &lt;element name="lastName" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="email" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="emailAcademy" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="mobile" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="deleteDate" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="functions" type="{http://www.w3.org/2001/XMLSchema}string[]"/>
+	 *         &lt;element name="displayName" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="profiles" type="{http://www.w3.org/2001/XMLSchema}string"/>
+	 *         &lt;element name="classes" type="{http://www.w3.org/2001/XMLSchema}string[]"/>
+	 *         &lt;element name="structures" type="{http://www.w3.org/2001/XMLSchema}string"/>
 	 *       &lt;/sequence>
 	 *     &lt;/restriction>
 	 *   &lt;/complexContent>
@@ -132,7 +137,17 @@ public class Users {
 			"externalId",
 			"login",
 			"firstName",
-			"lastName"
+			"lastName",
+			"email",
+			"emailAcademy",
+			"mobile",
+			"deleteDate",
+			"functions",
+			"displayName",
+			"profiles",
+			"classes",
+			"structures",
+			"administrativeStructure"
 	})
 	public static class User {
 
@@ -144,6 +159,28 @@ public class Users {
 		protected String firstName;
 		@XmlElement(required = true)
 		protected String lastName;
+		@XmlElement(required = false)
+		protected String email;
+		@XmlElement(required = false)
+		protected String emailAcademy;
+		@XmlElement(required = false)
+		protected String mobile;
+		@XmlElement(required = false)
+		protected String deleteDate;
+		@XmlElementWrapper(name="functions")
+		@XmlElement(name="function", required = false)
+		protected List<String> functions;
+		@XmlElement(required = false)
+		protected String displayName;
+		@XmlElement(required = false)
+		protected String profiles;
+		@XmlElementWrapper(name="classes")
+		@XmlElement(name="classe", required = false)
+		protected List<String> classes;
+		@XmlElement(required = false)
+		protected String structures;
+		@XmlElement(required = false)
+		protected String administrativeStructure;
 
 		/**
 		 * Gets the value of the externalId property.
@@ -239,6 +276,85 @@ public class Users {
 		 */
 		public void setLastName(String value) {
 			this.lastName = value;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+
+		public String getEmailAcademy() {
+			return emailAcademy;
+		}
+
+		public void setEmailAcademy(String emailAcademy) {
+			this.emailAcademy = emailAcademy;
+		}
+
+		public String getMobile() {
+			return mobile;
+		}
+
+		public void setMobile(String mobile) {
+			this.mobile = mobile;
+		}
+
+		public String getDeleteDate() {
+			return deleteDate;
+		}
+
+		public void setDeleteDate(String deleteDate) {
+			this.deleteDate = deleteDate;
+		}
+
+		public String getDisplayName() {
+			return displayName;
+		}
+
+		public void setDisplayName(String displayName) {
+			this.displayName = displayName;
+		}
+
+		public List<String> getFunctions() {
+			return functions;
+		}
+
+		public void setFunctions(List<String> functions) {
+			this.functions = functions;
+		}
+
+		public String getProfiles() {
+			return profiles;
+		}
+
+		public void setProfiles(String profiles) {
+			this.profiles = profiles;
+		}
+
+		public List<String> getclasses() {
+			return classes;
+		}
+
+		public void setClasses(List<String> classes) {
+			this.classes = classes;
+		}
+		public String getStructures() {
+			return structures;
+		}
+
+		public void setStructures(String structures) {
+			this.structures = structures;
+		}
+
+		public String getAdministrativeStructure() {
+			return administrativeStructure;
+		}
+
+		public void setAdministrativeStructure(String administrativeStructure) {
+			this.administrativeStructure = administrativeStructure;
 		}
 
 	}

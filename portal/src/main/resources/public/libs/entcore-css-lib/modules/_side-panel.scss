@@ -1,0 +1,54 @@
+side-panel{
+	position: absolute;
+	z-index: 7001;
+	.opener{
+		cursor: pointer;
+		width: 40px;
+		height: 40px;
+		text-align: center;
+		line-height: 40px;
+		display: inline-block;
+		vertical-align: middle;
+		border-radius: 25px;
+		transform: rotate(90deg);
+		-webkit-transform: rotate(90deg);
+		font-size: 24px;
+		margin-top: -6px;
+		@include run-transition(transform);
+		@include run-transition(-webkit-transform);
+	}
+
+	.opener::after{
+		content: "\25B2";
+		display: block;
+		margin-top: -3px;
+	}
+	&.hidden{
+		.toggle{
+			width: 0;
+		}
+		.opener{
+			transform: rotate(-90deg);
+			-webkit-transform: rotate(-90deg);
+		}
+	}
+	.toggle{
+		position: absolute;
+		width: 300px;
+		box-sizing: border-box;
+		@include run-transition(width);
+		overflow: hidden;
+		top: 0;
+		left: 55px;
+		.content{
+			padding: 15px;
+			width: 300px;
+			box-sizing: border-box;
+		}
+	}
+}
+side-panel + app-title{
+	float: left;
+	margin-top: 0;
+	margin-left: 50px;
+}

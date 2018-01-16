@@ -19,22 +19,24 @@
 
 package org.entcore.auth.users;
 
-import fr.wseduc.webutils.Either;
-
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import fr.wseduc.webutils.Either;
 
 public interface UserAuthAccount {
 
 	void activateAccount(String login, String activationCode, String password, String email,
-			String phone, HttpServerRequest request, Handler<Either<String, String>> handler);
+						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
 
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
 
-	void sendResetCode(HttpServerRequest request, String login, String email, Handler<Boolean> handler);
+	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest, Handler<Boolean> handler);
 
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 
@@ -45,6 +47,8 @@ public interface UserAuthAccount {
 			Handler<Boolean> handler);
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
+
+	void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler);
 
 	void findByLogin(String login, String resetCode, Handler<Either<String, JsonObject>> handler);
 

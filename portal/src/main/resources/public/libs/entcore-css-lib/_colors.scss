@@ -1,0 +1,57 @@
+///////// COLORS ELEMENTS
+
+.bg-primary{
+	background-color: $primary;
+}
+
+.bg-accent{
+	background-color: $accent;
+}
+.bg-color{
+	background-color: $background;
+}
+
+
+
+// TEXT COLORS
+
+.warning-color{
+    color: $warning-color;
+}
+.warning-color-hover{
+    color: $warning-color-hover;
+}
+.forewarn-color{
+    color: $forewarn-color;
+}
+.valid-color{
+    color: $valid-color;
+}
+
+
+.warning-bg-color{
+    background-color: $warning-color;
+}
+.warning-bg-color-hover{
+    background-color: $warning-color-hover;
+}
+.forewarn-bg-color{
+    background-color: $forewarn-color;
+}
+.valid-bg-color{
+    background-color: $valid-color;
+}
+
+
+
+.valid-color, .valid-color em, .valid-color i{
+    color: $valid-color!important;
+}
+
+.accent-color, .accent-color em, .accent-color i{
+    color: $accent!important;
+}
+
+.primary-color, .primary-color em, .primary-color i{
+    color: $primary!important;
+}

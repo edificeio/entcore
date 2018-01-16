@@ -1,0 +1,10 @@
+{
+	"main":"org.entcore.admin.Admin",
+	"port": 8089,
+	"mode": "dev",
+	"auto-redeploy": false,
+    "host" : "http://localhost:8089",
+    "app-name" : "Admin",
+    "app-address" : "http://localhost:8089/admin",
+    "app-icon" : "admin-large"
+}

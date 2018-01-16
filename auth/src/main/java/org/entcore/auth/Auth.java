@@ -50,8 +50,6 @@ public class Auth extends BaseServer {
 	@Override
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
-		clearFilters();
-		addFilter(new UserAuthFilter(new DefaultOAuthResourceProvider(eb)));
 		super.start();
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, container.logger())));
 
@@ -78,7 +76,10 @@ public class Auth extends BaseServer {
 							JsonObject conf = new JsonObject()
 									.putString("saml-metadata-folder", samlMetadataFolder)
 									.putString("saml-private-key", config.getString("saml-private-key"))
-									.putString("saml-issuer", config.getString("saml-issuer"));
+									.putString("saml-public-key", config.getString("saml-public-key"))
+									.putString("saml-issuer", config.getString("saml-issuer"))
+									.putString("saml-entng-idp-nq", config.getString("saml-entng-idp-nq"))
+									.putString("saml-slo-relayState", config.getString("saml-slo-relayState", "NULL"));
 							container.deployWorkerVerticle(SamlValidator.class.getName(), conf);
 							samlController.setEventStore(eventStore);
 							samlController.setUserAuthAccount(userAuthAccount);

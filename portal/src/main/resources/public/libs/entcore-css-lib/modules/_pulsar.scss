@@ -1,0 +1,294 @@
+
+// contains description
+pulsar{
+     z-index: 200000;
+     position: absolute;
+     pointer-events: all;
+
+     nav.dots{
+         ul{
+             margin: 15px 0 25px;
+         }
+         li.dot{
+             &::before{
+                 font-size: 60px;
+                 width: 12px;
+                 height: 12px;
+             }
+         }
+     }
+    .content{
+        background: #fff;
+        width: 300px;
+        box-shadow: 1px 1px 7px rgba(0,0,0,0.4);
+        padding: 15px;
+        box-sizing: border-box;
+        border: 6px solid #DDD;
+        border-radius: 2px;
+        position: relative;
+
+        >div.text{
+            margin-top: 25px;
+            padding: 10px;
+            font-size: 14px;
+            line-height: 18px;
+        }
+
+        button{
+            box-shadow: none;
+            font-size: 12px;
+            padding: 6px 20px 6px;
+            float: right;
+            margin-bottom: 0;
+        }
+        .close{
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            width: 22px;
+            height: 22px;
+            line-height: 17px;
+            background: #dddddd;
+            border-radius: 50%;
+            color: #636363;
+
+            &::before{
+                font-size: 9px;
+            }
+        }
+        .inf{
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            color: #fff;
+            background: lighten($accent, 15%);
+            border-radius: 50%;
+            line-height: 22px;
+            text-align: center;
+            width: 22px;
+            height: 22px;
+            &::before{
+                font-size: 18px;
+                content: 'i';
+                font-style: italic;
+                font-weight: bold;
+                display: inline-block;
+                margin-left: -1px;
+
+            }
+        }
+    }
+
+
+    .arrow{
+        @include triangle-top ($size: 14px, $color: #ddd)
+        z-index: 1;
+        position: absolute;
+    }
+    &.middle{
+        .arrow{
+            left: calc(50% - 7px);
+            top: -14px;
+        }
+    }
+
+    &.left{
+        .arrow{
+            transform: rotate(90deg);
+            right: -14px;
+        }
+    }
+    &.left.top{
+        .arrow{
+            top: 1px;
+        }
+    }
+
+    &.left.center{
+        .arrow{
+            top: calc(50% - 7px);
+        }
+    }
+    &.right.center{
+        .arrow{
+            top: calc(50% - 7px);
+        }
+    }
+
+    &.right{
+        .arrow{
+            transform: rotate(270deg);
+            left: -14px;
+        }
+    }
+    &.right.top{
+        .arrow{
+            top: 1px;
+        }
+    }
+    &.center.top{
+        .arrow{
+            transform: rotate(180deg);
+            top: 100%;
+            left: calc(50% - 7px);
+        }
+    }
+
+    &.bottom{
+        .arrow{
+            top: -14px;
+        }
+        &.center{
+            .arrow{
+                left: calc(50% - 7px);
+            }
+        }
+    }
+    &.bottom.right, &.bottom.left{
+        .arrow{
+            top: 1px;
+        }
+    }
+    &.bottom.right{
+        .arrow{
+            left: -14px;
+            transform: rotate(-90deg);
+        }
+    }
+    &.bottom.left{
+        .arrow{
+            transform: rotate(90deg);
+            right: -14px;
+            left: auto;
+        }
+    }
+
+
+}
+
+
+//shadow overlay
+.pulsar-layer{
+    box-shadow: 0px 0px 0px 99999px rgba(0, 0, 0, 0.6);
+    position: absolute;
+    border-radius: 2px;
+    z-index: 150000;
+}
+
+
+//pulsing element
+
+
+
+
+$sizePulsar: 40px;
+$sizeWave: 52px;
+$stroke: 6px;
+$pulsedelay: 0.3s;
+$pulseanim: 1s;
+
+
+.pulsar-button.hidden{
+    display: none;
+}
+
+
+.pulsar-button{
+    position: absolute;
+    z-index: 100000;
+    width: $sizePulsar;
+    height: $sizePulsar;
+}
+
+.pulse-spot{
+    // display: block;
+    position: absolute;
+    // z-index: 100000;
+    box-sizing: border-box;
+
+    width: $sizePulsar;
+    height: $sizePulsar;
+    cursor: pointer;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    font-size: 18px;
+    text-align: center;
+    line-height: ($sizePulsar - 9);
+    font-weight: bold;
+    color: $white;
+    background: $accent;
+    @include run-transition(all);
+
+    &::before{
+        content: 'i';
+        font-style: italic;
+        font-family: 'Times New Roman', Times, serif;
+    }
+    &.hidden{
+        opacity: 0;
+    }
+}
+
+
+.pulsar-button:hover{
+    .pulse-spot{
+        font-size: 22px;
+        border: 4px solid rgba($white, 0.3);
+    }
+    .pulse,
+    .pulse2 {
+        &::after {
+            box-shadow: 0 0 5px $stroke rgba(255, 237, 20, 0.6);
+        }
+    }
+}
+
+
+
+.pulse,
+.pulse2 {
+    height: $sizeWave;
+    width: $sizeWave;
+    position: absolute;
+    z-index: -1;
+    top: -($sizeWave/2 - $sizePulsar/2);
+    left: -($sizeWave/2 - $sizePulsar/2);
+    &::after {
+        transform: scale(0.1, 0.1);
+        content: "";
+        border-radius: 50%;
+        height: $sizeWave;
+        width: $sizeWave;
+        position: absolute;
+        left: 0;
+        top: 0;
+        box-shadow: 0 0 5px $stroke rgba(120, 218, 255, 0.6);
+        animation: pulsate $pulseanim ease-out;
+        animation-iteration-count: infinite;
+        opacity: 0.5;
+        @include run-transition(all);
+    }
+}
+
+.pulse2::after {
+    animation: pulsate $pulseanim ease-out;
+    animation-iteration-count: infinite;
+    animation-delay: $pulsedelay;
+}
+
+.test{
+    position: absolute;
+    top: 0;
+    right: 0;
+    //float: right;
+    display: table;
+    width: 100px;
+    height: 100px;
+    margin: 50px auto;
+    background: $accent;
+    z-index: 9999;
+}
+
+pulsar.pulse-filters .content{
+    width: 360px;
+}

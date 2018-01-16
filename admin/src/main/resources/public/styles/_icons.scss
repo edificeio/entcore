@@ -1,0 +1,31 @@
+/* Generic Icons */
+@font-face {
+    font-family: 'generic-icons';
+    src: url('generic-icons-1.0.0.woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@mixin fonticon {
+    font-family: "generic-icons";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-image: none;
+    font-weight: normal;
+    font-style: normal;
+}
+
+i.fonticon {
+    @include fonticon;
+}
+
+$cyan: #4bafd5;
+$green: #46bfaf;
+$yellow: #ecbe30;
+$red: #e13a3a;
+$pink: #b930a2;
+$purple: #763294;
+$indigo: #1a22a2;
+
+@import "_apps";
+@import "_apps-connectors";

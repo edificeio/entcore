@@ -58,6 +58,8 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.security.SecuredAction;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
@@ -408,7 +410,7 @@ public class UserBookController extends BaseController {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					String prop = request.params().get("prop");
-					if ("theme".equals(prop) || "userPreferencesBirthdayClass".equals(prop)) {
+					if (prop != null && (prop.startsWith("theme") || "userPreferencesBirthdayClass".equals(prop))) {
 						String attr = prop.replaceAll("\\W+", "");
 						String neoRequest =
 								"MATCH (n:User)-[:USERBOOK]->(m:UserBook)" +
@@ -470,6 +472,9 @@ public class UserBookController extends BaseController {
 	@SecuredAction("userbook.show.motto.mood")
 	public void userBookMottoMood(){}
 
+	@SecuredAction("userbook.switch.theme")
+	public void userBookSwitchTheme(){}
+
 	@BusAddress("activation.ack")
 	public void initUserBookNode(final Message<JsonObject> message){
 		JsonObject params = new JsonObject();
@@ -488,6 +493,16 @@ public class UserBookController extends BaseController {
 		String query2 = "MATCH (n:User)-[:USERBOOK]->m "
 				+ "WHERE n.id = {userId} "
 				+ "CREATE m-[:PUBLIC]->(c:Hobby {category: {category}, values: {values}})";
+		if (isNotEmpty(message.body().getString("theme"))) {
+			String query3 =
+					"MATCH (u:User {id:{userId}}) " +
+					"MERGE (u)-[:PREFERS]->(uac:UserAppConf) " +
+					"SET uac.theme = {theme} ";
+			JsonObject paramsTheme = new JsonObject()
+					.putString("userId", message.body().getString("userId"))
+					.putString("theme", message.body().getString("theme"));
+			queries.add(Neo.toJsonObject(query3, paramsTheme));
+		}
 		for (Object hobby : userBookData.getArray("hobbies")) {
 			JsonObject j = params.copy();
 			j.putString("category", (String)hobby);
@@ -830,9 +845,12 @@ public class UserBookController extends BaseController {
 												if(cache.containsField("preferences")){
 													JsonObject prefs = cache.getObject("preferences");
 													prefs.putString(application, params.getString("conf"));
-
+													if ("theme".equals(application)) {
+														prefs.removeField(THEME_ATTRIBUTE + getHost(request));
+													}
 													UserUtils.addSessionAttribute(eb, user.getUserId(), "preferences", prefs, new Handler<Boolean>() {
 														public void handle(Boolean event) {
+															UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 															if(!event)
 																log.error("Could not add preferences attribute to session.");
 														}

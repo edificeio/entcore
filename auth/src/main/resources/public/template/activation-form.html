@@ -11,7 +11,7 @@
 				</p>
 				<p>
 					<label translate content="auth.activation.password"></label>
-					<input-password required ng-pattern="/[[passwordRegex]]/" ng-model="user.password"
+					<input-password required ng-pattern="passwordRegex" ng-model="user.password"
 						ng-change="refreshInput(activationForm, 'confirmPassword')" name="password" ng-trim="false" tabindex="1"></input-password>
 					<p class="input-errors" ng-if="activationForm.password.$invalid && activationForm.password.$dirty">
 						<i18n>password.errors</i18n><br/>
@@ -20,7 +20,7 @@
 						</span>
 					</p>
 					<label translate content="auth.activation.confirm.password"></label>
-					<input-password required ng-pattern="identicalRegex(user.password)" ng-model="user.confirmPassword"
+					<input-password required ng-pattern="user.password" ng-model="user.confirmPassword"
 						name="confirmPassword" ng-trim="false" tabindex="2"></input-password>
 					<p class="input-errors" ng-if="activationForm.confirmPassword.$viewValue && activationForm.confirmPassword.$invalid && activationForm.confirmPassword.$dirty">
 						<i18n>password.identical</i18n>
@@ -59,7 +59,7 @@
 					</span>
 				</p>
 				<p ng-if="cgu">
-					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>&nbsp;&nbsp;<a href="/auth/cgu" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
+					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>&nbsp;&nbsp;<a href="[[lang.translate('auth.charter')]]" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
 				</p>
 				<input type="submit" translate attr="value" value="auth.activate" ng-disabled="activationForm.$invalid" tabindex="6"/>
 				<a href="/auth/login" target="_self" class="right cell" translate content="auth.cancel"></a>

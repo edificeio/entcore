@@ -1,0 +1,12 @@
+<div class="my-notifications" ng-if="me.userId === account.id && !account.email"
+    workflow="directory.externalNotifications">
+    <div class="row">
+        <a tooltip="panel.notifications.desc" ng-disabled="true" class="button disabled">
+            <i class="bell"></i>
+            <i18n>panel.notifications.activate</i18n>
+        </a>
+    </div>
+</div>
+
+<div class="row rigid-grid" ng-include="viewsContainers.user"></div>
+<div class="row user-book" ng-include="viewsContainers.userbook"></div>

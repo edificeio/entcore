@@ -4,7 +4,7 @@ html, body{
 	margin: 0;
 	height: 100%;
 	font-family: Arial;
-	background: $grayLighter;
+	background: $light-grey;
 	z-index: 0;
 
 	section.main{
@@ -24,6 +24,7 @@ html.print{
 	background: transparent;
 	body{
 		background: transparent;
+		overflow: visible;
 		section{
 			page-break-after: always;
 		}

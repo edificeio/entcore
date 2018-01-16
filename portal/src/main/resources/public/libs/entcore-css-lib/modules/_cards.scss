@@ -1,0 +1,29 @@
+.cards-list{
+	width: 100%;
+	text-align: center;
+	.card{
+		text-align: left;
+		display: inline-block;
+		padding: 10px;
+		margin: 8px;
+		vertical-align: top;
+		position: relative;
+		.illustration{
+			margin-right: 10px;
+			margin-bottom: 10px;
+			position: relative;
+			@include grid-cell-width(3);
+			@include grid-cell-height(3);
+			@include cell;
+			input[type=checkbox]{
+				position: absolute;
+				top: 5px;
+				left: 5px;
+				z-index: 1;
+			}
+		}
+		h3:first-of-type, h1:first-of-type, h2:first-of-type{
+			margin-top: 0;
+		}
+	}
+}

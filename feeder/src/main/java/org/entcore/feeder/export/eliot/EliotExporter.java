@@ -45,6 +45,7 @@ public class EliotExporter implements Exporter {
 
 	public static final String WEBDAV_ADDRESS = "webdav";
 	private static final Logger log = LoggerFactory.getLogger(EliotExporter.class);
+	public static final String ELIOT = "ELIOT";
 	private final String exportBasePath;
 	private final String exportDestination;
 	private final Vertx vertx;
@@ -69,8 +70,8 @@ public class EliotExporter implements Exporter {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				Tenant.list(new JsonArray().add("name"), null, null, value);
-				Structure.list(new JsonArray().add("academy"), null, null, value);
+				Tenant.list(new JsonArray().add("name").add("academy"), null, null, value);
+				Structure.list(ELIOT, new JsonArray().add("academy"), null, null, value);
 			}
 
 			@Override
@@ -78,7 +79,7 @@ public class EliotExporter implements Exporter {
 				JsonArray r = result.body().getArray("results");
 				if ("ok".equals(result.body().getString("status")) && r != null && r.size() == 2) {
 					final String tenant = r.<JsonArray>get(0).<JsonObject>get(0).getString("name");
-					final String academy = r.<JsonArray>get(1).<JsonObject>get(0).getString("academy");
+					final String academy = r.<JsonArray>get(0).<JsonObject>get(0).getString("academy", r.<JsonArray>get(1).<JsonObject>get(0).getString("academy"));
 					final Date exportDate = new Date();
 					final String path = exportBasePath + File.separator +
 							tenant + "_Complet_" + datetime.format(exportDate) + "_Export";
@@ -121,7 +122,7 @@ public class EliotExporter implements Exporter {
 
 	@Override
 	public String getName() {
-		return "ELIOT";
+		return ELIOT;
 	}
 
 	private void zipAndSend(final String path, final Handler<Message<JsonObject>> handler) {

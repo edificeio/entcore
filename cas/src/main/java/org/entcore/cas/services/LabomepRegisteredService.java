@@ -53,22 +53,18 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// Structures
-			Element structures = createElement("structures", doc);
 			for (Object o : data.getArray("structures", new JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				if (structure.getString("UAI") != null) {
-					structures.appendChild(createTextElement("structure", structure.getString("UAI").toString(), doc));
+					additionnalAttributes.add(createTextElement("structures", structure.getString("UAI"), doc));
 				}
 			}
-			additionnalAttributes.add(structures);
 
 			// classes
-			Element classes = createElement("classes", doc);
 			for (Object o : data.getArray("classes", new JsonArray())) {
 				JsonObject classe = (JsonObject) o;
-				classes.appendChild(createTextElement("classe", classe.getString("name"), doc));
+				additionnalAttributes.add(createTextElement("classes", classe.getString("name"), doc));
 			}
-			additionnalAttributes.add(classes);
 
 			// Profile
 			switch(data.getString("type")) {

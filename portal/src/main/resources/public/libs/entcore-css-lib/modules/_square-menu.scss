@@ -1,0 +1,76 @@
+
+.square-menu{
+	min-width: 51px;
+	width: 51px;
+	display: table-cell;
+	button{
+		width: 51px;
+		height: 47px;
+		margin: 0;
+		float: right;
+		margin-top: 1px;
+	}
+	.buttons-line{
+		button{
+			width: 25px;
+			float: left;
+			font-size: 10px;
+			padding: 0;
+			height: 25px;
+		}
+		button:first-child{
+			margin-right: 1px;
+		}
+	}
+	ul.menu-items{
+		margin: 0;
+		padding: 0;
+		li{
+			@include run-transition(background);
+			height: 30px;
+			width: 30px;
+			margin: 3px;
+			margin-top: 0;
+			margin-bottom: 6px;
+			float: left;
+
+			list-style-type: none;
+			i{
+				float: none;
+				display: inline-block;
+			}
+
+			i.text{
+				background-size: 60% auto;
+				background-color: transparent;
+			}
+			i.image, input[type=button].image{
+				background-size: 60% auto;
+				background-color: transparent;
+			}
+			i.sound, input[type=button].sound{
+				background-size: 60% auto;
+				background-color: transparent;
+			}
+			i.video{
+				background-size: 60% auto;
+				background-color: transparent;
+			}
+			i.grid{
+				background-size: 60% auto;
+				background-color: transparent
+			}
+			> li > div >input[type=button]:hover{
+				background-color: transparent;
+			}
+		}
+	}
+}
+
+.square-menu-actions{
+	display: table-cell;
+	width: 100%;
+	vertical-align: top;
+	position: relative;
+	padding: 1px;
+}

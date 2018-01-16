@@ -1,0 +1,8 @@
+.loading-panel{
+	background: url(../../img/icons/loading-panel.gif) no-repeat center;
+	display: block;
+}
+
+.element.loading, tr.loading{
+	opacity: 0.6;
+}

@@ -23,6 +23,7 @@ import com.hazelcast.core.BaseMap;
 import com.hazelcast.core.IMap;
 import com.hazelcast.nio.serialization.HazelcastSerializationException;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.eventbus.ResultMessage;
 import org.entcore.common.neo4j.Neo4j;
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
@@ -38,8 +39,10 @@ import java.util.*;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
+	private static final long LAST_ACTIVITY_DELAY = 30000l;
 	protected Map<String, String> sessions;
 	protected Map<String, List<LoginInfo>> logins;
+	protected Map<String, Long> inactivity;
 
 	private static final long DEFAULT_SESSION_TIMEOUT = 30 * 60 * 1000;
 	private static final String SESSIONS_COLLECTION = "sessions";
@@ -72,9 +75,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			ClusterManager cm = ((VertxInternal) vertx).clusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
+			if (config.getBoolean("inactivity", false)) {
+				inactivity = cm.getSyncMap("inactivity");
+				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
+			}
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
+			if (config.getBoolean("inactivity", false)) {
+				inactivity = new HashMap<>();
+			}
 		}
 		final String address = getOptionalStringConfig("address", "wse.session");
 		Number timeout = config.getNumber("session_timeout");
@@ -113,6 +123,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "drop":
 			doDrop(message);
 			break;
+		case "dropCacheSession":
+			doDropCacheSession(message);
+			break;
 		case "dropPermanentSessions" :
 			doDropPermanentSessions(message);
 			break;
@@ -125,6 +138,25 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		default:
 			sendError(message, "Invalid action: " + action);
 		}
+	}
+
+	private void doDropCacheSession(Message<JsonObject> message) {
+		final String userId = message.body().getString("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "[doDropCacheSession] Invalid userId : " + message.body().encode());
+			return;
+		}
+		final List<LoginInfo> loginInfos = logins.get(userId);
+		if (loginInfos != null) {
+			final List<String> sessionIds = new ArrayList<>();
+			for (LoginInfo loginInfo : loginInfos) {
+				sessionIds.add(loginInfo.sessionId);
+			}
+			for (String sessionId : sessionIds) {
+				dropSession(null, sessionId, null);
+			}
+		}
+		sendOK(message);
 	}
 
 	private void doDropPermanentSessions(final Message<JsonObject> message) {
@@ -280,6 +312,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			});
 		} else {
 			sendOK(message, new JsonObject().putString("status", "ok").putObject("session", session));
+			if (inactivity != null) {
+				Long lastActivity = inactivity.get(sessionId);
+				String userId = sessions.get(sessionId);
+				if (userId != null && (lastActivity == null || (lastActivity + LAST_ACTIVITY_DELAY) < System.currentTimeMillis())) {
+					inactivity.put(sessionId, System.currentTimeMillis());
+				}
+			}
 		}
 	}
 
@@ -313,12 +352,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
-					long timerId = vertx.setTimer(sessionTimeout, new Handler<Long>() {
-						public void handle(Long timerId) {
-							logins.remove(userId);
-							sessions.remove(sessionId);
-						}
-					});
+					long timerId = setTimer(userId, sessionId);
+
 					try {
 						sessions.put(sessionId, infos.encode());
 						addLoginInfo(userId, timerId, sessionId);
@@ -339,7 +374,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 								.putString("_id", sessionId).putString("userId", userId)
 								.putObject("created", now).putObject("lastUsed", now);
 						if (sessionIndex != null && nameId != null) {
-							json.putString("SessionIndex", sessionId).putString("NameID", nameId);
+							json.putString("SessionIndex", sessionIndex).putString("NameID", nameId);
 						}
 						mongo.save(SESSIONS_COLLECTION, json);
 					} else {
@@ -352,6 +387,37 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		});
+	}
+
+	protected long setTimer(final String userId, final String sessionId) {
+		if (inactivity != null) {
+			inactivity.put(sessionId, System.currentTimeMillis());
+		}
+		return setTimer(userId, sessionId, sessionTimeout);
+	}
+
+	protected long setTimer(final String userId, final String sessionId, final long sessionTimeout) {
+		return vertx.setTimer(sessionTimeout, new Handler<Long>() {
+							public void handle(Long timerId) {
+								if (inactivity != null) {
+									final Long lastActivity = inactivity.get(sessionId);
+									if(lastActivity != null) {
+										final long timeoutTimestamp = lastActivity + AuthManager.this.sessionTimeout;
+										final long now = System.currentTimeMillis();
+										if (timeoutTimestamp > now) {
+											setTimer(userId, sessionId, (timeoutTimestamp - now));
+										} else {
+											dropSession(new ResultMessage(), sessionId, null);
+										}
+									} else {
+										dropSession(new ResultMessage(), sessionId, null);
+									}
+								} else {
+									logins.remove(userId);
+									sessions.remove(sessionId);
+								}
+							}
+						});
 	}
 
 	private void addLoginInfo(String userId, long timerId, String sessionId) {
@@ -414,11 +480,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				}
 			}
 		}
+		if (inactivity != null) {
+			inactivity.remove(sessionId);
+		}
 		JsonObject res = new JsonObject().putString("status", "ok");
 		if (meta != null) {
 			res.putObject("sessionMetadata", meta);
 		}
-		sendOK(message, res);
+		if (message != null) {
+			sendOK(message, res);
+		}
 	}
 
 	private LoginInfo removeLoginInfo(String sessionId, String userId) {

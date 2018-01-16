@@ -22,6 +22,7 @@ package org.entcore.common.storage.impl;
 import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.http.ETag;
+import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.core.AsyncResult;
@@ -52,6 +53,7 @@ public class FileStorage implements Storage {
 	private final String basePath;
 	private final FileSystem fs;
 	private final boolean flat;
+	private AntivirusClient antivirus;
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat) {
 		this.basePath = (basePath != null && !basePath.endsWith("/")) ? basePath + "/" : basePath;
@@ -113,6 +115,7 @@ public class FileStorage implements Storage {
 						handler.handle(res.putString("_id", id)
 								.putString("status", "ok")
 								.putObject("metadata", metadata));
+						scanFile(path);
 					}
 				});
 				upload.exceptionHandler(new Handler<Throwable>() {
@@ -136,6 +139,12 @@ public class FileStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	private void scanFile(String path) {
+		if (antivirus != null) {
+			antivirus.scan(path);
+		}
 	}
 
 	private void mkdirsIfNotExists(String id, String path, final AsyncResultHandler<Void> h) {
@@ -168,32 +177,38 @@ public class FileStorage implements Storage {
 
 	@Override
 	public void writeBuffer(final String id, final Buffer buff, final String contentType, final String filename,
-			final Handler<JsonObject> handler) {
-		final JsonObject res = new JsonObject();
+							final Handler<JsonObject> handler) {
 		try {
-			final String path = getPath(id);
-			mkdirsIfNotExists(id, path, new AsyncResultHandler<Void>() {
-				@Override
-				public void handle(AsyncResult<Void> event) {
-					fs.writeFile(path, buff, new Handler<AsyncResult<Void>>() {
-						@Override
-						public void handle(AsyncResult<Void> event) {
-							if (event.succeeded()) {
-								final JsonObject metadata = new JsonObject().putString("content-type", contentType)
-										.putString("filename", filename).putNumber("size", buff.length());
-								res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
-							} else {
-								res.putString("status", "error").putString("message", event.cause().getMessage());
-							}
-							handler.handle(res);
-						}
-					});
-				}
-			});
+			writeBuffer(getPath(id), id, buff, contentType, filename, handler);
 		} catch (FileNotFoundException e) {
-			handler.handle(res.putString("status", "error").putString("message", "invalid.path"));
+			handler.handle(new JsonObject().putString("status", "error").putString("message", "invalid.path"));
 			log.warn(e.getMessage(), e);
 		}
+	}
+
+	@Override
+	public void writeBuffer(final String path, final String id, final Buffer buff, final String contentType, final String filename,
+			final Handler<JsonObject> handler) {
+		final JsonObject res = new JsonObject();
+		mkdirsIfNotExists(id, path, new AsyncResultHandler<Void>() {
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				fs.writeFile(path, buff, new Handler<AsyncResult<Void>>() {
+					@Override
+					public void handle(AsyncResult<Void> event) {
+						if (event.succeeded()) {
+							final JsonObject metadata = new JsonObject().putString("content-type", contentType)
+									.putString("filename", filename).putNumber("size", buff.length());
+							res.putString("status", "ok").putString("_id", id).putObject("metadata", metadata);
+							scanFile(path);
+						} else {
+							res.putString("status", "error").putString("message", event.cause().getMessage());
+						}
+						handler.handle(res);
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -299,6 +314,10 @@ public class FileStorage implements Storage {
 		final AtomicInteger count = new AtomicInteger(ids.size());
 		final JsonArray errors = new JsonArray();
 		for (final Object o: ids) {
+			if (o == null) {
+				decrementRemove(count, errors, handler, res);
+				continue;
+			}
 			try {
 				final String path = getPath(o.toString());
 				fs.delete(path, new AsyncResultHandler<Void>() {
@@ -462,6 +481,10 @@ public class FileStorage implements Storage {
 			}
 		}
 		throw new FileNotFoundException("Invalid file : " + file);
+	}
+
+	public void setAntivirus(AntivirusClient antivirus) {
+		this.antivirus = antivirus;
 	}
 
 }

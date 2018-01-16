@@ -68,6 +68,7 @@ public class UserController extends BaseController {
 	private UserService userService;
 	private UserBookService userBookService;
 	private TimelineHelper notification;
+	private static final int MOTTO_MAX_LENGTH = 75;
 
 	@Put("/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -103,6 +104,11 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(final JsonObject body) {
 				final String userId = request.params().get("userId");
+				String motto = body.getString("motto");
+				if( motto != null && motto.length() > MOTTO_MAX_LENGTH){
+					badRequest(request);
+					return;
+				}
 				userBookService.update(userId, body, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
@@ -129,10 +135,12 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/:userId")
+	@ResourceFilter(UserAccess.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
-		userService.get(userId, notEmptyResponseHandler(request));
+		boolean getManualGroups = Boolean.parseBoolean(request.params().get("manual-groups"));
+		userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
 	}
 
 	@Get("/userbook/:userId")
@@ -234,6 +242,7 @@ public class UserController extends BaseController {
 	}
 
 	@Put("/restore/user")
+	@ResourceFilter(AnyAdminOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void restore(final HttpServerRequest request) {
 		List<String> users = request.params().getAll("userId");
@@ -316,6 +325,13 @@ public class UserController extends BaseController {
 		final String userId = request.params().get("userId");
 		final String function = request.params().get("function");
 		userService.removeFunction(userId, function, defaultResponseHandler(request));
+	}
+
+	@Get("/user/:userId/functions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listFunctions(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		userService.listFunctions(userId, arrayResponseHandler(request));
 	}
 
 	@Post("/user/group/:userId/:groupId")
@@ -450,15 +466,30 @@ public class UserController extends BaseController {
 		userService.listDuplicates(new JsonArray(structures.toArray()), inherit, arrayResponseHandler(request));
 	}
 
+
 	@Get("/user/structures/list")
 	@ResourceFilter(AdmlOfStructuresByUAI.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listUserInStructuresByUAI(final HttpServerRequest request) {
 		final String format = request.params().get("format");
 		final List<String> structures = request.params().getAll("uai");
+
 		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+		if ("true".equalsIgnoreCase(request.params().get("administrativeStructure"))) {
+			fields.add("administrativeStructure");
+		}
+		JsonArray types = new JsonArray(request.params().getAll("type").toArray());
+
+		boolean isExportFull = false;
+		String isExportFullParameter = request.params().get("full");
+		if(null != isExportFullParameter
+				&& !isExportFullParameter.isEmpty()
+				&& "true".equals(isExportFullParameter)){
+			isExportFull = true;
+		}
+
 		if ("XML".equalsIgnoreCase(format)) {
-			userService.listByUAI(structures, fields, new Handler<Either<String, JsonArray>>() {
+			userService.listByUAI(structures, types, isExportFull, fields, new Handler<Either<String, JsonArray>>() {
 				@Override
 				public void handle(Either<String, JsonArray> event) {
 					if (event.isRight()) {
@@ -485,8 +516,15 @@ public class UserController extends BaseController {
 				}
 			});
 		} else {
-			userService.listByUAI(structures, fields, arrayResponseHandler(request));
+			userService.listByUAI(structures, types, isExportFull, fields, arrayResponseHandler(request));
 		}
+	}
+
+	@Post("/duplicate/generate/mergeKey/:userId")
+	@ResourceFilter(AdmlOfUser.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void generateMergeKeyByAdml(final HttpServerRequest request) {
+		userService.generateMergeKey(request.params().get("userId"), notEmptyResponseHandler(request));
 	}
 
 	@Get("/duplicate/user/mergeKey")

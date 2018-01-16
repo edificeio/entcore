@@ -22,6 +22,8 @@ package org.entcore.feeder.utils;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,11 +65,26 @@ public class AAFUtil {
 				case "functions-etab" :
 					res = functionsEtabConverter((JsonArray) value);
 					break;
+				case "structure-to-function":
+					res = structureToFunction((JsonArray) value);
+					break;
 				default :
 					res = value;
 			}
 		} catch (RuntimeException e) {
 			res = value;
+		}
+		return res;
+	}
+
+	private static Object structureToFunction(JsonArray value) {
+		JsonArray res = new JsonArray();
+		if (value != null) {
+			for (Object o : value) {
+				if (o != null && !o.toString().isEmpty()) {
+					res.add("EtabEducNat$" + o.toString() + "$UI");
+				}
+			}
 		}
 		return res;
 	}
@@ -98,6 +115,24 @@ public class AAFUtil {
 		String ENTEleveQualitePersRelEleve1 = "";
 		String ENTElevePersRelEleve2 = "";
 		String ENTEleveQualitePersRelEleve2 = "";
+
+		// prevent missing "ENTEleveAutoriteParentale" if item is duplicate
+		if (value.size() > 2) {
+			final Map<String, String> tmp = new HashMap<>();
+			for (Object o : value) {
+				final String[] s = ((String) o).split("\\$", 2);
+				final String v = tmp.get(s[0]);
+				if (v == null || "1$1$1$1$0".equals(v)) {
+					tmp.put(s[0], s[1]);
+				}
+			}
+			JsonArray tmpArray = new JsonArray();
+			for (Map.Entry<String, String> e : tmp.entrySet()) {
+				tmpArray.addString(e.getKey() + "$" + e.getValue());
+			}
+			value = tmpArray;
+		}
+
 		for (Object o : value) {
 			String [] s = ((String) o).split("\\$");
 			if ("1".equals(s[1]) || "2".equals(s[1])) {

@@ -21,18 +21,21 @@ package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
-
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.infra.controllers.AntiVirusController;
 import org.entcore.infra.controllers.EmbedController;
 import org.entcore.infra.controllers.EventStoreController;
 import org.entcore.infra.controllers.MonitoringController;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.services.EventStoreService;
+import org.entcore.infra.services.impl.ClamAvService;
+import org.entcore.infra.services.impl.ExecCommandWorker;
 import org.entcore.infra.services.impl.MongoDbEventStore;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
@@ -48,7 +51,6 @@ import org.vertx.java.core.spi.cluster.ClusterManager;
 
 import java.io.File;
 import java.text.ParseException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +60,8 @@ public class Starter extends BaseServer {
 
 	private String node;
 	private boolean cluster;
-	public final static Map<String,String> MAP_APP_VERSION = new HashMap<>();
+	private ConcurrentSharedMap<String, String> versionMap;
+	private ConcurrentSharedMap<String, String> deploymentsIdMap;
 
 	@Override
 	public void start() {
@@ -68,6 +71,8 @@ public class Starter extends BaseServer {
 			}
 			super.start();
 			final ConcurrentSharedMap<Object, Object> serverMap = vertx.sharedData().getMap("server");
+			deploymentsIdMap = vertx.sharedData().getMap("deploymentsId");
+			versionMap = vertx.sharedData().getMap("versions");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 			CookieHelper.getInstance().init((String) vertx
 					.sharedData().getMap("server").get("signKey"), log);
@@ -130,12 +135,24 @@ public class Starter extends BaseServer {
 		} catch (Exception ex) {
 			log.error(ex.getMessage());
 		}
+		JsonObject eventConfig = config.getObject("eventConfig", new JsonObject());
 		EventStoreService eventStoreService = new MongoDbEventStore();
-		EventStoreController eventStoreController = new EventStoreController();
+		EventStoreController eventStoreController = new EventStoreController(eventConfig);
 		eventStoreController.setEventStoreService(eventStoreService);
 		addController(eventStoreController);
 		addController(new MonitoringController());
 		addController(new EmbedController());
+		if (config.getBoolean("antivirus", false)) {
+			ClamAvService antivirusService = new ClamAvService();
+			antivirusService.setVertx(vertx);
+			antivirusService.setTimeline(new TimelineHelper(vertx, getEventBus(vertx), container));
+			antivirusService.setRender(new Renders(vertx, container));
+			antivirusService.init();
+			AntiVirusController antiVirusController = new AntiVirusController();
+			antiVirusController.setAntivirusService(antivirusService);
+			addController(antiVirusController);
+			container.deployWorkerVerticle(ExecCommandWorker.class.getName());
+		}
 	}
 
 	private void loadInvalidEmails() {
@@ -253,16 +270,17 @@ public class Starter extends BaseServer {
 				conf, module.getInteger("instances", 1), handler);
 	}
 
-	private void addAppVersion(final JsonObject module) {
+	private void addAppVersion(final JsonObject module, final String deploymentId) {
 		final List<String> lNameVersion = StringUtils.split(module.getString("name", ""), "~");
 		if (lNameVersion != null && lNameVersion.size() == 3) {
-			MAP_APP_VERSION.put(lNameVersion.get(0) + "." + lNameVersion.get(1), lNameVersion.get(2));
+			versionMap.put(lNameVersion.get(0) + "." + lNameVersion.get(1), lNameVersion.get(2));
+			deploymentsIdMap.put(lNameVersion.get(0) + "." + lNameVersion.get(1), deploymentId);
 		}
 	}
 
 	private void deployModules(JsonArray modules, boolean internal) {
 		for (Object o : modules) {
-			JsonObject module = (JsonObject) o;
+			final JsonObject module = (JsonObject) o;
 			if (module.getString("name") == null) {
 				continue;
 			}
@@ -276,9 +294,15 @@ public class Starter extends BaseServer {
 				}
 			}
 			conf = conf.mergeIn(module.getObject("config", new JsonObject()));
-			addAppVersion(module);
 			container.deployModule(module.getString("name"),
-					conf, module.getInteger("instances", 1));
+					conf, module.getInteger("instances", 1), new Handler<AsyncResult<String>>() {
+						@Override
+						public void handle(AsyncResult<String> event) {
+							if (event.succeeded()) {
+								addAppVersion(module, event.result());
+							}
+						}
+					});
 		}
 	}
 

@@ -51,6 +51,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			if (!doc.containsField("date")) {
 				doc.putObject("date", MongoDb.now());
 			}
+			doc.putObject("created", doc.getObject("date"));
 			mongo.save(TIMELINE_COLLECTION, doc, resultHandler(result));
 		} else {
 			result.handle(invalidArguments());
@@ -107,7 +108,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 					query.putArray("$nor", nor);
 				}
 			}
-			JsonObject sort = new JsonObject().putNumber("date", -1);
+			JsonObject sort = new JsonObject().putNumber("created", -1);
 			JsonObject keys = new JsonObject()
 				.putNumber("message", 1)
 				.putNumber("params", 1)

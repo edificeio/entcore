@@ -110,6 +110,23 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 	}
 
 	@Override
+	public void listExternalApplicationRolesWithGroups(String structureId, String connectorId, Handler<Either<String, JsonArray>> handler) {
+		String query =
+            "MATCH (e:External{id: {connectorId}})-[:PROVIDE]->()<-[:AUTHORIZE]-(r:Role) " +
+                "OPTIONAL MATCH (r)<-[:AUTHORIZED]-(g:Group)-[:DEPENDS*1..2]->(s:Structure {id: {structureId}}) " +
+                "OPTIONAL MATCH (s)<-[:HAS_ATTACHMENT]-(subStruct:Structure)<-[:DEPENDS]-()-[:AUTHORIZED]-(r) " +
+            "WITH r,e,subStruct, COLLECT(DISTINCT{id: g.id, name: g.name}) as groups " +
+            "RETURN r.id as id, r.name as name, e.id as connectorId, " +
+                    "COLLECT(DISTINCT subStruct.name) as subStructures, e.structureId as owner, " +
+                    "CASE WHEN any(x in groups where x <> {name: null, id: null}) THEN groups ELSE [] END as groups";
+
+		JsonObject params = new JsonObject()
+			.putString("connectorId", connectorId)
+			.putString("structureId", structureId);
+		neo.execute(query, params, validResultHandler(handler));
+	}
+
+	@Override
 	public void deleteExternalApplication(String applicationId,  Handler<Either<String, JsonObject>> handler) {
 		String query =
 			"MATCH (n:Application:External {id : {id}}) " +

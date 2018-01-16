@@ -1,0 +1,23 @@
+.bubble, .bubble-right, .bubble-left{
+    position: relative;
+    padding: 30px 50px;
+
+    &:before, &:after{
+        content: '';
+        display: block;
+        position: absolute;
+        top: 25px;
+    }
+
+}
+.bubble-right{
+    margin-left: 35px;
+    &:before{
+        left: -25px;
+        @include triangle-left(25px, $accent);
+    }
+    &:after{
+        left: -23px;
+        @include triangle-left(25px, $white);
+    }
+}

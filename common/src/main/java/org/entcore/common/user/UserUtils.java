@@ -110,6 +110,12 @@ public class UserUtils {
 		findUsers(eb, userId, m, handler);
 	}
 
+	public static void findVisibleUsers(final EventBus eb, String userId, boolean profile, String preFilter,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = queryVisibleUsers(preFilter, customReturn, additionnalParams, false, profile);
+		findUsers(eb, userId, m, handler);
+	}
+
 	public static void findVisibleUsers(final EventBus eb, String userId, boolean itSelf, boolean profile,
 			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
 		JsonObject m = queryVisibleUsers(customReturn, additionnalParams, itSelf, profile);
@@ -147,13 +153,22 @@ public class UserUtils {
 	}
 
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
+		JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
+		final String acceptLanguage, final Handler<JsonArray> handler) {
+		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, acceptLanguage, null, handler);
+	}
+
+	public static void findVisibles(EventBus eb, String userId, String customReturn,
 			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
-			final String acceptLanguage, final Handler<JsonArray> handler) {
+			final String acceptLanguage, String preFilter, final Handler<JsonArray> handler) {
 		JsonObject m = new JsonObject()
 				.putBoolean("itself", itSelf)
 				.putBoolean("mygroup", myGroup)
 				.putBoolean("profile", profile)
 				.putString("action", "visibleUsers");
+		if (preFilter != null) {
+			m.putString("preFilter", preFilter);
+		}
 		if (customReturn != null) {
 			m.putString("customReturn", customReturn);
 		}
@@ -178,7 +193,9 @@ public class UserUtils {
 		for (Object u : groups) {
 			if (!(u instanceof JsonObject)) continue;
 			JsonObject group = (JsonObject) u;
-			groupDisplayName(group, acceptLanguage);
+			if (group.getString("name") != null) {
+				groupDisplayName(group, acceptLanguage);
+			}
 		}
 	}
 
@@ -233,6 +250,17 @@ public class UserUtils {
 		findUsers(eb, userId, m, handler);
 	}
 
+	public static void findVisibleProfilsGroups(final EventBus eb, String userId, String preFilter,
+			String customReturn, JsonObject additionnalParams, final Handler<JsonArray> handler) {
+		JsonObject m = QUERY_VISIBLE_PROFILS_GROUPS.copy()
+				.putString("customReturn", customReturn)
+				.putObject("additionnalParams", additionnalParams);
+		if (preFilter != null) {
+			m.putString("preFilter", preFilter);
+		}
+		findUsers(eb, userId, m, handler);
+	}
+
 	public static void findVisibleProfilsGroups(final EventBus eb, String userId,
 												final Handler<JsonArray> handler) {
 		findUsers(eb, userId, QUERY_VISIBLE_PROFILS_GROUPS, handler);
@@ -263,6 +291,11 @@ public class UserUtils {
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {
+		getSession(eb, request, false, handler);
+	}
+
+	public static void getSession(EventBus eb, final HttpServerRequest request, boolean paused,
+								  final Handler<JsonObject> handler) {
 		if (request instanceof SecureHttpServerRequest &&
 				((SecureHttpServerRequest) request).getSession() != null) {
 			handler.handle(((SecureHttpServerRequest) request).getSession());
@@ -277,7 +310,9 @@ public class UserUtils {
 				handler.handle(null);
 				return;
 			} else {
-				request.pause();
+				if (!paused) {
+					request.pause();
+				}
 				JsonObject findSession = new JsonObject();
 				if (oneSessionId != null && !oneSessionId.trim().isEmpty()) {
 					findSession.putString("action", "find")
@@ -287,19 +322,24 @@ public class UserUtils {
 							.putString("userId", remoteUserId)
 							.putBoolean("allowDisconnectedUser", true);
 				}
-				findSession(eb, request, findSession, handler);
+				findSession(eb, request, findSession, paused, handler);
 			}
 		}
 	}
 
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession,
+									final Handler<JsonObject> handler) {
+		findSession(eb, request, findSession, false, handler);
+	}
+
+	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession, final boolean paused,
 			final Handler<JsonObject> handler) {
 		eb.send(SESSION_ADDRESS, findSession, new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonObject session = message.body().getObject("session");
-				if (request != null) {
+				if (request != null && !paused) {
 					request.resume();
 				}
 				if ("ok".equals(message.body().getString("status")) && session != null) {
@@ -312,6 +352,14 @@ public class UserUtils {
 				}
 			}
 		});
+	}
+
+	public static void getSessionByUserId(EventBus eb, final String userId, final Handler<JsonObject> handler) {
+		JsonObject findSession = new JsonObject()
+				.putString("action", "findByUserId")
+				.putString("userId", userId)
+				.putBoolean("allowDisconnectedUser", true);
+		findSession(eb, null, findSession, handler);
 	}
 
 	public static void getSession(EventBus eb, final String sessionId,  final Handler<JsonObject> handler) {
@@ -414,6 +462,21 @@ public class UserUtils {
 				.putString("action", "dropPermanentSessions")
 				.putString("userId", userId)
 				.putString("currentSessionId", currentSessionId);
+		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
+
+			@Override
+			public void handle(Message<JsonObject> res) {
+				if (handler != null) {
+					handler.handle("ok".equals(res.body().getString("status")));
+				}
+			}
+		});
+	}
+
+	public static void deleteCacheSession(EventBus eb, String userId, final Handler<Boolean> handler) {
+		JsonObject json = new JsonObject()
+				.putString("action", "dropCacheSession")
+				.putString("userId", userId);
 		eb.send(SESSION_ADDRESS, json, new Handler<Message<JsonObject>>() {
 
 			@Override

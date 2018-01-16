@@ -39,7 +39,7 @@ public interface UserService {
 
 	void sendUserCreatedEmail(HttpServerRequest request, String userId, Handler<Either<String, Boolean>> result);
 
-	void get(String id, Handler<Either<String, JsonObject>> result);
+	void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result);
 
 	void list(String structureId, String classId, JsonArray expectedProfiles, Handler<Either<String, JsonArray>> results);
 
@@ -65,6 +65,8 @@ public interface UserService {
 
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);
 
+	void listFunctions(String userId, Handler<Either<String, JsonArray>> handler);
+
 	void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
 
 	void removeGroup(String id, String groupId, Handler<Either<String, JsonObject>> result);
@@ -83,7 +85,7 @@ public interface UserService {
 
 	void mergeDuplicate(String userId1, String userId2, Handler<Either<String,JsonObject>> handler);
 
-	void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results);
+	void listByUAI(List<String> UAI,JsonArray expectedTypes,boolean isExportFull, JsonArray fields, Handler<Either<String, JsonArray>> results);
 
 	void generateMergeKey(String userId, Handler<Either<String,JsonObject>> handler);
 

@@ -21,14 +21,17 @@ package org.entcore.registry.services;
 
 import fr.wseduc.webutils.Either;
 
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public interface AppRegistryService {
 
 	void listApplications(String structureId, Handler<Either<String, JsonArray>> handler);
-
+	
 	void listRoles(String structureId, Handler<Either<String, JsonArray>> handler);
 
 	void listRolesWithActions(String structureId, Handler<Either<String, JsonArray>> handler);
@@ -38,6 +41,8 @@ public interface AppRegistryService {
 	void listGroupsWithRoles(String structureId, boolean classGroups, Handler<Either<String, JsonArray>> handler);
 
 	void listApplicationsWithActions(String structureId, String actionType, Handler<Either<String, JsonArray>> handler);
+	
+	void listApplicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler);
 
 	// if structureId is null => global role
 	void createRole(String structureId, JsonObject role, JsonArray actions, Handler<Either<String, JsonObject>> handler);

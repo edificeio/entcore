@@ -27,10 +27,7 @@ import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
 import org.entcore.feeder.timetable.Slot;
-import org.entcore.feeder.utils.JsonUtil;
-import org.entcore.feeder.utils.Report;
-import org.entcore.feeder.utils.TransactionHelper;
-import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
@@ -60,13 +57,25 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-			"WHERE head(u.profiles) = {profile} AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
-			"SET u.IDPN = {IDPN} " +
-			"RETURN DISTINCT u.id as id, u.IDPN as IDPN, head(u.profiles) as profile";
+			"WHERE head(u.profiles) IN ['Teacher','Personnel'] AND LOWER(u.lastName) = {lastName} AND LOWER(u.firstName) = {firstName} " +
+			"WITH COLLECT(DISTINCT u) as user " +
+			"WHERE LENGTH(user) = 1 " +
+			"SET HEAD(user).IDPN = {IDPN} " +
+			"RETURN DISTINCT HEAD(user).id as id, HEAD(user).IDPN as IDPN, {profile} as profile";
 	private static final String STUDENTS_TO_GROUPS =
 			"MATCH (u:User {attachmentId : {idSconet}}), (fg:FunctionalGroup {externalId:{externalId}}) " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
+	private static final String CLEAN_IDPN =
+			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+			"WHERE HAS(u.IDPN) AND HEAD(u.profiles) IN ['Relative','Guest', 'Student'] " +
+			"SET u.IDPN = null";
+	private static final String CLEAN_IDPN_OTHER_STRUCTURE =
+			"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+			"WHERE u.IDPN  starts with {structureExternalId} " +
+			"WITH u, collect(s.externalId) as struct " +
+			"WHERE NOT({structureExternalId} IN struct) " +
+			"SET u.IDPN = null";
 	private final String mode;
 	public static final String IDENT = "Ident";
 	public static final String IDPN = "IDPN";
@@ -106,6 +115,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 				if (event.succeeded()) {
 					try {
 						txXDT.setAutoSend(false);
+						txXDT.add(CLEAN_IDPN, new JsonObject().putString("UAI", UAI));
+						txXDT.add(CLEAN_IDPN_OTHER_STRUCTURE, new JsonObject().putString("structureExternalId", structureExternalId));
 						parse(content, true);
 						if (txXDT.isEmpty()) {
 							parse(content, false);
@@ -209,7 +220,8 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 		final String name = currentEntity.getString("Nom");
 		txXDT.add(CREATE_GROUPS, new JsonObject().putString("structureExternalId", structureExternalId)
-				.putString("name", name).putString("externalId", structureExternalId + "$" + name)
+				.putString("name", name).putString("displayNameSearchField", Validator.sanitize(name))
+				.putString("externalId", structureExternalId + "$" + name)
 				.putString("id", UUID.randomUUID().toString()).putString("source", getSource()));
 	}
 
@@ -274,7 +286,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 	void addPersonnel(JsonObject currentEntity) {
 		final String id = currentEntity.getString(IDENT);
 		try {
-			final String idPronote = Md5.hash(currentEntity.getString("Nom") + currentEntity.getString("Prenom"));
+			final String idPronote =  structureExternalId + "$" + Md5.hash(currentEntity.getString("Nom") + currentEntity.getString("Prenom"));
 			findPersEducNat(currentEntity, idPronote, "Personnel");
 			userImportedPronoteId.add(idPronote);
 		} catch (NoSuchAlgorithmException e) {
@@ -296,7 +308,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 						.putString("lastName", p.getString("lastName").toLowerCase())
 						.putString("firstName", p.getString("firstName").toLowerCase()));
 			} else {
-				report.addErrorWithParams("empty.required.user.attribute", p.encode());
+				report.addErrorWithParams("empty.required.user.attribute", p.encode().replaceAll("\\$", ""));
 			}
 		} catch (Exception e) {
 			report.addError(e.getMessage());
@@ -334,6 +346,9 @@ public class EDTImporter extends AbstractTimetableImporter {
 										if (notFoundPersEducNat.isEmpty()) {
 											handler.handle(new DefaultAsyncResult<>((Void) null));
 										} else {
+											for (Map.Entry<String, JsonObject> e: notFoundPersEducNat.entrySet()) {
+												log.info(e.getKey() + " : " + e.getValue().encode());
+											}
 											handler.handle(new DefaultAsyncResult<Void>(new ValidationException("not.found.users.not.empty")));
 										}
 									} else {

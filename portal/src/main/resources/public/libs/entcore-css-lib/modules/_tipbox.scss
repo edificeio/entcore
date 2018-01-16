@@ -1,0 +1,30 @@
+.tipbox{
+    display: flex;
+    align-items: flex-start;
+    backface-visibility: hidden;
+
+    i{
+        font-size: 26px;
+    }
+    .tipbox-content{
+        position: absolute;
+        margin-left: 40px; // less than tipbox i width
+        padding: 10px 15px;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        border: 1px solid cyan;
+        border-radius: 3px;
+        background: white;
+        z-index: 10000;
+    }
+}
+.tipbox:hover{
+    .tipbox-content{
+        opacity: 1;
+        width: auto;
+        height: auto;
+        transition: opacity 400ms;
+    }
+}

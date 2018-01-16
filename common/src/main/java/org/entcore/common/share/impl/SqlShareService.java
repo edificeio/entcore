@@ -53,7 +53,7 @@ public class SqlShareService extends GenericShareService {
 	}
 
 	@Override
-	public void shareInfos(final String userId, String resourceId, final String acceptLanguage,
+	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid userId."));
@@ -86,7 +86,7 @@ public class SqlShareService extends GenericShareService {
 						}
 						m.add(row.get(1));
 					}
-					getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage, new Handler<JsonObject>() {
+					getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage, search, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
 							if (event != null && event.size() == 3) {

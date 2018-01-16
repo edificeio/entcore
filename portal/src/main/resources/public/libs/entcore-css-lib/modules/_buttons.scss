@@ -1,0 +1,186 @@
+
+a.button, button, input[type=button], input[type=submit]{
+	cursor: pointer;
+	margin: 0;
+	margin-left: 1px;
+	margin-right: 1px;
+	@include cell;
+}
+
+.display-buttons{
+	padding-bottom: 10px;
+}
+
+input[type=search]{
+	padding: 3px;
+}
+
+
+
+.toggle-buttons-spacer{
+	margin-bottom: 50px;
+}
+
+.toggle-buttons{
+	width: 100%;
+	background: $medium-grey;
+	height: auto;
+	max-height: 150px;
+	left: 0;
+	bottom: 0;
+	position: fixed;
+	max-width: 100%;
+	@include run-transition(max-height);
+
+	-webkit-transition-delay: 250ms;
+	-moz-transition-delay: 250ms;
+	-ms-transition-delay: 250ms;
+	transition-delay: 250ms;
+
+	z-index: 8000;
+	.toggle{
+		padding: 10px;
+	}
+	button{
+		opacity: 1;
+		@include run-transition(opacity);
+	}
+	button.hide{
+		opacity: 0;
+		@include run-transition(opacity);
+	}
+
+	.contextual-link{
+		float: right;
+		margin: 10px;
+	}
+
+	behaviour, resource-right{
+		float:left;
+	}
+}
+
+.toggle-buttons.hide{
+	max-height: 0px;
+	@include run-transition(max-height);
+	overflow: hidden;
+}
+
+
+section{
+  .contextual-buttons{
+    .action-buttons{
+      @include cell;
+      @include grid-cell-width(9);
+      margin-bottom: 10px;
+      button, a.button{
+        vertical-align: top;
+      }
+    }
+
+    article{
+      li{
+        list-style-type: none;
+      }
+    }
+  }
+}
+
+.display-buttons{
+	@include cell;
+	float: right;
+	text-align: right;
+
+	i{
+		float: right;
+		cursor: pointer;
+		@include run-transition(opacity);
+		opacity: 1;
+	}
+	i:hover{
+		opacity: 0.4;
+		@include run-transition(opacity)
+	}
+}
+
+
+button{
+  position: relative;
+  span{
+    display: block;
+    float: left;
+  }
+}
+
+
+drop-down-button{
+	min-width: 150px;
+	height: 40px;
+}
+
+.drop-down-button{
+	z-index: 650;
+	white-space: nowrap;
+	min-width: 100%;
+	position: relative;
+	label{
+		display: block;
+		cursor: pointer;
+		box-sizing: border-box;
+		min-width: 100%;
+		padding: 4px 10px;
+		border-radius: 3px 3px 0 0;
+		float: left;
+		font-size: 15px;
+		background: #fff;
+		border: 1px solid #444;
+		color: #000;
+		@include run-transition(background);
+		font-weight: 300;
+	}
+
+	.options{
+		ul{
+			padding: 0;
+			margin: 0;
+			background: #fff;
+			border: 1px solid #444;
+			border-top: 0;
+			position: absolute;
+			width: 100%;
+			top: 23px;
+			box-sizing: border-box;
+			li{
+				list-style-type: none;
+				box-sizing: border-box;
+				padding: 5px;
+				@include run-transition(background);
+				font-size: 13px;
+				text-align: center;
+				color: #444;
+			}
+			li:hover{
+				background: #444;
+				color: #fff;
+			}
+		}
+	}
+}
+
+.drop-down-button.hidden{
+	z-index: 1;
+	label{
+		border-radius: 3px;
+		background: #ccc;
+		color: #fff;
+		border: 1px solid transparent;
+	}
+	.options{
+		display: none;
+	}
+	label:hover{
+		background: #fff;
+		border: 1px solid #ccc;
+		color: #000;
+	}
+}

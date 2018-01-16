@@ -19,7 +19,7 @@
  -->
 
 <div class="row reduce-block-six twelve-mobile user-infos">
-	<article class="rigid-grid cell twelve small-text">
+	<article class="rigid-grid cell twelve">
 
 		<div class="cell four height-four reduce-block-six avatar">
 			<div class="fluid twelve cell clip" ng-if="account.edit.userbook">
@@ -33,7 +33,7 @@
 
 		<h2>[[account.displayName]]</h2>
 
-		<form class="sheet" name="userForm" novalidate>
+		<form class="sheet small-text" name="userForm" novalidate>
 			<div class="row">
 				<div class="four cell">
 					<i18n>userBook.profile.login</i18n>
@@ -46,8 +46,8 @@
 					<i18n>userBook.profile.password</i18n>
 				</div>
 				<em class="seven cell">
-					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
-					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
+					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress))" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="(me.federated && !account.disabledFederatedAdress)" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
 				</em>
 			</div>
 
@@ -87,7 +87,7 @@
 			<div class="row">
 				<label translate content="userBook.profile.telephone" class="four cell"></label>
 				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.homePhone" />
+					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="phone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.homePhone" />
 					<span class="twelve input-errors" ng-if="userForm.phone.$invalid && userForm.phone.$dirty">
 						<span ng-repeat="(key, value) in userForm.phone.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>
@@ -101,7 +101,7 @@
 			<div class="row">
 				<label translate content="userBook.profile.mobilePhone" class="four cell"></label>
 				<div class="seven cell">
-					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,14}[0-9]$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
+					<input type="tel" ng-pattern="/^(00|\+)?(?:[0-9] ?-?\.?){6,15}$/" name="mobilePhone" class="twelve inline-editing" complete-change="userForm.$valid ? saveChanges() : ''" ng-model="account.mobile" />
 					<span class="twelve input-errors" ng-if="userForm.mobilePhone.$invalid && userForm.mobilePhone.$dirty">
 						<span ng-repeat="(key, value) in userForm.mobilePhone.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>

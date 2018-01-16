@@ -24,16 +24,28 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import javax.xml.stream.XMLEventFactory;
+import javax.xml.stream.XMLEventWriter;
+import javax.xml.stream.XMLStreamException;
+
 public class PersHorsAAFExportProcessing extends UserExportProcessing {
 
 	private final String date;
 	private final String stdPrefix;
 
 	public PersHorsAAFExportProcessing(String path, String date, String stdPrefix, boolean concat) {
-		super("dictionary/export/eliot/PersRelEleve.json", 10000, path,
+		super("dictionary/export/eliot/PersHorsAAF.json", 10000, path,
 				new JsonArray().add("Guest"), "PersHorsAAF", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
+	}
+
+	@Override
+	protected void process(XMLEventWriter writer, XMLEventFactory eventFactory) throws XMLStreamException {
+		writer.add(eventFactory.createAttribute("name", "categoriePersonne"));
+		writer.add(eventFactory.createStartElement("", "", "value"));
+		writer.add(eventFactory.createCharacters("HorsAAF"));
+		writer.add(eventFactory.createEndElement("", "", "value"));
 	}
 
 	@Override

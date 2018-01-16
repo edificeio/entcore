@@ -27,6 +27,7 @@ import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
+import org.joda.time.DateTime;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
@@ -45,26 +46,49 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DuplicateUsers {
 
 	private static final Logger log = LoggerFactory.getLogger(DuplicateUsers.class);
-	private final JsonArray searchSources;
+	private static final String INCREMENT_RELATIVE_SCORE =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}), " +
+			"(u1)-[:RELATED]->()-[rp:DUPLICATE]-()<-[:RELATED]-(u2) " +
+			"SET rp.score = rp.score + 1 ";
+	private static final String SIMPLE_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
+			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
+			"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId " +
+			"DELETE r, r2, u2 " +
+			"WITH u1, IDPN, oldId " +
+			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
+			"SET u1.IDPN = IDPN " +
+			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
+	private static final String SWITCH_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
+			"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId " +
+			"DELETE r, r2, u2 " +
+			"WITH u1, source, externalId, IDPN, oldId " +
+			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
+			"u1.externalId = externalId, u1.source = source, u1.disappearanceDate = null " +
+			"WITH u1, IDPN, oldId " +
+			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
+			"SET u1.IDPN = IDPN " +
+			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private final List<String> notDeduplicateSource = Arrays.asList("AAF", "AAF1D");
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
+	private final boolean autoMergeOnlyInSameStructure;
 
-	public DuplicateUsers(JsonArray searchSources, boolean updateCourses) {
-		this(searchSources, null, updateCourses);
+	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
+		this(null, updateCourses, autoMergeOnlyInSameStructure);
 	}
 
-	public DuplicateUsers(JsonArray searchSources, JsonArray sourcesPriority, boolean updateCourses) {
-		this.searchSources = (searchSources != null) ? searchSources : new JsonArray().add(ManualFeeder.SOURCE)
-				.add("CSV").add("EDT").add("UDT");
+	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
 		if (sourcesPriority == null) {
-			sourcesPriority = new JsonArray().add("AAF").add("BE1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
+			sourcesPriority = new JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {
 			sourcePriority.put(sourcesPriority.<String>get(i), size - i);
 		}
 		this.updateCourses = updateCourses;
+		this.autoMergeOnlyInSameStructure = autoMergeOnlyInSameStructure;
 	}
 
 	public void markDuplicates(Handler<JsonObject> handler) {
@@ -76,31 +100,56 @@ public class DuplicateUsers {
 	}
 
 	public void markDuplicates(final Message<JsonObject> message, final Handler<JsonObject> handler) {
-		final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
-		final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
-		final long start = System.currentTimeMillis();
-		handlers[handlers.length - 1] = new VoidHandler() {
+		final String now = DateTime.now().toString();
+		final String query = "MATCH (s:System {name : 'Starter'}) return s.lastSearchDuplicates as lastSearchDuplicates ";
+		TransactionManager.getNeo4jHelper().execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
-			protected void handle() {
+			public void handle(Message<JsonObject> event) {
+				JsonArray res = event.body().getArray("result");
+				if ("ok".equals(event.body().getString("status")) && res != null &&
+						res.size() == 1 && res.<JsonObject>get(0).getString("lastSearchDuplicates") != null) {
+					final String last = res.<JsonObject>get(0).getString("lastSearchDuplicates");
+					final String[] profiles = ManualFeeder.profiles.keySet().toArray(new String[ManualFeeder.profiles.keySet().size()]);
+					final VoidHandler[] handlers = new VoidHandler[profiles.length + 1];
+					final long start = System.currentTimeMillis();
+					handlers[handlers.length - 1] = new VoidHandler() {
+						@Override
+						protected void handle() {
+							final String updateDate = "MATCH (s:System {name : 'Starter'}) set s.lastSearchDuplicates = {now} ";
+							TransactionManager.getNeo4jHelper().execute(updateDate, new JsonObject().putString("now", now),
+									new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> event) {
+											if (!"ok".equals(event.body().getString("status"))) {
+												log.error("Error updating last search duplicate date : " + event.body().getString("message"));
+											}
+										}
+									});
 				log.info("Mark duplicates users finished - elapsed time " + (System.currentTimeMillis() - start) + " ms.");
-				if (message != null) {
+							if (message != null) {
+								message.reply(new JsonObject().putString("status", "ok"));
+							}
+							if (handler != null) {
+								handler.handle(new JsonObject().putString("status", "ok"));
+							}
+						}
+					};
+					for (int i = profiles.length - 1; i >= 0; i--) {
+						final int j = i;
+						handlers[i] = new VoidHandler() {
+							@Override
+							protected void handle() {
+								searchDuplicatesByProfile(last, profiles[j], handlers[j + 1]);
+							}
+						};
+					}
+					handlers[0].handle(null);
+				} else {
+					log.warn("lastSearchDuplicates not found.");
 					message.reply(new JsonObject().putString("status", "ok"));
 				}
-				if (handler != null) {
-					handler.handle(new JsonObject().putString("status", "ok"));
-				}
 			}
-		};
-		for (int i = profiles.length - 1; i >= 0; i--) {
-			final int j = i;
-			handlers[i] = new VoidHandler() {
-				@Override
-				protected void handle() {
-					searchDuplicatesByProfile(profiles[j], handlers[j + 1]);
-				}
-			};
-		}
-		handlers[0].handle(null);
+		});
 	}
 
 	public void ignoreDuplicate(final Message<JsonObject> message) {
@@ -182,7 +231,9 @@ public class DuplicateUsers {
 		String query =
 				"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}) " +
 				"RETURN DISTINCT u1.id as userId1, u1.source as source1, NOT(HAS(u1.activationCode)) as activatedU1, " +
-				"u2.id as userId2, u2.source as source2, NOT(HAS(u2.activationCode)) as activatedU2";
+				"u1.disappearanceDate as disappearanceDate1, u1.deleteDate as deleteDate1, " +
+				"u2.id as userId2, u2.source as source2, NOT(HAS(u2.activationCode)) as activatedU2, " +
+				"u2.disappearanceDate as disappearanceDate2, u2.deleteDate as deleteDate2";
 		JsonObject params = new JsonObject().putString("userId1", userId1).putString("userId2", userId2);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -205,15 +256,18 @@ public class DuplicateUsers {
 		});
 	}
 
-	private void mergeDuplicate(JsonObject r, final Message<JsonObject> message, final TransactionHelper tx) {
+	private void mergeDuplicate(final JsonObject r, final Message<JsonObject> message, final TransactionHelper tx) {
 		final String source1 = r.getString("source1");
 		final String source2 = r.getString("source2");
 		final boolean activatedU1 = r.getBoolean("activatedU1", false);
 		final boolean activatedU2 = r.getBoolean("activatedU2", false);
 		final String userId1 = r.getString("userId1");
 		final String userId2 = r.getString("userId2");
+		final boolean missing1 = r.getLong("disappearanceDate1") != null || r.getLong("deleteDate1") != null;
+		final boolean missing2 = r.getLong("disappearanceDate2") != null || r.getLong("deleteDate2") != null;
 		final JsonObject error = new JsonObject().putString("status", "error");
-		if (source1 != null && source1.equals(source2) && notDeduplicateSource.contains(source1)) {
+		if (source1 != null && source1.equals(source2) && notDeduplicateSource.contains(source1) &&
+				!missing1 && !missing2) {
 			message.reply(error.putString("message", "two.users.in.same.source"));
 			return;
 		}
@@ -222,37 +276,36 @@ public class DuplicateUsers {
 		if ((activatedU1 && prioritySource(source1) >= prioritySource(source2)) ||
 				(activatedU2 && prioritySource(source1) <= prioritySource(source2)) ||
 				(!activatedU1 && !activatedU2)) {
-			query = "MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
-					"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId " +
-					"DELETE r, r2, u2 " +
-					"WITH u1, IDPN, oldId " +
-					"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-					"SET u1.IDPN = IDPN " +
-					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
-			if (activatedU1) {
-				params.putString("userId1", userId1).putString("userId2", userId2);
-			} else if (activatedU2) {
-				params.putString("userId1", userId2).putString("userId2", userId1);
-			} else {
-				if (prioritySource(source1) > prioritySource(source2)) {
+			query = SIMPLE_MERGE_QUERY;
+			if (prioritySource(source1) == prioritySource(source2) && notDeduplicateSource.contains(source1)) {
+				if (!missing1 && activatedU1) {
 					params.putString("userId1", userId1).putString("userId2", userId2);
-				} else {
+				} else if (!missing2 && activatedU2) {
 					params.putString("userId1", userId2).putString("userId2", userId1);
+				} else {
+					query = SWITCH_MERGE_QUERY;
+					if (activatedU1) {
+						params.putString("userId1", userId1).putString("userId2", userId2);
+					} else {
+						params.putString("userId1", userId2).putString("userId2", userId1);
+					}
+				}
+			} else {
+				if (activatedU1) {
+					params.putString("userId1", userId1).putString("userId2", userId2);
+				} else if (activatedU2) {
+					params.putString("userId1", userId2).putString("userId2", userId1);
+				} else {
+					if (prioritySource(source1) > prioritySource(source2)) {
+						params.putString("userId1", userId1).putString("userId2", userId2);
+					} else {
+						params.putString("userId1", userId2).putString("userId2", userId1);
+					}
 				}
 			}
 		} else if ((activatedU1 && prioritySource(source1) < prioritySource(source2)) ||
 				(activatedU2 && prioritySource(source1) > prioritySource(source2))) {
-			query = "MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId " +
-					"DELETE r, r2, u2 " +
-					"WITH u1, source, externalId, IDPN, oldId " +
-					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
-					"u1.externalId = externalId, u1.source = source " +
-					"WITH u1, IDPN, oldId " +
-					"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-					"SET u1.IDPN = IDPN " +
-					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
+			query = SWITCH_MERGE_QUERY;
 			if (activatedU1) {
 				params.putString("userId1", userId1).putString("userId2", userId2);
 			} else {
@@ -263,20 +316,29 @@ public class DuplicateUsers {
 			return;
 		}
 		if (tx != null) {
+			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params);
 			message.reply(new JsonObject().putString("status", "ok"));
 		} else {
-			TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						if (updateCourses) {
-							AbstractTimetableImporter.updateMergedUsers(event.body().getArray("result"));
+			try {
+				TransactionHelper txl = TransactionManager.getTransaction();
+				txl.add(INCREMENT_RELATIVE_SCORE, params);
+				txl.add(query, params);
+				txl.commit(new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if ("ok".equals(event.body().getString("status"))) {
+						  log.info("Merge duplicates : " + r.encode());
+							if (updateCourses) {
+								AbstractTimetableImporter.updateMergedUsers(event.body().getArray("results"));
+							}
 						}
+						message.reply(event.body());
 					}
-					message.reply(event.body());
-				}
-			});
+				});
+			} catch (TransactionException e) {
+				message.reply(error.putString("message", "invalid.transaction"));
+			}
 		}
 	}
 
@@ -292,59 +354,88 @@ public class DuplicateUsers {
 			message.reply(error.putString("message", "invalid.merge.keys"));
 			return;
 		}
-		try {
-			TransactionHelper tx = TransactionManager.getTransaction();
-			final JsonObject params = new JsonObject()
-					.putString("userId", originalUserId)
-					.putArray("mergeKeys", mergeKeys);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-					"MERGE u-[:IN]->gin " +
-					"DELETE rin ", params);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-					"MERGE  u-[:COMMUNIQUE]->gcom " +
-					"DELETE rcom ", params);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-					"MERGE u<-[:COMMUNIQUE]-gcomr " +
-					"DELETE rcomr ", params);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-					"MERGE u-[:RELATED]->ur " +
-					"DELETE rr ", params);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User)<-[rrr:RELATED]-(urr:User) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
-					"MERGE u<-[:RELATED]-urr " +
-					"DELETE rrr ", params);
-			tx.add(
-					"MATCH (u:User {id: {userId}}), (mu:User) " +
-					"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
-					"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " + // AND LENGTH(mu.joinKey) < 2  " +
-					"SET mu.mergedWith = {userId}, mu.mergeKey = null, u.mergedLogins = coalesce(u.mergedLogins, []) + mu.login " +
+		final JsonObject params = new JsonObject()
+				.putString("userId", originalUserId);
+		TransactionManager.getNeo4jHelper().execute(
+				"MATCH (u:User {id: {userId}}) RETURN u.mergeKey as mergeKey", params, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						JsonArray result = event.body().getArray("result");
+						if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
+							String mergeKey = result.<JsonObject>get(0).getString("mergeKey");
+							if (mergeKey != null && mergeKeys.contains(mergeKey)) {
+								final JsonArray tmp = new JsonArray();
+								for (Object o : mergeKeys) {
+									if (!mergeKey.equals(o)) {
+										tmp.add(o);
+									}
+								}
+								if (tmp.size() > 0) {
+									params.putArray("mergeKeys", tmp);
+								} else {
+									message.reply(error.putString("message", "invalid.merge.keys"));
+									return;
+								}
+							} else {
+								params.putArray("mergeKeys", mergeKeys);
+							}
+							try {
+								TransactionHelper tx = TransactionManager.getTransaction();
+
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User)-[rin:IN]->(gin:Group) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"MERGE u-[:IN]->gin " +
+												"DELETE rin ", params);
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"MERGE  u-[:COMMUNIQUE]->gcom " +
+												"DELETE rcom ", params);
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"MERGE u<-[:COMMUNIQUE]-gcomr " +
+												"DELETE rcomr ", params);
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"MERGE u-[:RELATED]->ur " +
+												"DELETE rr ", params);
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User)<-[rrr:RELATED]-(urr:User) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " +
+												"MERGE u<-[:RELATED]-urr " +
+												"DELETE rrr ", params);
+								tx.add(
+										"MATCH (u:User {id: {userId}}), (mu:User) " +
+												"WHERE HEAD(u.profiles) = 'Relative' AND HEAD(mu.profiles) = 'Relative' " +
+												"AND NOT(HAS(u.mergedWith)) AND mu.mergeKey IN {mergeKeys} " + // AND LENGTH(mu.joinKey) < 2  " +
+												"SET mu.mergedWith = {userId}, mu.mergeKey = null, u.mergedLogins = coalesce(u.mergedLogins, []) + mu.login " +
 //					", u.joinKey =  FILTER(eId IN u.joinKey WHERE eId <> mu.externalId) + mu.externalId " +
-					"MERGE mu-[:MERGED]->u " +
-					"RETURN u.mergedLogins as mergedLogins ", params);
-			tx.commit(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					message.reply(event.body());
-				}
-			});
-		} catch (TransactionException e) {
-			log.error("transaction.error", e);
-			message.reply(error.putString("message", "transaction.error"));
-		}
+												"MERGE mu-[:MERGED]->u " +
+												"RETURN u.mergedLogins as mergedLogins ", params);
+								tx.commit(new Handler<Message<JsonObject>>() {
+									@Override
+									public void handle(Message<JsonObject> event) {
+										message.reply(event.body());
+									}
+								});
+							} catch (TransactionException e) {
+								log.error("transaction.error", e);
+								message.reply(error.putString("message", "transaction.error"));
+							}
+						} else {
+							message.reply(error.putString("message", "user.not.found"));
+						}
+					}
+				});
+
 	}
 
 	private int prioritySource(String source) {
@@ -352,12 +443,12 @@ public class DuplicateUsers {
 		return (priority != null) ? priority : 0;
 	}
 
-	private void searchDuplicatesByProfile(final String profile, final VoidHandler handler) {
+	private void searchDuplicatesByProfile(String last, final String profile, final VoidHandler handler) {
 		String query =
-				"MATCH (u:User) WHERE u.source IN {searchSources} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
+				"MATCH (u:User) WHERE u.modified > {lastSearchDuplicate} AND HEAD(u.profiles) = {profile} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.birthDate as birthDate, u.email as email";
-		JsonObject params = new JsonObject().putString("profile", profile).putArray("searchSources", searchSources);
+						"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
+		JsonObject params = new JsonObject().putString("profile", profile).putString("lastSearchDuplicate", last);
 		TransactionManager.getNeo4jHelper().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -381,7 +472,7 @@ public class DuplicateUsers {
 				"START u=node:node_auto_index({luceneQuery}) " +
 				"WHERE HEAD(u.profiles) = {profile} AND u.id <> {id} AND NOT(HAS(u.deleteDate)) " +
 				"RETURN u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.birthDate as birthDate, u.email as email";
+				"u.birthDate as birthDate, u.email as email, u.source as source, u.disappearanceDate as disappearanceDate";
 		final JsonObject params = new JsonObject().putString("profile", profile);
 		TransactionHelper tx;
 		try {
@@ -463,6 +554,9 @@ public class DuplicateUsers {
 			}
 			v = v.replaceAll("\\W+", "");
 			if (v.isEmpty() || (v.length() < 4 && values.length > 1)) continue;
+			if ("OR".equalsIgnoreCase(v) || "AND".equalsIgnoreCase(v) || "NOT".equalsIgnoreCase(v)) {
+				v = "\"" + v + "\"";
+			}
 			sb.append(attributeName).append(":").append(v).append(d).append(" OR ");
 		}
 		int len = sb.length();
@@ -484,6 +578,8 @@ public class DuplicateUsers {
 		final String firstName = cleanAttribute(searchUser.getString("firstName"));
 		final String birthDate = cleanAttribute(searchUser.getString("birthDate"));
 		final String email = cleanAttribute(searchUser.getString("email"));
+		final String source = searchUser.getString("source");
+		final Long disappearanceDate = searchUser.getLong("disappearanceDate");
 
 		for (int i = 0; i < findUsers.size(); i++) {
 			int score = 2;
@@ -492,7 +588,8 @@ public class DuplicateUsers {
 			score += exactMatch(firstName, cleanAttribute(fu.getString("firstName")));
 			score += exactMatch(birthDate, cleanAttribute(fu.getString("birthDate")));
 			score += exactMatch(email, cleanAttribute(fu.getString("email")));
-			if (score > 3) {
+			if (score > 3 && (!notDeduplicateSource.contains(source) || !source.equals(fu.getString("source")) ||
+					disappearanceDate != null || fu.getLong("disappearanceDate") != null)) {
 				tx.add(query, params.copy().putString("dId", fu.getString("id")).putNumber("score", score));
 			}
 		}
@@ -536,6 +633,7 @@ public class DuplicateUsers {
 								mergeDuplicate(new ResultMessage(mergeHandler)
 										.put("userId1", u1.getString("id"))
 										.put("userId2", u2.getString("id")), tx);
+								log.info("AutoMerge duplicates - u1 : " + u1.encode() + ", u2 : " + u2.encode());
 							} else {
 								decrementCount(count, tx);
 							}
@@ -571,7 +669,7 @@ public class DuplicateUsers {
 			}
 		};
 		listDuplicates(new ResultMessage(duplicatesHandler).put("minScore", 5)
-				.put("inSameStructure", true).put("inherit", false));
+				.put("inSameStructure", autoMergeOnlyInSameStructure).put("inherit", false));
 	}
 
 }

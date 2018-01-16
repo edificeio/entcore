@@ -26,7 +26,10 @@ if(window.infraPrefix === undefined){
 
 window.entcore = {
     appPrefix: appPrefix,
-    infraPrefix: infraPrefix
+	infraPrefix: infraPrefix,
+	MediaLibrary: {
+		thumbnails: "thumbnail=120x120&thumbnail=100x100&thumbnail=290x290&thumbnail=381x381&thumbnail=1600x0"
+	}
 };
 
 var currentLanguage = '';
@@ -119,6 +122,14 @@ var findVersion = function(){
 			browser: 'Chrome',
 			version: version,
 			outdated: version < 39
+		}
+	}
+	else if(userAgent.indexOf('IEMobile') !== -1){
+		version = parseInt(navigator.userAgent.split('IEMobile/')[1].split(';')[0]);
+		return {
+			browser: 'MSIE',
+			version: version,
+			outdated: version < 10
 		}
 	}
 	else if(userAgent.indexOf('AppleWebKit') !== -1 && userAgent.indexOf('Chrome') === -1){

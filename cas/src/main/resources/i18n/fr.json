@@ -9,6 +9,10 @@
   "LeSiteTvRegisteredService.description" : "Service CAS spécifique <a href='http://www.lesite.tv/' target='_blank'>LeSite.tv</a>, catalogue de ressources audiovisuelles.",
   "UniversalisRegisteredService.name" : "Universalis",
   "UniversalisRegisteredService.description" : "Service CAS spécifique pour Universalis, l'encyplopédie en ligne.",
+  "EnglishAttackRegisteredService.name" : "English Attack",
+  "EnglishAttackRegisteredService.description" : "Service CAS spécifique pour English Attack",
+  "CIDJRegisteredService.name" : "CIDJ",
+  "CIDJRegisteredService.description" : "Service CAS spécifique pour CIDJ",
   "WebclasseursRegisteredService.name" : "Webclasseur",
   "WebclasseursRegisteredService.description" : "Service CAS spécifique <a href='http://www.onisep.fr/Mes-infos-regionales/Ile-de-France/Espace-pedagogique/Le-Webclasseur-Orientation' target='_blank'>Webclasseur</a>, outil pédagogique national dédié à l’orientation.",
   "ProEPSRegisteredService.name" : "ProEPS",
@@ -28,6 +32,7 @@
   "GRRRegisteredService.name" : "GRR",
   "GRRRegisteredService.description" : "Service CAS spécifique <a href='http://grr.devome.com/' target='_blank'>GRR</a>, logiciel de réservation de ressource.",
   "LabomepRegisteredService.name" : "LaboMEP",
-  "LabomepRegisteredService.description" : "Service CAS spécifique <a href='http://www.labomep.net/' target='_blank'>LaboMEP</a>, préparation de séances de mathématiques"
-
+  "LabomepRegisteredService.description" : "Service CAS spécifique <a href='http://www.labomep.net/' target='_blank'>LaboMEP</a>, préparation de séances de mathématiques",
+  "AcademicSuffixRegisteredService.name" : "OGIL/Césame",
+  "AcademicSuffixRegisteredService.description" : "Service CAS spécifique pour Ogil et Césame"
 }

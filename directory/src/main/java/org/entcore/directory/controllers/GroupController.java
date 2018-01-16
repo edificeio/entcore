@@ -25,6 +25,8 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -38,6 +40,13 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
+
+import java.util.List;
+
+import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 
 public class GroupController extends BaseController {
 
@@ -52,7 +61,27 @@ public class GroupController extends BaseController {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
 					final JsonArray types = new JsonArray(request.params().getAll("type").toArray());
-					groupService.listAdmin(structureId, user, types, arrayResponseHandler(request));
+					final Boolean translate= request.params().contains("translate") ?
+							new Boolean(request.params().get("translate")) :
+							Boolean.FALSE;
+					final Handler<Either<String, JsonArray>> handler;
+					if(translate){
+						handler = new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> r) {
+								if (r.isRight()) {
+									JsonArray res = r.right().getValue();
+									UserUtils.translateGroupsNames(res, I18n.acceptLanguage(request));
+									renderJson(request, res);
+								} else {
+									leftToResponse(request, r.left());
+								}
+							}
+						};
+					}else{
+						handler = arrayResponseHandler(request);
+					}
+					groupService.listAdmin(structureId, user, types, handler);
 				} else {
 					unauthorized(request);
 				}
@@ -103,8 +132,53 @@ public class GroupController extends BaseController {
 		}
 	}
 
+	@Put("/group/:groupId/users/add")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void addUsers(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			bodyToJson(request, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject body) {
+					final JsonArray userIds = body.getArray("userIds");
+					groupService.addUsers(groupId, userIds, new Handler<Either<String, JsonObject>>() {
+						@Override
+						public void handle(Either<String, JsonObject> res) {
+							if (res.isRight()) {
+								JsonObject j = new JsonObject()
+										.putString("action", "setCommunicationRules")
+										.putString("groupId", groupId);
+								eb.send("wse.communication", j);
+								ApplicationUtils.publishModifiedUserGroup(eb, userIds);
+								renderJson(request, res.right().getValue());
+							} else {
+								renderJson(request, new JsonObject().putString("error", res.left().getValue()), 400);
+							}
+						}
+					});
+				}
+			});
+		}
+	}
+	
 	public void setGroupService(GroupService groupService) {
 		this.groupService = groupService;
 	}
 
+	@Put("/group/:groupId/users/delete")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void removeUsers(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			bodyToJson(request, new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject body) {
+					final JsonArray userIds = body.getArray("userIds");
+					groupService.removeUsers(groupId, userIds, defaultResponseHandler(request));
+				}
+			});
+		}
+	}
 }

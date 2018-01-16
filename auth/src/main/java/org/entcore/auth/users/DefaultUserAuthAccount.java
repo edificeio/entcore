@@ -27,7 +27,10 @@ import fr.wseduc.webutils.Either;
 
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
+
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
+import org.joda.time.DateTime;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -44,6 +47,8 @@ import org.entcore.common.validation.StringValidation;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
 
@@ -76,7 +81,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
-			String email, String phone, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+			String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -109,6 +114,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 											.putString("Host", Renders.getHost(request))
 									)
 							);
+					if (isNotEmpty(theme)) {
+						jo.putString("theme", theme);
+					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
 					handler.handle(new Either.Right<String, String>(
 							res.body().getObject("result").getObject("0").getString("id")));
@@ -190,6 +198,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject params = new JsonObject().putString("mail", email);
 
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler) {
+		boolean setFirstname = firstName != null && !firstName.trim().isEmpty();
+		boolean setStructure = structure != null && !structure.trim().isEmpty();
+
+		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.email = {mail} " +
+				(setFirstname ? " AND u.firstName =~ {firstName}" : "") +
+				(setStructure ? " AND s.id = {structure}" : "") +
+				" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
+		JsonObject params = new JsonObject().putString("mail", email);
+		if(setFirstname)
+			params.putString("firstName", "(?i)"+firstName);
+		if(setStructure)
+			params.putString("structure", structure);
+		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
 	@Override
@@ -398,7 +423,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetCode(final HttpServerRequest request, final String login, final String email,
+	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
@@ -414,11 +439,21 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getArray("result") != null && event.body().getArray("result").size() == 1 &&
 						1 == ((JsonObject) event.body().getArray("result").get(0)).getInteger("nb")) {
-					sendResetPasswordMail(request, email, code, new Handler<Either<String, JsonObject>>() {
-						public void handle(Either<String, JsonObject> event) {
-							handler.handle(event.isRight());
-						}
-					});
+					if ("email".equals(dest.getType())) {
+						sendResetPasswordMail(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> event) {
+								handler.handle(event.isRight());
+							}
+						});
+					} else if ("mobile".equals(dest.getType())) {
+						sendResetPasswordSms(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> event) {
+								handler.handle(event.isRight());
+							}
+						});
+					} else {
+						handler.handle(false);
+					}
 				} else {
 					handler.handle(false);
 				}
@@ -442,11 +477,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void storeDomain(String id, String domain, String scheme, final Handler<Boolean> handler) {
-		String query = "MATCH (u:User {id: {id}}) SET u.lastDomain = {domain}, u.lastScheme = {scheme} return count(*) = 1 as exists";
+		String query =
+				"MATCH (u:User {id: {id}}) " +
+				"SET u.lastDomain = {domain}, u.lastScheme = {scheme}, u.lastLogin = {now} " +
+				"return count(*) = 1 as exists";
 		JsonObject params = new JsonObject()
 			.putString("id", id)
 			.putString("domain", domain)
-			.putString("scheme", scheme);
+			.putString("scheme", scheme)
+			.putString("now", DateTime.now().toString());
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {

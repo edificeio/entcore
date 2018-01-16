@@ -30,6 +30,7 @@ import fr.wseduc.webutils.Either;
 public interface ExternalApplicationService {
 
 	void listExternalApps(String structureId, Handler<Either<String, JsonArray>> handler);
+	void listExternalApplicationRolesWithGroups(String structureId, String connectorId,  Handler<Either<String, JsonArray>> handler);
 	void deleteExternalApplication(String applicationId, Handler<Either<String, JsonObject>> handler);
 	void createExternalApplication(String structureId, JsonObject application, Handler<Either<String, JsonObject>> handler);
 	void toggleLock(String structureId, Handler<Either<String, JsonObject>> handler);

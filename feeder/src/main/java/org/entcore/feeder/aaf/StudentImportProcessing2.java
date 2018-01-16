@@ -34,16 +34,13 @@ public class StudentImportProcessing2 extends StudentImportProcessing {
 
 	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
-		parse(handler, null);
+		parse(handler, new CleanImportProcessing(path, vertx));
 	}
 
 	@Override
 	protected void preCommit() {
 		importer.linkRelativeToStructure(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
 		importer.linkRelativeToClass(DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID, getAcademyPrefix());
-		importer.removeOldFunctionalGroup();
-		importer.removeEmptyClasses();
-		importer.restorePreDeletedUsers();
 	}
 
 	@Override

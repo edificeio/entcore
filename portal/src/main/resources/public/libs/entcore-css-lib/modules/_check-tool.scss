@@ -1,0 +1,47 @@
+
+///NEW CHECKBOXES
+
+.check-tool{
+	position: absolute;
+	right: -12px;
+	top: -11px;
+	padding: 5px 5px 10px 10px;
+	cursor: pointer;
+	z-index: 1;
+
+	i{
+		display: block;
+		width: 20px;
+		height: 20px;
+		line-height: 20px;
+		background: darken($light-grey, 7%);
+		color: $white;
+		border-radius: 50%;
+		cursor: pointer;
+		box-shadow: 1px 1px 0px 0px $shadow-light;
+		@include run-transition(all);
+
+		&:before{
+			content:"+";
+			display: block;
+			font-size: 14px;
+			text-align: center;
+			text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+		}
+	}
+}
+.check-tool i:hover{
+	transform: scale(1.1);
+	background: $accent;
+}
+.selected .check-tool{
+	i{
+		background: $primary-dark;
+		&:before{
+			content:"-";
+			font-size: 25px;
+		}
+	}
+}
+
+/////

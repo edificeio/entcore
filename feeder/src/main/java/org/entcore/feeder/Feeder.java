@@ -26,8 +26,6 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
-import org.entcore.feeder.be1d.Be1dFeeder;
-import org.entcore.feeder.be1d.Be1dValidator;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.csv.CsvImportsLauncher;
 import org.entcore.feeder.csv.CsvValidator;
@@ -44,6 +42,7 @@ import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.VoidHandler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -88,7 +87,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		defaultFeed = container.config().getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
-		feeds.put("BE1D", new Be1dFeeder(vertx, getFilesDirectory("BE1D")));
 		feeds.put("CSV", new CsvFeeder(vertx, container.config().getObject("csvMappings", new JsonObject())));
 		final long deleteUserDelay = container.config().getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
 		final long preDeleteUserDelay = container.config().getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
@@ -98,7 +96,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final JsonObject imports = container.config().getObject("imports");
 		final JsonObject preDelete = container.config().getObject("pre-delete");
 		try {
-			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb));
+			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx));
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.getFieldNames())) {
@@ -136,8 +134,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		Validator.initLogin(neo4j, vertx);
 		manual = new ManualFeeder(neo4j);
-		duplicateUsers = new DuplicateUsers(container.config().getArray("duplicateSources"),
-				container.config().getBoolean("timetable", true));
+		duplicateUsers = new DuplicateUsers(container.config().getBoolean("timetable", true),
+				container.config().getBoolean("autoMergeOnlyInSameStructure", true));
 		postImport = new PostImport(vertx, duplicateUsers, container.config());
 		vertx.eventBus().registerLocalHandler(
 				container.config().getString("address", FEEDER_ADDRESS), this);
@@ -245,6 +243,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-delete-group" : manual.deleteGroup(message);
 				break;
+			case "manual-add-group-users" : manual.addGroupUsers(message);
+				break;
+			case "manual-remove-group-users" : manual.removeGroupUsers(message);
+				break;
 			case "manual-relative-student" : manual.relativeStudent(message);
 				break;
 			case "manual-unlink-relative-student" : manual.unlinkRelativeStudent(message);
@@ -258,10 +260,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-remove-user-group" : manual.removeUserGroup(message);
 				break;
 			case "manual-create-tenant" : manual.createOrUpdateTenant(message);
-				break;
-			case "manual-csv-class-student" : manual.csvClassStudent(message);
-				break;
-			case "manual-csv-class-relative" : manual.csvClassRelative(message);
 				break;
 			case "manual-structure-attachment" : manual.structureAttachment(message);
 				break;
@@ -307,6 +305,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "manual-udt":
 				UDTImporter.launchImport(vertx, message, postImport);
 				break;
+			case "reinit-logins" :
+				Validator.initLogin(neo4j, vertx);
+				break;
 			default:
 				sendError(message, "invalid.action");
 		}
@@ -324,10 +325,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "CSV":
 				v = new CsvValidator(vertx, acceptLanguage,
 						container.config().getObject("csvMappings", new JsonObject()));
-				break;
-			case "BE1D":
-				v = new Be1dValidator(vertx, container.config().getString("uai-separator", "_"),
-						acceptLanguage);
 				break;
 			case "AAF":
 			case "AAF1D":
@@ -355,8 +352,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				final Report r = (Report) v;
 				if (preDelete && structureExternalId != null && !r.containsErrors()) {
 					final JsonArray externalIds = r.getUsersExternalId();
+					final JsonArray profiles = r.getResult().getArray(Report.PROFILES);
 					new User.PreDeleteTask(0).findMissingUsersInStructure(
-							structureExternalId, source, externalIds, new Handler<Message<JsonObject>>() {
+							structureExternalId, source, externalIds, profiles, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							final JsonArray res = event.body().getArray("result");
@@ -364,7 +362,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								for (Object o : res) {
 									if (!(o instanceof JsonObject)) continue;
 									JsonObject j = (JsonObject) o;
-									String filename = j.getString("profile"); // TODO manage BE1D
+									String filename = j.getString("profile");
 									r.addUser(filename, j.putString("state", r.translate(Report.State.DELETED.name()))
 											.putString("translatedProfile", r.translate(j.getString("profile"))));
 								}
@@ -493,11 +491,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								sendError(message, "import.error");
 								return;
 							}
-							JsonArray existingUsers = importReport.getResult().getArray("usersExternalIds");
+							final JsonObject ir = importReport.getResult();
+							final JsonArray existingUsers = ir.getArray("usersExternalIds");
+							final JsonArray profiles = ir.getArray(Report.PROFILES);
 							if (preDelete && structureExternalId != null && existingUsers != null &&
 									existingUsers.size() > 0 && !importReport.containsErrors()) {
 								new User.PreDeleteTask(0).preDeleteMissingUsersInStructure(
-										structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
+										structureExternalId, source, existingUsers, profiles, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> event) {
 										if (!"ok".equals(event.body().getString("status"))) {
@@ -550,7 +550,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								if (m != null && "ok".equals(m.body().getString("status"))) {
 									logger.info(m.body().encode());
 									if (executePostImport) {
-										postImport.execute();
+										postImport.execute(feed.getSource());
 									}
 								} else {
 									Validator.initLogin(neo4j, vertx);
@@ -562,10 +562,18 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										report.addError("import.error");
 									}
 								}
-								report.getResult().putArray("usersExternalIds",
-										new JsonArray(importer.getUserImportedExternalId().toArray()));
+								report.setUsersExternalId(new JsonArray(importer.getUserImportedExternalId().toArray()));
 								h.handle(report);
-								logger.info("Elapsed time " + (System.currentTimeMillis() - start) + " ms.");
+								final long endTime = System.currentTimeMillis();
+								report.setEndTime(endTime);
+								report.setStartTime(start);
+								report.countDiff(new VoidHandler() {
+									@Override
+									protected void handle() {
+										report.emailReport(vertx, container);
+									}
+								});
+								logger.info("Elapsed time " + (endTime - start) + " ms.");
 								importer.clear();
 								checkEventQueue();
 							}

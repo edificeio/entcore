@@ -87,8 +87,10 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "removeFunction" :
 					adminOrTeacher(request, user, handler);
 					break;
+				case "listFunctions" :
+					adminOrTeacher(request, user, handler);
+					break;
 				case "updateAvatar" :
-				case "get" :
 				case "getUserBook" :
 				case "updateUserBook" :
 				case "update" :
@@ -120,6 +122,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 				case "getLevels" :
 				case "getMassmailUsers" :
+				case "getMassMailUsersList" :
 				case "performMassmail" :
 					isAdmin(user, false, handler);
 					break;
@@ -220,9 +223,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		validateQuery(request, handler, query, params);
 	}
 
-	private void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
+	private static void validateQuery(final HttpServerRequest request, final Handler<Boolean> handler, String query, JsonObject params) {
 		request.pause();
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				request.resume();
@@ -425,7 +428,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
-	private void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
+	static void isTeacherOf(final HttpServerRequest request, UserInfos user, final Handler<Boolean> handler) {
 		List<String> userIds = request.params().getAll("userId");
 		if (userIds == null || userIds.isEmpty() || userIds.contains(user.getUserId()) ||
 				(!"Teacher".equals(user.getType()) && !"Personnel".equals(user.getType()))) {
@@ -474,7 +477,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					String query =
 							"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(pg:ProfileGroup)" +
 									"<-[:IN]-(t:`User` { id : {teacherId}}) " +
-									"RETURN count(*) = 1 as exists ";
+									"RETURN count(*) > 0 as exists ";
 					JsonObject params = new JsonObject()
 							.putString("classId", classId)
 							.putString("teacherId", user.getUserId());
@@ -547,11 +550,11 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		validateQuery(request, handler, query, params);
 	}
 
-	private Set<String> getIds(UserInfos user) {
+	static Set<String> getIds(UserInfos user) {
 		return getIds(user, false);
 	}
 
-	private Set<String> getIds(UserInfos user, boolean structuresOnly) {
+	private static Set<String> getIds(UserInfos user, boolean structuresOnly) {
 		Set<String> ids = new HashSet<>();
 		Map<String, UserInfos.Function> functions = user.getFunctions();
 		if (functions != null && !functions.isEmpty()) {

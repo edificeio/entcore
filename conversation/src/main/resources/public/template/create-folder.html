@@ -27,7 +27,7 @@
 	<hr />
 </div>
 
-<div class="lightbox-buttons fluid right-magnet">
-    <input type="button" class="cancel button" i18n-value="cancel" ng-click="lightbox.show = false"/>
-	<input type="submit" i18n-value="create" ng-click="createFolder()" ng-disabled="!newFolder.name"/>
+<div class="row">
+	<button ng-click="createFolder()" class="right-magnet" ng-disabled="!newFolder.name"><i18n>create</i18n></button>
+    <button type="button" class="cancel right-magnet" ng-click="lightbox.show = false"><i18n>cancel</i18n></button>
 </div>

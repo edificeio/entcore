@@ -19,8 +19,7 @@
 
 package org.entcore.feeder.csv;
 
-import au.com.bytecode.opencsv.CSV;
-import au.com.bytecode.opencsv.CSVReadProc;
+import com.opencsv.CSVReader;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
 import org.entcore.feeder.dictionary.structures.Structure;
@@ -33,14 +32,18 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
-import static org.entcore.feeder.be1d.Be1dFeeder.frenchDatePatter;
-import static org.entcore.feeder.be1d.Be1dFeeder.generateUserExternalId;
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.feeder.csv.CsvFeeder.*;
+import static org.entcore.feeder.utils.CSVUtil.emptyLine;
+import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
 public class CsvValidator extends Report implements ImportValidator {
 
@@ -51,6 +54,8 @@ public class CsvValidator extends Report implements ImportValidator {
 	private boolean findUsersEnabled = true;
 	private final Map<String, String> classesNamesMapping = new HashMap<>();
 	public static final Map<String, Validator> profiles;
+	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
+	private final long defaultStudentSeed;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -67,6 +72,7 @@ public class CsvValidator extends Report implements ImportValidator {
 		this.columnsMapper = new ColumnsMapper(additionnalsMappings);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
+		defaultStudentSeed = new Random().nextLong();
 	}
 
 	@Override
@@ -139,25 +145,22 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
-		CSV csvParser = CSV
-				.ignoreLeadingWhiteSpace()
-				.separator(';')
-				.skipLines(0)
-				.charset(charset)
-				.create();
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
 		final JsonArray externalIds = new JsonArray();
-		csvParser.read(path, new CSVReadProc() {
-			@Override
-			public void procRow(int i, String... strings) {
+		try {
+			CSVReader csvParser = getCsvReader(path, charset);
+
+			String[] strings;
+			int i = 0;
+			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
 					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {
 						int j = 0;
-						for (String c: columns) {
+						for (String c : columns) {
 							if ("externalId".equals(c)) {
 								filterExternalId.set(j);
 							}
@@ -169,7 +172,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					} else {
 						validateFile(path, profile, columns, null, charset, handler);
 					}
-				} else if (filterExternalId.get() >= 0) {
+				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
 						externalIds.addString(strings[filterExternalId.get()]);
 					} else if (findUsersEnabled) { // TODO add check to empty lines
@@ -179,8 +182,14 @@ public class CsvValidator extends Report implements ImportValidator {
 						findUsers(path, profile, columns, eii, charset, handler);
 					}
 				}
+				i++;
 			}
-		});
+		} catch (Exception e) {
+			addError(profile, "csv.exception");
+			log.error("csv.exception", e);
+			handler.handle(result);
+			return;
+		}
 		if (filterExternalId.get() >= 0) {
 			filterExternalIdExists(externalIds, new Handler<JsonArray>() {
 				@Override
@@ -251,8 +260,9 @@ public class CsvValidator extends Report implements ImportValidator {
 	}
 
 	private void validateFile(final String path, final String profile, final List<String> columns, final JsonArray existExternalId, final String charset, final Handler<JsonObject> handler) {
+		addProfile(profile);
 		final Validator validator = profiles.get(profile);
-		getStructure(path, new Handler<Structure>() {
+		getStructure(path.substring(0, path.lastIndexOf(File.separator)), new Handler<Structure>() {
 			@Override
 			public void handle(final Structure structure) {
 				if (structure == null) {
@@ -260,15 +270,23 @@ public class CsvValidator extends Report implements ImportValidator {
 					handler.handle(result);
 					return;
 				}
-				CSV csvParser = CSV
-						.ignoreLeadingWhiteSpace()
-						.separator(';')
-						.skipLines(1)
-						.charset(charset)
-						.create();
-				csvParser.read(path, new CSVReadProc() {
-					@Override
-					public void procRow(int i, String... strings) {
+				try {
+					CSVReader csvParser = getCsvReader(path, charset, 1);
+					final int nbColumns = columns.size();
+					String[] strings;
+					int i = 1;
+					csvParserWhile : while ((strings = csvParser.readNext()) != null) {
+						if (emptyLine(strings)) {
+							i++;
+							continue;
+						}
+						if (strings.length > nbColumns) {
+							strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
+						}
+//						if (strings.length != nbColumns) {
+//							addErrorByFile(profile, "bad.columns.number", "" + ++i);
+//							continue;
+//						}
 						final JsonArray classesNames = new JsonArray();
 						JsonObject user = new JsonObject();
 						user.putArray("structures", new JsonArray().add(structure.getExternalId()));
@@ -281,7 +299,7 @@ public class CsvValidator extends Report implements ImportValidator {
 							}
 							final String c = columns.get(j);
 							final String v = strings[j].trim();
-							if (v.isEmpty()) continue;
+							if (v.isEmpty() && !c.startsWith("child")) continue;
 							switch (validator.getType(c)) {
 								case "string":
 									if ("birthDate".equals(c)) {
@@ -352,7 +370,7 @@ public class CsvValidator extends Report implements ImportValidator {
 							classesA = null;
 						}
 						if ("Student".equals(profile) && classesA != null && classesA.size() == 1) {
-							seed = CsvFeeder.DEFAULT_STUDENT_SEED;
+							seed = defaultStudentSeed;
 							ca = classesA.get(0);
 						} else {
 							ca = String.valueOf(i);
@@ -366,6 +384,7 @@ public class CsvValidator extends Report implements ImportValidator {
 						} else {
 							if (existExternalId.contains(externalId)) {
 								state = State.UPDATED;
+								studentExternalIdMapping.put(getHashMapping(user, ca, structure, seed), externalId);
 							} else {
 								state = State.NEW;
 							}
@@ -373,6 +392,9 @@ public class CsvValidator extends Report implements ImportValidator {
 						switch (profile) {
 							case "Relative":
 								JsonArray linkStudents = new JsonArray();
+								if ("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) {
+									break csvParserWhile;
+								}
 								user.putArray("linkStudents", linkStudents);
 								for (String attr : user.getFieldNames()) {
 									if ("childExternalId".equals(attr)) {
@@ -384,7 +406,38 @@ public class CsvValidator extends Report implements ImportValidator {
 										} else {
 											linkStudents.add(o);
 										}
-									} else if ("childLastName".equals(attr)) {
+									} else if ("childUsername".equals(attr)) {
+										Object childUsername = user.getValue(attr);
+										Object childLastName = user.getValue("childLastName");
+										Object childFirstName = user.getValue("childFirstName");
+										Object childClasses = user.getValue("childClasses");
+										if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
+												childFirstName instanceof JsonArray && childClasses instanceof JsonArray &&
+												((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
+												((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
+											for (int j = 0; j < ((JsonArray) childUsername).size(); j++) {
+												String mapping = structure.getExternalId() +
+														((JsonArray) childUsername).<String>get(j).trim() +
+														((JsonArray) childLastName).<String>get(j).trim() +
+														((JsonArray) childFirstName).<String>get(j).trim() +
+														((JsonArray) childClasses).<String>get(j).trim() +
+														defaultStudentSeed;
+												relativeStudentMapping(linkStudents, mapping);
+											}
+										} else if (childUsername instanceof String && childLastName instanceof String &&
+												childFirstName instanceof String && childClasses instanceof String) {
+											String mapping = structure.getExternalId() +
+													childLastName.toString().trim() +
+													childFirstName.toString().trim() +
+													childClasses.toString().trim() +
+													defaultStudentSeed;
+											relativeStudentMapping(linkStudents, mapping);
+										} else {
+											addErrorByFile(profile, "invalid.child.mapping", "" + (i+1) , "childLUsername");
+											handler.handle(result);
+											return;
+										}
+									} else if ("childLastName".equals(attr) && !user.getFieldNames().contains("childUsername")) {
 										Object childLastName = user.getValue(attr);
 										Object childFirstName = user.getValue("childFirstName");
 										Object childClasses = user.getValue("childClasses");
@@ -394,10 +447,10 @@ public class CsvValidator extends Report implements ImportValidator {
 												((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
 											for (int j = 0; j < ((JsonArray) childLastName).size(); j++) {
 												String mapping = structure.getExternalId() +
-														((JsonArray) childLastName).<String>get(i).trim() +
-														((JsonArray) childFirstName).<String>get(i).trim() +
-														((JsonArray) childClasses).<String>get(i).trim() +
-														CsvFeeder.DEFAULT_STUDENT_SEED;
+														((JsonArray) childLastName).<String>get(j) +
+														((JsonArray) childFirstName).<String>get(j) +
+														((JsonArray) childClasses).<String>get(j) +
+														defaultStudentSeed;
 												relativeStudentMapping(linkStudents, mapping);
 											}
 										} else if (childLastName instanceof String && childFirstName instanceof String &&
@@ -406,10 +459,10 @@ public class CsvValidator extends Report implements ImportValidator {
 													childLastName.toString().trim() +
 													childFirstName.toString().trim() +
 													childClasses.toString().trim() +
-													CsvFeeder.DEFAULT_STUDENT_SEED;
+													defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
 										} else {
-											addError(profile, "invalid.child.mapping");
+											addErrorByFile(profile, "invalid.child.mapping", "" + (i+1) , "childLastName & childFirstName");
 											handler.handle(result);
 											return;
 										}
@@ -421,12 +474,16 @@ public class CsvValidator extends Report implements ImportValidator {
 										classesNames.addString(classesNamesMapping.get(o));
 									}
 								}
+								if (classesNames.size() == 0) {
+									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1),
+											user.getString("firstName"), user.getString("lastName"));
+								}
 								break;
 						}
 						String error = validator.validate(user, acceptLanguage);
 						if (error != null) {
 							log.warn(error);
-							addError(profile, error);
+							addErrorByFile(profile, "validator.errorWithLine", "" + (i+1), error); // Note that 'error' is already translated
 						} else {
 							final String classesStr = Joiner.on(", ").join(classesNames);
 							classesNamesMapping.put(user.getString("externalId"), classesStr);
@@ -434,18 +491,12 @@ public class CsvValidator extends Report implements ImportValidator {
 									.putString("translatedProfile", translate(profile))
 									.putString("classesStr", classesStr));
 						}
+						i++;
 					}
-
-					private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
-						if (mapping.trim().isEmpty()) return;
-						try {
-							linkStudents.add(Hash.sha1(mapping.getBytes("UTF-8")));
-						} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
-							log.error(e.getMessage(), e);
-						}
-					}
-
-				});
+				} catch (Exception e) {
+					addError(profile, "csv.exception");
+					log.error("csv.exception", e);
+				}
 				handler.handle(result);
 			}
 		});
@@ -470,6 +521,16 @@ public class CsvValidator extends Report implements ImportValidator {
 				}
 			}
 		});
+	}
+
+	private void relativeStudentMapping(JsonArray linkStudents, String mapping) {
+		if (mapping.trim().isEmpty()) return;
+		try {
+			String hash = Hash.sha1(mapping.getBytes("UTF-8"));
+			linkStudents.add(getOrElse(studentExternalIdMapping.get(hash), hash));
+		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 }

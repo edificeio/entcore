@@ -19,6 +19,8 @@
 
 package org.entcore.feeder.utils;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -30,6 +32,8 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class CSVUtil {
 
@@ -50,8 +54,11 @@ public class CSVUtil {
 			structure.putString("name", n[0]);
 			structure.putString("externalId", Hash.sha1(dirName.getBytes("UTF-8")));
 		}
-		if (n.length == 2) {
+		if (n.length > 1 && isNotEmpty(n[1])) {
 			structure.putString("UAI", n[1]);
+		}
+		if (n.length > 2 && isNotEmpty(n[2])) {
+			structure.putString("overrideClass", n[2]);
 		}
 		return structure;
 	}
@@ -97,6 +104,35 @@ public class CSVUtil {
 			}
 		}
 		return "ISO-8859-1";
+	}
+
+	public static CSVReader getCsvReader(String file, String charset)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		return getCsvReader(file, charset, 0);
+	}
+
+	public static CSVReader getCsvReader(String file, String charset, int skipLines)
+			throws FileNotFoundException, UnsupportedEncodingException {
+		return new CSVReader(new InputStreamReader(new FileInputStream(file), charset), ';', '"', skipLines);
+	}
+
+	public static CSVWriter getCsvWriter(String file, String charset) throws IOException {
+		FileOutputStream fos = new FileOutputStream(file);
+		if ("UTF-8".equals(charset)) {
+			fos.write(UTF8_BOM.getBytes());
+		}
+		return new CSVWriter(new OutputStreamWriter(fos, charset), ';');
+	}
+
+	public static boolean emptyLine(String [] line) {
+		if (line != null) {
+			for (String s : line) {
+				if (isNotEmpty(s)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 }

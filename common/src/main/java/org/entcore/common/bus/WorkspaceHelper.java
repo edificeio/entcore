@@ -30,11 +30,14 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.core.logging.Logger;
+import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.Date;
 
 public class WorkspaceHelper {
 
+	private static final Logger log = LoggerFactory.getLogger(WorkspaceHelper.class);
 	private static final String WORKSPACE_ADDRESS = "org.entcore.workspace";
 	private final EventBus eb;
 	private final Storage storage;
@@ -104,7 +107,15 @@ public class WorkspaceHelper {
 									@Override
 									public void handle(Message<JsonObject> message) {
 										if (!"ok".equals(message.body().getString("status"))) {
-											storage.removeFile(up.getString("_id"), null);
+											storage.removeFile(up.getString("_id"), new Handler<JsonObject>() {
+												@Override
+												public void handle(JsonObject event) {
+													if (!"ok".equals(event.getString("status"))) {
+														log.error("Error removing file " + up.getString("_id") + " : "
+																+ event.getString("message"));
+													}
+												}
+											});
 										}
 										if (handler != null) {
 											handler.handle(message);

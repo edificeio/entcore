@@ -38,7 +38,11 @@
 				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
 				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
 			</th>
-			<th ng-if="currentTree.name !== 'trash'"></th>
+			<th ng-if="currentTree.name !== 'trash'">
+				<span translate content="comments"></span>
+				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
+				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
+			</th>
 			<th scope="col" class="date zero-mobile" ng-click="orderByField('created')">
 				<span translate content="modified"></span>
 				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
@@ -68,7 +72,7 @@
 			</td>
 			<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
 			<td ng-if="currentTree.name !== 'trash'">
-				<span class="badge" ng-if="folder.comments.length > 0" translate-attr="title" title="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
+				<span class="badge" ng-if="folder.comments.length > 0" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 			</td>
 			<td class="date small-font zero-mobile">[[shortDate(folder.created)]]</td>
 			<td class="zero-mobile"></td>
@@ -106,14 +110,14 @@
 			<td class="icon"><input type="checkbox" data-ng-model="document.selected"  ng-change="setAll()" /></td>
 			<td class="icon zero-mobile">
 				<div class="twelve cell">
-					<i class="[[document.metadata.contentType]]"></i>
+					<i class="[[document.metadata.role]]"></i>
 					<i ng-if="document.shared.length > 0" class="shared"></i>
 				</div>
 			</td>
 			<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 			<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
 			<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
-			<td class="date small-font zero-mobile">[[shortDate(document.created)]]</td>
+			<td class="date small-font zero-mobile">[[shortDate(document.modified)]]</td>
 			<td class="size small-font zero-mobile">
 				[[formatDocumentSize(document.metadata.size)]]
 			</td>

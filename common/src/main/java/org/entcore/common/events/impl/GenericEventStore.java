@@ -39,6 +39,7 @@ public abstract class GenericEventStore implements EventStore {
 
 	protected String module;
 	protected EventBus eventBus;
+	protected JsonArray userBlacklist;
 	protected static final Logger logger = LoggerFactory.getLogger(GenericEventStore.class);
 
 	@Override
@@ -95,14 +96,16 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request,
 			JsonObject customAttributes) {
-		storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
-			@Override
-			public void handle(Either<String, Void> event) {
-				if (event.isLeft()) {
-					logger.error("Error adding event : " + event.left().getValue());
+		if (user == null || !userBlacklist.contains(user.getUserId())) {
+			storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
+				@Override
+				public void handle(Either<String, Void> event) {
+					if (event.isLeft()) {
+						logger.error("Error adding event : " + event.left().getValue());
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	private JsonObject generateEvent(String eventType, UserInfos user, HttpServerRequest request,
@@ -136,8 +139,18 @@ public abstract class GenericEventStore implements EventStore {
 
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
 
+	private void initBlacklist() {
+		eventBus.send("event.blacklist", new JsonObject(), new Handler<Message<JsonArray>>() {
+			@Override
+			public void handle(Message<JsonArray> message) {
+				userBlacklist = message.body();
+			}
+		});
+	}
+
 	public void setEventBus(EventBus eventBus) {
 		this.eventBus = eventBus;
+		this.initBlacklist();
 	}
 
 	public void setModule(String module) {

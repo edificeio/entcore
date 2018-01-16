@@ -43,9 +43,7 @@ public class ImportInfos {
 
 	private String UAI;
 	private String structureName;
-	private static final List<String> be1dFiles =
-			Arrays.asList("CSVExtraction-eleves.csv", "CSVExtraction-enseignants.csv", "CSVExtraction-responsables.csv");
-	enum ImportType {  CSV, BE1D }
+	enum ImportType { CSV }
 	private ImportType type;
 	private boolean preDelete = false;
 	private boolean transition = false;
@@ -53,7 +51,7 @@ public class ImportInfos {
 	private String id;
 	private String structureId;
 	private String structureExternalId;
-
+	private String overrideClass;
 	private String language;
 
 	public String getFeeder() {
@@ -128,31 +126,19 @@ public class ImportInfos {
 		this.language = language;
 	}
 
+	public String getOverrideClass() {
+		return overrideClass;
+	}
+
+	public void setOverrideClass(String overrideClass) {
+		this.overrideClass = overrideClass;
+	}
+
 	public void validate(final boolean isAdmc, final Vertx vertx, final Handler<AsyncResult<String>> handler) {
 		if (!isAdmc && isEmpty(structureId)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.id"));
 		} else if (isEmpty(structureName)) {
 			handler.handle(new DefaultAsyncResult<>("invalid.structure.name"));
-		} else if (ImportType.BE1D == type) {
-			final FileSystem fs = vertx.fileSystem();
-			fs.readDir(path, ".*\\.csv$", new Handler<AsyncResult<String[]>>() {
-				@Override
-				public void handle(AsyncResult<String[]> list) {
-					if (list.succeeded()) {
-						final List<String> l = new LinkedList<>();
-						for (String f: list.result()) {
-							l.add(f.substring(path.length() + 1));
-						}
-						if (l.containsAll(be1dFiles)) {
-							moveFiles(list.result(), fs, handler);
-						} else {
-							handler.handle(new DefaultAsyncResult<>("missing.be1d.files"));
-						}
-					} else {
-						handler.handle(new DefaultAsyncResult<String>(list.cause()));
-					}
-				}
-			});
 		} else if (ImportType.CSV == type) {
 			final FileSystem fs = vertx.fileSystem();
 			fs.readDir(path, new Handler<AsyncResult<String[]>>() {
@@ -176,8 +162,8 @@ public class ImportInfos {
 
 	private void moveFiles(final String [] l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {
 		final String p = path + File.separator + structureName +
-				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
-				(isNotEmpty(UAI) ? "_" + UAI : "");
+				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") + "_" +
+				(isNotEmpty(UAI) ? UAI : "") + "_" + (isNotEmpty(overrideClass) ? overrideClass : "");
 		fs.mkdir(p, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {

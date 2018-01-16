@@ -44,6 +44,12 @@ public class Directory extends BaseServer {
     public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
     @Override
+    protected void initFilters() {
+        super.initFilters();
+        addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
+    }
+
+    @Override
     public void start() {
         final EventBus eb = getEventBus(vertx);
         clearFilters();
@@ -118,6 +124,7 @@ public class Directory extends BaseServer {
 
         ImportController importController = new ImportController();
         importController.setImportService(new DefaultImportService(vertx, eb));
+        importController.setSchoolService(schoolService);
         addController(importController);
 
         TimetableController timetableController = new TimetableController();

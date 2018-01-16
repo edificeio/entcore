@@ -18,7 +18,35 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-function Http() {
+window.entcore.$ = $;
+window.entcore.moment = moment;
+window.entcore.angular = angular;
+window.entcore._ = _;
+
+if(!XMLHttpRequest.baseSend){
+  XMLHttpRequest.prototype.baseSend = XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.send = function(data){
+    if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1){
+      var lightbox = $(`<lightbox>
+					<section class="lightbox">
+						<div class="content">
+							<h2>${ lang.translate('disconnected.title') }</h2>
+							<div class="warning">${ lang.translate('disconnected.warning') }</div>
+							<a class="button right-magnet" href="/auth/login">${ lang.translate('disconnected.redirect') }</a>
+						</div>
+						<div class="background"></div>
+					</section>
+				</lightbox>
+			`);
+      $('body').append(lightbox).addClass('lightbox-opened');
+      lightbox.find('.lightbox').fadeIn();
+      return;
+    }
+    this.baseSend(data);
+  }
+}
+
+function Http(){
   this.statusCallbacks = {};
 }
 
@@ -1261,51 +1289,38 @@ var skin = (function() {
             that.theme = '/assets/themes/' + data.skin + '/skins/default/';
             that.basePath = that.theme + '../../';
 
-            http()
-              .get(
-                '/assets/themes/' + data.skin + '/template/override.json',
-                { token: rand },
-                {
-                  async: false,
-                  disableNotifications: true,
-                  success: function(override) {
-                    this.templateMapping = override;
-                  }.bind(this),
-                }
-              )
-              .e404(function() {});
-          }.bind(this),
-        }
-      );
-    },
-    listThemes: function(cb) {
-      http().get('/themes').done(function(themes) {
-        if (typeof cb === 'function') {
-          cb(themes);
-        }
-      });
-    },
-    setTheme: function(theme) {
-      ui.setStyle(theme.path);
-      http().get(
-        '/userbook/api/edit-userbook-info?prop=theme&value=' + theme._id
-      );
-    },
-    loadConnected: function() {
-      var rand = Math.random();
-      var that = this;
-      http().get(
-        '/theme',
-        {},
-        {
-          async: false,
-          success: function(data) {
-            that.theme = data.skin;
-            that.basePath = that.theme + '../../';
-            that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
-            that.portalTemplate =
-              '/assets/themes/' + that.skin + '/portal.html';
-            that.logoutCallback = data.logoutCallback;
+					http().get('/assets/themes/' + data.skin + '/template/override.json', { token: rand }, {
+						async: false,
+						disableNotifications: true,
+						success: function(override){
+							this.templateMapping = override;
+						}.bind(this)
+					}).e404(function(){});
+				}.bind(this)
+			});
+		},
+		listThemes: function(cb){
+			http().get('/themes').done(function(themes){
+				if(typeof cb === 'function'){
+					cb(themes);
+				}
+			});
+		},
+		setTheme: function(theme){
+			ui.setStyle(theme.path);
+			http().get('/userbook/api/edit-userbook-info?prop=theme-'+ skin + '&value=' + theme._id);
+		},
+		loadConnected: function(){
+			var rand = Math.random();
+			var that = this;
+			http().get('/theme', {}, {
+				async: false,
+				success: function(data){
+					that.theme = data.skin;
+					that.basePath = that.theme + '../../';
+					that.skin = that.theme.split('/assets/themes/')[1].split('/')[0];
+					that.portalTemplate = '/assets/themes/' + that.skin + '/portal.html';
+					that.logoutCallback = data.logoutCallback;
 
             http().get(
               '/assets/themes/' + that.skin + '/template/override.json',
@@ -2023,168 +2038,216 @@ var recorder = (function() {
     navigator.msGetUserMedia;
   window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-  var context,
-    gainNode,
-    recorder,
-    player = new Audio();
-  var leftChannel = [],
-    rightChannel = [];
+	var context,
+		ws = null,
+		intervalId,
+		gainNode,
+		recorder,
+		player = new Audio();
+	var leftChannel = [],
+		rightChannel = [];
 
-  var bufferSize = 4096,
-    loaded = false,
-    recordingLength = 0,
-    followers = [];
+	var bufferSize = 4096,
+		loaded = false,
+		recordingLength = 0,
+		lastIndex = 0,
+		encoder = new Worker('/infra/public/js/audioEncoder.js'),
+		followers = [];
 
-  function notifyFollowers(status, data) {
-    followers.forEach(function(follower) {
-      if (typeof follower === 'function') {
-        follower(status, data);
-      }
-    });
-  }
+	function uuid() {
+		return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            return v.toString(16);
+        });
+	}
 
-  return {
-    elapsedTime: 0,
-    loadComponents: function() {
-      this.title =
-        lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
-      loaded = true;
-      navigator.getUserMedia(
-        {
-          audio: true,
-        },
-        function(mediaStream) {
-          context = new AudioContext();
-          var audioInput = context.createMediaStreamSource(mediaStream);
-          gainNode = context.createGain();
-          audioInput.connect(gainNode);
+	function sendWavChunk() {
+		var	index = rightChannel.length;
+		if (!(index > lastIndex)) return;
+		encoder.postMessage(['chunk', leftChannel.slice(lastIndex, index), rightChannel.slice(lastIndex, index), (index - lastIndex) * bufferSize]);
+		encoder.onmessage = function(e) {
+			var deflate = new Zlib.Deflate(e.data);
+			ws.send(deflate.compress());
+		};
+		lastIndex = index;
+	}
 
-          recorder = context.createScriptProcessor(bufferSize, 2, 2);
-          recorder.onaudioprocess = function(e) {
-            if (
-              this.status !== 'recording' &&
-              this.status !== 'paused' &&
-              this.status !== 'playing'
-            ) {
-              var tracks = mediaStream.getAudioTracks();
-              for (var i = 0; i < tracks.length; i++) {
-                tracks[i].stop();
-              }
-              loaded = false;
-            }
-            if (this.status !== 'recording') {
-              return;
-            }
-            var left = e.inputBuffer.getChannelData(0);
-            leftChannel.push(new Float32Array(left));
-            var right = e.inputBuffer.getChannelData(1);
-            rightChannel.push(new Float32Array(right));
+	function closeWs() {
+		if (ws) {
+			if (ws.readyState === 1) {
+				ws.close()
+			}
+		}
+        clearWs();
+	}
 
-            recordingLength += bufferSize;
-            this.elapsedTime += e.inputBuffer.duration;
-            notifyFollowers(this.status);
-          }.bind(this);
+	function clearWs() {
+		ws = null;
+        leftChannel = [];
+		rightChannel = [];
+		lastIndex = 0;
+	}
 
-          gainNode.connect(recorder);
-          recorder.connect(context.destination);
-        }.bind(this),
-        function(err) {}
-      );
-    },
-    isCompatible: function() {
-      return (
-        navigator.getUserMedia !== undefined &&
-        window.AudioContext !== undefined
-      );
-    },
-    stop: function() {
-      this.status = 'idle';
-      player.pause();
-      if (player.currentTime > 0) {
-        player.currentTime = 0;
-      }
+	function notifyFollowers(status, data){
+		followers.forEach(function(follower){
+			if(typeof follower === 'function'){
+				follower(status, data);
+			}
+		})
+	}
 
-      notifyFollowers(this.status);
-    },
-    flush: function() {
-      this.stop();
-      this.elapsedTime = 0;
-      leftChannel = [];
-      rightChannel = [];
-      notifyFollowers(this.status);
-    },
-    record: function() {
-      player.pause();
-      if (player.currentTime > 0) {
-        player.currentTime = 0;
-      }
+	return {
+		elapsedTime: 0,
+		loadComponents: function () {
+		    this.title = lang.translate('recorder.filename') + moment().format('DD/MM/YYYY');
+			loaded = true;
 
-      this.status = 'recording';
-      notifyFollowers(this.status);
-      if (!loaded) {
-        this.loadComponents();
-      }
-    },
-    pause: function() {
-      this.status = 'paused';
-      player.pause();
-      notifyFollowers(this.status);
-    },
-    play: function() {
-      this.pause();
-      this.status = 'playing';
-      var encoder = new Worker('/infra/public/js/audioEncoder.js');
-      encoder.postMessage(['wav', rightChannel, leftChannel, recordingLength]);
-      encoder.onmessage = function(e) {
-        player.src = window.URL.createObjectURL(e.data);
-        player.play();
-      };
-      notifyFollowers(this.status);
-    },
-    state: function(callback) {
-      followers.push(callback);
-    },
-    title: '',
-    status: 'idle',
-    save: function(callback, format) {
-      this.stop();
-      this.status = 'encoding';
-      notifyFollowers(this.status);
-      if (!format) {
-        format = 'mp3';
-      }
+			navigator.getUserMedia({
+			audio: true
+			}, function(mediaStream){
+				context = new AudioContext();
+				var audioInput = context.createMediaStreamSource(mediaStream);
+				gainNode = context.createGain();
+				audioInput.connect(gainNode);
 
-      var form = new FormData();
-      var encoder = new Worker('/infra/public/js/audioEncoder.js');
-      encoder.postMessage([format, rightChannel, leftChannel, recordingLength]);
-      encoder.onmessage = function(e) {
-        this.status = 'uploading';
-        notifyFollowers(this.status);
-        form.append('blob', e.data, this.title + '.' + format);
-        var url = '/workspace/document';
-        if (this.protected) {
-          url += '?application=mediaLibrary&protected=true';
-        }
-        http().postFile(url, form).done(
-          function(doc) {
-            if (typeof callback === 'function') {
-              callback(doc);
-              this.flush();
-              notify.info('recorder.saved');
-            }
-          }.bind(this)
-        );
-      }.bind(this);
-    },
-    mute: function(mute) {
-      if (mute) {
-        gainNode.gain.value = 0;
-      } else {
-        gainNode.gain.value = 1;
-      }
-    },
-  };
-})();
+				recorder = context.createScriptProcessor(bufferSize, 2, 2);
+				recorder.onaudioprocess = function(e){
+					if(this.status !== 'recording'){
+						return;
+					}
+					var left = new Float32Array(e.inputBuffer.getChannelData (0));
+					leftChannel.push (left);
+					var right = new Float32Array(e.inputBuffer.getChannelData (1));
+					rightChannel.push (right);
+
+					recordingLength += bufferSize;
+
+					this.elapsedTime += e.inputBuffer.duration;
+
+					sendWavChunk();
+
+					notifyFollowers(this.status);
+				}.bind(this);
+
+				gainNode.connect (recorder);
+				recorder.connect (context.destination);
+
+			}.bind(this), function(err){
+
+			});
+
+		},
+		isCompatible: function(){
+			return navigator.getUserMedia !== undefined && window.AudioContext !==undefined;
+		},
+		stop: function(){
+			if (ws) {
+				ws.send("cancel");
+			}
+			this.status = 'idle';
+			player.pause();
+			if(player.currentTime > 0){
+				player.currentTime = 0;
+			}
+			leftChannel = [];
+			rightChannel = [];
+			notifyFollowers(this.status);
+		},
+		flush: function(){
+			this.stop();
+			this.elapsedTime = 0;
+			leftChannel = [];
+			rightChannel = [];
+			notifyFollowers(this.status);
+		},
+		record: function(){
+			player.pause();
+			var that = this;
+			if (ws) {
+				that.status = 'recording';
+				notifyFollowers(that.status);
+				if(!loaded){
+					that.loadComponents();
+				}
+			} else {
+				ws = new WebSocket((window.location.protocol === "https:" ? "wss": "ws") + "://" +
+						window.location.host + "/audio/" + uuid());
+				ws.onopen = function () {
+					if(player.currentTime > 0){
+						player.currentTime = 0;
+					}
+
+					that.status = 'recording';
+					notifyFollowers(this.status);
+					if(!loaded){
+						http().get('/infra/public/js/zlib.min.js').done(function(){
+							that.loadComponents();
+						}.bind(this));
+					}
+				};
+				ws.onerror = function (event) {
+					console.log(event);
+					that.status = 'stop';
+                    notifyFollowers(that.status);
+                    closeWs();
+                    notify.info(event.data);
+				}
+                ws.onmessage = function (event) {
+                	if (event.data && event.data.indexOf("error") !== -1) {
+                		console.log(event.data);
+						closeWs();
+						notify.info(event.data);
+                	} else if (event.data && event.data === "ok") {
+                		closeWs();
+                		notify.info("recorder.saved");
+                	}
+
+                }
+                ws.onclose = function (event) {
+                	that.status = 'stop';
+                    notifyFollowers(that.status);
+                    clearWs();
+                }
+			}
+		},
+		pause: function(){
+			this.status = 'paused';
+			player.pause();
+			notifyFollowers(this.status);
+		},
+		play: function(){
+			this.pause();
+			this.status = 'playing';
+			var encoder = new Worker('/infra/public/js/audioEncoder.js');
+			encoder.postMessage(['wav', rightChannel, leftChannel, recordingLength]);
+			encoder.onmessage = function(e) {
+				player.src = window.URL.createObjectURL(e.data);
+				player.play();
+			};
+			notifyFollowers(this.status);
+		},
+		state: function(callback){
+			followers.push(callback);
+		},
+		title: "",
+		status: 'idle',
+		save: function(callback, format){
+//			this.stop();
+			sendWavChunk();
+			ws.send("save-" +  this.title);
+			this.status = 'encoding';
+			notifyFollowers(this.status);
+		},
+		mute: function(mute){
+			if(mute){
+				gainNode.gain.value = 0;
+			}
+			else{
+				gainNode.gain.value = 1;
+			}
+		}
+	}
+}());
 
 var sniplets = {
   load: function(callback) {

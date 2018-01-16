@@ -23,8 +23,11 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
@@ -61,8 +64,8 @@ public abstract class BaseServer extends Server {
 	private RepositoryHandler repositoryHandler;
 	private SearchingHandler searchingHandler;
 	private String schema;
-	private boolean oauthClientGrant = false;
 	private String contentSecurityPolicy;
+	private AccessLogger accessLogger;
 
 	@Override
 	public void start() {
@@ -70,6 +73,9 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start();
+
+		accessLogger = new EntAccessLogger(getEventBus(vertx));
+		initFilters();
 
 		String node = (String) vertx.sharedData().getMap("server").get("node");
 
@@ -95,7 +101,7 @@ public abstract class BaseServer extends Server {
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
 		} else {
-			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider, oauthClientGrant));
+			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
 		}
 		vertx.eventBus().registerLocalHandler("user.repository", repositoryHandler);
 		vertx.eventBus().registerLocalHandler("search.searching", this.searchingHandler);
@@ -107,11 +113,19 @@ public abstract class BaseServer extends Server {
 		SecurityHandler.setVertx(vertx);
 	}
 
+	protected void initFilters() {
+		clearFilters();
+		addFilter(new AccessLoggerFilter(accessLogger));
+		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
+				getEventBus(vertx), getPathPrefix(config)), new BasicFilter()));
+	}
+
 	@Override
 	protected Server addController(BaseController controller) {
+		controller.setAccessLogger(accessLogger);
 		super.addController(controller);
 		if (config.getString("override-theme") != null) {
-			controller.addHookRenderProcess(new OverrideThemeHookRender(config.getString("override-theme")));
+			controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getString("override-theme")));
 		}
 		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
 			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
@@ -285,7 +299,4 @@ public abstract class BaseServer extends Server {
 		return schema;
 	}
 
-	public void setOauthClientGrant(boolean oauthClientGrant) {
-		this.oauthClientGrant = oauthClientGrant;
-	}
 }

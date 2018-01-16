@@ -1,0 +1,41 @@
+.grid-exemple.row .article, .grid-exemple.row .absolute{
+	font-size: 14px;
+	padding: 10px;
+	color: #888;
+	border: #fff solid 5px;
+	border-radius: 12px;
+	background: #eee;
+	text-align: left;
+}
+
+.nested-grid{
+	height: 100%;
+	cursor: inherit;
+	min-height: 60px;
+	position: relative;
+	z-index: 100;
+}
+
+grid-cell.height-undefined{
+    overflow: visible;
+}
+
+.grid-wrapper{
+	height: 100%;
+	position: relative;
+}
+
+.grid-media{
+	transition: width 150ms ease,
+				padding-bottom 150ms ease,
+				margin-left 100ms ease,
+				border 250ms ease,
+				box-shadow 250ms ease;
+}
+
+.drawing-grid{
+	height: auto;
+	.row{
+		min-height: 60px;
+	}
+}

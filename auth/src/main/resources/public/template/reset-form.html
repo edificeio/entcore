@@ -15,7 +15,7 @@
 				</p>
 				<p>
 					<label><i18n>auth.activation.password</i18n></label>
-					<input-password required ng-pattern="/[[passwordRegex]]/" ng-model="user.password"
+					<input-password required ng-pattern="passwordRegex" ng-model="user.password"
 						ng-change="refreshInput(resetForm, 'confirmPassword')" name="password" ng-trim="false" tabindex="2"></input-password>
 					<p class="input-errors" ng-if="resetForm.password.$invalid && resetForm.password.$dirty">
 						<i18n>password.errors</i18n><br/>
@@ -24,7 +24,7 @@
 						</span>
 					</p>
 					<label><i18n>auth.activation.confirm.password</i18n></label>
-					<input-password required ng-pattern="identicalRegex(user.password)" ng-model="user.confirmPassword"
+					<input-password required ng-pattern="user.password" ng-model="user.confirmPassword"
 						name="confirmPassword" ng-trim="false" tabindex="3"></input-password>
 					<p class="input-errors" ng-if="resetForm.confirmPassword.$viewValue && resetForm.confirmPassword.$invalid && resetForm.confirmPassword.$dirty">
 						<i18n>password.identical</i18n>

@@ -1,0 +1,86 @@
+.drop-down.hidden{
+	height: 0;
+	ul{
+		height: 0;
+	}
+}
+
+.drop-down.expanded{
+	overflow: visible;
+}
+
+.drop-down{
+	@include drop-down();
+	overflow: hidden;
+	height: auto;
+}
+
+
+//twitter bootstrap adapter
+.dropdown-menu{
+	@include drop-down;
+	height: auto;
+	@include reduce-block(6px);
+}
+
+
+
+//// TIMELINE CHIPS
+
+.drop-down-block{
+    margin-bottom: 30px;
+
+    i.arrow{
+        &:before{
+            font-size: 14px;
+        }
+    }
+    .drop-down-label, .drop-up-label{
+        margin-bottom: 25px;
+        overflow: hidden;
+        & > label{
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    }
+    .drop-down-label{
+        i.arrow{
+            transform: rotate(90deg);
+            display: inline-block;
+        }
+        label{
+            padding-left: 5px;
+        }
+        &+.drop-down-info{
+            font-size: 11px;
+            position: absolute;
+            top: 23px;
+            right: 5px;
+            font-style: italic;
+        }
+    }
+    .drop-up-label{
+        text-align: right;
+        margin: 25px auto 0;
+        display: none;
+    }
+    .drop-down-content{
+        margin: 15px 5px;
+    }
+}
+.slided{
+    .drop-down-label{
+        i.arrow{
+            transform: rotate(180deg);
+        }
+    }
+}
+
+
+@media screen and (max-width: $small-mobile){
+    body{
+        .drop-down-block .drop-up-label{
+            display: block;
+        }
+    }
+}

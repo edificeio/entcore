@@ -1,6 +1,6 @@
 {
   "file.missing.in.directory" : "Le fichier {0} est manquant dans le dossier {1}.",
-  "invalid.column" : "Colonne {0} invalide.",
+  "invalid.column" : "Nom de colonne \"{0}\" invalide. Veuillez vous référer aux fichiers fournis en exemple.",
   "error.list.files" : "Erreur lors de la lecture des fichiers.",
   "relative.error.line" : "",
   "null.object": "L'objet n'est pas défini.",
@@ -50,5 +50,24 @@
   "invalid.edt.key" : "La clé de cryptage EDT est invalide",
   "invalid.epj" : "Utilisateur sans identifiant : {0}",
   "not.found.users.not.empty" : "Utilisateurs non présents dans la base",
-  "missing.student" : "Élève manquant : {0}"
+  "missing.student" : "Élève manquant : {0}",
+  "bad.columns.number" : "Mauvais nombre de colonnes à la ligne {0}.",
+  "missing.student.soft" : "Ligne {0} : le parent {1} {2} référence un élève non retrouvé.",
+  "email.hi": "Bonjour,",
+  "email.signature" : "Cordialement,",
+  "report.Teacher.ignored" : "Enseignants ignorés",
+  "report.Personnel.ignored" : "Personnels ignorés",
+  "report.Student.ignored" : "Élèves ignorés",
+  "report.Relative.ignored" : "Parents ignorés",
+  "import.report" : "Rapport d'alimentation",
+  "report.start" : "Début import",
+  "report.end" : "Fin import",
+  "report.source" : "Source",
+  "report.created" : "Nombre d'utilisateurs ajoutés",
+  "report.modified" : "Nombre d'utilisateurs modifiés",
+  "report.disappearance" : "Nombre d'utilisateurs disparus",
+  "report.errors" : "Erreurs",
+  "report.loadedFiles" : "Fichiers chargés",
+  "validator.errorWithLine" : "Ligne {0} : {1}",
+  "invalid.child.mapping" : "Ligne {0} : valeur(s) invalide(s) associée(s) au(x) champs {1} "
 }

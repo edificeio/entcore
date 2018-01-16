@@ -29,7 +29,18 @@
 		<button type="button" class="right-magnet" ng-if="wizard.valid" ng-click="launchImport(wizard)" ng-disabled="disabledButtons.import"><i18n>wizard.launch.import</i18n></button>
 		<i class="spinner horizontal-spacing-twice right-magnet" ng-if="disabledButtons.import"></i>
 	</div>
-
+	<div ng-repeat="item in softErrors">
+		<div class="row">
+			<h5>[[item.title]]</h5>
+		</div>
+		<div class="row">
+			<ul>
+				<li ng-repeat="el in item.elements">
+					<span>[[el]]</span>
+				</li>
+			</ul>
+		</div>
+	</div>
 	<div class="row" style="margin-top: 10px; margin-bottom: 10px;">
 		<label class="two cell"><span tooltip="wizard.tooltip.type"><i18n>wizard.filter</i18n></span></label>
 		<select class="three cell margin-top-5 row-item"

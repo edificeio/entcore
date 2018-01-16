@@ -64,7 +64,7 @@ public class PersALExportProcessing extends BaseExportProcessing {
 		TransactionManager.executeTransaction(new Function<TransactionHelper, Message<JsonObject>>() {
 			@Override
 			public void apply(TransactionHelper value) {
-				User.listByFunctions(function, value);
+				User.listByFunctions(EliotExporter.ELIOT, function, value);
 			}
 
 			@Override
@@ -74,7 +74,7 @@ public class PersALExportProcessing extends BaseExportProcessing {
 					JsonArray rs = r.get(0);
 					handler.handle(rs);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(null);
 				}
 			}
 		});

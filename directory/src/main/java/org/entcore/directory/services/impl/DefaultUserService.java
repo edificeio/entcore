@@ -139,22 +139,29 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void get(String id, Handler<Either<String, JsonObject>> result) {
+	public void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
+		
+		String getMgroups = "";
+		String resultMgroups = "";
+		if (getManualGroups) {
+			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, admStruct, admGroups, parents, children, functions, u, structureNodes ";
+			resultMgroups = "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
+		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
-				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) " +
-				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
-				"OPTIONAL MATCH u<-[:RELATED]-(child: User) " +
-				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
-				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) " +
-				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) " +
-				"RETURN DISTINCT u.profiles as type, " +
-				"COLLECT(distinct s) as structureNodes, " +
-				"COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) END as children, " +
-				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) END as parents, " +
-				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct {id: fgroup.id, name: fgroup.name}) END as functionalGroups, " +
-				"CASE WHEN admStruct IS NULL THEN [] ELSE collect(distinct {id: admStruct.id}) END as administrativeStructures, " +
+				"OPTIONAL MATCH u-[:IN]->()-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes " +
+				"OPTIONAL MATCH u<-[:RELATED]-(child: User) WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId}) as children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				getMgroups +
+				"RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
+				"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
+				"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
+				"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
+				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
+				resultMgroups +
 				"u";
 		neo.execute(query, new JsonObject().putString("id", id), fullNodeMergeHandler("u", result, "structureNodes"));
 	}
@@ -337,6 +344,15 @@ public class DefaultUserService implements UserService {
 		eb.send(Directory.FEEDER, action, validEmptyHandler(result));
 	}
 
+	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
+		String query =
+				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " + 
+				"RETURN COLLECT(distinct [f.externalId, rf.scope]) as functions";
+		JsonObject params = new JsonObject();
+		params.putString("userId", userId);
+		neo.execute(query, params, validResultHandler(result));
+	}
+
 	@Override
 	public void addGroup(String id, String groupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
@@ -432,7 +448,7 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void listByUAI(List<String> UAI, JsonArray fields, Handler<Either<String, JsonArray>> results) {
+	public void listByUAI(List<String> UAI, JsonArray expectedTypes, boolean isExportFull, JsonArray fields, Handler<Either<String, JsonArray>> results) {
 		if (UAI == null || UAI.isEmpty()) {
 			results.handle(new Either.Left<String, JsonArray>("missing.uai"));
 			return;
@@ -448,19 +464,64 @@ public class DefaultUserService implements UserService {
 		if (fields == null || fields.size() == 0) {
 			fields = new JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
 		}
+
+		//user's fields for Full Export
+		if(isExportFull){
+			fields.add("email");
+			fields.add("emailAcademy");
+			fields.add("mobile");
+			fields.add("deleteDate");
+			fields.add("functions");
+			fields.add("displayName");
+		}
+
+		// Init params and filter for all type of queries
+		String  filter =  "WHERE s.UAI IN {uai} ";
+
+		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
+
 		StringBuilder query = new StringBuilder();
-		query.append("MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User)")
-				.append("WHERE s.UAI IN {uai} RETURN DISTINCT ");
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(cpg:ProfileGroup)");
+
+		// filter by types if needed OR full export
+		if( isExportFull || (expectedTypes != null && expectedTypes.size() > 0)) {
+			query.append("-[:HAS_PROFILE]->(p:Profile)");
+		}
+		// filter by types if needed
+		if (expectedTypes != null && expectedTypes.size() > 0) {
+
+			filter += "AND p.name IN {expectedTypes} ";
+			params.putArray("expectedTypes", expectedTypes);
+		}
+
+		query.append(", cpg<-[:IN]-(u:User) ")
+				.append(filter);
+
+		if (fields.contains("administrativeStructure")) {
+			query.append("OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->sa ");
+		}
+
+		query.append("RETURN DISTINCT ");
+
 		for (Object field : fields) {
 			if ("type".equals(field) || "profile".equals(field)) {
 				query.append(" HEAD(u.profiles)");
+			} else if ("administrativeStructure".equals(field)) {
+				query.append(" sa.externalId ");
 			} else {
 				query.append(" u.").append(field);
 			}
 			query.append(" as ").append(field).append(",");
 		}
 		query.deleteCharAt(query.length() - 1);
-		JsonObject params = new JsonObject().putArray("uai", new JsonArray(UAI.toArray()));
+
+		//Full Export : profiles and Structure
+		if(isExportFull){
+			query.append(", p.name as profiles");
+			query.append(", s.externalId as structures")
+					.append(" , CASE WHEN size(u.classes) > 0  THEN  last(collect(u.classes)) END as classes");
+		}
+
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
@@ -489,9 +550,13 @@ public class DefaultUserService implements UserService {
 		String query =
 				"MATCH (n:Group)<-[:IN]-(u:User) " +
 				"WHERE n.id = {groupId} " + condition +
-				"OPTIONAL MATCH n-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"OPTIONAL MATCH (n)-[:DEPENDS*0..1]->(:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+				"OPTIONAL MATCH (u)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH (pg)-[:HAS_PROFILE]->(pro:Profile) " +
 				"RETURN distinct u.id as id, u.login as login," +
-				" u.displayName as username, u.firstName as firstName, u.lastName as lastName, profile.name as type " +
+				"u.displayName as username, u.firstName as firstName, u.lastName as lastName, profile.name as type," +
+				"CASE WHEN s IS NULL THEN [] ELSE COLLECT(DISTINCT {id: s.id, name: s.name}) END as structures," +
+				"CASE WHEN pro IS NULL THEN NULL ELSE HEAD(COLLECT(DISTINCT pro.name)) END as profile " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.putString("groupId", groupId);

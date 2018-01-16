@@ -68,6 +68,7 @@ public class DefaultRegisteredService implements RegisteredService {
 		for (Pattern pattern : patterns) {
 			Matcher matcher = pattern.matcher(serviceUri);
 			if (matcher.matches()) {
+				if (log.isDebugEnabled()) log.debug("service URI + |" + serviceUri + "| matches with pattern : " + pattern.pattern());
 				return true;
 			}
 		}
@@ -102,8 +103,8 @@ public class DefaultRegisteredService implements RegisteredService {
 	private void addConfPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				this.confPatterns.add(Pattern.compile(pattern));
-				this.patterns.add(Pattern.compile(pattern));
+				this.confPatterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
+				this.patterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
 			}
 			catch (PatternSyntaxException pe) {
 				log.error("Bad service configuration : failed to compile regex : " + pattern);
@@ -115,7 +116,7 @@ public class DefaultRegisteredService implements RegisteredService {
 	public void addPatterns(String... patterns) {
 		for (String pattern : patterns) {
 			try {
-				this.patterns.add(Pattern.compile(pattern));
+				this.patterns.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
 			}
 			catch (PatternSyntaxException pe) {
 				log.error("Bad service configuration : failed to compile regex : " + pattern);

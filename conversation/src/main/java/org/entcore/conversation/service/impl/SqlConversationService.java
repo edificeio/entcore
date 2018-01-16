@@ -19,6 +19,7 @@
 
 package org.entcore.conversation.service.impl;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.List;
@@ -30,6 +31,7 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.vertx.java.core.Handler;
@@ -273,28 +275,10 @@ public class SqlConversationService implements ConversationService{
 	public void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-		JsonArray values1 = new JsonArray();
 		JsonArray values2 = new JsonArray();
 		JsonArray values3 = new JsonArray();
 		values2.add(user.getUserId());
 		values3.add(user.getUserId());
-
-		String getUnusedAttachmentsIds =
-			"WITH linkedAtts AS (" +
-				"SELECT att.* FROM " + attachmentTable + " att JOIN " +
-				userMessageAttachmentTable + " uma ON uma.attachment_id = att.id " +
-				"WHERE uma.message_id IN " + generateInVars(messagesId, values1) +
-			" ), unusedAtts AS (" +
-				"SELECT distinct a.id AS id "+
-					"FROM " + userMessageAttachmentTable + " uma "+
-					"JOIN linkedAtts a " +
-					"ON uma.attachment_id = a.id "+
-					"GROUP BY id HAVING count(distinct user_id) = 1 "+
-				    "AND count(distinct uma.message_id) = 1 "+
-			") SELECT " +
-			"CASE WHEN COUNT(distinct a) = 0 THEN '[]' ELSE json_agg(distinct a.*) END AS unusedAttachments " +
-			"FROM unusedAtts u "+
-			"JOIN " + attachmentTable + " a ON u.id = a.id";
 
 		String getTotalQuota =
 			"SELECT coalesce(sum(um.total_quota), 0)::integer AS totalQuota FROM " + userMessageTable + " um " +
@@ -307,11 +291,10 @@ public class SqlConversationService implements ConversationService{
 		getTotalQuota += (generateInVars(messagesId, values2));
 		deleteUserMessages += (generateInVars(messagesId, values3));
 
-		builder.prepared(getUnusedAttachmentsIds, values1);
 		builder.prepared(getTotalQuota, values2);
 		builder.prepared(deleteUserMessages, values3);
 
-		sql.transaction(builder.build(), SqlResult.validResultsHandler(result, "unusedAttachments"));
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(result));
 	}
 
 	@Override
@@ -372,13 +355,21 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
-			final String acceptLanguage, final Handler<Either<String, JsonObject>> result) {
+			final String acceptLanguage, final String search, final Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result))
 			return;
 
 		final JsonObject visible = new JsonObject();
 
 		final JsonObject params = new JsonObject();
+
+		final String preFilter;
+		if (isNotEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			params.putString("search", StringValidation.removeAccents(search.trim()).toLowerCase());
+		} else {
+			preFilter = null;
+		}
 
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
 			String getMessageQuery = "SELECT m.* FROM " + messageTable +
@@ -404,7 +395,7 @@ public class SqlConversationService implements ConversationService{
 							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 							"visibles.profiles[0] as profile";
 
-					findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, new Handler<JsonArray>() {
+					findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibles) {
 							JsonArray users = new JsonArray();
@@ -432,7 +423,7 @@ public class SqlConversationService implements ConversationService{
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile";
-			findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, new Handler<JsonArray>() {
+			findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
 					JsonArray users = new JsonArray();
@@ -645,45 +636,6 @@ public class SqlConversationService implements ConversationService{
 			"WHERE f.user_id = ?";
 		recursiveValues.add(user.getUserId());
 
-		/* Get all messages in those folders */
-		String messagesTerm =
-			"SELECT DISTINCT um.message_id AS id FROM parents " +
-			"JOIN " + userMessageTable +" um "+
-			"ON um.folder_id = parents.id " +
-			"AND um.user_id = parents.user_id ";
-
-		/* Select now unused attachments */
-
-		String unusedTerm =
-			"SELECT DISTINCT att.id AS id " +
-			"FROM " + userMessageAttachmentTable + " uma " +
-			"JOIN messages " +
-			"ON uma.message_id = messages.id " +
-			"JOIN conversation.attachments att " +
-			"ON att.id = uma.attachment_id " +
-			"GROUP BY att.id " +
-			"HAVING count(distinct uma.user_id) = 1 " +
-			"AND count(distinct uma.message_id) = 1 ";
-
-		String selectTerm =
-			"SELECT " +
-			"CASE WHEN COUNT(distinct a) = 0 THEN '[]' ELSE json_agg(distinct a.*) END AS unusedAttachments " +
-			"FROM unusedAtts u "+
-			"JOIN " + attachmentTable + " a ON u.id = a.id";
-
-		String attachmentsRecursion =
-			"WITH RECURSIVE parents AS ( "+
-				nonRecursiveTerm +
-				"UNION " +
-				recursiveTerm +
-			"), messages AS (" +
-				messagesTerm +
-			"), unusedAtts AS (" +
-				unusedTerm +
-			")" + selectTerm;
-
-		builder.prepared(attachmentsRecursion, recursiveValues);
-
 		/* Get quota to free */
 
 		String quotaRecursion =
@@ -710,7 +662,7 @@ public class SqlConversationService implements ConversationService{
 
 		/* Perform the transaction */
 
-		sql.transaction(builder.build(), SqlResult.validResultsHandler(result, "unusedAttachments"));
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(result));
 
 	}
 

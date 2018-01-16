@@ -20,6 +20,7 @@
   "charset.iso88591": "Europe Occidentale (ISO-8859-1)",
   "charset.utf8": "Unicode (UTF-8)",
   "choose": "Choisir",
+  "themes.title": "Choix du thème (pour l'affichage de l'interface)",
   "choose.file": "Choisir un fichier",
   "classAdmin.className": "Nom de la classe",
   "classAdmin.exportFile": "Exporter les codes d'activation",
@@ -550,7 +551,10 @@
   "auth.activation.confirm.password": "Confirmation du nouveau mot de passe",
   "panel.my.profile": "Mon profil",
   "panel.user.history": "Mon historique",
+  "panel.user.pickTheme": "Thème",
   "panel.notifications.set": "Mes notifications externes",
+  "theme-open-ent": "Je suis dans un collège ou un lycée",
+  "panda": "Je suis dans une école",
   "timetable.title": "Mode d'alimentation des groupes d'enseignement",
   "timetable.type": "Flux d'alimentation",
   "timetable.update.type": "Valider",
@@ -571,5 +575,12 @@
   "directory.slotProfile": "Grille horaire",
   "directory.slot.bad.request.profile.already.exists": "Un profil de ce nom existe déjà pour cette structure",
   "directory.slot.bad.request.slot.name.already.exists": "Une horaire de ce nom existe déjà pour ce profil",
-  "directory.slot.bad.request.slot.overlap": "Une horaire existe déjà sur cette plage horaire"
+  "directory.slot.bad.request.slot.overlap": "Une horaire existe déjà sur cette plage horaire",
+  "invalid.file.extension" : "Le format du fichier n’est pas valide. Votre fichier doit être au format CSV (séparateur point virgule).",
+  "group.AdminLocal": "Tous les admins locaux de {0}.",
+  "group.Guest": "Tous les invités du groupe {0}.",
+  "group.Personnel": "Tous les personnels du groupe {0}.",
+  "group.Relative": "Tous les parents du groupe {0}.",
+  "group.Student": "Tous les élèves du groupe {0}.",
+  "group.Teacher": "Tous les enseignants du groupe {0}."
 }

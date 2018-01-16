@@ -58,6 +58,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 				$scope.displayErrors(data);
 			} else {
 				wizard.valid = true;
+				$scope.softErrors = {};
 				$scope.validatedUsers = [];
             	$scope.userOrder = 'lastName';
             	$scope.userFilter = {};
@@ -68,6 +69,12 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
             	var uniqueStates = {};
             	var uniqueProfiles = {};
 				for (var attr in data) {
+					if ("softErrors" === attr) {
+						$scope.softErrors = _.map(data[attr], function (errors, file) {
+							return {"title" : lang.translate('error.' + file), "elements" : errors };
+						});
+						continue;
+					}
 					for (var i = 0; i < data[attr].length; i++) {
 						$scope.validatedUsers.push(data[attr][i]);
 						if (data[attr][i]['classesStr']) {

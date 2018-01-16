@@ -91,7 +91,7 @@ public class PortalController extends BaseController {
 			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin + "/skins", false, new Handler<List<String>>() {
 				@Override
 				public void handle(List<String> event) {
-					themes.put(domain, event);
+					themes.put(skin, event);
 					JsonArray a = new JsonArray();
 					for (final String s : event) {
 						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
@@ -115,7 +115,7 @@ public class PortalController extends BaseController {
 						}
 						a.add(j);
 					}
-					themesDetails.put(domain, a);
+					themesDetails.put(skin, a);
 				}
 			});
 		}
@@ -272,7 +272,7 @@ public class PortalController extends BaseController {
 					String query =
 							"MATCH (n:User)-[:USERBOOK]->u " +
 							"WHERE n.id = {id} " +
-							"RETURN u.theme as theme";
+							"RETURN u.theme" + getSkinFromConditions(request).replaceAll("\\W+", "") + " as theme";
 					Map<String, Object> params = new HashMap<>();
 					params.put("id", user.getUserId());
 					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
@@ -282,7 +282,7 @@ public class PortalController extends BaseController {
 								JsonArray result = event.body().getArray("result");
 								String userTheme = (result != null && result.size() == 1) ?
 										result.<JsonObject>get(0).getString("theme") : null;
-								List<String> t = themes.get(getHost(request));
+								List<String> t = themes.get(getSkinFromConditions(request));
 								if (userTheme != null && t != null && t.contains(userTheme)) {
 									theme.putString("skin", getThemePrefix(request) + "/skins/" + userTheme + "/");
 								} else {
@@ -346,7 +346,6 @@ public class PortalController extends BaseController {
 	}
 
 	@Get("/resources-applications")
-	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void resourcesApplications(HttpServerRequest request){
 		renderJson(request, container.config().getArray("resources-applications", new JsonArray()));
 	}
@@ -360,13 +359,14 @@ public class PortalController extends BaseController {
 	@Get("/themes")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void themes(HttpServerRequest request){
-		JsonArray themes = themesDetails.get(getHost(request));
+		JsonArray themes = themesDetails.get(getSkinFromConditions(request));
 		if (themes == null) {
 			themes = new JsonArray();
 		}
 		renderJson(request, themes);
 	}
 
+	/*
 	@Get("/admin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
@@ -374,5 +374,6 @@ public class PortalController extends BaseController {
 		redirectPermanent(request, "/directory/admin-console");
 		adminConsoleEventStore.createAndStoreEvent(PortalEvent.ACCESS.name(), request);
 	}
+	*/
 
 }

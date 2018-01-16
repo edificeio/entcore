@@ -689,8 +689,18 @@ window.RTE = (function () {
 						else{
 							r = that.nextRanges[that.nextRanges.length - 1];
 						}
-						r.setEnd(sibling, 1);
+						r.setEnd(sibling, sibling.childNodes.length);
 			            $(sibling).css(css);
+						$(sibling).find('*').each(function(index, item){
+							for(var i = 0; i < item.style.length; i++){
+								for(var prop in css){
+									item.style.removeProperty(prop);
+								}
+							}
+						});
+						if($(sibling).find(range.endContainer).length){
+							break;
+						}
 			        }
 			        else {
 			            var el = $('<span></span>')
@@ -765,7 +775,6 @@ window.RTE = (function () {
 			    } while (
                     sibling && sibling !== nodeEnd
                     && !(sibling.parentNode === range.endContainer && sibling === range.endContainer.childNodes[range.endOffset])
-                    && !$(sibling).find(range.endContainer).length
                 );
 			}
 
@@ -3039,22 +3048,25 @@ window.RTE = (function () {
 			            if (navigator.userAgent.indexOf('Trident') !== -1 || navigator.userAgent.indexOf('Edge') !== -1) {
 			                element.find('code').hide();
 			            }
-			            $('body').append(
-                            $('<link />')
-                                .attr('rel', 'stylesheet')
-                                .attr('type', 'text/css')
-                                .attr('href', '/infra/public/js/prism/prism.css')
-                       );
+			            if($('.prism-css').length === 0){
+							$('body').append(
+								$('<link />')
+									.attr('rel', 'stylesheet')
+									.attr('type', 'text/css')
+									.attr('class', 'prism-css')
+									.attr('href', '/infra/public/js/prism/prism.css')
+							);
 
-			            loader.openFile({
-			                url: '/infra/public/js/prism/prism.js',
-			                callback: function () {
+							loader.openFile({
+								url: '/infra/public/js/prism/prism.js',
+								callback: function () {
 
-			                },
-			                error: function () {
+								},
+								error: function () {
 
-			                }
-			            });
+								}
+							});
+						}
 
 			            element.find('.close-focus').on('click', function(){
 			                element.removeClass('focus');
@@ -3173,14 +3185,9 @@ window.RTE = (function () {
                             }
                         );
 
-                        $(window).on('resize', function () {
-                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
-							toolbarElement.css({ 'position': 'relative' });
-                        });
-
                         var previousScroll = 0;
                         function sticky() {
-							if(element.parents('.editor-media').length > 0){
+							if(element.parents('.editor-media').length > 0 || element.parents('body').length === 0){
 								return;
 							}
 							
@@ -3224,6 +3231,19 @@ window.RTE = (function () {
 						if(ui.breakpoints.tablette <= $(window).width()){
 							var placeEditorToolbar = requestAnimationFrame(sticky);
 						}
+
+						$(window).on('resize', function () {
+                            highlightZone.css({ top: (element.find('editor-toolbar').height() + 1) + 'px' });
+							if($(window).width() > ui.breakpoints.tablette){
+								toolbarElement.css({ 'position': 'relative' });
+								cancelAnimationFrame(sticky);
+								var placeEditorToolbar = requestAnimationFrame(sticky);
+							}
+							else{
+								cancelAnimationFrame(sticky);
+							}
+							placeToolbar();
+                        });
 
                         element.children('popover').find('li:first-child').on('click', function(){
                             element.removeClass('html');
@@ -3354,7 +3374,7 @@ window.RTE = (function () {
                             }
 
                             editZone.find('img').each(function(index, item){
-                               if($(item).attr('src').startsWith('data:')){
+                               if($(item).attr('src') && $(item).attr('src').startsWith('data:')){
                                    var split = $(item).attr('src').split('data:')[1].split(',');
                                    var blob = b64toBlob(split[1], split[0].split(';')[0]);
 								   blob.name = 'image';
@@ -3390,6 +3410,9 @@ window.RTE = (function () {
                                 });
                                 element.css({ 'padding-top': toolbarElement.height() + 1 + 'px' });
                             }
+							else if($(window).width() < ui.breakpoints.tablette){
+								element.css({ 'padding-top': '' });
+							}
                         }
 
                         element.parents().on('resizing', placeToolbar)

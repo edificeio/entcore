@@ -26,6 +26,7 @@ import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -35,6 +36,8 @@ import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.HashSet;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 public class User {
 
 	public static class DeleteTask implements Handler<Long> {
@@ -42,32 +45,71 @@ public class User {
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 		private final long delay;
 		private final EventBus eb;
+		private final Vertx vertx;
 		private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
+		private static final int LIMIT = 1000;
+		private int page;
 
-		public DeleteTask(long delay, EventBus eb) {
+		public DeleteTask(long delay, EventBus eb, Vertx vertx) {
 			this.delay = delay;
 			this.eb = eb;
+			this.vertx = vertx;
 		}
 
 		@Override
 		public void handle(Long event) {
 			log.info("Execute task delete user.");
+			page = 1;
+			delete();
+		}
+
+		protected void delete() {
 			try {
 				TransactionHelper tx = TransactionManager.getInstance().begin();
-				User.delete(delay, tx);
+				User.getDelete(delay, LIMIT, tx);
 				tx.commit(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
 						JsonArray results = m.body().getArray("results");
 						if ("ok".equals(m.body().getString("status")) && results != null) {
-							JsonArray r = results.get(0);
+							final JsonArray r = results.get(0);
 							if (r != null && r.size() > 0) {
-								log.info("Delete users : " + r.encode());
-								eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
-										.putString("action", "delete-users")
-										.putArray("old-users", r));
-								eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
-										(UserInfos) null, new JsonObject().putArray("old-users", r));
+								final JsonArray deleteUsers = new JsonArray();
+								for (Object o : r) {
+									if (!(o instanceof JsonObject)) continue;
+									deleteUsers.addString(((JsonObject) o).getString("id"));
+								}
+								try {
+									TransactionHelper tx = TransactionManager.getInstance().begin();
+									User.delete(deleteUsers, tx);
+									tx.commit(new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> m2) {
+											if ("ok".equals(m2.body().getString("status"))) {
+												log.info("Delete users : " + r.encode());
+												eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+														.putString("action", "delete-users")
+														.putArray("old-users", r));
+												eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
+														(UserInfos) null, new JsonObject().putArray("old-users", r));
+												if (r.size() == LIMIT) {
+													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
+														@Override
+														public void handle(Long event) {
+															log.info("Delete page " + ++page);
+															delete();
+														}
+													});
+												}
+											} else {
+												log.error("Error deleting user : " + m2.body().getString("message"));
+											}
+										}
+									});
+								} catch (Exception e) {
+									log.error("Delete task error");
+									log.error(e.getMessage(), e);
+								}
 							} else if (r == null) {
 								log.error("User delete task return null array.");
 							}
@@ -125,22 +167,23 @@ public class User {
 		}
 
 		public void findMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
-				Handler<Message<JsonObject>> handler) {
+				JsonArray profiles, Handler<Message<JsonObject>> handler) {
 			final String query =
 					"MATCH (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
-					"WHERE u.source = {source} AND NOT(u.externalId IN {existingUsers}) " +
+					"WHERE u.source = {source} AND HEAD(u.profiles) IN {profiles} AND NOT(u.externalId IN {existingUsers}) " +
 					"RETURN u.id as id, u.externalId as externalId, u.lastName as lastName, " +
 							"u.firstName as firstName, HEAD(u.profiles) as profile";
 			final JsonObject params = new JsonObject()
 					.putString("structureExternalId", structureExternalId)
 					.putString("source", source)
-					.putArray("existingUsers", existingUsers);
+					.putArray("existingUsers", existingUsers)
+					.putArray("profiles", profiles);
 			TransactionManager.getInstance().getNeo4j().execute(query, params, handler);
 		}
 
 		public void preDeleteMissingUsersInStructure(String structureExternalId, String source, JsonArray existingUsers,
-				final Handler<Message<JsonObject>> handler) {
-			findMissingUsersInStructure(structureExternalId, source, existingUsers, new Handler<Message<JsonObject>>() {
+				JsonArray profiles, final Handler<Message<JsonObject>> handler) {
+			findMissingUsersInStructure(structureExternalId, source, existingUsers, profiles, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					final JsonArray res = event.body().getArray("result");
@@ -234,6 +277,12 @@ public class User {
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
 				"SET b.RELATED_INCOMING = ids ";
 		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}})-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure), " +
+				" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+				"WITH b, COLLECT(s.id) as sIds " +
+				"SET b.structureIds = sIds";
+		transaction.add(query, params);
 	}
 
 	public static void preDelete(String userId, TransactionHelper transaction) {
@@ -241,7 +290,7 @@ public class User {
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE]-() " +
-				"SET u.deleteDate = timestamp() " +
+				"SET u.deleteDate = timestamp(), u.IDPN = null " +
 				"DELETE r " +
 				"CREATE UNIQUE dg<-[:IN]-u";
 		transaction.add(query, params);
@@ -249,15 +298,26 @@ public class User {
 
 	public static void restorePreDeleted(String userId, TransactionHelper transaction){
 		JsonObject params = new JsonObject().putString("userId", userId);
-		String query =
+		
+		String query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " + 
+			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING CREATE UNIQUE u-[:IN]->g";
+		transaction.add(query, params);
+		
+		query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING CREATE UNIQUE u-[:COMMUNIQUE]->g";
+		transaction.add(query, params);
+		
+		query = 
+			"MATCH (u:User {id: {userId}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING CREATE UNIQUE u<-[:COMMUNIQUE]-g";
+		transaction.add(query, params);
+				
+		query = 
 			"MATCH (u:User {id: {userId}})-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"REMOVE u.disappearanceDate, u.deleteDate WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.IN_OUTGOING " +
-			"CREATE UNIQUE u-[:IN]->g WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.COMMUNIQUE_OUTGOING " +
-			"CREATE UNIQUE u-[:COMMUNIQUE]->g WITH r, r2, b, u MATCH (g:Group) " +
-			"WHERE g.id IN b.COMMUNIQUE_INCOMING " +
-			"CREATE UNIQUE u<-[:COMMUNIQUE]-g DELETE r, r2, b ";
+			"REMOVE u.disappearanceDate, u.deleteDate " + 
+			"DELETE r, r2, b";
 		transaction.add(query, params);
 	}
 
@@ -273,8 +333,10 @@ public class User {
 		transaction.add(query, params);
 	}
 
-	public static void delete(long delay, TransactionHelper transactionHelper) {
-		JsonObject params = new JsonObject().putNumber("date", System.currentTimeMillis() - delay);
+	public static void getDelete(long delay, int limit, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.putNumber("date", System.currentTimeMillis() - delay)
+				.putNumber("limit", limit);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
@@ -284,15 +346,20 @@ public class User {
 				"WHERE c.externalId IN u.classes " +
 				"OPTIONAL MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.structures " +
-				"RETURN u.id as id, u.firstName, u.lastName, u.externalId as externalId, u.displayName as displayName, " +
+				"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, u.externalId as externalId, u.displayName as displayName, " +
 				"HEAD(u.profiles) as type, " +
 				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
 				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
-				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds";
+				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds " +
+				"LIMIT {limit} ";
 		transactionHelper.add(query, params);
-		query =
+	}
+
+	public static void delete(JsonArray deleteUsers, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject().putArray("deleteUsers", deleteUsers);
+		final String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"WHERE u.id IN {deleteUsers} " +
 				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"OPTIONAL MATCH u-[r]-() " +
 				"DELETE u,b,r,rb ";
@@ -323,7 +390,7 @@ public class User {
 				"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
 				"WITH n, f " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
-				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) " +
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"WITH fg " +
 				"MATCH (u:User { id : {userId}}) " +
@@ -378,31 +445,48 @@ public class User {
 		transactionHelper.add(query, params);
 	}
 
-	public static void count(JsonArray profiles, TransactionHelper transactionHelper) {
+	public static void count(String exportType, JsonArray profiles, TransactionHelper transactionHelper) {
 		String query;
 		JsonObject params = new JsonObject();
 		if (profiles != null && profiles.size() > 0) {
-			query = "MATCH (u:User) " +
+			query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 					"WHERE HEAD(u.profiles) IN {profiles} ";
 			params.putArray("profiles", profiles);
+			if (isNotEmpty(exportType)) {
+				query += "AND ";
+			}
 		} else {
-			query = "MATCH (u:User) ";
+			query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) ";
+			if (isNotEmpty(exportType)) {
+				query += "WHERE ";
+			}
+		}
+		if (isNotEmpty(exportType)) {
+			query += "HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
 		}
 		query += "RETURN count(distinct u) as nb";
 		transactionHelper.add(query, params);
 	}
 
-	public static void list(JsonArray profiles, JsonArray attributes, Integer skip, Integer limit,
+	public static void list(String exportType, JsonArray profiles, JsonArray attributes, Integer skip, Integer limit,
 			TransactionHelper transactionHelper) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
+		String filter = "";
+		if (isNotEmpty(exportType)) {
+			filter = "AND HAS(s0.exports) AND {exportType} IN s0.exports ";
+			params.putString("exportType", exportType);
+		}
 		if (profiles != null && profiles.size() > 0) {
-			query.append("MATCH (u:User) WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) " +
+			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) " +
+					"WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) ").append(filter).append(
 					"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) " +
-					"WITH u, COLLECT(s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
+					"WITH u, COLLECT(DISTINCT s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
 			params.putArray("profiles", profiles);
 		} else {
-			query.append("MATCH (u:User) WHERE NOT(HAS(u.deleteDate)) ");
+			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) WHERE NOT(HAS(u.deleteDate)) ")
+					.append(filter);
 		}
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
@@ -429,17 +513,25 @@ public class User {
 		transactionHelper.add(query.toString(), params);
 	}
 
-	public static void listByFunctions(JsonArray functions, TransactionHelper transactionHelper) {
+	public static void listByFunctions(String exportType, JsonArray functions, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.putArray("functions", functions);
+		String filter;
+		if(isNotEmpty(exportType)) {
+			filter = "-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"WHERE f.externalId IN {functions} AND HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
+		} else {
+			filter = " WHERE f.externalId IN {functions} ";
+		}
 		String query =
-				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u " +
-				"WHERE f.externalId IN {functions} " +
+				"MATCH (f:Function)<-[:CONTAINS_FUNCTION*0..1]-()<-[rf:HAS_FUNCTION]-u" +
+				filter +
 				"WITH DISTINCT u.externalId as externalId, rf.scope as scope, f " +
 				"MATCH (s:Structure) " +
 				"WHERE s.id in scope " +
 				"WITH externalId, COLLECT(distinct s.externalId) as structs, f " +
 				"RETURN externalId, COLLECT(distinct [f.externalId, structs]) as functions ";
-		JsonObject params = new JsonObject()
-				.putArray("functions", functions);
 		transactionHelper.add(query, params);
 	}
 

@@ -1,0 +1,6 @@
+i.cloud-upload{
+    @include fonticon;
+    &::before{
+        content: '\e9c3'
+    }
+}

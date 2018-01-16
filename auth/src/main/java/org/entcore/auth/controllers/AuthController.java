@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -90,6 +91,7 @@ import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
+import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.users.UserAuthAccount;
 
 import fr.wseduc.webutils.request.CookieHelper;
@@ -107,7 +109,6 @@ public class AuthController extends BaseController {
 	private ProtectedResource protectedResource;
 	private UserAuthAccount userAuthAccount;
 	private static final Tracer trace = TracerFactory.getTracer("auth");
-	private static final String USERINFO_SCOPE = "userinfo";
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
@@ -115,6 +116,7 @@ public class AuthController extends BaseController {
 	private Pattern passwordPattern;
 	private String smsProvider;
 	private boolean slo;
+	private List<String> internalAddress;
 
 
 	@Override
@@ -153,6 +155,7 @@ public class AuthController extends BaseController {
 		} else {
 			invalidEmails = new HashMap<>();
 		}
+		internalAddress = container.config().getArray("internalAddress", new JsonArray().add("localhost").add("127.0.0.1")).toList();
 	}
 
 	@Get("/oauth2/auth")
@@ -163,7 +166,7 @@ public class AuthController extends BaseController {
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
-			if (scope != null && (scope.contains(USERINFO_SCOPE) || scope.contains("openid"))) {
+			if (isNotEmpty(scope)) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				data.validateClientById(clientId, new Handler<Boolean>() {
 
@@ -405,7 +408,7 @@ public class AuthController extends BaseController {
 			UserUtils.getUserInfos(eb, request, new org.vertx.java.core.Handler<UserInfos>() {
 				@Override
 				public void handle(UserInfos event) {
-					if (event != null && Boolean.TRUE.equals(event.getFederated())) {
+					if (event != null && Boolean.TRUE.equals(event.getFederated()) && !request.params().contains("SAMLRequest")) {
 						if (container.config().containsField("openid-federate")) {
 							redirect(request, "/auth/openid/slo?callback=" + c);
 						} else {
@@ -490,6 +493,31 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Get("/internal/userinfo")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void internalUserInfo(final HttpServerRequest request) {
+		if (!(request instanceof SecureHttpServerRequest) || !internalAddress.contains(getIp(request))) {
+			forbidden(request);
+			return;
+		}
+		UserUtils.getSessionByUserId(eb, ((SecureHttpServerRequest)request).getAttribute("remote_user"), new org.vertx.java.core.Handler<JsonObject>() {
+
+			@Override
+			public void handle(JsonObject infos) {
+				if (infos != null) {
+					JsonObject info;
+					UserInfoAdapter adapter = ResponseAdapterFactory.getUserInfoAdapter(request);
+					SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
+					String clientId = sr.getAttribute("client_id");
+					info = adapter.getInfo(infos, clientId);
+					renderJson(request, info);
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	@BusAddress("wse.oauth")
 	public void oauthResourceServer(final Message<JsonObject> message) {
 		if (message.body() == null) {
@@ -553,6 +581,7 @@ public class AuthController extends BaseController {
 				final String activationCode = request.formAttributes().get("activationCode");
 				final String email = request.formAttributes().get("mail");
 				final String phone = request.formAttributes().get("phone");
+				final String theme = request.formAttributes().get("theme");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				if (container.config().getBoolean("cgu", true) &&
@@ -596,7 +625,7 @@ public class AuthController extends BaseController {
 					}
 					renderJson(request, error);
 				} else {
-					userAuthAccount.activateAccount(login, activationCode, password, email, phone, request,
+					userAuthAccount.activateAccount(login, activationCode, password, email, phone, theme, request,
 							new org.vertx.java.core.Handler<Either<String, String>>() {
 
 						@Override
@@ -667,26 +696,43 @@ public class AuthController extends BaseController {
 			public void handle(JsonObject data) {
 				final String mail = data.getString("mail");
 				final String service = data.getString("service");
-				if(mail == null || mail.trim().isEmpty()){
+				final String firstName = data.getString("firstName");
+				final String structure = data.getString("structureId");
+				if (mail == null || mail.trim().isEmpty()) {
 					badRequest(request);
 					return;
 				}
-
-				userAuthAccount.findByMail(mail, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+				userAuthAccount.findByMailAndFirstNameAndStructure(mail, firstName, structure, new org.vertx.java.core.Handler<Either<String, JsonArray>>() {
 					@Override
-					public void handle(Either<String, JsonObject> result) {
+					public void handle(Either<String, JsonArray> event) {
 						//No user with that email, or more than one found.
-						if(result.isLeft()){
-							badRequest(request, result.left().getValue());
+						if(event.isLeft()){
+							badRequest(request, event.left().getValue());
 							return;
 						}
-						if(result.right().getValue().size() == 0){
+						JsonArray results = event.right().getValue();
+						if (results.size() == 0) {
 							badRequest(request, "no.match");
 							return;
 						}
-
-						final String id = result.right().getValue().getString("login", "");
-						final String mobile = result.right().getValue().getString("mobile", "");
+						JsonArray structures = new JsonArray();
+						if(results.size() > 1) {
+							for (Object ob : results) {
+								JsonObject j = (JsonObject) ob;
+								j.removeField("login");
+								j.removeField("mobile");
+								if (!structures.toString().contains(j.getString("structureId")))
+									structures.add(j);
+							}
+							if (firstName != null && structures.size() == 1)
+								badRequest(request, "non.unique.result");
+							else
+								renderJson(request, new JsonObject().putArray("structures", structures));
+							return;
+						}
+						JsonObject match = results.get(0);
+						final String id = match.getString("login", "");
+						final String mobile = match.getString("mobile", "");
 
 						//Force mail
 						if("mail".equals(service)){
@@ -798,20 +844,42 @@ public class AuthController extends BaseController {
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	@IgnoreCsrf
 	public void sendResetPassword(final HttpServerRequest request) {
-		String login = request.formAttributes().get("login");
-		String email = request.formAttributes().get("email");
-		if (login == null || login.trim().isEmpty() || !StringValidation.isEmail(email)) {
-			badRequest(request);
-			return;
-		}
-		userAuthAccount.sendResetCode(request, login, email, new org.vertx.java.core.Handler<Boolean>() {
+		request.expectMultiPart(true);
+		request.endHandler(new VoidHandler() {
 			@Override
-			public void handle(Boolean sent) {
-				if (Boolean.TRUE.equals(sent)) {
-					renderJson(request, new JsonObject());
+			public void handle() {
+				String login = request.formAttributes().get("login");
+				String email = request.formAttributes().get("email");
+				String mobile = request.formAttributes().get("mobile");
+				SendPasswordDestination dest = null;
+				
+				if (login == null || login.trim().isEmpty()) {
+					badRequest(request, "login required");
+					return;
+				} 
+				if (StringValidation.isEmail(email)) {
+					dest = new SendPasswordDestination();
+					dest.setType("email");
+					dest.setValue(email);
+				} else if (StringValidation.isPhone(mobile)) {
+					dest = new SendPasswordDestination();
+					dest.setType("mobile");
+					dest.setValue(mobile);
 				} else {
-					badRequest(request);
+					badRequest(request, "valid email or valid mobile required");
+					return;
 				}
+				
+				userAuthAccount.sendResetCode(request, login, dest, new org.vertx.java.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean sent) {
+						if (Boolean.TRUE.equals(sent)) {
+							renderJson(request, new JsonObject());
+						} else {
+							badRequest(request);
+						}
+					}
+				});
 			}
 		});
 	}
@@ -834,6 +902,14 @@ public class AuthController extends BaseController {
 								public void handle(Boolean event) {
 									if (!event) {
 										log.error("Error delete permanent session with userId : " + userId);
+									}
+								}
+							});
+							UserUtils.deleteCacheSession(eb, userId, new org.vertx.java.core.Handler<Boolean>() {
+								@Override
+								public void handle(Boolean event) {
+									if (!event) {
+										log.error("Error delete cache session with userId : " + userId);
 									}
 								}
 							});

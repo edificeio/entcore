@@ -23,6 +23,7 @@ import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.Validator;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
@@ -31,6 +32,8 @@ import org.vertx.java.core.logging.Logger;
 import org.vertx.java.core.logging.impl.LoggerFactory;
 
 import java.util.*;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Structure {
 
@@ -41,6 +44,7 @@ public class Structure {
 	protected JsonObject struct;
 	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
 	protected final Set<String> functionalGroups = Collections.synchronizedSet(new HashSet<String>());
+	private transient String overrideClass;
 
 	public Structure(JsonObject struct) {
 		this(struct.getString("externalId"), struct);
@@ -84,7 +88,7 @@ public class Structure {
 				"MATCH (s:Structure { externalId : {externalId}}) " +
 				"WITH s " +
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
-				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId");
+				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId", "created");
 		getTransaction().add(query, struct);
 		this.struct = struct;
 	}
@@ -94,11 +98,12 @@ public class Structure {
 				"CREATE (s:Structure {props}) " +
 				"WITH s " +
 				"MATCH (p:Profile) " +
-				"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name})-[:DEPENDS]->s " +
+				"CREATE p<-[:HAS_PROFILE]-(g:Group:ProfileGroup {name : s.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->s " +
 				"SET g.id = id(g)+'-'+timestamp() ";
 		JsonObject params = new JsonObject()
 				.putString("id", id)
 				.putString("externalId", externalId)
+				.putString("groupSearchField", Validator.sanitize(struct.getString("name")))
 				.putObject("props", struct);
 		getTransaction().add(query, params);
 	}
@@ -152,14 +157,15 @@ public class Structure {
 					"CREATE s<-[:BELONGS]-(c:Class {props})" +
 					"WITH s, c " +
 					"MATCH s<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name})-[:DEPENDS]->g " +
+					"CREATE c<-[:DEPENDS]-(pg:Group:ProfileGroup {name : c.name+'-'+p.name, displayNameSearchField: {groupSearchField}})-[:DEPENDS]->g " +
 					"SET pg.id = id(pg)+'-'+timestamp() ";
 			JsonObject params = new JsonObject()
 					.putString("structureExternalId", externalId)
+					.putString("groupSearchField", Validator.sanitize(name))
 					.putObject("props", new JsonObject()
-							.putString("externalId", classExternalId)
-							.putString("id", UUID.randomUUID().toString())
-							.putString("name", name)
+									.putString("externalId", classExternalId)
+									.putString("id", UUID.randomUUID().toString())
+									.putString("name", name)
 					);
 			getTransaction().add(query, params);
 		}
@@ -176,6 +182,7 @@ public class Structure {
 					.putObject("props", new JsonObject()
 							.putString("externalId", groupExternalId)
 							.putString("id", UUID.randomUUID().toString())
+							.putString("displayNameSearchField", Validator.sanitize(name))
 							.putString("name", name)
 					);
 			getTransaction().add(query, params);
@@ -263,15 +270,24 @@ public class Structure {
 		tx.add(query, params);
 	}
 
-	public static void count(TransactionHelper transactionHelper) {
+	public static void count(String exportType, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject();
-		String query = "MATCH (s:Structure) RETURN count(distinct s) as nb";
+		String query = "MATCH (s:Structure) ";
+		if (isNotEmpty(exportType)) {
+			query += "WHERE HAS(s.exports) AND {exportType} IN s.exports ";
+			params.putString("exportType", exportType);
+		}
+		query += "RETURN count(distinct s) as nb";
 		transactionHelper.add(query, params);
 	}
 
-	public static void list(JsonArray attributes, Integer skip, Integer limit, TransactionHelper transactionHelper) {
+	public static void list(String exportType, JsonArray attributes, Integer skip, Integer limit, TransactionHelper transactionHelper) {
 		StringBuilder query = new StringBuilder("MATCH (s:Structure) ");
 		JsonObject params = new JsonObject();
+		if (isNotEmpty(exportType)) {
+			query.append("WHERE HAS(s.exports) AND {exportType} IN s.exports ");
+			params.putString("exportType", exportType);
+		}
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
 			for (Object attribute : attributes) {
@@ -306,7 +322,7 @@ public class Structure {
 				"SET rf.scope = coalesce(rf.scope, []) + s.id " +
 				"WITH DISTINCT s as n, f, u " +
 				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-ADMIN_LOCAL'}) " +
-				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name " +
+				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) " +
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"MERGE fg<-[:IN { source : 'MANUAL'}]-u";
 		JsonObject params =  new JsonObject()
@@ -335,6 +351,14 @@ public class Structure {
 				.putString("parentStructureId", parentStructureId);
 		transactionHelper.add(query, params);
 		transactionHelper.add(query2, params);
+	}
+
+	public String getOverrideClass() {
+		return overrideClass;
+	}
+
+	public void setOverrideClass(String overrideClass) {
+		this.overrideClass = overrideClass;
 	}
 
 }
