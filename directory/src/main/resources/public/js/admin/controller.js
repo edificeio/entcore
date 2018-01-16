@@ -849,8 +849,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
 	$scope.createUser = function(user){
 		user.create(function(){
-			$scope.resetUser(user)
-			$scope.structure.loadStructure($scope.refreshScope)
+			$scope.resetUser(user);
+			$scope.structure.loadStructure($scope.refreshScope);
 		})
 	}
 

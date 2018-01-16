@@ -34,10 +34,7 @@ import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
-import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VoidHandler;
@@ -52,6 +49,7 @@ import java.util.*;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
+import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
@@ -63,6 +61,7 @@ public class DirectoryController extends BaseController {
 	private ClassService classService;
 	private UserService userService;
 	private GroupService groupService;
+	private SlotProfileService slotProfileService;
 
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -473,7 +472,7 @@ public class DirectoryController extends BaseController {
 				userService.get(userId, false, BusResponseHandler.busResponseHandler(message));
 				break;
 			case "getUserInfos" :
-				userService.getInfos(userId, BusResponseHandler.busResponseHandler(message));
+				userService.getInfos(userId, busResponseHandler(message));
 				break;
 			case "list-users":
 				JsonArray userIds = message.body().getArray("userIds", new JsonArray());
@@ -494,6 +493,14 @@ public class DirectoryController extends BaseController {
 			case "list-adml" :
 				String sId = message.body().getString("structureId");
 				userService.listAdml(sId, responseHandler(message));
+				break;
+			case "list-slotprofiles" :
+				String structId = message.body().getString("structureId");
+				slotProfileService.listSlotProfilesByStructure(structId, busArrayHandler(message));
+				break;
+			case "list-slots" :
+				String slotProfileId = message.body().getString("slotProfileId");
+				slotProfileService.listSlots(slotProfileId, busResponseHandler(message));
 				break;
 		default:
 			message.reply(new JsonObject()
@@ -533,5 +540,9 @@ public class DirectoryController extends BaseController {
 
 	public void setGroupService(GroupService groupService) {
 		this.groupService = groupService;
+	}
+
+	public void setSlotProfileService (SlotProfileService slotProfileService) {
+		this.slotProfileService = slotProfileService;
 	}
 }

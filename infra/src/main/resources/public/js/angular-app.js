@@ -758,9 +758,15 @@ module.directive('calendar', function($compile) {
 
                 $scope.createItem = function(day, timeslot) {
                     $scope.newItem = {};
-                    var year = model.calendar.year;
+                    var year = model.calendar.firstDay.year() || (day.date && day.date.year());
                     if (day.index < model.calendar.firstDay.dayOfYear()) {
                         year++;
+                    }
+                    if (!timeslot) {
+                        timeslot = {
+                            start: calendar.startOfDay,
+                            end: calendar.endOfDay
+                        }
                     }
                     $scope.newItem.beginning = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.start);
                     $scope.newItem.end = moment().utc().year(year).dayOfYear(day.index).hour(timeslot.end);
@@ -773,48 +779,33 @@ module.directive('calendar', function($compile) {
                     $scope.onCreateClose();
                 };
 
-                $scope.updateCalendarWeek = function() {
-                    //annoying new year workaround
-                    if (moment(model.calendar.dayForWeek).week() === 1 && moment(model.calendar.dayForWeek).dayOfYear() > 7) {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() + 1
-                        });
-                    } else if (moment(model.calendar.dayForWeek).week() === 53 && moment(model.calendar.dayForWeek).dayOfYear() < 7) {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year() - 1
-                        });
-                    } else {
-                        model.calendar = new calendar.Calendar({
-                            week: moment(model.calendar.dayForWeek).week(),
-                            year: moment(model.calendar.dayForWeek).year()
-                        });
-                    }
-                    model.trigger('calendar.date-change');
-                    refreshCalendar();
+                $scope.updateCalendarDate = function() {
+                    model.calendar.setDate(model.calendar.firstDay);
                 };
 
                 $scope.previousTimeslots = function() {
                     calendar.startOfDay--;
                     calendar.endOfDay--;
-                    model.calendar = new calendar.Calendar({
-                        week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
-                    });
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
 
                 $scope.nextTimeslots = function() {
                     calendar.startOfDay++;
                     calendar.endOfDay++;
-                    model.calendar = new calendar.Calendar({
-                        week: moment(model.calendar.dayForWeek).week(),
-                        year: moment(model.calendar.dayForWeek).year()
-                    });
+                    model.calendar.days.sync();
                     refreshCalendar();
                 };
+
+                $scope.openMorePopup = function(items) {
+                    $scope.morePopupItems = items;
+                    $scope.display.moreItems = true;
+                };
             };
+
+            $scope.getMonthDayOffset = function(day) {
+                return (day.date.day() || 7) - 1; // sunday is 0, so set it to 7
+            }
 
             calendar.setCalendar = function(cal) {
                 model.calendar = cal;
@@ -826,11 +817,25 @@ module.directive('calendar', function($compile) {
                 $scope.$watchCollection('items', refreshCalendar);
             }, 0);
             $scope.refreshCalendar = refreshCalendar;
+
+            $scope.$watch('display.mode', function() {
+                model.calendar.setIncrement($scope.display.mode);
+                refreshCalendar();
+            });
         },
         link: function(scope, element, attributes) {
             var allowCreate;
-            scope.display = {};
-            scope.display.readonly = false;
+
+            if (attributes.itemTooltipTemplate) {
+                scope.itemTooltipTemplate = attributes.itemTooltipTemplate;
+            }
+
+            scope.display = {
+                readonly: false,
+                mode: 'week',
+                enableModes: attributes.enableDisplayModes === 'true',
+            }
+
             attributes.$observe('createTemplate', function() {
                 if (attributes.createTemplate) {
                     template.open('schedule-create-template', attributes.createTemplate);
@@ -838,6 +843,12 @@ module.directive('calendar', function($compile) {
                 }
                 if (attributes.displayTemplate) {
                     template.open('schedule-display-template', attributes.displayTemplate);
+                }
+                if (attributes.displayMonthTemplate) {
+                    template.open('schedule-display-month-template', attributes.displayMonthTemplate);
+                }
+                if (attributes.moreItemsTemplate) {
+                    template.open('schedule-more-items-template', attributes.moreItemsTemplate);
                 }
             });
             attributes.$observe('readonly', function(){
@@ -882,13 +893,12 @@ module.directive('scheduleItem', function($compile) {
         link: function(scope, element, attributes) {
             var parentSchedule = element.parents('.schedule');
             var scheduleItemEl = element.children('.schedule-item');
-            var dayWidth = parentSchedule.find('.day').width();
-            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || scope.item.locked) {
+            if (scope.item.beginning.dayOfYear() !== scope.item.end.dayOfYear() || !scope.item.myRights.process || moment().diff(moment(scope.item.end_date)) > 0 || scope.item.parent_booking_id != null) {
                 scheduleItemEl.removeAttr('resizable');
                 scheduleItemEl.removeAttr('draggable');
                 scheduleItemEl.unbind('mouseover');
                 scheduleItemEl.unbind('click');
-                scheduleItemEl.data('lock', true)
+                scheduleItemEl.data('lock', true);
             }
 
             var getTimeFromBoundaries = function() {
@@ -902,8 +912,8 @@ module.directive('scheduleItem', function($compile) {
                 endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
                 endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
-                startTime.year(model.calendar.year);
-                endTime.year(model.calendar.year);
+                startTime.year(model.calendar.firstDay.year());
+                endTime.year(model.calendar.firstDay.year());
 
                 var days = element.parents('.schedule').find('.day');
                 var center = scheduleItemEl.offset().left + scheduleItemEl.width() / 2;
@@ -911,17 +921,15 @@ module.directive('scheduleItem', function($compile) {
                 days.each(function(index, item) {
                     var itemLeft = $(item).offset().left;
                     if (itemLeft < center && itemLeft + dayWidth > center) {
-                        var day = index + 1;
-                        var week = model.calendar.week;
-                        endTime.week(week);
-                        startTime.week(week);
-                        if (day === 7) {
-                            day = 0;
-                            endTime.week(week + 1);
-                            startTime.week(week + 1);
-                        }
-                        endTime.day(day);
-                        startTime.day(day);
+                        var dayDate = model.calendar.firstDay.clone().add(index, 'days');
+
+                        endTime.year(dayDate.year());
+                        endTime.month(dayDate.month());
+                        endTime.date(dayDate.date());
+
+                        startTime.year(dayDate.year());
+                        startTime.month(dayDate.month());
+                        startTime.date(dayDate.date()) ;
                     }
                 });
 
@@ -960,6 +968,7 @@ module.directive('scheduleItem', function($compile) {
             });
 
             var placeItem = function() {
+                var dayWidth = parentSchedule.find('.day').width();
                 var cellWidth = element.parent().width() / 12;
                 var startDay = scope.item.beginning.dayOfYear();
                 var endDay = scope.item.end.dayOfYear();
@@ -1209,6 +1218,71 @@ module.directive('soundSelect', function($compile) {
             });
         }
     }
+});
+
+module.directive('timePickerCore', function($compile){
+	return {
+		scope: {
+			ngModel: '=',
+			ngBegin: '=',
+			ngEnd: '=',
+			ngLimit: '='
+		},
+		transclude: true,
+		replace: true,
+		restrict: 'E',
+		template: "<input type='text' />",
+		link: function($scope, $element, $attributes){
+			var hideFunction = function(e){
+				var timepicker = $element.data('timepicker');
+				if(!timepicker || $element[0] === e.target || $('.bootstrap-timepicker-widget').find(e.target).length !== 0){
+					return;
+				}
+				timepicker.hideWidget();
+			};
+			$('body').on('click', hideFunction);
+			loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-timepicker.js', function(){
+				$element.timepicker({
+					showMeridian: false,
+					defaultTime: 'current',
+					minuteStep: 5,
+					// minHour: model.timeConfig.start_hour,
+					// maxHour: model.timeConfig.end_hour
+				});
+			});
+
+			$scope.$watch('ngModel', function(newVal){
+
+				$element.val($scope.ngModel.format("HH:mm"));
+				if( ($scope.ngLimit !== undefined && !newVal.isSame($scope.ngLimit))
+						&& ( ($scope.ngBegin === true && newVal.isAfter($scope.ngLimit))
+								|| ($scope.ngEnd === true && newVal.isBefore($scope.ngLimit)) )
+				){
+					$scope.ngLimit = moment(newVal);
+				}
+			});
+
+			$element.on('change', function(){
+			    var time = $element.val().split(':');
+                var newVal = $scope.ngLimit ? moment($scope.ngLimit) : moment();
+                newVal.set('hour', time[0]);
+                newVal.set('minute', time[1]);
+
+				$scope.ngModel = newVal;
+				$scope.$apply('ngModel');
+				$scope.$parent.$eval($scope.ngChange);
+				$scope.$parent.$apply();
+			});
+
+			$element.on('focus', function() {
+				$element.timepicker('updateFromElementVal');
+			});
+
+			$element.on('$destroy', function(){
+				$element.timepicker('remove');
+			});
+		}
+	}
 });
 
 module.directive('mediaSelect', function($compile) {
@@ -2492,34 +2566,76 @@ module.directive('tooltip', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+            var tgtElement = element;
+            if (attributes.tooltipTargetSelector) {
+                tgtElement = element.find(attributes.tooltipTargetSelector);
+                if (!tgtElement) return;
+            }
+
+            var restrictToElement;
+            if (attributes.tooltipRestrictSelector) {
+                restrictToElement = tgtElement.parents(attributes.tooltipRestrictSelector);
+                if (restrictToElement.length !== 1) restrictToElement = undefined;
+            }
+
             if(ui.breakpoints.tablette >= $(window).width()){
                 return;
             }
             var tip;
-            element.on('mouseover', function() {
-                if (!attributes.tooltip || attributes.tooltip === 'undefined') {
-                    return;
-                }
-                tip = $('<div />')
-                    .addClass('tooltip')
-                    .html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
-                    .appendTo('body');
-                scope.$apply();
+            tgtElement.on('mouseenter', function() {
+                if (attributes.tooltipTemplate) {
+                    var tplPath = template.containers[attributes.tooltipTemplate]
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div ng-include=\'\"' + tplPath + '\"\'></div>')(scope))
+                        .appendTo('body');
+                    scope.$apply();
 
-                var top = parseInt(element.offset().top + element.height());
-                var left = parseInt(element.offset().left + element.width() / 2 - tip.width() / 2);
-                if (top < 5) {
-                    top = 5;
+                    tip.css('position', 'absolute');
+
+                    var top  = tgtElement.offset().top;
+                    var left = parseInt(tgtElement.offset().left - tip.width() - 5);
+                    if (restrictToElement) {
+                        if (left < restrictToElement.offset().left) {
+                            left = parseInt(tgtElement.offset().left + tgtElement.width() + 5);
+                        }
+
+                        // now, is it too far right ?
+                        if (left + tgtElement.width() > restrictToElement.offset().left + restrictToElement.width()) {
+                            left = restrictToElement.offset().left + 5;
+                            top += 30;
+                        }
+
+                        // now, is it too far bot ?
+                        if (top > restrictToElement.height() + 150) {
+                          top -= 130;
+                        }
+
+                    }
+                    tip.css('left', left);
+                    tip.css('top', top);
+                } else {
+                    tip = $('<div />')
+                        .addClass('tooltip')
+                        .html($compile('<div class="arrow"></div><div class="content">' + lang.translate(attributes.tooltip) + '</div> ')(scope))
+                        .appendTo('body');
+                    scope.$apply();
+
+                    var top = parseInt(tgtElement.offset().top + tgtElement.height());
+                    var left = parseInt(tgtElement.offset().left + tgtElement.width() / 2 - tip.width() / 2);
+                    if (top < 5) {
+                        top = 5;
+                    }
+                    if (left < 5) {
+                        left = 5;
+                    }
+                    tip.offset({
+                        top: top,
+                        left: left
+                    });
                 }
-                if (left < 5) {
-                    left = 5;
-                }
-                tip.offset({
-                    top: top,
-                    left: left
-                });
                 tip.fadeIn();
-                element.one('mouseout', function() {
+                tgtElement.on('mouseleave', function() {
                     tip.fadeOut(200, function() {
                         $(this).remove();
                     })
@@ -2531,7 +2647,7 @@ module.directive('tooltip', function($compile) {
                     tip.remove();
                 }
 
-                element.off();
+                tgtElement.off();
             });
 
         }
@@ -3440,6 +3556,7 @@ module.directive('draggable', function($compile) {
     return {
         restrict: 'A',
         link: function(scope, element, attributes) {
+
             if (attributes.draggable == 'false' || attributes.native !== undefined) {
                 return;
             }
@@ -3477,28 +3594,28 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
             if(!($scope.resources instanceof Array)){
                 $scope.resources = [$scope.resources];
             }
-        
+
             $scope.sharing = {};
             $scope.found = [];
             $scope.maxResults = 5;
-        
+
             $scope.editResources = [];
             $scope.sharingModel = {
                 edited: []
             };
-        
+
             $scope.addResults = function(){
                 $scope.maxResults += 5;
             };
-        
+
             var actionsConfiguration = {};
-        
+
             http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function(config){
                 actionsConfiguration = config;
             });
-        
+
             $scope.translate = idiom.translate;
-        
+
             function actionToRights(item, action){
                 var actions = [];
                 _.where($scope.actions, { displayName: action.displayName }).forEach(function(item){
@@ -3506,30 +3623,30 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                         actions.push(i);
                     });
                 });
-        
+
                 return actions;
             }
-        
+
             function rightsToActions(rights, http){
                 var actions = {};
-        
+
                 rights.forEach(function(right){
                     var action = _.find($scope.actions, function(action){
                         return action.name.indexOf(right) !== -1
                     });
-        
+
                     if(!action){
                         return;
                     }
-        
+
                     if(!actions[action.displayName]){
                         actions[action.displayName] = true;
                     }
                 });
-        
+
                 return actions;
             }
-        
+
             function setActions(actions){
                 $scope.actions = actions;
                 $scope.actions.forEach(function(action){
@@ -3540,7 +3657,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     }
                 });
             }
-        
+
             function dropRights(callback){
                 function drop(resource, type){
                     var done = 0;
@@ -3563,7 +3680,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                 callback();
                 $scope.varyingRights = false;
             }
-        
+
             function differentRights(model1, model2){
                 var result = false;
                 function different(type){
@@ -3571,18 +3688,18 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                         if(!model2[type].checked[element]){
                             return true;
                         }
-        
+
                         model1[type].checked[element].forEach(function(right){
                             result = result || model2[type].checked[element].indexOf(right) === -1
                         });
                     }
-        
+
                     return result;
                 }
-        
+
                 return different('users') || different('groups');
             }
-            
+
             var feeding = false;
             var feedData = function(){
                 if(feeding){
@@ -3597,18 +3714,18 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                             $scope.sharingModel = data;
                             $scope.sharingModel.edited = [];
                         }
-        
+
                         data._id = resource._id;
                         $scope.editResources.push(data);
                         var editResource = $scope.editResources[$scope.editResources.length -1];
                         if(!$scope.sharing.actions){
                             setActions(data.actions);
                         }
-        
+
                         function addToEdit(type){
                             for(var element in editResource[type].checked){
                                 var rights = editResource[type].checked[element];
-        
+
                                 var groupActions = rightsToActions(rights);
                                 var elementObj = _.findWhere(editResource[type].visibles, {
                                     id: element
@@ -3618,15 +3735,15 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                                     if(initModel){
                                         $scope.sharingModel.edited.push(elementObj);
                                     }
-        
+
                                     elementObj.index = $scope.sharingModel.edited.length;
                                 }
                             }
                         }
-        
+
                         addToEdit('groups');
                         addToEdit('users');
-        
+
                         if(!initModel){
                             if(differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)){
                                 $scope.varyingRights = true;
@@ -3634,13 +3751,13 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                             }
                         }
                         initModel = false;
-        
+
                         $scope.$apply('sharingModel.edited');
                         feeding = false;
                     });
                 })
             };
-        
+
             $scope.$watch('resources', function(){
                 $scope.actions = [];
                 $scope.sharingModel.edited = [];
@@ -3649,7 +3766,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                 $scope.varyingRights = false;
                 feedData();
             });
-        
+
             $scope.$watchCollection('resources', function(){
                 $scope.actions = [];
                 $scope.sharingModel.edited = [];
@@ -3658,14 +3775,14 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                 $scope.varyingRights = false;
                 feedData();
             });
-        
+
             $scope.addEdit = function(item){
                 item.actions = {};
                 $scope.sharingModel.edited.push(item);
                 item.index = $scope.sharingModel.edited.length;
                 var addedIndex = $scope.found.indexOf(item);
                 $scope.found.splice(addedIndex, 1);
-        
+
                 var defaultActions = []
                 $scope.actions.forEach(function(action){
                     var actionId = action.displayName.split('.')[1];
@@ -3674,7 +3791,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                         defaultActions.push(action);
                     }
                 });
-        
+
                 var index = -1;
                 var loopAction = function(){
                     if(++index < defaultActions.length){
@@ -3682,7 +3799,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     }
                 }
                 loopAction()
-        
+
             };
 
             $scope.clearSearch = function(){
@@ -3690,7 +3807,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                 $scope.sharingModel.users = [];
                 $scope.found = [];
             }
-        
+
             $scope.findUserOrGroup = function(){
                 var searchTerm = idiom.removeAccents($scope.search).toLowerCase();
                 var startSearch = searchTerm.substr(0, 3);
@@ -3727,7 +3844,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     return $scope.sharingModel.edited.indexOf(element) === -1;
                 })
             };
-        
+
             $scope.remove = function(element){
                 var data;
                 if(element.login !== undefined){
@@ -3740,11 +3857,11 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                         groupId: element.id
                     }
                 }
-        
+
                 $scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function(item){
                     return item.id === element.id;
                 });
-        
+
                 $scope.resources.forEach(function(resource){
                     var path = '/' + currentApp + '/share/remove/' + resource._id;
                     http().put(path, http().serialize(data)).done(function(){
@@ -3752,14 +3869,14 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     });
                 })
             }
-        
+
             $scope.maxEdit = 3;
-        
+
             $scope.displayMore = function(){
                 var displayMoreInc = 5;
                 $scope.maxEdit += displayMoreInc;
             }
-        
+
             function applyRights(element, action, cb){
                 var data;
                 if(element.login !== undefined){
@@ -3769,7 +3886,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     data = { groupId: element.id, actions: [] }
                 }
                 data.actions = actionToRights(element, action);
-        
+
                 var setPath = 'json';
                 if(!element.actions[action.displayName]){
                     setPath = 'remove';
@@ -3796,14 +3913,14 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                         }
                     });
                 }
-        
+
                 var times = $scope.resources.length
                 var countdownAction = function(){
                     if(--times <= 0 && typeof cb === 'function'){
                         cb()
                     }
                 }
-        
+
                 $scope.resources.forEach(function(resource){
                     http().put('/' + currentApp + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function(){
                         if(setPath === 'remove'){
@@ -3816,7 +3933,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                     });
                 });
             }
-        
+
             $scope.saveRights = function(element, action, cb){
                 if($scope.varyingRights){
                     dropRights(function(){
@@ -3842,8 +3959,8 @@ module.directive('searchUser', () => {
             <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
         </form>
         `,
-        scope: { 
-            ngModel: '=', 
+        scope: {
+            ngModel: '=',
             onSend: '&',
             clearList: '&'
         },
@@ -4079,7 +4196,7 @@ module.directive('progressBar', function($compile) {
     }
 });
 
-module.directive('datePicker', function($compile) {
+module.directive('datePicker', function($compile, $timeout) {
     return {
         scope: {
             minDate: '=',
@@ -4117,9 +4234,11 @@ module.directive('datePicker', function($compile) {
                     element.val(moment(minDate).format('DD/MM/YYYY'));
                 }
 
-                scope.$apply('ngModel');
-                scope.$parent.$eval(scope.ngChange);
-                scope.$parent.$apply();
+                $timeout(function() {
+                    scope.$apply('ngModel');
+                    scope.$parent.$eval(scope.ngChange);
+                    scope.$parent.$apply();
+                });
             }
 
             loader.asyncLoad('/' + infraPrefix + '/public/js/bootstrap-datepicker.js', function() {
@@ -5318,7 +5437,6 @@ module.directive('multiCombo', function() {
             scope.maxSelected = parseInt(scope.maxSelected)
             if (!isNaN(scope.maxSelected) && scope.maxSelected < 1) {
                 throw '[<multi-combo> directive] Error: max-selected must be an integer greater than 0.'
-                return
             }
 
             /* Visibility mouse click event */
@@ -6490,6 +6608,342 @@ function Account($scope) {
     $scope.refreshMails();
     $scope.refreshAvatar();
     $scope.currentURL = window.location.href;
+}
+
+function Share($rootScope, $scope, ui, _, lang) {
+    if (!$scope.appPrefix) {
+        $scope.appPrefix = appPrefix;
+    }
+    if ($scope.resources instanceof Model) {
+        $scope.resources = [$scope.resources];
+    }
+
+    if (!($scope.resources instanceof Array)) {
+        throw new TypeError('Resources in share panel must be instance of Model or Array');
+    }
+
+    $scope.sharing = {};
+    $scope.found = [];
+    $scope.maxResults = 5;
+
+    $scope.editResources = [];
+    $scope.sharingModel = {
+        edited: []
+    };
+
+    $scope.addResults = function() {
+        $scope.maxResults += 5;
+    };
+
+    var actionsConfiguration = {};
+
+    http().get('/' + infraPrefix + '/public/json/sharing-rights.json').done(function(config) {
+        actionsConfiguration = config;
+    });
+
+    $scope.translate = lang.translate;
+
+    function actionToRights(item, action) {
+        var actions = [];
+        _.where($scope.actions, {
+            displayName: action.displayName
+        }).forEach(function(item) {
+            item.name.forEach(function(i) {
+                actions.push(i);
+            });
+        });
+
+        return actions;
+    }
+
+    function rightsToActions(rights, http) {
+        var actions = {};
+
+        rights.forEach(function(right) {
+            var action = _.find($scope.actions, function(action) {
+                return action.name.indexOf(right) !== -1
+            });
+
+            if (!action) {
+                return;
+            }
+
+            if (!actions[action.displayName]) {
+                actions[action.displayName] = true;
+            }
+        });
+
+        return actions;
+    }
+
+    function setActions(actions) {
+        $scope.actions = actions;
+        $scope.actions.forEach(function(action) {
+            var actionId = action.displayName.split('.')[1];
+            if (actionsConfiguration[actionId]) {
+                action.priority = actionsConfiguration[actionId].priority;
+                action.requires = actionsConfiguration[actionId].requires;
+            }
+        });
+    }
+
+    function dropRights(callback) {
+        function drop(resource, type) {
+            var done = 0;
+            for (var element in resource[type].checked) {
+                var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
+                var data = {};
+                if (type === 'users') {
+                    data.userId = element;
+                } else {
+                    data.groupId = element;
+                }
+                http().put(path, http().serialize(data));
+            }
+        }
+        $scope.editResources.forEach(function(resource) {
+            drop(resource, 'users');
+            drop(resource, 'groups');
+        });
+        callback();
+        $scope.varyingRights = false;
+    }
+
+    function differentRights(model1, model2) {
+        var result = false;
+
+        function different(type) {
+            for (var element in model1[type].checked) {
+                if (!model2[type].checked[element]) {
+                    return true;
+                }
+
+                model1[type].checked[element].forEach(function(right) {
+                    result = result || model2[type].checked[element].indexOf(right) === -1
+                });
+            }
+
+            return result;
+        }
+
+        return different('users') || different('groups');
+    }
+
+    var feedData = function() {
+        var initModel = true;
+        $scope.resources.forEach(function(resource) {
+            var id = resource._id;
+            http().get('/' + $scope.appPrefix + '/share/json/' + id).done(function(data) {
+                if (initModel) {
+                    $scope.sharingModel = data;
+                    $scope.sharingModel.edited = [];
+                }
+
+                data._id = resource._id;
+                $scope.editResources.push(data);
+                var editResource = $scope.editResources[$scope.editResources.length - 1];
+                if (!$scope.sharing.actions) {
+                    setActions(data.actions);
+                }
+
+                function addToEdit(type) {
+                    for (var element in editResource[type].checked) {
+                        var rights = editResource[type].checked[element];
+
+                        var groupActions = rightsToActions(rights);
+                        var elementObj = _.findWhere(editResource[type].visibles, {
+                            id: element
+                        });
+                        if (elementObj) {
+                            elementObj.actions = groupActions;
+                            if (initModel) {
+                                $scope.sharingModel.edited.push(elementObj);
+                            }
+
+                            elementObj.index = $scope.sharingModel.edited.length;
+                        }
+                    }
+                }
+
+                addToEdit('groups');
+                addToEdit('users');
+
+                if (!initModel) {
+                    if (differentRights(editResource, $scope.sharingModel) || differentRights($scope.sharingModel, editResource)) {
+                        $scope.varyingRights = true;
+                        $scope.sharingModel.edited = [];
+                    }
+                }
+                initModel = false;
+
+                $scope.$apply('sharingModel.edited');
+            });
+        })
+    };
+
+    $scope.$watch('resources', function() {
+        $scope.actions = [];
+        $scope.sharingModel.edited = [];
+        $scope.search = '';
+        $scope.found = [];
+        $scope.varyingRights = false;
+        feedData();
+    })
+
+    $scope.addEdit = function(item) {
+        item.actions = {};
+        $scope.sharingModel.edited.push(item);
+        item.index = $scope.sharingModel.edited.length;
+        var addedIndex = $scope.found.indexOf(item);
+        $scope.found.splice(addedIndex, 1);
+
+        var defaultActions = [];
+        $scope.actions.forEach(function(action) {
+            var actionId = action.displayName.split('.')[1];
+            if (actionsConfiguration[actionId].default) {
+                item.actions[action.displayName] = true;
+                defaultActions.push(action);
+            }
+        });
+
+        var index = -1;
+        var loopAction = function() {
+            if (++index < defaultActions.length) {
+                $scope.saveRights(item, defaultActions[index], loopAction);
+            }
+        }
+        loopAction()
+
+    };
+
+    $scope.findUserOrGroup = function() {
+        var searchTerm = lang.removeAccents($scope.search).toLowerCase();
+        $scope.found = _.union(
+            _.filter($scope.sharingModel.groups.visibles, function(group) {
+                var testName = lang.removeAccents(group.name).toLowerCase();
+                return testName.indexOf(searchTerm) !== -1;
+            }),
+            _.filter($scope.sharingModel.users.visibles, function(user) {
+                var testName = lang.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
+                var testNameReversed = lang.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
+                return testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1;
+            })
+        );
+        $scope.found = _.filter($scope.found, function(element) {
+            return $scope.sharingModel.edited.indexOf(element) === -1;
+        })
+    };
+
+    $scope.remove = function(element) {
+        var data;
+        if (element.login !== undefined) {
+            data = {
+                userId: element.id
+            }
+        } else {
+            data = {
+                groupId: element.id
+            }
+        }
+
+        $scope.sharingModel.edited = _.reject($scope.sharingModel.edited, function(item) {
+            return item.id === element.id;
+        });
+
+        $scope.resources.forEach(function(resource) {
+            var path = '/' + $scope.appPrefix + '/share/remove/' + resource._id;
+            http().put(path, http().serialize(data)).done(function() {
+                $rootScope.$broadcast('share-updated', data);
+            });
+        })
+    }
+
+    $scope.maxEdit = 3;
+
+    $scope.displayMore = function() {
+        var displayMoreInc = 5;
+        $scope.maxEdit += displayMoreInc;
+    }
+
+    function applyRights(element, action, cb) {
+        var data;
+        if (element.login !== undefined) {
+            data = {
+                userId: element.id
+            }
+        } else {
+            data = {
+                groupId: element.id
+            }
+        }
+        data.actions = actionToRights(element, action);
+
+        var setPath = 'json';
+        if (!element.actions[action.displayName]) {
+            setPath = 'remove';
+            _.filter($scope.actions, function(item) {
+                    return _.find(item.requires, function(dependency) {
+                        return action.displayName.split('.')[1].indexOf(dependency) !== -1;
+                    }) !== undefined
+                })
+                .forEach(function(item) {
+                    if (item) {
+                        element.actions[item.displayName] = false;
+                        data.actions = data.actions.concat(actionToRights(element, item));
+                    }
+                })
+        } else {
+            action.requires.forEach(function(required) {
+                var action = _.find($scope.actions, function(action) {
+                    return action.displayName.split('.')[1].indexOf(required) !== -1;
+                });
+                if (action) {
+                    element.actions[action.displayName] = true;
+                    data.actions = data.actions.concat(actionToRights(element, action));
+                }
+            });
+        }
+
+        var times = $scope.resources.length
+        var countdownAction = function() {
+            if (--times <= 0 && typeof cb === 'function') {
+                cb()
+            }
+        }
+
+        $scope.resources.forEach(function(resource) {
+            http().put('/' + $scope.appPrefix + '/share/' + setPath + '/' + resource._id, http().serialize(data)).done(function() {
+                if (setPath === 'remove') {
+                    $rootScope.$broadcast('share-updated', {
+                        removed: {
+                            groupId: data.groupId,
+                            userId: data.userId,
+                            actions: rightsToActions(data.actions)
+                        }
+                    });
+                } else {
+                    $rootScope.$broadcast('share-updated', {
+                        added: {
+                            groupId: data.groupId,
+                            userId: data.userId,
+                            actions: rightsToActions(data.actions)
+                        }
+                    });
+                }
+                countdownAction()
+            });
+        });
+    }
+
+    $scope.saveRights = function(element, action, cb) {
+        if ($scope.varyingRights) {
+            dropRights(function() {
+                applyRights(element, action, cb)
+            });
+        } else {
+            applyRights(element, action, cb)
+        }
+    };
 }
 
 function Admin($scope) {
