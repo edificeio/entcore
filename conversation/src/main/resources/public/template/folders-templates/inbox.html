@@ -19,14 +19,10 @@
 
 <div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
 	<div class="check-col">
-		<div>
-			<label class="checkbox cell">
-				<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
-				<i18n></i18n>
-			</label>
-		</div>
-		<!-- <input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" /> -->
-
+		<label class="wrapping-checkbox relative">
+			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+			<i18n></i18n>
+		</label>
 	</div>
 	<div class="status-filter">
 		<label class="chip">
@@ -64,14 +60,15 @@
 
 		<article ng-click="readMail(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
-				<div class="avatar" ng-click="$event.stopPropagation();">
-					<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
 
-					<label class="checkbox-color"><input type="checkbox" ng-model="mail.selected"/>
+				<label class="wrapping-checkbox">
+					<div class="avatar" ng-click="$event.stopPropagation();">
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
-					</label>
+					</div>
+				</label>
 
-				</div>
 				<div class="states">
 					<i class="undo" ng-if="mail.response"></i>
 					<i class="mail" ng-if="mail.unread"></i>
