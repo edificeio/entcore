@@ -3,8 +3,9 @@
 	<div class="">
 		<switch-search
 			ng-model="searchField.words"
-			ng-change="search(words)">
-			<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+			ng-change="search(words)"
+			cancel="cancelSearch()">
+			<button class="cell cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
 				<i class="add"></i><i18n>new.message</i18n>
 			</button>
 		</switch-search>

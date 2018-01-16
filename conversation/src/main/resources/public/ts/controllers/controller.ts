@@ -187,12 +187,14 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.search = async (text: string) => {
             if(text.trim().length > 3) {
+                await new Promise(resolve => setTimeout(resolve, 10));
                 await Conversation.instance.currentFolder.search(text);
                 $scope.$apply();
             }
         }
 
         $scope.cancelSearch = async () => {
+            await new Promise(resolve => setTimeout(resolve, 10));
             await Conversation.instance.currentFolder.search("");
             $scope.$apply();
         }
