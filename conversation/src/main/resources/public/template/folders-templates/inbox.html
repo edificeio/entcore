@@ -16,7 +16,6 @@
 </nav>
 
 
-
 <div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
 	<div class="check-col">
 		<label class="wrapping-checkbox relative">
@@ -44,6 +43,7 @@
 	</div>
 </div>
 
+
 <div class="mailbox">
 
 	<div ng-if="isLoading()">
@@ -60,7 +60,6 @@
 
 		<article ng-click="readMail(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
-
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
 						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
@@ -79,15 +78,18 @@
 					<span class="small-text">[[mail.subject]]</span>
 				</div>
 			</div>
+
 			<div class="notification-date">
 				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
 			</div>
 			<div class="notification-attachment">
 				<i class="attachment" ng-if="mail.attachments.length"></i>
 			</div>
+
 		</article>
 	</div>
 </div>
+
 
 <lightbox show="inactives.length > 0" on-close="clearInactives()">
 	<h2><i18n>warning.title</i18n></h2>
