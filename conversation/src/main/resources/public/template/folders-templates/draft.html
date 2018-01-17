@@ -1,65 +1,93 @@
 <h3 whereami></h3>
-<nav class="contextual-buttons twelve cell">
+<nav class="twelve cell">
 	<div class="">
-		<input type="text" name="searchField.words" ng-model="searchField.words"
-			   ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="ten cell"
-			   i18n-placeholder="search" required autofocus/>
-		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-			<i class="add"></i><i18n>create</i18n>
-		</button>
+		<switch-search
+			ng-model="searchField.words"
+			ng-change="search(words)"
+			cancel="cancelSearch()">
+			<button class="cell cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i class="add"></i><i18n>new.message</i18n>
+			</button>
+		</switch-search>
 	</div>
 </nav>
-<article class="list list-view twelve cell mailbox">
-	<table class="twelve">
-		<thead>
-		<tr>
-			<th class="icon">
-				<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
-					<i18n></i18n>
-				</label>
-			</th>
-			<th class="user" ng-click="setSort(folders.draft, sortBy.name)"><i18n>to</i18n></th>
-			<th class="content" ng-click="setSort(folders.draft, sortBy.subject)"><i18n>subject</i18n></th>
-			<th class="icon"></th>
-			<th class="date" ng-click="setSort(folders.draft, sortBy.date)"><i18n>date</i18n></th>
-		</tr>
-		</thead>
-		<tbody ng-if="isLoading()">
-		<tr>
-			<td>
-				<h1 class="nomargin"><i18n>loading</i18n></h1>
-			</td>
-		</tr>
-		</tbody>
-		<tbody ng-if="!isLoading()">
-		<tr ng-if="conversation.currentFolder.mails.empty()">
-			<td colspan="5" translate key="folder.empty">
-			</td>
-		</tr>
-		<tr ng-repeat="mail in folders.draft.mails.all | orderBy : folders.draft.sort : folders.draft.reverse"
-		    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
-			<td>
-				<div class="avatar">
-					<i class="sticker app type messagerie" ng-if="mail.to.length > 1"></i>
-					<i class="sticker app type community" ng-if="mail.to.length == 0"></i>
-					<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
-					<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
+
+
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
+	<div class="check-col">
+		<label class="wrapping-checkbox relative">
+			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+			<i18n></i18n>
+		</label>
+	</div>
+	<div class="status-filter">
+		<label class="chip">
+			<i class="mail"></i>
+			<span></span>
+			<!-- mettre taille wrapper en dur -->
+
+		</label>
+	</div>
+	<div class="flex-all-remains cell horizontal-margin">
+		<!-- MLAP check si la recherche met bien à jour les brouillons-->
+		<div class="search-pagination">
+			<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
+			ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
+			i18n-placeholder="search"/>
+			<i class="search-2" ng-click="search(searchField.words)"></i>
+		</div>
+		<a><i ng-if="searchField.words.length > 0" class="close-2x horizontal-spacing" ng-click='searchField.words="";cancelSearch()'></i></a>
+	</div>
+</div>
+
+
+<div class="mailbox">
+
+	<div ng-if="isLoading()">
+		<h1 class="nomargin"><i18n>loading</i18n></h1>
+	</div>
+	<div ng-if="folders.inbox.mails.all.length == 0">
+		<i18n>folder.empty</i18n>
+	</div>
+
+	<div class="notification relative no-margin" ng-if="!isLoading()"
+		ng-repeat="mail in folders.draft.mails.all | orderBy : folders.draft.sort : folders.draft.reverse"
+		ng-class="{ checked: mail.selected}"
+		dragstart="drag(mail, $originalEvent)">
+
+		<article ng-click="editDraft(mail);$event.stopPropagation();">
+			<div class="flex-row align-center">
+				<label class="wrapping-checkbox">
+					<div class="avatar" ng-click="$event.stopPropagation();">
+						<!-- MLAP mettre condition si groupes ou no-user-->
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
-					</label>
+					</div>
+				</label>
+
+				<div class="states"><!-- keep empty --></div>
+				<div class="flex-all-remains horizontal-margin cell-ellipsis">
+					<div class="strong" ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
+						<span ng-if="!users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
+						<span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
+						<span ng-if="$index < 1 && receivers.length > 1">,</span>
+					</div>
+					<span class="strong" ng-if="receivers.length > 2">...</span>
+					<br>
+					<span class="small-text">[[mail.subject]]</span>
 				</div>
-			</td>
-			<td class="user">
-				<span ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
-					<a ng-if="!users.list.isGroup(receiver)" ng-click="editDraft(mail)">[[mail.map(receiver).displayName]]</a><span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
-				</span>
-				<span ng-if="receivers.length > 2">...</span>
-			</td>
-			<td class="content"><a ng-click="editDraft(mail)">[[mail.subject]]</a></td>
-			<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
-			<td class="date">[[mail.sentDate()]]</td>
-		</tr>
-		</tbody>
-	</table>
-</article>
+			</div>
+
+			<div class="notification-date">
+				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
+			</div>
+			<div class="notification-attachment">
+				<i class="attachment" ng-if="mail.attachments.length"></i>
+			</div>
+
+		</article>
+	</div>
+</div>
 
 <container template="toaster"></container>
