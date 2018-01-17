@@ -40,7 +40,7 @@
 					<i18n>cancel</i18n>
 				</button>
 			</plus>
-			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length 
+			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
 				|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
 				|| sending">
 				<i18n>submit</i18n>
@@ -61,7 +61,7 @@
 					<label
 						ng-click="signatureShow = !signatureShow"
 						pulsar="{ index: 7, position: 'bottom center'}">
-						<strong><i18n>add.signature</i18n></strong>
+						<i18n>add.signature</i18n>
 					</label>
 				</label>
 				<input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/>
