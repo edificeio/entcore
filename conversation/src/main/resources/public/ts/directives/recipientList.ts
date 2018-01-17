@@ -20,8 +20,8 @@ export const recipientList = ng.directive('recipientList', () => {
         template: `
             <div class="twelve flex-row align-center">
                 <label ng-model="ngModel" ng-change="ngChange" class="chip removable" ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)" ng-click="giveFocus()">
-                    <span class="cell">[[item.toString()]]</span>
                     <i class="close right-magnet" ng-click="deleteItem(item)"></i>
+                    <span class="cell-ellipsis block">[[item.toString()]]</span>
                 </label>
                 <label class="chip selected" ng-if="needChipDisplay()" ng-click="giveFocus()">
                     <span class="cell">... <i18n>chip.more1</i18n> [[ngModel.length - 2]] <i18n>chip.more2</i18n></span>
