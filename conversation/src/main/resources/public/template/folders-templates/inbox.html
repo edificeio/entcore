@@ -21,7 +21,7 @@
 	<div class="check-col">
 		<label class="wrapping-checkbox relative">
 			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
-			<span></span>
+			<i18n></i18n>
 		</label>
 	</div>
 	<div class="status-filter">
@@ -65,7 +65,7 @@
 					<div class="avatar" ng-click="$event.stopPropagation();">
 						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
 						<input type="checkbox" ng-model="mail.selected"/>
-						<span></span>
+						<i18n></i18n>
 					</div>
 				</label>
 
