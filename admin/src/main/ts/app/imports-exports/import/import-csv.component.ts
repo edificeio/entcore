@@ -12,6 +12,7 @@ import { WizardComponent } from '../../shared/ux/components'
 
 import { Messages } from './messages.model'
 
+
 @Component({
     selector: 'import-csv',
     template : `
@@ -68,12 +69,17 @@ import { Messages } from './messages.model'
         </step>
         <step #step2 name="{{ 'import.fieldsChecking' | translate }}" [class.active]="step2.isActived">
             <h2>{{ 'import.fieldsChecking' | translate }}</h2>
+            <message-box *ngIf="!globalError.message && !columns.hasWarning()" [type]="'success'" 
+                [messages]="['import.fieldsChecking.success']"></message-box>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <message-box *ngIf="columns.hasWarning()" [type]="'warning'" [messages]="['import.global.warning']"></message-box>
             <panel-section *ngFor="let p of columns.profiles" section-title="{{'import.file.'+ p}}" [folded]="true">
                 <span other-actions>
                     <message-sticker [type]="'info'" [messages]="['import.info.columns.'+p]"></message-sticker>            
                     <message-sticker *ngIf="globalError.profile[p]" [type]="'danger'" 
                         [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-sticker>
+                    <message-sticker *ngIf="columns.hasWarning(p)" [type]="'warning'" 
+                        [messages]="['import.file.warning']"></message-sticker>
                 </span>
                 <message-box *ngIf="globalError.profile[p]" [type]="'danger'" 
                     [messages]="[['import.error.requieredFieldNotFound',{fields : globalError.profile[p]}]]"></message-box>
@@ -81,18 +87,33 @@ import { Messages } from './messages.model'
                     [headers]="['import.fieldFromFile','import.fieldToMap']"
                     [mappings]="columns.mappings[p]"
                     [availables]="columns.availableFields[p]"
+                    [emptyLabel]="'import.fieldsChecking.warning.ignore'"
+                    [emptyWarning]="'import.fieldsChecking.warning.ignore.1'"
                 >
                 </mappings-table>
             </panel-section>
         </step>
         <step #step3 name="{{'import.classesChecking' | translate }}" [class.active]="step3.isActived">
-            <h2>{{ 'import.class.checking' | translate }}</h2>
+            <h2>{{ 'import.classesChecking' | translate }}
+                <message-sticker [type]="'info'" [header]="'import.classesChecking.info.0'" 
+                    [messages]="messages.get('import.classesChecking.info')">
+                </message-sticker>
+            </h2>
+            <message-box *ngIf="!classes.hasWarning()" [type]="'success'" [messages]="['import.classesChecking.success']"></message-box>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <message-box *ngIf="classes.hasWarning()" [type]="'warning'" [messages]="['import.file.warning']"></message-box>
             <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true"> 
+                <span other-actions>
+                    <message-sticker *ngIf="classes.hasWarning(p)" [type]="'warning'" 
+                        [messages]="['importClassesChecking.'+ (profile == 'Student()' ? 'student' : 'generic') + '.warning']"></message-sticker>
+                </span>
+
                 <mappings-table 
                     [headers]="['import.classFromFile','import.classToMap']"
                     [mappings]="classes.mappings[profile]"
                     [availables]="classes.availableClasses[profile]"
+                    [emptyLabel]="'import.classesChecking.warning.create'"
+                    [emptyWarning]="'import.classesChecking.warning.create.1'"
                 >
                 </mappings-table>
             </panel-section>
@@ -181,7 +202,6 @@ import { Messages } from './messages.model'
         table.report td span[contenteditable]:focus { background : yellow; }
     `]
 })
-
 export class ImportCSV implements OnInit, OnDestroy {
 
     constructor(
@@ -201,7 +221,7 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     @ViewChild(WizardComponent) wizardEl: WizardComponent;
 
-    globalError:{ message:string,profile:{},reset:Function} = {
+    globalError:{ message:string,profile:{},reset:Function } = {
         message:undefined,
         profile:{},
         reset(){
@@ -283,27 +303,40 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableFields : {},
         mappings : {},
         profiles : [],
+        hasErrors(){
+            for (let p of this.profiles) {
+                for (let requiered of this.requieredFields[p]) {
+                    if (!Object.values(this.mappings[p]).includes(requiered)) { 
+                        return true; 
+                    }
+                }
+            }
+            return false;
+        },
         errors(){
             let res = {};
-            let errorCounter = 0;
-            for (let profile of this.profiles) {
-                res[profile] = Array.from(this.requieredFields[profile])
-                    .filter((field) => {
-                        if (Object.values(this.mappings[profile]).indexOf(field) == -1) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    },this);
-                if (res[profile].length == 0)
-                    res[profile] = undefined;
-                else 
-                    errorCounter += res[profile].length;
+            for (let p of this.profiles) {
+                for (let requiered of this.requieredFields[p]) {
+                    if (!Object.values(this.mappings[p]).includes(requiered)) { 
+                        if (res[p] == undefined ) res[p] = [];
+                        res[p].push(requiered);
+                    }
+                }
+            } 
+            return res;
+        },
+        hasWarning(profile?:Profile) { 
+            if (profile) {
+                return Object.values(this.mappings[profile]).includes('ignore') ||
+                    Object.values(this.mappings[profile]).includes('');
             }
-            if (errorCounter > 0) 
-                return res;
-            else 
-                return undefined;
+            for (let p of this.profiles) {
+                if (Object.values(this.mappings[p]).includes('ignore') || 
+                    Object.values(this.mappings[p]).includes('')) { 
+                    return true; 
+                } 
+            }
+            return false;
         }
     };
  
@@ -333,6 +366,17 @@ export class ImportCSV implements OnInit, OnDestroy {
                 });
             }
             this.availableClasses[profile] = availables;
+        },
+        hasWarning(profile?:Profile) {
+            if (profile) {
+                return Object.values(this.mappings[profile]).includes('');
+            }
+            for (let p of this.profiles) {
+                if (Object.values(this.mappings[p]).includes('')) { 
+                    return true; 
+                } 
+            }
+            return false;
         }
     };
 
@@ -469,8 +513,8 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
             this.columns.profiles = this.profiles.asArray();
-            let errors = this.columns.errors();
-            if (errors) {
+            if (this.columns.hasErrors()) {
+                let errors = this.columns.errors();
                 this.globalError.message = 'import.error.requieredFieldNotFound.global';
                 for(let p of this.columns.profiles) {
                     if (errors[p]) {
