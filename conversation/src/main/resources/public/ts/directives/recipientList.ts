@@ -18,25 +18,27 @@ export const recipientList = ng.directive('recipientList', () => {
     return {
         restrict: 'E',
         template: `
-            <label ng-model="ngModel" ng-change="ngChange" class="chip removable" ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)" ng-click="deleteItem(item)">
-                <span class="cell">[[item.toString()]]</span>
-                <i class="close right-magnet"></i>
-            </label>
-            <label class="chip selected" ng-if="needChipDisplay()" ng-click="giveFocus()">
-                <span class="cell">... <i18n>chip.more1</i18n> [[ngModel.length - 2]] <i18n>chip.more2</i18n></span>
-            </label>
-            <form class="input-help" ng-submit="update(true)">
-                <label class="right-magnet" ng-class="{ hide: searchText.length >= 3 }">
-                    <i18n>share.search.help1</i18n>[[3 - searchText.length]]<i18n>share.search.help2</i18n>
+            <div class="twelve flex-row align-center">
+                <label ng-model="ngModel" ng-change="ngChange" class="chip removable" ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)" ng-click="giveFocus()">
+                    <span class="cell">[[item.toString()]]</span>
+                    <i class="close right-magnet" ng-click="deleteItem(item)"></i>
                 </label>
-                <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" />
-            </form>
-            <drop-down
-                options="itemsFound"
-                ng-change="addItem()"
-                on-close="clearSearch()"
-                ng-model="currentReceiver">
-            </drop-down>
+                <label class="chip selected" ng-if="needChipDisplay()" ng-click="giveFocus()">
+                    <span class="cell">... <i18n>chip.more1</i18n> [[ngModel.length - 2]] <i18n>chip.more2</i18n></span>
+                </label>
+                <form class="input-help" ng-submit="update(true)">
+                    <label ng-class="{ hide: focused || ngModel.length > 0 }">
+                        <i18n>share.search.help1</i18n>[[3 - searchText.length]]<i18n>share.search.help2</i18n>
+                    </label>
+                    <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" />
+                </form>
+                <drop-down
+                    options="itemsFound"
+                    ng-change="addItem()"
+                    on-close="clearSearch()"
+                    ng-model="currentReceiver">
+                </drop-down>
+            </div>
         `,
 
         scope: { 
@@ -47,6 +49,7 @@ export const recipientList = ng.directive('recipientList', () => {
 
         link: (scope, element, attributes) => {
             var firstFocus = true;
+            var minWidth = 0;
             scope.focused = false;
             scope.searchText = '';
             scope.itemsFound = [];
@@ -56,16 +59,17 @@ export const recipientList = ng.directive('recipientList', () => {
                 if (firstFocus)
                     firstFocus = false;
                 scope.focused = true;
-                element.addClass('focus');
-                element.find('form label').addClass('move');
+                element.find('div').addClass('focus');
+                element.find('form').width(minWidth);
             });
 
             element.find('input').on('blur', () => {
                 scope.focused = false;
-                element.removeClass('focus');
-                if(!scope.searchText) {
-                    element.find('form label').removeClass('move');
-                }
+                element.find('div').removeClass('focus');
+                setTimeout(function(){
+                    if (!scope.focused)
+                        element.find('form').width(0);
+                }, 250);
             });
 
             scope.needChipDisplay = () => {
@@ -87,7 +91,8 @@ export const recipientList = ng.directive('recipientList', () => {
             };
 
             scope.giveFocus = () => {
-                element.find('input').focus();
+                if (!scope.focus)
+                    element.find('input').focus();
             };
 
             scope.addItem = (item) => {
@@ -126,7 +131,7 @@ export const recipientList = ng.directive('recipientList', () => {
             
             // Make the input width be the label help infos width
             setTimeout(function(){
-                element.find('input').width(element.find('form label').width());
+                minWidth = element.find('form label').width();
             }, 0);
         }
     };
