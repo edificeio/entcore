@@ -24,13 +24,15 @@
 		<!-- keep empty -->
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
-		<div class="search-pagination">
-			<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
-			ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
-			i18n-placeholder="search"/>
-			<i class="search-2" ng-click="search(searchField.words)"></i>
+		<div class="search-pagination flex-row align-center horizontal-spacing-twicen">
+			<a ng-class="{'show-close': searchField.words.length > 0}" ng-click='searchField.words="";cancelSearch()'><i class="close horizontal-spacing cell-ellipsis"></i></a>
+			<div class="cell twelve">
+				<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
+				ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
+				i18n-placeholder="search"/>
+				<i class="search-2" ng-click="search(searchField.words)"></i>
+			</div>
 		</div>
-		<a><i ng-if="searchField.words.length > 0" class="close-2x horizontal-spacing" ng-click='searchField.words="";cancelSearch()'></i></a>
 	</div>
 </div>
 

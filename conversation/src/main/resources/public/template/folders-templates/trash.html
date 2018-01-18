@@ -1,72 +1,119 @@
 <h3 whereami></h3>
-<nav class="contextual-buttons twelve cell">
+<nav class="twelve cell bottom-spacing-twice">
 	<div class="">
-		<input type="text" name="searchField.words" ng-model="searchField.words"
-			   ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="ten cell"
-			   i18n-placeholder="search" required autofocus/>
-		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-			<i class="add"></i><i18n>create</i18n>
-		</button>
+		<switch-search
+			ng-model="searchField.words"
+			ng-change="search(words)"
+			cancel="cancelSearch()">
+			<button class="cell cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i class="add"></i><i18n>new.message</i18n>
+			</button>
+		</switch-search>
 	</div>
 </nav>
-<article class="list list-view twelve cell mailbox">
-	<table class="twelve">
-		<thead>
-			<tr>
-				<th class="icon">
-					<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
+	<div class="check-col">
+		<label class="wrapping-checkbox relative">
+			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+			<i18n></i18n>
+		</label>
+	</div>
+	<div class="status-filter">
+		<label class="chip">
+			<i class="mail"></i>
+			<span ng-model="folders.trash.nbUnread">([[folders.trash.nbUnread]])</span>
+			<!--
+			<input type="checkbox" ng-model="" ng-change="" />
+			-->
+		</label>
+	</div>
+	<div class="flex-all-remains cell horizontal-margin">
+		<div class="search-pagination flex-row align-center horizontal-spacing-twicen">
+			<a ng-class="{'show-close': searchField.words.length > 0}" ng-click='searchField.words="";cancelSearch()'><i class="close horizontal-spacing cell-ellipsis"></i></a>
+			<div class="cell twelve">
+				<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
+				ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
+				i18n-placeholder="search"/>
+				<i class="search-2" ng-click="search(searchField.words)"></i>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+<div class="mailbox">
+
+	<div ng-if="isLoading()">
+		<div class="info fade-in"><i18n>loading</i18n></div>
+	</div>
+	<div ng-if="!isLoading() && conversation.currentFolder.mails.empty() && conversation.currentFolder.userFolders.empty()">
+		<div class="info fade-in"><i18n>folder.empty</i18n></div>
+	</div>
+
+	<!-- folders -->
+	<div class="notification relative no-margin" ng-if="!isLoading()"
+		ng-repeat="folder in folders.trash.userFolders.all | orderBy: 'name'"
+		ng-class="{ checked: folder.selected }">
+
+		<article>
+			<div class="flex-row align-center">
+				<label class="wrapping-checkbox">
+					<div class="avatar" ng-click="$event.stopPropagation();">
+						<img skin-src="/img/icons/folder-large.png?thumbnail=100x100"/>
+						<input type="checkbox" ng-model="folder.selected"/>
 						<i18n></i18n>
-					</label>
-				</th>
-				<th class="icon"></th>
-				<th ng-click="setSort(folders.trash, sortBy.name)"><i18n>from</i18n></th>
-				<th ng-click="setSort(folders.trash, sortBy.subject)"><i18n>content</i18n></th>
-				<th class="icon"></th>
-				<th ng-click="setSort(folders.trash, sortBy.date)"><i18n>date</i18n></th>
-			</tr>
-		</thead>
-		<tbody ng-if="isLoading()">
-		<tr>
-			<td>
-				<h1 class="nomargin"><i18n>loading</i18n></h1>
-			</td>
-		</tr>
-		</tbody>
-		<tbody ng-if="!isLoading()">
-			<tr ng-if="conversation.currentFolder.mails.empty() && conversation.currentFolder.userFolders.empty()">
-				<td colspan="6" translate key="folder.empty">
-				</td>
-			</tr>
-			<tr ng-repeat="folder in folders.trash.userFolders.all | orderBy: 'name'"
-			    ng-class="{ checked: folder.selected }">
-				<td>
-					<div class="avatar">
-						<i class="sticker app type folder"></i>
-						<label class="checkbox cell"><input type="checkbox" ng-model="folder.selected" />
-							<i18n></i18n>
-						</label>
 					</div>
-				</td>
-				<td class="user" colspan="2"><i class="folder"></i></td>
-				<td class="content" colspan="3">[[folder.name]]</td>
-			</tr>
-			<tr ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse" ng-class="{ checked: mail.selected }">
-				<td>
-					<div class="avatar">
-						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
-						<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
-							<i18n></i18n>
-						</label>
+				</label>
+				<div class="states"></div>
+				<div class="flex-all-remains horizontal-margin cell-ellipsis">
+					<span class="strong">[[folder.name]]</span>
+				</div>
+			</div>
+		</article>
+	</div>
+
+	<!-- mails -->
+	<div class="notification relative no-margin" ng-if="!isLoading()"
+		ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse"
+		ng-class="{ checked: mail.selected, 'new-element': mail.unread }" >
+
+		<article ng-click="readMail(mail);$event.stopPropagation();">
+			<div class="flex-row align-center">
+				<label class="wrapping-checkbox">
+					<div class="avatar" ng-click="$event.stopPropagation();">
+						<!-- <img ng-if="!mail.to.length && mail.inbox.length" ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/> -->
+						<img skin-src="/img/illustrations/no-avatar.svg?thumbnail=100x100"/>
+						<!-- <img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/> -->
+						<!-- <img ng-if="mail.to.length > 1" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+					 -->
+						<input type="checkbox" ng-model="mail.selected"/>
+						<i18n></i18n>
 					</div>
-				</td>
-				<td class="zero-mobile"></td>
-				<td class="user"><a ng-click="viewMail(mail)">[[mail.sender().displayName]]</a></td>
-				<td class="content"><a ng-click="viewMail(mail)">[[mail.subject]]</a></td>
-				<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
-				<td class="date">[[mail.sentDate()]]</td>
-			</tr>
-		</tbody>
-	</table>
-</article>
+				</label>
+
+				<div class="states">
+					<i class="undo" ng-if="mail.response"></i>
+					<i class="mail" ng-if="mail.unread"></i>
+				</div>
+				<div class="flex-all-remains horizontal-margin cell-ellipsis">
+					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>
+					<br>
+					<span class="small-text">[[mail.subject]]</span>
+				</div>
+			</div>
+
+			<div class="notification-date">
+				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
+			</div>
+			<div class="notification-attachment">
+				<i class="attachment" ng-if="mail.attachments.length"></i>
+			</div>
+
+		</article>
+	</div>
+</div>
 
 <container template="toaster"></container>
