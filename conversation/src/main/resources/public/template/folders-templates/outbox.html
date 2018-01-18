@@ -53,8 +53,8 @@
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<img ng-if="!mail.to.length" ng-src="/unknown.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length > 1" ng-src="/groups.svg?thumbnail=100x100"/>
+						<img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length > 1" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
 						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
