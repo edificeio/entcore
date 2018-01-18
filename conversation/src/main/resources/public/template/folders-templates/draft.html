@@ -39,10 +39,10 @@
 <div class="mailbox">
 
 	<div ng-if="isLoading()">
-		<h1 class="nomargin"><i18n>loading</i18n></h1>
+		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
-	<div ng-if="folders.inbox.mails.all.length == 0">
-		<i18n>folder.empty</i18n>
+	<div ng-if="!isLoading() && folders.inbox.mails.all.length == 0">
+		<div class="info fade-in"><i18n>folder.empty</i18n></div>
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
@@ -55,7 +55,9 @@
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
 						<!-- MLAP mettre condition si groupes ou no-user-->
-						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/>
+						<img ng-if="!mail.to.length" ng-src="/unknown.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length > 1" ng-src="/groups.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
 					</div>
