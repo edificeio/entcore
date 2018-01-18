@@ -1,5 +1,5 @@
 <h3 whereami></h3>
-<nav class="twelve cell">
+<nav class="twelve cell bottom-spacing-twice">
 	<div class="">
 		<switch-search
 			ng-model="searchField.words"
@@ -21,12 +21,7 @@
 		</label>
 	</div>
 	<div class="status-filter">
-		<label class="chip">
-			<i class="mail"></i>
-			<span></span>
-			<!-- mettre taille wrapper en dur -->
-
-		</label>
+		<!-- keep empty -->
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
 		<!-- MLAP check si la recherche met bien à jour les brouillons-->
@@ -68,12 +63,12 @@
 
 				<div class="states"><!-- keep empty --></div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
-					<div class="strong" ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
+					<span class="strong" ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
 						<span ng-if="!users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
 						<span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
 						<span ng-if="$index < 1 && receivers.length > 1">,</span>
-					</div>
-					<span class="strong" ng-if="receivers.length > 2">...</span>
+						<span class="strong" ng-if="mail.to.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
+					</span>
 					<br>
 					<span class="small-text">[[mail.subject]]</span>
 				</div>
