@@ -47,10 +47,10 @@
 <div class="mailbox">
 
 	<div ng-if="isLoading()">
-		<h1 class="nomargin"><i18n>loading</i18n></h1>
+		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
-	<div ng-if="folders.inbox.mails.all.length == 0">
-		<i18n>folder.empty</i18n>
+	<div ng-if="!isLoading() && folders.inbox.mails.all.length == 0">
+		<div class="info fade-in"><i18n>folder.empty</i18n></div>
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"

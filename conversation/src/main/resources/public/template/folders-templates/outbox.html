@@ -1,72 +1,91 @@
 <h3 whereami></h3>
-<nav class="contextual-buttons twelve cell">
+<nav class="twelve cell bottom-spacing-twice">
 	<div class="">
-		<input type="text" name="searchField.words" ng-model="searchField.words"
-			   ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null" class="ten cell"
-			   i18n-placeholder="search" required autofocus/>
-		<button class="cell right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
-			<i class="add"></i><i18n>create</i18n>
-		</button>
+		<switch-search
+			ng-model="searchField.words"
+			ng-change="search(words)"
+			cancel="cancelSearch()">
+			<button class="cell cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+				<i class="add"></i><i18n>new.message</i18n>
+			</button>
+		</switch-search>
 	</div>
 </nav>
-<article class="list list-view twelve cell mailbox">
-	<table class="twelve">
-		<thead>
-		<tr>
-			<th class="icon">
-				<label class="checkbox cell"><input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
-					<i18n></i18n>
-				</label>
-			</th>
-			<th class="unread"></th>
-			<th class="content" ng-click="setSort(folders.outbox, sortBy.subject)"><i18n>to</i18n></th>
-			<th class="icon"></th>
-			<th class="date" ng-click="setSort(folders.outbox, sortBy.date)"><i18n>date</i18n></th>
-		</tr>
-		</thead>
-		<tbody ng-if="isLoading()">
-		<tr>
-			<td>
-				<h1 class="nomargin"><i18n>loading</i18n></h1>
-			</td>
-		</tr>
-		</tbody>
-		<tbody ng-if="!isLoading()">
-		<tr ng-if="conversation.currentFolder.mails.empty()">
-			<td colspan="4">
-				<i18n>folder.empty</i18n>
-			</td>
-		</tr>
-		<tr ng-repeat="mail in folders.outbox.mails.all | orderBy : folders.outbox.sort : folders.outbox.reverse"
-		    ng-class="{ checked: mail.selected }" dragstart="drag(mail, $originalEvent)">
-			<td>
-				<div class="avatar">
-					<i class="sticker app type messagerie" ng-if="mail.to.length != 1"></i>
-					<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
-					<label class="checkbox cell"><input type="checkbox" ng-model="mail.selected" />
+
+
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
+	<div class="check-col">
+		<label class="wrapping-checkbox relative">
+			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
+			<i18n></i18n>
+		</label>
+	</div>
+	<div class="status-filter">
+		<!-- keep empty -->
+	</div>
+	<div class="flex-all-remains cell horizontal-margin">
+		<div class="search-pagination">
+			<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
+			ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
+			i18n-placeholder="search"/>
+			<i class="search-2" ng-click="search(searchField.words)"></i>
+		</div>
+		<a><i ng-if="searchField.words.length > 0" class="close-2x horizontal-spacing" ng-click='searchField.words="";cancelSearch()'></i></a>
+	</div>
+</div>
+
+
+<div class="mailbox">
+
+	<div ng-if="isLoading()">
+		<div class="info fade-in"><i18n>loading</i18n></div>
+	</div>
+	<div ng-if="!isLoading() && folders.inbox.mails.all.length == 0">
+		<div class="info fade-in"><i18n>folder.empty</i18n></div>
+	</div>
+
+	<div class="notification relative no-margin" ng-if="!isLoading()"
+		ng-repeat="mail in folders.outbox.mails.all | orderBy : folders.outbox.sort : folders.outbox.reverse"
+		ng-class="{checked: mail.selected}"
+		dragstart="drag(mail, $originalEvent)">
+
+		<article ng-click="viewMail(mail);$event.stopPropagation();">
+			<div class="flex-row align-center">
+				<label class="wrapping-checkbox">
+					<div class="avatar" ng-click="$event.stopPropagation();">
+						<img ng-if="!mail.to.length" ng-src="/unknown.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length > 1" ng-src="/groups.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
-					</label>
-				</div>
-			</td>
-			<td class="unread"></td>
-			<td class="content"
-				ng-init="recs = allReceivers(mail)"
-				ng-click="viewMail(mail)">
-					<div>
-						<span class="medium-text">
-							<span ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
-								<a ng-if="!receiver.deleted && !users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</a><span ng-if="!receiver.deleted &&  users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span><span ng-if="receiver.deleted">[[receiver.displayName]]</span><span ng-if="$index < 1 && receivers.length > 1">,</span>
-							</span>
-							<span ng-if="receivers.length > 2">...</span>
-						</span>
 					</div>
-					[[mail.subject]]
-			</td>
-			<td class="attach"><i class="attachment" ng-if="mail.attachments.length"></i></td>
-			<td class="date">[[mail.sentDate()]]</td>
-		</tr>
-		</tbody>
-	</table>
-</article>
+				</label>
+
+				<div class="states">
+					<i class="undo" ng-if="mail.response"></i>
+				</div>
+				<div class="flex-all-remains horizontal-margin cell-ellipsis" ng-init="recs = allReceivers(mail)">
+					<span class="strong" ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
+						<span ng-if="!receiver.deleted && !users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
+						<span ng-if="!receiver.deleted &&  users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
+						<span ng-if="receiver.deleted">[[receiver.displayName]]</span>
+						<span ng-if="$index < 1 && receivers.length > 1">,</span>
+						<span class="strong" ng-if="recs.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
+					</span>
+					<br>
+					<span class="small-text">[[mail.subject]]</span>
+				</div>
+			</div>
+
+			<div class="notification-date">
+				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
+			</div>
+			<div class="notification-attachment">
+				<i class="attachment" ng-if="mail.attachments.length"></i>
+			</div>
+
+		</article>
+	</div>
+</div>
 
 <container template="toaster"></container>
