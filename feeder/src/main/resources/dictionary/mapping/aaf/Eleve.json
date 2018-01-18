@@ -1,5 +1,6 @@
 {
 	"ENTPersonJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
+	"ENTEleveINE" : { "attribute" : "ine", "type" : "string" },
 	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
 	"sn" : { "attribute" : "lastName", "type" : "string" },
 	"givenName" : { "attribute" : "firstName", "type" : "string" },
