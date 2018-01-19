@@ -27,17 +27,16 @@ if(!XMLHttpRequest.baseSend){
 	XMLHttpRequest.prototype.baseSend = XMLHttpRequest.prototype.send;
 	XMLHttpRequest.prototype.send = function(data){
 		if(document.cookie.indexOf('authenticated=true') === -1 && window.location.href.indexOf('/auth') === -1){
-			var lightbox = $(`<lightbox>
-					<section class="lightbox">
-						<div class="content">
-							<h2>${ lang.translate('disconnected.title') }</h2>
-							<div class="warning">${ lang.translate('disconnected.warning') }</div>
-							<a class="button right-magnet" href="/auth/login">${ lang.translate('disconnected.redirect') }</a>
-						</div>
-						<div class="background"></div>
-					</section>
-				</lightbox>
-			`);
+			var lightbox = $('<lightbox>' +
+					'<section class="lightbox">' +
+						'<div class="content">' +
+							'<h2>${ lang.translate(\'disconnected.title\') }</h2>' +
+							'<div class="warning">${ lang.translate(\'disconnected.warning\') }</div>' +
+							'<a class="button right-magnet" href="/auth/login">${ lang.translate(\'disconnected.redirect\') }</a>' +
+						'</div>' +
+						'<div class="background"></div>' +
+					'</section>' +
+				'</lightbox>');
 			$('body').append(lightbox).addClass('lightbox-opened');
 			lightbox.find('.lightbox').fadeIn();
 			return;
