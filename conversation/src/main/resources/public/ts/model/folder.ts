@@ -1,5 +1,5 @@
 ﻿import { notify, toFormData, _ } from 'entcore';
-import { Conversation, sorts } from './conversation';
+import { Conversation, filters } from './conversation';
 import { Mail, Mails } from './mail';
 import { quota } from './quota';
 
@@ -14,7 +14,7 @@ export abstract class Folder implements Selectable {
     api: { get: string, post: string, put: string, delete: string };
     eventer = new Eventer();
     selected: boolean;
-    sort: (mail1: Mail, mail2: Mail) => number;
+    filter: (mail1: Mail, mail2: Mail) => boolean;
     reverse: boolean;
     searchText: string;
     abstract removeSelection();
@@ -24,7 +24,7 @@ export abstract class Folder implements Selectable {
 
     constructor(api: { get: string, post: string, put: string, delete: string }){
         this.api = api;
-        this.sort = sorts.date;
+        this.filter = filters.none;
         this.reverse = true;
     }
 
@@ -37,7 +37,6 @@ export abstract class Folder implements Selectable {
 
     async search(text : string) {
         this.searchText = text;
-        this.sort = sorts.rank;
         await this.mails.sync({ pageNumber: 0, searchText: this.searchText, emptyList: true });
     }
 }
@@ -256,7 +255,7 @@ export class UserFolder extends Folder {
         this.mails.full = false;
         this.pageNumber = 0;
         this.searchText = null;
-        this.sort = sorts.date;
+        this.filter = filters.none;
         Conversation.instance.currentFolder = this;
         await this.sync();
     }
@@ -370,7 +369,7 @@ export class SystemFolders {
     async openFolder (folderName) {
         Conversation.instance.currentFolder = this[folderName];
         Conversation.instance.currentFolder.searchText = null;
-        Conversation.instance.currentFolder.sort = sorts.date;
+        Conversation.instance.currentFolder.filter = filters.none;
         await Conversation.instance.currentFolder.sync();
         Conversation.instance.currentFolder.pageNumber = 0;
         Conversation.instance.currentFolder.mails.full = false;
