@@ -24,12 +24,10 @@
 		</label>
 	</div>
 	<div class="status-filter">
-		<label class="chip">
+		<label class="chip" ng-class="{ selected: state.filterUnread }">
 			<i class="mail"></i>
 			<span ng-model="folders.inbox.nbUnread">([[folders.inbox.nbUnread]])</span>
-			<!--
-			<input type="checkbox" ng-model="" ng-change="" />
-			-->
+			<input type="checkbox" ng-model="state.filterUnread" ng-change="folders.inbox.filter = (state.filterUnread ? filterBy.unread : filterBy.none);" />
 		</label>
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
@@ -56,7 +54,7 @@
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
-		ng-repeat="mail in folders.inbox.mails.all | orderBy : folders.inbox.sort : folders.inbox.reverse"
+		ng-repeat="mail in folders.inbox.mails.all | filter:folders.inbox.filter"
 		ng-class="{ checked: mail.selected, 'new-element': mail.unread }"
 		dragstart="drag(mail, $originalEvent)">
 
@@ -109,7 +107,7 @@
 					<i18n>folder.empty</i18n>
 				</td>
 			</tr>
-			<tr ng-repeat="inactive in inactives | orderBy : folders.inbox.sort : folders.inbox.reverse">
+			<tr ng-repeat="inactive in inactives | orderBy : folders.inbox.filter : folders.inbox.reverse">
 				<td class="user"><a>[[inactive]]</a></td>
 			</tr>
 			</tbody>

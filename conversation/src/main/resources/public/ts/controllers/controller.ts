@@ -1,10 +1,11 @@
 import { ng, notify, idiom as lang, template, skin, Document, $, _ } from 'entcore';
-import { Mail, User, UserFolder, sorts, quota, Conversation, Trash, SystemFolder } from '../model';
+import { Mail, User, UserFolder, filters, quota, Conversation, Trash, SystemFolder } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
         $scope.state = {
             selectAll: false,
+            filterUnread: false,
             current: undefined,
             newItem: undefined
         };
@@ -62,6 +63,11 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.openInbox();
         };
 
+        $scope.resetState = function() {
+            $scope.state.selectAll = false;
+            $scope.state.filterUnread = false;
+        };
+
         $scope.getSignature = () => {
             if(Conversation.instance.preference.useSignature)
                 return Conversation.instance.preference.signature.replace(new RegExp('\n', 'g'),'<br>');
@@ -81,7 +87,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.newItem = new Mail();
             $scope.state.newItem.setMailSignature($scope.getSignature());
             template.open('main', 'folders-templates/' + folderName);
-            $scope.state.selectAll = false;
+            $scope.resetState();
             await Conversation.instance.folders.openFolder(folderName);
             $scope.$apply();
         };
@@ -96,7 +102,7 @@ export let conversationController = ng.controller('ConversationController', [
             await folder.open();
             obj.template = '';
             obj.template = 'folder-content';
-            $scope.state.selectAll = false;
+            $scope.resetState();
             $scope.$apply();
             template.open('main', 'folders-templates/user-folder');
 
@@ -593,14 +599,5 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.quota = quota;
 
-        $scope.sortBy = sorts;
-
-        $scope.setSort = function (box, sortFun) {
-            if (box.sort === sortFun) {
-                box.reverse = !box.reverse;
-            } else {
-                box.sort = sortFun;
-                box.reverse = false;
-            }
-        }
+        $scope.filterBy = filters;
     }]);
