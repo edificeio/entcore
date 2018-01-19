@@ -361,23 +361,7 @@ public class GridfsStorage implements Storage {
 				}
 				if (chunk.n == 0) {
 					if (!inline) {
-						String name = downloadName;
-						if (metadata != null && metadata.getString("filename") != null) {
-							String filename = metadata.getString("filename");
-							int fIdx = filename.lastIndexOf('.');
-							String fExt = null;
-							if (fIdx >= 0) {
-								fExt = filename.substring(fIdx);
-							}
-							int dIdx = downloadName.lastIndexOf('.');
-							String dExt = null;
-							if (dIdx >= 0) {
-								dExt = downloadName.substring(dIdx);
-							}
-							if (fExt != null && !fExt.equals(dExt)) {
-								name += fExt;
-							}
-						}
+						String name = fr.wseduc.swift.utils.FileUtils.getNameWithExtension(downloadName, metadata);
 						response.putHeader("Content-Disposition",
 								"attachment; filename=\"" + name + "\"");
 					} else {
