@@ -47,7 +47,7 @@
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
-		ng-repeat="mail in folders.outbox.mails.all | orderBy : folders.outbox.sort : folders.outbox.reverse"
+		ng-repeat="mail in folders.outbox.mails.all"
 		ng-class="{checked: mail.selected}"
 		dragstart="drag(mail, $originalEvent)">
 
@@ -56,8 +56,8 @@
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
 						<img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length > 1" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+						<img ng-if="mail.to.length > 1 || mail.isRecipientGroup()" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
+						<img ng-if="mail.to.length === 1 && !mail.isRecipientGroup()" ng-src="/userbook/avatar/[[mail.getRecipientId()]]?thumbnail=100x100"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
 					</div>
