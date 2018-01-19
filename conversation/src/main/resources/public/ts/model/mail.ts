@@ -125,6 +125,18 @@ export class Mail implements Selectable {
         return User.prototype.mapUser(this.displayNames, id);
     };
 
+    isRecipientGroup() {
+        return this.getRecipientId().length < 36;
+    }
+
+    getRecipientId() {
+        var to = this.to[0];
+        if (to instanceof User) {
+            return to.id;
+        }
+        return to;
+    }
+
     async saveAsDraft(): Promise<any> {
             var that = this;
             var data: any = { subject: this.subject, body: this.body };
