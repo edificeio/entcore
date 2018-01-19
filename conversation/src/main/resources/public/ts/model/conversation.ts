@@ -25,40 +25,12 @@ import { Eventer } from 'entcore-toolkit';
 
 import http from 'axios';
 
-export const sorts = {
-    name: function (mail) {
-        var systemFolder = mail.getSystemFolder();
-        if (systemFolder === 'INBOX') {
-            if (mail.fromName)
-                return mail.fromName;
-            else
-                return mail.sender().displayName;
-        }
-        return _.chain(mail.displayNames)
-            .filter(function (u) { return mail.to.indexOf(u[0]) >= 0 })
-            .map(function (u) { return u[1] }).value().sort();
-    },
-    subject: function (mail) {
-        return mail.subject;
-    },
-    date: function (mail) {
-        return mail.date;
-    },
-    systemFolder: function (mail) {
-        var systemFolder = mail.getSystemFolder();
-        if (systemFolder === "INBOX")
-            return 1
-        if (systemFolder === "OUTBOX")
-            return 2
-        if (systemFolder === "DRAFT")
-            return 3
-        return 0
-    },
+export const filters = {
     unread: function(mail){
         return mail.unread;
     },
-    rank: function(mail){
-        return mail.rank ? mail.rank : 0;
+    none: function(mail){
+        return true;
     }
 }
 
