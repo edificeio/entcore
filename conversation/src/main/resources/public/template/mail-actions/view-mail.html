@@ -6,17 +6,22 @@
 			<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
 		</plus>
 		<button ng-click="transfer()" class="right-magnet"><i18n>transfer</i18n></button>
-		<button class="" ng-click="previousMail()">
-			<i18n><</i18n>
-		</button>
-		<button>
-			<span>[[conversation.currentFolder.mails.all.indexOf(state.current)+1]] </span>
-			<i18n>mail.count.of</i18n>
-			<span> [[state.current.count]]</span>
-		</button>
-		<button class="" ng-click="nextMail()">
-			<i18n>></i18n>
-		</button>
+
+<nav class="prev-next">
+	<button class="" ng-click="previousMail()">
+		<i class="left-open"></i>
+	</button>
+	<span class="pagination">
+		<span>[[conversation.currentFolder.mails.all.indexOf(state.current)+1]] </span>
+		<i18n class="zero-mobile">mail.count.of</i18n>
+		<span class="zero-desktop">/</span>
+		<span> [[state.current.count]]</span>
+	</span>
+	<button class="" ng-click="nextMail()">
+		<i class="open-right"></i>
+	</button>
+</nav>
+
 	</div>
 
 	<article class="twelve cell vertical-spacing mail">
