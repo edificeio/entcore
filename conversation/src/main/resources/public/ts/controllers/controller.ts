@@ -167,10 +167,17 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.mail = mail;
         }
 
-        $scope.viewMail = function (mail) {
+        $scope.viewMail = async function (mail) {
             template.open('main', 'mail-actions/view-mail');
+            await mail.updateAllowReply();
             setCurrentMail(mail);
-            mail.open();
+            try{
+                await mail.open();
+                $scope.$root.$emit('refreshMails');
+            }
+            catch(e){
+                template.open('page', 'errors/e404');
+            }
         };
 
         $scope.refresh = function () {
@@ -601,8 +608,4 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.quota = quota;
 
         $scope.filterBy = filters;
-
-        $scope.test = function(a) {
-            console.log(a);
-        };
     }]);
