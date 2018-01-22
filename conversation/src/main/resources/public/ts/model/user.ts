@@ -21,11 +21,13 @@ export class User implements Selectable {
         return (this.displayName || '') + (this.name || '') + (this.profile ? ' (' + lang.translate(this.profile) + ')' : '')
     }
 
-    async findData(): Promise<void> {
+    async findData(): Promise<boolean> {
         var that = this;
         const response = await http.get('/userbook/api/person?id=' + this.id);
         const userData = response.data;
         Mix.extend(this, { id: that.id, displayName: userData.result[0].displayName });
+
+        return this.id === userData.result[0].userId;
     }
 
     mapUser(displayNames, id) {

@@ -181,6 +181,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.readMail = async (mail: Mail) => {
             template.open('main', 'mail-actions/read-mail');
+            await mail.updateAllowReply();
             setCurrentMail(mail, true);
             try{
                 await mail.open();
@@ -600,4 +601,8 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.quota = quota;
 
         $scope.filterBy = filters;
+
+        $scope.test = function(a) {
+            console.log(a);
+        };
     }]);

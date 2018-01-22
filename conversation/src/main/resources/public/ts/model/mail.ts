@@ -46,6 +46,8 @@ export class Mail implements Selectable {
     attachments: Attachment[];
     eventer = new Eventer();
     selected: boolean;
+    allowReply: boolean;
+    allowReplyAll: boolean;
 
     constructor(id?: string) {
         this.id = id;
@@ -71,6 +73,36 @@ export class Mail implements Selectable {
             return 'mail-out';
         if (systemFolder === "DRAFT")
             return 'mail-new';
+        return '';
+    }
+
+    isAvatarGroup(systemFolder: string): boolean {
+        if (systemFolder === "INBOX")
+            return false;
+        return this.to.length > 1 || this.isRecipientGroup();
+    }
+
+    isAvatarUnknown(): boolean {
+        return this.to.length === 0;
+    }
+
+    isAvatarAlone(): boolean {
+        const systemFolder = this.getSystemFolder();
+        if (systemFolder === "INBOX")
+            return true;
+        return this.to.length === 1 && !this.isRecipientGroup();
+    }
+
+    matchAvatar(): string {
+        const systemFolder = this.getSystemFolder();
+        if (this.isAvatarGroup(systemFolder))
+            return '/img/illustrations/group-avatar.svg?thumbnail=100x100';
+        if (this.isAvatarUnknown())
+            return '/img/illustrations/unknown-avatar.svg?thumbnail=100x100';
+        if (this.isAvatarAlone()) {
+            var id = systemFolder === "INBOX" ? this.from : this.to[0];
+            return '/userbook/avatar/' + id + '?thumbnail=100x100';
+        }
         return '';
     }
 
@@ -126,8 +158,11 @@ export class Mail implements Selectable {
     };
 
     isRecipientGroup() {
-        return this.getRecipientId().length < 36;
-    }
+        var id = this.getRecipientId();
+        if (!id)
+            return false;
+        return id.length < 36;
+    };
 
     getRecipientId() {
         var to = this.to[0];
@@ -135,7 +170,22 @@ export class Mail implements Selectable {
             return to.id;
         }
         return to;
-    }
+    };
+
+    async updateAllowReply() {
+        var sender = this.map(this.from);
+        var exists = await sender.findData();
+        this.allowReply = exists;
+        if (exists) {
+            for (var i = 0, l = this.to.length; i < l; i++) {
+                var receiver = this.map(this.to[i]);
+                exists = await receiver.findData();
+                if (!exists)
+                    break;
+            }
+        }
+        this.allowReplyAll = exists;
+    };
 
     async saveAsDraft(): Promise<any> {
             var that = this;

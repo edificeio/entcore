@@ -55,9 +55,8 @@
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length > 1" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
+						<img ng-if="mail.isAvatarAlone()" ng-src="[[ mail.matchAvatar() ]]"/>
+						<img ng-if="!mail.isAvatarAlone()" skin-src="[[ mail.matchAvatar() ]]"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
 					</div>
@@ -66,8 +65,7 @@
 				<div class="states"><!-- keep empty --></div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 					<span class="strong" ng-repeat="receiver in receivers = (mail.to | limitTo:2 | filter: filterUsers(mail))">
-						<span ng-if="!users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
-						<span ng-if="users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
+						<span>[[mail.map(receiver).displayName]]</span>
 						<span ng-if="$index < 1 && receivers.length > 1">,</span>
 						<span class="strong" ng-if="mail.to.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
 					</span>

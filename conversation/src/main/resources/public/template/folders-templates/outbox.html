@@ -55,9 +55,8 @@
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length > 1 || mail.isRecipientGroup()" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length === 1 && !mail.isRecipientGroup()" ng-src="/userbook/avatar/[[mail.getRecipientId()]]?thumbnail=100x100"/>
+						<img ng-if="mail.isAvatarAlone()" ng-src="[[ mail.matchAvatar() ]]"/>
+						<img ng-if="!mail.isAvatarAlone()" skin-src="[[ mail.matchAvatar() ]]"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
 					</div>
@@ -68,9 +67,7 @@
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis" ng-init="recs = allReceivers(mail)">
 					<span class="strong" ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
-						<span ng-if="!receiver.deleted && !users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
-						<span ng-if="!receiver.deleted &&  users.list.isGroup(receiver)">[[mail.map(receiver).displayName]]</span>
-						<span ng-if="receiver.deleted">[[receiver.displayName]]</span>
+						<span>[[mail.map(receiver).displayName]]</span>
 						<span ng-if="$index < 1 && receivers.length > 1">,</span>
 						<span class="strong" ng-if="recs.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
 					</span>
