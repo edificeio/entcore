@@ -173,8 +173,11 @@ export class Mail implements Selectable {
     };
 
     async updateAllowReply() {
-        var sender = this.map(this.from);
-        var exists = await sender.findData();
+        const systemFolder = this.getSystemFolder();
+        var id = systemFolder === "INBOX" ? this.from : this.to[0];
+        var user = this.map(id);
+        console.log(id);
+        var exists = await user.findData();
         this.allowReply = exists;
         if (exists) {
             for (var i = 0, l = this.to.length; i < l; i++) {
