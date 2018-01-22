@@ -6,7 +6,7 @@ export const switchSearch = ng.directive('switchSearch', () => {
         transclude: true,
         template: `
             <div ng-class="{'hide-search': hide}" class="search-pagination flex-row align-center horizontal-spacing-twicen">
-                <a class="zero-mobile" ng-click='cancelSearch()'><i class="close-2x horizontal-spacing hidden-desktop"></i></a>
+                <a class="zero-mobile" ng-click='cancelSearch()'><i class="close horizontal-spacing hidden-desktop"></i></a>
                 <div class="cell">
                     <input class="twelve hidden-desktop" type="text" ng-model="ngModel"
                     ng-keyup="$event.keyCode == 13 ? ngChange({words: ngModel}) : null"
@@ -17,7 +17,7 @@ export const switchSearch = ng.directive('switchSearch', () => {
             </div>
         `,
 
-        scope: { 
+        scope: {
             ngModel: '=',
             ngChange: '&',
             cancel: '&'
