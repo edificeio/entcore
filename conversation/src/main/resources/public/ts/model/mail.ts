@@ -82,7 +82,11 @@ export class Mail implements Selectable {
         return this.to.length > 1 || this.isRecipientGroup();
     }
 
-    isAvatarUnknown(): boolean {
+    isAvatarUnknown(systemFolder: string): boolean {
+        if (systemFolder === "INBOX" && !this.from)
+            return true;
+        if (systemFolder === "OUTBOX" && this.to.length === 1 && !this.to[0])
+            return true;
         return this.to.length === 0;
     }
 
@@ -97,7 +101,7 @@ export class Mail implements Selectable {
         const systemFolder = this.getSystemFolder();
         if (this.isAvatarGroup(systemFolder))
             return '/img/illustrations/group-avatar.svg?thumbnail=100x100';
-        if (this.isAvatarUnknown())
+        if (this.isAvatarUnknown(systemFolder))
             return '/img/illustrations/unknown-avatar.svg?thumbnail=100x100';
         if (this.isAvatarAlone()) {
             var id = systemFolder === "INBOX" ? this.from : this.to[0];
@@ -174,11 +178,17 @@ export class Mail implements Selectable {
 
     async updateAllowReply() {
         const systemFolder = this.getSystemFolder();
+
+        // Reply
         var id = systemFolder === "INBOX" ? this.from : this.to[0];
-        var user = this.map(id);
-        console.log(id);
-        var exists = await user.findData();
+        var exists;
+        if (!id) // completely deleted user
+            exists = false;
+        else
+            exists = await this.map(id).findData();
         this.allowReply = exists;
+
+        // Reply all
         if (exists) {
             for (var i = 0, l = this.to.length; i < l; i++) {
                 var receiver = this.map(this.to[i]);
