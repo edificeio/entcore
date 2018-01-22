@@ -6,12 +6,12 @@ export const switchSearch = ng.directive('switchSearch', () => {
         transclude: true,
         template: `
             <div ng-class="{'hide-search': hide}" class="search-pagination flex-row align-center horizontal-spacing-twicen">
-                <a class="zero-mobile" ng-click='cancelSearch()'><i class="close horizontal-spacing hidden-desktop"></i></a>
+                <a class="zero-mobile" ng-click='cancelSearch()'><i class="close horizontal-spacing zero-desktop"></i></a>
                 <div class="cell">
-                    <input class="twelve hidden-desktop" type="text" ng-model="ngModel"
+                    <input class="twelve zero-desktop" type="text" ng-model="ngModel"
                     ng-keyup="$event.keyCode == 13 ? ngChange({words: ngModel}) : null"
                     i18n-placeholder="search"/>
-                    <i class="search flex-row align-center justify-center hidden-desktop" ng-click="hide ? extend() : ngChange({words: ngModel});"></i>
+                    <i class="search flex-row align-center justify-center zero-desktop" ng-click="hide ? extend() : ngChange({words: ngModel});"></i>
                 </div>
                 <ng-transclude></ng-transclude>
             </div>
