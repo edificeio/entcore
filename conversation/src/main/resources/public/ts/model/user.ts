@@ -26,10 +26,10 @@ export class User implements Selectable {
         const response = await http.get('/userbook/api/person?id=' + this.id);
         const userData = response.data;
         if (!userData.result[0]) // If group
-            return true;
+            return false;
         Mix.extend(this, { id: that.id, displayName: userData.result[0].displayName });
 
-        return this.id === userData.result[0].userId;
+        return true;
     }
 
     mapUser(displayNames, id) {

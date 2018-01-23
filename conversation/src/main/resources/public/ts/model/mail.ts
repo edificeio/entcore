@@ -53,6 +53,8 @@ export class Mail implements Selectable {
         this.id = id;
         this.loadingAttachments = [];
         this.attachments = [];
+        this.allowReply = true;
+        this.allowReplyAll = true;
     }
 
     getSystemFolder(): string{
@@ -290,6 +292,7 @@ export class Mail implements Selectable {
         if(!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
         }
+        await this.updateAllowReply();
     };
 
     async remove() {
