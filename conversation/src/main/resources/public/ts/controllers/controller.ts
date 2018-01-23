@@ -99,12 +99,11 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.openUserFolder = async (folder: UserFolder, obj) => {
             $scope.mail = undefined;
-            await folder.open();
-            obj.template = '';
             obj.template = 'folder-content';
-            $scope.resetState();
-            $scope.$apply();
             template.open('main', 'folders-templates/user-folder');
+            $scope.resetState();
+            await folder.open();
+            $scope.$apply();
 
             $timeout(function () {
                 $('body').trigger('whereami.update');
