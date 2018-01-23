@@ -168,7 +168,6 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.viewMail = async function (mail) {
             template.open('main', 'mail-actions/view-mail');
-            await mail.updateAllowReply();
             setCurrentMail(mail);
             try{
                 await mail.open();
@@ -187,7 +186,6 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.readMail = async (mail: Mail) => {
             template.open('main', 'mail-actions/read-mail');
-            await mail.updateAllowReply();
             setCurrentMail(mail, true);
             try{
                 await mail.open();
@@ -224,7 +222,8 @@ export let conversationController = ng.controller('ConversationController', [
                 nextMail =mails[idx+1];
             if(nextMail){
                 setCurrentMail(nextMail, true);
-                nextMail.open();
+                await nextMail.open();
+                $scope.$apply();
             }
             if(idx === mails.length-2 && nextMail.count > mails.length){
                 await Conversation.instance.currentFolder.nextPage();
@@ -232,7 +231,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.previousMail = () => {
+        $scope.previousMail = async () => {
             var mails = Conversation.instance.currentFolder.mails.all;
             var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
             var nextMail = null;
@@ -240,7 +239,8 @@ export let conversationController = ng.controller('ConversationController', [
                 nextMail =mails[idx-1];
             if(nextMail){
                 setCurrentMail(nextMail, true);
-                nextMail.open();
+                await nextMail.open();
+                $scope.$apply();
             }
         }
 
