@@ -74,7 +74,7 @@ export class Mail implements Selectable {
         if (systemFolder === "OUTBOX")
             return 'mail-out';
         if (systemFolder === "DRAFT")
-            return 'mail-new';
+            return 'draft';
         return '';
     }
 
@@ -364,7 +364,7 @@ export class Mail implements Selectable {
 
         return Promise.all(promises);
     }
-    
+
 
     async deleteAttachment(attachment) {
         this.attachments.splice(this.attachments.indexOf(attachment), 1);
