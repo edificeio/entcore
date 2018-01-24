@@ -72,6 +72,14 @@ export const recipientList = ng.directive('recipientList', () => {
                 }, 250);
             });
 
+            element.find('input').on('keydown', function (e) {
+                if (e.keyCode === 8) { // BackSpace
+                    var nb = scope.ngModel.length;
+                    if (nb > 0)
+                        scope.deleteItem(scope.ngModel[nb - 1]);
+                }
+            });
+
             scope.needChipDisplay = () => {
                 return !scope.focused && (typeof scope.ngModel !== 'undefined') && scope.ngModel.length > 3;
             };
