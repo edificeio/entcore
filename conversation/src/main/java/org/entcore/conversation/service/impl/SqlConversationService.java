@@ -207,16 +207,7 @@ public class SqlConversationService implements ConversationService{
 		int skip = page * LIST_LIMIT;
 
 		String additionalWhere = "";
-		String orderBy = "";
-		String additionalSelect = "";
-		boolean search = searchText != null;
-		List<String> words = null;
 		JsonArray values = new JsonArray();
-		if(search){
-			words = checkAndComposeWordFromSearchText(searchText);
-			additionalSelect = " ts_rank(m.text_searchable, to_tsquery(m.language::regconfig, unaccent(?))) as rank, ";
-			values.addString(StringUtils.join(words, " & "));
-		}
 		values.add("SENT").add(user.getUserId());
 		if(restrain != null){
 			additionalWhere = "AND um.folder_id = ? AND um.trashed = false";
@@ -225,16 +216,12 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere = addFolderCondition(folder, values, user.getUserId());
 		}
 
-		if(search){
+		if(searchText != null){
 			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
-			values.addString(StringUtils.join(words, " | "));
-			orderBy = " ORDER BY rank ";
-		}else{
-			orderBy = "ORDER BY m.date";
+			values.addString(StringUtils.join(checkAndComposeWordFromSearchText(searchText), " & "));
 		}
-			String query = "SELECT m.*, um.unread as unread, " +
-				"CASE when COUNT(distinct r) = 0 THEN false ELSE true END AS response," +
-				" COUNT(*) OVER() as count, " + additionalSelect +
+		String query = "SELECT m.*, um.unread as unread, " +
+				"CASE when COUNT(distinct r) = 0 THEN false ELSE true END AS response, COUNT(*) OVER() as count, " +
 				"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 				"FROM " + userMessageTable + " um LEFT JOIN " +
 				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
@@ -243,7 +230,7 @@ public class SqlConversationService implements ConversationService{
 				attachmentTable + " att ON uma.attachment_id = att.id " +
 				"WHERE um.user_id = ? " + additionalWhere + " " +
 				"GROUP BY m.id, unread " +
-				orderBy + " DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
+				"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "displayNames"));
 	}
