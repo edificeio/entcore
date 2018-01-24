@@ -252,6 +252,42 @@ i.group_add {
 * TODO : replacce by using a css framework
 * here a bulma.io semantic is used
 */
+.button {
+    cursor: pointer;
+    text-align: left;
+    padding: 10px 10px;
+    border-radius: 3px;
+    transition: background 0.25s, color 0.25s;
+    line-height: 1.5em;
+    transition: background 0.25s, color 0.25s, border 0.25s;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+
+    &.is-primary { 
+        color: $accent; 
+        background-color: $button-bg; 
+        border: 1px solid $button-bg;
+
+        &:hover {
+            color: white;
+            background-color: $accent; 
+            border: 1px solid $accent;
+        }
+    }
+    &.is-link {}
+    &.is-info {}
+    &.is-success {}
+    &.is-warning {}
+    &.is-danger {}
+
+    &.is-active { 
+        color: white; 
+        background-color: $accent;
+        box-shadow: 0 0 10px red;
+        border-color: #ff8352;
+    }
+}
+
 .container {
     background-color: white;
     padding: 10px 30px 40px 30px;
@@ -999,16 +1035,19 @@ user-list, group-users-list, group-input-users, group-output-users {
 /* User list */
 user-list {
     .user-toolbar {
-        > i { @extend .action; }
+        display: flex;
+        align-items: center;
 
-        .toolbar-right {
-            font-size: 1.2em;
-            float: right;
+        > i { @extend .action; padding-right: 5px;}
+
+        .is-pulled-right {
+            margin-left: auto;
         }
     }
     .list-wrapper {
         max-height: 60vh;
         overflow-y: auto;
+        clear: both;
     }
 }
 

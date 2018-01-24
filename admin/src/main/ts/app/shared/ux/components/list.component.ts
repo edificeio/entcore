@@ -15,7 +15,7 @@ import { Subject } from 'rxjs/Subject'
             (scrolled)="scrolledDown.emit()"
             [infiniteScrollThrottle]="50">
             <ul>
-                <li *ngFor="let item of model | filter: filters | filter: inputFilter | orderBy: sort | slice: 0:limit | store:self:'storedElements'"
+                <li *ngFor="let item of model | filter: filters | filter: inputFilter | store:self:'storedElements' | orderBy: sort | slice: 0:limit"
                     (click)="onSelect.emit(item)"
                     [class.selected]="isSelected(item)"
                     [class.disabled]="isDisabled(item)"
