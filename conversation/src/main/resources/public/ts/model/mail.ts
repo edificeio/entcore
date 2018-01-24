@@ -112,6 +112,11 @@ export class Mail implements Selectable {
         return '';
     }
 
+    isUnread(): boolean {
+        const systemFolder = this.getSystemFolder();
+        return this.unread && systemFolder !== 'DRAFT';
+    }
+
     setMailSignature(signature: string){
         if(!this.body)
             this.body='';

@@ -77,7 +77,7 @@
 	<!-- mails -->
 	<div class="notification relative no-margin" ng-if="!isLoading()"
 		ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse"
-		ng-class="{ checked: mail.selected, 'new-element': mail.unread }" >
+		ng-class="{ checked: mail.selected, 'new-element': mail.isUnread() }" >
 
 		<article ng-click="readMail(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
@@ -96,7 +96,7 @@
 
 				<div class="states">
 					<i class="undo" ng-if="mail.response"></i>
-					<i class="mail" ng-if="mail.unread"></i>
+					<i class="mail" ng-if="mail.isUnread()"></i>
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>
