@@ -1,5 +1,5 @@
 import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, 
-    AfterViewInit, TemplateRef, ContentChild } from '@angular/core'
+    TemplateRef, ContentChild } from '@angular/core'
 import { Subject } from 'rxjs/Subject'
 
 @Component({
@@ -48,7 +48,7 @@ import { Subject } from 'rxjs/Subject'
     `],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ListComponent implements AfterViewInit {
+export class ListComponent {
 
     /* Store pipe */
     self = this
@@ -56,11 +56,6 @@ export class ListComponent implements AfterViewInit {
 
     constructor(
         public cdRef: ChangeDetectorRef){}
-
-    ngAfterViewInit() {
-        this.cdRef.markForCheck()
-        this.cdRef.detectChanges()
-    }
 
     @Input() model = []
     @Input() filters
