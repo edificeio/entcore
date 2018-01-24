@@ -1,5 +1,5 @@
 import { Component, Input, Output, OnInit, OnDestroy, EventEmitter,
-    ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+    ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked } from '@angular/core'
 import { Subscription } from 'rxjs/Subscription'
 
 import { UserListService, UserlistFiltersService } from '../../core/services'
@@ -21,28 +21,33 @@ import { UsersStore } from '../users.store';
         [limit]="userListService.limit"
         (inputChange)="userListService.inputFilter = $event"
         (onSelect)="selectedUser = $event; onselect.emit($event)"
-        (scrolledDown)="userListService.addPageDown()">
+        (scrolledDown)="userListService.addPageDown()"
+        (listChange)="refreshListCount($event)">
         <div toolbar class="user-toolbar">
-             <i class="fa" aria-hidden="true"
+             <i class="fa is-size-5" aria-hidden="true"
                 [ngClass]="{
                     'fa-sort-alpha-asc': userListService.sortsMap.alphabetical.sort === '+',
                     'fa-sort-alpha-desc': userListService.sortsMap.alphabetical.sort === '-',
                     'selected': userListService.sortsMap.alphabetical.selected
                 }"
-                [title]="'sort.alphabetical' | translate" position="top"
+                [title]="'sort.alphabetical' | translate"
                 (click)="userListService.changeSorts('alphabetical')"></i>
-            <i class="fa" aria-hidden="true"
+            <i class="fa is-size-5" aria-hidden="true"
                 [ngClass]="{
                     'fa-sort-amount-asc': userListService.sortsMap.profile.sort === '+',
                     'fa-sort-amount-desc': userListService.sortsMap.profile.sort === '-',
                     'selected': userListService.sortsMap.profile.selected
                 }"
-                [title]="'sort.profile' | translate" position="top"
+                [title]="'sort.profile' | translate"
                 (click)="userListService.changeSorts('profile')"></i>
-            <i class="fa fa-filter toolbar-right" aria-hidden="true"
-                [title]="'filters' | translate" position="top"
-                (click)="companionChange.emit('filter')"></i>
-            <strong class="badge">{{ userlist.length }} <s5l>list.results.users</s5l></strong>
+            <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
+            <a class="button is-primary is-pulled-right" aria-hidden="true"
+                [title]="'filters' | translate"
+                [ngClass]="{'is-active': filtersOn()}"
+                (click)="companionChange.emit('filter')">
+                <s5l>filters</s5l>
+                <i class="fa fa-chevron-right" aria-hidden="true"></i>
+            </a>
         </div>
 
         <ng-template let-item>
@@ -73,7 +78,6 @@ import { UsersStore } from '../users.store';
     styles: [`
         .user-toolbar {
             padding: 15px;
-            font-size: 1.2em;
         }
         .user-toolbar i {
             cursor: pointer;
@@ -82,11 +86,12 @@ import { UsersStore } from '../users.store';
 
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserList implements OnInit, OnDestroy {
+export class UserList implements OnInit, OnDestroy, AfterViewChecked {
 
     private filtersUpdatesSubscriber: Subscription;
     private userUpdatesSubscriber: Subscription;
     private storeSubscriber: Subscription;
+    nbUser: number;
 
     @Input() userlist: UserModel[] = [];
 
@@ -111,6 +116,7 @@ export class UserList implements OnInit, OnDestroy {
                 this.cdRef.markForCheck();
             }
         });
+        this.nbUser = this.userlist.length;
     }
 
     ngOnDestroy() {
@@ -119,7 +125,20 @@ export class UserList implements OnInit, OnDestroy {
         this.storeSubscriber.unsubscribe();
     }
 
+    ngAfterViewChecked() {
+        // called to update list nbUser after filters update
+        this.cdRef.markForCheck();
+    }
+
     isSelected = (user: UserModel) => {
         return this.selectedUser && user && this.selectedUser.id === user.id;
+    }
+
+    refreshListCount(list): void {
+        this.nbUser = list.length;
+    }
+
+    filtersOn(): boolean {
+        return this.userlist.length != this.nbUser;
     }
 }
