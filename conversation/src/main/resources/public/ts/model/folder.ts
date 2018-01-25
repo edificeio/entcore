@@ -27,6 +27,7 @@ export abstract class Folder implements Selectable {
         this.api = api;
         this.filter = false;
         this.reverse = true;
+        this.nbUnread = 0;
     }
 
     getName() {
@@ -131,6 +132,7 @@ export class Trash extends SystemFolder {
             await folder.restore();
         }
         await this.syncUsersFolders();
+        await this.countUnread();
     }
 
     async restoreMails () {
@@ -173,6 +175,7 @@ export class Inbox extends SystemFolder {
     async toggleUnreadSelection(unread){
         await this.mails.toggleUnread(unread);
         await quota.refresh();
+        await this.countUnread();
     }
 
     selectAll(){
