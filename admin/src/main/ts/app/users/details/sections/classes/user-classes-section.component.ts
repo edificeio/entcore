@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/
 
 import { AbstractSection } from '../abstract.section'
 import { SpinnerService, NotifyService } from '../../../../core/services'
+import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'user-classes-section',
@@ -15,9 +16,8 @@ import { SpinnerService, NotifyService } from '../../../../core/services'
                 <div class="padded">
                     <h3><s5l>add.class</s5l></h3>
                     <list class="inner-list"
-                        [model]="structure.classes"
+                        [model]="lightboxClasses"
                         [inputFilter]="filterByInput"
-                        [filters]="filterClasses"
                         searchPlaceholder="search.class"
                         sort="name"
                         (inputChange)="inputFilter = $event"
@@ -35,7 +35,7 @@ import { SpinnerService, NotifyService } from '../../../../core/services'
             <ul class="actions-list">
                 <li *ngFor="let c of user?.classes">
                     <span>{{ c.name }}</span>
-                    <i  class="fa fa-times action" 
+                    <i class="fa fa-times action" 
                         (click)="removeClass(c)"
                         [tooltip]="'delete.this.class' | translate"
                         [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
@@ -47,16 +47,10 @@ import { SpinnerService, NotifyService } from '../../../../core/services'
     inputs: ['user', 'structure'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserClassesSection extends AbstractSection {
+export class UserClassesSection extends AbstractSection implements OnInit, OnChanges {
+    lightboxClasses: {id: string, name: string}[] = [];
     
     showClassesLightbox: boolean = false
-
-    constructor(
-        public spinner: SpinnerService,
-        private ns: NotifyService,
-        private cdRef: ChangeDetectorRef) {
-        super()
-    }
 
     private _inputFilter = ""
     set inputFilter(filter: string) {
@@ -66,13 +60,30 @@ export class UserClassesSection extends AbstractSection {
         return this._inputFilter
     }
 
+    constructor(
+        public spinner: SpinnerService,
+        private ns: NotifyService,
+        private cdRef: ChangeDetectorRef) {
+        super()
+    }
+
+    ngOnInit() {
+        this.updateLightboxClasses();
+    }
+
+    ngOnChanges() {
+        this.updateLightboxClasses();
+    }
+
+    private updateLightboxClasses() {
+        this.lightboxClasses = this.structure.classes.filter(
+            c => !this.user.classes.find(uc => uc.id == c.id)
+        );
+    }
+
     filterByInput = (c: {id: string, name: string}) => {
         if (!this.inputFilter) return true
         return `${c.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
-    }
-
-    filterClasses = (c: {id: string, name: string}) => {
-        return !this.user.classes.find(classe => c.id === classe.id)
     }
     
     disableClass = (c) => {
@@ -89,6 +100,8 @@ export class UserClassesSection extends AbstractSection {
                             classe:  event.name
                         } 
                     }, 'notify.user.add.class.title');
+
+                this.updateLightboxClasses();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -112,6 +125,8 @@ export class UserClassesSection extends AbstractSection {
                             classe:  classe.name
                         } 
                     }, 'notify.user.remove.class.title');
+
+                this.updateLightboxClasses();
                 this.cdRef.markForCheck();
             })
             .catch(err => {

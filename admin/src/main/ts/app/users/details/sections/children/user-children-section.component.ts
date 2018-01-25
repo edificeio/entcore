@@ -1,10 +1,10 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, 
     ChangeDetectionStrategy } from '@angular/core'
-import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
 import { UserListService, SpinnerService, NotifyService } from '../../../../core/services'
 import { UserModel } from '../../../../core/store/models/user.model'
+import { OnInit, OnChanges } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'user-children-section',
@@ -18,9 +18,8 @@ import { UserModel } from '../../../../core/store/models/user.model'
                 <div class="padded">
                     <h3><s5l>add.child</s5l></h3>
                     <list class="inner-list"
-                        [model]="structure?.users?.data"
+                        [model]="lightboxChildren"
                         [inputFilter]="userListService.filterByInput"
-                        [filters]="filterChildren"
                         searchPlaceholder="search.user"
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
@@ -52,9 +51,8 @@ import { UserModel } from '../../../../core/store/models/user.model'
     providers: [ UserListService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserChildrenSection extends AbstractSection {
-    @ViewChild("codeInput") 
-    codeInput : AbstractControl
+export class UserChildrenSection extends AbstractSection implements OnInit, OnChanges {
+    lightboxChildren: UserModel[] = [];
 
     constructor(
             private userListService: UserListService,
@@ -64,18 +62,27 @@ export class UserChildrenSection extends AbstractSection {
         super()
     }
 
+    ngOnInit() {
+        this.updateLightboxChildren();
+    }
+
+    ngOnChanges() {
+        this.updateLightboxChildren();
+    }
+
+    private updateLightboxChildren() {
+        this.lightboxChildren = this.structure.users.data.filter(
+            u => u.type == 'Student'
+                && !u.deleteDate
+                && this.details.children
+                && !this.details.children.find(c => c.id == u.id)
+        );
+    }
+
     protected onUserChange(){}
 
     isRelative(u: UserModel){
         return u.type === 'Relative'
-    }
-
-    filterChildren = (u: UserModel) => {
-        return this.details 
-            && this.details.children 
-            && !this.details.children.find(c => c.id === u.id)
-            && u.type === 'Student' 
-            && !u.deleteDate
     }
 
     disableChild = (child) => {
@@ -84,7 +91,7 @@ export class UserChildrenSection extends AbstractSection {
 
     addChild = (child) => {
         console.log(child);
-        this.spinner.perform('portal-content', this.details.addChild(child))
+        this.spinner.perform('portal-content', this.details.addChild(child)
             .then(() => {
                 this.ns.success(
                     { 
@@ -93,6 +100,8 @@ export class UserChildrenSection extends AbstractSection {
                             child:  child.displayName
                         } 
                     }, 'notify.user.add.child.title');
+
+                this.updateLightboxChildren();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -103,12 +112,13 @@ export class UserChildrenSection extends AbstractSection {
                             child:  child.displayName
                         }
                     }, 'notify.user.add.child.error.title', err);
-            });
+            })
+        );
     }
 
     removeChild = (child) => {
         console.log(child);
-        this.spinner.perform('portal-content', this.details.removeChild(child))
+        this.spinner.perform('portal-content', this.details.removeChild(child)
             .then(() => {
                 this.ns.success(
                     { 
@@ -117,6 +127,8 @@ export class UserChildrenSection extends AbstractSection {
                             child:  child.displayName
                         } 
                     }, 'notify.user.remove.child.title');
+
+                this.updateLightboxChildren();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -127,6 +139,7 @@ export class UserChildrenSection extends AbstractSection {
                             child:  child.displayName
                         }
                     }, 'notify.user.remove.child.error.title', err);
-            });
+            })
+        );
     }
 }
