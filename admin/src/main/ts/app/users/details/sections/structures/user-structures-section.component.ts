@@ -1,10 +1,10 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core'
 import { AbstractControl } from '@angular/forms'
-import { Router } from '@angular/router'
 
 import { AbstractSection } from '../abstract.section'
 import { SpinnerService, NotifyService } from '../../../../core/services'
-import { globalStore, StructureCollection, UserModel } from '../../../../core/store'
+import { globalStore, StructureCollection, UserModel, StructureModel } from '../../../../core/store'
+import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'user-structures-section',
@@ -18,9 +18,8 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
                 <div class="padded">
                     <h3><s5l>add.structure</s5l></h3>
                     <list class="inner-list"
-                        [model]="structureCollection.data"
+                        [model]="lightboxStructures"
                         [inputFilter]="filterByInput"
-                        [filters]="filterStructures"
                         searchPlaceholder="search.structure"
                         sort="name"
                         (inputChange)="inputFilter = $event"
@@ -37,7 +36,7 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
             <ul class="actions-list">
                 <li *ngFor="let structure of user.visibleStructures()">
                     <span>{{ structure.name }}</span>
-                    <i  class="fa fa-times action" (click)="removeStructure(structure)"
+                    <i class="fa fa-times action" (click)="removeStructure(structure)"
                         [tooltip]="'delete.this.structure' | translate"
                         [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
                 </li>
@@ -50,28 +49,40 @@ import { globalStore, StructureCollection, UserModel } from '../../../../core/st
     inputs: ['user', 'structure'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserStructuresSection extends AbstractSection {
-    @ViewChild("codeInput")
-    codeInput : AbstractControl
-    showStructuresLightbox: boolean = false
-    structureCollection : StructureCollection = globalStore.structures
+export class UserStructuresSection extends AbstractSection implements OnInit, OnChanges {
+    lightboxStructures : StructureModel[];
 
-    constructor(private router: Router,
-        public spinner: SpinnerService,
+    showStructuresLightbox: boolean = false;
+
+    private _inputFilter = "";
+    set inputFilter(filter: string) {
+        this._inputFilter = filter;
+    }
+    get inputFilter() {
+        return this._inputFilter;
+    }
+
+    constructor(public spinner: SpinnerService,
         private ns: NotifyService,
         protected cdRef: ChangeDetectorRef) {
-        super()
+        super();
+    }
+    
+    ngOnInit() {
+        this.updateLightboxStructures();
+    }
+    
+    ngOnChanges() {
+        this.updateLightboxStructures();
+    }
+
+    private updateLightboxStructures() {
+        this.lightboxStructures = globalStore.structures.data.filter(
+            s => !this.user.structures.find(us => us.id == s.id)
+        );
     }
 
     protected onUserChange(){}
-
-    private _inputFilter = ""
-    set inputFilter(filter: string) {
-        this._inputFilter = filter
-    }
-    get inputFilter() {
-        return this._inputFilter
-    }
 
     disableStructure = (s) => {
         return this.spinner.isLoading(s.id)
@@ -81,13 +92,9 @@ export class UserStructuresSection extends AbstractSection {
         if(!this.inputFilter) return true
         return `${s.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
     }
-    
-    filterStructures = (s: {id: string, name: string}) => {
-        return !this.user.structures.find(struct => s.id === struct.id)
-    }
 
     addStructure = (structure) => {
-        this.spinner.perform('portal-content', this.user.addStructure(structure.id))
+        this.spinner.perform('portal-content', this.user.addStructure(structure.id)
             .then(() => {
                 this.ns.success(
                     { 
@@ -96,6 +103,8 @@ export class UserStructuresSection extends AbstractSection {
                             structure:  structure.name
                         } 
                     }, 'notify.user.add.structure.title');
+                
+                this.updateLightboxStructures();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -106,11 +115,12 @@ export class UserStructuresSection extends AbstractSection {
                             structure:  structure.name
                         }
                     }, 'notify.user.add.structure.error.title', err);
-            });
+            })
+        );
     }
 
     removeStructure = (structure) => {
-        this.spinner.perform('portal-content', this.user.removeStructure(structure.id))
+        this.spinner.perform('portal-content', this.user.removeStructure(structure.id)
             .then(() => {
                 this.ns.success(
                     { 
@@ -119,6 +129,8 @@ export class UserStructuresSection extends AbstractSection {
                             structure:  structure.name
                         } 
                     }, 'notify.user.remove.structure.title');
+                
+                this.updateLightboxStructures();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -129,6 +141,7 @@ export class UserStructuresSection extends AbstractSection {
                             structure:  structure.name
                         }
                     }, 'notify.user.remove.structure.error.title', err);
-            });
+            })
+        );
     }
 }
