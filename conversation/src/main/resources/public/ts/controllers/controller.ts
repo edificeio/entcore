@@ -1,5 +1,5 @@
 import { ng, notify, idiom as lang, template, skin, Document, $, _ } from 'entcore';
-import { Mail, User, UserFolder, filters, quota, Conversation, Trash, SystemFolder } from '../model';
+import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -88,6 +88,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.newItem.setMailSignature($scope.getSignature());
             template.open('main', 'folders-templates/' + folderName);
             $scope.resetState();
+            await $scope.fluidWait();
             await Conversation.instance.folders.openFolder(folderName);
             $scope.$apply();
         };
@@ -102,6 +103,8 @@ export let conversationController = ng.controller('ConversationController', [
             obj.template = 'folder-content';
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
+            await folder.countUnread();
+            await $scope.fluidWait();
             await folder.open();
             $scope.$apply();
 
@@ -198,15 +201,21 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.search = async (text: string) => {
             if(text.trim().length > 3) {
-                await new Promise(resolve => setTimeout(resolve, 10));
+                await $scope.fluidWait();
                 await Conversation.instance.currentFolder.search(text);
                 $scope.$apply();
             }
         }
 
         $scope.cancelSearch = async () => {
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await $scope.fluidWait();
             await Conversation.instance.currentFolder.search("");
+            $scope.$apply();
+        }
+
+        $scope.filterUnread = async () => {
+            await $scope.fluidWait();
+            await Conversation.instance.currentFolder.filterUnread($scope.state.filterUnread);
             $scope.$apply();
         }
 
@@ -606,5 +615,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.quota = quota;
 
-        $scope.filterBy = filters;
+        $scope.fluidWait = async () => {
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
     }]);
