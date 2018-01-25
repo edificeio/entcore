@@ -20,12 +20,10 @@
 		</label>
 	</div>
 	<div class="status-filter">
-		<label class="chip">
+		<label class="chip" ng-class="{ selected: state.filterUnread }">
 			<i class="mail"></i>
 			<span ng-model="conversation.currentFolder.nbUnread">([[conversation.currentFolder.nbUnread]])</span>
-			<!--
-			<input type="checkbox" ng-model="" ng-change="" />
-			-->
+			<input type="checkbox" ng-model="state.filterUnread" ng-change="filterUnread()" />
 		</label>
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
@@ -48,12 +46,12 @@
 	<div ng-if="isLoading()">
 		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
-	<div ng-if="!isLoading() && conversation.currentFolder.mails.empty() && conversation.currentFolder.userFolders.empty()">
+	<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0 && conversation.currentFolder.userFolders.all.length === 0">
 		<div class="info fade-in"><i18n>folder.empty</i18n></div>
 	</div>
 
 	<!-- folders -->
-	<div class="notification relative no-margin" ng-if="!isLoading()"
+	<div class="notification relative no-margin" ng-if="!isLoading() && !state.filterUnread"
 		ng-repeat="folder in folders.trash.userFolders.all | orderBy: 'name'"
 		ng-class="{ checked: folder.selected }">
 
@@ -76,19 +74,15 @@
 
 	<!-- mails -->
 	<div class="notification relative no-margin" ng-if="!isLoading()"
-		ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse"
+		ng-repeat="mail in conversation.currentFolder.mails.all"
 		ng-class="{ checked: mail.selected, 'new-element': mail.isUnread(conversation.currentFolder) }" >
 
-		<article ng-click="readMail(mail);$event.stopPropagation();">
+		<article ng-click="variableMailAction(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<!-- <img ng-if="!mail.to.length && mail.inbox.length" ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100"/> -->
-						<img skin-src="/img/illustrations/no-avatar.svg?thumbnail=100x100"/>
-						<!-- <img ng-if="!mail.to.length" skin-src="/img/illustrations/unknown-avatar.svg?thumbnail=100x100"/> -->
-						<!-- <img ng-if="mail.to.length > 1" skin-src="/img/illustrations/group-avatar.svg?thumbnail=100x100"/>
-						<img ng-if="mail.to.length == 1" ng-src="/userbook/avatar/{{ mail.to[0] }}?thumbnail=100x100"/>
-					 -->
+						<img ng-if="mail.isAvatarAlone()" ng-src="[[ mail.matchAvatar() ]]"/>
+						<img ng-if="!mail.isAvatarAlone()" skin-src="[[ mail.matchAvatar() ]]"/>
 						<input type="checkbox" ng-model="mail.selected"/>
 						<i18n></i18n>
 					</div>
@@ -99,14 +93,34 @@
 					<i class="mail" ng-if="mail.isUnread(conversation.currentFolder)"></i>
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
-					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>
+
+					<i class="[[mail.matchSystemIcon()]]" tooltip="[[mail.matchSystemIcon()]]"></i>
+
+					<!-- if NOT from inbox, display DEST -->
+					<span class="strong"
+						ng-if="mail.getSystemFolder() !== 'INBOX'"
+						ng-init="recs = allReceivers(mail)">
+
+						<span ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
+							<span>[[mail.map(receiver).displayName]]</span>
+							<span ng-if="$index < 1 && receivers.length > 1">,</span>
+							<span class="strong" ng-if="recs.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
+						</span>
+					</span>
+
+					<!-- if from inbox, display EXP -->
+					<span class="strong"
+						ng-if="mail.getSystemFolder() === 'INBOX'">
+						[[mail.sender().displayName]][[mail.fromName]]
+					</span>
+
 					<br>
 					<span class="small-text">[[mail.subject]]</span>
 				</div>
 			</div>
 
 			<div class="notification-date">
-				<em class="low-importance right-magnet">[[mail.longDate()]]</em>
+				<em class="low-importance right-magnet">[[mail.sentDate()]]</em>
 			</div>
 			<div class="notification-attachment">
 				<i class="attachment" ng-if="mail.attachments.length"></i>

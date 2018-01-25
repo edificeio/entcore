@@ -90,6 +90,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.resetState();
             await $scope.fluidWait();
             await Conversation.instance.folders.openFolder(folderName);
+            await Conversation.instance.currentFolder.countUnread();
             $scope.$apply();
         };
 
@@ -103,9 +104,9 @@ export let conversationController = ng.controller('ConversationController', [
             obj.template = 'folder-content';
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
-            await folder.countUnread();
             await $scope.fluidWait();
             await folder.open();
+            await folder.countUnread();
             $scope.$apply();
 
             $timeout(function () {
@@ -380,13 +381,13 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
+            await Conversation.instance.currentFolder.countUnread();
             await Conversation.instance.folders.inbox.countUnread();
             $scope.refreshFolders();
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
             await Conversation.instance.folders.inbox.toggleUnreadSelection(unread);
-            await Conversation.instance.folders.inbox.countUnread();
             $scope.refreshFolders();
         };
 
@@ -616,6 +617,6 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.quota = quota;
 
         $scope.fluidWait = async () => {
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise(resolve => setTimeout(resolve, 1));
         }
     }]);
