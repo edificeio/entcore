@@ -1,5 +1,5 @@
 ﻿import { notify, toFormData, _ } from 'entcore';
-import { Conversation, filters } from './conversation';
+import { Conversation } from './conversation';
 import { Mail, Mails } from './mail';
 import { quota } from './quota';
 
@@ -14,9 +14,10 @@ export abstract class Folder implements Selectable {
     api: { get: string, post: string, put: string, delete: string };
     eventer = new Eventer();
     selected: boolean;
-    filter: (mail1: Mail, mail2: Mail) => boolean;
+    filter: boolean;
     reverse: boolean;
     searchText: string;
+
     abstract removeSelection();
     abstract sync();
     abstract selectAll();
@@ -24,8 +25,18 @@ export abstract class Folder implements Selectable {
 
     constructor(api: { get: string, post: string, put: string, delete: string }){
         this.api = api;
-        this.filter = filters.none;
+        this.filter = false;
         this.reverse = true;
+    }
+
+    getName() {
+        if (this instanceof SystemFolder) {
+            return this.folderName.toUpperCase();;
+        }
+        if (this instanceof UserFolder) {
+            return this.id;
+        }
+        return "";
     }
 
     async nextPage() {
@@ -37,7 +48,26 @@ export abstract class Folder implements Selectable {
 
     async search(text : string) {
         this.searchText = text;
-        await this.mails.sync({ pageNumber: 0, searchText: this.searchText, emptyList: true });
+        await this.mails.sync({ pageNumber: 0, searchText: this.searchText, emptyList: true, filterUnread: this.filter });
+    }
+
+    async filterUnread(filter : boolean) {
+        this.filter = filter;
+        this.pageNumber = 0;
+        await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: true, filterUnread: this.filter });
+    }
+
+    async countUnread () {
+        var name = this.getName();
+        var restrain;
+        if (this instanceof SystemFolder) {
+            restrain = '';
+        }
+        if (this instanceof UserFolder) {
+            restrain = '&restrain=';
+        }
+        const response = await http.get('/conversation/count/' + name + '?unread=true' + restrain)
+        this.nbUnread = parseInt(response.data.count);
     }
 }
 
@@ -152,11 +182,6 @@ export class Inbox extends SystemFolder {
     deselectAll(){
         this.mails.selection.deselectAll();
     }
-
-    async countUnread () {
-        const response = await http.get('/conversation/count/INBOX?unread=true')
-        this.nbUnread = parseInt(response.data.count);
-    }
 }
 
 export class Draft extends SystemFolder {
@@ -255,7 +280,7 @@ export class UserFolder extends Folder {
         this.mails.full = false;
         this.pageNumber = 0;
         this.searchText = null;
-        this.filter = filters.none;
+        this.filter = false;
         Conversation.instance.currentFolder = this;
         await this.sync();
     }
@@ -369,7 +394,7 @@ export class SystemFolders {
     async openFolder (folderName) {
         Conversation.instance.currentFolder = this[folderName];
         Conversation.instance.currentFolder.searchText = null;
-        Conversation.instance.currentFolder.filter = filters.none;
+        Conversation.instance.currentFolder.filter = false;
         await Conversation.instance.currentFolder.sync();
         Conversation.instance.currentFolder.pageNumber = 0;
         Conversation.instance.currentFolder.mails.full = false;

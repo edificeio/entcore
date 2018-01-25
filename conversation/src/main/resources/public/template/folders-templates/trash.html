@@ -22,7 +22,7 @@
 	<div class="status-filter">
 		<label class="chip">
 			<i class="mail"></i>
-			<span ng-model="folders.trash.nbUnread">([[folders.trash.nbUnread]])</span>
+			<span ng-model="conversation.currentFolder.nbUnread">([[conversation.currentFolder.nbUnread]])</span>
 			<!--
 			<input type="checkbox" ng-model="" ng-change="" />
 			-->
@@ -77,7 +77,7 @@
 	<!-- mails -->
 	<div class="notification relative no-margin" ng-if="!isLoading()"
 		ng-repeat="mail in folders.trash.mails.all | orderBy : folders.trash.sort : folders.trash.reverse"
-		ng-class="{ checked: mail.selected, 'new-element': mail.isUnread() }" >
+		ng-class="{ checked: mail.selected, 'new-element': mail.isUnread(conversation.currentFolder) }" >
 
 		<article ng-click="readMail(mail);$event.stopPropagation();">
 			<div class="flex-row align-center">
@@ -96,7 +96,7 @@
 
 				<div class="states">
 					<i class="undo" ng-if="mail.response"></i>
-					<i class="mail" ng-if="mail.isUnread()"></i>
+					<i class="mail" ng-if="mail.isUnread(conversation.currentFolder)"></i>
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>

@@ -3,7 +3,7 @@
 import { User } from './user';
 import { Conversation } from './conversation';
 import { quota } from './quota';
-import { SystemFolder, UserFolder } from './folder';
+import { SystemFolder, UserFolder, Folder } from './folder';
 
 import { Mix, Eventer, Selection, Selectable } from 'entcore-toolkit';
 
@@ -112,9 +112,10 @@ export class Mail implements Selectable {
         return '';
     }
 
-    isUnread(): boolean {
+    isUnread(currentFolder: Folder): boolean {
         const systemFolder = this.getSystemFolder();
-        return this.unread && systemFolder !== 'DRAFT';
+        console.log(currentFolder.getName());
+        return this.unread && (systemFolder === 'INBOX' || currentFolder.getName() === 'INBOX');
     }
 
     setMailSignature(signature: string){
@@ -418,7 +419,7 @@ export class Mails {
         }
     }
 
-    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }){
+    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }){
         this.loading = !data || !data.pageNumber || data.pageNumber == 0;
         if(this.userFolder){
             await this.userFolderSync(data);
@@ -429,7 +430,7 @@ export class Mails {
         this.loading = false;
     }
 
-    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }){
+    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }){
         if(!data){
             data = {};
         }
@@ -441,7 +442,10 @@ export class Mails {
         }else {
             data.searchText += "&search=" + data.searchText;
         }
-        const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber + data.searchText);
+        if (!data.filterUnread) {
+            data.filterUnread = false;
+        }
+        const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }
@@ -451,7 +455,7 @@ export class Mails {
         }
     }
 
-    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean }): Promise<void>{
+    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }): Promise<void>{
         if (!data) {
             data = {};
         }
@@ -463,7 +467,10 @@ export class Mails {
         }else {
             data.searchText = "&search=" + data.searchText;
         }
-        let response = await http.get(this.api.get + '?page=' + data.pageNumber + data.searchText);
+        if (!data.filterUnread) {
+            data.filterUnread = false;
+        }
+        let response = await http.get(this.api.get + '?page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }
