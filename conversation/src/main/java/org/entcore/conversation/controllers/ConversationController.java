@@ -367,6 +367,7 @@ public class ConversationController extends BaseController {
 	public void list(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
 		final String restrain = request.params().get("restrain");
+		final String unread = request.params().get("unread");
 		final String search = request.params().get("search");
 		if(search != null  && search.trim().length() < 3){
 			badRequest(request);
@@ -385,7 +386,11 @@ public class ConversationController extends BaseController {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.list(folder, restrain, user, page, search, new Handler<Either<String, JsonArray>>() {
+					Boolean b = null;;
+					if (unread != null && !unread.isEmpty()) {
+						b = Boolean.valueOf(unread);
+					}
+					conversationService.list(folder, restrain, b, user, page, search, new Handler<Either<String, JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
@@ -458,6 +463,7 @@ public class ConversationController extends BaseController {
 	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
 	public void count(final HttpServerRequest request) {
 		final String folder = request.params().get("folder");
+		final String restrain = request.params().get("restrain");
 		final String unread = request.params().get("unread");
 		if (folder == null || folder.trim().isEmpty()) {
 			badRequest(request);
@@ -471,7 +477,7 @@ public class ConversationController extends BaseController {
 					if (unread != null && !unread.isEmpty()) {
 						b = Boolean.valueOf(unread);
 					}
-					conversationService.count(folder, b, user, defaultResponseHandler(request));
+					conversationService.count(folder, restrain, b, user, defaultResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
