@@ -65,6 +65,7 @@
     "mail.sent": "Message envoyé",
     "message": "le message",
     "message.draft.saved": "Message enregistré en brouillon",
+    "message.save.fail": "Erreur : le message n'a pas pu être enregistré",
     "messages": "Messages",
     "ml.sent": "Message envoyé",
     "modify": "Modifier",

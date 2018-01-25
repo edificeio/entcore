@@ -47,13 +47,19 @@
 			</button>
 		</div>
 	</div>
-
-	<hr class="row" />
 	<div class="row">
+
+        <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
+        <div class="row info hollow no-margin absolute-w" ng-class="{reveal : state.newItem.id}" >
+            <i18n>message.draft.saved</i18n>
+        </div>
+        <div class="row warning hollow no-margin absolute-w" ng-class="{reveal : false}" >
+            <i18n>message.save.fail</i18n>
+        </div>
+
 		<editor ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
 	</div>
-	<div class="row info" ng-if="state.newItem.id" ><i18n>message.draft.saved</i18n></div>
-	<div class="row drop-down-block" ng-class="{slided: signatureShow}">
+    <div class="row drop-down-block" ng-class="{slided: signatureShow}">
 		<div class="drop-down-label">
 			<div class="twelve cell" pulsar-highlight="7">
 				<label ng-click="signatureShow = !signatureShow">
