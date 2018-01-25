@@ -1,9 +1,9 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core'
-import { AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
 import { UserListService, SpinnerService, NotifyService } from '../../../../core/services'
 import { UserModel } from '../../../../core/store/models'
+import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 
 @Component({
     selector: 'user-relatives-section',
@@ -17,9 +17,8 @@ import { UserModel } from '../../../../core/store/models'
                 <div class="padded">
                     <h3><s5l>add.relative</s5l></h3>
                     <list class="inner-list"
-                        [model]="structure?.users?.data"
+                        [model]="lightboxRelatives"
                         [inputFilter]="userListService.filterByInput"
-                        [filters]="filterRelatives"
                         searchPlaceholder="search.user"
                         [sort]="userListService.sorts"
                         (inputChange)="userListService.inputFilter = $event"
@@ -51,9 +50,8 @@ import { UserModel } from '../../../../core/store/models'
     providers: [ UserListService ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserRelativesSection extends AbstractSection {
-    @ViewChild("codeInput") 
-    codeInput : AbstractControl
+export class UserRelativesSection extends AbstractSection implements OnInit, OnChanges {
+    lightboxRelatives: UserModel[] = [];
 
     constructor(
         public userListService: UserListService,
@@ -63,18 +61,27 @@ export class UserRelativesSection extends AbstractSection {
         super()
     }
 
+    ngOnInit() {
+        this.updateLightboxRelatives();
+    }
+
+    ngOnChanges() {
+        this.updateLightboxRelatives();
+    }
+
+    private updateLightboxRelatives() {
+        this.lightboxRelatives = this.structure.users.data.filter(
+            u => u.type == 'Relative' 
+                && !u.deleteDate
+                && this.details.parents 
+                && !this.details.parents.find(p => p.id == u.id)
+        );
+    }
+
     protected onUserChange(){}
 
     isStudent(u: UserModel){
         return u.type === 'Student'
-    }
-
-    filterRelatives = (u: UserModel) => {
-        return this.details 
-            && this.details.parents 
-            && !this.details.parents.find(p => p.id === u.id)
-            && u.type === 'Relative' 
-            && !u.deleteDate
     }
 
     disableRelative = (relative) => {
@@ -82,7 +89,7 @@ export class UserRelativesSection extends AbstractSection {
     }
 
     addRelative = (relative) => {
-        this.spinner.perform('portal-content', this.details.addRelative(relative))
+        this.spinner.perform('portal-content', this.details.addRelative(relative)
             .then(() => {
                 this.ns.success(
                     { 
@@ -91,6 +98,8 @@ export class UserRelativesSection extends AbstractSection {
                             relative:  relative.displayName
                         } 
                     }, 'notify.user.add.relative.title');
+
+                this.updateLightboxRelatives();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -101,11 +110,12 @@ export class UserRelativesSection extends AbstractSection {
                             relative:  relative.displayName
                         }
                     }, 'notify.user.add.relative.error.title', err);
-            });
+            })
+        );
     }
 
     removeRelative = (relative) => {
-        this.spinner.perform('portal-content', this.details.removeRelative(relative))
+        this.spinner.perform('portal-content', this.details.removeRelative(relative)
             .then(() => {
                 this.ns.success(
                     { 
@@ -114,6 +124,8 @@ export class UserRelativesSection extends AbstractSection {
                             relative:  relative.displayName
                         } 
                     }, 'notify.user.remove.relative.title');
+
+                this.updateLightboxRelatives();
                 this.cdRef.markForCheck();
             })
             .catch(err => {
@@ -124,6 +136,7 @@ export class UserRelativesSection extends AbstractSection {
                             relative:  relative.displayName
                         }
                     }, 'notify.user.remove.relative.error.title', err);
-            });
+            })
+        );
     }
 }
