@@ -42,12 +42,12 @@
 	<div ng-if="isLoading()">
 		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
-	<div ng-if="!isLoading() && folders.inbox.mails.all.length == 0">
+	<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0">
 		<div class="info fade-in"><i18n>folder.empty</i18n></div>
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
-		ng-repeat="mail in folders.outbox.mails.all"
+		ng-repeat="mail in conversation.currentFolder.mails.all"
 		ng-class="{checked: mail.selected}"
 		dragstart="drag(mail, $originalEvent)">
 

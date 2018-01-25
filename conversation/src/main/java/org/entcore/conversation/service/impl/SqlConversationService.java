@@ -205,7 +205,7 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
-		
+
 		JsonArray values = new JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 
@@ -939,8 +939,8 @@ public class SqlConversationService implements ConversationService{
 		if (unread != null && unread) {
 			String upFolder = folder.toUpperCase();
 
-			// Only for user folders
-			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT") && !upFolder.equals("TRASH")) {
+			// Only for user folders and trash
+			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT")) {
 				messageConditionUnread = " AND m.state = ? AND m.from <> ?";
 				values.add("SENT");
 				values.add(user.getUserId());

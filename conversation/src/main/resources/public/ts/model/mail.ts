@@ -114,7 +114,6 @@ export class Mail implements Selectable {
 
     isUnread(currentFolder: Folder): boolean {
         const systemFolder = this.getSystemFolder();
-        console.log(currentFolder.getName());
         return this.unread && (systemFolder === 'INBOX' || currentFolder.getName() === 'INBOX');
     }
 
