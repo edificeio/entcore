@@ -203,18 +203,14 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, String restrain, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
-
-		String additionalWhere = "";
+		
 		JsonArray values = new JsonArray();
+		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
+
 		values.add("SENT").add(user.getUserId());
-		if(restrain != null){
-			additionalWhere = "AND um.folder_id = ? AND um.trashed = false";
-			values.add(folder);
-		} else {
-			additionalWhere = addFolderCondition(folder, values, user.getUserId());
-		}
+		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user);
 
 		if(searchText != null){
 			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
@@ -225,7 +221,7 @@ public class SqlConversationService implements ConversationService{
 				"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 				"FROM " + userMessageTable + " um LEFT JOIN " +
 				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
-				messageTable + " m ON um.message_id = m.id LEFT JOIN " +
+				messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") LEFT JOIN " +
 				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? LEFT JOIN " +
 				attachmentTable + " att ON uma.attachment_id = att.id " +
 				"WHERE um.user_id = ? " + additionalWhere + " " +
@@ -355,23 +351,20 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void count(String folder, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
+	public void count(String folder, String restrain, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, folder))
 			return;
 
-		JsonArray values = new JsonArray()
-			.add(user.getUserId());
+		JsonArray values = new JsonArray();
+
+		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
+		values.add(user.getUserId());
 
 		String query = "SELECT count(*) as count FROM " + userMessageTable + " um JOIN " +
-			messageTable + " m ON (um.message_id = m.id) " +
+			messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") " +
 			"WHERE user_id = ? ";
 
-		if(unread != null){
-			query += "AND unread = ? ";
-			values.add(unread);
-		}
-
-		query += addFolderCondition(folder, values, user.getUserId());
+		query += addCompleteFolderCondition(values, restrain, unread, folder, user);
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
@@ -922,6 +915,39 @@ public class SqlConversationService implements ConversationService{
 				break;
 		}
 		return additionalWhere;
+	}
+
+	private String addCompleteFolderCondition(JsonArray values, String restrain, Boolean unread, String folder, UserInfos user) {
+		String additionalWhere = "";
+		if(unread != null && unread){
+			additionalWhere += "AND unread = ? ";
+			values.add(unread);
+		}
+		if(restrain != null){
+			additionalWhere += "AND um.folder_id = ? AND um.trashed = false";
+			values.add(folder);
+		} else {
+			additionalWhere += addFolderCondition(folder, values, user.getUserId());
+		}
+
+		return additionalWhere;
+	}
+
+	private String addMessageConditionUnread(String folder, JsonArray values, Boolean unread, UserInfos user) {
+		String messageConditionUnread = "";
+
+		if (unread != null && unread) {
+			String upFolder = folder.toUpperCase();
+
+			// Only for user folders
+			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT") && !upFolder.equals("TRASH")) {
+				messageConditionUnread = " AND m.state = ? AND m.from <> ?";
+				values.add("SENT");
+				values.add(user.getUserId());
+			}
+		}
+
+		return messageConditionUnread;
 	}
 
 	private boolean validationError(UserInfos user, Handler<Either<String, JsonArray>> results, String ... params) {

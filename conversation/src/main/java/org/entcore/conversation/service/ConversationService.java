@@ -58,7 +58,7 @@ public interface ConversationService {
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
 
-	void list(String folder, String restrain, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
+	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
@@ -68,7 +68,7 @@ public interface ConversationService {
 
 	void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
-	void count(String folder, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void count(String folder, String restrain, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	void findVisibleRecipients(String parentMessageId, UserInfos user,
 		String acceptLanguage, String search, Handler<Either<String, JsonObject>> result);
