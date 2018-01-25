@@ -25,15 +25,6 @@ import { Eventer } from 'entcore-toolkit';
 
 import http from 'axios';
 
-export const filters = {
-    unread: function(mail){
-        return mail.unread;
-    },
-    none: function(mail){
-        return true;
-    }
-}
-
 export class Conversation {
     folders: SystemFolders;
     userFolders: UserFolders;
