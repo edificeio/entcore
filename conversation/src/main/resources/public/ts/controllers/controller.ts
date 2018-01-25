@@ -574,12 +574,15 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.dropMove = async (mails, folder) => {
-            var mailObj
-            mails.forEach(async mail => {
+            var mailObj;
+            for (var i = 0, l = mails.length; i < l; i++) {
+                var mail = mails[i];
                 mailObj = new Mail(mail.id);
                 await mailObj.move(folder);
                 $scope.$apply();
-            })
+            }
+            await folder.countUnread();
+            $scope.$apply();
         }
         $scope.dropTrash = async mails => {
             var mailObj;
