@@ -73,26 +73,25 @@
 
 					<i class="[[mail.matchSystemIcon()]]" tooltip="[[mail.matchSystemIcon()]]"></i>
 
-					<!-- if NOT from inbox, display DEST -->
 					<span class="strong"
-						ng-if="mail.getSystemFolder() !== 'INBOX'"
 						ng-init="recs = allReceivers(mail)">
 
-						<span ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
+						<span
+							ng-if="mail.getSystemFolder() !== 'INBOX'"
+							ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
 							<span>[[mail.map(receiver).displayName]]</span>
 							<span ng-if="$index < 1 && receivers.length > 1">,</span>
 							<span class="strong" ng-if="recs.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
 						</span>
-					</span>
 
-					<!-- if from inbox, display EXP -->
-					<span class="strong"
-						ng-if="mail.getSystemFolder() === 'INBOX'">
-						[[mail.sender().displayName]][[mail.fromName]]
-					</span>
+						<span class="strong"
+							ng-if="mail.getSystemFolder() === 'INBOX'">
+							[[mail.sender().displayName]][[mail.fromName]]
+						</span>
 
-					<br>
-					<span class="small-text">[[mail.subject]]</span>
+						<br ng-if="recs.length > 0">
+						<span class="small-text">[[mail.subject]]</span>
+					</span>
 				</div>
 			</div>
 

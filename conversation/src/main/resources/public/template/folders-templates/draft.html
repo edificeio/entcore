@@ -69,7 +69,7 @@
 						<span ng-if="$index < 1 && receivers.length > 1">,</span>
 						<span class="strong" ng-if="mail.to.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
 					</span>
-					<br>
+					<br ng-if="receivers.length > 0">
 					<span class="small-text">[[mail.subject]]</span>
 				</div>
 			</div>
