@@ -9,7 +9,7 @@
 		<button ng-click="transfer()" class="right-magnet"><i18n>transfer</i18n></button>
 
 <nav class="prev-next">
-	<button class="" ng-click="previousMail()">
+	<button class="" ng-click="previousMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
 		<i class="left-open"></i>
 	</button>
 	<span class="pagination">
@@ -18,7 +18,7 @@
 		<span class="zero-desktop">/</span>
 		<span> [[state.current.count]]</span>
 	</span>
-	<button class="" ng-click="nextMail()">
+	<button class="" ng-click="nextMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
 		<i class="open-right"></i>
 	</button>
 </nav>
