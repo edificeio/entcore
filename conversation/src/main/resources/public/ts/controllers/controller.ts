@@ -7,7 +7,8 @@ export let conversationController = ng.controller('ConversationController', [
             selectAll: false,
             filterUnread: false,
             current: undefined,
-            newItem: undefined
+            newItem: undefined,
+            draftError: false
         };
 
         $scope.conversation = Conversation.instance;
@@ -66,6 +67,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.resetState = function() {
             $scope.state.selectAll = false;
             $scope.state.filterUnread = false;
+            $scope.state.draftError = false;
         };
 
         $scope.getSignature = () => {
@@ -317,16 +319,16 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.quickSaveDraft = async () => {
-            await Conversation.instance.folders.draft.saveDraft($scope.state.newItem);
+            $scope.saveDraft($scope.state.newItem);
         };
 
-        $scope.saveDraft = async () => {
-            notify.info('draft.saved');
-            if(!$scope.draftSavingFlag)
-                await $scope.quickSaveDraft();
-            $scope.state.newItem = new Mail();
-            $scope.state.newItem.setMailSignature($scope.getSignature());
-            await $scope.openFolder(Conversation.instance.folders.draft.folderName);
+        $scope.saveDraft = async (item) => {
+            try {
+                await Conversation.instance.folders.draft.saveDraft(item);
+            }
+            catch(e) {
+                $scope.state.draftError = true;
+            }
         };
 
         $scope.saveDraftAuto = async () => {
@@ -335,7 +337,7 @@ export let conversationController = ng.controller('ConversationController', [
                 var temp = $scope.state.newItem;
                 setTimeout(async function () {
                     if (!$scope.sending && temp.state != "SENT") {
-                        await Conversation.instance.folders.draft.saveDraft(temp);
+                        $scope.saveDraft(temp);
                     }
                     $scope.draftSavingFlag=false;
                 }, 5000)
