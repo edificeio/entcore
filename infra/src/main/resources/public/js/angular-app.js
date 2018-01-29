@@ -2492,7 +2492,7 @@ module.directive('userMissingRole', function($compile) {
     return {
         restrict: 'A',
         link: function($scope, $element, $attributes) {
-            var auth = $attributes.userRole;
+            var auth = $attributes.userMissingRole;
             if (model.me.functions[auth]) {
                 $element.hide();
             } else {
