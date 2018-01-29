@@ -3848,17 +3848,16 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
 module.directive('searchUser', () => {
     return {
         restrict: 'E',
-        template: `
-        <form class="input-help" ng-submit="update(true)">
-            <label ng-class="{ hide: ngModel.length >= 3 }" user-role="ADMIN_LOCAL">
-                <i18n>share.search.help</i18n>
-            </label>
-            <label user-missing-role="ADMIN_LOCAL">
-                <i18n>share.search.placeholder</i18n>
-            </label>
-            <input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />
-        </form>
-        `,
+        template: 
+        '<form class="input-help" ng-submit="update(true)">' +
+        '<label ng-class="{ hide: ngModel.length >= 3 }" user-role="ADMIN_LOCAL">' +
+        '<i18n>share.search.help</i18n>' +
+        '</label>' +
+        '<label user-missing-role="ADMIN_LOCAL">' +
+        '<i18n>share.search.placeholder</i18n>' +
+        '</label>' +
+        '<input type="text" ng-model="ngModel" ng-change="update()" autocomplete="off" ng-class="{ move: ngModel.length > 0 }" />' +
+        '</form>',
         scope: { 
             ngModel: '=', 
             onSend: '&',
