@@ -95,6 +95,7 @@
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 
 					<i class="[[mail.matchSystemIcon()]]" tooltip="[[mail.matchSystemIcon()]]"></i>
+					<i ng-if="mail.matchSystemIcon() === mail.getInSystemIcon() && mail.isUserAuthor()" class="[[mail.getOutSystemIcon()]]" tooltip="[[mail.getOutSystemIcon()]]"></i>
 
 					<span class="strong"
 						ng-init="recs = allReceivers(mail)">

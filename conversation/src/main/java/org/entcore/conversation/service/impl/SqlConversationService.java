@@ -941,9 +941,8 @@ public class SqlConversationService implements ConversationService{
 
 			// Only for user folders and trash
 			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT")) {
-				messageConditionUnread = " AND m.state = ? AND m.from <> ?";
+				messageConditionUnread = " AND m.state = ?";
 				values.add("SENT");
-				values.add(user.getUserId());
 			}
 		}
 
