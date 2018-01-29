@@ -70,6 +70,12 @@ export abstract class Folder implements Selectable {
         const response = await http.get('/conversation/count/' + name + '?unread=true' + restrain)
         this.nbUnread = parseInt(response.data.count);
     }
+
+    async toggleUnreadSelection(unread) {
+        await this.mails.toggleUnread(unread);
+        await quota.refresh();
+        await this.countUnread();
+    }
 }
 
 export abstract class SystemFolder extends Folder {
@@ -170,12 +176,6 @@ export class Inbox extends SystemFolder {
     async removeSelection(){
         await this.mails.toTrash();
         await quota.refresh();
-    }
-
-    async toggleUnreadSelection(unread){
-        await this.mails.toggleUnread(unread);
-        await quota.refresh();
-        await this.countUnread();
     }
 
     selectAll(){
