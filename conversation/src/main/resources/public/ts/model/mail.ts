@@ -57,10 +57,14 @@ export class Mail implements Selectable {
         this.allowReplyAll = true;
     }
 
+    isUserAuthor(): boolean {
+        return this.from === model.me.userId;
+    }
+
     getSystemFolder(): string {
         if (Conversation.instance.currentFolder.getName() !== 'OUTBOX' && (this.to.indexOf(model.me.userId) !== -1 || this.cc.indexOf(model.me.userId) !== -1) && this.state === "SENT")
             return 'INBOX';
-        if (Conversation.instance.currentFolder.getName() !== 'INBOX' && this.from === model.me.userId && this.state === "SENT")
+        if (Conversation.instance.currentFolder.getName() !== 'INBOX' && this.isUserAuthor() && this.state === "SENT")
             return 'OUTBOX';
         if (this.from === model.me.userId && this.state === "DRAFT")
             return 'DRAFT';
