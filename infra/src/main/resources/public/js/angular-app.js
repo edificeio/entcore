@@ -3468,7 +3468,7 @@ module.directive('draggable', function($compile) {
     }
 });
 
-module.directive('sharePanel', ['$rootScope', ($rootScope) => {
+module.directive('sharePanel', ['$rootScope', function ($rootScope) {
 	return {
 		scope: {
 			resources: '=',
@@ -3729,12 +3729,12 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
                 $scope.found = _.union(
                     _.filter($scope.sharingModel.groups.visibles, function(group){
                         var testName = idiom.removeAccents(group.name).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(i => i.id === group.id) === undefined;
+                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(function(i){ return i.id === group.id }) === undefined;
                     }),
                     _.filter($scope.sharingModel.users.visibles, function(user){
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && $scope.sharingModel.edited.find(i => i.id === user.id) === undefined;
+                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && $scope.sharingModel.edited.find(function(i){ return i.id === user.id }) === undefined;
                     })
                 );
                 $scope.found = _.filter($scope.found, function(element){
@@ -3845,7 +3845,7 @@ module.directive('sharePanel', ['$rootScope', ($rootScope) => {
 	}
 }]);
 
-module.directive('searchUser', () => {
+module.directive('searchUser', function () {
     return {
         restrict: 'E',
         template: 
@@ -3863,19 +3863,19 @@ module.directive('searchUser', () => {
             onSend: '&',
             clearList: '&'
         },
-        link: async (scope, element, attributes) => {
+        link: function (scope, element, attributes) {
             if(attributes.id){
                 element.find('input').attr('id', attributes.id);
                 element.attr('id', '');
             }
 
-            element.find('input').on('focus', () => {
+            element.find('input').on('focus', function () {
                 element.addClass('focus');
                 element.find('label').addClass('move');
             });
 
-            element.find('input').on('blur', () => {
-                setTimeout(() => {
+            element.find('input').on('blur', function () {
+                setTimeout(function () {
                     element.removeClass('focus');
                     if(!scope.ngModel){
                         element.find('label').removeClass('move');
@@ -3883,7 +3883,7 @@ module.directive('searchUser', () => {
                 }, 200);
             });
 
-            scope.update = (force) => {
+            scope.update = function (force) {
                 if(!model.me.functions.ADMIN_LOCAL){
                     force = true;
                 }
