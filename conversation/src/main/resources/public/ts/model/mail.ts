@@ -57,25 +57,33 @@ export class Mail implements Selectable {
         this.allowReplyAll = true;
     }
 
-    getSystemFolder(): string{
-        if (this.from !== model.me.userId && this.state === "SENT")
+    getSystemFolder(): string {
+        if (Conversation.instance.currentFolder.getName() !== 'OUTBOX' && (this.to.indexOf(model.me.userId) !== -1 || this.cc.indexOf(model.me.userId) !== -1) && this.state === "SENT")
             return 'INBOX';
-        if (this.from === model.me.userId && this.state === "SENT")
+        if (Conversation.instance.currentFolder.getName() !== 'INBOX' && this.from === model.me.userId && this.state === "SENT")
             return 'OUTBOX';
         if (this.from === model.me.userId && this.state === "DRAFT")
             return 'DRAFT';
         return '';
     }
 
-    matchSystemIcon(): string{
+    matchSystemIcon(): string {
         const systemFolder = this.getSystemFolder();
         if (systemFolder === "INBOX")
-            return 'mail-in';
+            return this.getInSystemIcon();
         if (systemFolder === "OUTBOX")
-            return 'mail-out';
+        return this.getOutSystemIcon();
         if (systemFolder === "DRAFT")
             return 'draft';
         return '';
+    }
+
+    getInSystemIcon(): string {
+        return 'mail-in';
+    }
+
+    getOutSystemIcon(): string {
+        return 'mail-out';
     }
 
     isAvatarGroup(systemFolder: string): boolean {
@@ -502,11 +510,21 @@ export class Mails {
     }
 
     async toggleUnread(unread) {
-        var paramsIds = toFormData({ id: _.pluck(this.selection.selected, 'id') });
+        // Unselect mails that are not from inbox
+        var selected = [];
+        this.selection.selected.forEach(mail => {
+            if (mail.getSystemFolder() === 'INBOX') {
+                selected.push(mail);
+            }
+        });
+        if (selected.length === 0)
+            return;
+
+        var paramsIds = toFormData({ id: _.pluck(selected, 'id') });
         var paramUnread = `unread=${unread}`;
 
         await http.post(`/conversation/toggleUnread?${paramsIds}&${paramUnread}`);
-        Conversation.instance.folders.inbox.mails.refresh();
+        Conversation.instance.currentFolder.mails.refresh();
         quota.refresh();
     }
 }

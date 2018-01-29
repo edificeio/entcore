@@ -392,7 +392,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
-            await Conversation.instance.folders.inbox.toggleUnreadSelection(unread);
+            await Conversation.instance.currentFolder.toggleUnreadSelection(unread);
             $scope.refreshFolders();
         };
 
