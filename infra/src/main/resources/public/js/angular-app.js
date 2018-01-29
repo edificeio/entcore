@@ -3885,6 +3885,10 @@ module.directive('searchUser', () => {
             });
 
             scope.update = (force) => {
+                if(!model.me.functions.ADMIN_LOCAL){
+                    force = true;
+                }
+
                 scope.$apply();
                 if(scope.ngModel.length < 3){
                     scope.clearList();
