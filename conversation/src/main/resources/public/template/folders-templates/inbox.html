@@ -32,7 +32,7 @@
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
 		<div class="search-pagination flex-row align-center">
-			<a ng-class="{'show-close': searchField.words.length > 0}" ng-click='searchField.words="";cancelSearch()'><i class="close horizontal-spacing cell-ellipsis"></i></a>
+			<a ng-class="{'show-close': searchField.words.length > 0 || state.searching}" ng-click='searchField.words="";cancelSearch()'><i class="close horizontal-spacing cell-ellipsis"></i></a>
 			<div class="cell twelve">
 				<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
 				ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
