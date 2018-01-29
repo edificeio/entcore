@@ -6,6 +6,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.state = {
             selectAll: false,
             filterUnread: false,
+            searching: false,
             current: undefined,
             newItem: undefined,
             draftError: false
@@ -204,6 +205,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.search = async (text: string) => {
             if(text.trim().length > 3) {
+                $scope.state.searching = true;
                 await $scope.fluidWait();
                 await Conversation.instance.currentFolder.search(text);
                 $scope.$apply();
@@ -211,6 +213,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.cancelSearch = async () => {
+            $scope.state.searching = false;
             await $scope.fluidWait();
             await Conversation.instance.currentFolder.search("");
             $scope.$apply();
