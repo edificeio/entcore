@@ -3729,12 +3729,12 @@ module.directive('sharePanel', ['$rootScope', function ($rootScope) {
                 $scope.found = _.union(
                     _.filter($scope.sharingModel.groups.visibles, function(group){
                         var testName = idiom.removeAccents(group.name).toLowerCase();
-                        return testName.indexOf(searchTerm) !== -1 && $scope.sharingModel.edited.find(function(i){ return i.id === group.id }) === undefined;
+                        return testName.indexOf(searchTerm) !== -1 && _.find($scope.sharingModel.edited, function(i){ return i.id === group.id }) === undefined;
                     }),
                     _.filter($scope.sharingModel.users.visibles, function(user){
                         var testName = idiom.removeAccents(user.lastName + ' ' + user.firstName).toLowerCase();
                         var testNameReversed = idiom.removeAccents(user.firstName + ' ' + user.lastName).toLowerCase();
-                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && $scope.sharingModel.edited.find(function(i){ return i.id === user.id }) === undefined;
+                        return (testName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1) && _.find($scope.sharingModel.edited, function(i){ return i.id === user.id }) === undefined;
                     })
                 );
                 $scope.found = _.filter($scope.found, function(element){
