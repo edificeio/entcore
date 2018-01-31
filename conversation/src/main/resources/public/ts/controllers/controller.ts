@@ -461,7 +461,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.moveToFolderClick = async (folder, obj) => {
             obj.template = ''
 
-            if (folder.userFolders.length() > 0) {
+            if (folder.userFolders.all.length > 0) {
                 $timeout(function () {
                     obj.template = 'move-folders-content'
                 }, 10)
