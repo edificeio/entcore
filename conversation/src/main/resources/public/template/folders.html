@@ -7,8 +7,8 @@
 	   dropcondition="dropCondition(folder)"
        on-dragover   ="openUserFolderOnDragover(folder, obj)"
        class="folder-list-item">
-		<i class="arrow" ng-if="folder.userFolders.length()"></i>
-		[[folder.name]]
+		<i class="arrow" ng-if="folder.userFolders.all.length"></i>
+        [[folder.name]]
 		<i class="close" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
 		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
 	</a>

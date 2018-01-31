@@ -20,13 +20,16 @@
 
  <!-- Folders - move popup templates -->
  <script type="text/ng-template" id="move-folders-content">
- 	<a ng-click="destination.folder = folder; moveToFolderClick(folder, obj)" ng-init="obj = { template: '' }" ng-class="{ selected: destination.folder.id === folder.id, opened: destination.folder.id === folder.id || isParentOf(folder, destination.folder) }" class="folder-list-item">
- 		<i class="arrow" ng-if="folder.userFolders.length()"></i>
+	 <a ng-click="destination.folder = folder; moveToFolderClick(folder, obj)"
+		 ng-init="obj = { template: '' }"
+		 ng-class="{ selected: destination.folder.id === folder.id, opened: destination.folder.id === folder.id || isParentOf(folder, destination.folder) }"
+		 class="folder-list-item">
+		<i class="arrow" ng-if="folder.userFolders.all.length"></i>
  		[[folder.name]]
  	</a>
  	<ul ng-class="{ selected: destination.folder.id === folder.id, closed: !selected }"
- 		ng-if="destination.folder.id === folder.id || isParentOf(folder, destination.folder)">
- 		<li data-ng-repeat="folder in folder.userFolders.all"
+		 ng-if="destination.folder.id === folder.id || isParentOf(folder, destination.folder)">
+		<li data-ng-repeat="folder in folder.userFolders.all | orderBy : 'name'"
  			data-ng-include="obj.template">
  		</li>
  	</ul>
