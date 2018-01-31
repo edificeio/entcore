@@ -274,15 +274,12 @@ export class Mail implements Selectable {
                 this.state = "SENT";
                 notify.info('mail.sent');
             }
-            var undelivered = result.undelivered.join(', ');
-            if (result.undelivered.length > 0) {
-                notify.error(undelivered + lang.translate('undelivered'));
-            }
-            return result.inactive;
+
+            return {inactive : result.inactive, undelivered : result.undelivered};
         }
         catch(e){
             notify.error(e.response.data.error);
-            return [];
+            return {};
         }
     };
 
