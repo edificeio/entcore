@@ -365,7 +365,7 @@ public class SqlConversationService implements ConversationService{
 
 		final String preFilter;
 		if (isNotEmpty(search)) {
-			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			params.putString("search", StringValidation.removeAccents(search.trim()).toLowerCase());
 		} else {
 			preFilter = null;
@@ -394,28 +394,7 @@ public class SqlConversationService implements ConversationService{
 							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 							"visibles.profiles[0] as profile";
-
-					findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
-						@Override
-						public void handle(JsonArray visibles) {
-							JsonArray users = new JsonArray();
-							JsonArray groups = new JsonArray();
-							visible.putArray("groups", groups).putArray("users", users);
-							for (Object o: visibles) {
-								if (!(o instanceof JsonObject)) continue;
-								JsonObject j = (JsonObject) o;
-								if (j.getString("name") != null) {
-									j.removeField("displayName");
-									UserUtils.groupDisplayName(j, acceptLanguage);
-									groups.add(j);
-								} else {
-									j.removeField("name");
-									users.add(j);
-								}
-							}
-							result.handle(new Either.Right<String,JsonObject>(visible));
-						}
-					});
+					callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 				}
 			}));
 		} else {
@@ -423,28 +402,33 @@ public class SqlConversationService implements ConversationService{
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile";
-			findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
-				@Override
-				public void handle(JsonArray visibles) {
-					JsonArray users = new JsonArray();
-					JsonArray groups = new JsonArray();
-					visible.putArray("groups", groups).putArray("users", users);
-					for (Object o: visibles) {
-						if (!(o instanceof JsonObject)) continue;
-						JsonObject j = (JsonObject) o;
-						if (j.getString("name") != null) {
-							j.removeField("displayName");
-							UserUtils.groupDisplayName(j, acceptLanguage);
-							groups.add(j);
-						} else {
-							j.removeField("name");
-							users.add(j);
-						}
-					}
-					result.handle(new Either.Right<String,JsonObject>(visible));
-				}
-			});
+			callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
 		}
+	}
+
+	private void callFindVisibles(UserInfos user, final String acceptLanguage, final Handler<Either<String, JsonObject>> result,
+			final JsonObject visible, JsonObject params, String preFilter, String customReturn) {
+		findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
+			@Override
+			public void handle(JsonArray visibles) {
+				JsonArray users = new JsonArray();
+				JsonArray groups = new JsonArray();
+				visible.putArray("groups", groups).putArray("users", users);
+				for (Object o: visibles) {
+					if (!(o instanceof JsonObject)) continue;
+					JsonObject j = (JsonObject) o;
+					if (j.getString("name") != null) {
+						j.removeField("displayName");
+						UserUtils.groupDisplayName(j, acceptLanguage);
+						groups.add(j);
+					} else {
+						j.removeField("name");
+						users.add(j);
+					}
+				}
+				result.handle(new Either.Right<String,JsonObject>(visible));
+			}
+		});
 	}
 
 	@Override
