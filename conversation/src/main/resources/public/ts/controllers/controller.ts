@@ -361,21 +361,18 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.inactives = [];
+        $scope.result = {};
 
         $scope.sendMail = async () => {
             $scope.sending = true; //Blocks submit button while message hasn't been send
             const mail: Mail = $scope.state.newItem;
-            $scope.inactives = await mail.send();
+            $scope.result = await mail.send();
             $scope.state.newItem = new Mail();
             $scope.state.newItem.setMailSignature($scope.getSignature());
             await $scope.openFolder(Conversation.instance.folders.inbox.folderName);
             $scope.sending = false;
         };
 
-        $scope.clearInactives = () => {
-            $scope.inactives = [];
-        };
 
         $scope.restore = async () => {
             await Conversation.instance.folders.trash.restore();
