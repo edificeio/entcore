@@ -62,7 +62,7 @@ export class Mail implements Selectable {
     }
 
     getSystemFolder(): string {
-        if (Conversation.instance.currentFolder.getName() !== 'OUTBOX' && (this.to.indexOf(model.me.userId) !== -1 || this.cc.indexOf(model.me.userId) !== -1) && this.state === "SENT")
+        if (Conversation.instance.currentFolder.getName() !== 'OUTBOX' && (this.isMeInsideGroup(this.to) || this.isMeInsideGroup(this.cc)) && this.state === "SENT")
             return 'INBOX';
         if (Conversation.instance.currentFolder.getName() !== 'INBOX' && this.isUserAuthor() && this.state === "SENT")
             return 'OUTBOX';
@@ -129,6 +129,28 @@ export class Mail implements Selectable {
         return this.unread && (systemFolder === 'INBOX' || currentFolder.getName() === 'INBOX');
     }
 
+    isRecipientGroup() {
+        var to = this.to[0];
+        if (!to)
+            return false;
+        if (!(to instanceof User)) {
+            to = this.map(to);
+        }
+        return to.isAGroup();
+    };
+
+    isMeInsideGroup(list) {
+        if (list.indexOf(model.me.userId) !== -1)
+            return true;
+
+        for (var i = 0, l = list.length; i < l; i++) {
+            if (model.me.groupsIds.indexOf(list[i]) !== -1)
+                return true;
+        }
+
+        return false;
+    }
+
     setMailSignature(signature: string){
         if(!this.body)
             this.body='';
@@ -178,16 +200,6 @@ export class Mail implements Selectable {
             return id;
         }
         return User.prototype.mapUser(this.displayNames, id);
-    };
-
-    isRecipientGroup() {
-        var to = this.to[0];
-        if (!to)
-            return false;
-        if (!(to instanceof User)) {
-            to = this.map(to);
-        }
-        return to.isAGroup();
     };
 
     async updateAllowReply() {
