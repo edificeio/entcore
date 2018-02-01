@@ -570,7 +570,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
-        $scope.dropTo = async (targetItem, $originalEvent) => {
+        $scope.dropTo = function (targetItem, $originalEvent) {
             var dataField = $scope.dropCondition(targetItem)($originalEvent)
             var originalItems = JSON.parse($originalEvent.dataTransfer.getData(dataField))
             if (targetItem.folderName === 'trash')
@@ -590,6 +590,7 @@ export let conversationController = ng.controller('ConversationController', [
                 var mail = mails[i];
                 mailObj = new Mail(mail.id);
                 await mailObj.move(folder);
+                $scope.$apply();
             }
             await folder.countUnread();
             await $scope.state.dragFolder.countUnread();
@@ -601,6 +602,7 @@ export let conversationController = ng.controller('ConversationController', [
             mails.forEach(async mail => {
                 mailObj = new Mail(mail.id);
                 await mailObj.trash();
+                $scope.$apply();
             })
 
             await $scope.state.dragFolder.countUnread();
