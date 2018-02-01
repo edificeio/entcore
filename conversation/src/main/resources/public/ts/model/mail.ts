@@ -329,14 +329,12 @@ export class Mail implements Selectable {
         await http.put('move/userfolder/' + destinationFolder.id + '?id=' + this.id);
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
-        await Conversation.instance.folders.inbox.countUnread();
     }
 
     async trash() {
         await http.put('/conversation/trash?id=' + this.id);
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
-        await Conversation.instance.folders.inbox.countUnread();
     }
 
     postAttachments($scope) {
@@ -507,7 +505,7 @@ export class Mails {
 
     async moveSelection(destinationFolder) {
         await http.put('move/userfolder/' + destinationFolder.id + '?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
-        Conversation.instance.currentFolder.mails.refresh();
+        await Conversation.instance.currentFolder.mails.refresh();
     }
 
     async toggleUnread(unread) {

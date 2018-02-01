@@ -9,7 +9,8 @@ export let conversationController = ng.controller('ConversationController', [
             searching: false,
             current: undefined,
             newItem: undefined,
-            draftError: false
+            draftError: false,
+            dragFolder: undefined
         };
 
         $scope.conversation = Conversation.instance;
@@ -485,7 +486,8 @@ export let conversationController = ng.controller('ConversationController', [
             template.close('lightbox');
             await Conversation.instance.currentFolder.mails.moveSelection(folderTarget);
             await Conversation.instance.folders.draft.mails.refresh();
-            await Conversation.instance.folders.inbox.countUnread();
+            await Conversation.instance.currentFolder.countUnread();
+            await folderTarget.countUnread();
             await $scope.refreshFolder();
         }
 
@@ -541,6 +543,7 @@ export let conversationController = ng.controller('ConversationController', [
         letterIcon.src = skin.theme + "../../img/icons/message-icon.png"
         $scope.drag = function (item, $originalEvent) {
             var selected = [];
+            $scope.state.dragFolder = Conversation.instance.currentFolder;
             if(Conversation.instance.currentFolder.mails.selection.selected.indexOf(item) > -1)
                 selected = Conversation.instance.currentFolder.mails.selection.selected;
             else
@@ -567,7 +570,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
-        $scope.dropTo = function (targetItem, $originalEvent) {
+        $scope.dropTo = async (targetItem, $originalEvent) => {
             var dataField = $scope.dropCondition(targetItem)($originalEvent)
             var originalItems = JSON.parse($originalEvent.dataTransfer.getData(dataField))
             if (targetItem.folderName === 'trash')
@@ -587,19 +590,21 @@ export let conversationController = ng.controller('ConversationController', [
                 var mail = mails[i];
                 mailObj = new Mail(mail.id);
                 await mailObj.move(folder);
-                $scope.$apply();
             }
             await folder.countUnread();
+            await $scope.state.dragFolder.countUnread();
             $scope.$apply();
         }
+
         $scope.dropTrash = async mails => {
             var mailObj;
             mails.forEach(async mail => {
                 mailObj = new Mail(mail.id);
                 await mailObj.trash();
-                $scope.$apply();
             })
 
+            await $scope.state.dragFolder.countUnread();
+            $scope.$apply();
         }
 
         //Given a data size in bytes, returns a more "user friendly" representation.

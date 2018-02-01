@@ -8,7 +8,7 @@
        on-dragover   ="openUserFolderOnDragover(folder, obj)"
        class="folder-list-item">
 		<i class="arrow" ng-if="folder.userFolders.all.length"></i>
-        [[folder.name]]
+        [[folder.name]] <span ng-if="folder.nbUnread" class="badge">[[folder.nbUnread]]</span>
 		<i class="close" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
 		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
 	</a>
