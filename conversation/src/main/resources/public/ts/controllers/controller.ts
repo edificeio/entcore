@@ -145,7 +145,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
                 await Conversation.instance.folders.draft.mails.refresh();
                 await Conversation.instance.folders.inbox.countUnread();
-                $scope.refreshFolders();
+                await $scope.refreshFolder();
             }
         };
 
@@ -378,19 +378,19 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.trash.restore();
             await Conversation.instance.folders.draft.mails.refresh();
             await Conversation.instance.folders.inbox.countUnread();
-            $scope.refreshFolders();
+            await $scope.refreshFolder();
         };
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
             await Conversation.instance.currentFolder.countUnread();
             await Conversation.instance.folders.inbox.countUnread();
-            $scope.refreshFolders();
+            await $scope.refreshFolder();
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
             await Conversation.instance.currentFolder.toggleUnreadSelection(unread);
-            $scope.refreshFolders();
+            await $scope.refreshFolder();
         };
 
         $scope.allReceivers = function (mail) {
@@ -433,16 +433,21 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.rootFolderTemplate = { template: 'folder-root-template' }
         $scope.refreshFolders = async () => {
             await $scope.userFolders.sync();
-            await Conversation.instance.currentFolder.sync();
-            $scope.state.selectAll = false;
-            if(Conversation.instance.currentFolder instanceof UserFolder){
-                $scope.openUserFolder(Conversation.instance.currentFolder, {});
-            }
+            await $scope.refreshFolder();
             $scope.rootFolderTemplate.template = ""
             $timeout(function () {
                 $scope.$apply()
                 $scope.rootFolderTemplate.template = 'folder-root-template'
             }, 100)
+        }
+
+        $scope.refreshFolder = async () => {
+            await Conversation.instance.currentFolder.sync();
+            $scope.state.selectAll = false;
+            if(Conversation.instance.currentFolder instanceof UserFolder){
+                $scope.openUserFolder(Conversation.instance.currentFolder, {});
+            }
+            $scope.$apply();
         }
 
         $scope.currentFolderDepth = function () {
@@ -468,7 +473,7 @@ export let conversationController = ng.controller('ConversationController', [
                 return
             }
 
-            await folder.userFolders.sync();
+            //await folder.userFolders.sync();
             $timeout(function () {
                 obj.template = 'move-folders-content'
             }, 10);
@@ -480,7 +485,7 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.currentFolder.mails.moveSelection(folderTarget);
             await Conversation.instance.folders.draft.mails.refresh();
             await Conversation.instance.folders.inbox.countUnread();
-            $scope.refreshFolders();
+            await $scope.refreshFolder();
         }
 
         $scope.openNewFolderView = function () {
