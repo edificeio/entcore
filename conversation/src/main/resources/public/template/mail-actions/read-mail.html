@@ -12,20 +12,20 @@
 			<i18n>reply</i18n>
 		</button>
 
-<nav class="prev-next" ng-if="state.current.count > 1">
-	<button class="" ng-click="previousMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
-		<i class="left-open"></i>
-	</button>
-	<span class="pagination">
-		<span>[[conversation.currentFolder.mails.all.indexOf(state.current)+1]]</span>
-		<i18n class="zero-mobile">mail.count.of</i18n>
-		<span class="zero-desktop">/</span>
-		<span> [[state.current.count]]</span>
-	</span>
-	<button class="" ng-click="nextMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
-		<i class="open-right"></i>
-	</button>
-</nav>
+		<nav class="prev-next" ng-if="state.current.count > 1">
+			<button class="" ng-click="previousMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
+				<i class="left-open"></i>
+			</button>
+			<span class="pagination">
+				<span>[[conversation.currentFolder.mails.all.indexOf(state.current)+1]]</span>
+				<i18n class="zero-mobile">mail.count.of</i18n>
+				<span class="zero-desktop">/</span>
+				<span> [[state.current.count]]</span>
+			</span>
+			<button class="" ng-click="nextMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
+				<i class="open-right"></i>
+			</button>
+		</nav>
 
 	</div>
 
@@ -57,8 +57,8 @@
 
 					<!-- to -->
 					<div>
-						<span translate key="to"></span>
-						<span> : </span>
+						<strong><span translate key="to"></span>
+						<span> : </span></strong>
 
 						<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
 							<a ng-if="!receiver.isMe() && !receiver.isAGroup()" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
@@ -70,8 +70,8 @@
 
 					<!-- copies -->
 					<div ng-if="(mail.cc.length + mail.ccName.length) > 0">
-						<span translate key="cc"></span>
-						<span> : </span>
+						<strong><span translate key="cc"></span>
+						<span> : </span></strong>
 
 						<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
 							<a ng-if="!receiver.isMe() && !receiver.isAGroup()" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
@@ -89,47 +89,40 @@
 			<div class="row horizontal-spacing">
 				<div class="twelve cell escape_cke" bind-html="mail.body"></div>
 			</div>
-			<hr />
 		</div>
 
+		<hr />
 
-		<div class="row block-container medium-text" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
-			<p>
-				<h2>
-					<i18n>attachments</i18n>
-					<a  data-ng-if="mail.attachments.length > 1" class="" ng-href="[['message/'+mail.id+'/allAttachments']]"><i class="mail-in" ></i></a>
-				</h2>
-			</p>
-			<article class="list-view">
-				<table class="list-view">
-					<thead>
-					<th colspan="4"></th>
-					</thead>
-					<tbody>
-					<tr ng-repeat="attachment in mail.attachments | orderBy: columnOrder" class="element">
-						<td class="icon">
-							<div class="twelve cell">
-								<i class="[[formatFileType(attachment.contentType)]]"></i>
-							</div>
-						</td>
-						<td>
-							<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]">
-								[[attachment.filename]]
-							</a>
-						</td>
-						<td>
-							[[formatSize(attachment.size)]]
-						</td>
-						<td>
-							<i class="remove-small center"
-							   ng-click="deleteAttachment($event, attachment, mail)"
-							   tooltip="remove.attachment">
-							</i>
-						</td>
-					</tr>
-					</tbody>
-				</table>
-			</article>
+		<div class="row block-container" ng-if="mail.attachments && mail.attachments.length > 0" ng-init="columnOrder = 'filename'">
+			<h2 class="no-margin">
+				<i18n>attachments</i18n>
+				<a data-ng-if="mail.attachments.length > 1"
+					class="right-magnet fade-in-hover"
+					ng-href="[['message/'+mail.id+'/allAttachments']]"
+					tooltip="download.all.attachment">
+					<i class="download-disk valid-color horizontal-spacing"></i>
+				</a>
+			</h2>
+			<hr class="line no-margin" />
+
+			<div class="loading-list no-padding vertical-spacing-twice">
+				<ul>
+					<li class="no-margin" ng-repeat="attachment in mail.attachments | orderBy: columnOrder">
+						<div class="icon">
+							<i class="[[formatFileType(attachment.contentType)]]"></i>
+						</div>
+						<div class="title">
+							[[attachment.filename]]
+						</div>
+						<div class="status-infos">
+							<span class="small-text horizontal-margin">[[formatSize(attachment.size)]]</span>
+						</div>
+						<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]" class="fade-in-hover large-text">
+							<i class="download-disk valid-color" tooltip="download"></i>
+						</a>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</article>
 </div>
