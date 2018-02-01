@@ -80,68 +80,79 @@
 	</div>
 
 
+
+
+
 	<div class="row">
-		<div class="row">
-			<h3 class="cell" ng-if="state.newItem.attachments.length"><i18n>attachments</i18n></h3>
-			<div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
-				<div class="hidden-content">
-					<input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
-					<input type="text" data-display-file="">
-				</div>
-				<button class="small file-button" translate="" content="add.attachment"></button>
-			</div>
+
+        <!-- attachment list header -->
+        <div ng-if="state.newItem.attachments.length">
+            <h2 class="no-margin">
+                <i18n>attachments</i18n>
+                <a data-ng-if="mail.attachments.length > 1"
+                    class="right-magnet fade-in-hover"
+                    ng-href="[['message/'+mail.id+'/allAttachments']]"
+                    tooltip="download.all.attachment">
+                    <i class="download-disk valid-color horizontal-spacing"></i>
+                </a>
+            </h2>
+            <hr class="line no-margin" />
 		</div>
-		<article class="list-view" ng-if="state.newItem.loadingAttachments.length > 0">
-			<h4><i18n>attachments.loading</i18n></h4>
-			<table class="list-view">
-				<thead>
-					<th><i18n>name</i18n></th>
-					<th><i18n>progress</i18n></th>
-				</thead>
-				<tbody>
-					<tr ng-repeat="attachment in state.newItem.loadingAttachments">
-						<td>
-							[[attachment.file.name]]
-						</td>
-						<td>
-							<progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</article>
+
+        <!-- attachment list while loading -->
+        <div ng-if="state.newItem.loadingAttachments.length > 0">
+            <h2 class="no-margin">
+                <i18n>attachments.loading</i18n>
+            </h2>
+            <hr class="line no-margin" />
+
+            <div class="loading-list no-padding vertical-spacing-twice">
+                <ul>
+                    <li class="no-margin" ng-repeat="attachment in state.newItem.loadingAttachments">
+                        <div class="title">
+                            [[attachment.file.name]]
+                        </div>
+                        <div class="title">
+                            <progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
 	</div>
-	<article class="list-view" ng-init="columnOrder = 'filename'" drop-files="state.newItem.newAttachments" on-drop="postAttachments()" ng-if="state.newItem.attachments.length">
-		<table class="list-view">
-			<thead>
-				<th class="icon"></th>
-				<th ng-click="columnOrder = columnOrder === 'filename' ? '-filename' : 'filename'"><i18n>name</i18n></th>
-				<th ng-click="columnOrder = columnOrder === 'size' ? '-size' : 'size'"><i18n>size</i18n></th>
-				<th class="icon"></th>
-			</thead>
-			<tbody>
-				<tr ng-repeat="attachment in state.newItem.attachments | orderBy: columnOrder" class="element">
-					<td class="icon">
-						<div class="twelve cell">
-							<i class="[[formatFileType(attachment.contentType)]]"></i>
-						</div>
-					</td>
-					<td>
-						<a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]">
-							[[attachment.filename]]
-						</a>
-					</td>
-					<td>
-						[[formatSize(attachment.size)]]
-					</td>
-					<td>
-						<i class="remove-small center"
-	                       ng-click="deleteAttachment($event, attachment, state.newItem)"
-	                       tooltip="remove.attachment">
-							</i>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	</article>
+
+    <!-- attachment list loaded -->
+    <div class="loading-list no-padding vertical-spacing-twice" ng-init="columnOrder = 'filename'" drop-files="state.newItem.newAttachments" on-drop="postAttachments()" ng-if="state.newItem.attachments.length">
+        <ul>
+            <li class="no-margin removable" ng-repeat="attachment in state.newItem.attachments | orderBy: columnOrder">
+                <div class="icon">
+                    <i class="[[formatFileType(attachment.contentType)]]"></i>
+                </div>
+                <div class="title">
+                    [[attachment.filename]]
+                </div>
+                <div class="status-infos">
+                    <span class="small-text reduce-block-four">[[formatSize(attachment.size)]]</span>
+                </div>
+                <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover large-text reduce-block-four">
+                    <i class="download-disk valid-color" tooltip="download"></i>
+                </a>
+                <i class="close"
+                   ng-click="deleteAttachment($event, attachment, state.newItem)"
+                   tooltip="remove.attachment">
+                </i>
+            </li>
+        </ul>
+    </div>
+
+    <div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
+        <div class="hidden-content">
+            <input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
+            <input type="text" data-display-file="">
+        </div>
+        <button class="flat-button file-button" translate="" content="add.attachment"></button>
+    </div>
+
+
+
 </article>
