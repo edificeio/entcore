@@ -68,6 +68,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.resetState = function() {
             $scope.state.selectAll = false;
             $scope.state.filterUnread = false;
+            $scope.state.searching = false;
             $scope.state.draftError = false;
         };
 
