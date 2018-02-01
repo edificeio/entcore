@@ -181,18 +181,13 @@ export class Mail implements Selectable {
     };
 
     isRecipientGroup() {
-        var id = this.getRecipientId();
-        if (!id)
-            return false;
-        return id.length < 36;
-    };
-
-    getRecipientId() {
         var to = this.to[0];
-        if (to instanceof User) {
-            return to.id;
+        if (!to)
+            return false;
+        if (!(to instanceof User)) {
+            to = this.map(to);
         }
-        return to;
+        return to.isAGroup();
     };
 
     async updateAllowReply() {

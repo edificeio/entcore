@@ -1,4 +1,4 @@
-﻿import { idiom as lang, _ } from 'entcore';
+﻿import { idiom as lang, _, model, } from 'entcore';
 
 import { Mix, Selection, Selectable, Eventer } from 'entcore-toolkit';
 
@@ -38,6 +38,16 @@ export class User implements Selectable {
         }), function (user) {
             return new User(user[0], user[1]);
         })[0];
+    }
+
+    isMe() {
+        return model.me.userId == this.id;
+    }
+
+    isAGroup() {
+        if (!this.id)
+            return false;
+        return this.id.length < 36;
     }
 }
 

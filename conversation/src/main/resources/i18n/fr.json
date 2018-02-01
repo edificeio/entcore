@@ -63,6 +63,7 @@
     "mail-out": "Message de la boîte d'envoi",
     "mail.move": "Déplacer le(s) message(s)",
     "mail.sent": "Message envoyé",
+    "me": "Moi",
     "message": "le message",
     "message.draft.saved": "Message enregistré en brouillon",
     "message.save.fail": "Erreur : le message n'a pas pu être enregistré",
