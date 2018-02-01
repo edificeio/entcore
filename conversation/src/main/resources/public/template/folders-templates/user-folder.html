@@ -21,10 +21,10 @@
 		</label>
 	</div>
 	<div class="status-filter">
-		<label class="chip" ng-class="{ selected: state.filterUnread }">
+		<label class="chip" ng-class="{ selected: state.filterUnread && conversation.currentFolder.nbUnread > 0, 'not-available': conversation.currentFolder.nbUnread === 0 }">
 			<i class="mail"></i>
 			<span ng-model="conversation.currentFolder.nbUnread">([[conversation.currentFolder.nbUnread]])</span>
-			<input type="checkbox" ng-model="state.filterUnread" ng-change="filterUnread()" />
+			<input type="checkbox" ng-model="state.filterUnread" ng-change="filterUnread()" ng-if="conversation.currentFolder.nbUnread > 0" />
 		</label>
 	</div>
 	<div class="flex-all-remains cell horizontal-margin">
