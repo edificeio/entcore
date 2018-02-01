@@ -73,7 +73,7 @@ export const recipientList = ng.directive('recipientList', () => {
             });
 
             element.find('input').on('keydown', function (e) {
-                if (e.keyCode === 8) { // BackSpace
+                if (e.keyCode === 8 && scope.searchText.length === 0) { // BackSpace
                     var nb = scope.ngModel.length;
                     if (nb > 0)
                         scope.deleteItem(scope.ngModel[nb - 1]);
