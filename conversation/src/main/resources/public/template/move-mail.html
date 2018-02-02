@@ -42,12 +42,12 @@
 
 <h2><i18n>mail.move</i18n></h2>
 
-<h3><i18n>destination.folder</i18n></h3>
+<div class="vertical-spacing-twice horizontal-margin-twice">
+    <h4><i18n>destination.folder</i18n></h4>
+    <nav class="vertical vertical-spacing-twice horizontal-margin-twice" ng-include="'move-folders-root'"></nav>
+</div>
 
-
-<nav class="vertical" ng-include="'move-folders-root'"></nav>
-
-<div class="lightbox-buttons fluid centered">
-    <input type="submit" i18n-value="move.first.caps" ng-click="moveMessages(destination.folder)" ng-disabled="!destination.folder"/>
-    <input type="button" class="cancel button" i18n-value="cancel" ng-click="lightbox.show = false; template.close('lightbox')"/>
+<div class="row">
+    <input type="submit" class="right-magnet" i18n-value="move.first.caps" ng-click="moveMessages(destination.folder)" ng-disabled="!destination.folder"/>
+    <input type="button" class="right-magnet cancel button" i18n-value="cancel" ng-click="lightbox.show = false; template.close('lightbox')"/>
 </div>
