@@ -175,9 +175,13 @@ public class SqlConversationService implements ConversationService{
 				SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
 				String updateMessage =
-					"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
-					"RETURNING id, subject";
+						"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
+								"RETURNING id, subject";
+				String updateUnread = "UPDATE " + userMessageTable + " " +
+						"SET unread = true " +
+						"WHERE user_id = ? AND message_id = ? ";
 				builder.prepared(updateMessage, new JsonArray().add("SENT").add(draftId));
+				builder.prepared(updateUnread, new JsonArray().add(user.getUserId()).add(draftId));
 
 				for(Object toObj : ids){
 					if(toObj.equals(user.getUserId()))
