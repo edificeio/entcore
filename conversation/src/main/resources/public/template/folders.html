@@ -48,7 +48,7 @@
                 <li workflow="conversation.draft">
                     <a ng-click="openFolder('draft')" ng-class="{ selected: conversation.currentFolder.folderName === 'draft' }">
                         [[lang.translate('draft')]]
-                        <span class="badge" ng-if="folders.draft.mails.selection.all.length > 0">[[folders.draft.mails.selection.all.length]]</span>
+                        <span class="badge" ng-if="folders.draft.mails.selection.all.length > 0">[[folders.draft.totalNb]]</span>
                     </a>
                 </li>
                 <li>

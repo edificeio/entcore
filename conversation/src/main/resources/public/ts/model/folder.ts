@@ -188,12 +188,15 @@ export class Inbox extends SystemFolder {
 }
 
 export class Draft extends SystemFolder {
+    totalNb: number;
+
     constructor() {
         super({
             get: '/conversation/list/draft'
         });
 
         this.folderName = 'draft';
+        this.totalNb = 0;
     }
 
     selectAll(){
@@ -206,6 +209,7 @@ export class Draft extends SystemFolder {
 
     async sync(){
         await this.mails.sync({ searchText: this.searchText});
+        await this.countTotal();
     }
 
     async removeSelection(){
@@ -222,14 +226,19 @@ export class Draft extends SystemFolder {
         await this.saveDraft(newMail);
         try{
             await http.put("message/" + newMail.id + "/forward/" + mail.id);
-            for (var i = 0; i < mail.attachments.length; i++) {
-                newMail.attachments.push(JSON.parse(JSON.stringify(mail.attachments[i])))
+            for (let attachment of mail.attachments) {
+                newMail.attachments.push(JSON.parse(JSON.stringify(attachment)))
             }
             quota.refresh();
         }
         catch(e){
             notify.error(e.data.error)
         }
+    }
+
+    async countTotal () {
+        const response = await http.get('/conversation/count/DRAFT?unread=false')
+        this.totalNb = parseInt(response.data.count);
     }
 }
 
@@ -377,6 +386,12 @@ export class UserFolders{
         this.forEach(function (item) {
             item.syncUserFolders()
         });
+    }
+
+    async countUnread() {
+        for (let folder of this.all) {
+            await folder.countUnread();
+        }
     }
 }
 
