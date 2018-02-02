@@ -145,8 +145,8 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.removeFromUserFolder = async (event, mail) => {
             if(Conversation.instance.currentFolder instanceof UserFolder){
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
-                await Conversation.instance.folders.draft.mails.refresh();
                 await Conversation.instance.folders.inbox.countUnread();
+                await Conversation.instance.folders.draft.countTotal();
                 await $scope.refreshFolder();
             }
         };
@@ -380,13 +380,14 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.trash.restore();
             await Conversation.instance.folders.draft.mails.refresh();
             await Conversation.instance.folders.inbox.countUnread();
+            await $scope.userFolders.countUnread();
+            await Conversation.instance.folders.draft.countTotal();
             await $scope.refreshFolder();
         };
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
             await Conversation.instance.currentFolder.countUnread();
-            await Conversation.instance.folders.inbox.countUnread();
             await $scope.refreshFolder();
         };
 
@@ -485,9 +486,11 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.lightbox.show = false;
             template.close('lightbox');
             await Conversation.instance.currentFolder.mails.moveSelection(folderTarget);
-            await Conversation.instance.folders.draft.mails.refresh();
-            await Conversation.instance.currentFolder.countUnread();
-            await folderTarget.countUnread();
+            if (!(await $scope.countDraft(Conversation.instance.currentFolder, folderTarget))) {
+                await Conversation.instance.currentFolder.countUnread();
+                await folderTarget.countUnread();
+            }
+
             await $scope.refreshFolder();
         }
 
@@ -586,26 +589,30 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.dropMove = async (mails, folder) => {
             var mailObj;
-            for (var i = 0, l = mails.length; i < l; i++) {
-                var mail = mails[i];
+            for (let mail of mails) {
                 mailObj = new Mail(mail.id);
                 await mailObj.move(folder);
                 $scope.$apply();
             }
-            await folder.countUnread();
-            await $scope.state.dragFolder.countUnread();
+
+            if (!(await $scope.countDraft($scope.state.dragFolder, folder))) {
+                await folder.countUnread();
+                await $scope.state.dragFolder.countUnread();
+            }
             $scope.$apply();
         }
 
         $scope.dropTrash = async mails => {
             var mailObj;
-            mails.forEach(async mail => {
+            for (let mail of mails) {
                 mailObj = new Mail(mail.id);
                 await mailObj.trash();
                 $scope.$apply();
-            })
+            }
 
-            await $scope.state.dragFolder.countUnread();
+            if (!(await $scope.countDraft($scope.state.dragFolder, $scope.state.dragFolder))) {
+                await $scope.state.dragFolder.countUnread();
+            }
             $scope.$apply();
         }
 
@@ -636,5 +643,13 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.fluidWait = async () => {
             await new Promise(resolve => setTimeout(resolve, 1));
+        }
+
+        $scope.countDraft = async (folderSource, folderTarget) => {
+            var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
+            if (draft)
+                await Conversation.instance.folders.draft.countTotal();
+            console.log(Conversation.instance.folders.draft.totalNb);
+            return draft;
         }
     }]);
