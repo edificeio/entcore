@@ -153,7 +153,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.nextPage = async () => {
             if(template.containers.main.indexOf('mail-actions') < 0) {
-                await Conversation.instance.currentFolder.nextPage();
+                await Conversation.instance.currentFolder.nextPage($scope.state.selectAll);
                 $scope.$apply();
             }
         };
@@ -243,7 +243,7 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.$apply();
             }
             if(idx === mails.length-2 && nextMail.count > mails.length){
-                await Conversation.instance.currentFolder.nextPage();
+                await Conversation.instance.currentFolder.nextPage($scope.state.selectAll);
                 $scope.$apply();
             }
         }

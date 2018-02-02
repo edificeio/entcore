@@ -423,16 +423,25 @@ export class Mails {
         await http.put('move/root?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }))
     }
 
-    addRange(arr: Mail[]){
+    addRange(arr: Mail[], selectAll: boolean){
         if(!(arr[0] instanceof Mail)){
-            arr.forEach(d => this.all.push(Mix.castAs(Mail, d)));
+            arr.forEach(d => {
+                var m = Mix.castAs(Mail, d);
+                if (selectAll)
+                    m.selected = true;
+                this.all.push(m);
+            });
         }
         else{
-            arr.forEach(d => this.all.push(d));
+            arr.forEach(m => {
+                if (selectAll)
+                    m.selected = true;
+                this.all.push(m);
+            });
         }
     }
 
-    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }){
+    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
         this.loading = !data || !data.pageNumber || data.pageNumber == 0;
         if(this.userFolder){
             await this.userFolderSync(data);
@@ -443,7 +452,7 @@ export class Mails {
         this.loading = false;
     }
 
-    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }){
+    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
         if(!data){
             data = {};
         }
@@ -458,17 +467,24 @@ export class Mails {
         if (!data.filterUnread) {
             data.filterUnread = false;
         }
+        if (!data.selectAll) {
+            data.selectAll = false;
+        }
         const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }
-        response.data.forEach(m => this.all.push(Mix.castAs(Mail, m)));
+        response.data.forEach(m => {
+            if (data.selectAll)
+                m.selected = true;
+            this.all.push(Mix.castAs(Mail, m))
+        });
         if (response.data.length === 0) {
             this.full = true;
         }
     }
 
-    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean }): Promise<void>{
+    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }): Promise<void>{
         if (!data) {
             data = {};
         }
@@ -483,12 +499,15 @@ export class Mails {
         if (!data.filterUnread) {
             data.filterUnread = false;
         }
+        if (!data.selectAll) {
+            data.selectAll = false;
+        }
         let response = await http.get(this.api.get + '?page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
         if(data.emptyList !== false){
             this.all.splice(0, this.all.length);
         }
 
-        this.addRange(response.data);
+        this.addRange(response.data, data.selectAll);
         if (response.data.length === 0) {
             this.full = true;
         }

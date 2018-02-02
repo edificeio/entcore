@@ -40,10 +40,10 @@ export abstract class Folder implements Selectable {
         return "";
     }
 
-    async nextPage() {
+    async nextPage(select : boolean) {
         if (!this.mails.full) {
             this.pageNumber++;
-            await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false });
+            await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, selectAll: select });
         }
     }
 
