@@ -143,8 +143,8 @@ export class Mail implements Selectable {
         if (list.indexOf(model.me.userId) !== -1)
             return true;
 
-        for (var i = 0, l = list.length; i < l; i++) {
-            if (model.me.groupsIds.indexOf(list[i]) !== -1)
+        for (let id of list) {
+            if (model.me.groupsIds.indexOf(id) !== -1)
                 return true;
         }
 
@@ -216,8 +216,8 @@ export class Mail implements Selectable {
 
         // Reply all
         if (exists) {
-            for (var i = 0, l = this.to.length; i < l; i++) {
-                var receiver = this.map(this.to[i]);
+            for (let to of this.to) {
+                var receiver = this.map(to);
                 exists = await receiver.findData();
                 if (!exists)
                     break;
