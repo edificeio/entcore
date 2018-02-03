@@ -74,7 +74,7 @@ public class DefaultTimetableService implements TimetableService {
 	}
 
 	@Override
-	public void listCoursesBetweenTwoDates(String structureId, String teacherId, String group, String begin, String end, Handler<Either<String,JsonArray>> handler){
+	public void listCoursesBetweenTwoDates(String structureId, String teacherId, List<String> groupsName, String begin, String end, Handler<Either<String,JsonArray>> handler){
 		if (Utils.validationParamsNull(handler, structureId, begin, end)) return;
 		final JsonObject query = new JsonObject();
 
@@ -93,16 +93,23 @@ public class DefaultTimetableService implements TimetableService {
 		JsonObject betweenEnd = new JsonObject();
 		betweenEnd.putString("$gte", startDate);
 
-		if (group != null) {
+		if (groupsName != null) {
 			JsonObject dateOperand =  new JsonObject()
 					.putArray("$and", new JsonArray()
 							.addObject(new JsonObject().putObject("startDate" ,betweenStart))
 							.addObject(new JsonObject().putObject("endDate" ,betweenEnd)));
 
-			JsonObject groupOperand = new JsonObject()
-					.putArray("$or", new JsonArray()
-							.addObject(new JsonObject().putString("classes", group))
-							.addObject(new JsonObject().putString("groups", group)));
+			JsonObject groupOperand = new JsonObject();
+			JsonArray groupsNameArray = new JsonArray();
+
+			for (int i = 0; i < groupsName.size(); i++) {
+				String groupName = groupsName.get(i);
+				groupsNameArray.addObject(new JsonObject().putString("classes", groupName));
+				groupsNameArray.addObject(new JsonObject().putString("groups", groupName));
+			}
+
+			groupOperand.putArray("$or", groupsNameArray);
+
 			query.putArray("$and", new JsonArray().addObject(dateOperand).add(groupOperand));
 		} else {
 			query.putArray("$and", new JsonArray()

@@ -42,7 +42,8 @@ public interface TimetableService {
 	 * @param end To the begin date
 	 * @param handler
 	 */
-	void listCoursesBetweenTwoDates(String structureId, String teacherId, String group, String begin, String end, Handler<Either<String,JsonArray>> handler);
+	void listCoursesBetweenTwoDates(String structureId, String teacherId, List<String> groupsName, String begin, String end, Handler<Either<String,JsonArray>> handler);
+
 
 	void listSubjects(String structureId, List<String> teachers, boolean classes, boolean groups,
 	                  Handler<Either<String, JsonArray>> handler);
