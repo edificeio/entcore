@@ -1,5 +1,8 @@
 <h3 whereami></h3>
 <nav class="twelve bottom-spacing-twice">
+	<div class="cell zero-mobile no-2d">
+		<i class="refresh" ng-click="refresh()"></i>
+	</div>
 	<div class="">
 		<switch-search
 			ng-model="searchField.words"
@@ -9,9 +12,6 @@
 				<i18n>new.message</i18n>
 			</button>
 		</switch-search>
-	</div>
-	<div class="cell zero-mobile no-2d">
-		<i class="refresh" ng-click="refresh()"></i>
 	</div>
 </nav>
 
