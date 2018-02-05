@@ -588,11 +588,15 @@ public class ConversationController extends BaseController {
 			badRequest(request);
 			return;
 		}
+		deleteMessages(request, ids, false);
+	}
+
+	private void deleteMessages(final HttpServerRequest request, final List<String> ids, final Boolean deleteAll) {
 		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					conversationService.delete(ids, user, new Handler<Either<String,JsonArray>>() {
+					conversationService.delete(ids, deleteAll, user, new Handler<Either<String,JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> event) {
 							if(event.isLeft()){
@@ -616,6 +620,13 @@ public class ConversationController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Delete("emptyTrash")
+	@SecuredAction(value="conversation.empty.trash", type = ActionType.AUTHENTICATED)
+	public void emptyTrash(final HttpServerRequest request) {
+		deleteMessages(request, null, true);
+		deleteFolders(request, null, true);
 	}
 
 	//Mark messages as unread / read
@@ -819,13 +830,17 @@ public class ConversationController extends BaseController {
 	public void deleteFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 
+		deleteFolders(request, folderId, false);
+	}
+
+	private void deleteFolders(final HttpServerRequest request, final String folderId, final Boolean deleteAll) {
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
 			public void handle(final UserInfos user) {
 				if(user == null){
 					unauthorized(request);
 					return;
 				}
-				conversationService.deleteFolder(folderId, user, new Handler<Either<String,JsonArray>>() {
+				conversationService.deleteFolder(folderId, deleteAll, user, new Handler<Either<String,JsonArray>>() {
 					public void handle(Either<String, JsonArray> event) {
 						if(event.isLeft()){
 							badRequest(request, event.left().getValue());

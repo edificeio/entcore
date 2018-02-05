@@ -382,7 +382,7 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.inbox.countUnread();
             await $scope.userFolders.countUnread();
             await Conversation.instance.folders.draft.countTotal();
-            await $scope.refreshFolder();
+            await $scope.refreshFolders();
         };
 
         $scope.removeSelection = async () => {
@@ -505,7 +505,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
         $scope.createFolder = async () => {
             await $scope.newFolder.create();
-            $scope.refreshFolders();
+            await $scope.refreshFolders();
             $scope.lightbox.show = false;
             template.close('lightbox');
             $scope.$apply();
@@ -520,14 +520,14 @@ export let conversationController = ng.controller('ConversationController', [
         }
         $scope.updateFolder = async () => {
             await $scope.targetFolder.update();
-            $scope.refreshFolders();
+            await $scope.refreshFolders();
             $scope.lightbox.show = false;
             template.close('lightbox');
             $scope.$apply();
         }
         $scope.trashFolder = async (folder: UserFolder) => {
             await folder.trash();
-            $scope.refreshFolders();
+            await $scope.refreshFolders();
             await Conversation.instance.folders.trash.sync();
             await $scope.openFolder('trash');
         }
@@ -649,7 +649,17 @@ export let conversationController = ng.controller('ConversationController', [
             var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
             if (draft)
                 await Conversation.instance.folders.draft.countTotal();
-            console.log(Conversation.instance.folders.draft.totalNb);
             return draft;
+        }
+
+        $scope.emptyTrash = async () => {
+            $scope.lightbox.show = true;
+            template.open('lightbox', 'empty-trash');
+        }
+
+        $scope.removeTrashMessages = async () => {
+            $scope.lightbox.show = false;
+            await Conversation.instance.folders.trash.removeAll();
+            await $scope.refreshFolders();
         }
     }]);

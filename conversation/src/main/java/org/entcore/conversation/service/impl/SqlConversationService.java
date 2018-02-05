@@ -295,7 +295,7 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+	public void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
 		JsonArray values2 = new JsonArray();
@@ -305,14 +305,18 @@ public class SqlConversationService implements ConversationService{
 
 		String getTotalQuota =
 			"SELECT coalesce(sum(um.total_quota), 0)::integer AS totalQuota FROM " + userMessageTable + " um " +
-			"WHERE um.user_id = ? AND um.trashed = true AND um.message_id IN ";
+			"WHERE um.user_id = ? AND um.trashed = true";
 
 		String deleteUserMessages =
 			"DELETE FROM " + userMessageTable + " um " +
-			"WHERE um.user_id = ? AND um.trashed = true AND um.message_id IN ";
+			"WHERE um.user_id = ? AND um.trashed = true";
 
-		getTotalQuota += (generateInVars(messagesId, values2));
-		deleteUserMessages += (generateInVars(messagesId, values3));
+		if (!deleteAll) {
+			getTotalQuota += " AND um.message_id IN ";
+			getTotalQuota += (generateInVars(messagesId, values2));
+			deleteUserMessages += " AND um.message_id IN ";
+			deleteUserMessages += (generateInVars(messagesId, values3));
+		}
 
 		builder.prepared(getTotalQuota, values2);
 		builder.prepared(deleteUserMessages, values3);
@@ -640,9 +644,11 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonArray>> result) {
-		if(validationError(user, result, folderId))
-			return;
+	public void deleteFolder(String folderId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result) {
+		if (!deleteAll) {
+			if(validationError(user, result, folderId))
+				return;
+		}
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
@@ -650,8 +656,14 @@ public class SqlConversationService implements ConversationService{
 
 		String nonRecursiveTerm =
 			"SELECT DISTINCT f.* FROM " + folderTable + " AS f " +
-			"WHERE f.id = ? AND f.user_id = ? AND f.trashed = true ";
-		JsonArray recursiveValues = new JsonArray().add(folderId).add(user.getUserId());
+			"WHERE ";
+		JsonArray recursiveValues = new JsonArray();
+		if (!deleteAll) {
+			nonRecursiveTerm += "f.id = ? AND ";
+			recursiveValues.add(folderId);
+		}
+		nonRecursiveTerm += "f.user_id = ? AND f.trashed = true ";
+		recursiveValues.add(user.getUserId());
 
 		String recursiveTerm =
 			"SELECT f.* FROM " + folderTable + " AS f JOIN " +
@@ -676,10 +688,15 @@ public class SqlConversationService implements ConversationService{
 
 		String deleteFolder =
 			"DELETE FROM " + folderTable + " f " +
-			"WHERE f.id = ? AND f.user_id = ? AND f.trashed = true";
-		JsonArray values = new JsonArray()
-			.add(folderId)
-			.add(user.getUserId());
+			"WHERE ";
+		JsonArray values = new JsonArray();
+		if (!deleteAll) {
+			deleteFolder += "f.id = ? AND ";
+			values.add(folderId);
+		}
+		deleteFolder += "f.user_id = ? AND f.trashed = true";
+		values.add(user.getUserId());
+
 
 		builder.prepared(deleteFolder, values);
 
