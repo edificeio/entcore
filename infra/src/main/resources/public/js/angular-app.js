@@ -312,7 +312,9 @@ module.directive('lightbox', function($compile) {
 
             scope.$watch('show', function(newVal) {
                 if (newVal) {
-                    $('body').addClass('lightbox-opened');
+                    if(element.parents('header.main').length === 0){
+                        $('body').addClass('lightbox-opened');
+                    }
                     var lightboxWindow = element.children('.lightbox');
 
                     //Backup overflow hidden elements + z-index of parents
