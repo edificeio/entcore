@@ -13,8 +13,8 @@
 		</div>
 	</nav>
 
-	<div class="row">
-		<a href="#" class="cell flex-row align-center justify-start horizontal-spacing bottom-spacing zero-mobile">
+	<div class="row" ng-if="folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0">
+		<a href="#" class="cell flex-row align-center justify-start horizontal-spacing bottom-spacing zero-mobile" ng-click="emptyTrash()">
 			<i class="trash small-text"></i>
 			<span class="horizontal-margin small-text"><i18n>empty.trash</i18n></span>
 		</a>

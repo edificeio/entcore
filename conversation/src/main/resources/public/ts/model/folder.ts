@@ -158,6 +158,10 @@ export class Trash extends SystemFolder {
         }));
         this.mails.removeSelection();
     }
+
+    async removeAll() {
+        const response = await http.delete('/conversation/emptyTrash');
+    }
 }
 
 export class Inbox extends SystemFolder {

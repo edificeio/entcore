@@ -500,7 +500,7 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void delete(List<String> messagesId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+	public void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		if (validationError(user, result)) return;
 
 
@@ -934,7 +934,7 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void deleteFolder(String folderId, UserInfos user, Handler<Either<String, JsonArray>> result) {
+	public void deleteFolder(String folderId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		if(validationError(user, result, folderId)) return;
 
 		String retrieveAttachments =

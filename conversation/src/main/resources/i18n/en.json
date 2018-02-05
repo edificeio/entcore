@@ -8,6 +8,7 @@
     "chip.more1": "and ",
     "chip.more2": "more",
     "clickhere": "Click here ",
+    "confirm.empty.trash": "Attention ! Vous allez supprimer définitivement l'ensemble des messages et dossiers présents dans votre corbeille",
     "conversation.send.error": "Aucun destinataire n'a pu recevoir le messsage.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
     "conversation.title": "Messaging",
     "copy": "Copy",
