@@ -1,6 +1,7 @@
 {
     "add.attachment": "Ajouter une pièce jointe",
     "add.signature" : "Ajouter une signature",
+    "at": "à",
     "attachments": "Pièces jointes",
     "attachments.loading": "En cours de chargement",
     "cancel": "Annuler",
@@ -57,6 +58,7 @@
     "group.school.Relative": "Tous les parents de l'{0}.",
     "group.school.Student": "Tous les élèves de l'{0}.",
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
+    "hour.date": "h",
     "inbox": "Boîte de réception",
     "invalid": " recevra le message après avoir activé son compte",
     "loading": "Chargement...",
@@ -105,6 +107,7 @@
     "tag.read": "Marquer comme lus",
     "tag.unread": "Marquer comme non-lus",
     "to": "À",
+    "today": "Aujourd'hui",
     "transfer": "transférer",
     "transfer.cc": "Copie à : ",
     "transfer.date": "Date: ",
@@ -125,5 +128,6 @@
     "widget.title": "messages",
     "forward.failed.quota": "Le transfert des pièces jointes du message à échoué car vous n'avez pas assez d'espace libre sur votre quota.",
     "wait.attachments.completion": "Une pièce jointe est en cours de chargement, le message pourra être envoyé après complétion.",
+    "yesterday": "Hier",
     "you.answered": "Vous avez répondu à ce message"
 }
