@@ -1,6 +1,7 @@
 {
     "add.attachment": "Ajouter une pièce jointe",
     "add.signature" : "Add a signature",
+    "at": "à",
     "attachments": "Pièces jointes",
     "attachments.loading": "En cours de chargement",
     "cancel": "Cancel",
@@ -53,6 +54,7 @@
     "group.school.Relative": "Relatives from {0}.",
     "group.school.Student": "students from {0}.",
     "group.school.Teacher": "Teachers from {0}.",
+    "hour.date": "h",
     "inbox": "Inbox",
     "invalid": " will get the message after activating his account",
     "mail-in": "Message de la boîte de réception",
@@ -97,6 +99,7 @@
     "tag.read": "Tag as read",
     "tag.unread": "Tag as unread",
     "to": "To",
+    "today": "Aujourd'hui",
     "transfer": "forward",
     "transfer.cc": "Copy: ",
     "transfer.date": "Date: ",
@@ -111,5 +114,6 @@
     "user.folders": "Dossiers",
     "widget.empty": "You don't have any message",
     "widget.title": "messages",
+    "yesterday": "Hier",
     "you.answered": "You answered to this message"
 }

@@ -182,13 +182,33 @@ export class Mail implements Selectable {
         });
     }
 
-    sentDate() {
+    notifDate() {
         return moment(parseInt(this.date)).calendar();
     };
 
-    longDate() {
-        return moment(parseInt(this.date)).format('dddd DD MMMM YYYY')
-    };
+    isToday() {
+        return moment(parseInt(this.date)).isSame(moment().startOf('day'), 'day');
+    }
+
+    isYesterday() {
+        return moment(parseInt(this.date)).isSame(moment().subtract(1, 'day'), 'day');
+    }
+
+    isMoreThanYesterday() {
+        return !this.isToday() && !this.isYesterday();
+    }
+
+    getHours() {
+        return moment(parseInt(this.date)).format('HH');
+    }
+
+    getMinutes() {
+        return moment(parseInt(this.date)).format('mm');
+    }
+
+    getDate() {
+        return moment(parseInt(this.date)).format('dddd D MMMM YYYY');
+    }
 
     sender() {
         var that = this;

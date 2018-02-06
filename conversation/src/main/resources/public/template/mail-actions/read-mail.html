@@ -32,7 +32,9 @@
 	<article class="twelve cell vertical-spacing mail">
 		<div class="row">
 			<em class="cell small-text right-magnet">
-				[[mail.sentDate()]]
+				<span ng-if="mail.isToday()"><i18n>today</i18n> <i18n>at</i18n> [[mail.getHours()]]<i18n>hour.date</i18n>[[mail.getMinutes()]]</span>
+				<span ng-if="mail.isYesterday()"><i18n>yesterday</i18n> <i18n>at</i18n> [[mail.getHours()]]<i18n>hour.date</i18n>[[mail.getMinutes()]]</span>
+				<span ng-if="mail.isMoreThanYesterday()">[[mail.getDate()]] <i18n>at</i18n> [[mail.getHours()]]<i18n>hour.date</i18n>[[mail.getMinutes()]]</span>
 			</em>
 			<div class="row">
 				<div class="text-title">[[mail.subject]]</div>

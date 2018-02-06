@@ -1,6 +1,7 @@
 {
     "add.attachment": "Ajouter une pièce jointe",
     "add.signature" : "Ajouter une signature",
+    "at": "à",
     "attachments": "Pièces jointes",
     "attachments.loading": "En cours de chargement",
     "cancel": "Cancelar",
@@ -51,6 +52,7 @@
     "group.school.Relative": "Tous les parents de l'{0}.",
     "group.school.Student": "Tous les élèves de l'{0}.",
     "group.school.Teacher": "Tous les enseignants de l'{0}.",
+    "hour.date": "h",
     "inbox": "Entrada",
     "invalid": " vai receber o mensagem depois de ter ativado o seu conto",
     "mail-in": "Message de la boîte de réception",
@@ -93,6 +95,7 @@
     "subject": "Assunto",
     "submit": "Enviar",
     "to": "Para",
+    "today": "Aujourd'hui",
     "transfer": "encaminhar",
     "transfer.cc": "Còpia para :",
     "transfer.date": "Data : ",
@@ -107,5 +110,6 @@
     "user.folders": "Dossiers",
     "widget.empty": "Vous n'avez aucun message",
     "widget.title": "messages",
+    "yesterday": "Hier",
     "you.answered": "Vous avez répondu à ce message"
 }
