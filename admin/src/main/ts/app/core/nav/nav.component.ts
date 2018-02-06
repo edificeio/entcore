@@ -12,9 +12,9 @@ import { Subscription } from 'rxjs/Subscription'
         <portal>
             <div header-left>
                 <i class="fa" aria-hidden="true"
-                [ngClass]="{'fa-times': openside, 'fa-bars': !openside}"
-                (click)="openside = !openside"
-                #sidePanelOpener></i>
+                    [ngClass]="{'fa-times': openside, 'fa-bars': !openside, 'is-hidden': structures.length == 1}"
+                    (click)="openside = !openside"
+                    #sidePanelOpener></i>
                 <span class="link" [routerLink]="'/admin/' + currentStructure?.id">
                     {{ currentStructure?.name }}
                 </span>
@@ -58,7 +58,10 @@ import { Subscription } from 'rxjs/Subscription'
                     [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"></i>
             </div>
             <div section>
-                <side-panel [toggle]="openside" (onClose)="openside = false" 
+                <side-panel 
+                    *ngIf="structures.length > 1"
+                    [toggle]="openside" 
+                    (onClose)="openside = false" 
                     [opener]="sidePanelOpener">
                     <div class="side-search">
                         <search-input (onChange)="structureFilter = $event" 
@@ -123,6 +126,9 @@ export class NavComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.session = this.route.snapshot.data['session']
         this.structures = globalStore.structures.asTree()
+
+        if (this.structures.length == 1)
+            this.currentStructure = this.structures[0];
 
         this.structureSubscriber = this.route.children[0].params.subscribe(params => {
             let structureId = params['structureId']
