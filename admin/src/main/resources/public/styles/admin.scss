@@ -360,6 +360,10 @@ i.group_add {
     clear: both;
 }
 
+.is-hidden {
+    display: none !important;
+}
+
 /* UX */
 .badge {
     font-size: 0.8em;
