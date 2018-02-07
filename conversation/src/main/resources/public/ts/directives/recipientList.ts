@@ -28,7 +28,7 @@ export const recipientList = ng.directive('recipientList', () => {
                 </label>
                 <form class="input-help" ng-submit="update(true)">
                     <label ng-class="{ hide: focused || ngModel.length > 0 }">
-                        <i18n>share.search.help1</i18n>[[3 - searchText.length]]<i18n>share.search.help2</i18n>
+                        <i18n>share.search.help</i18n>
                     </label>
                     <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" />
                 </form>
