@@ -1,7 +1,24 @@
 <article class="twelve cell solid write-mail" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
     <div class="row warning" ng-if="state.newItem.loadingAttachments.length > 0"><i18n>wait.attachments.completion</i18n></div>
-	<div class="row">
-		<div class="nine cell twelve-mobile">
+
+
+    <div class="flex-row f-column mobile-f-column-reverse">
+        <div>
+			<plus class="right-magnet">
+				<button class="cell" ng-click="saveDraft()" workflow="conversation.draft">
+					<i18n>save</i18n>
+				</button>
+				<button class="cancel cell" ng-click="conversation.currentFolder.folderName ? openView(conversation.currentFolder.folderName, 'main') : openView('folder', 'main')">
+					<i18n>cancel</i18n>
+				</button>
+			</plus>
+            <button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
+                || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+                || sending">
+                <i18n>submit</i18n>
+            </button>
+		</div>
+        <div>
 			<div class="row">
 				<div class="row receivers">
 					<label class="two cell twelve-mobile"><i18n>to</i18n></label>
@@ -14,7 +31,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="row">
+			<div>
 				<div class="row receivers">
 					<label class="two cell twelve-mobile"><i18n>copy</i18n></label>
 					<div class="ten cell twelve-mobile right-magnet">
@@ -31,14 +48,8 @@
 				<input type="text" class="ten cell twelve-mobile" ng-model="state.newItem.subject" ng-change="saveDraftAuto()"/>
 			</div>
 		</div>
-		<div class="three cell twelve-mobile">
-			<button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
-				|| (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
-				|| sending">
-				<i18n>submit</i18n>
-			</button>
-		</div>
 	</div>
+
 	<div class="row">
 
         <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
@@ -70,10 +81,6 @@
 			<textarea ng-if="signatureShow" ng-model="conversation.preference.signature" ng-blur="conversation.putPreference()"></textarea>
 		</div>
 	</div>
-
-
-
-
 
 	<div class="row">
 
@@ -144,7 +151,5 @@
         </div>
         <button class="flat-button file-button" translate="" content="add.attachment"></button>
     </div>
-
-
 
 </article>
