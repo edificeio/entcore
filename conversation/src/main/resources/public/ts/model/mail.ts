@@ -154,7 +154,7 @@ export class Mail implements Selectable {
     setMailSignature(signature: string){
         if(!this.body)
             this.body='';
-        this.body = this.body + '<br><br><div class="signature new-signature">' + signature + '</div>'
+        this.body = this.body + '<div><br></div><div class="signature new-signature">' + signature + '</div>'
     }
 
     setMailContent(origin: Mail, mailType: string, compile, sanitize, $scope, signature, copyReceivers?: boolean): Promise<any> {
@@ -171,7 +171,7 @@ export class Mail implements Selectable {
         }
 
         return new Promise((resolve, reject) => {
-            this.body = '<br><br><div class="signature new-signature">' + signature + '</div>' +
+            this.body = '<div><br></div><div class="signature new-signature">' + signature + '</div>' +
                 format[mailType].content + '<blockquote>' + origin.body + '</blockquote>';
             const tempElement = compile(format[mailType].content)($scope);
             setTimeout(function(){
