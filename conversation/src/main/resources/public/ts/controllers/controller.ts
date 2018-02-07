@@ -106,6 +106,8 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.openUserFolder = async (folder: UserFolder, obj) => {
             $scope.mail = undefined;
+            $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailSignature($scope.getSignature());
             obj.template = 'folder-content';
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
