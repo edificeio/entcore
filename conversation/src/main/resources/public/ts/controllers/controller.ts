@@ -661,5 +661,6 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.lightbox.show = false;
             await Conversation.instance.folders.trash.removeAll();
             await $scope.refreshFolders();
+            await Conversation.instance.folders.trash.countUnread();
         }
     }]);
