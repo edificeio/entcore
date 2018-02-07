@@ -19,7 +19,7 @@
 			<span class="horizontal-margin small-text"><i18n>empty.trash</i18n></span>
 		</a>
 	</div>
-	<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin">
+	<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin" ng-if="folders.trash.userFolders.all.length > 0 || conversation.currentFolder.mails.all.length > 0">
 		<div class="check-col">
 			<label class="wrapping-checkbox relative">
 				<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
