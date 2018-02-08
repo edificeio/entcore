@@ -149,6 +149,21 @@ class ManualGroupsFilter extends UserFilter<string> {
     }
 }
 
+class DuplicatesFilter extends UserFilter<string> {
+    type = 'duplicates'
+    label = 'duplicates.multi.combo.title'
+    comboModel = [ 'users.duplicated', 'users.not.duplicated' ]
+    order = ''
+    filterProp = 'this'
+
+    filter = (duplicates: {}[]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+            outputModel.indexOf('users.duplicated') >= 0 && duplicates.length > 0 ||
+            outputModel.indexOf('users.not.duplicated') >= 0 && duplicates.length == 0
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -165,6 +180,7 @@ export class UserlistFiltersService {
     // FIXME when user model updated
     // private matieresFilter          = new MatieresFilter(this.updateSubject)
     private sourcesFilter           = new SourcesFilter(this.updateSubject)
+    private duplicatesFilter             = new DuplicatesFilter(this.updateSubject)
 
     filters : UserFilterList<any> = [
         this.profileFilter,
@@ -175,7 +191,8 @@ export class UserlistFiltersService {
         this.functionsFilter,
         // FIXME when user model updated
         // this.matieresFilter,
-        this.sourcesFilter
+        this.sourcesFilter,
+        this.duplicatesFilter
     ]
 
     resetFilters(){
