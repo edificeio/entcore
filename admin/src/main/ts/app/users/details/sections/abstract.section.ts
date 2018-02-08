@@ -18,7 +18,9 @@ export abstract class AbstractSection {
     structure: StructureModel
 
     protected now : string = `${new Date().getFullYear()}-${new Date().getMonth() + 1}-${new Date().getDate()}`
-    emailPattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+    
+    // HTML5 email
+    emailPattern = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 
     protected getStructure(id: string) {
         return globalStore.structures.data.find(s => s.id === id)
