@@ -62,6 +62,9 @@
     "MANUAL": "Manuel",
     "CLASS_PARAM" : "Paramétrage de la classe",
     "change.activation.code": "Changer le code d'activation",
+    "duplicates.multi.combo.title": "Doublons",
+    "users.duplicated": "Utilisateurs doublons",
+    "users.not.duplicated": "Utilisateurs uniques",
     
     "user.inactive": "Inactif",
     "user.icons.tooltip.blocked": "Compte bloqué",
