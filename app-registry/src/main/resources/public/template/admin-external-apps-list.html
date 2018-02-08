@@ -15,11 +15,12 @@
 		 <div class="pictos">
 			<i class="linked" ng-if="inherited(app)" tooltip="appregistry.inherited.application"/>
 			<i class="lock" ng-if="app.data.locked" tooltip="appregistry.app.is.locked"/>
+			<i class="lock" ng-if="app.data.appLocked " tooltip="appregistry.app.is.applocked"/>
 		 </div>
 		 <div class="actions">
-			<i class="remove" ng-click="deleteExternalApp(app)" ng-if="!app.data.locked && scopeable(app)" tooltip="appregistry.delete.application"></i>
-			<i class="lock" ng-click="lockExternalApp(app)" ng-if="!app.data.locked && isCentralAdmin()" tooltip="tooltip.locked"></i>
-			<i class="unlock" ng-click="lockExternalApp(app)" ng-if="app.data.locked && isCentralAdmin()" tooltip="tooltip.unlocked"></i>
+			<i class="remove" ng-click="deleteExternalApp(app)" ng-if="!app.data.appLocked && !app.data.locked && scopeable(app)" tooltip="appregistry.delete.application"></i>
+			<i class="lock" ng-click="lockExternalApp(app)" ng-if="!app.data.locked && !app.data.appLocked && isCentralAdmin()" tooltip="tooltip.locked"></i>
+			<i class="unlock" ng-click="lockExternalApp(app)" ng-if="app.data.locked && !app.data.appLocked && isCentralAdmin()" tooltip="tooltip.unlocked"></i>
 		 </div>
 	</div>
 </div>
