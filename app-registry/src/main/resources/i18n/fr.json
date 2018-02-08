@@ -169,6 +169,7 @@
 	"tooltip.cas.server.type": "Spécifie la réponse et donc les champs renvoyés au client CAS lorsqu'il appelle la route /serviceValidate.",
 	"tooltip.scope": "Ensemble de fonctions appelables. L'authentification OAuth donne le droit au client OAuth d'appeler les fonctions contenues dans le scope.",
 	"appregistry.app.is.locked": "L'application est verrouillée",
+	"appregistry.app.is.applocked": "Cette application est à la responsabilité du service pages, veuillez contacter l'auteur pour toute modification.",
 	"appregistry.widget.is.locked": "Le widget est verrouillé",
 	"appregistry.do.lock": "Verrouiller",
 	"appregistry.do.unlock": "Déverrouiller",

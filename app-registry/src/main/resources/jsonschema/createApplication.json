@@ -35,7 +35,10 @@
 	},
     "inherits": {
       "type": "boolean"
-  	}
+  	},
+    "appLocked": {
+      "type": "boolean"
+    }
   },
   "required": [
     "name",
