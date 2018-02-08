@@ -249,7 +249,7 @@ i.group_add {
 }
 
 /* generic style
-* TODO : replacce by using a css framework
+* TODO : replace by using a css framework
 * here a bulma.io semantic is used
 */
 .button {
@@ -257,11 +257,10 @@ i.group_add {
     text-align: left;
     padding: 10px 10px;
     border-radius: 3px;
-    transition: background 0.25s, color 0.25s;
-    line-height: 1.5em;
     transition: background 0.25s, color 0.25s, border 0.25s;
     font-family: 'Arial', sans-serif;
     font-weight: bold;
+    font-size: 0.85rem;
 
     &.is-primary { 
         color: $accent; 
