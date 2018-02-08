@@ -30,16 +30,16 @@
             </button>
         </div>
         <div class="toolbar" ng-if="externalApp.data.id">
-            <button ng-click="updateExternalApp(externalApp)" ng-disabled="externalAppForm.$invalid || externalApp.data.locked || !scopeable(externalApp)">
+            <button ng-click="updateExternalApp(externalApp)" ng-disabled="externalAppForm.$invalid || externalApp.data.appLocked || externalApp.data.locked || !scopeable(externalApp)">
     			<i18n>appregistry.save</i18n>
     		</button>
-    		<button ng-click="deleteExternalApp(externalApp)" ng-disabled="externalApp.data.locked || !scopeable(externalApp)">
+    		<button ng-click="deleteExternalApp(externalApp)" ng-disabled="externalApp.data.appLocked || externalApp.data.locked || !scopeable(externalApp)">
     			<i18n>appregistry.delete</i18n>
     		</button>
-    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.locked" ng-if="isCentralAdmin() && !externalApp.data.locked">
+    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.locked" ng-if="isCentralAdmin() && !externalApp.data.appLocked && !externalApp.data.locked">
     			<i18n>appregistry.do.lock</i18n>
     		</button>
-    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.unlocked" ng-if="isCentralAdmin() && externalApp.data.locked">
+    		<button ng-click="lockExternalApp(externalApp)" tooltip="tooltip.unlocked" ng-if="isCentralAdmin() && !externalApp.data.appLocked && externalApp.data.locked">
     			<i18n>appregistry.do.unlock</i18n>
     		</button>
     	</div>
@@ -61,6 +61,9 @@
     	<fieldset ng-disabled="externalApp.data.locked || !scopeable(externalApp)" class="unstyled">
     		<legend class="warning" ng-if="externalApp.data.locked">
     			<i18n>appregistry.app.is.locked</i18n>
+    		</legend>
+    		<legend class="warning" ng-if="externalApp.data.appLocked">
+    			<i18n>appregistry.app.is.applocked</i18n>
     		</legend>
     		<legend class="warning" ng-if="!externalApp.data.locked && !scopeable(externalApp)">
     			<i18n>appregistry.app.is.not.scopeable</i18n>
@@ -170,7 +173,7 @@
         <ul class="checklist">
             <li ng-repeat="group in school.groups.all | filter: {name: filterGroups} | filter: linkedGroupsOpts.filterLinked(externalApp) | orderBy: 'name' | orderBy: linkedGroupsOpts.orderByLinked(externalApp)"
                 ng-click="switchExternalAppGroupLink(group, externalApp)"
-                ng-class="{'checked': isLinked(group, externalApp), 'disabled': externalApp.data.locked}">
+                ng-class="{'checked': isLinked(group, externalApp), 'disabled': externalApp.data.locked || externalApp.data.appLocked}">
                 [[group.name]]
             </li>
         </ul>
