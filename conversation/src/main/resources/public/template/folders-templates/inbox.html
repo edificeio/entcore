@@ -16,7 +16,7 @@
 </nav>
 
 
-<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin" ng-if="conversation.currentFolder.mails.all.length > 0">
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin" ng-if="conversation.currentFolder.mails.all.length > 0 || state.searching">
 	<div class="check-col">
 		<label class="wrapping-checkbox relative">
 			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
