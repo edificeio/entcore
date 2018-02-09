@@ -208,22 +208,26 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.search = async (text: string) => {
             if(text.trim().length > 3) {
                 $scope.state.searching = true;
-                await $scope.fluidWait();
-                await Conversation.instance.currentFolder.search(text);
-                $scope.$apply();
+                setTimeout(async function() {
+                    await Conversation.instance.currentFolder.search(text);
+                    $scope.$apply();
+                }, 1);
             }
         }
 
         $scope.cancelSearch = async () => {
             $scope.state.searching = false;
-            await $scope.fluidWait();
-            await Conversation.instance.currentFolder.search("");
-            $scope.$apply();
+            setTimeout(async function() {
+                await Conversation.instance.currentFolder.search("");
+                $scope.$apply();
+            }, 1);
         }
 
         $scope.filterUnread = async () => {
-            await Conversation.instance.currentFolder.filterUnread($scope.state.filterUnread);
-            $scope.$apply();
+            setTimeout(async function() {
+                await Conversation.instance.currentFolder.filterUnread($scope.state.filterUnread);
+                $scope.$apply();
+            }, 1);
         }
 
         $scope.isLoading = () => {
@@ -639,10 +643,6 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.quota = quota;
-
-        $scope.fluidWait = async () => {
-            await new Promise(resolve => setTimeout(resolve, 1));
-        }
 
         $scope.countDraft = async (folderSource, folderTarget) => {
             var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
