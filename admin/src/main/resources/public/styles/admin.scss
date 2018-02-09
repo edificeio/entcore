@@ -1448,10 +1448,9 @@ user-create {
             justify-content: flex-end;
 
             button {
-                padding: 10px 10px;
                 margin: 20px 0 0 5px;
-                min-width: 100px;
-                font-size: 1.2em;
+                min-width: 80px;
+                font-size: 1em;
                 text-align: center;
 
                 &.create:not([disabled]) {
@@ -1580,10 +1579,9 @@ group-create {
             justify-content: flex-end;
 
             button {
-                padding: 10px 10px;
                 margin: 20px 0 0 5px;
-                min-width: 100px;
-                font-size: 1.2em;
+                min-width: 80px;
+                font-size: 1em;
                 text-align: center;
 
                 &.create:not([disabled]) {
