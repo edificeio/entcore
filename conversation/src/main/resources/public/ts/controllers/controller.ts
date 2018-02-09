@@ -93,7 +93,6 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.newItem.setMailSignature($scope.getSignature());
             template.open('main', 'folders-templates/' + folderName);
             $scope.resetState();
-            await $scope.fluidWait();
             await Conversation.instance.folders.openFolder(folderName);
             await Conversation.instance.currentFolder.countUnread();
             $scope.$apply();
@@ -111,7 +110,6 @@ export let conversationController = ng.controller('ConversationController', [
             obj.template = 'folder-content';
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
-            await $scope.fluidWait();
             await folder.open();
             await folder.countUnread();
             $scope.$apply();
@@ -224,7 +222,6 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.filterUnread = async () => {
-            await $scope.fluidWait();
             await Conversation.instance.currentFolder.filterUnread($scope.state.filterUnread);
             $scope.$apply();
         }
