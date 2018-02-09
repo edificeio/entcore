@@ -4,14 +4,6 @@
 
     <div class="flex-row f-column mobile-f-column-reverse">
         <div>
-			<plus class="right-magnet">
-				<button class="cell" ng-click="saveDraft()" workflow="conversation.draft">
-					<i18n>save</i18n>
-				</button>
-				<button class="cancel cell" ng-click="conversation.currentFolder.folderName ? openView(conversation.currentFolder.folderName, 'main') : openView('folder', 'main')">
-					<i18n>cancel</i18n>
-				</button>
-			</plus>
             <button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
                 || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
                 || sending">
