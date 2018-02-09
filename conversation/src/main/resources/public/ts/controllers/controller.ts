@@ -96,6 +96,10 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.openFolder(folderName);
             await Conversation.instance.currentFolder.countUnread();
             $scope.$apply();
+
+            $timeout(function () {
+                $('body').trigger('whereami.update');
+            }, 100);
         };
 
         $scope.openUserFolderOnDragover = async (folder: UserFolder, obj) => {
@@ -116,7 +120,7 @@ export let conversationController = ng.controller('ConversationController', [
 
             $timeout(function () {
                 $('body').trigger('whereami.update');
-            }, 100)
+            }, 100);
         };
 
         $scope.isParentOf = function (folder, targetFolder) {
