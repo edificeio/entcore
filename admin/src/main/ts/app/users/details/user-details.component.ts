@@ -255,6 +255,7 @@ export class UserDetails implements OnInit, OnDestroy{
                 this.user.blocked = !this.user.blocked;
                 this.updateBlockedInStructures();
                 this.userListService.updateSubject.next();
+                this.cdRef.markForCheck();
 
                 this.ns.success(
                     {
