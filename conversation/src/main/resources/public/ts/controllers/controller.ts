@@ -96,10 +96,7 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.openFolder(folderName);
             await Conversation.instance.currentFolder.countUnread();
             $scope.$apply();
-
-            $timeout(function () {
-                $('body').trigger('whereami.update');
-            }, 100);
+            $scope.updateWherami();
         };
 
         $scope.openUserFolderOnDragover = async (folder: UserFolder, obj) => {
@@ -117,10 +114,7 @@ export let conversationController = ng.controller('ConversationController', [
             await folder.open();
             await folder.countUnread();
             $scope.$apply();
-
-            $timeout(function () {
-                $('body').trigger('whereami.update');
-            }, 100);
+            $scope.updateWherami();
         };
 
         $scope.isParentOf = function (folder, targetFolder) {
@@ -457,6 +451,8 @@ export let conversationController = ng.controller('ConversationController', [
             if(Conversation.instance.currentFolder instanceof UserFolder){
                 $scope.openUserFolder(Conversation.instance.currentFolder, {});
             }
+            else
+                $scope.updateWherami();
             $scope.$apply();
         }
 
@@ -665,5 +661,11 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.trash.removeAll();
             await $scope.refreshFolders();
             await Conversation.instance.folders.trash.countUnread();
+        }
+
+        $scope.updateWherami = () => {
+            $timeout(function () {
+                $('body').trigger('whereami.update');
+            }, 100);
         }
     }]);
