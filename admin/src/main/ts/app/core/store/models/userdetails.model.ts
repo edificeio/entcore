@@ -54,6 +54,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         return this.http.post('/auth/sendResetPassword', payload)
     }
 
+    sendIndividualMassMail(type: string){
+        return this.http.get(`/directory/structure/massMail/${this.id}/${type}`, {responseType: 'blob'});
+    }
+
     addRelative(parent) {
         return this.http.put(`/directory/user/${this.id}/related/${parent.id}`).then(() => {
             this.parents.push(parent)

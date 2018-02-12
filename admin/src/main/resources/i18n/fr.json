@@ -139,7 +139,8 @@
     "export.all.profiles": "Tous",
     "link": "Lien",
     "import.users": "Importer des utilisateurs",
-    
+
+    "massmail": "Publipostage",
     "massmail.accounts": "Publipostage des comptes",
     "massmail.pdf": "PDF",
     "massmail.mail": "Courriel",
@@ -152,7 +153,9 @@
     "massmail.error" :  "Erreur lors du publipostage",
     "massmail.link.user" : "Accéder à la fiche utilisateur",
     "process.massmail": "Lancer le publipostage",
-    
+    "individual.massmail.pdf" : "Fiche de connexion individuelle PDF",
+    "individual.massmail.mail" : "Fiche de connexion individuelle mail",
+
     "switch.old.admin.console": "Version classique",
     "switch.old.admin.console.tooltip": "Quitter la version BETA et revenir à la version classique de la console d'administration",
     "no.user.found": "Aucun utilisateur trouvé",
