@@ -218,14 +218,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void findByLogin(final String login, final String resetCode, final Handler<Either<String,JsonObject>> handler) {
+	public void findByLogin(final String login, final String resetCode,boolean checkFederatedLogin, final Handler<Either<String,JsonObject>> handler) {
 		boolean setResetCode = resetCode != null && !resetCode.trim().isEmpty();
 
 		String basicQuery =
 			"MATCH (n:User) " +
 			"WHERE n.login = {login} " +
 			"AND n.activationCode IS NULL " +
-			"AND (NOT(HAS(n.federated)) OR n.federated = false) " +
+			(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN n.email as email, n.mobile as mobile";
 
@@ -423,12 +423,12 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	@Override
-	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,
+	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,boolean checkFederatedLogin ,
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode IS NULL AND " +
-				"(NOT(HAS(n.federated)) OR n.federated = false) " +
+				"WHERE n.login = {login} AND n.activationCode IS NULL " +
+				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
 				"RETURN count(n) as nb";
 		final String code = StringValidation.generateRandomCode(8);
