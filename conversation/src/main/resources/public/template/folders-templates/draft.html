@@ -47,7 +47,7 @@
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
-		ng-repeat="mail in folders.draft.mails.all | orderBy : folders.draft.sort : folders.draft.reverse"
+		ng-repeat="mail in conversation.currentFolder.mails.all"
 		ng-class="{ checked: mail.selected}"
 		dragstart="drag(mail, $originalEvent)">
 
