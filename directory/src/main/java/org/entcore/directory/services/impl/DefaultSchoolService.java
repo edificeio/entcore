@@ -344,6 +344,37 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
+	public void massMailUser(String userId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
+		String filter =
+				"MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User {id: {userId}}), "+
+						"(g)-[:HAS_PROFILE]-(p: Profile) ";
+		String condition = "";
+		String optional =
+				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+
+		JsonObject params = new JsonObject().putString("userId", userId);
+
+		//With clause
+		String withStr =
+				"WITH u, p ";
+
+		//Return clause
+		String returnStr =
+				"RETURN distinct collect(p.name)[0] as profile, " +
+						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+						"u.email as email, u.login as login, u.activationCode as activationCode ";
+
+		withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
+		returnStr += ", classes, classname, isInClass ";
+
+		withStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName } END as child ";
+
+		String query = filter + condition + optional + withStr + returnStr ;
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
 	@Override
 	public void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
 		String filter =

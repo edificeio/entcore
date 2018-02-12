@@ -100,6 +100,20 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                 </div>
             </div>
         </form-field>
+                <form-field label="massmail">
+            <div>
+                <button class="mobile"
+                    (click)="sendIndividualMassMail('pdf')">
+                    <span><s5l>individual.massmail.pdf</s5l></span>
+                    <i class="fa fa-file-pdf-o"></i>
+                </button>
+                <button class="mobile"
+                    (click)="sendIndividualMassMail('mail')">
+                    <span><s5l>individual.massmail.mail</s5l></span>
+                    <i class="fa fa-envelope"></i>
+                </button>
+            </div>
+        </form-field>
     </panel-section>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -109,6 +123,8 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     passwordResetMobile: string
     smsModule: boolean
     showConfirmation: boolean = false;
+    downloadAnchor = null;
+    downloadObjectUrl = null;
 
     @Input() structure;
     @Input() user;
@@ -199,7 +215,6 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                         key: 'notify.user.sendResetPassword.mobile.content',
                         parameters: {
                             user: this.user.firstName + ' ' + this.user.lastName,
-                            mobile: mobile
                         }
                     }, 'notify.user.sendResetPassword.mobile.title')
             })
@@ -212,6 +227,54 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                         }
                     }, 'notify.user.sendResetPassword.mobile.error.title', err)
             })
+    }
+
+    sendIndividualMassMail(type: string) {
+        this.spinner.perform('portal-content', this.details.sendIndividualMassMail(type))
+            .then(res => {
+                var infoKey;
+                if(type != 'mail') {
+                    this.ajaxDownload(res.data, this.user.firstName + '_' + this.user.lastName + '.pdf');
+                    infoKey = 'massmail.pdf.done';
+                }else{
+                    infoKey = 'massmail.mail.done';
+                }
+
+                this.ns.success({
+                        key: infoKey,
+                        parameters: {}
+                    }, 'massmail')
+            })
+            .catch(err => {
+                this.ns.error({
+                        key: 'massmail.error',
+                        parameters: {}
+                    }, 'massmail', err)
+            })
+    }
+    
+    private createDownloadAnchor() {
+        this.downloadAnchor = document.createElement('a');
+        this.downloadAnchor.style = "display: none";
+        document.body.appendChild(this.downloadAnchor);
+    }
+
+    private ajaxDownload(blob, filename) {
+        if (window.navigator.msSaveOrOpenBlob) {
+            //IE specific
+            window.navigator.msSaveOrOpenBlob(blob, filename);
+        } else {
+            //Other browsers
+            if (this.downloadAnchor === null)
+                this.createDownloadAnchor()
+            if (this.downloadObjectUrl !== null)
+                window.URL.revokeObjectURL(this.downloadObjectUrl);
+            this.downloadObjectUrl = window.URL.createObjectURL(blob)
+            var anchor = this.downloadAnchor
+            anchor.href = this.downloadObjectUrl
+            anchor.download = filename
+            anchor.click()
+        }
     }
 
     generateMergeKey() {
