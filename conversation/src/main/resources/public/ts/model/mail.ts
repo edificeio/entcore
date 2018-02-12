@@ -186,6 +186,10 @@ export class Mail implements Selectable {
         return moment(parseInt(this.date)).calendar();
     };
 
+    longDate() {
+        return moment(parseInt(this.date)).format('dddd DD MMMM YYYY')
+    };
+
     isToday() {
         return moment(parseInt(this.date)).isSame(moment().startOf('day'), 'day');
     }
