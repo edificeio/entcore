@@ -36,7 +36,7 @@ public interface UserAuthAccount {
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
 
-	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest, Handler<Boolean> handler);
+	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest,boolean checkFederatedLogin , Handler<Boolean> handler);
 
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 
@@ -50,7 +50,7 @@ public interface UserAuthAccount {
 
 	void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler);
 
-	void findByLogin(String login, String resetCode, Handler<Either<String, JsonObject>> handler);
+	void findByLogin(String login, String resetCode,boolean checkFederatedLogin, Handler<Either<String, JsonObject>> handler);
 
 	void sendResetPasswordMail(HttpServerRequest request, String email,
 			String resetCode, Handler<Either<String, JsonObject>> handler);
