@@ -117,7 +117,7 @@ public class AuthController extends BaseController {
 	private String smsProvider;
 	private boolean slo;
 	private List<String> internalAddress;
-
+	private boolean checkFederatedLogin= false;
 
 	@Override
 	public void init(Vertx vertx, Container container, RouteMatcher rm,
@@ -126,8 +126,8 @@ public class AuthController extends BaseController {
 		JsonObject oic = container.config().getObject("openid-connect");
 		OpenIdConnectService openIdConnectService = (oic != null) ? new DefaultOpendIdConnectService(
 				oic.getString("iss"), vertx, oic.getString("keys")) : null;
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,
-				container.config().getBoolean("check-federated-login", false));
+		checkFederatedLogin = container.config().getBoolean("check-federated-login", false);
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,checkFederatedLogin);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -764,7 +764,7 @@ public class AuthController extends BaseController {
 
 	@Get("/password-channels")
 	public void getForgotPasswordService(final HttpServerRequest request) {
-		userAuthAccount.findByLogin(request.params().get("login"), null, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+		userAuthAccount.findByLogin(request.params().get("login"), null,checkFederatedLogin, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
 			public void handle(Either<String, JsonObject> result) {
 				if(result.isLeft()){
 					badRequest(request, result.left().getValue());
@@ -809,7 +809,7 @@ public class AuthController extends BaseController {
 					return;
 				}
 
-				userAuthAccount.findByLogin(login, resetCode, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
+				userAuthAccount.findByLogin(login, resetCode,checkFederatedLogin, new org.vertx.java.core.Handler<Either<String,JsonObject>>() {
 					public void handle(Either<String, JsonObject> result) {
 						if(result.isLeft()){
 							badRequest(request, result.left().getValue());
@@ -870,7 +870,7 @@ public class AuthController extends BaseController {
 					return;
 				}
 				
-				userAuthAccount.sendResetCode(request, login, dest, new org.vertx.java.core.Handler<Boolean>() {
+				userAuthAccount.sendResetCode(request, login, dest, checkFederatedLogin , new org.vertx.java.core.Handler<Boolean>() {
 					@Override
 					public void handle(Boolean sent) {
 						if (Boolean.TRUE.equals(sent)) {
