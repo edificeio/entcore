@@ -12,6 +12,9 @@ routes.define(function ($routeProvider) {
         .when("/write-mail/:userId", {
             action: "writeMail"
         })
+        .when("/write-mail", {
+            action: "writeMail"
+        })
         .when('/inbox', {
             action: 'inbox'
         })
