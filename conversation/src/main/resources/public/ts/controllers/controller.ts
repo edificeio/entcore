@@ -21,6 +21,7 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('page', 'folders');
                 $scope.readMail(new Mail(params.mailId));
                 await Conversation.instance.sync();
+                await Conversation.instance.folders.draft.countTotal();
                 $scope.$apply();
             },
             writeMail: async function (params) {
@@ -38,7 +39,7 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('page', 'folders');
                 await Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
-                await Conversation.instance.folders.draft.sync();
+                await Conversation.instance.folders.draft.countTotal();
                 $scope.$apply();
             }
         });
@@ -307,6 +308,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.saveDraft = async (item) => {
             try {
                 await Conversation.instance.folders.draft.saveDraft(item);
+                $scope.state.draftError = false;
             }
             catch(e) {
                 $scope.state.draftError = true;
