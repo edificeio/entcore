@@ -262,7 +262,6 @@ export class Mail implements Selectable {
             if (this.id) {
                 const response = await http.put(path + '/' + this.id, data);
                 Mix.extend(this, response.data);
-                Conversation.instance.folders.draft.mails.refresh();
             }
             else {
                 if (this.parentConversation) {
@@ -270,7 +269,6 @@ export class Mail implements Selectable {
                 }
                 let response = await http.post(path, data)
                 Mix.extend(this, response.data);
-                Conversation.instance.folders.draft.mails.refresh();
             }
     };
 
