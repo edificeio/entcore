@@ -33,11 +33,20 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.sync();
 
                 template.open('page', 'folders');
-                let user = new User(params.userId)
-                await user.findData();
                 template.open('main', 'mail-actions/write-mail');
                 $scope.constructNewItem();
-                $scope.addUser(user);
+
+                if(_.isString(params.userId)){
+                    let user = new User(params.userId);
+                    await user.findData();
+                    $scope.addUser(user);
+                }else if(params.userId !== undefined) {
+                    for(let i = 0; i < params.userId.length; i++){
+                        let user = new User(params.userId[i]);
+                        await user.findData();
+                        $scope.addUser(user);
+                    }
+                }
                 $scope.$apply();
             },
             inbox: async () => {
