@@ -222,9 +222,11 @@ export class Draft extends SystemFolder {
     }
 
     async saveDraft(draft: Mail): Promise<any> {
+        var id = draft.id;
         await draft.saveAsDraft();
         this.mails.push(draft);
-        this.totalNb++;
+        if(id == undefined && draft.id != undefined)
+            this.totalNb++;
     }
 
     async transfer(mail: Mail, newMail: Mail) {
