@@ -45,10 +45,10 @@
 	<div class="row">
 
         <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
-        <div class="row info hollow no-margin absolute-w" ng-class="{reveal : state.newItem.id}" >
+        <div class="row info fade-in no-margin absolute-w" ng-if="state.newItem.id && !state.draftError" >
             <i18n>message.draft.saved</i18n>
         </div>
-        <div class="row warning hollow no-margin absolute-w" ng-class="{reveal : state.draftError}" >
+        <div class="row warning fade-in no-margin absolute-w" ng-if="state.draftError"  >
             <i18n>message.save.fail</i18n>
         </div>
 
