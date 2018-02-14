@@ -21,7 +21,13 @@ package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
 import org.entcore.common.storage.impl.*;
+import org.entcore.common.validation.ExtensionValidator;
+import org.entcore.common.validation.FileValidator;
+import org.entcore.common.validation.QuotaFileSizeValidation;
+import org.vertx.java.core.AsyncResult;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.core.shareddata.ConcurrentSharedMap;
 
@@ -94,6 +100,12 @@ public class StorageFactory {
 					((FileStorage) storage).setAntivirus(av);
 				}
 			}
+			FileValidator fileValidator = new QuotaFileSizeValidation();
+			JsonArray blockedExtensions = fs.getArray("blockedExtensions");
+			if (blockedExtensions != null && blockedExtensions.size() > 0) {
+				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
+			}
+			((FileStorage) storage).setValidator(fileValidator);
 		} else {
 			storage = new GridfsStorage(vertx, Server.getEventBus(vertx), gridfsAddress);
 		}
