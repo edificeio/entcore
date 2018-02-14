@@ -113,7 +113,6 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'folders-templates/user-folder');
             $scope.resetState();
             await folder.open();
-            await folder.countUnread();
             $scope.$apply();
             $scope.updateWherami();
         };
