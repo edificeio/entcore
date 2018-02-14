@@ -164,6 +164,7 @@
     "tuto.action.select": "Cliquez",
     "tuto.text.select": "pour séléctionner et accéder au menu d'options,",
     "tuto.action.open": "Double-cliquez",
-    "tuto.text.open": "pour ouvrir un dossier ou un fichier."
+    "tuto.text.open": "pour ouvrir un dossier ou un fichier.",
+    "blocked.extension" : "Erreur l'extension du fichier est interdite."
 
 }

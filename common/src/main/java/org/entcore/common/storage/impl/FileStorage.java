@@ -25,6 +25,8 @@ import fr.wseduc.webutils.http.ETag;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.validation.AbstractValidator;
+import org.entcore.common.validation.FileValidator;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
@@ -54,6 +56,7 @@ public class FileStorage implements Storage {
 	private final FileSystem fs;
 	private final boolean flat;
 	private AntivirusClient antivirus;
+	private FileValidator validator;
 
 	public FileStorage(Vertx vertx, String basePath, boolean flat) {
 		this.basePath = (basePath != null && !basePath.endsWith("/")) ? basePath + "/" : basePath;
@@ -85,11 +88,24 @@ public class FileStorage implements Storage {
 			public void handle(final HttpServerFileUpload upload) {
 				request.pause();
 				final JsonObject metadata = FileUtils.metadata(upload);
-				if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-					handler.handle(new JsonObject().putString("status", "error")
-							.putString("message", "file.too.large"));
-					return;
+				if (validator != null) {
+					validator.process(metadata, new JsonObject().putNumber("maxSize", maxSize), new Handler<AsyncResult<Void>>() {
+						@Override
+						public void handle(AsyncResult<Void> event) {
+							if (event.succeeded()) {
+								doUpload(upload, metadata);
+							} else {
+								handler.handle(res.putString("status", "error")
+										.putString("message", event.cause().getMessage()));
+							}
+						}
+					});
+				} else {
+					doUpload(upload, metadata);
 				}
+			}
+
+			private void doUpload(final HttpServerFileUpload upload, final JsonObject metadata) {
 				upload.endHandler(new Handler<Void>() {
 					@Override
 					public void handle(Void event) {
@@ -485,6 +501,10 @@ public class FileStorage implements Storage {
 
 	public void setAntivirus(AntivirusClient antivirus) {
 		this.antivirus = antivirus;
+	}
+
+	public void setValidator(FileValidator validator) {
+		this.validator = validator;
 	}
 
 }
