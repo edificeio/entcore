@@ -182,6 +182,10 @@ export class Mail implements Selectable {
         });
     }
 
+    getSubject(){
+        return this.subject ? this.subject : lang.translate('nosubject');
+    }
+
     notifDate() {
         return moment(parseInt(this.date)).calendar();
     };
@@ -255,9 +259,7 @@ export class Mail implements Selectable {
             var data: any = { subject: this.subject, body: this.body };
             data.to = _.pluck(this.to, 'id');
             data.cc = _.pluck(this.cc, 'id');
-            if (!data.subject) {
-                data.subject = lang.translate('nosubject');
-            }
+
             var path = '/conversation/draft';
             if (this.id) {
                 const response = await http.put(path + '/' + this.id, data);
