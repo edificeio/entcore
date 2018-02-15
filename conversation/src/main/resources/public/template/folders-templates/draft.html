@@ -29,8 +29,9 @@
 			<div class="cell twelve">
 				<input class="twelve" name="searchField.words" type="text" ng-model="searchField.words"
 				ng-keyup="$event.keyCode == 13 ? search(searchField.words) : null"
-				i18n-placeholder="search"/>
+				i18n-placeholder="search.condition"/>
 				<i class="search" ng-click="search(searchField.words)"></i>
+				<div class="cell small-text warning-color" ng-if="state.searchFailed"><i18n>search.failed</i18n></div>
 			</div>
 		</div>
 	</div>
@@ -43,7 +44,7 @@
 		<div class="info fade-in"><i18n>loading</i18n></div>
 	</div>
 	<div ng-if="!isLoading() && conversation.currentFolder.mails.all.length === 0">
-		<div class="info fade-in"><i18n>folder.empty</i18n></div>
+		<div class="info fade-in">[[state.emptyMessage]]</div>
 	</div>
 
 	<div class="notification relative no-margin" ng-if="!isLoading()"
