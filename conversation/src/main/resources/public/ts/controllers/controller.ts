@@ -374,6 +374,16 @@ export let conversationController = ng.controller('ConversationController', [
             await $scope.refreshFolder();
         };
 
+        $scope.canMarkUnread = () => {
+          return  Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
+            Conversation.instance.currentFolder.mails.selection.selected.find(e => !e.unread)
+        }
+
+        $scope.canMarkRead = () => {
+          return  Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
+            Conversation.instance.currentFolder.mails.selection.selected.find(e => e.unread)
+        }
+
         $scope.allReceivers = function (mail) {
             var receivers = mail.to.slice(0);
             mail.toName && mail.toName.forEach(function (deletedReceiver) {
