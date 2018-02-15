@@ -10,8 +10,10 @@ export let conversationController = ng.controller('ConversationController', [
             current: undefined,
             newItem: undefined,
             draftError: false,
-            dragFolder: undefined
-        };
+            dragFolder: undefined,
+            emptyMessage: lang.translate('folder.empty'),
+            searchFailed: false
+    };
 
         $scope.conversation = Conversation.instance;
     
@@ -72,6 +74,9 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.filterUnread = false;
             $scope.state.searching = false;
             $scope.state.draftError = false;
+            $scope.state.emptyMessage = lang.translate('folder.empty');
+            $scope.state.searchFailed = false;
+
         };
 
         $scope.getSignature = () => {
@@ -204,17 +209,22 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.search = async (text: string) => {
-            if(text.trim().length > 3) {
+            if(text.trim().length > 2) {
+                $scope.state.searchFailed = false;
                 $scope.state.searching = true;
+                $scope.state.emptyMessage = lang.translate('no.result');
                 setTimeout(async function() {
                     await Conversation.instance.currentFolder.search(text);
                     $scope.$apply();
                 }, 1);
+            }else{
+                $scope.state.searchFailed = true;
             }
         }
 
         $scope.cancelSearch = async () => {
             $scope.state.searching = false;
+            $scope.state.searchFailed = false;
             setTimeout(async function() {
                 await Conversation.instance.currentFolder.search("");
                 $scope.$apply();
