@@ -336,11 +336,13 @@ export class Mail implements Selectable {
         ));
         if(!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
+            await this.updateAllowReply();
         }
-        await this.updateAllowReply();
     };
 
     async remove() {
+        if(!this.id)
+            return;
         if ((Conversation.instance.currentFolder as SystemFolder).folderName !== 'trash') {
             await http.put('/conversation/trash?id=' + this.id);
             Conversation.instance.currentFolder.mails.refresh();
@@ -354,6 +356,11 @@ export class Mail implements Selectable {
 
     async removeFromFolder() {
         return http.put('move/root?id=' + this.id)
+    }
+
+    async restore() {
+        await http.put('/conversation/restore?id=' + this.id);
+        Conversation.instance.folders['trash'].mails.refresh();
     }
 
     async move(destinationFolder) {
@@ -561,8 +568,11 @@ export class Mails {
     async toggleUnread(unread) {
         // Unselect mails that are not from inbox
         var selected = [];
+        var folder = '';
+
         this.selection.selected.forEach(mail => {
-            if (mail.getSystemFolder() === 'INBOX') {
+            folder = mail.getSystemFolder();
+            if (folder === 'INBOX' || folder === 'OUTBOX') {
                 selected.push(mail);
             }
         });

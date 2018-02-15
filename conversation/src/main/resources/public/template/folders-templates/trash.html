@@ -86,7 +86,7 @@
 			ng-repeat="mail in conversation.currentFolder.mails.all"
 			ng-class="{ checked: mail.selected, 'new-element': mail.isUnread(conversation.currentFolder) }" >
 
-			<article ng-click="variableMailAction(mail);$event.stopPropagation();">
+			<article ng-click="viewMail(mail);$event.stopPropagation();">
 				<div class="flex-row align-center">
 					<label class="wrapping-checkbox">
 						<div class="avatar" ng-click="$event.stopPropagation();">

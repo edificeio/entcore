@@ -4,6 +4,9 @@
 
     <div class="flex-row f-column mobile-f-column-reverse">
         <div>
+            <plus class="right-magnet">
+                <button ng-click="state.newItem.remove(); openFolder()"><i18n>remove</i18n></button>
+            </plus>
             <button class="right-magnet" ng-click="sendMail()" ng-disabled="!state.newItem.to.length
                 || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
                 || sending">
