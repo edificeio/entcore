@@ -473,7 +473,7 @@ export class Mails {
     }
 
     async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
-        this.loading = !data || !data.pageNumber || data.pageNumber == 0;
+        this.loading = !data || !data.pageNumber || data.pageNumber == 0 || data.searchText != undefined ;
         if(this.userFolder){
             await this.userFolderSync(data);
         }
