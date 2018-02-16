@@ -24,6 +24,7 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.readMail(new Mail(params.mailId));
                 await Conversation.instance.sync();
                 await Conversation.instance.folders.draft.countTotal();
+                $scope.constructNewItem();
                 $scope.$apply();
             },
             writeMail: async function (params) {
@@ -35,6 +36,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await user.findData();
                 template.open('main', 'mail-actions/write-mail');
                 $scope.addUser(user);
+                $scope.constructNewItem();
                 $scope.$apply();
             },
             inbox: async () => {
@@ -42,6 +44,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
                 await Conversation.instance.folders.draft.countTotal();
+                $scope.constructNewItem()
                 $scope.$apply();
             }
         });
@@ -51,7 +54,6 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.folders = Conversation.instance.folders;
         $scope.userFolders = Conversation.instance.userFolders;
         $scope.users = { list: Conversation.instance.users, search: '', found: [], foundCC: [] };
-        $scope.state.newItem = new Mail();
         template.open('main', 'folders-templates/inbox');
         template.open('toaster', 'folders-templates/toaster');
         $scope.formatFileType = Document.role;
@@ -79,13 +81,17 @@ export let conversationController = ng.controller('ConversationController', [
 
         };
 
+        $scope.constructNewItem = function(){
+            $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailSignature($scope.getSignature());
+        }
+
         $scope.getSignature = () => {
             if(Conversation.instance.preference.useSignature)
                 return Conversation.instance.preference.signature.replace(new RegExp('\n', 'g'),'<br>');
             return '';
         }
 
-        $scope.state.newItem.setMailSignature($scope.getSignature());
 
         $scope.openFolder = async folderName => {
             if (!folderName) {
