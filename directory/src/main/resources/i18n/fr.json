@@ -557,5 +557,5 @@
     "group.Relative": "Tous les parents du groupe {0}.",
     "group.Student": "Tous les élèves du groupe {0}.",
     "group.Teacher": "Tous les enseignants du groupe {0}.",
-    "password.warning.federated" : "Le mot de passe que vous allez changer corrrespond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT."
+    "password.warning.federated" : "Le mot de passe que vous allez changer correspond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT."
 }
