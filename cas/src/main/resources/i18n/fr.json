@@ -8,7 +8,7 @@
   "LeSiteTvRegisteredService.name" : "LeSite.tv",
   "LeSiteTvRegisteredService.description" : "Service CAS spécifique <a href='http://www.lesite.tv/' target='_blank'>LeSite.tv</a>, catalogue de ressources audiovisuelles.",
   "UniversalisRegisteredService.name" : "Universalis",
-  "UniversalisRegisteredService.description" : "Service CAS spécifique pour Universalis, l'encyplopédie en ligne.",
+  "UniversalisRegisteredService.description" : "Service CAS spécifique pour Universalis, l'encyclopédie en ligne.",
   "EnglishAttackRegisteredService.name" : "English Attack",
   "EnglishAttackRegisteredService.description" : "Service CAS spécifique pour English Attack",
   "CIDJRegisteredService.name" : "CIDJ",
