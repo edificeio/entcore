@@ -338,58 +338,102 @@ public class AuthController extends BaseController {
 					public void handle(final String userId) {
 						final String c = callBack.toString();
 						if (userId != null && !userId.trim().isEmpty()) {
-							trace.info("Connexion de l'utilisateur " + login);
-							userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
-									new io.vertx.core.Handler<Boolean>() {
-								public void handle(Boolean ok) {
-									if(!ok){
-										trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
-									}
-								}
-							});
-							eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
-							createSession(userId, request, c);
+							handleGetUserId(login, userId, request, c);
 						} else {
-							userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
+							// try with loginAlias
+							userAuthAccount.getUserIdByLoginAlias(login, password, new io.vertx.core.Handler<String>() {
 								@Override
-								public void handle(Boolean passIsActivationCode) {
-									if(passIsActivationCode){
-										trace.info("Code d'activation entré pour l'utilisateur " + login);
-										final JsonObject json = new JsonObject();
-										json.put("activationCode", password);
-										json.put("login", login);
-										if (config.getBoolean("cgu", true)) {
-											json.put("cgu", true);
-										}
-										UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
-											@Override
-											public void handle(UserInfos user) {
-												json.put("notLoggedIn", user == null);
-												renderView(request, json, "activation.html", null);
-											}
-										});
-
+								public void handle(final String userId) {
+									if (userId != null && !userId.trim().isEmpty()) {
+										handleGetUserId(login, userId, request, c);
 									} else {
-										userAuthAccount.matchResetCode(login, password, new io.vertx.core.Handler<Boolean>() {
+										// try activation with login
+										userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
 											@Override
-											public void handle(Boolean passIsResetCode) {
-												if(passIsResetCode){
-													redirect(request, "/auth/reset/"+password+"?login="+login);
+											public void handle(Boolean passIsActivationCode) {
+												if(passIsActivationCode){
+													handleMatchActivationCode(login, password, request);
 												} else {
-													trace.info("Erreur de connexion pour l'utilisateur " + login);
-													loginResult(request, "auth.error.authenticationFailed", c);
+													// try activation with loginAlias
+													userAuthAccount.matchActivationCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
+														@Override
+														public void handle(Boolean passIsActivationCode) {
+															if (passIsActivationCode) {
+																handleMatchActivationCode(login, password, request);
+															} else {
+																// try reset with login
+																userAuthAccount.matchResetCode(login, password, new io.vertx.core.Handler<Boolean>() {
+																	@Override
+																	public void handle(Boolean passIsResetCode) {
+																		if (passIsResetCode) {
+																			handleMatchResetCode(login, password, request);
+																		} else {
+																			// try reset with loginAlias
+																			userAuthAccount.matchResetCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
+																				@Override
+																				public void handle (Boolean passIsResetCode) {
+																					if (passIsResetCode) {
+																						handleMatchResetCode(login, password, request);
+																					} else {
+																						trace.info("Erreur de connexion pour l'utilisateur " + login);
+																						loginResult(request, "auth.error.authenticationFailed", c);
+																					}
+																				}
+																			});
+																		}
+																	}
+																});
+															}
+														}
+													});
 												}
 											}
 										});
 									}
 								}
 							});
+
 						}
 					}
 				});
 
 			}
 		});
+	}
+
+	private void handleGetUserId(String login, String userId, HttpServerRequest request, String callback) {
+		trace.info("Connexion de l'utilisateur " + login);
+		userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
+				new io.vertx.core.Handler<Boolean>() {
+					public void handle(Boolean ok) {
+						if(!ok){
+							trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
+						}
+					}
+				});
+		eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
+		createSession(userId, request, callback);
+	}
+
+	private void handleMatchActivationCode(String login, String password, HttpServerRequest request) {
+		trace.info("Code d'activation entré pour l'utilisateur " + login);
+		final JsonObject json = new JsonObject();
+		json.put("activationCode", password);
+		json.put("login", login);
+		if (config.getBoolean("cgu", true)) {
+			json.put("cgu", true);
+		}
+		UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				json.put("notLoggedIn", user == null);
+				renderView(request, json, "activation.html", null);
+			}
+		});
+	}
+
+	private void handleMatchResetCode(String login, String password, HttpServerRequest request) {
+		redirect(request, "/auth/reset/" + password + "?login=" + login);
 	}
 
 	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
@@ -643,39 +687,64 @@ public class AuthController extends BaseController {
 						@Override
 						public void handle(Either<String, String> activated) {
 							if (activated.isRight() && activated.right().getValue() != null) {
-								final String userId = activated.right().getValue();
-								trace.info("Activation du compte utilisateur " + login);
-								eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
-								if (config.getBoolean("activationAutoLogin", false)) {
-									trace.info("Connexion de l'utilisateur " + login);
-									userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
-											new io.vertx.core.Handler<Boolean>() {
-										public void handle(Boolean ok) {
-											if(!ok){
-												trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
-											}
-										}
-									});
-									eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
-									createSession(userId, request,
-											getScheme(request) + "://" + getHost(request));
-								} else {
-									redirect(request, "/auth/login");
-								}
+								handleActivation(login, request, activated);
 							} else {
-								trace.info("Echec de l'activation : compte utilisateur " + login +
-										" introuvable ou déjà activé.");
-								JsonObject error = new JsonObject()
-								.put("error", new JsonObject()
-								.put("message", I18n.getInstance().translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
-								error.put("activationCode", activationCode);
-								renderJson(request, error);
+								// if failed because duplicated user
+								if(activated.isLeft() && "activation.error.duplicated".equals(activated.left().getValue())) {
+									trace.info("Echec de l'activation : utilisateur " + login + " en doublon.");
+									JsonObject error = new JsonObject()
+											.put("error", new JsonObject()
+													.put("message", I18n.getInstance().translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
+									error.put("activationCode", activationCode);
+									renderJson(request, error);
+								} else {
+									// else try activation with loginAlias
+									userAuthAccount.activateAccountByLoginAlias(login, activationCode, password, email, phone, theme, request,
+										new io.vertx.core.Handler<Either<String, String>>() {
+											@Override
+											public void handle(Either<String, String> activated) {
+												if (activated.isRight() && activated.right().getValue() != null) {
+													handleActivation(login, request, activated);
+												} else {
+													trace.info("Echec de l'activation : compte utilisateur " + login +
+															" introuvable ou déjà activé.");
+													JsonObject error = new JsonObject()
+															.put("error", new JsonObject()
+															.put("message", I18n.getInstance().translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
+													error.put("activationCode", activationCode);
+													renderJson(request, error);
+												}
+											}
+										});
+								}
 							}
 						}
 					});
 				}
 			}
 		});
+	}
+
+	private void handleActivation(String login, HttpServerRequest request, Either<String, String> activated) {
+		final String userId = activated.right().getValue();
+		trace.info("Activation du compte utilisateur " + login);
+		eventStore.createAndStoreEvent(AuthEvent.ACTIVATION.name(), login);
+		if (config.getBoolean("activationAutoLogin", false)) {
+			trace.info("Connexion de l'utilisateur " + login);
+			userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
+					new io.vertx.core.Handler<Boolean>() {
+						public void handle(Boolean ok) {
+							if(!ok){
+								trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
+							}
+						}
+					});
+			eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
+			createSession(userId, request,
+					getScheme(request) + "://" + getHost(request));
+		} else {
+			redirect(request, "/auth/login");
+		}
 	}
 
 	@Get("/forgot")

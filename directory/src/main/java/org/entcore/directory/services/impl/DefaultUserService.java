@@ -295,7 +295,9 @@ public class DefaultUserService implements UserService {
 				"MATCH " + filter + "(u:User) " +
 				functionMatch + filterProfile + condition + optionalMatch +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
-				"u.activationCode as code, u.login as login, u.firstName as firstName, " +
+				"u.activationCode as code, " + 
+				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " + 
+				"u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
 				"u.birthDate as birthDate, u.blocked as blocked, " +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +

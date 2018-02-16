@@ -47,6 +47,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -82,9 +83,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void activateAccount(final String login, String activationCode, final String password,
 			String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+		activateAccount("login", login, activationCode, password, email, phone, theme, request, handler);
+	}
+
+	@Override
+	public void activateAccountByLoginAlias(final String login, String activationCode, final String password,
+		String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
+		activateAccount("loginAlias", login, activationCode, password, email, phone, theme, request, handler);
+	}
+
+	private void activateAccount(final String loginFieldName, final String login, String activationCode, final String password,
+	 	String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
 				"OPTIONAL MATCH (p:Profile) " +
@@ -128,7 +140,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				} else {
 					String q =
 							"MATCH (n:User) " +
-							"WHERE n.login = {login} AND n.activationCode IS NULL " +
+							"WHERE n." + loginFieldName + "={login} AND n.activationCode IS NULL " +
 							"AND NOT(n.password IS NULL) " +
 							"RETURN n.password as password, n.id as id";
 					Map<String, Object> p = new HashMap<>();
@@ -155,9 +167,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void matchActivationCode(final String login, String potentialActivationCode,
 			final Handler<Boolean> handler) {
+		matchActivationCode("login", login, potentialActivationCode, handler);
+	}
+
+	@Override
+	public void matchActivationCodeByLoginAlias(final String login, String potentialActivationCode,
+			final Handler<Boolean> handler) {
+		matchActivationCode("loginAlias", login, potentialActivationCode, handler);
+	}
+
+	private void matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode,
+		 final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"RETURN true as exists";
 
@@ -178,9 +201,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	public void matchResetCode(final String login, String potentialResetCode,
 			final Handler<Boolean> handler) {
+		matchResetCode("login", login, potentialResetCode, handler);
+	}
+
+	@Override
+	public void matchResetCodeByLoginAlias(final String login, String potentialResetCode,
+		   final Handler<Boolean> handler) {
+		matchResetCode("loginAlias", login, potentialResetCode, handler);
+	}
+
+	private void matchResetCode(final String loginFieldName, final String login, String potentialResetCode,
+		final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"WHERE n." + loginFieldName + "={login} AND n.resetCode = {resetCode} " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
@@ -228,7 +262,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String basicQuery =
 			"MATCH (n:User) " +
-			"WHERE n.login = {login} " +
+			"WHERE (n.login={login} OR n.loginAlias={login}) " +
 			"AND n.activationCode IS NULL " +
 			(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
@@ -239,7 +273,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
 			"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
 			"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-			"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+			"WHERE (n.login={login} OR n.loginAlias={login}) AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
 			"(NOT(HAS(n.federated)) OR n.federated = false) " +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN p.email as email";
@@ -399,7 +433,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"WHERE n.login={login} AND n.resetCode = {resetCode} " +
 				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
 				"RETURN n.password as pw";
@@ -417,7 +451,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void changePassword(String login, String password, final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND NOT(n.password IS NULL) " +
+				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"SET n.password = {password} " +
 				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
@@ -430,7 +464,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode IS NULL " +
+				"WHERE n.login={login} AND n.activationCode IS NULL " +
 				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
 				"RETURN count(n) as nb";
@@ -512,6 +546,49 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						&& pw.equals(r.getJsonObject("0").getString("pw")));
 			}
 		});
+	}
+
+	@Override
+	public void getUserIdByLoginAlias(String username, String password, Handler<String> handler) {
+		if (username != null && password != null &&
+				!username.trim().isEmpty() && !password.trim().isEmpty()) {
+			String query =
+					"MATCH (n:User) " +
+					"WHERE n.loginAlias={loginAlias} AND NOT(n.password IS NULL) " +
+					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
+
+			query +=
+					"OPTIONAL MATCH (p:Profile) " +
+					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
+			Map<String, Object> params = new HashMap<>();
+			params.put("loginAlias", username);
+			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
+
+				@Override
+				public void handle(Message<JsonObject> res) {
+					JsonArray result = res.body().getJsonArray("result");
+					if ("ok".equals(res.body().getString("status")) &&
+							result != null && result.size() == 1) {
+						JsonObject r = result.getJsonObject(0);
+						String dbPassword;
+						if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
+							if (BCrypt.checkpw(password, dbPassword)) {
+								handler.handle(r.getString("userId"));
+							} else {
+								handler.handle(null);
+							}
+						} else {
+							handler.handle(null);
+						}
+					} else {
+						handler.handle(null);
+					}
+				}
+			});
+		} else {
+			handler.handle(null);
+		}
 	}
 
 }

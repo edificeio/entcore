@@ -161,6 +161,10 @@
 		"fieldOfStudyLabels" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
+		},
+		"loginAlias" : {
+			"type": "login-alias",
+			"validator": "loginAlias"
 		}
 	},
 	"generate" : {
@@ -176,5 +180,5 @@
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName", "birthDate"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
 		"otherNames", "address", "postbox", "zipCode", "city", "country", "homePhone",
-		"workPhone", "mobile", "email", "birthDate"]
+		"workPhone", "mobile", "email", "birthDate", "loginAlias"]
 }

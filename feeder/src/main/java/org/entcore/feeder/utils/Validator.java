@@ -60,6 +60,7 @@ public class Validator {
 		patterns.put("siren", Pattern.compile("^[0-9]{3} ?[0-9]{3} ?[0-9]{3}$"));
 		patterns.put("siret", Pattern.compile("^[0-9]{3} ?[0-9]{3} ?[0-9]{3} ?[0-9]{5}$"));
 		patterns.put("uri", Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
+		patterns.put("loginAlias", Pattern.compile("^([0-9a-z\\-\\.]+)$"));
 	}
 
 	public static final String SEARCH_FIELD = "SearchField";
@@ -124,6 +125,9 @@ public class Validator {
 					case "boolean" :
 						err = validBoolean(attr, value, acceptLanguage);
 						break;
+					case "login-alias" :
+						err = validLoginAlias(attr, value, validator, acceptLanguage);
+						break;
 					default:
 						err = i18n.translate("missing.type.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, type);
 				}
@@ -184,6 +188,9 @@ public class Validator {
 						break;
 					case "boolean" :
 						err = validBoolean(attr, value);
+						break;
+					case "login-alias" :
+						err = validLoginAlias(attr, value, validator);
 						break;
 					default:
 						err = "Missing type validator: " + type;
@@ -410,6 +417,25 @@ public class Validator {
 		}
 	}
 
+	private String validLoginAlias(String attr, Object value, String validator) {
+		return validLoginAlias(attr, value, validator, "fr");
+	}
+	
+	private String validLoginAlias(String attr, Object value, String validator, String acceptLanguage) {
+		Pattern p = patterns.get(validator);
+		if (p == null) {
+			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
+		}
+		if (!p.matcher((String) value).find()) {
+			return i18n.translate("invalid.value", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
+		}
+
+		if (logins.containsKey(value)) {
+			return i18n.translate("invalid.duplicate", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
+		}
+		return null;
+	}
+	
 	public String getType(String attr) {
 		JsonObject a = validate.getJsonObject(attr);
 		return a != null ? a.getString("type", "") : "";
@@ -430,13 +456,18 @@ public class Validator {
 	}
 
 	protected static void initLogins(Neo4j neo4j, final long startInit, final boolean remove) {
-		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";
+		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins, COLLECT(DISTINCT u.loginAlias) as loginAliases";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonArray r = message.body().getJsonArray("result");
 				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
 					JsonArray l = (r.getJsonObject(0)).getJsonArray("logins");
+					JsonArray aliases = (r.getJsonObject(0)).getJsonArray("loginAliases");
+
+					for(Object alias : aliases) {
+						l.add(alias);
+					}
 
 					if (l != null) {
 						final Set<Object> tmp = new HashSet<>(l.getList());

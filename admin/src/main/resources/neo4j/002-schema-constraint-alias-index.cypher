@@ -1,0 +1,1 @@
+CREATE CONSTRAINT ON (u:User) ASSERT u.loginAlias IS UNIQUE;

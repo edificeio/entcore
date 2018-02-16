@@ -80,8 +80,8 @@ export class NotifyService {
     }
 
     public error(content: string | {key: string, parameters: {}},
-            title : string | {key: string, parameters: {}}, err, opts?: NotyOptions) {
-        const errorMessage = err && err.response && err.response.data && err.response.data.error || err.message
+            title : string | {key: string, parameters: {}}, err?, opts?: NotyOptions) {
+        const errorMessage = (err && err.response && err.response.data && err.response.data.error) || (err && err.message)
         this.notify(content, title, errorMessage, 'error', this.mixin({
             timeout: false
         }, opts))

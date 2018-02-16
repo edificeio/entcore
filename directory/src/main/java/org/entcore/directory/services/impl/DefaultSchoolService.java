@@ -306,7 +306,7 @@ public class DefaultSchoolService implements SchoolService {
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as profile, " +
 				"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-				"u.email as email, u.login as login, u.activationCode as activationCode ";
+				"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as activationCode ";
 
 		if(groupClasses){
 			withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
@@ -364,7 +364,7 @@ public class DefaultSchoolService implements SchoolService {
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as profile, " +
 						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.email as email, u.login as login, u.activationCode as activationCode ";
+						"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as activationCode ";
 
 		withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		returnStr += ", classes, classname, isInClass ";
@@ -410,7 +410,7 @@ public class DefaultSchoolService implements SchoolService {
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as type, " +
 						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.email as email, u.login as login, u.activationCode as code ";
+						"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code ";
 
 		withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		returnStr += ", classes, classname, isInClass ";

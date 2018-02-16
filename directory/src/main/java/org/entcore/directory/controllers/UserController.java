@@ -611,6 +611,13 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Get("/allowLoginUpdate")
+	@SecuredAction("user.allow.login.update")
+	public void allowLoginUpdate(final HttpServerRequest request) {
+		// This route is used to create user.allow.login.update Workflow right, nothing to do
+		request.response().end();
+	}
+
 	public void setUserService(UserService userService) {
 		this.userService = userService;
 	}

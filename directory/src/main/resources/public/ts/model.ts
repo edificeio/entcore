@@ -456,6 +456,10 @@ directory.User.prototype.saveInfos = function(){
 	oldHttp().putJson('/directory/user/' + this.id, userData);
 };
 
+directory.User.prototype.saveLogin = function(newLoginAlias) {
+	return oldHttp().putJson('/directory/user/' + this.id, {loginAlias: newLoginAlias});
+}
+
 directory.User.prototype.saveChanges = function(){
 	if(this.edit.userbook){
 		this.saveUserbook();
