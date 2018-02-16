@@ -10,7 +10,7 @@ export const switchSearch = ng.directive('switchSearch', () => {
                 <div class="cell">
                     <input class="twelve zero-desktop" type="text" ng-model="ngModel"
                     ng-keyup="$event.keyCode == 13 ? ngChange({words: ngModel}) : null"
-                    i18n-placeholder="search"/>
+                    i18n-placeholder="search.condition"/>
                     <i class="search flex-row align-center justify-center zero-desktop" ng-click="hide ? extend() : ngChange({words: ngModel});"></i>
                 </div>
                 <ng-transclude></ng-transclude>
