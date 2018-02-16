@@ -4,5 +4,5 @@
   "timeline.archive.success" : "Vous pouvez télécharger l'archive : ",
   "timeline.archive.error" : "Une erreur est survenue lors de la création de l'archive",
   "timeline.archive.link" : "cliquez ici pour lancer le téléchargement",
-  "timeline.archive.success.warning" : "Ce lien est utilisable aujourd'hui pour une seule utilisation. Pour obtenir un autre lien, veuillez relancez un nouvel export."
+  "timeline.archive.success.warning" : "Ce lien est utilisable aujourd'hui pour une seule utilisation. Pour obtenir un autre lien, veuillez relancer un nouvel export."
 }
