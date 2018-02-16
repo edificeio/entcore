@@ -34,6 +34,9 @@ public interface UserAuthAccount {
 	void activateAccount(String login, String activationCode, String password, String email,
 						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
 
+	void activateAccountByLoginAlias(String login, String activationCode, String password, String email,
+						 String phone, String theme, HttpServerRequest request, Handler<Either<String, String>> handler);
+
 	void resetPassword(String login, String resetCode, String password, Handler<Boolean> handler);
 
 	void changePassword(String login, String password, Handler<Boolean> handler);
@@ -45,7 +48,13 @@ public interface UserAuthAccount {
 	void matchActivationCode(String login, String potentialActivationCode,
 			Handler<Boolean> handler);
 
+	void matchActivationCodeByLoginAlias(String loginAlias, String potentialActivationCode,
+			 Handler<Boolean> handler);
+
 	void matchResetCode(String login, String potentialResetCode,
+			Handler<Boolean> handler);
+
+	void matchResetCodeByLoginAlias(String loginAlias, String potentialResetCode,
 			Handler<Boolean> handler);
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
@@ -68,4 +77,5 @@ public interface UserAuthAccount {
 
 	void storeDomain(String id, String domain, String scheme, Handler<Boolean> handler);
 
+	void getUserIdByLoginAlias(String username, String password, Handler<String> handler);
 }

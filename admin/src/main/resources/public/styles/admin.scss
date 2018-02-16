@@ -157,6 +157,8 @@ input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     outline: none;
     transition: border-color 0.25s;
     padding: 0;
+    font-size: 1em;
+    font-family: 'Oxygen', sans-serif;
 
     &:focus { border-color: $accent; }
 
@@ -176,6 +178,26 @@ form-errors {
 
     > .form-errors {
         margin: 0 10px;
+    }
+}
+
+fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+
+    &[disabled] {
+        input {
+            background: none;
+        }
+    }
+
+    form-field:first-child div.form-field {
+        margin-top: 5px;
+    }
+
+    form-field:last-child div.form-field {
+        margin-bottom: 5px;
     }
 }
 
@@ -341,6 +363,10 @@ i.group_add {
 
 .has-vertical-padding {
     padding: 10px 0px;
+}
+
+.has-margin-top {
+    margin-top: 10px;
 }
 
 .has-shadow {
@@ -904,14 +930,14 @@ div.panel-message {
 
     i.opener{ font-size: 1.3em }
 }
-.panel-section-content {
+.panel-section-content {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
     font-size: 0.9em;
     overflow: auto;
 }
 
 /* Forms */
 .form-field {
-    margin: 15px 0px;
+    margin: 25px 0px;
 }
 
 .form-row {
@@ -1328,10 +1354,6 @@ user-detail {
 user-info-section {
     panel-section {
         form-field {
-            button.noflex {
-                flex: none !important;
-            }
-
             div.sendPassword {
                 display: flex;
                 flex-flow: row wrap;
@@ -1360,22 +1382,6 @@ user-info-section {
                         }
                     }
                 }
-            }
-
-            div.adml-buttons {
-                padding-bottom: 20px;
-            }
-        }
-    }
-}
-
-user-administrative-section {
-    fieldset {
-        border: none;
-
-        &[disabled] {
-            input {
-                background: none
             }
         }
     }

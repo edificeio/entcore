@@ -19,6 +19,32 @@
  -->
 
 <div class="row reduce-block-six twelve-mobile user-infos">
+	<lightbox show="display.login" on-close="display.login = false" workflow="directory.allowLoginUpdate" ng-if="account.id === me.userId">
+		<h1><i18n>directory.login.update.title</i18n></h1>
+		<form name="loginForm" novalidate>
+			<div class="row">
+				<p>
+					<label translate content="userBook.profile.login" class="two cell twelve-mobile"></label>
+					<input type="text" class="ten cell twelve-mobile" ng-pattern="/^[0-9a-z\-\.]+$/" name="newLoginAlias" ng-model="account.newLoginAlias">
+				</p>
+			</div>
+
+			<div class="row">
+				<p class="input-errors small-text" ng-if="loginForm.newLoginAlias.$invalid && loginForm.newLoginAlias.$dirty">
+					<span ng-repeat="(key, value) in loginForm.newLoginAlias.$error">
+						<span ng-if="value">[[lang.translate(key)]]</span><span ng-if="key == 'pattern'">[[lang.translate('directory.form.login.pattern')]]</span>
+					</span>
+				</p>
+			</div>
+
+			<hr>
+
+			<div class="row">
+				<button type="button" class="submit right-magnet cell" ng-click="saveLogin();" ng-disabled="loginForm.newLoginAlias.$invalid || loginForm.newLoginAlias.$pristine "><i18n>directory.save</i18n></button>
+				<button type="button" class="cancel right-magnet cell" ng-click="display.login = false;"><i18n>cancel</i18n></button>
+			</div>
+		</form>
+	</lightbox>
 
 	<article class="rigid-grid cell twelve">
 
@@ -46,7 +72,13 @@
 				<div class="four cell">
 					<i18n>userBook.profile.login</i18n>
 				</div>
-				<em class="seven cell">[[account.login]]</em>
+				<em class="seven cell">
+					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]] 
+					<a ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
+						<i18n>directory.login.update.button</i18n>
+					</a>
+				</em>
+
 			</div>
 
 			<div class="row" ng-if="account.id === me.userId">
