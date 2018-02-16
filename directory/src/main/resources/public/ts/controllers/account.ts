@@ -182,6 +182,23 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		$scope.saveChanges();
 	}
 
+	$scope.saveLogin = function() {
+		directory.account.saveLogin($scope.account.newLoginAlias)
+			.done(function(e){
+				$scope.account.loginAlias = $scope.account.newLoginAlias;
+				$scope.display.login = false;
+				$scope.$apply();
+			})
+			.e400(function(e){
+				let errorMsg: string = JSON.parse(e.responseText).error;
+				if(errorMsg.includes('already exists') || errorMsg.includes('existe déjà')) {
+					notify.error('directory.notify.loginUpdate.error.alreadyExists');
+				} else {
+					notify.error(errorMsg);
+				}
+			}.bind(this));
+	}
+
 	$scope.saveInfos = function(){
 		directory.account.saveInfos();
 	};

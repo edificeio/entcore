@@ -84,7 +84,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			String email, String phone, final String theme, final HttpServerRequest request, final Handler<Either<String, String>> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
 				"OPTIONAL MATCH (p:Profile) " +
@@ -123,7 +123,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				} else {
 					String q =
 							"MATCH (n:User) " +
-							"WHERE n.login = {login} AND n.activationCode IS NULL " +
+							"WHERE (n.login={login} OR n.loginAlias={login}) AND n.activationCode IS NULL " +
 							"AND NOT(n.password IS NULL) " +
 							"RETURN n.password as password, n.id as id";
 					Map<String, Object> p = new HashMap<>();
@@ -152,7 +152,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"RETURN true as exists";
 
@@ -175,7 +175,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND n.resetCode = {resetCode} " +
 				"RETURN true as exists";
 
 		JsonObject params = new JsonObject()
@@ -223,7 +223,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String basicQuery =
 			"MATCH (n:User) " +
-			"WHERE n.login = {login} " +
+			"WHERE (n.login={login} OR n.loginAlias={login}) " +
 			"AND n.activationCode IS NULL " +
 			(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
@@ -234,7 +234,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
 			"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
 			"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-			"WHERE n.login = {login} AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+			"WHERE (n.login={login} OR n.loginAlias={login}) AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
 			"(NOT(HAS(n.federated)) OR n.federated = false) " +
 			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 			"RETURN p.email as email";
@@ -394,7 +394,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.resetCode = {resetCode} " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND n.resetCode = {resetCode} " +
 				(codeDelay > 0 ? "AND coalesce({today} - n.resetDate < {delay}, true) " : "") +
 				"SET n.password = {password}, n.resetCode = null, n.resetDate = null " +
 				"RETURN n.password as pw";
@@ -412,7 +412,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void changePassword(String login, String password, final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND NOT(n.password IS NULL) " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND NOT(n.password IS NULL) " +
 				"SET n.password = {password} " +
 				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
@@ -425,7 +425,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			final Handler<Boolean> handler) {
 		String query =
 				"MATCH (n:User) " +
-				"WHERE n.login = {login} AND n.activationCode IS NULL " +
+				"WHERE (n.login={login} OR n.loginAlias={login}) AND n.activationCode IS NULL " +
 				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
 				"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
 				"RETURN count(n) as nb";

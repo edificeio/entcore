@@ -35,6 +35,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     manualGroups?: GroupModel[]
     administrativeStructures?: Array<string>
     mergeKey?: string
+    loginAlias?: string
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
@@ -113,9 +114,13 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     }
 
     generateMergeKey() {
-    return this.http.post(`/directory/duplicate/generate/mergeKey/${this.id}`, {}).then((res) => {
+        return this.http.post(`/directory/duplicate/generate/mergeKey/${this.id}`, {}).then((res) => {
             this.mergeKey = res.data.mergeKey
         });
+    }
+
+    updateLoginAlias() {
+        return this.http.put(`/directory/user/${this.id}/loginAlias`, {loginAlias: this.loginAlias});
     }
 
     toJSON() {
@@ -129,7 +134,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             zipCode:        this.zipCode,
             email:          this.email,
             homePhone:      this.homePhone,
-            mobile:         this.mobile
+            mobile:         this.mobile,
+            loginAlias:     this.loginAlias
         }
     }
 }

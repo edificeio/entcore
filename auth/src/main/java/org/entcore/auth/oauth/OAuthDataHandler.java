@@ -99,7 +99,7 @@ public class OAuthDataHandler extends DataHandler {
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
 					"MATCH (n:User) " +
-					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
+					"WHERE (n.login={login} OR n.loginAlias={login}) AND NOT(n.password IS NULL) " +
 					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
 			if (checkFederatedLogin) {
 				query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";

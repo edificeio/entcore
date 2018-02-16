@@ -9,6 +9,7 @@ import { LabelsService } from '../services/labels.service';
         <div *ngIf="ref && ref.errors && (ref.dirty || ref.touched)" class="form-errors">
             <div *ngFor="let error of getErrorsArray()">
                 <span>{{ 'form.error.' + error.name | translate: error.value }}</span>
+                <span *ngIf="error.name == 'pattern'">{{expectedPatternMsg}}</span>
             </div>
         </div>
     `,
@@ -25,6 +26,9 @@ export class FormErrorsComponent {
 
     @Input("control")
     ref : AbstractControl
+
+    @Input("expectedPatternMsg")
+    expectedPatternMsg: string
 
     getErrorsArray() {
         let errorsArray = []
