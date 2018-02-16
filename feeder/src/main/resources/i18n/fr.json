@@ -12,6 +12,7 @@
   "empty.attribute" : "L'attribut {0} est vide.",
   "invalid.bounce.email": "L'attribut {0} contient l'adresse email {1} qui n'est pas utilisable.",
   "invalid.value" : "L'attribut {0} contient une valeur invalide {1}.",
+  "invalid.duplicate": "L'attribut {0} contient une valeur {1} qui existe déjà.",
   "Relative" : "Parent",
   "Teacher" : "Enseignant",
   "Student" : "Élève",

@@ -40,9 +40,7 @@
     "code.multi.combo.title": "Activation",
     "classes.multi.combo.title": "Classes",
     "sources.multi.combo.title": "Sources",
-    // "functions.multi.combo.title": "Fonctions (personnels)", // FIXME when user model updated
     "functions.multi.combo.title": "Fonctions & matières",
-    // "matieres.multi.combo.title": "Matières (enseignants)", // FIXME when user model updated
     "functionalGroups.multi.combo.title": "Groupes d'enseignement",
     "manualGroups.multi.combo.title": "Groupes manuels",
     "adml.multi.combo.title": "Administrateurs locaux",
@@ -57,6 +55,8 @@
     "activation.code": "Code d'activation",
     "activation.code.placeholder": "Entrez un code d'activation",
     "login": "Login",
+    "loginAlias": "Identifiant personnalisé (Alias)",
+    "login.update": "Enregistrer",
     "id": "Identifiant",
     "externalId": "Identifiant externe",
     "source": "Source",
@@ -92,7 +92,8 @@
     "form.error.minlength": "{{requiredLength}} caractères minimum",
     "form.error.maxlength": "{{requiredLength}} caractères maximum",
     "form.error.pattern": "Saisie invalide",
-    
+    "form.user.alias.pattern": " - Seuls les lettres minuscules, chiffres, point (.) et tiret (-) sont autorisés",
+
     "firstName": "Prénom",
     "lastName": "Nom",
     "displayName": "Nom d'affichage",
@@ -222,7 +223,6 @@
     "notify.user.update.content": "Les données de l'utilisateur {{user}} ont bien été mises à jour.",
     "notify.user.update.error.title": "Erreur lors de la modification",
     "notify.user.update.error.content": "L'utilisateur {{user}} n'a pas pu être mis à jour.",
-
     "notify.user.updateLoginAlias.title": "Modification effectuée",
     "notify.user.updateLoginAlias.content": "L'alias de login de l'utilisateur {{user}} a bien été mis à jour.",
     "notify.user.updateLoginAlias.error.title": "Erreur lors de la modifiation",
