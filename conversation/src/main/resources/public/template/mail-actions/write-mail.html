@@ -51,12 +51,17 @@
 
         <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
         <div class="row info fade-in no-margin absolute-w" ng-if="state.newItem.id && !state.draftError" >
+            <i class="check-circle"></i>
             <i18n>message.draft.saved</i18n>
+            <i18n>at</i18n>
+            <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
         </div>
         <div class="row warning fade-in no-margin absolute-w" ng-if="state.draftError"  >
+            <i class="warning"></i>
             <i18n>message.save.fail</i18n>
+            <i18n>at</i18n>
+            <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
         </div>
-
 		<editor ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
 	</div>
     <div class="row drop-down-block" ng-class="{slided: signatureShow}">
