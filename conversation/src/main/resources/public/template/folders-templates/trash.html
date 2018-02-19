@@ -112,10 +112,9 @@
 
 							<span
 								ng-if="mail.getSystemFolder() !== 'INBOX'"
-								ng-repeat="receiver in receivers = (recs | limitTo:2 | filter: filterUsers(mail))">
+								ng-repeat="receiver in receivers = (recs | limitTo:5 | filter: filterUsers(mail))">
 								<span>[[mail.map(receiver).displayName]]</span>
 								<span ng-if="$index < 1 && receivers.length > 1">,</span>
-								<span class="strong" ng-if="recs.filter(filterUsers(mail)).length > 2 && $index === receivers.length-1">...</span>
 							</span>
 
 							<span class="strong"
