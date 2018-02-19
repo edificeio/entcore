@@ -65,9 +65,9 @@
 
 				<div class="states"><!-- keep empty --></div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
+
 					<span class="strong" ng-repeat="receiver in receivers = (mail.to | limitTo:5 | filter: filterUsers(mail))">
-						<span>[[mail.map(receiver).displayName]]</span>
-						<span ng-if="$index < 1 && receivers.length > 1">,</span>
+						<span>[[mail.map(receiver).displayName]]</span><span ng-if="$index < (receivers.length - 1) && receivers.length > 1">, </span>						
 					</span>
 					<br ng-if="receivers.length > 0">
 					<span class="small-text">[[mail.getSubject()]]</span>
