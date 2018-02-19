@@ -67,7 +67,9 @@
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
 						<img ng-src="[[ mail.matchAvatar() ]]"/>
-						<input type="checkbox" ng-model="mail.selected"/>
+
+						<input type="checkbox" ng-model="mail.selected" ng-click="refreshSelectionState(mail)"/>
+
 						<i18n></i18n>
 					</div>
 				</label>
