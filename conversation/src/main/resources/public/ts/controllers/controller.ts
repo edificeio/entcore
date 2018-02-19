@@ -176,6 +176,11 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
+        $scope.refreshSelectionState = function (mail) {
+            if(!mail.selected)
+                $scope.state.selectAll = false
+        };
+
         function setCurrentMail(mail: Mail, doNotSelect?: boolean) {
             $scope.state.current = mail;
             Conversation.instance.currentFolder.deselectAll();
