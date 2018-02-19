@@ -64,14 +64,17 @@
 			<div class="twelve cell" pulsar-highlight="7">
 				<label ng-click="signatureShow = !signatureShow">
 					<i class="arrow"></i>
-					<label
-						ng-click="signatureShow = !signatureShow"
-						pulsar="{ index: 7, position: 'bottom center'}">
-						<i18n>add.signature</i18n>
-					</label>
+					<i18n>add.signature</i18n>
 				</label>
-				<input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/>
-			</div>
+
+				<!-- <input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/> -->
+
+                <label class="checkbox" ng-click="refreshSignature(conversation.preference.useSignature)">
+                    <input type="checkbox" ng-model="conversation.preference.useSignature">
+                    <span></span>
+                </label>
+
+        	</div>
 		</div>
 
 		<div class="drop-down-content" slide="signatureShow">
