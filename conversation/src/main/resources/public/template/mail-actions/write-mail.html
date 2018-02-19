@@ -21,6 +21,7 @@
 						<recipient-list
 							ng-model="state.newItem.to"
 							ng-change="quickSaveDraft()"
+                            restriction="isLocalAdmin()"
 							update-found-items="updateFoundUsers(search, model, founds)">
 						</recipient-list>
 					</div>
@@ -33,7 +34,8 @@
 						<recipient-list
 							ng-model="state.newItem.cc"
 							ng-change="quickSaveDraft()"
-							update-found-items="updateFoundUsers(search, model, founds)">
+                            restriction="isLocalAdmin()"
+                            update-found-items="updateFoundUsers(search, model, founds)">
 						</recipient-list>
 					</div>
 				</div>

@@ -28,7 +28,8 @@ export const recipientList = ng.directive('recipientList', () => {
                 </label>
                 <form class="input-help" ng-submit="update(true)">
                     <label ng-class="{ hide: focused || ngModel.length > 0 }">
-                        <i18n>share.search.help</i18n>
+                        <i18n ng-if="restriction">share.search.help</i18n>
+                        <i18n ng-if="!restriction">share.search.placeholder</i18n>
                     </label>
                     <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" />
                 </form>
@@ -44,6 +45,7 @@ export const recipientList = ng.directive('recipientList', () => {
         scope: { 
             ngModel: '=',
             ngChange: '&',
+            restriction: '=',
             updateFoundItems: '&'
         },
 
@@ -73,7 +75,7 @@ export const recipientList = ng.directive('recipientList', () => {
             });
 
             element.find('input').on('keydown', function (e) {
-                if (e.keyCode === 8 && scope.searchText.length === 0) { // BackSpace
+                if (e.keyCode === 8 && scope.searchText && scope.searchText.length === 0) { // BackSpace
                     var nb = scope.ngModel.length;
                     if (nb > 0)
                         scope.deleteItem(scope.ngModel[nb - 1]);
@@ -89,7 +91,7 @@ export const recipientList = ng.directive('recipientList', () => {
                     scope.doSearch();
                 }
                 else {
-                    if(scope.searchText.length < 3) {
+                    if(scope.restriction && scope.searchText.length < 3 || scope.searchText.length < 1) {
                         scope.itemsFound.splice(0, scope.itemsFound.length);
                     }
                     else {

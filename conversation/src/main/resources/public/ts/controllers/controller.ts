@@ -671,4 +671,9 @@ export let conversationController = ng.controller('ConversationController', [
                 $('body').trigger('whereami.update');
             }, 100);
         }
+
+        $scope.isLocalAdmin = () => {
+           return model.me.functions &&
+            model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope
+        };
     }]);
