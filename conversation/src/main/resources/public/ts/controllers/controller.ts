@@ -201,10 +201,11 @@ export let conversationController = ng.controller('ConversationController', [
             }
         };
 
-        $scope.refresh = function () {
+        $scope.refresh = async function () {
             notify.info('updating');
-            Conversation.instance.currentFolder.mails.refresh();
-            Conversation.instance.folders.inbox.countUnread();
+            await Conversation.instance.currentFolder.mails.refresh();
+            await Conversation.instance.folders.inbox.countUnread();
+            $scope.$apply();
         };
 
         $scope.readMail = async (mail: Mail) => {
