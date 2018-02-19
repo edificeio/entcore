@@ -1,4 +1,4 @@
-import { ng, notify, idiom as lang, template, skin, Document, $, _ } from 'entcore';
+import { ng, notify, idiom as lang, template, skin, moment, Document, $, _ } from 'entcore';
 import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
@@ -16,7 +16,7 @@ export let conversationController = ng.controller('ConversationController', [
     };
 
         $scope.conversation = Conversation.instance;
-    
+
         route({
             readMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
@@ -30,7 +30,7 @@ export let conversationController = ng.controller('ConversationController', [
             writeMail: async function (params) {
                 Conversation.instance.folders.openFolder('inbox');
                 await Conversation.instance.sync();
-                
+
                 template.open('page', 'folders');
                 let user = new User(params.userId)
                 await user.findData();
@@ -326,6 +326,10 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.saveDraft($scope.state.newItem);
         };
 
+        $scope.hourIsit = () => moment().format('HH');
+        $scope.minIsit = () => moment().format('mm');
+
+
         $scope.saveDraft = async (item) => {
             try {
                 await Conversation.instance.folders.draft.saveDraft(item);
@@ -511,7 +515,7 @@ export let conversationController = ng.controller('ConversationController', [
             if (Conversation.instance.currentFolder instanceof UserFolder) {
                 $scope.newFolder.parentFolderId = (Conversation.instance.currentFolder as UserFolder).id;
             }
-            
+
             $scope.lightbox.show = true
             template.open('lightbox', 'create-folder')
         }
