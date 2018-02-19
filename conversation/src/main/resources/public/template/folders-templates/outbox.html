@@ -64,7 +64,7 @@
 				</label>
 
 				<div class="states">
-					<i class="undo" ng-if="mail.response"></i>
+					<i class="undo" ng-if="mail.response" tooltip="you.answered"></i>
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis" ng-init="recs = allReceivers(mail)">
 					<span class="strong" ng-repeat="receiver in receivers = (recs | limitTo:5 | filter: filterUsers(mail))">

@@ -18,7 +18,10 @@
 			<button ng-click="mail.restore(); openFolder('trash')" class="right-magnet"><i18n>restore</i18n></button>
 		</div>
 		<nav class="prev-next" ng-if="state.current.count > 1">
-			<button class="" ng-click="previousMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
+			<button class=""
+			tooltip="previous"
+			ng-click="previousMail()"
+			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
 				<i class="left-open"></i>
 			</button>
 			<span class="pagination">
@@ -27,7 +30,10 @@
 				<span class="zero-desktop">/</span>
 				<span> [[state.current.count]]</span>
 			</span>
-			<button class="" ng-click="nextMail()" ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
+			<button class=""
+			tooltip="next"
+			ng-click="nextMail()"
+			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
 				<i class="open-right"></i>
 			</button>
 		</nav>

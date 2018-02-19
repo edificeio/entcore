@@ -26,6 +26,7 @@
 	<div class="status-filter">
 
 		<label class="chip"
+		tooltip="filter.unread"
 		ng-if="conversation.currentFolder.nbUnread > 0"
 		ng-class="{ selected: state.filterUnread && conversation.currentFolder.nbUnread > 0}">
 			<i class="mail"></i>
@@ -75,8 +76,8 @@
 				</label>
 
 				<div class="states">
-					<i class="undo" ng-if="mail.response"></i>
-					<i class="mail" ng-if="mail.isUnread(conversation.currentFolder)"></i>
+					<i class="undo" ng-if="mail.response" tooltip="you.answered"></i>
+					<i class="mail" ng-if="mail.isUnread(conversation.currentFolder)" tooltip="unread.mail"></i>
 				</div>
 				<div class="flex-all-remains horizontal-margin cell-ellipsis">
 					<span class="strong">[[mail.sender().displayName]][[mail.fromName]]</span>
