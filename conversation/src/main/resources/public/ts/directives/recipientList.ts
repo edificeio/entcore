@@ -18,7 +18,7 @@ export const recipientList = ng.directive('recipientList', () => {
     return {
         restrict: 'E',
         template: `
-            <div class="twelve flex-row align-center">
+            <div class="twelve flex-row align-center" ng-click="unfoldChip()">
                 <label ng-model="ngModel" ng-change="ngChange" class="chip removable" ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)" ng-click="giveFocus()">
                     <i class="close right-magnet" ng-click="deleteItem(item)"></i>
                     <span class="cell-ellipsis block">[[item.toString()]]</span>
@@ -42,7 +42,7 @@ export const recipientList = ng.directive('recipientList', () => {
             </div>
         `,
 
-        scope: { 
+        scope: {
             ngModel: '=',
             ngChange: '&',
             restriction: '=',
@@ -82,6 +82,14 @@ export const recipientList = ng.directive('recipientList', () => {
                 }
             });
 
+            //prevent blur when look for more users in dropDown
+            element.parents().find('.display-more').on('click', () => {
+                if (!firstFocus) {
+                    scope.giveFocus();
+                }
+            });
+
+
             scope.needChipDisplay = () => {
                 return !scope.focused && (typeof scope.ngModel !== 'undefined') && scope.ngModel.length > 3;
             };
@@ -105,6 +113,14 @@ export const recipientList = ng.directive('recipientList', () => {
                     element.find('input').focus();
             };
 
+            scope.unfoldChip = () => {
+                if (!firstFocus && scope.needChipDisplay()) {
+                    scope.giveFocus();
+                }
+            };
+
+
+
             scope.addItem = (item) => {
                 if (!scope.ngModel) {
                     scope.ngModel = [];
@@ -127,7 +143,7 @@ export const recipientList = ng.directive('recipientList', () => {
                 scope.itemsFound = [];
                 scope.searchText = '';
             };
-            
+
             scope.doSearch = () => {
                 scope.updateFoundItems({search:scope.searchText, model:scope.ngModel, founds:scope.itemsFound});
             };
@@ -138,7 +154,9 @@ export const recipientList = ng.directive('recipientList', () => {
                     scope.giveFocus();
                 }
             });
-            
+
+
+
             // Make the input width be the label help infos width
             setTimeout(function(){
                 minWidth = element.find('form label').width();
