@@ -46,7 +46,7 @@ public interface ConversationService {
 
 	List<String> UPDATE_DRAFT_REQUIRED_FIELDS = Arrays.asList("date");
 
-	void saveDraft(String parentMessageId, JsonObject message, UserInfos user,
+	void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result);
 
 	void updateDraft(String messageId, JsonObject message, UserInfos user,

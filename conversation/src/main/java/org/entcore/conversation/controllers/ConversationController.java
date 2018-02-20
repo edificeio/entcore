@@ -136,9 +136,15 @@ public class ConversationController extends BaseController {
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								@Override
 								public void handle(JsonObject parent) {
+									final String threadId;
+									if( parent != null){
+										threadId = parent.getString("thread_id");
+									}else{
+										threadId = null;
+									}
 									neoConversationService.addDisplayNames(message, parent, new Handler<JsonObject>() {
 										public void handle(JsonObject message) {
-											conversationService.saveDraft(parentMessageId, message, user, defaultResponseHandler(request, 201));
+											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201));
 										}
 									});
 								}
@@ -205,7 +211,7 @@ public class ConversationController extends BaseController {
 	}
 
 	private void saveAndSend(final String messageId, final JsonObject message, final UserInfos user,
-			final String parentMessageId, final Handler<Either<String, JsonObject>> result){
+			final String parentMessageId, final String threadId, final Handler<Either<String, JsonObject>> result){
 
 		Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 			@Override
@@ -259,7 +265,7 @@ public class ConversationController extends BaseController {
 		if (messageId != null && !messageId.trim().isEmpty()) {
 			conversationService.updateDraft(messageId, message, user, handler);
 		} else {
-			conversationService.saveDraft(parentMessageId, message, user, handler);
+			conversationService.saveDraft(parentMessageId, threadId, message, user, handler);
 		}
 	}
 
@@ -283,9 +289,15 @@ public class ConversationController extends BaseController {
 
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
+									final String threadId;
+									if( parentMsg != null){
+										threadId = parentMsg.getString("thread_id");
+									}else{
+										threadId = null;
+									}
 									neoConversationService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
 										public void handle(final JsonObject message) {
-											saveAndSend(messageId, message, user, parentMessageId,
+											saveAndSend(messageId, message, user, parentMessageId, threadId,
 													new Handler<Either<String, JsonObject>>() {
 												@Override
 												public void handle(Either<String, JsonObject> event) {
@@ -472,13 +484,31 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
+								HashMap<String, JsonArray> test = new HashMap<String, JsonArray>();
+								JsonObject tmp;
+								String threadId;
+								JsonArray result = new JsonArray();
 								for (Object o : r.right().getValue()) {
 									if (!(o instanceof JsonObject)) {
 										continue;
 									}
-									translateGroupsNames((JsonObject) o, request);
+									tmp = (JsonObject) o;
+									translateGroupsNames(tmp, request);
+									threadId = tmp.getString("thread_id");
+									if(threadId != null){
+										if(test.containsKey(threadId))
+											test.get(threadId).add(tmp);
+										else
+											test.put(threadId, new JsonArray().add(tmp));
+									}else{
+										result.add(new JsonArray().add(tmp));
+									}
 								}
-								renderJson(request, r.right().getValue());
+
+								for(JsonArray array : test.values()){
+									result.addArray(array);
+								}
+								renderJson(request, result);
 							} else {
 								JsonObject error = new JsonObject()
 										.putString("error", r.left().getValue());
@@ -1335,7 +1365,7 @@ public class ConversationController extends BaseController {
 		}
 		neoConversationService.addDisplayNames(m, null, new Handler<JsonObject>() {
 			public void handle(final JsonObject m) {
-				saveAndSend(null, m, user, null,
+				saveAndSend(null, m, user, null, null,
 					new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> event) {

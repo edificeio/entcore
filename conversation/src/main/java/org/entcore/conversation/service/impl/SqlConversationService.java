@@ -71,11 +71,11 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void saveDraft(String parentMessageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		save(parentMessageId, message, user, result);
+	public void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		save(parentMessageId, threadId, message, user, result);
 	}
 
-	private void save(String parentMessageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result){
+	private void save(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result){
 		message
 			.putString("id", UUID.randomUUID().toString())
 			.putString("from", user.getUserId())
@@ -90,6 +90,12 @@ public class SqlConversationService implements ConversationService{
 
 		if(parentMessageId != null)
 			message.putString("parent_id", parentMessageId);
+
+		if(threadId != null){
+			message.putString("thread_id", threadId);
+		}else{
+			message.putString("thread_id", message.getString("id"));
+		}
 
 		// 1 - Insert message
 		builder.insert(messageTable, message, "id");
@@ -255,59 +261,54 @@ public class SqlConversationService implements ConversationService{
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT/4;
 		int maxMessageInThread = 7;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
 		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		values.add(user.getUserId());
-		String query = " WITH RECURSIVE messagesThred AS ( " +
-				" (SELECT "+messagesFields+", um.unread as unread , m.parent_id as conversation, 1 AS nb FROM " + userMessageTable + " um " +
+		String query = " WITH threads AS ( " +
+				" SELECT DISTINCT thread_id from (SELECT m.thread_id, m.date FROM " + userMessageTable + " um " +
 				" JOIN "+messageTable+" m ON um.message_id = m.id " +
 				" LEFT JOIN "+messageTable+" r ON m.id = r.parent_id AND r.state= 'SENT' " +
 				" WHERE um.user_id = ? AND r.id IS NULL " +
 				" AND m.state = 'SENT' AND um.trashed = false " +
-				" ORDER BY m.date	 DESC LIMIT "+ LIST_LIMIT/4 +" OFFSET "+ skip+") " +
-				" UNION ALL " +
-				" (SELECT DISTINCT "+messagesFields+",  um.unread as unread, messagesThred.conversation as conversation, messagesThred.nb+1 as nb FROM messagesThred, " + userMessageTable + " as um " +
-				" JOIN "+messageTable+" m ON um.message_id = m.id  " +
+				" ORDER BY m.date	 DESC LIMIT "+ LIST_LIMIT/4 +" OFFSET "+ skip+") a )" +
+
+				"SELECT * FROM ( " +
+				"SELECT DISTINCT "+messagesFields+", um.unread as unread, row_number() OVER (PARTITION BY m.thread_id ORDER BY m.date DESC) as rownum " +
+				"FROM threads, " +userMessageTable + " um JOIN "+messageTable+" m ON um.message_id = m.id  " +
 				" WHERE um.user_id = ? and " +
-				" m.id = messagesThred.parent_id AND m.state = 'SENT' AND um.trashed = false and " +
-				" nb+1 < "+maxMessageInThread+")" +
-				")" +
-				"SELECT * FROM messagesThred ORDER BY conversation, nb";
+				" m.thread_id = threads.thread_id AND m.state = 'SENT' AND um.trashed = false " +
+
+				") b where rownum <= "+maxMessageInThread+" ORDER BY thread_id, date DESC";
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
 	}
 
 	@Override
 	public void listThreadMessages(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
-		int maxMessageInThread = 7;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
-		String noRecusiveConditions, recusiveConditions, limit;
+		int maxMessageInThread = 15;
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
+		String condition, limit;
 		JsonArray values = new JsonArray();
 
 		if(previous){
-			noRecusiveConditions = "m.id = ?";
-			recusiveConditions = " m.id = messagesThred.parent_id ";
-			limit = " AND nb+1 < "+ maxMessageInThread;
+			condition = " m.date < element.date ";
+			limit = " LIMIT "+ maxMessageInThread +" OFFSET 0";
 		}else{
-			noRecusiveConditions = "m.parent_id = ? ";
-			recusiveConditions = " m.parent_id = messagesThred.id ";
+			condition = " m.date > element.date ";
 			limit = "";
 		}
 		values.add(messageId);
 		values.add(user.getUserId());
-		values.add(user.getUserId());
 
-		String query = "WITH RECURSIVE messagesThred AS (" +
-				" SELECT "+messagesFields+", um.unread as unread, 1 AS nb FROM  " + userMessageTable + " um " +
-				" JOIN " + messageTable + " m ON um.message_id = m.id " +
-				" WHERE "+noRecusiveConditions+" and um.user_id = ? AND m.state = 'SENT' AND um.trashed = false " +
-				" UNION ALL " +
-				" SELECT "+messagesFields+", um.unread as unread, messagesThred.nb+1 as nb FROM messagesThred, " + userMessageTable + " um " +
-				" JOIN " + messageTable + " as m ON um.message_id = m.id " +
-				" WHERE um.user_id = ? AND " +
-				recusiveConditions +" AND m.state = 'SENT' AND um.trashed = false " +
-				limit + " ) SELECT * FROM messagesThred ORDER BY date";
+		String query = "WITH element AS ( " +
+				" SELECT thread_id, date FROM "+messageTable+" WHERE id = ? ) " +
+				"SELECT "+messagesFields+", um.unread as unread FROM element, " +userMessageTable + " as um " +
+				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
+				" WHERE um.user_id = ? AND m.thread_id = element.thread_id " +
+				" AND " + condition +
+				" AND m.state = 'SENT' AND um.trashed = false " +
+				" ORDER BY m.date DESC" + limit;
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
 	}
