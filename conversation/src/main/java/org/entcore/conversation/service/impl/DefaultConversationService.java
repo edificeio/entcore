@@ -60,7 +60,7 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void saveDraft(final String parentMessageId, final JsonObject message,
+	public void saveDraft(final String parentMessageId, final String threadId, final JsonObject message,
 			final UserInfos user, final Handler<Either<String, JsonObject>> result) {
 		if (displayNamesCondition(message)) {
 			addDisplayNames(message, new Handler<JsonObject>() {
