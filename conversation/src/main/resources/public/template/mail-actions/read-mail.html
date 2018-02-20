@@ -14,7 +14,6 @@
 
 		<nav class="prev-next" ng-if="state.current.count > 1">
 			<button class=""
-			tooltip="previous"
 			ng-click="previousMail()"
 			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
 				<i class="left-open"></i>
@@ -26,7 +25,6 @@
 				<span> [[state.current.count]]</span>
 			</span>
 			<button class=""
-			tooltip="next"
 			ng-click="nextMail()"
 			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
 				<i class="open-right"></i>
