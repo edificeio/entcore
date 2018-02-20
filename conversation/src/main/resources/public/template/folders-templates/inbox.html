@@ -3,12 +3,14 @@
 	<div class="cell zero-mobile no-2d">
 		<i class="refresh" ng-click="refresh()"></i>
 	</div>
+
 	<div class="">
 		<switch-search
 			ng-model="searchField.words"
 			ng-change="search(words)"
 			cancel="cancelSearch()">
-			<button class="cell cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
+			
+			<button class="cell-ellipsis right-magnet" ng-click="template.open('main', 'mail-actions/write-mail')">
 				<i18n>new.message</i18n>
 			</button>
 		</switch-search>
@@ -16,13 +18,14 @@
 </nav>
 
 
-<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile no-margin" ng-if="conversation.currentFolder.mails.all.length > 0 || state.searching">
+<div class="mailbox-tools notification twelve flex-row align-center centered-text zero-mobile-fat-mobile no-margin" ng-if="conversation.currentFolder.mails.all.length > 0 || state.searching">
 	<div class="check-col">
 		<label class="wrapping-checkbox relative">
 			<input type="checkbox" ng-model="state.selectAll" ng-change="switchSelectAll()" />
 			<i18n></i18n>
 		</label>
 	</div>
+
 	<div class="status-filter">
 
 		<label class="chip"
