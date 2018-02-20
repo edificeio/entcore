@@ -328,6 +328,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.hourIsit = () => moment().format('HH');
         $scope.minIsit = () => moment().format('mm');
+        $scope.secIsit = () => moment().format(':ss');
 
 
         $scope.saveDraft = async (item) => {
