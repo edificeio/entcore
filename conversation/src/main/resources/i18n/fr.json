@@ -99,7 +99,7 @@
     "restore": "Restaurer",
     "save": "Enregistrer",
     "search.condition": "Pour rechercher, tapez au moins 3 lettres",
-    "search.failed": "La recherche ne s'est pas lancée car il faut renseigner 3 caractères au minimum",
+    "search.failed": "Il faut renseigner au moins 3 caractères avant de lancer la recherche",
     "sender": "Expéditeur",
     "size": "Taille",
     "sniplet.ml.content.placeholder": "Contenu du message",
