@@ -5,7 +5,7 @@
 		<EMPRUNTEUR_M>{{lastName}} {{firstName}}</EMPRUNTEUR_M>
 		<DATE_NAISSANCE_M>{{#formatBirthDate}}{{birthDate}}{{/formatBirthDate}}</DATE_NAISSANCE_M>
 		<STATUT_M_M>{{#i18n}}{{type}}{{/i18n}}</STATUT_M_M>
-		<CLASSE_M>{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}}</CLASSE_M>
+		{{#hasClass}}<CLASSE_M>{{#allClasses}}{{#-first}}{{name}}{{/-first}}{{/allClasses}}</CLASSE_M>{{/hasClass}}
 		<COMPTE_M>OUI</COMPTE_M>
 		<MOT_DE_PASSE_M>esidoc-pwd</MOT_DE_PASSE_M>
 		<IDENTITE_ENT_M>{{externalId}}</IDENTITE_ENT_M>
