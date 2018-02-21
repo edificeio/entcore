@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { Behaviours, http, MediaLibrary } from 'entcore';
+import { Behaviours, http, MediaLibrary, notify } from 'entcore';
 import { _ } from 'entcore';
 
 console.log('workspace behaviours loaded');
@@ -126,6 +126,11 @@ Behaviours.register('workspace', {
 			    file.title = splitName[0];
 				callback(resources, data);
 			});
+		}.bind(this)).e400(function(e){
+			file.loading = false;
+			var error = JSON.parse(e.responseText);
+			//can't use notify.error, notify is undefined in not TS app like support
+			window.notify.error(error.error);
 		}.bind(this));
 	},
 	duplicate: function(file, visibility, callback){
