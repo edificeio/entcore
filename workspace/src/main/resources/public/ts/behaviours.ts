@@ -130,7 +130,7 @@ Behaviours.register('workspace', {
 			file.loading = false;
 			var error = JSON.parse(e.responseText);
 			//can't use notify.error, notify is undefined in not TS app like support
-			window.notify.error(error.error);
+			(<any>window).notify.error(error.error);
 		}.bind(this));
 	},
 	duplicate: function(file, visibility, callback){
