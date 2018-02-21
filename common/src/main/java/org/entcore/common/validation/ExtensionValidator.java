@@ -19,7 +19,7 @@ public class ExtensionValidator extends FileValidator {
 	protected void validate(JsonObject metadata, JsonObject context, Handler<AsyncResult<Void>> handler) {
 		final String filename = metadata.getString("filename", "");
 		final int idx = filename.lastIndexOf('.');
-		if (idx > 0 && idx < (filename.length() - 1) && blockedExtension.contains(filename.substring(idx + 1))) {
+		if (idx > 0 && idx < (filename.length() - 1) && blockedExtension.contains(filename.substring(idx + 1).toLowerCase())) {
 			handler.handle(new DefaultAsyncResult<Void>(new ValidationException("blocked.extension")));
 		} else {
 			handler.handle(new DefaultAsyncResult<>((Void) null));
