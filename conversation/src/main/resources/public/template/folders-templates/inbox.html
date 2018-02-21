@@ -112,7 +112,7 @@
 			</tr>
 			</thead>
 			<tbody>
-			<tr ng-repeat="users in result.inactive">
+			<tr ng-repeat="users in result.inactive track by $index">
 				<td class="user"><a>[[users]]</a></td>
 			</tr>
 			</tbody>
@@ -134,7 +134,7 @@
 			</tr>
 			</thead>
 			<tbody>
-			<tr ng-repeat="users in result.undelivered">
+			<tr ng-repeat="users in result.undelivered track by $index">
 				<td class="user"><a>[[users]]</a></td>
 			</tr>
 			</tbody>
