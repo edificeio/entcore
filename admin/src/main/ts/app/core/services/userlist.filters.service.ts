@@ -98,23 +98,6 @@ class FunctionsFilter extends UserFilter<string> {
     }
 }
 
-class MatieresFilter extends UserFilter<string> {
-    type = 'aafFunctions'
-    label = 'matieres.multi.combo.title'
-    comboModel = []
-    order = '+'
-    filterProp = 'this'
-
-    filter = (matieres: string[]) => {
-        let outputModel = this.outputModel
-        return outputModel.length === 0 ||
-            matieres && matieres.length > 0 &&
-            matieres.some(m => {
-                return outputModel.some(o => o === m)
-            })
-    }
-}
-
 class FunctionalGroupsFilter extends UserFilter<string> {
     type = 'functionalGroups'
     label = 'functionalGroups.multi.combo.title'
@@ -164,6 +147,19 @@ class DuplicatesFilter extends UserFilter<string> {
     }
 }
 
+class MailFilter extends UserFilter<string> {
+    type = 'email'
+    label = 'email'
+    comboModel = ['users.with.mail', 'users.without.mail']
+
+    filter = (mail: string) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+            outputModel.indexOf('users.without.mail') >= 0 && !mail ||
+            outputModel.indexOf('users.with.mail') >= 0 && !(!mail)
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -171,16 +167,15 @@ export class UserlistFiltersService {
 
     updateSubject: Subject<any> = new Subject<any>()
 
-    private profileFilter           = new ProfileFilter(this.updateSubject)
-    private classesFilter           = new ClassesFilter(this.updateSubject)
-    private functionalGroupsFilter  = new FunctionalGroupsFilter(this.updateSubject)
-    private manualGroupsFilter      = new ManualGroupsFilter(this.updateSubject)
-    private activationFilter        = new ActivationFilter(this.updateSubject)
-    private functionsFilter         = new FunctionsFilter(this.updateSubject)
-    // FIXME when user model updated
-    // private matieresFilter          = new MatieresFilter(this.updateSubject)
-    private sourcesFilter           = new SourcesFilter(this.updateSubject)
-    private duplicatesFilter             = new DuplicatesFilter(this.updateSubject)
+    private profileFilter = new ProfileFilter(this.updateSubject)
+    private classesFilter = new ClassesFilter(this.updateSubject)
+    private functionalGroupsFilter = new FunctionalGroupsFilter(this.updateSubject)
+    private manualGroupsFilter = new ManualGroupsFilter(this.updateSubject)
+    private activationFilter = new ActivationFilter(this.updateSubject)
+    private functionsFilter = new FunctionsFilter(this.updateSubject)
+    private sourcesFilter = new SourcesFilter(this.updateSubject)
+    private duplicatesFilter = new DuplicatesFilter(this.updateSubject)
+    private mailFilter = new MailFilter(this.updateSubject);
 
     filters : UserFilterList<any> = [
         this.profileFilter,
@@ -189,10 +184,9 @@ export class UserlistFiltersService {
         this.manualGroupsFilter,
         this.activationFilter,
         this.functionsFilter,
-        // FIXME when user model updated
-        // this.matieresFilter,
         this.sourcesFilter,
-        this.duplicatesFilter
+        this.duplicatesFilter,
+        this.mailFilter
     ]
 
     resetFilters(){
@@ -201,33 +195,36 @@ export class UserlistFiltersService {
         }
     }
 
-    setProfiles(profiles: string[]) {
-        this.profileFilter.comboModel = profiles
+    setProfilesComboModel(combos: string[]) {
+        this.profileFilter.comboModel = combos
     }
 
-    setClasses(classes: {id:string, name:string}[]) {
-        this.classesFilter.comboModel = classes
+    setClassesComboModel(combos: {id:string, name:string}[]) {
+        this.classesFilter.comboModel = combos
     }
 
-    setSources(sources: string[]) {
-        this.sourcesFilter.comboModel = sources
+    setSourcesComboModel(combos: string[]) {
+        this.sourcesFilter.comboModel = combos
     }
 
-    setFunctions(functions: string[]) {
-        this.functionsFilter.comboModel = functions
+    setFunctionsComboModel(combos: string[]) {
+        this.functionsFilter.comboModel = combos
     }
 
-    // FIXME when user model updated
-    // setMatieres(matieres: string[]) {
-    //     this.matieresFilter.comboModel = matieres
-    // }
-
-    setFunctionalGroups(fgroups: string[]) {
-        this.functionalGroupsFilter.comboModel = fgroups
+    setFunctionalGroupsComboModel(combos: string[]) {
+        this.functionalGroupsFilter.comboModel = combos
     }
 
-    setManualGroups(mgroups: string[]) {
-        this.manualGroupsFilter.comboModel = mgroups
+    setManualGroupsComboModel(combos: string[]) {
+        this.manualGroupsFilter.comboModel = combos
+    }
+
+    setDuplicatesComboModel(combos: string[]) {
+        this.duplicatesFilter.comboModel = combos;
+    }
+
+    setMailsComboModel(combos: string[]) {
+        this.mailFilter.comboModel = combos;
     }
 
     getFormattedFilters() : Object {
@@ -246,9 +243,5 @@ export class UserlistFiltersService {
             outputModels[filter.type] = filter.outputModel;
         }
         return outputModels
-    }
-
-    pushNewFilter(filter: UserFilter<String>){
-        this.filters.push(filter)
     }
 }

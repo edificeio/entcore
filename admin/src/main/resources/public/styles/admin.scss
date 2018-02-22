@@ -259,7 +259,6 @@ i.group_add {
     border-radius: 3px;
     transition: background 0.25s, color 0.25s, border 0.25s;
     font-family: 'Arial', sans-serif;
-    font-weight: bold;
     font-size: 0.85rem;
 
     &.is-primary { 
@@ -1773,17 +1772,7 @@ mass-mail{
     }
 
     .filters-toggle {
-        color: $accent;
         font-size: 1.5em;
-    }
-
-    .filtersOn {
-        background-color: $accent;
-        color: white;
-
-        i {
-            color: white;
-        }
     }
 
     .filters {
@@ -1821,7 +1810,6 @@ multi-combo {
     >button {
         min-width: 210px !important;
         outline: none;
-        font-weight: bolder;
 
         &:not([disabled]) {
             background-color: $button-bg;

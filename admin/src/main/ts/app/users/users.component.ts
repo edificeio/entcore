@@ -88,13 +88,13 @@ export class UsersComponent implements OnInit, OnDestroy {
     private initFilters(structure: StructureModel) {
         this.listFilters.resetFilters()
         
-        this.listFilters.setClasses(structure.classes)
-        this.listFilters.setSources(structure.sources)
-        this.listFilters.setFunctions(structure.aafFunctions)
-        this.listFilters.setProfiles(structure.profiles.map(p => p.name))
-        this.listFilters.setFunctionalGroups(
+        this.listFilters.setClassesComboModel(structure.classes)
+        this.listFilters.setSourcesComboModel(structure.sources)
+        this.listFilters.setFunctionsComboModel(structure.aafFunctions)
+        this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name))
+        this.listFilters.setFunctionalGroupsComboModel(
             structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name))
-        this.listFilters.setManualGroups(
+        this.listFilters.setManualGroupsComboModel(
             structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name))
     }
     

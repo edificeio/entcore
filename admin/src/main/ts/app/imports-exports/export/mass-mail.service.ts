@@ -1,11 +1,12 @@
 import http from 'axios'
 import qs from 'qs'
+import { UserModel } from '../../core/store';
 
 export class MassMailService {
 
     private constructor() {}
 
-    static async getList(structureId): Promise<any> {
+    static async getUsers(structureId): Promise<UserModel[]> {
         let response;
         try {
             response = await http.get(`directory/structure/${structureId}/massMail/allUsers`);
