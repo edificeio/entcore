@@ -139,6 +139,6 @@ export class UserList implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     filtersOn(): boolean {
-        return this.userlist.length != this.nbUser;
+        return this.listFiltersService.filters.some(f => f.outputModel && f.outputModel.length > 0);
     }
 }
