@@ -2310,8 +2310,7 @@ table {
     border-collapse: collapse;
     thead
     {
-        color: white;
-        background: $main;
+        border-bottom : 4px solid $main;
         font-weight: bolder;
         th {
             padding: 10px;
@@ -2321,11 +2320,65 @@ table {
     {
         tr > td {
             padding: 6px;
-            font-size: 0.95em;
-            border-bottom: 1px solid grey;
+            font-size: 0.9em;
+            border-bottom: 1px solid #aaa;
             text-align: left;
         }
+        tr:hover {
+            background: #f0f0f0;
+        } 
     }
+}
+
+
+/* generic style 
+* TODO : replacce by using a css framework
+* here a bulma.io semantic is used 
+*/
+
+.has-text-right {
+    text-align: right;
+}
+.container {
+    padding: .25em;
+}
+
+.message {
+    border: 2px solid black;  
+    padding : .75rem;
+    font-weight: bold; 
+
+    &.is-success { border-color:  green; color: green;}
+    &.is-info { border-color:  blue; color: blue;}
+    &.is-danger { border-color: red; color: red;}
+    &.is-warning { border-color: orange; color: orange;}
+}
+
+.button {
+    padding : .25rem;
+    font-weight: bold; 
+    border-radius: 5px;
+    align-items: center;
+    display: inline-flex;
+    cursor: pointer;
+
+    &.is-outline { border: 2px solid black;  }
+    &.is-outline:hover { 
+        background:  black; 
+        color : white !important;
+        text-decoration: none; 
+    }
+
+    &.is-outline.is-success { border-color:  green; color: green;}
+    &.is-outline.is-info { border-color:  blue; color: blue;}
+    &.is-outline.is-danger { border-color: red; color: red;}
+    &.is-outline.is-warning { border-color: orange; color: orange;}
+
+    &.is-outline.is-success:hover { background: green; }
+    &.is-outline.is-info:hover { background: blue; }
+    &.is-outline.is-danger:hover { background: red; }
+    &.is-outline.is-warning:hover { background: orange; }
+
 }
 
 /* <wizard> */
@@ -2342,9 +2395,9 @@ wizard {
     nav.steps-progress-menu {
         font-size: 1.05em;
         font-weight: bold;
-        color: $main-lighter;
+        color: $main-light;
         li { 
-            padding: 5px 0;
+            padding: 7px 0;
             &.active { 
                 color : white; 
             }
@@ -2361,6 +2414,14 @@ wizard {
             font-size : 1.6em;
             font-weight : bold;
             color: $main-dark;
+        }
+        a {
+            display: inline-flex;
+            color: $accent-dark;
+            &:hover {
+                color: $accent-dark;
+                text-decoration: underline;
+            }
         }
     }
 }

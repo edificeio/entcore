@@ -45,4 +45,5 @@ public interface ImportService {
 
 	void deleteLine(String importId, String profile, Integer line, Handler<Either<String,JsonObject>> handler);
 
+	void findById(String importId,  Handler<Either<String,JsonObject>> handler);
 }

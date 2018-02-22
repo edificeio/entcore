@@ -205,6 +205,12 @@ public class DefaultImportService implements ImportService {
 		mongo.update(IMPORTS, query, update, MongoDbResult.validActionResultHandler(handler));
 	}
 
+	public void findById(String importId, Handler<Either<String,JsonObject>> handler) {
+		mongo.findOne("imports",
+				new JsonObject().putString("_id", importId),
+				MongoDbResult.validActionResultHandler(handler));
+	}
+
 	protected void sendCommand(final Handler<Either<JsonObject, JsonObject>> handler, JsonObject action) {
 		eb.send("entcore.feeder", action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override

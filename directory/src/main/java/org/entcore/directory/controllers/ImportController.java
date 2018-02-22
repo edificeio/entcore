@@ -51,6 +51,7 @@ import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.reportResponseHandler;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
@@ -240,6 +241,13 @@ public class ImportController extends BaseController {
 
 	private boolean paramToBoolean(String param) {
 		return "true".equalsIgnoreCase(param);
+	}
+
+	@Get("/wizard/import/:id")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void findImportDraft(final HttpServerRequest request) {
+		importService.findById(request.params().get("id"), defaultResponseHandler(request));
 	}
 
 	@Post("/wizard/import")
