@@ -7,8 +7,8 @@ import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { routing } from '../../core/services/routing.service'
 import { ImportCSVService } from './import-csv.service'
-import { WizardComponent } from '../../shared/ux/components'
 import { User, Error, Profile } from './user.model'
+import { WizardComponent } from '../../shared/ux/components'
 
 @Component({
     selector: 'import-csv',
