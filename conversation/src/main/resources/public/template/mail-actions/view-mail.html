@@ -1,9 +1,9 @@
 <!-- view from outbox -->
 <div class="twelve cell">
 	<div class="row">
-		<div ng-if="conversation.currentFolder.folderName !== 'trash'">
+		<div ng-if="mail.state === 'SENT' && conversation.currentFolder.folderName !== 'trash'">
 			<plus class="right-magnet">
-				<button ng-click="reply()" ng-disabled="!mail.allowReply" ng-if=""><i18n>reply</i18n></button>
+				<button ng-click="reply()" ng-disabled="!mail.allowReply" ><i18n>reply</i18n></button>
 				<button ng-click="replyAll()" ng-disabled="!mail.allowReplyAll"><i18n>replyall</i18n></button>
 				<a class="button"   target="_blank" ng-href="/conversation/print#/printMail/[[mail.id]]"><i18n>print</i18n></a>
 				<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
@@ -17,9 +17,16 @@
 			</plus>
 			<button ng-click="mail.restore(); openFolder('trash')" class="right-magnet"><i18n>restore</i18n></button>
 		</div>
+		<div ng-if="conversation.currentFolder.id && mail.state === 'DRAFT'">
+			<plus class="right-magnet">
+				<a class="button"   target="_blank" ng-href="/conversation/print#/printMail/[[mail.id]]"><i18n>print</i18n></a>
+				<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
+			</plus>
+			<button ng-click="editDraft(mail)" class="right-magnet"><i18n>edit</i18n></button>
+		</div>
 		<nav class="prev-next" ng-if="state.current.count > 1">
 			<button class=""
-			ng-click="previousMail()"
+			ng-click="previousMail(conversation.currentFolder.folderName === 'trash')"
 			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) === 0">
 				<i class="left-open"></i>
 			</button>
@@ -30,7 +37,7 @@
 				<span> [[state.current.count]]</span>
 			</span>
 			<button class=""
-			ng-click="nextMail()"
+			ng-click="nextMail(conversation.currentFolder.folderName === 'trash')"
 			ng-disabled="conversation.currentFolder.mails.all.indexOf(state.current) + 1 === state.current.count">
 				<i class="open-right"></i>
 			</button>
