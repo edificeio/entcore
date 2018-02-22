@@ -140,14 +140,20 @@ export class Mail implements Selectable {
     };
 
     isMeInsideGroup(list) {
-        if (list.indexOf(model.me.userId) !== -1)
-            return true;
-
-        for (let id of list) {
-            if (model.me.groupsIds.indexOf(id) !== -1)
+        if(list[0] instanceof User){
+            for (let user of list) {
+                if (model.me.groupsIds.indexOf(user.id) !== -1 || user.id === model.me.userId)
+                    return true;
+            }
+        }else {
+            if (list.indexOf(model.me.userId) !== -1)
                 return true;
-        }
 
+            for (let id of list) {
+                if (model.me.groupsIds.indexOf(id) !== -1)
+                    return true;
+            }
+        }
         return false;
     }
 
