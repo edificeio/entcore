@@ -144,7 +144,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.variableMailAction = function (mail) {
             var systemFolder = mail.getSystemFolder();
             if (systemFolder === "DRAFT")
-                return $scope.editDraft(mail);
+                return $scope.viewMail(mail);
             else if (systemFolder === "OUTBOX")
                 return $scope.viewMail(mail);
             else
@@ -191,6 +191,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.viewMail = async function (mail) {
             template.open('main', 'mail-actions/view-mail');
+            window.scrollTo(0,0);
             setCurrentMail(mail);
             try{
                 await mail.open();
@@ -210,6 +211,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.readMail = async (mail: Mail) => {
             template.open('main', 'mail-actions/read-mail');
+            window.scrollTo(0,0);
             setCurrentMail(mail, true);
             try{
                 await mail.open();
@@ -254,16 +256,20 @@ export let conversationController = ng.controller('ConversationController', [
             return Conversation.instance.currentFolder.mails.loading;
         };
 
-        $scope.nextMail = async () => {
+        $scope.nextMail = async (trash?: boolean) => {
             var mails = Conversation.instance.currentFolder.mails.all;
             var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
             var nextMail = null;
             if(idx > -1 && idx < mails.length-1)
                 nextMail =mails[idx+1];
             if(nextMail){
-                setCurrentMail(nextMail, true);
-                await nextMail.open();
-                $scope.$apply();
+                if(trash){
+                    setCurrentMail(nextMail, true);
+                    await nextMail.open();
+                    $scope.$apply();
+                }else{
+                    $scope.variableMailAction(nextMail);
+                }
             }
             if(idx === mails.length-2 && nextMail.count > mails.length){
                 await Conversation.instance.currentFolder.nextPage($scope.state.selectAll);
@@ -271,16 +277,20 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.previousMail = async () => {
+        $scope.previousMail = async (trash?: boolean) => {
             var mails = Conversation.instance.currentFolder.mails.all;
             var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
-            var nextMail = null;
+            var previousMail = null;
             if(idx > -1 && idx > 0)
-                nextMail =mails[idx-1];
-            if(nextMail){
-                setCurrentMail(nextMail, true);
-                await nextMail.open();
-                $scope.$apply();
+                previousMail =mails[idx-1];
+            if(previousMail){
+                if(trash){
+                    setCurrentMail(previousMail, true);
+                    await previousMail.open();
+                    $scope.$apply();
+                }else{
+                    $scope.variableMailAction(previousMail);
+                }
             }
         }
 
@@ -317,6 +327,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.editDraft = async (draft: Mail) => {
             template.open('main', 'mail-actions/write-mail');
+            window.scrollTo(0,0);
             $scope.state.newItem = draft;
             await draft.open();
             $scope.$apply();
