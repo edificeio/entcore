@@ -75,7 +75,7 @@
 				<!-- <input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/> -->
 
                 <label class="checkbox" ng-click="refreshSignature(conversation.preference.useSignature)">
-                    <input type="checkbox" ng-model="conversation.preference.useSignature">
+                    <input type="checkbox" ng-disabled="!conversation.preference.useSignature && !conversation.preference.signature" ng-model="conversation.preference.useSignature">
                     <span></span>
                 </label>
 
