@@ -133,7 +133,7 @@ public class Report {
 			reason = new JsonObject();
 			fileErrors.put(cleanKey, reason);
 		}
-		JsonArray lineErrors = reason.getArray(lineNumber);
+		JsonArray lineErrors = reason.getJsonArray(lineNumber);
 		if (lineErrors == null) {
 			lineErrors = new JsonArray();
 			reason.put(lineNumber, lineErrors);
