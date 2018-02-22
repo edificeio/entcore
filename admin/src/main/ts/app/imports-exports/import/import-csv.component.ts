@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs/Subscription'
 import { routing } from '../../core/services/routing.service'
 import { ImportCSVService } from './import-csv.service'
 import { WizardComponent } from '../../shared/ux/components'
+import { User, Error, Profile } from './user.model'
 
 @Component({
     selector: 'import-csv',
@@ -20,7 +21,7 @@ import { WizardComponent } from '../../shared/ux/components'
     >
         <step #step1 name="{{ 'import.files.deposit' | translate }}" [isActived]="true" [class.active]="step1.isActived">
             <h2>{{ 'import.files.deposit' | translate }}</h2>
-            <p *ngIf="stepErrors[0]" class="error">{{stepErrors[0]}}</p>
+            <article *ngIf="stepErrors[0]" class="message is-danger">{{stepErrors[0]}}</article>
             <h3>{{ 'import.files.deposit' | translate }}</h3>
             <form-field *ngFor="let p of profiles.asArray(true)" label="{{p}}">
                 <input type="checkbox" name="{{p + 'CB'}}" [(ngModel)]="profiles[p]">
@@ -37,7 +38,7 @@ import { WizardComponent } from '../../shared/ux/components'
         </step>
         <step #step2 name="{{ 'import.fields.checking' | translate }}" [class.active]="step2.isActived">
             <h2 class="panel-header">{{ 'import.fields.checking' | translate }}</h2>
-            <p *ngIf="stepErrors[1]" class="error">{{stepErrors[1]}}</p>
+            <article *ngIf="stepErrors[1]" class="message is-danger">{{stepErrors[1]}}</article>
             <panel-section *ngFor="let profile of columns.profiles" section-title="{{'import.'+profile+'File'}}" [folded]="true">
                 <mappings-table 
                     [headers]="['import.fieldFromFile','import.fieldToMap']"
@@ -49,7 +50,7 @@ import { WizardComponent } from '../../shared/ux/components'
         </step>
         <step #step3 name="{{ 'import.classCheckingBetweenFiles' | translate }}" [class.active]="step3.isActived">
             <h2 class="panel-header">{{ 'import.class.checking' | translate }}</h2>
-            <p *ngIf="stepErrors[2]" class="error">{{stepErrors[2]}}</p>
+            <article *ngIf="stepErrors[2]" class="message is-danger">{{stepErrors[2]}}</article>
             <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.'+profile+'File'}}" [folded]="true"> 
                 <mappings-table 
                     [headers]="['import.classFromFile','import.classToMap']"
@@ -61,50 +62,60 @@ import { WizardComponent } from '../../shared/ux/components'
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2 class="panel-header">{{ 'import.report' | translate }}</h2>
-            <div *ngIf="report.hasErrors()">
-                <span *ngFor="let r of report.softErrors.reasons" 
-                    [ngClass]="{'error':report.countByReason(r) > 0, 'valid':report.countByReason(r) == 0}">
-                    {{ r | translate }} :
-                    <span class="counter">{{report.countByReason(r)}}</span>
-                </span>
+            <div *ngIf="report.hasErrors()" class="container report-filter">
+                <a *ngFor="let r of report.softErrors.reasons" 
+                    class="button is-outline"
+                    [ngClass]="{'is-danger':report.countByReason(r) > 0, 'is-success':report.countByReason(r) == 0}"
+                    (click)="report.setFilter('reasons',r)"
+                >
+                {{ [r, report.countByReason(r)] | translate }}
+                    &nbsp;
+                </a>
+            </div>
+            <div class="container has-text-right">
+                <a (click)="report.setFilter('none')">{{'view.all' | translate}}</a>
             </div>
             <table class="report">
                 <thead>
-                    <th>{{ 'line' | translate }}</th>
-                    <th>{{ 'lastname' | translate }}</th>
-                    <th>{{ 'firstname' | translate }}</th>
-                    <th>{{ 'birthdate' | translate }}</th>
-                    <th>{{ 'profile' | translate }}</th>
-                    <th>{{ 'id' | translate }}</th>
-                    <th>{{ 'classes' | translate }}</th>
-                    <th>{{ 'operation' | translate }}</th>
+                    <tr>
+                        <th>{{ 'line' | translate }}</th>
+                        <th>{{ 'lastname' | translate }}</th>
+                        <th>{{ 'firstname' | translate }}</th>
+                        <th>{{ 'birthdate' | translate }}</th>
+                        <th>{{ 'login' | translate }}</th>
+                        <th>{{ 'profile' | translate }}</th>
+                        <th>{{ 'externalId'| translate }}</th>
+                        <th>{{ 'classes' | translate }}</th>
+                        <th>{{ 'operation' | translate }}</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let user of report.users">
+                <tr *ngFor="let user of (report.users | filter: report.filter())">
                         <td>{{user.line}}</td>
-                        <td [ngClass]="{'error': !!user.error?.lastName}" class="clickable">
+                        <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
                             <span  contenteditable="true" 
                                 (blur)="updateReport($event)"
                                 field="lastName">
                                 {{user.lastName?.length > 0 ? user.lastName : 'empty.lastName' | translate}}
                             </span>
                         </td>
-                        <td [ngClass]="{'error': !!user.error?.firstName}" class="clickable">
+                        <td [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
                             <span  contenteditable="true" 
                                 (blur)="updateReport($event)"
                                 field="firstName">
                                 {{user.firstName?.length > 0 ? user.firstName : 'empty.firstName' | translate}}
                             </span>
                         </td>
-                        <td [ngClass]="{'error': !!user.error?.birthDate}" class="clickable">
+                        <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
                             <span  contenteditable="true" 
                                 (blur)="updateReport($event)"
                                 field="birthDate">
                                 {{user.birthDate?.length > 0 ? user.birthDate : 'empty.birthDate' | translate}}
                             </span>
                         </td>
+                        <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
                         <td>{{user.profiles.join(',')}}</td>
-                        <td><span ellipsis>{{user.id}}</span></td>
+                        <td><span ellipsis>{{user.externalId}}</span></td>
                         <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
                         <td>{{user.state}}</td>
                     </tr>
@@ -117,25 +128,11 @@ import { WizardComponent } from '../../shared/ux/components'
     </wizard>
     `,
     styles : [`
-        div .error , div .valid {
-            display : inline-flex;
-        }
-        .error, .valid  {
-            padding : 5px; margin: 5px 10px 10px;  
-            border: 2px solid red; color: red; 
-            font-weight: bold; 
-        }
-        .error .counter, .valid .counter { 
-            padding : 2px; 
-            background-color : red; color: white;
-            font-family: monospace; 
-        }
-        .valid { border-color: green; color: green; }
-        .valid .counter { background-color : green; color: white; }
-
+        .report-filter .button { margin-right: .5rem; }
         table.report { display: block; max-height : 500px; overflow: scroll; }
         table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
-        table.report td.error { border: 2px dashed red; }
+        table.report td.is-danger { border: 2px dashed red; }
+        table.report td.is-success { border: 2px dashed green; }
         table.report td span[contenteditable]:focus { background : yellow; }
     `]
 })
@@ -250,8 +247,10 @@ export class ImportCSV implements OnInit, OnDestroy {
         users : [],
         softErrors : {
             reasons : [],
-            list : [] // list's elements have type : { line:string, reason:string, attribute:string, value:string }
+            list : []
         },
+        filter : User.filter,
+        setFilter : User.setFilter,
         hasErrors():boolean {
             return this.softErrors.reasons.length > 0;
         },
@@ -259,6 +258,28 @@ export class ImportCSV implements OnInit, OnDestroy {
             return this.softErrors.list.reduce((count, item) => {
                 return count + (item.reason == r ? 1 : 0);
             }, 0);
+        },
+        markUserErrors(errors:Error[], p:Profile):void {
+            if (errors == undefined || errors == null)
+                return;
+            for (let err of errors) {
+                let user:User = this.users.find(el => { 
+                    return (el.line.toString() == err.line) && el.hasProfile(p)
+                });
+                user.errors.set(err.attribute, err);
+                user.errors.get(err.attribute).corrected = false;
+                user.reasons.push(err.reason);
+            }
+        },
+        reset():void {
+            Object.assign(this, {
+                importId:'', 
+                users:[], 
+                softErrors : {
+                    reasons:[],
+                    list: []
+                }
+            });
         }
     }
 
@@ -303,7 +324,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         Object.assign(this.importInfos, {predelete:false, transition:false});
         Object.assign(this.columns, {mappings:{},availableFields:{},profiles:[]});
         Object.assign(this.classes, {mappings:{},availableClasses:{},profiles:[]});
-        Object.assign(this.report, {importId:'', users:[], softErrors : {reasons:[],list:[]}});
+        this.report.reset();
     }
 
     nextStep(activeStep: Number) {
@@ -368,6 +389,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     private async validate() {
+        this.report.reset();
         let data = await ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings); 
         if (data.errors) {
             this.stepErrors[3] = data.errors;
@@ -379,21 +401,18 @@ export class ImportCSV implements OnInit, OnDestroy {
             for (let p of this.profiles.asArray()) {
                 // merge profile's users 
                 if (data[p]) {
-                    this.report.users.push(...data[p]);
+                    this.report.users.push(...Array.from(data[p], u => new User(u)));
                 }
                 // merge profile's softErrors list
                 if (data.softErrors && data.softErrors[p]) {
                     this.report.softErrors.list.push(...data.softErrors[p]);
+                    this.report.markUserErrors(data.softErrors[p], p);
                 }
             }
-            // Get softError's reasons set
+            
             if (data.softErrors) {
                 this.report.softErrors.reasons = data.softErrors.reasons;
-                for (let err of this.report.softErrors.list) {
-                    let user = this.report.users.find(el => { return el.line == err.line});
-                    if (!user['error']) { user['error'] = {}; }
-                    user['error'][err.attribute] = err;
-                }
+                this.report.setFilter('errors');
             }
         }
         this.wizardEl.doNextStep();
@@ -413,7 +432,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         if (data.errors) {
             this.stepErrors[3] = data.errors;
         } else {
-            let user = this.report.users.find(el => { return el.line == body.line});
+            let user:User = this.report.users.find(el => { return el.line == body.line});
             for (let p in body) {
                 if ('line' != p) {
                     // Synchronize model with view.  
@@ -421,12 +440,12 @@ export class ImportCSV implements OnInit, OnDestroy {
 
                     // Update error report 
                     // TODO : Control (if possible) with Feeder's validator
-                    if (user.error[p] && body[p].length > 0) {
+                    if (user.errors.get(p) && body[p].length > 0) {
                         this.report.softErrors.list.splice(
-                            this.report.softErrors.list.indexOf(user.error[p]),
+                            this.report.softErrors.list.indexOf(user.errors.get(p)),
                             1
                         );
-                        user.error[p] = undefined;
+                        user.errors.get(p).corrected = true;
                     }
                     this.cdRef.markForCheck();
                 }
