@@ -17,7 +17,10 @@ import { FilterPipe } from '../../shared/ux/pipes'
             <h2>{{ 'massmail.accounts' | translate }}</h2>
             
             <div class="has-vertical-padding is-pulled-left">
-                <button id="buttonToggle" (click)="toggleVisibility()" [ngClass]="setFiltersOnStyle()" #filtersToggle>
+                <button (click)="toggleVisibility()" 
+                    class="button" 
+                    [ngClass]="setFiltersOnStyle()" 
+                    #filtersToggle>
                     <s5l>massmail.filters</s5l> 
                     <i class="fa fa-filter filters-toggle"></i>
                 </button>
@@ -25,7 +28,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                 <div [hidden]="!show" class="filters" #filtersDiv>
                     <i class="fa fa-close close" (click)="show=false"></i>
 
-                    <div *ngFor="let filter of listFilters.filters">
+                    <div *ngFor="let filter of userlistFiltersService.filters">
                         <div *ngIf="filter.comboModel.length > 0">
                             <multi-combo
                                 [comboModel]="filter.comboModel"
@@ -77,22 +80,22 @@ import { FilterPipe } from '../../shared/ux/pipes'
                         </tr>
                         <tr>    
                             <th>
-                                <input class="twelve" type="text" [(ngModel)]="sortObject.lastName" 
+                                <input class="twelve" type="text" [(ngModel)]="inputFilters.lastName" 
                                     [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th>
-                                <input type="text" [(ngModel)]="sortObject.firstName" 
+                                <input type="text" [(ngModel)]="inputFilters.firstName" 
                                     [attr.placeholder]="'search' | translate"/>
                             </th>
                             <th colspan="4"></th>
                             <th>
-                                <input type="text" [(ngModel)]="sortObject.classesStr" 
+                                <input type="text" [(ngModel)]="inputFilters.classesStr" 
                                     [attr.placeholder]="'search' | translate"/>
                             </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let user of (getData() | filter: sortObject) | orderBy: userOrder "
+                        <tr *ngFor="let user of (getFilteredUsers() | filter: inputFilters) | orderBy: userOrder "
                             [routerLink]="'/admin/'+structureId+'/users/'+user.id" 
                             routerLinkActive="active"
                             title="{{ 'massmail.link.user' | translate}}">
@@ -121,48 +124,52 @@ import { FilterPipe } from '../../shared/ux/pipes'
 })
 export class MassMailComponent implements OnInit, OnDestroy {
 
+    @ViewChild('filtersDiv') filtersDivRef: ElementRef;
+    @ViewChild('filtersToggle') filtersToggleRef;
+
+    users: UserModel[];
+    filters: Object;
+    inputFilters = { lastName: '', firstName: '', classesStr: '' };
+    countUsers = 0;
+    countUsersWithoutMail = 0;
+    userOrder: string;
+    structureId: string;
+    show: boolean = false;
+    private deselectItem: boolean = false;
+
+    dataSubscriber: Subscription
+    routerSubscriber: Subscription
+
+    downloadAnchor = null;
+    downloadObjectUrl = null;
+
+    translate = (...args) => { return (<any>this.bundles.translate)(...args) }
+
     constructor(
         public route: ActivatedRoute,
         public router: Router,
-        public listFilters: UserlistFiltersService,
+        public userlistFiltersService: UserlistFiltersService,
         public cdRef: ChangeDetectorRef,
         public bundles: BundlesService,
         private ns: NotifyService,
         private spinner: SpinnerService
     ) { }
-    sortObject = {lastName: '', firstName: '', classesStr: ''};
-    dataSubscriber: Subscription
-    routerSubscriber: Subscription
-    countUsers = 0;
-    countUsersWithoutMail = 0;
-    structureId;
-    filters;
-    data;
-    userOrder;
-    addFilter = false;
-    downloadAnchor = null;
-    downloadObjectUrl = null;
-    show: boolean = false;
-    
-    @ViewChild('filtersDiv') filtersDivRef: ElementRef;
-    @ViewChild('filtersToggle') filtersToggleRef;
-    private deselectItem: boolean = false
-
-    translate = (...args) => { return (<any>this.bundles.translate)(...args) }
 
     ngOnInit(): void {
         this.dataSubscriber = routing.observe(this.route, "data").subscribe(async (data: Data) => {
             if (data['structure']) {
                 let structure: StructureModel = data['structure']
-                this.spinner.perform('portal-content', this.getList(structure._id))
-                    .then(() => {
+                this.spinner.perform('portal-content', MassMailService.getUsers(structure._id)
+                    .then((data) => {
+                        this.users = data;
                         this.structureId = structure._id;
                         this.initFilters(structure)
-                        this.filters = this.listFilters.getFormattedFilters();
+                        this.filters = this.userlistFiltersService.getFormattedFilters();
                         this.cdRef.detectChanges();
                     }).catch(err => {
                         this.ns.error("massmail.error", "error", err);
                     })
+                );
             }
         })
 
@@ -177,23 +184,65 @@ export class MassMailComponent implements OnInit, OnDestroy {
         this.routerSubscriber.unsubscribe()
     }
 
-    private initFilters(structure: StructureModel) {
-        this.listFilters.resetFilters()
-        if (this.listFilters.filters.length < 8) {
-            this.listFilters.pushNewFilter(new MailFilter(new Subject<any>()))
-            this.addFilter = true
-        }
-        this.listFilters.setClasses(structure.classes)
-        this.listFilters.setProfiles(structure.profiles.map(p => p.name))
+    private initFilters(structure: StructureModel): void {
+        this.userlistFiltersService.resetFilters();
+        this.userlistFiltersService.setDuplicatesComboModel([]);
+        this.userlistFiltersService.setClassesComboModel(structure.classes);
+        this.userlistFiltersService.setProfilesComboModel(structure.profiles.map(p => p.name));
     }
 
-    private createDownloadAnchor() {
+    getFilteredUsers(): UserModel[] {
+        let users = FilterPipe.prototype.transform(this.users, this.filters) || []
+        this.countUsers = 0;
+        this.countUsersWithoutMail = 0;
+        users.forEach(user => {
+            this.countUsers++;
+            if (!user.email)
+                this.countUsersWithoutMail++;
+        })
+        return users;
+
+    }
+
+    async processMassMail(type: String): Promise<void> {
+        let outputModels = this.userlistFiltersService.getFormattedOutputModels();
+
+        let params: any = {
+            p: outputModels['type'],
+            c: outputModels['classes'].map(c => c.id),
+            a: 'all'
+        }
+
+        let blob;
+        if (outputModels['email'].length == 1) {
+            params.mail = outputModels['email'][0].indexOf('users.with.mail') >= 0;
+        }
+        if (outputModels['code'].length == 1) {
+            params.a = outputModels['code'][0].indexOf('users.activated') >= 0;
+        }
+
+        try {
+            blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));
+        } catch (error) {
+            this.ns.error("massmail.error", "error", error);
+            return
+        }
+        
+        if (type.indexOf("pdf") > -1) {
+            this.ajaxDownload(blob, this.translate("massmail.filename") + ".pdf");
+            this.ns.success("massmail.pdf.done");
+        } else {
+            this.ns.success("massmail.mail.done");
+        }
+    }
+
+    private createDownloadAnchor(): void {
         this.downloadAnchor = document.createElement('a');
         this.downloadAnchor.style = "display: none";
         document.body.appendChild(this.downloadAnchor);
     }
 
-    private ajaxDownload(blob, filename) {
+    private ajaxDownload(blob, filename): void {
         if (window.navigator.msSaveOrOpenBlob) {
             //IE specific
             window.navigator.msSaveOrOpenBlob(blob, filename);
@@ -211,71 +260,26 @@ export class MassMailComponent implements OnInit, OnDestroy {
         }
     }
 
-    private async getList(id) {
-        this.data = await MassMailService.getList(id);
-    }
-
-    async processMassMail(type: String) {
-        let outputModels = this.listFilters.getFormattedOutputModels();
-        let params: any = {
-            p: outputModels['type'],
-            c: outputModels['classes'].map(c => c.id),
-            a: 'all'
-        }
-        let blob;
-        if (outputModels['email'].length == 1) {
-            params.mail = outputModels['email'][0].indexOf('users.with.mail') >= 0;
-        }
-        if (outputModels['code'].length == 1) {
-            params.a = outputModels['code'][0].indexOf('users.activated') >= 0;
-        }
-       try {
-           blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));
-       } catch (error) {
-           this.ns.error("massmail.error", "error", error);
-           return
-       }
-       if (type.indexOf("pdf") > -1) {
-          this.ajaxDownload(blob, this.translate("massmail.filename") + ".pdf");
-          this.ns.success("massmail.pdf.done");
-       } else {
-          this.ns.success("massmail.mail.done");
-       }
-    }
-
-    deselect(filter, item) {
+    deselect(filter, item): void {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
         this.deselectItem = true;
     }
 
-    setUserOrder(order: string) {
+    setUserOrder(order: string): void {
         this.userOrder = this.userOrder === order ? '-' + order : order;
     }
 
-    getData(){
-        let users = FilterPipe.prototype.transform(this.data, this.filters) || []
-        this.countUsers = 0;
-        this.countUsersWithoutMail = 0;
-        users.forEach( user => {
-            this.countUsers++;
-            if (!user.email)
-                this.countUsersWithoutMail++;
-        })
-        return users;
-
-    }
-
     setFiltersOnStyle = () => {
-        return { 'filtersOn': this.listFilters.filters.some(f => f.outputModel && f.outputModel.length > 0) }
+        return { 'is-active': this.userlistFiltersService.filters.some(f => f.outputModel && f.outputModel.length > 0) }
     }
 
     onClick(event) {
-        if (this.show 
-                && event.target != this.filtersToggleRef.nativeElement 
-                && !this.filtersToggleRef.nativeElement.contains(event.target)
-                && !this.filtersDivRef.nativeElement.contains(event.target)
-                && !this.deselectItem) {
+        if (this.show
+            && event.target != this.filtersToggleRef.nativeElement
+            && !this.filtersToggleRef.nativeElement.contains(event.target)
+            && !this.filtersDivRef.nativeElement.contains(event.target)
+            && !this.deselectItem) {
             this.toggleVisibility();
         }
         this.deselectItem = false
@@ -284,18 +288,5 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     toggleVisibility(): void {
         this.show = !this.show
-    }
-}
-
-export class MailFilter extends UserFilter<string> {
-    type = 'email'
-    label = 'email'
-    comboModel = ['users.with.mail', 'users.without.mail']
-
-    filter = (mail: string) => {
-        let outputModel = this.outputModel
-        return outputModel.length === 0 ||
-            outputModel.indexOf('users.without.mail') >= 0 && !mail ||
-            outputModel.indexOf('users.with.mail') >= 0 && !(!mail)
     }
 }

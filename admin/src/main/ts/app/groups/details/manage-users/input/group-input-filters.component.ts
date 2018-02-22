@@ -74,22 +74,22 @@ export class GroupInputFilters implements OnChanges {
         this.listFilters.resetFilters()
 
         this.structure.syncClasses().then(() => {
-            this.listFilters.setClasses(this.structure.classes)
+            this.listFilters.setClassesComboModel(this.structure.classes)
             this.cdRef.markForCheck()
         })
         this.structure.syncAafFunctions().then(() => {
-            this.listFilters.setFunctions(this.structure.aafFunctions)
+            this.listFilters.setFunctionsComboModel(this.structure.aafFunctions)
             this.cdRef.markForCheck()
         })
         ProfilesService.getProfiles().then(p => {
             this.structure.profiles = p
-            this.listFilters.setProfiles(this.structure.profiles.map(p => p.name))
+            this.listFilters.setProfilesComboModel(this.structure.profiles.map(p => p.name))
             this.cdRef.markForCheck()
         })
         this.structure.groups.sync().then(() => {
-            this.listFilters.setFunctionalGroups(
+            this.listFilters.setFunctionalGroupsComboModel(
                 this.structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name))
-            this.listFilters.setManualGroups(
+            this.listFilters.setManualGroupsComboModel(
                 this.structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name))
             this.cdRef.markForCheck()
         })
