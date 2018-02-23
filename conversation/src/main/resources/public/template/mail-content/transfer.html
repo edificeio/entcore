@@ -1,14 +1,12 @@
 <p>&nbsp;</p><p class="row"><hr /></p>
 <p class="medium-text">
-	<span translate key="transfer.from"></span><em>[[mail.sender().displayName]]</em>
-	<br /><span class="medium-importance" translate key="transfer.date"></span><em>[[mail.longDate()]]</em>
-	<br /><span class="medium-importance" translate key="transfer.subject"></span><em>[[mail.subject]]</em>
+	<span translate key="transfer.from"></span><em> [[mail.sender().displayName]]</em>
+	<br /><span class="medium-importance" translate key="transfer.date"></span><em> [[mail.longDate()]]</em>
+	<br /><span class="medium-importance" translate key="transfer.subject"></span><em> [[mail.subject]]</em>
 	<br /><span class="medium-importance" translate key="transfer.to"></span>
-	<em class="medium-importance" ng-repeat="receiver in mail.to">
-		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+	<em class="medium-importance" ng-repeat="receiver in mail.to"><em> [[mail.map(receiver).displayName]]</em><span ng-if="$index !== mail.to.length - 1">,</span>
 	</em>
 	<br /><span class="medium-importance" translate key="transfer.cc"></span>
-	<em class="medium-importance" ng-repeat="receiver in mail.cc">
-		[[mail.map(receiver).displayName]]<span ng-if="$index !== mail.to.length - 1">,</span>
+	<em class="medium-importance" ng-repeat="receiver in mail.cc"><em> [[mail.map(receiver).displayName]]</em><span ng-if="$index !== mail.cc.length - 1">,</span>
 	</em>
 </p>

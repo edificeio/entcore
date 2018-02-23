@@ -12,7 +12,8 @@ export let conversationController = ng.controller('ConversationController', [
             draftError: false,
             dragFolder: undefined,
             emptyMessage: lang.translate('folder.empty'),
-            searchFailed: false
+            searchFailed: false,
+            draftSaveDate: null
     };
 
         $scope.conversation = Conversation.instance;
@@ -78,6 +79,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.state.draftError = false;
             $scope.state.emptyMessage = lang.translate('folder.empty');
             $scope.state.searchFailed = false;
+            $scope.state.draftSaveDate = null;
 
         };
 
@@ -303,12 +305,16 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.$apply();
         };
 
-        $scope.reply = async () => {
+        $scope.reply = async (outbox?: boolean) => {
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
             await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, $scope.getSignature());
-            $scope.addUser($scope.mail.sender());
+            if(outbox)
+                mail.to = $scope.mail.to;
+            else
+                $scope.addUser($scope.mail.sender());
+
             $scope.$apply();
         };
 
@@ -337,15 +343,15 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.saveDraft($scope.state.newItem);
         };
 
-        $scope.hourIsit = () => moment().format('HH');
-        $scope.minIsit = () => moment().format('mm');
-        $scope.secIsit = () => moment().format(':ss');
-
+        $scope.hourIsit = () => $scope.state.draftSaveDate.format('HH');
+        $scope.minIsit = () => $scope.state.draftSaveDate.format('mm');
+        $scope.secIsit = () => $scope.state.draftSaveDate.format(':ss');
 
         $scope.saveDraft = async (item) => {
             try {
                 await Conversation.instance.folders.draft.saveDraft(item);
                 $scope.state.draftError = false;
+                $scope.state.draftSaveDate = moment();
             }
             catch(e) {
                 $scope.state.draftError = true;
