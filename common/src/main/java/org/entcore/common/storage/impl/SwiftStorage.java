@@ -24,6 +24,7 @@ import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.validation.FileValidator;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
@@ -245,6 +246,11 @@ public class SwiftStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	@Override
+	public FileValidator getValidator() {
+		return null;
 	}
 
 }

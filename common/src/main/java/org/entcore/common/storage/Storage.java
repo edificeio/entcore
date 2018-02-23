@@ -19,6 +19,7 @@
 
 package org.entcore.common.storage;
 
+import org.entcore.common.validation.FileValidator;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
@@ -61,5 +62,7 @@ public interface Storage {
 	String getBucket();
 
 	void stats(AsyncResultHandler<BucketStats> handler);
+
+	FileValidator getValidator();
 
 }
