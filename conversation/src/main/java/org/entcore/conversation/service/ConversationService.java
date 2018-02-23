@@ -62,7 +62,9 @@ public interface ConversationService {
 
 	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
 
-	void listThreadMessages(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results);
+	void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results);
+
+	void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results);
 
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
