@@ -43,16 +43,19 @@ export abstract class Folder implements Selectable {
     async nextPage(select : boolean) {
         if (!this.mails.full) {
             this.pageNumber++;
-            await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, selectAll: select });
+            await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter, selectAll: select });
         }
     }
 
     async search(text : string) {
+        this.mails.full = false;
+        this.pageNumber = 0;
         this.searchText = text;
         await this.mails.sync({ pageNumber: 0, searchText: this.searchText, emptyList: true, filterUnread: this.filter });
     }
 
     async filterUnread(filter : boolean) {
+        this.mails.full = false;
         this.filter = filter;
         this.pageNumber = 0;
         await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: true, filterUnread: this.filter });
