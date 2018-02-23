@@ -3,7 +3,7 @@
 	<div class="row">
 		<div ng-if="mail.state === 'SENT' && conversation.currentFolder.folderName !== 'trash'">
 			<plus class="right-magnet">
-				<button ng-click="reply()" ng-disabled="!mail.allowReply" ><i18n>reply</i18n></button>
+				<button ng-click="reply(true)" ng-disabled="!mail.allowReply" ><i18n>reply</i18n></button>
 				<button ng-click="replyAll()" ng-disabled="!mail.allowReplyAll"><i18n>replyall</i18n></button>
 				<a class="button"   target="_blank" ng-href="/conversation/print#/printMail/[[mail.id]]"><i18n>print</i18n></a>
 				<button ng-click="mail.remove(); openFolder()"><i18n>remove</i18n></button>
