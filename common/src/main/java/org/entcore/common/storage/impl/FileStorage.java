@@ -507,4 +507,9 @@ public class FileStorage implements Storage {
 		this.validator = validator;
 	}
 
+	@Override
+	public FileValidator getValidator() {
+		return validator;
+	}
+
 }

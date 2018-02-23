@@ -28,6 +28,7 @@ import fr.wseduc.webutils.http.ETag;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageException;
+import org.entcore.common.validation.FileValidator;
 import org.vertx.java.core.AsyncResult;
 import org.vertx.java.core.AsyncResultHandler;
 import org.vertx.java.core.Handler;
@@ -468,6 +469,11 @@ public class GridfsStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	@Override
+	public FileValidator getValidator() {
+		return null;
 	}
 
 	private static class Chunk {
