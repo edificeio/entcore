@@ -259,7 +259,8 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
-		int skip = page * LIST_LIMIT/4;
+		int nbThread =  5;
+		int skip = page * nbThread;
 		int maxMessageInThread = 7;
 		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
 		JsonArray values = new JsonArray();
@@ -271,7 +272,7 @@ public class SqlConversationService implements ConversationService{
 				" LEFT JOIN "+messageTable+" r ON m.id = r.parent_id AND r.state= 'SENT' " +
 				" WHERE um.user_id = ? AND r.id IS NULL " +
 				" AND m.state = 'SENT' AND um.trashed = false " +
-				" ORDER BY m.date	 DESC LIMIT "+ LIST_LIMIT/4 +" OFFSET "+ skip+") a )" +
+				" ORDER BY m.date DESC LIMIT "+ nbThread +" OFFSET "+ skip+") a )" +
 
 				"SELECT * FROM ( " +
 				"SELECT DISTINCT "+messagesFields+", um.unread as unread, row_number() OVER (PARTITION BY m.thread_id ORDER BY m.date DESC) as rownum " +
@@ -285,7 +286,26 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void listThreadMessages(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
+	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
+		int skip = page * LIST_LIMIT;
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
+		JsonArray values = new JsonArray();
+
+		values.add(user.getUserId());
+		values.add(threadId);
+
+		String query =
+				"SELECT "+messagesFields+", um.unread as unread FROM " +userMessageTable + " as um " +
+				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
+				" WHERE um.user_id = ? AND m.thread_id = ? " +
+				" AND m.state = 'SENT' AND um.trashed = false " +
+				" ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
+
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+	}
+
+	@Override
+	public void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int maxMessageInThread = 15;
 		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
 		String condition, limit;
