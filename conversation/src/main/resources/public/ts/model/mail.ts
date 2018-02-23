@@ -321,7 +321,7 @@ export class Mail implements Selectable {
     };
 
     async open(forPrint? : boolean) {
-        if(this.unread){
+        if(this.unread && this.state !== "DRAFT"){
             Conversation.instance.currentFolder.nbUnread --;
         }
         this.unread = false;
