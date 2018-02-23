@@ -437,6 +437,13 @@ public class SqlConversationService implements ConversationService{
 
 		query += addCompleteFolderCondition(values, restrain, unread, folder, user);
 
+		if(restrain != null && unread){
+			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
+			values.add(user.getUserId());
+			values.add(new JsonArray().add(user.getUserId()).toString());
+			values.add(new JsonArray().add(user.getUserId()).toString());
+		}
+
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
