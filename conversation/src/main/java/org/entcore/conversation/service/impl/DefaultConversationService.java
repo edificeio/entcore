@@ -450,7 +450,12 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
-	public void listThreadMessages(String message, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
+	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
+
+	}
+
+	@Override
+	public void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
 
 	}
 

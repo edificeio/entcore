@@ -523,6 +523,49 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	@Get("thread/messages/:id")
+	@SecuredAction(value = "conversation.threads.message", type = ActionType.AUTHENTICATED)
+	public void listThreadMessages(final HttpServerRequest request){
+		final String threadId = request.params().get("id");
+		final String p = Utils.getOrElse(request.params().get("page"), "0", false);
+
+		if (threadId == null || threadId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					int page;
+					try {
+						page = Integer.parseInt(p);
+					} catch (NumberFormatException e) { page = 0; }
+					conversationService.listThreadMessages(threadId, page, user, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								for (Object o : r.right().getValue()) {
+									if (!(o instanceof JsonObject)) {
+										continue;
+									}
+									translateGroupsNames((JsonObject) o, request);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.putString("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	@Get("thread/previous-messages/:id")
 	@SecuredAction(value = "conversation.threads.previous")
 	@ResourceFilter(MessageUserFilter.class)
@@ -552,7 +595,7 @@ public class ConversationController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					conversationService.listThreadMessages(messageId, listPrevious, user, new Handler<Either<String, JsonArray>>() {
+					conversationService.listThreadMessagesNavigation(messageId, listPrevious, user, new Handler<Either<String, JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
