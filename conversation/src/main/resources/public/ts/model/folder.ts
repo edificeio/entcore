@@ -76,6 +76,7 @@ export abstract class Folder implements Selectable {
 
     async toggleUnreadSelection(unread) {
         await this.mails.toggleUnread(unread);
+        this.mails.selection.deselectAll();
         await quota.refresh();
         await this.countUnread();
     }
@@ -152,7 +153,6 @@ export class Trash extends SystemFolder {
             id: _.pluck(this.mails.selection.selected, 'id')
         }));
         this.mails.removeSelection();
-        Conversation.instance.folders.inbox.mails.refresh();
     }
 
     async removeMails () {

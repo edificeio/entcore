@@ -552,6 +552,7 @@ export class Mails {
 
     refresh() {
         this.pageNumber = 0;
+        this.full = false;
         return this.sync();
     }
 
@@ -568,7 +569,6 @@ export class Mails {
 
     async moveSelection(destinationFolder) {
         await http.put('move/userfolder/' + destinationFolder.id + '?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
-        await Conversation.instance.currentFolder.mails.refresh();
     }
 
     async toggleUnread(unread) {
@@ -588,9 +588,15 @@ export class Mails {
         var paramsIds = toFormData({ id: _.pluck(selected, 'id') });
         var paramUnread = `unread=${unread}`;
 
-        await http.post(`/conversation/toggleUnread?${paramsIds}&${paramUnread}`);
-        Conversation.instance.currentFolder.mails.refresh();
-        quota.refresh();
+        try{
+            await http.post(`/conversation/toggleUnread?${paramsIds}&${paramUnread}`);
+            quota.refresh();
+            selected.forEach(mail => mail.unread = unread);
+        }
+        catch(e){
+            notify.error(e.response.data.error);
+        }
+
     }
 }
 
