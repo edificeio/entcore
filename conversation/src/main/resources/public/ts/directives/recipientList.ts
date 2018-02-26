@@ -27,11 +27,10 @@ export const recipientList = ng.directive('recipientList', () => {
                     <span class="cell">... <i18n>chip.more1</i18n> [[ngModel.length - 2]] <i18n>chip.more2</i18n></span>
                 </label>
                 <form class="input-help" ng-submit="update(true)">
-                    <label ng-class="{ hide: focused || ngModel.length > 0 }">
-                        <i18n ng-if="restriction">share.search.help</i18n>
-                        <i18n ng-if="!restriction">share.search.placeholder</i18n>
-                    </label>
-                    <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" />
+                    <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" 
+                    i18n-placeholder="[[restriction ? 'share.search.help' : 'share.search.placeholder' ]]"
+                    />
+                    
                 </form>
                 <drop-down
                     options="itemsFound"
