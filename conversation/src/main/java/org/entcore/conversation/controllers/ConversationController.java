@@ -364,9 +364,12 @@ public class ConversationController extends BaseController {
 				.putString("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		params.putString("resourceUri", params.getString("messageUri"));
 		List<String> recipients = new ArrayList<>();
+		String idTmp;
 		for (Object o : r) {
 			if (!(o instanceof String)) continue;
-			recipients.add((String) o);
+			idTmp = (String) o;
+			if(!user.getUserId().equals(idTmp))
+				recipients.add(idTmp);
 		}
 		notification.notifyTimeline(request, "messagerie.send-message", user, recipients, id, params);
 	}
