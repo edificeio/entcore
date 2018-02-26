@@ -158,7 +158,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
                 await Conversation.instance.folders.inbox.countUnread();
                 await Conversation.instance.folders.draft.countTotal();
-                await $scope.refreshFolder();
+                $scope.$apply();
             }
         };
 
@@ -404,18 +404,18 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.inbox.countUnread();
             await $scope.userFolders.countUnread();
             await Conversation.instance.folders.draft.countTotal();
-            await $scope.refreshFolders();
+            $scope.$apply();
         };
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
             await Conversation.instance.currentFolder.countUnread();
-            await $scope.refreshFolder();
+            $scope.$apply();
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
             await Conversation.instance.currentFolder.toggleUnreadSelection(unread);
-            await $scope.refreshFolder();
+            $scope.$apply();
         };
 
         $scope.canMarkUnread = () => {
@@ -524,8 +524,8 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.currentFolder.countUnread();
                 await folderTarget.countUnread();
             }
+            $scope.$apply();
 
-            await $scope.refreshFolder();
         }
 
         $scope.openNewFolderView = function () {
