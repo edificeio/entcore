@@ -11,7 +11,7 @@
     "clickhere": "Cliquez ici pour ",
     "confirm.empty.trash": "Attention ! Vous allez supprimer définitivement l'ensemble des messages et dossiers présents dans votre corbeille",
     "content": "Objet",
-    "conversation.send.error": "Aucun destinataire n'a pu recevoir le messsage.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
+    "conversation.send.error": "Aucun destinataire n'a pu recevoir le message.<br/><i><small>Raisons fréquentes : compte inactif, quota plein, messagerie bloquée, ...</small></i>",
     "conversation.title": "Messagerie",
     "copy": "Copie",
     "create": "Créer",
