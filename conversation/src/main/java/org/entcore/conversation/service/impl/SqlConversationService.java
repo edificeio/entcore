@@ -259,20 +259,18 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
-		int nbThread =  5;
+		int nbThread =  10;
 		int skip = page * nbThread;
-		int maxMessageInThread = 7;
+		int maxMessageInThread = 5;
 		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
 		JsonArray values = new JsonArray();
 		values.add(user.getUserId());
 		values.add(user.getUserId());
 		String query = " WITH threads AS ( " +
-				" SELECT DISTINCT thread_id from (SELECT m.thread_id, m.date FROM " + userMessageTable + " um " +
+				" SELECT DISTINCT thread_id, date from (SELECT m.thread_id, m.date FROM " + userMessageTable + " um " +
 				" JOIN "+messageTable+" m ON um.message_id = m.id " +
-				" LEFT JOIN "+messageTable+" r ON m.id = r.parent_id AND r.state= 'SENT' " +
-				" WHERE um.user_id = ? AND r.id IS NULL " +
-				" AND m.state = 'SENT' AND um.trashed = false " +
-				" ORDER BY m.date DESC LIMIT "+ nbThread +" OFFSET "+ skip+") a )" +
+				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false) a "+
+				" ORDER BY date DESC LIMIT "+ nbThread +" OFFSET "+ skip + ") " +
 
 				"SELECT * FROM ( " +
 				"SELECT DISTINCT "+messagesFields+", um.unread as unread, row_number() OVER (PARTITION BY m.thread_id ORDER BY m.date DESC) as rownum " +
