@@ -70,7 +70,7 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 	}};
 
 	private String externalIdPrefix = "^ENT\\$([0-9]*)$";
-	private String academicConfPattern = "^(PARIS|CRETEIL|VERSAILLES|PARIS-CRIF|VERSAILLES-CRIF|CRETEIL-CRIF|AGRICOLE)-([0-9]*)$";
+	private String academicConfPattern = "^(PARIS|CRETEIL|VERSAILLES|PARIS-CRIF|VERSAILLES-CRIF|CRETEIL-CRIF|AGRICOLE)-([a-zA-Z0-9-]*)$";
 
 	private  Pattern academicPattern = Pattern.compile(academicConfPattern);
 
