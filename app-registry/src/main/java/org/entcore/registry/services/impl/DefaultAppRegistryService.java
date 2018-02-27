@@ -38,6 +38,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -305,14 +307,20 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			for (Object o: actions) {
 				JsonObject json = (JsonObject) o;
 				String type;
+				List<String> removeLabels = new ArrayList<>();
+				removeLabels.add("ResourceAction");
+				removeLabels.add("AuthenticatedAction");
+				removeLabels.add("WorkflowAction");
 				switch (json.getString("type", "WORKFLOW")) {
 					case "RESOURCE" : type = "Resource"; break;
 					case "AUTHENTICATED" : type = "Authenticated"; break;
 					default: type = "Workflow"; break;
 				}
+				removeLabels.remove(type + "Action");
 				String createAction =
-						"MERGE (a:Action:" + type + "Action {name:{name}}) " +
-						"SET a.displayName = {displayName}, a.type = {type} " +
+						"MERGE (a:Action {name:{name}}) " +
+						"REMOVE a:" + Joiner.on(":").join(removeLabels) + " " +
+						"SET a.displayName = {displayName}, a.type = {type}, a:" + type + "Action " +
 						"WITH a " +
 						"MATCH (n:Application) " +
 						"WHERE n.name = {applicationName} " +
