@@ -36,8 +36,8 @@ export let conversationController = ng.controller('ConversationController', [
                 let user = new User(params.userId)
                 await user.findData();
                 template.open('main', 'mail-actions/write-mail');
-                $scope.addUser(user);
                 $scope.constructNewItem();
+                $scope.addUser(user);
                 $scope.$apply();
             },
             inbox: async () => {
