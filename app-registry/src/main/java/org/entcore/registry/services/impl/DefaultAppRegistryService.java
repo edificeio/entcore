@@ -330,6 +330,11 @@ public class DefaultAppRegistryService implements AppRegistryService {
 						.putString("applicationName", applicationName)
 						.putString("type", "SECURED_ACTION_" + json.getString("type", "WORKFLOW")));
 			}
+			final String removeNotWorkflowInRole =
+					"MATCH (:Role)-[r:AUTHORIZE]->(a:Action) " +
+					"WHERE a:ResourceAction OR a:AuthenticatedAction " +
+					"DELETE r";
+			b.add(removeNotWorkflowInRole);
 		} else if (address != null && !address.trim().isEmpty()) {
 			String query2 =
 					"MATCH (n:Application) " +
