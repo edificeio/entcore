@@ -6,7 +6,7 @@ pipeline {
       stage('Build') {
         steps {
           checkout scm
-          sh './build.sh clean publish'
+          sh './build.sh clean install publish'
         }
       }
     }
