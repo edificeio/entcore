@@ -22,8 +22,7 @@ package org.entcore.feeder.utils;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +107,7 @@ public class AAFUtil {
 	private static JsonObject siecleConverter(JsonArray value) {
 		JsonObject res = new JsonObject();
 		JsonArray ENTEleveParents = new JsonArray();
-		JsonArray ENTEleveAutoriteParentale = new JsonArray();
+		Set<String> ENTEleveAutoriteParentale = new HashSet<>();
 		String ENTEleveAutoriteParentale1 = "";
 		String ENTEleveAutoriteParentale2 = "";
 		String ENTElevePersRelEleve1 = "";
@@ -135,7 +134,7 @@ public class AAFUtil {
 
 		for (Object o : value) {
 			String [] s = ((String) o).split("\\$");
-			if ("1".equals(s[1]) || "2".equals(s[1])) {
+			if ("1".equals(s[1]) || "2".equals(s[1]) || "10".equals(s[1]) || "20".equals(s[1])) {
 				if (!ENTEleveParents.contains(s[0])) {
 					ENTEleveParents.add(s[0]);
 				}
@@ -178,8 +177,11 @@ public class AAFUtil {
 					}
 				}
 			}
-			if (isEmpty(ENTEleveAutoriteParentale1) && "1".equals(s[3])) {
-				ENTEleveAutoriteParentale1 = s[0];
+			if ("1".equals(s[3])) {
+				if (isEmpty(ENTEleveAutoriteParentale1)) {
+					ENTEleveAutoriteParentale1 = s[0];
+				}
+				ENTEleveAutoriteParentale.add(s[0]);
 			}
 			if (isEmpty(ENTEleveAutoriteParentale2) && "2".equals(s[3])) {
 				ENTEleveAutoriteParentale2 = s[0];
@@ -193,7 +195,7 @@ public class AAFUtil {
 			ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale2);
 		}
 		res.putArray("ENTEleveParents", ENTEleveParents);
-		res.putArray("ENTEleveAutoriteParentale", ENTEleveAutoriteParentale);
+		res.putArray("ENTEleveAutoriteParentale", new JsonArray(ENTEleveAutoriteParentale.toArray()));
 		res.putString("ENTElevePersRelEleve1", ENTElevePersRelEleve1);
 		res.putString("ENTEleveQualitePersRelEleve1", ENTEleveQualitePersRelEleve1);
 		res.putString("ENTElevePersRelEleve2", ENTElevePersRelEleve2);
