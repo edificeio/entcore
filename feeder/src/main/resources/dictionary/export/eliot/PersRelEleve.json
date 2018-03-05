@@ -13,5 +13,7 @@
 	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"country" : { "attribute" : "ENTPersonPays" },
 	"mobile" : { "attribute" : "ENTPersonMobileSMS" },
-	"mobilePhone" : { "attribute" : "ENTPersonMobile" }
+	"mobilePhone" : { "attribute" : "ENTPersonMobile" },
+	"students" : { "attribute" : "ENTAuxPersRelEleveEleve" },
+	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" }
 }

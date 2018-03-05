@@ -18,5 +18,6 @@
 	"ENTAuxEnsClassesPrincipal" : { "attribute" : "headTeacher", "type" : "array-string", "prefix" : true },
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"PersEducNatPresenceDevantEleves" : { "attribute" : "teaches", "type" : "boolean" },
-	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" }
+	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" },
+	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher" }
 }
