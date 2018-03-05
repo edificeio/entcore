@@ -198,6 +198,7 @@ public class AAFUtil {
 		res.put("ENTEleveQualitePersRelEleve1", ENTEleveQualitePersRelEleve1);
 		res.put("ENTElevePersRelEleve2", ENTElevePersRelEleve2);
 		res.put("ENTEleveQualitePersRelEleve2", ENTEleveQualitePersRelEleve2);
+		res.put("ENTElevePersRelEleve", value);
 		return res;
 	}
 

@@ -1,5 +1,6 @@
 {
 	"joinKey" : { "attribute" : "ENTPersonJointure", "converter" : "head-array" },
+	"attachmentId" : { "attribute" : "ENTEleveStructRattachId" },
 	"birthDate" : { "attribute" : "ENTPersonDateNaissance", "converter" : "date" },
 	"lastName" : { "attribute" : "sn" },
 	"firstName" : { "attribute" : "givenName" },
@@ -20,5 +21,6 @@
 	"transport" : { "attribute" : "ENTEleveTransport", "converter": "boolean-ON" },
 	"status" : { "attribute" : "ENTEleveStatutEleve" },
 	"fieldOfStudyLabels" : { "attribute" : "ENTEleveEnseignements" },
-	"relative" : { "converter" : "siecle" }
+	"relative" : { "converter" : "siecle" },
+	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" }
 }

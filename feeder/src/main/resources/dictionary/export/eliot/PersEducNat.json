@@ -20,5 +20,7 @@
 	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"headTeacher" : { "attribute" : "ENTAuxEnsClassesPrincipal" },
 	"functions" : { "attribute" : "ENTPersonFonctions" },
-	"teaches" : { "attribute" : "PersEducNatPresenceDevantEleves", "converter" : "boolean-ON" }
+	"teaches" : { "attribute" : "PersEducNatPresenceDevantEleves", "converter" : "boolean-ON" },
+	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" },
+	"isTeacher" : { "attribute" : "ENTPersonCategorieEnseignant", "converter" : "boolean-ON" }
 }

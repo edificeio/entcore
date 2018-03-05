@@ -3,5 +3,7 @@
 	"ENTLibelleMef" : { "attribute" : "name", "type" : "string" },
 	"ENTMEFRattach" : { "attribute" : "attachment", "type" : "string" },
 	"ENTMEFSTAT11" : { "attribute" : "stat", "type" : "string" },
-	"categorieMef" : { "attribute" : "category", "type" : "string" }
+	"categorieMef" : { "attribute" : "category", "type" : "string" },
+	"ENTNivFormation" : { "attribute" : "level", "type" : "string" },
+	"ENTFiliere" : { "attribute" : "filiere", "type" : "string" }
 }
