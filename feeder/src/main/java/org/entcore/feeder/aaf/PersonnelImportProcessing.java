@@ -63,17 +63,22 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	}
 
 	protected String detectProfile(JsonObject object) {
-		JsonArray functions = object.getJsonArray("functions");
-		if (object.getBoolean("teaches", false)) {
-			return TEACHER_PROFILE_EXTERNAL_ID;
-		} else if (functions != null && functions.size() > 0) {
-			for (Object function : functions.getList()) {
-				if (function != null && (function.toString().contains("$DOC$") || function.toString().contains("$ENS$"))) {
-					return TEACHER_PROFILE_EXTERNAL_ID;
+		Boolean isTeacher = object.getBoolean("isTeacher");
+		if (isTeacher != null) {
+			return isTeacher ? TEACHER_PROFILE_EXTERNAL_ID : PERSONNEL_PROFILE_EXTERNAL_ID;
+		} else {
+			JsonArray functions = object.getJsonArray("functions");
+			if (object.getBoolean("teaches", false)) {
+				return TEACHER_PROFILE_EXTERNAL_ID;
+			} else if (functions != null && functions.size() > 0) {
+				for (Object function : functions.getList()) {
+					if (function != null && (function.toString().contains("$DOC$") || function.toString().contains("$ENS$"))) {
+						return TEACHER_PROFILE_EXTERNAL_ID;
+					}
 				}
 			}
+			return PERSONNEL_PROFILE_EXTERNAL_ID;
 		}
-		return PERSONNEL_PROFILE_EXTERNAL_ID;
 	}
 
 	protected void linkMef(JsonArray modules) {
