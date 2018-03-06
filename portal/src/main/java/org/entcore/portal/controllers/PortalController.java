@@ -253,7 +253,11 @@ public class PortalController extends BaseController {
 								path,
 								lastModified, dev);
 					} else {
-						request.response().sendFile(path);
+						request.response().sendFile(path, ar -> {
+							if (ar.failed() && !request.response().ended()) {
+								notFound(request);
+							}
+						});
 					}
 				}
 			});
