@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
@@ -204,7 +205,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void handle(Message<JsonObject> message) {
-		String action = message.body().getString("action", "");
+		String action = getOrElse(message.body().getString("action"), "");
 		if (action.startsWith("manual-") && !Importer.getInstance().isReady()) {
 			eventQueue.add(message);
 			return;
@@ -315,8 +316,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private void launchImportValidation(final Message<JsonObject> message, final Handler<Report> handler) {
 		logger.info(message.body().encodePrettily());
-		final String acceptLanguage = message.body().getString("language", "fr");
-		final String source = message.body().getString("feeder", defaultFeed);
+		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
+		final String source = getOrElse(message.body().getString("feeder"), defaultFeed);
 
 		// TODO make validator factory
 		final ImportValidator v;
@@ -340,7 +341,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 
 		final String structureExternalId = message.body().getString("structureExternalId");
-		final boolean preDelete = message.body().getBoolean("preDelete", false);
+		final boolean preDelete = getOrElse(message.body().getBoolean("preDelete"), false);
 		String path = message.body().getString("path");
 		if (path == null && !"CSV".equals(source)) {
 			path = config.getString("import-files");
@@ -451,14 +452,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void launchImport(final Message<JsonObject> message) {
-		final String source = message.body().getString("feeder", defaultFeed);
+		final String source = getOrElse(message.body().getString("feeder"), defaultFeed);
 		final Feed feed = feeds.get(source);
 		if (feed == null) {
 			sendError(message, "invalid.feeder");
 			return;
 		}
 
-		final boolean preDelete = message.body().getBoolean("preDelete", false);
+		final boolean preDelete = getOrElse(message.body().getBoolean("preDelete"), false);
 		final String structureExternalId = message.body().getString("structureExternalId");
 
 		if (message.body().getBoolean("transition", false)) {
@@ -521,12 +522,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	private void doImport(final Message<JsonObject> message, final Feed feed, final Handler<Report> h) {
 
-		final String acceptLanguage = message.body().getString("language", "fr");
+		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
 
 
-		final String charset = message.body().getString("charset", "UTF-8");
+		final String charset = getOrElse(message.body().getString("charset"), "UTF-8");
 		final String importPath = message.body().getString("path");
-		final boolean executePostImport = message.body().getBoolean("postImport", true);
+		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
@@ -599,7 +600,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void checkEventQueue() {
 		Message<JsonObject> event = eventQueue.poll();
 		if (event != null) {
-			switch (event.body().getString("action", "")) {
+			switch (getOrElse(event.body().getString("action"), "")) {
 				case "import": launchImport(event);
 					break;
 				case "transition": launchTransition(event, null);
