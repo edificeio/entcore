@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.*;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.events.EventStore;
@@ -193,7 +194,8 @@ public class PostImport {
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
 										.getJsonArray("ids", new JsonArray()));
-						eb.send("wse.communication", j, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
+								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
