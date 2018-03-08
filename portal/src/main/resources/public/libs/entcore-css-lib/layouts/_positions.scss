@@ -22,11 +22,31 @@
 	&.justify-end{
 		justify-content: flex-end;
 	}
+	&.justify-between{
+		justify-content: space-between;
+	}
+	&.justify-around{
+		justify-content: space-around;
+	}
+
+	&.f-column{
+		flex-direction: column;
+	}
+	&.f-row{
+		flex-direction: row;
+	}
+
+	.flex-all-remains{
+		flex: 1;
+	}
 }
 
 
 .fixed{
 	@include absolute;
+}
+.relative{
+	position: relative;
 }
 
 
@@ -73,6 +93,20 @@
 			&.mobile-justify-end{
 				justify-content: flex-end;
 			}
+
+			&.mobile-f-row{
+				flex-direction: row;
+			}
+			&.mobile-f-row-reverse{
+				flex-direction: row-reverse;
+			}
+			&.mobile-f-column{
+				flex-direction: column;
+			}
+			&.mobile-f-column-reverse{
+				flex-direction: column-reverse;
+			}
+
 		}
 
 	}

@@ -25,6 +25,33 @@ image-select > div > img{
 	width: 100%
 }
 
+image-select{
+	> div > i {
+		position: absolute;
+		color: #fff;
+		text-shadow: 1px 1px 1px rgba(0,0,0,0.6);
+		cursor: pointer;
+		transition: color 250ms ease;
+	}
+	i.trash{
+		right: 10px;
+	    top: 3px;
+		&::before{
+			font-size: 15px;
+		}
+	}
+	i.edit{
+		right: 34px;
+	    top: 4px;
+		border: none;
+		padding: 0;
+		&::before{
+			font-size: 18px;
+			line-height: 24px;
+		}
+	}
+}
+
 .illustration{
 	display: flex;
 	height: 100%;

@@ -1,0 +1,10 @@
+.signature:not(:empty) {
+    border-top: 1px solid $neutral-grey;
+    margin-top: 25px;
+    font-size: $font-size - 1;
+    &:before{
+        content: ' ';
+        display: block;
+        padding-top: 10px;
+    }
+}

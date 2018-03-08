@@ -11,112 +11,12 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 box-sizing: border-box;
-                margin-bottom: -3px;
+                margin-bottom: -5px;
                 font-size: 12px;
             }
             section {
                 padding: 10px 5px;
             }
-        }
-
-
-        media-library {
-            .media-library > h2 {
-                display: none;
-            }
-            .search {
-                hr {
-                    display: none;
-                }
-                h2 {
-                    display: none;
-                }
-            }
-
-            .icons-view .element {
-                padding: 0;
-                margin: 5px;
-                .container{
-                    width: 105px;
-                    height: 105px;
-                    margin: 0;
-                    i{
-                        width: 105px!important;
-                        height: 105px!important;
-                    }
-                }
-                legend{
-                    box-sizing: border-box;
-                    left: 0;
-                    bottom: 0;
-                    position: absolute!important;
-                    a.medium-text{
-                        font-size: 12px!important;
-                    }
-                }
-            }
-
-        }
-
-
-        .widgets,
-        .widgets-picker {
-            display: none;
-        }
-        .widgets-friend {
-            margin-left: 0 !important;
-        }
-
-
-        .drop-down-filters {
-            .wrapper {
-                i {
-                    height: 55px !important;
-                    width: 55px !important;
-                    background-size: 60px 60px;
-                }
-                p {
-                    display: none;
-                }
-                label {
-                    width: 59px;
-                }
-            }
-        }
-
-
-        .navbar .welcome-message {
-            display: none;
-        }
-
-
-        .cards-list .card {
-            max-width: 250px;
-        }
-
-
-        grid-cell.media {
-            .media-wrapper,
-            .text-wrapper h1,
-            .text-wrapper h2 {
-                padding: 0;
-                .media-container {
-                    min-height: 0;
-                }
-            }
-            table {
-                width: 100% !important;
-            }
-        }
-
-
-        .media.height-undefined,
-        .media.height-zero {
-            min-height: 0;
-        }
-        .drawing-grid .row {
-            min-height: 0;
-            margin-bottom: 10px;
         }
     }
 
@@ -129,6 +29,66 @@
 ////
 
     body {
+        .widgets,
+		.widgets-picker {
+			display: none;
+		}
+		.widgets-friend {
+			margin-left: 0 !important;
+		}
+
+
+		.drop-down-filters {
+			.wrapper {
+				i {
+					height: 55px !important;
+					width: 55px !important;
+					background-size: 60px 60px;
+				}
+				p {
+					display: none;
+				}
+				label {
+					width: 59px;
+				}
+			}
+		}
+
+
+		.navbar .welcome-message {
+			display: none;
+		}
+
+
+		.cards-list .card {
+			max-width: 250px;
+		}
+
+
+		grid-cell.media {
+			.media-wrapper,
+			.text-wrapper h1,
+			.text-wrapper h2 {
+				padding: 0;
+				.media-container {
+					min-height: 0;
+				}
+			}
+			table {
+				width: 100% !important;
+			}
+		}
+
+
+		.media.height-undefined,
+		.media.height-zero {
+			min-height: 0;
+		}
+		.drawing-grid .row {
+			min-height: 0;
+			margin-bottom: 10px;
+        }
+
         width: 100%;
         min-height: 100%;
         @include run-transition(left);
@@ -203,11 +163,9 @@
 
         section.lightbox {
             > div.content {
-                top: 75px;
                 padding: 20px;
                 min-height: calc(100% - 60px);
                 width: 90%;
-                margin-top: 0;
                 margin-bottom: 30px;
                 border-radius: 0;
                 box-sizing: border-box;
@@ -326,75 +284,6 @@
         }
     }
 
-
-    //mailbox
-    article.list-view.mailbox {
-        thead {
-            display: none;
-        }
-        table,
-        tbody,
-        tr,
-        td {
-            display: block;
-        }
-        tbody {
-            tr {
-                position: relative;
-                overflow: hidden;
-                min-height: 70px;
-            }
-            td {
-                width: auto;
-                max-width: none;
-            }
-            td.icon {
-                position: absolute;
-                padding: 27px 0;
-                height: 100%!important;
-                width: 45px!important;
-                text-align: center;
-            }
-            td.icon.sysmail {
-                top: 0;
-                right: -10px;
-            }
-            td.user {
-                margin-left: 45px;
-                padding-top: 15px;
-                padding-bottom: 0;
-                max-width: calc(70% - 45px);
-            }
-            td.content {
-                margin-left: 45px;
-                padding: 5px 15px 10px 12px;
-                font-size: 12px;
-                max-width: calc(80% - 45px);
-            }
-            td.attach {
-                position: absolute;
-                right: 8px;
-                bottom: 7px;
-                padding: 0;
-                i.attachment {
-                    width: 12px;
-                    height: 12px;
-                }
-            }
-            td.date {
-                position: absolute;
-                right: 0;
-                top: 2px;
-                padding: 0 5px 0 0;
-                font-size: 11px;
-            }
-        }
-    }
-    //write mail
-    article.solid form .right-magnet {
-        margin: 10px;
-    }
-
     section.main-col {
         nav.contextual-buttons {
             .action-buttons {
@@ -415,18 +304,6 @@
 			overflow: hidden;
 		}
 	}
-
-
-
-    .whereami {
-        display: block;
-        float: left;
-        margin-top: 5px;
-        margin-bottom: 10px;
-        font-size: 15px;
-        font-weight: bold;
-    }
-
 
     /// MICROBOX
 
@@ -520,14 +397,6 @@
         margin-top: 40px;
     }
 
-
-
-    .check-tool i:hover{
-        background: darken($light-grey, 7%);
-    }
-    .check-tool i:active{
-        background: $accent;
-    }
 
 
     //structure main-col / rows

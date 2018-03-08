@@ -1,0 +1,26 @@
+div.select-blocks {
+	> div {
+		position: relative;
+  		display: inline-block;
+		font-size: $font-size;
+    	font-weight: bold;
+
+  		&:hover {
+			&::after {
+				opacity: 1;
+			}
+		}
+
+		&::after {
+			content: " ";
+			width: 16px;
+			height: 16px;
+			position: absolute;
+			background-repeat: no-repeat;
+			background-size: cover;
+			top: 7px;
+			right: 8px;
+			opacity: 0;
+		}
+	}
+}

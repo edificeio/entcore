@@ -81,7 +81,7 @@ pulsar{
 
 
     .arrow{
-        @include triangle-top ($size: 14px, $color: #ddd)
+        @include triangle-top ($size: 14px, $color: #ddd);
         z-index: 1;
         position: absolute;
     }

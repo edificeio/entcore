@@ -8,22 +8,30 @@
     padding: 0 15px;
     cursor: pointer;
     i{
-        margin-left: -5px;
         margin-right: 3px;
         font-size: 14px;
     }
     span{
         font-size: 11px;
     }
-    span.cell-ellipsis{
-        width: 95%;
-        text-align: right;
-    }
     input{
         display: none;
     }
 
 }
+
+.chip:hover, .chip:active{
+    box-shadow: 2px 2px 4px 0px $shadow-darker inset;
+}
+
+.chip.selected{
+    box-shadow: 2px 2px 1px 0px  $shadow;
+    background: $primary;
+}
+.chip.selected:hover{
+    box-shadow: 2px 2px 1px 0px  $shadow-darker;
+}
+
 
 .chip.multiselect{
     text-transform: uppercase;
@@ -32,8 +40,36 @@
     word-spacing: 5px;
 }
 
+.chip.removable{
+    border: 1px solid $medium-grey;
+    background: $white;
+    box-shadow: none;
+    text-shadow: none;
+    padding-right: 0;
+    span{
+        color: $black;
+    }
+    i{
+        padding: 0 12px;
+        &:before{
+            color: $solid-grey!important;
+            text-shadow: none!important;
+            font-size: 10px;
+            vertical-align: top;
+            @include run-transition;
+        }
+
+        &:hover{
+            &:before{
+                color: $warning-color!important;
+            }
+        }
+    }
+}
+
 @media screen and (max-width: $small-mobile){
     body{
+
         .chip{
             margin: 10px auto;
             display: block;
@@ -41,11 +77,23 @@
             max-width: 200px;
             line-height: 28px;
             padding: 0 20px;
+            @include run-transition(all);
             i{
                 margin-right: 10px;
                 font-size: 14px;
             }
         }
+
+        recipient-list .chip{
+            margin: 10px;
+            max-width: none;
+            line-height: 28px;
+            padding-right: 5px;
+            i{
+                margin-right: 0;
+            }
+        }
+
         .chip.multiselect{
             margin-right: 5px;
             display: inline-block;

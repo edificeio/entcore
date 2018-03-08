@@ -2,7 +2,9 @@
 @import "breakpoints";
 @import "fonts";
 @import "mixins";
+@import "animations";
 @import "colors";
+@import "cursor";
 @import "crisscross";
 @import "crisscross-mobile";
 
@@ -11,3 +13,4 @@
 @import "modules/modules";
 @import "app";
 @import "mobile/mobile";
+@import "icons/icons";

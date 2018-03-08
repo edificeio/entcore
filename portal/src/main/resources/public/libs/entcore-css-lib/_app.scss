@@ -116,3 +116,11 @@ html.app{
 		height: auto;
 	}
 }
+
+@media screen and (max-width: $tablette) {
+	body{
+		header.main{
+			height: $mobile-header-height;
+		}
+	}
+}

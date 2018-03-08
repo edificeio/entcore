@@ -3,6 +3,7 @@
 	position: absolute;
 	z-index: 999990;
 	display: none;
+	pointer-events: none;
 	.content{
 		padding: 5px 10px;
 		background: #ccc;
@@ -22,4 +23,13 @@
 		border-bottom: 10px solid;
 	}
 
+}
+
+@media screen and (max-width: $fat-mobile) {
+
+    body {
+		.tooltip {
+			display: none !important;
+		}
+	}
 }

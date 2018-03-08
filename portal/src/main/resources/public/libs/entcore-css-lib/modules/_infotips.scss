@@ -32,6 +32,15 @@ infotip{
 	text-align: center;
 	border-radius: 10px;
     max-width: 100%;
+
+    i.warning{
+        padding: 0;
+        margin-right: 10px;
+        color: $warning-color;
+        border: 0;
+        font-size: 20px;
+        vertical-align: middle;
+    }
 }
 
 .info{
@@ -42,4 +51,12 @@ infotip{
 	text-align: center;
 	border-radius: 10px;
     max-width: 100%;
+    i.check-circle{
+        padding: 0;
+        margin-right: 10px;
+        color: $primary;
+        border: 0;
+        font-size: 18px;
+        vertical-align: middle;
+    }
 }

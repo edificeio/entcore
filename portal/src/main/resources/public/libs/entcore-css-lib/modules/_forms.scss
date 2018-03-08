@@ -34,6 +34,40 @@ input[type=text], input[type=password], input[type=search], input[type=tel], inp
 	border: none;
 }
 
+.input-help{
+	label {
+		pointer-events: none;
+		position: absolute;
+		top: 5px;
+		font-size: 14px;
+		color: #aaa;
+		transition: all 250ms ease;
+		opacity: 1;
+
+		&.hide{
+			opacity: 0;
+		}
+
+		&.move {
+			top: 35px;
+			font-size: 12px;
+		}
+	}
+
+	input[type=text]{
+		width: 100%;
+	}
+
+	textarea {
+		height: 30px;
+		margin-left: 60px;
+		width: 662px;
+		border: none;
+		border-bottom: 1px solid #888;
+		padding: 0;
+	}
+}
+
 input-password{
 	input{
 		width: calc(100% - 50px);
@@ -88,11 +122,5 @@ input-password{
 
 	input[type=submit]{
 		float: right;
-	}
-}
-
-.panel.login form{
-	label{
-		width: 150px;
 	}
 }

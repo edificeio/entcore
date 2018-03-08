@@ -12,19 +12,26 @@ span.no-style{
 	margin: 0 !important;
 }
 
-em.low-importance{
+p{
+	word-break: break-word;
+}
+
+
+.low-importance{
 	font-size: 12px !important;
 	height: 16px;
 	line-height: 16px;
 	text-align: right;
 }
 
-em.medium-importance{
+
+.medium-importance{
 	font-style: normal;
 	color: #666;
 }
 
-em.high-importance{
+
+.high-importance{
 	font-style: normal;
 	font-weight: bold;
 	color: #666;
@@ -43,8 +50,20 @@ label{
 .strong-text{
 	font-size: $font-size + 8px;
 }
+
 .upper-title{
 	margin-bottom: 0;
+}
+.strong-title {
+	font-size: 27px;
+	font-weight: bold;
+	color: $grey;
+}
+.text-title {
+	word-wrap: break-word;
+	font-size: 27px;
+	color: $grey;
+    line-height: normal;
 }
 
 .comment{
@@ -106,7 +125,44 @@ strong.cell-ellipsis{
 		font-size: 14px;
 	}
 }
-
+.large-text{
+	font-size: 18px !important;
+	a{
+		font-size: 18px;
+	}
+}
 .single-line{
 
+}
+
+.escape_cke{
+	word-wrap: break-word;
+}
+
+h2 > i.back{
+	font-size: 26px;
+    margin-right: 7px;
+    display: block;
+	float: left;
+	&:hover{
+		color: $accent;
+	}
+}
+
+.indication {
+	color: $solid-grey;
+	font-size: 13px;
+
+	i {
+		margin-right: 0.5em;
+	}
+}
+
+
+@media screen and (max-width: $tablette) {
+	body{
+		.text-title {
+			font-size: 22px;
+		}
+	}
 }
