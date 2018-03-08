@@ -1,0 +1,25 @@
+recipient-list {
+    div {
+        transition: all 250ms linear;
+        flex-wrap: wrap;
+    }
+    div.focus {
+
+    }
+    input.chip-input {
+
+
+    }
+    form label {
+        display: inline-block;
+        white-space: nowrap;
+        transition: none !important;
+        top: 10px !important;
+    }
+    form {
+        position: relative;
+        display: inline-block;
+        margin-left: 5px;
+        flex: auto;
+    }
+}

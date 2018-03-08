@@ -1,0 +1,2 @@
+if googlefont import is not available, evertest scenario fails
+so we need to embed the font

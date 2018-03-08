@@ -52,7 +52,7 @@ $valid-color: 			$green;
 
 $text-light:                  $grey !default;
 $text-lightest: 			  $white !default;
-// $text-color: ;
+$text-color:                  $black !default;
 // $title-color: ;
 // $button-color: ;
 
@@ -76,6 +76,7 @@ $icon-list-size: 117px !default;
 $icon-list-padding: 7px !default;
 
 $header-height: 150px !default;
+$mobile-header-height: 150px !default;
 
 $font-size: 12px !default;
 
@@ -87,7 +88,7 @@ $btnPrimaryBackground: $medium-grey !default;
 
 @font-face {
     font-family: 'generic-icons';
-    src: url(../../../generic-icons/fonts/generic-icons.woff);
+    src: url(../../../generic-icons/fonts/generic-icons.ttf);
     font-weight: normal;
     font-style: normal;
 }

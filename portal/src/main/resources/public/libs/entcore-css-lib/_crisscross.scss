@@ -1,52 +1,4 @@
 
-.row{
-	width: 100%;
-	position: relative;
-	clear: both;
-	box-sizing: border-box;
-}
-
-.row:after{
-	clear:both;
-	content: " ";
-	display: block;
-	width: 100%;
-}
-
-.cell{
-	box-sizing: border-box;
-	float: left;
-	display: block;
-	position: relative;
-}
-
-.right-magnet{
-	float: right !important;
-}
-
-.bottom-magnet{
-	position: absolute;
-	bottom: 0;
-}
-
-
-.square-small{
-	width: 20px;
-	max-width: 20px!important;
-	height: 20px;
-}
-.square-medium{
-	width: 40px;
-	max-width: 40px!important;
-	height: 40px;
-}
-.square-large{
-	width: 80px;
-	max-width: 80px!important;
-	height: 80px;
-}
-
-
 
 .height-one{
 	@include fixed-block;
@@ -162,17 +114,6 @@
 	@include grid-cell-left(12);
 }
 
-.fluid{
-	position: relative !important;
-}
-
-.absolute{
-	position: absolute;
-	height: 100%;
-	width: 100%;
-	top: 0;
-	left: 0;
-}
 
 .zero{
 	display: none;
@@ -370,9 +311,4 @@
 	> .margin-twelve{
 		@include grid-rigid-margin(12);
 	}
-}
-
-.centered{
-  margin-left: auto;
-  margin-right: auto;
 }

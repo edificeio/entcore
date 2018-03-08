@@ -1,8 +1,8 @@
 
 
 .share{
-    width: 100%;
-
+	width: 100%;
+	
 	table{
 		width: 100%;
 	}
@@ -105,5 +105,11 @@
 			display: inline;
 			float: none;
 		}
+	}
+}
+
+@media screen and (max-width: $tablette) {
+	search-user{
+		margin-top: 15px;
 	}
 }

@@ -1,20 +1,162 @@
+
 .notification {
     width: auto;
     height: auto;
     padding: 7px;
     margin-bottom: 25px;
     background: $white;
+
+    &.checked{
+        background-color: $primary-light !important;
+    }
+
     article {
+        background: transparent;
+        box-shadow: none;
         margin: 0;
         padding: 0;
         height: auto;
-        width: calc(100% - 30px);
+
+        label.wrapping-checkbox{
+            i18n{
+                position: absolute;
+                bottom: -2px;
+                right: 7px;
+            }
+            &:hover{
+                img{
+                    border-color: $white;
+                    box-shadow: 4px 4px 5px $shadow-light;
+                }
+            }
+        }
+		.avatar {
+            position: relative;
+			align-self: center;
+			width: auto;
+			height: auto;
+            //width 72 for mailtools check-col
+            margin: 0;
+            padding: 5px;
+
+			img, i.system-avatar {
+                width: 60px;
+                height: 60px;
+                background: $white;
+                max-width: none;
+                display: block;
+                border-radius: 50%;
+                border: 1px solid $light-grey;
+                object-fit: cover;
+                @include run-transition(all);
+
+			}
+		}
+        .states {
+            width: 80px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            i{
+                padding: 0 4px;
+            }
+        }
+
+        .flex-all-remains{
+            i{
+                @include run-transition(all);
+                &:before{
+                    font-size: 12px;
+                    vertical-align: top;
+                }
+            }
+        }
+
         .notification-date {
             position: absolute;
-            right: 35px;
             top: 8px;
+            right: 15px;
             text-align: right;
+            em {
+                font-style: normal;
+                color: $grey;
+            }
         }
+
+    }
+}
+
+
+////CONVERSATION SPECIFIC
+
+.mailbox .notification{
+
+    -webkit-transition: -webkit-filter 250ms ease;
+    -moz-transition: -moz-filter 250ms ease;
+    -ms-transition: -ms-filter 250ms ease;
+    transition: filter 250ms ease;
+
+    .undo:before {
+        @include run-transition(color);
+        color: #555;
+    }
+    .mail:before {
+        @include run-transition(color);
+        color: $primary-dark;
+    }
+
+    &.new-element{
+        background-color: $primary-lighter;
+        span{
+            font-weight: bold;
+        }
+    }
+
+    &.checked{
+        .mail:before, .undo:before {
+            color: $white;
+            text-shadow: 1px 1px 1px $primary-dark;
+        }
+        .flex-all-remains{
+            i{
+                color: $white!important;
+            }
+        }
+    }
+    &:hover{
+        filter: invert(0.05);
+    }
+
+    .flex-all-remains{
+        i {
+            margin-right: 0.5em;
+            &.draft{
+                color: #999;
+            }
+            &.mail-in{
+                color: $primary-dark;
+            }
+            &.mail-out{
+                color: $primary-darkest;
+            }
+        }
+    }
+
+    .notification-attachment {
+        position: absolute;
+        right: 15px;
+        bottom: 8px;
+    }
+}
+
+
+
+////TIMELINE SPECIFIC
+
+div:not(.simple-notifications) > .notification{
+    article{
+        width: calc(100% - 30px);
+
         >.row {
             display: flex;
             flex-direction: row;
@@ -23,21 +165,17 @@
                 width: auto;
             }
         }
-		.avatar {
-			align-self: center;
-			width: auto;
-			height: auto;
-			margin: 15px 20px 15px 10px;
-
-			img, i.system-avatar {
-				height: 75px;
-                width: 75px;
-                max-width: none;
-                display: block;
-                border-radius: 50%;
-                object-fit: cover;
-			}
-		}
+        .avatar{
+            margin: 15px 20px 15px 10px;
+            padding: 0;
+        }
+        img, i.system-avatar {
+            height: 75px;
+            width: 75px;
+        }
+        .notification-date {
+            right: 35px;
+        }
     }
     .content {
         float: none;
@@ -47,15 +185,19 @@
     }
 	i.sticker.app {
 		position: absolute;
-		bottom: 10px;
-		left: 60px;
+        bottom: -5px;
+        left: 50px;
 		width: 30px;
 		height: 30px;
 		line-height: 30px;
 		border-radius: 50%;
 		text-align: center;
 		font-size: 12px;
-
+        box-shadow: 1px 1px 0 0 $shadow-darker;
+        &::before {
+            color: $white!important;
+            text-shadow: 1px 1px 0 $shadow-dark;
+        }
 	}
     i.type {
         float: left;
@@ -66,16 +208,28 @@
         width: 95%;
         padding: 0;
     }
+
 }
+
+
+
+//// ACTIONS OPENER SPECIFIC
+
 .notification div.notification-actions {
     position: absolute;
     overflow: hidden;
     top: 0;
     right: 0;
     height: 100%;
+    background-color: white;
+    @include run-transition(width, 0.3s);
+
+    .report a[disabled] {
+        color: $warning-color;
+    }
 }
 .notification div.notification-actions:not(.opened) {
-    display: none;
+    width: 0;
 }
 .notification:hover div.notification-actions {
     display: block;
@@ -88,6 +242,15 @@
     text-align: center;
     width: 30px;
     float: left;
+    border-left: 1px solid $medium-grey;
+    border-right: 1px solid $medium-grey;
+    color: $accent;
+    background-color: $white;
+    @include run-transition(all);
+}
+.notification div.notification-actions>.opener:hover {
+    background-color: $accent;
+    color: $white;
 }
 .notification div.notification-actions>.opener>.left-open {
     font-size: 13px;
@@ -102,6 +265,7 @@
     justify-content: center;
     i {
         margin-right: 10px;
+        color: $darkest-grey;
     }
 }
 .notification div.notification-actions>.actions>.action {
@@ -115,35 +279,69 @@
     width: 55%;
 }
 
+
+
+
+/////MOBILE
+
+
 @media screen and (max-width: $tablette) {
     body {
-        .notification article .notification-date {
-            right: 10px;
-            top: 8px;
-        }
-        .notification div.notification-actions {
-            display: block !important;
-            width: 30px;
-        }
-        .notification div.notification-date {
-            margin-right: 30px;
+        //SPECIFIC TIMELINE
+        div:not(.simple-notifications) > .notification{
+            article .notification-date {
+                right: 10px;
+                top: 8px;
+            }
+            div.notification-actions {
+                display: block !important;
+                width: 30px;
+            }
+            div.notification-date {
+                margin-right: 30px;
+            }
         }
     }
 }
 
 @media screen and (max-width: $fat-mobile) {
     body {
+
         .notification article{
-            min-height: 95px;
             .avatar {
-                width: 50px;
-                height: 50px;
-                margin: 10px 10px 20px 5px;
                 i.system-avatar,
                 img {
                     width: 50px;
                     height: 50px;
                 }
+            }
+            .states{
+                width: 45px;
+                font-size: 12px;
+            }
+            .flex-all-remains{
+                line-height: 16px;
+                .strong{
+                    font-size: 13px;
+                }
+                .small-text{
+                    font-size: 12px!important;
+                }
+            }
+            .notification-date em {
+                font-size: 10px!important;
+                line-height: 7px;
+            }
+        }
+
+
+////TIMELINE SPECIFIC
+        div:not(.simple-notifications) > .notification article{
+            min-height: 95px;
+            .avatar {
+                width: 50px;
+                height: 50px;
+                margin: 10px 10px 20px 5px;
 
                 i.sticker.app {
                     top: auto;
@@ -158,11 +356,9 @@
             .content {
                 margin: 15px 10px 5px;
             }
-            .notification-date em {
-                font-size: 10px!important;
-                line-height: 7px;
-            }
         }
+
+//// ACTIONS OPENER SPECIFIC
         .notification div.notification-actions>.actions>.action {
             margin-left: 15px;
             width: auto;
@@ -170,7 +366,10 @@
         }
     }
 }
+
 @media screen and (max-width: $small-mobile) {
+
+//// ACTIONS OPENER SPECIFIC
     .notification div.notification-actions.opened {
         width: 80%;
     }

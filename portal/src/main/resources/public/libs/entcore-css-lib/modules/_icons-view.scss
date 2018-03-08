@@ -9,12 +9,25 @@
 		display: inline-block;
 		box-sizing: border-box;
 		position: relative;
+		overflow: hidden;
+		margin: 2px;
+		vertical-align: top;
+		i{
+			background-size: contain;
+			background-position: 0px 2px;
+		}
+	}
+	explorer{
+		display: inline-block;
+		box-sizing: border-box;
+		position: relative;
 		height: 192px;
 		overflow: hidden;
 		width: $icon-list-size + ($icon-list-padding * 2) + 2px + 12px;
 		margin: 2px;
-		position: relative;
 		list-style-type: none;
+	}
+	explorer, .element{
 
 		.container{
 			height: $icon-list-size;
@@ -34,6 +47,7 @@
 				height: 100%;
 				width: 100%;
 				position: relative;
+				overflow: hidden;
 			}
 		}
 
@@ -108,7 +122,4 @@
 
 .icons-view.apps{
 	text-align: left;
-	a > img{
-		pointer-events: none;
-	}
 }

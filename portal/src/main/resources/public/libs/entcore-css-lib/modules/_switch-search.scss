@@ -1,0 +1,45 @@
+
+
+@media screen and (max-width: $fat-mobile){
+	body {
+        switch-search {
+            .search-pagination{
+                input {
+                    transition: all 250ms ease !important;
+                }
+
+                i.search {
+                    transition: all 250ms ease;
+                    left: calc(100% - 35px);
+                }
+
+                ng-transclude > * {
+                    transition: all 250ms ease !important;
+                    max-width: 100vw;
+                }
+
+                &.hide-search {
+                    input {
+                        width: 0 !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        border-color: transparent;
+                    }
+
+                    i.search {
+                        transition: left 250ms;
+                        left: 0;
+                    }
+                }
+
+                &:not(.hide-search) {
+                    ng-transclude > * {
+                        max-width: 0px;
+                        padding-left: 0 !important;
+                        padding-right: 0 !important;
+                    }
+                }
+            }
+        }
+    }
+}

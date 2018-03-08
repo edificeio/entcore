@@ -1,0 +1,102 @@
+multi-combo {
+  display: block;
+  height: 35px;
+
+  .multi-combo-root-button {
+    min-width: 150px;
+    height: 35px;
+    font-size: $font-size*1.2;
+    padding: 0px 10px;
+    text-align: left;
+    width: 100%;
+    max-width: 400px;
+
+    &::after {
+      font-size: 10px;
+      margin-left: 10px;
+      float: right;
+      @include run-transition(transform, 0.25s, ease-in-out);
+    }
+  }
+
+  .multi-combo-root-panel {
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 10000;
+    overflow: hidden;
+    max-height: 500px;
+    @include run-transition(max-height, 0.25s, ease-in-out);
+
+    &.hidden {
+      max-height: 0;
+    }
+
+    > ul {
+      list-style: none;
+      padding: 0px;
+      max-height: 300px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+
+      > li {
+        line-height: 25px;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  div {
+    .multi-combo-panel-opts {
+      text-align: right;
+      position: absolute;
+      z-index: 1;
+      right: 10px;
+      top: 10px;
+      width: auto;
+
+      > * {
+        display: inline-block;
+        vertical-align: middle;
+        margin: 0;
+      }
+
+      > h4 {
+        margin: 0;
+        margin-right: 10px;
+        font-size: 15px;
+      }
+
+      > button {
+        float: none;
+        border: 0;
+        width: 26px;
+        height: 22px;
+      }
+    }
+
+    .multi-combo-search-bar {
+      width: 100%;
+      position: relative;
+
+      > input {
+        min-width: 250px;
+        width: 100%;
+        height: 30px;
+        box-sizing: border-box;
+        border: none;
+        outline: none;
+        text-indent: 10px;
+        padding-right: 65px;
+      }
+
+      > i.multi-icon-search-cancel {
+        width: 15px;
+        height: 15px;
+        position: absolute;
+      }
+    }
+  }
+}

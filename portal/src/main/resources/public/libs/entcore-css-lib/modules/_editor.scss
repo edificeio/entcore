@@ -18,11 +18,29 @@
 }
 
 [contenteditable], [bind-html]{
+    .column .image-block{
+        display: inline-block !important;
+    }
     .image-container{
         display: inline-block;
         user-select: all;
-        border: none;
-        padding: 5px;
+        padding: 15px;
+        overflow: hidden;
+        border: 2px dashed transparent;
+        transition: border-color 250ms ease;
+        vertical-align: middle;
+        background: transparent;
+
+        img{
+            width: 99.99%;
+            min-width: 20px;
+        }
+    }
+    .column{
+        .image-container{
+            max-width: 100%;
+            padding: 0;
+        }
     }
 	audio{
 		display: block;
@@ -88,7 +106,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    user-: none;
+    user-select: none;
 }
 
 .editor{
@@ -109,7 +127,13 @@ body editor{
 	float: left;
 	width: 100%;
 	margin: 10px auto 20px;
-    -webkit-user-: auto;
+    -webkit-user-select: auto;
+
+    .column{
+        .image-container{
+            max-width: 100%;
+        }
+    }
 
 	> div{
 		position: relative;
@@ -125,12 +149,20 @@ body editor{
         padding: 0;
     }
 
+    .image-container{
+        user-select: none;
+        overflow: hidden;
+        img{
+            width: 100%;
+        }
+    }
+
 	.editor-toolbar-opener, .close-focus{
 		display: none;
 	}
     &.focus.edit, &.focus.both, &.focus.html{
         editor-toolbar.inline{
-			-list{
+			select-list{
 				display: inline;
                 opacity: 1;
                 pointer-events: all !important;
@@ -140,7 +172,7 @@ body editor{
                 opacity: 1;
                 pointer-events: all !important;
 			}
-            .option, .option > -list .ed-value, .option > i{
+            .option, .option > select-list .selected-value, .option > i{
                 opacity: 1;
                 pointer-events: all !important;
             }
@@ -344,7 +376,7 @@ body editor{
             opacity: 0;
 			pointer-events: none !important;
 			@include run-transition(opacity);
-			-list, popover, .option, .option > -list .ed-value, .option > i{
+			select-list, popover, .option, .option > select-list .selected-value, .option > i{
 				display: inline-block;
                 opacity: 0;
                 pointer-events: none !important;
@@ -361,7 +393,7 @@ body editor{
 			display: inline-block;
 			padding: 6px 5px;
 
-			user-: none;
+			user-select: none;
 			position: relative;
 			@include run-transition(all);
 			height: 30px;
@@ -375,7 +407,7 @@ body editor{
 				background-size: 15px;
                 background-repeat: no-repeat;
                 background-position: center;
-				user-: none;
+				user-select: none;
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -411,24 +443,24 @@ body editor{
 		}
 		.option.font{
 			width: 140px;
-            -list .ed-value{
+            select-list .selected-value{
                 width: 115px;
             }
 			&:hover{
 				background: none;
-				border: none;
+				border-color: transparent;
 			}
 		}
 		.option.font-size{
 			&:hover{
 				background: none;
-				border: none;
+				border-color: transparent;
 			}
 		}
 		.option.format{
 			&:hover{
 				background: none;
-				border: none;
+				border-color: transparent;
 			}
 			h1, h2, h3, p{
 				margin: 0;
@@ -521,14 +553,11 @@ body editor{
 		height: 100%;
 		z-index: 100001 !important;
 
-        -list{
+        select-list{
             .options{
-                position: fixed;
-                min-width: 0;
-                top: 80px;
+                right: 100%;
                 width: 200px;
-                margin-left: -100px;
-                left: 50%;
+                left: auto;
             }
         }
 
@@ -544,7 +573,7 @@ body editor{
             border-left: 1px solid #ddd;
             border-right: none;
             display: block;
-            &.opened .option i{
+            &.opened .option > i{
                 width: 40px;
             }
 
@@ -601,10 +630,7 @@ body editor{
 			font-size: 22px;
 			height: 38px;
 			width: 44px;
-            -webkit-user-: none;
-			-moz-user-: none;
-			-ms-user-: none;
-			user-: none;
+			user-select: none;
 			&::before{
 				content: "+";
 				display: block;
@@ -630,8 +656,8 @@ body editor{
 		}
 	}
 
-    .option > -list{
-        .ed-value{
+    .option > select-list{
+        .selected-value{
             border: none;
             color: transparent;
         }
@@ -647,8 +673,8 @@ body editor{
             position: relative;
             margin-bottom: 50px;
         }
-        -list{
-            .ed-value{
+        select-list{
+            .selected-value{
                 width: 100%;
                 box-sizing: border-box;
             }
@@ -684,18 +710,7 @@ body editor{
     }
 }
 
-
-//editor icons
-
-@mixin edit-icon(){
-	font-family: "generic-icons";
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-image: none;
-}
-
 @mixin editor-icon(){
-	@include edit-icon;
     display: block;
     position: absolute;
     text-align: center;
@@ -706,146 +721,26 @@ body editor {
     > popover {
         > [popover-opener] {
             &.tools {
+                background: none;
+                @include fonticon;
                 @include editor-icon;
                 height: auto;
                 font-size: 25px;
 
                 &::before {
-                    content: '\e815';
+                    content: '\e8c3';
                 }
             }
         }
     }
 
     &.edit editor-toolbar, &.both editor-toolbar, &.html editor-toolbar {
-        .option.undo > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e800';
-            }
+        .option > i{
+            display: block;
+            position: absolute;
+            text-align: center;
+            line-height: 44px;
         }
-
-        .option.redo > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e801';
-            }
-        }
-
-        .option.bold > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e802';
-            }
-        }
-
-        .option.italic > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e803';
-            }
-        }
-
-        .option.underline > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e804';
-            }
-        }
-
-        .option.justify-left > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e805';
-            }
-        }
-
-        .option.justify-right > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e807';
-            }
-        }
-
-        .option.justify-center > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e806';
-            }
-        }
-
-        .option.justify-full > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e808';
-            }
-        }
-
-        .option.subscript > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80d';
-            }
-        }
-
-        .option.superscript > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80c';
-            }
-        }
-
-        .option.quote > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e816';
-            }
-        }
-
-        .option.ulist i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e809';
-            }
-        }
-
-        .option.olist > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80a';
-            }
-        }
-
-        .option.image > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e817';
-            }
-        }
-
-        .option.sound > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80f';
-            }
-        }
-
         .option.remove-format > i {
             height: 100%;
             width: 100%;
@@ -879,101 +774,21 @@ body editor {
             vertical-align: middle;
         }
 
-        .option.table {
-            popover {
-                > i {
-                    @include editor-icon;
-                    top: -6px;
-
-                    &::before {
-                        content: '\e814';
-                        color: black;
-                    }
-                }
-            }
-        }
-
-        .option.linker {
-            > i {
-                @include editor-icon;
-
-                &::before {
-                    content: '\e812';
-                }
-            }
-        }
-
-        .option.smileys {
-            > i {
-                @include editor-icon;
-
-                &::before {
-                    content: '\e813';
-                }
-            }
-        }
-
-        .option.unlink > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e811';
-            }
-        }
-
 		.option.embed {
             .lightbox > .content{
                 overflow: hidden;
             }
-            
-            > i{
-			    @include editor-icon;
-                &::before{
-                    content: '\e810';
-                }
-            }
-        }
-
-        .option.audio > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e839';
-            }
-        }
-
-        .option.color > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80b';
-            }
-        }
-
-        .option.attachment > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80e';
-            }
-        }
-
-        .option.background-color > i {
-            @include editor-icon;
-
-            &::before {
-                content: '\e80b';
-            }
-
-            color: #fff;
         }
     }
 }
 
 @media screen and (max-width: $tablette){
+
     body editor{
+        box-sizing: border-box;
         editor-toolbar{
-            -list .ed-value{
+
+            select-list .selected-value{
                 width: 44px;
                 &::after{
                     height: 44px;
@@ -984,67 +799,31 @@ body editor {
                 }
             }
 
+
             .option.table{
-            popover{
-                > i{
-                    &::before{
-                        left: 7px;
-                        position: absolute;
-                    }
-			    }
-            }
-		}
-
-            .option.font{
-                -list .ed-value{
-                    @include editor-icon();
-                    &::after{
-                        content: '\e80b';
-                        color: black;
+                popover{
+                    > i{
+                        &::before{
+                            left: 7px;
+                            position: absolute;
+                        }
                     }
                 }
             }
 
-            .option.font-size{
-                -list .ed-value{
-                    @include editor-icon();
-                    &::after{
-                        content: '\e819';
-                        color: black;
-                    }
-                }
-            }
-
-            .option.format{
-                -list .ed-value{
-                    @include editor-icon();
-                    &::after{
-                        content: '\e81a';
-                        color: black;
-                    }
-                }
-            }
         }
     }
 }
 
 .download-attachments{
     .download{
-        @include edit-icon;
+        @include fonticon;
         font-size: 20px;
         vertical-align: top;
     }
     .download::before{
         content: '\e818';
     }
-}
-
-.conversation{
-	editor{
-		.option.attachment{
-			display: none !important;
-		}
-	}
 }
 
 @media screen and (min-width: $tablette){
@@ -1062,30 +841,39 @@ body editor {
         transform: scaleY(1);
     }
 }
+.lightbox-opened .image-contextual-menu{
+    opacity: 0;
+}
+
+.lightbox-opened .image-contextual-menu{
+    display: none;
+}
 
 .image-contextual-menu{
     position: absolute;
-    background: #eee;
     padding: 5px;
     border-radius: 5px;
     animation: slideIn 1 250ms;
     transform-origin: top;
+    z-index: 100001;
+    background: #f9f9f9;
+    color: #222;
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    white-space: nowrap;
     button, i{
         user-select: none;
         margin-bottom: 0;
         background: transparent;
-        color: #fff;
+        color: #222;
         cursor: pointer;
     }
     button{
-        padding-top: 9px;
-        padding-bottom: 9px;
         padding-left: 13px;
         background: transparent;
         box-shadow: none;
         border-right: 1px solid rgba(255,255,255, 0.3);
         &:hover{
-            background: #fff;
+            background: #ccc;
         }
     }
     i{
@@ -1113,9 +901,66 @@ body editor {
     }
 
     i.resize-image{
-        @include edit-icon();
+        @include fonticon();
         &::before{
             content: '\e929';
+        }
+    }
+}
+
+.image-contextual-menu{
+    i:hover, i.selected{
+        background: #ddd;
+    }
+    button:hover{
+        color: #222;
+    }
+}
+@media screen and (max-width: $tablette) {
+    body{
+        .image-contextual-menu{
+            pointer-events: none;
+            button, i{
+                pointer-events: all;
+            }
+        }
+    }
+}
+
+
+body editor [contenteditable]{
+    .image-template .image-container{
+        border: none !important;
+    }
+    .image-container{
+        border: 2px dashed $primary;
+        &.top{
+            border-top-color: $accent;
+        }
+        &.left{
+            border-left-color: $accent;
+        }
+        &.right{
+            border-right-color: $accent;
+        }
+        &.bottom{
+            border-bottom-color: $accent;
+        }
+        &.top-left{
+            border-top-color: $accent;
+            border-left-color: $accent;
+        }
+        &.top-right{
+            border-right-color: $accent;
+            border-top-color: $accent;
+        }
+        &.bottom-left{
+            border-bottom-color: $accent;
+            border-left-color: $accent;
+        }
+        &.bottom-right{
+            border-bottom-color: $accent;
+            border-right-color: $accent;
         }
     }
 }

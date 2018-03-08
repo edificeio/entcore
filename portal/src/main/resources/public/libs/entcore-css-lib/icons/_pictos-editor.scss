@@ -1,0 +1,227 @@
+@mixin editor-icon(){
+    @include fonticon;
+    display: block;
+    position: absolute;
+    text-align: center;
+    line-height: 44px;
+}
+
+
+.option.justify-left > i, i.justify-left {
+    @include fonticon;
+
+    &::before {
+        content: '\e8b8';
+    }
+}
+
+.option.justify-right > i, i.justify-right {
+    @include fonticon;
+
+    &::before {
+        content: '\e8b6';
+    }
+}
+
+.option.justify-center > i, i.justify-center {
+    @include fonticon;
+
+    &::before {
+        content: '\e8b7';
+    }
+}
+
+.option.justify-full > i, i.justify-full {
+    @include fonticon;
+
+    &::before {
+        content: '\e8b5';
+    }
+}
+
+.option.bold > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b9';
+    }
+}
+.option.italic > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b4';
+    }
+}
+.option.underline > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b1';
+    }
+}
+.option.justify-left > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b8';
+    }
+}
+.option.justify-right > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b6';
+    }
+}
+.option.justify-center > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b7';
+    }
+}
+.option.justify-full > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b5';
+    }
+}
+.option.subscript > i{
+    @include fonticon;
+    &::before{
+        content: '\e8b0';
+    }
+}
+.option.superscript > i{
+    @include fonticon;
+    &::before{
+        content: '\e8af';
+    }
+}
+.option.quote > i{
+    @include fonticon;
+    &::before{
+        content: '\e8c2';
+    }
+}
+.option.ulist i{
+    @include fonticon;
+    &::before{
+        content: '\e8ad';
+    }
+}
+.option.olist > i{
+    @include fonticon;
+    &::before{
+        content: '\e8ae';
+    }
+}
+.option.image> i{
+    @include fonticon;
+    &::before{
+        content: '\e84a';
+    }
+}
+.option.attachment> i{
+    @include fonticon;
+    &::before{
+        content: '\e805';
+    }
+}
+.option.sound > i{
+    @include fonticon;
+    &::before{
+        content: '\e839';
+    }
+}
+.option.table{
+    popover{
+        > i{
+            @include fonticon;
+            &::before{
+                content: '\e8b3';
+                color: black;
+            }
+        }
+    }
+}
+.option.linker{
+    > i{
+        @include fonticon;
+        &::before{
+            content: '\e84d';
+        }
+    }
+}
+.option.smileys{
+    > i {
+        @include fonticon;
+        &::before{
+            content: '\e8c0';
+        }
+    }
+}
+.option.unlink > i{
+    @include fonticon;
+    &::before{
+        content: '\e8bf';
+    }
+}
+.option.embed > i{
+    @include fonticon;
+    &::before{
+        content: '\e872';
+    }
+}
+.option.audio > i{
+    @include fonticon;
+    &::before{
+        content: '\e839';
+    }
+}
+.option.color > i{
+    @include fonticon;
+    &::before{
+        content: '\e8c4';
+    }
+}
+.option.background-color > i{
+    @include fonticon;
+    &::before{
+        content: '\e8c4';
+    }
+    color: #fff;
+}
+
+
+
+@media screen and (max-width: $tablette){
+
+    body editor editor-toolbar{
+
+        .option.font{
+            select-list .selected-value{
+                @include editor-icon();
+                &::after{
+                    content: '\e8c4';
+                    color: black;
+                }
+            }
+        }
+
+        .option.font-size{
+            select-list .selected-value{
+                @include editor-icon();
+                &::after{
+                    content: '\e8c7';
+                    color: black;
+                }
+            }
+        }
+
+        .option.format{
+            select-list .selected-value{
+                @include editor-icon();
+                &::after{
+                    content: '\e8c8';
+                    color: black;
+                }
+            }
+        }
+    }
+}

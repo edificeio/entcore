@@ -1,10 +1,33 @@
 
 ///NEW CHECKBOXES
+.domino .check-tool{
+	right: -12px;
+	top: -13px;
+}
 
+.cards-list .card .check-tool{
+	right: -13px;
+	top: -12px;
+}
+
+
+nav.vertical .check-tool{
+	right: calc(50% - 10px);
+    top: auto;
+    bottom: -10px;
+	padding: 0;
+
+	i{
+		background: $accent;
+		&:hover{
+			transform: scale(1.3);
+		}
+	}
+}
 .check-tool{
 	position: absolute;
-	right: -12px;
-	top: -11px;
+	right: -2px;
+	top: -3px;
 	padding: 5px 5px 10px 10px;
 	cursor: pointer;
 	z-index: 1;
@@ -13,13 +36,16 @@
 		display: block;
 		width: 20px;
 		height: 20px;
-		line-height: 20px;
+		line-height: 18px;
 		background: darken($light-grey, 7%);
 		color: $white;
 		border-radius: 50%;
 		cursor: pointer;
 		box-shadow: 1px 1px 0px 0px $shadow-light;
 		@include run-transition(all);
+		backface-visibility: hidden;
+		transform: translateZ(0);
+		-webkit-font-smoothing: antialiased;
 
 		&:before{
 			content:"+";
@@ -31,7 +57,7 @@
 	}
 }
 .check-tool i:hover{
-	transform: scale(1.1);
+	transform: scale(1.15);
 	background: $accent;
 }
 .selected .check-tool{
@@ -45,3 +71,13 @@
 }
 
 /////
+@media screen and (max-width: $tablette) {
+    body{
+	    .check-tool i:hover{
+	        background: darken($light-grey, 7%);
+	    }
+	    .check-tool i:active{
+	        background: $accent;
+	    }
+	}
+}

@@ -1,0 +1,175 @@
+i.cloud-upload{
+    @include fonticon;
+    &::before{
+        content: '\e9c3'
+    }
+}
+
+i.undo, .undo > i{
+    @include fonticon;
+    &::before {
+        content: '\e8be';
+    }
+}
+
+i.redo, .redo > i{
+    @include fonticon;
+    &::before {
+        content: '\e8bd';
+    }
+}
+i.loaded{
+    @include fonticon;
+    transform: rotate(0deg);
+    &::before{
+        content: '\e915';
+    }
+}
+
+i.loading{
+    animation: rotate 1000ms linear infinite;
+    @include fonticon;
+    display: inline-block;
+    &::before{
+        content: '\e85a';
+    }
+}
+
+i.back{
+    @include fonticon;
+    &::before{
+        content: '\e84c';
+    }
+}
+
+i.forward{
+    @include fonticon;
+    transform: rotate(180deg);
+    &::before{
+        content: '\e84c';
+    }
+}
+
+i.rotate{
+    @include fonticon;
+    &::before{
+        content: '\e92b';
+    }
+}
+
+i.crop{
+    @include fonticon;
+    &::before{
+        content: '\ea57';
+    }
+}
+
+i.blur{
+    @include fonticon;
+    &::before{
+        content: '\e92e';
+    }
+}
+
+i.resize{
+    @include fonticon;
+    &::before{
+        content: '\e865';
+    }
+}
+
+i.trash{
+    @include fonticon;
+    &::before{
+        content: '\e8cf';
+    }
+}
+
+.download-disk{
+    @include fonticon;
+    &:before{
+        content: '\e86e';
+    }
+}
+
+i.properties{
+    @include fonticon;
+    &::before{
+        content: '\e854';
+    }
+}
+
+i.help-large, i.help.cas, i.help{
+    @include fonticon;
+}
+i.help-large::before, i.type.help::before, i.help::before{
+    content: '\e835';
+    cursor: pointer;
+}
+i.others{
+    @include fonticon;
+    &::before {
+        content: '\e815';
+    }
+}
+i.search{
+    @include fonticon;
+    &::before {
+        content: '\e930';
+    }
+}
+i.file-text, i.draft{
+    @include fonticon;
+    &:before{
+        content: '\e919';
+    }
+}
+i.mail-in, i.download{
+  @include fonticon;
+  text-align: center;
+}
+i.mail-in:before, i.download:before{
+  content: '\e83f';
+  font-size: 12px;
+}
+
+i.mail-out, i.upload{
+  @include fonticon;
+  text-align: center;
+}
+i.mail-out:before, i.upload:before{
+  content: '\e84e';
+  font-size: 12px;
+}
+
+i.mail-new{
+  @include fonticon;
+  text-align: center;
+}
+i.mail-new:before{
+  content: '\e828';
+  font-size: 12px;
+}
+
+i.attachment{
+    width: auto;
+    height: auto;
+    @include fonticon;
+    &:before{
+        content: '\e805';
+    }
+}
+
+
+i.warning{
+    @include fonticon;
+    &::before{
+        content: '\e903';
+    }
+}
+i.check-circle{
+    @include fonticon;
+    &::before{
+        content: "\e916";
+    }
+}

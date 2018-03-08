@@ -1,11 +1,68 @@
 
-.no-margin{
-	margin: 0!important;
+.row{
+	width: 100%;
+	position: relative;
+	clear: both;
+	box-sizing: border-box;
 }
 
-.margin-auto{
-	margin-left: auto;
-	margin-right: auto;
+.row:after{
+	clear:both;
+	content: " ";
+	display: block;
+	width: 100%;
+}
+
+.cell{
+	box-sizing: border-box;
+	float: left;
+	display: block;
+	position: relative;
+}
+
+.right-magnet{
+	float: right !important;
+}
+
+.bottom-magnet{
+	position: absolute;
+	bottom: 0;
+}
+
+
+.square-small{
+	width: 20px;
+	max-width: 20px!important;
+	height: 20px;
+}
+.square-medium{
+	width: 40px;
+	max-width: 40px!important;
+	height: 40px;
+}
+.square-large{
+	width: 80px;
+	max-width: 80px!important;
+	height: 80px;
+}
+
+
+
+.no-margin, .nomargin{
+	margin: 0!important;
+}
+.no-padding, .nopadding{
+	padding: 0!important;
+}
+
+.aligned {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.centered, .margin-auto{
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .horizontal-margin{
@@ -81,6 +138,24 @@
 	overflow: hidden;
 }
 
+.absolute{
+	position: absolute;
+	height: 100%;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+.absolute-w{
+	position: absolute;
+	width: 100%;
+	top: 0;
+	left: 0;
+}
+
+.fluid{
+	position: relative !important;
+}
+
 
 .vertical-divider{
 	display: block;
@@ -94,32 +169,6 @@
 	    right: 50%;
 	}
 }
-
-
-
-///////// CURSOR STYLES
-
-[draggable]{
-	cursor: move;
-	[contenteditable=true]{
-		cursor: move;
-	}
-}
-[ng-click], [data-ng-click], [call], [complete-click]{
-	cursor: pointer;
-}
-
-[data-reload]{
-	cursor: pointer;
-}
-[sortable-element]{
-	cursor: move;
-}
-[sortable-element].animated{
-	@include run-transition(margin-top);
-}
-
-
 
 
 
@@ -158,6 +207,15 @@ hr{
 	width: 100%;
     border: none;
     padding: 10px;
+}
+hr.line{
+	display: block;
+	box-sizing: border-box;
+	clear: both;
+	width: 100%;
+    border: none;
+    padding: 5px;
+    border-top: 1px solid $primary;
 }
 
 
@@ -201,7 +259,6 @@ dl{
 }
 
 
-
 div.hidden-content{
 	height: 0px;
 	width: 0px;
@@ -217,10 +274,48 @@ div.hidden-content{
     }
 }
 
+.hollow{
+	visibility: hidden;
+	opacity: 0;
+	@include run-transition(all);
+	&.reveal{
+		visibility: visible;
+		animation: transient-display 1 5s;
+	}
+}
+
+
+
 @media screen and (max-width: $tablette) {
     body {
 		.block-mobile{
 			display: block!important;
+		}
+	}
+}
+
+// For special elements that are only visible on desktop and tablettes
+@media screen and (max-width: $fat-mobile){
+	body {
+		.zero-mobile-fat-mobile{
+			display: none!important;
+		}
+	}
+}
+// For special elements that are only visible on mobiles and tablettes
+@media screen and (min-width: $tablette){
+	body {
+		.zero-desktop{
+			display: none!important;
+		}
+	}
+}
+
+// For special elements that are only visible on mobile and fat-mobiles
+@media screen and (min-width: $fat-mobile){
+	body {
+		.mobile-fat-mobile{
+			display: none!important;
 		}
 	}
 }

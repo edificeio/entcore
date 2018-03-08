@@ -1,0 +1,95 @@
+article.mail, article.write-mail {
+    padding: 15px 30px;
+
+    //answers
+    p.medium-text{
+        span, em{
+            color: $grey;
+        }
+    }
+}
+
+
+//read
+article.mail{
+    .avatar {
+        width: auto;
+        height:auto;
+        img{
+            width: 75px;
+            min-width: 75px;
+            height: 75px;
+            border: 1px solid $light-grey;
+            border-radius: 50%;
+        }
+    }
+}
+
+
+// list mails header
+.mailbox-tools{
+    .check-col{
+        width: 72px;
+        .wrapping-checkbox{
+            top: 5px;
+            i18n:after{
+                top: -6px;
+            }
+        }
+    }
+    .status-filter{
+        width: 80px;
+        height: 40px; //(keep mailboxtools height)
+        .chip{
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-bottom: 0px;
+            white-space: nowrap;
+        }
+    }
+    .search-pagination {
+        // voir si specific tools ou pas
+        a {
+            overflow: hidden;
+            width: 0;
+            transition: all 250ms ease;
+
+            &.show-close {
+                width: 40px;
+            }
+        }
+    }
+}
+
+
+
+
+@media screen and (max-width: $tablette) {
+    body{
+        article.mail, article.write-mail {
+            padding: 15px 20px;
+        }
+        article.write-mail {
+            background: transparent;
+            box-shadow: none;
+        }
+        article.mail{
+            em.small-text{
+                font-size: 12px !important;
+            }
+            .avatar {
+                img{
+                    width: 50px;
+                    min-width: 50px;
+                    height: 50px
+                }
+                & + div{
+                    strong, a, span{
+                        font-size: 14px!important;
+                        line-height: 22px!important;
+                    }
+                }
+            }
+        }
+    }
+}

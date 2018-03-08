@@ -4,6 +4,8 @@
         margin: 0!important;
         box-sizing: border-box;
     }
+
+    //input + i[class*="search"]{
     input + i.search{
         position: absolute;
         top: 0;
@@ -15,9 +17,17 @@
         margin-right: 0;
         margin-top: 0;
         padding: 0 3px;
+        font-size: 22px;
         @include run-transition(all);
         &:hover{
             color: $accent;
         }
+    }
+    @include placeholder{
+        color: #ccc;
+        font-size: 15px;
+        font-family: Roboto;
+        font-style: italic;
+        letter-spacing: 1px
     }
 }

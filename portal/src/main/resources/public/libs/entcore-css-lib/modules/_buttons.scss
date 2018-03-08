@@ -7,9 +7,6 @@ a.button, button, input[type=button], input[type=submit]{
 	@include cell;
 }
 
-.display-buttons{
-	padding-bottom: 10px;
-}
 
 input[type=search]{
 	padding: 3px;
@@ -90,7 +87,7 @@ section{
 	@include cell;
 	float: right;
 	text-align: right;
-
+	padding-bottom: 10px;
 	i{
 		float: right;
 		cursor: pointer;
@@ -106,10 +103,6 @@ section{
 
 button{
   position: relative;
-  span{
-    display: block;
-    float: left;
-  }
 }
 
 

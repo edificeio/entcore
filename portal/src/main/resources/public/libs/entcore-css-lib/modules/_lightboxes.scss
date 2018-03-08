@@ -32,7 +32,6 @@ section.lightbox{
 	overflow: auto;
 	position: fixed;
 	z-index: 10001;
-	background: rgba(0,0,0,0.6);
 	top: 0;
 	margin-left: auto;
 	margin-right: auto;
@@ -47,9 +46,21 @@ section.lightbox{
 	font-weight: normal;
     cursor: default;
 	.background{
-		position: absolute;
+		position: fixed;
 		width: 100%;
 		height: 100%;
+		z-index: 0;
+		top: 0;
+		&::after{
+			content: " ";
+			width: 100%;
+			height: 100%;
+			display: block;
+			background: rgba(0,0,0,0.6);
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
 	}
 	> div.content{
 		border-radius: 5px;
@@ -58,10 +69,11 @@ section.lightbox{
 		margin-right: auto;
 		background: #fff;
 		position: relative;
-		margin-top: 80px;
+		margin-top: 20px;
 		padding: 15px;
 		float: none !important;
-        overflow: visible;
+		overflow: visible;
+		z-index: 1;
 	}
 	.content::after{
 		clear:both;

@@ -1,0 +1,21 @@
+///////// CURSOR STYLES
+
+[draggable]{
+	cursor: move;
+	[contenteditable=true]{
+		cursor: move;
+	}
+}
+[ng-click], [data-ng-click], [call], [complete-click]{
+	cursor: pointer;
+}
+
+[data-reload]{
+	cursor: pointer;
+}
+[sortable-element]{
+	cursor: move;
+}
+[sortable-element].animated{
+	@include run-transition(margin-top);
+}

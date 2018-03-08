@@ -32,28 +32,10 @@ embedder{
             }
         }
 
-        label {
-            pointer-events: none;
-            position: absolute;
-            top: 26px;
-            left: 60px;
-            font-size: 14px;
-            color: #aaa;
-            transition: all 250ms ease;
-
-            &.move {
-                top: -20px;
-                font-size: 12px;
+        .input-help{
+            label{
+                left: 60px;
             }
-        }
-
-        textarea {
-            height: 58px;
-            margin-left: 60px;
-            width: 662px;
-            border: none;
-            border-bottom: 1px solid #888;
-            padding: 0;
         }
 
         .others {
@@ -77,10 +59,6 @@ embedder{
 
             &:hover {
                 box-shadow: none;
-            }
-
-            &::before {
-                content: '\e815';
             }
         }
 
@@ -133,9 +111,16 @@ embedder{
             display: inline-block;
             padding: 10px;
             box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            margin: 5px;
+            padding: 20px;
             transition: opacity 500ms ease;
             &:hover{
                 opacity: 1;
+            }
+            img{
+                display: block;
             }
         }
     }

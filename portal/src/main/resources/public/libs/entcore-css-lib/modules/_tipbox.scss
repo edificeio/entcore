@@ -5,6 +5,7 @@
 
     i{
         font-size: 26px;
+        color: $primary;
     }
     .tipbox-content{
         position: absolute;
@@ -14,10 +15,17 @@
         width: 0;
         height: 0;
         overflow: hidden;
-        border: 1px solid cyan;
         border-radius: 3px;
         background: white;
         z-index: 10000;
+        border: 1px solid $primary-light;
+        background: $white;
+        box-shadow: 0 1px 3px $shadow;
+    }
+    &.left{
+        .tipbox-content{
+            right: 40px;
+        }
     }
 }
 .tipbox:hover{
@@ -26,5 +34,14 @@
         width: auto;
         height: auto;
         transition: opacity 400ms;
+        min-width: 250px;
+    }
+}
+
+@media screen and (max-width: $tablette) {
+    .tipbox:hover{
+        .tipbox-content{
+            min-width: 180px;
+        }
     }
 }
