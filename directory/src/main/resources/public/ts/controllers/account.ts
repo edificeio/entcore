@@ -102,13 +102,13 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		model.me.workflow.load(['directory'])
 	})
 
-	function init(){
+	async function init(){
 		$scope.me = model.me;
 		directory.account.one('change', function(){
 			$scope.$apply();
 		});
 
-		directory.account.load();
+		await directory.account.load();
 		$scope.account = directory.account;
 		loadThemeConf();
 	}
