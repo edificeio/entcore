@@ -17,13 +17,13 @@ import { FilterPipe } from '../../shared/ux/pipes'
             <h2>{{ 'massmail.accounts' | translate }}</h2>
             
             <div class="has-vertical-padding is-pulled-left">
-                <button (click)="toggleVisibility()" 
-                    class="button" 
+                <a (click)="toggleVisibility()" 
+                    class="button is-primary" 
                     [ngClass]="setFiltersOnStyle()" 
                     #filtersToggle>
                     <s5l>massmail.filters</s5l> 
-                    <i class="fa fa-filter filters-toggle"></i>
-                </button>
+                    <i class="fa fa-chevron-down"></i>
+                </a>
                 
                 <div [hidden]="!show" class="filters" #filtersDiv>
                     <i class="fa fa-close close" (click)="show=false"></i>

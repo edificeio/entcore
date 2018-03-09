@@ -9,8 +9,13 @@ import { UserlistFiltersService, ProfilesService } from '../../../../core/servic
 @Component({
     selector: 'group-input-filters-users',
     template: `
-        <i class="fa fa-filter" (click)="toggleVisibility()" 
-            [tooltip]="'filters' | translate"></i>
+        <a class="button is-primary" aria-hidden="true"
+            [title]="'filters' | translate"
+            [ngClass]="{'is-active': filtersOn()}"
+            (click)="toggleVisibility()">
+            <s5l>filters</s5l>
+            <i class="fa fa-chevron-down" aria-hidden="true"></i>
+        </a>
         <div *ngIf="show">
             <div *ngFor="let filter of listFilters.filters">
                 <div *ngIf="filter.comboModel.length > 0">
@@ -114,5 +119,9 @@ export class GroupInputFilters implements OnChanges {
 
     toggleVisibility(): void {
         this.show = !this.show
+    }
+
+    filtersOn(): boolean {
+        return this.listFilters.filters.some(f => f.outputModel && f.outputModel.length > 0);
     }
 }
