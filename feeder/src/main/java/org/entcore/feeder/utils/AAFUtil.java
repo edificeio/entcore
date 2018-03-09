@@ -177,9 +177,11 @@ public class AAFUtil {
 					}
 				}
 			}
-			if (isEmpty(ENTEleveAutoriteParentale1) && "1".equals(s[3])) {
-				ENTEleveAutoriteParentale1 = s[0];
-				ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale1);
+			if ("1".equals(s[3])) {
+				if (isEmpty(ENTEleveAutoriteParentale1)) {
+					ENTEleveAutoriteParentale1 = s[0];
+				}
+				ENTEleveAutoriteParentale.add(s[0]);
 			}
 			if (isEmpty(ENTEleveAutoriteParentale2) && "2".equals(s[3])) {
 				ENTEleveAutoriteParentale2 = s[0];
