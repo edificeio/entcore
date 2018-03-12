@@ -30,6 +30,7 @@ export class UserModel extends Model<UserModel> {
     aafFunctions: string[]
     functionalGroups: string[]
     manualGroups: string[]
+    functions?: Array<[string, Array<string>]>
     structures: { id: string, name: string }[]
     classes: { id: string, name: string}[]
     duplicates: { id: string, firstName: string, lastName: string, code: string, structures: string[] }[]

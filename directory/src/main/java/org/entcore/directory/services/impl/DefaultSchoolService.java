@@ -489,18 +489,17 @@ public class DefaultSchoolService implements SchoolService {
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct: Structure) " +
 			"OPTIONAL MATCH (u)-[:IN]->(fgroup: FunctionalGroup) " +
 			"OPTIONAL MATCH (u)-[:IN]->(mgroup: ManualGroup) " +
-			"WITH u, p, class, fgroup, mgroup, struct, duplicate, d, collect(DISTINCT {id: sd.id, name: sd.name}) as structuresDup " +
+			"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->()-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
+			"WITH u, p, class, fgroup, mgroup, f, rf, struct, duplicate, d, collect(DISTINCT {id: sd.id, name: sd.name}) as structuresDup " +
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked," +
 			"EXTRACT(function IN u.functions | last(split(function, \"$\"))) as aafFunctions," +
-			"CASE WHEN class IS NULL THEN [] " +
-			"ELSE COLLECT(distinct {id: class.id, name: class.name}) END as classes," +
-			"CASE WHEN fgroup IS NULL THEN [] " +
-			"ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
-			"CASE WHEN mgroup IS NULL THEN [] " +
-			"ELSE COLLECT(distinct mgroup.name) END as manualGroups, " +
+			"CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name}) END as classes," +
+			"CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
+			"CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups, " +
+			"CASE WHEN f IS NULL THEN [] ELSE COLLECT(distinct [f.externalId, rf.scope]) END as functions, " +
 			"CASE WHEN duplicate IS NULL THEN [] " +
 			"ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
 			"COLLECT (distinct {id: struct.id, name: struct.name}) as structures " +
@@ -513,7 +512,7 @@ public class DefaultSchoolService implements SchoolService {
 			"WITH u, b, s " +
 			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, " +
 			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, " +
-			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as duplicates, " +
+			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";
 
