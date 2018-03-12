@@ -98,6 +98,7 @@ export class GroupInputFilters implements OnChanges {
                 this.structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name))
             this.cdRef.markForCheck()
         })
+        this.listFilters.setMailsComboModel([]);
     }
 
     orderer(a){

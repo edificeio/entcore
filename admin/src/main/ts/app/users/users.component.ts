@@ -96,6 +96,7 @@ export class UsersComponent implements OnInit, OnDestroy {
             structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name))
         this.listFilters.setManualGroupsComboModel(
             structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name))
+        this.listFilters.setMailsComboModel([]);
     }
     
 }
