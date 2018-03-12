@@ -25,11 +25,11 @@ import { UsersStore } from '../../../users.store'
                         {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ (formatStructures(duplicate.structures)) }}
                     </span>
                     <span class="badge alert" *ngIf="duplicate.score > 3" 
-                        [tooltip]="'blocking.duplicate.tooltip' | translate">
+                        [title]="'blocking.duplicate.tooltip' | translate">
                         <s5l>blocking.duplicate</s5l>
                     </span>
                     <span class="badge info" *ngIf="duplicate.score < 4" 
-                        [tooltip]="'minor.duplicate.tooltip' | translate">
+                        [title]="'minor.duplicate.tooltip' | translate">
                         <s5l>minor.duplicate</s5l>
                     </span>
                     <div>
