@@ -37,7 +37,7 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
                 <li *ngFor="let structure of user.visibleStructures()">
                     <span>{{ structure.name }}</span>
                     <i class="fa fa-times action" (click)="removeStructure(structure)"
-                        [tooltip]="'delete.this.structure' | translate"
+                        [title]="'delete.this.structure' | translate"
                         [ngClass]="{ disabled: spinner.isLoading(structure.id)}"></i>
                 </li>
                 <li *ngFor="let structure of user.invisibleStructures()">

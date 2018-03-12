@@ -21,7 +21,7 @@ import { UserListService } from '../../../core/services';
                     'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
                     'selected': userLS.sortsMap.alphabetical.selected
                 }"
-                   [tooltip]="'sort.alphabetical' | translate" position="top"
+                   [title]="'sort.alphabetical' | translate" position="top"
                    (click)="userLS.changeSorts('alphabetical')"></i>
                 <i class="tools__tool fa" aria-hidden="true"
                    [ngClass]="{
@@ -29,7 +29,7 @@ import { UserListService } from '../../../core/services';
                         'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
                         'selected': userLS.sortsMap.profile.selected
                     }"
-                   [tooltip]="'sort.profile' | translate" position="top"
+                   [title]="'sort.profile' | translate" position="top"
                    (click)="userLS.changeSorts('profile')"></i>
                 <strong class="tools__tool badge">
                     {{ users.length }}

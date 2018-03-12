@@ -21,10 +21,11 @@ import { Subscription } from 'rxjs/Subscription'
             </div>
             <div header-right>
                 <a class="old-console" href="/directory/admin-console"
-                    [tooltip]="'switch.old.admin.console.tooltip' | translate">
+                    [title]="'switch.old.admin.console.tooltip' | translate">
                     <i class="fa fa-step-backward"></i>
                 </a>
-                <a href="/auth/logout" [tooltip]="'logout' | translate">
+                <a href="/auth/logout" 
+                    [title]="'logout' | translate">
                     <i class="fa fa-power-off" aria-hidden="true"></i>
                 </a>
                 <i class="fa fa-exclamation-triangle"
@@ -33,27 +34,27 @@ import { Subscription } from 'rxjs/Subscription'
                     disabled></i>
                 <i class="fa fa-exchange"
                     *ngIf="currentStructure"
-                    [tooltip]="'imports.exports' | translate"
+                    [title]="'imports.exports' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)"></i>
                 <i class="fa fa-th"
                     *ngIf="currentStructure"
-                    [tooltip]="'services' | translate"
+                    [title]="'services' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)"></i>
                 <i class="fa fa-users"
                     *ngIf="currentStructure"
-                    [tooltip]="'groups' | translate"
+                    [title]="'groups' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/groups/manual'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)"></i>
                 <i class="fa fa-user" aria-hidden="true"
                     *ngIf="currentStructure"
-                    [tooltip]="'users' | translate"
+                    [title]="'users' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"></i>
                 <i class="fa fa-home" aria-hidden="true"
                     *ngIf="currentStructure"
-                    [tooltip]="'nav.structure' | translate"
+                    [title]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"></i>
             </div>
@@ -83,7 +84,7 @@ import { Subscription } from 'rxjs/Subscription'
                 <div class="welcome-message" *ngIf="router.url === '/admin'">
                     <s5l>message.new.console</s5l>
                     <a class="old-console" href="/directory/admin-console"
-                        [tooltip]="'switch.old.admin.console.tooltip' | translate">
+                        [title]="'switch.old.admin.console.tooltip' | translate">
                         <i class="fa fa-step-backward"></i>
                     </a>
                 </div>

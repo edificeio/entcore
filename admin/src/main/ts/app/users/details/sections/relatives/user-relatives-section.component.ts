@@ -39,7 +39,7 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
                             {{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}
                         </a>
                         <i  class="fa fa-times action" (click)="removeRelative(parent)"
-                            [tooltip]="'delete.this.relative' | translate"
+                            [title]="'delete.this.relative' | translate"
                             [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
                     </div>
                 </li>

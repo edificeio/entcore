@@ -21,8 +21,8 @@ import Flatpickr from 'flatpickr';
     template: `
         <div class="flatpickr" #datePickerElement>
             <input type="date" [(ngModel)]="value" [ngClass]="{ 'cursor-default': disabled }" placeholder="{{ placeholder }}" #inputRef>
-            <a *ngIf="!disabled" data-toggle [tooltip]="labels('datepicker.open')"><i class="fa fa-calendar open" aria-hidden="true"></i></a>
-            <a *ngIf="!disabled" data-clear [tooltip]="labels('datepicker.delete')"><i class="fa fa-times delete" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-toggle [title]="labels('datepicker.open')"><i class="fa fa-calendar open" aria-hidden="true"></i></a>
+            <a *ngIf="!disabled" data-clear [title]="labels('datepicker.delete')"><i class="fa fa-times delete" aria-hidden="true"></i></a>
         </div>
     `,
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ]
