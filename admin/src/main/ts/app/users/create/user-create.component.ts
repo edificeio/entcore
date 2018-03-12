@@ -89,7 +89,7 @@ import { SpinnerService, NotifyService, UserListService, UserChildrenListService
                                 </span>
                                 <i  class="fa fa-times action" 
                                     (click)="removeChild(child)"
-                                    [tooltip]="'create.user.deselect.child' | translate">
+                                    [title]="'create.user.deselect.child' | translate">
                                 </i>
                             </li>
                         </ul>

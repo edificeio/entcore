@@ -34,7 +34,7 @@ import { UserModel } from '../../../../core/store/models'
                             'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
                             'selected': userLS.sortsMap.alphabetical.selected
                         }"
-                        [tooltip]="'sort.alphabetical' | translate" position="top"
+                        [title]="'sort.alphabetical' | translate" position="top"
                         (click)="userLS.changeSorts('alphabetical')"></i>
 
                     <i class="fa" aria-hidden="true"
@@ -43,7 +43,7 @@ import { UserModel } from '../../../../core/store/models'
                             'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
                             'selected': userLS.sortsMap.profile.selected
                         }"
-                        [tooltip]="'sort.profile' | translate" position="top"
+                        [title]="'sort.profile' | translate" position="top"
                         (click)="userLS.changeSorts('profile')"></i>
 
                     <button class="select-all" (click)="selectAll()"

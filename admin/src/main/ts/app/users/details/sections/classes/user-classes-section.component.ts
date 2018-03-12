@@ -43,7 +43,7 @@ import { GlobalStore } from "../../../../core/store";
                     <span>{{ classe.name }}</span>
                     <i class="fa fa-times action"
                        (click)="removeClass(classe)"
-                       [tooltip]="'delete.this.class' | translate"
+                       [title]="'delete.this.class' | translate"
                        [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
                     </i>
                     <span class="headteacher-buttons"
