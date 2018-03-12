@@ -423,7 +423,7 @@ public class AppRegistryController extends BaseController {
 			bodyToJson(request, new Handler<JsonObject>() {
 				@Override
 				public void handle(JsonObject jo) {
-					eb.send(config.getString("address"), jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					eb.send(config.getString("address", "wse.app.registry"), jo, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> reply) {
 							renderJson(request, reply.body());
