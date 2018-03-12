@@ -90,7 +90,7 @@
     "notify.saved":  "Modifications enregistrées",
     "auth.notify.mail.sent": "Courriel envoyé.",
     "auth.notify.mobile.sent": "Texto envoyé.",
-    "auth.notify.no.match.login": "Utilisateur inconnu ou aucune adresse courrielle renseignée pour cet utilisateur. Veuillez contacter votre administrateur ENT.",
+    "auth.notify.no.match.login": "Utilisateur inconnu ou aucune adresse courriel renseignée pour cet utilisateur. Veuillez contacter votre administrateur ENT.",
     "auth.notify.no.match.mail": "Aucune correspondance trouvée. Veuillez contacter votre administrateur ENT.",
     "auth.notify.non.unique.result.mail": "Plusieurs correspondances. Veuillez contacter votre administrateur ENT.",
     "auth.notify.invalid.receivers.all.login": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
