@@ -351,6 +351,9 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableClasses : {},
         profiles : [],
         init(classesMapping:ClassesMapping) : void {
+            this.mappings = {};
+            this.availableClasses = {};
+            this.profiles = [];    
             for (let p of Object.keys(classesMapping)) {
                 if (p != 'dbClasses') {
                     this.profiles.push(p);
@@ -397,6 +400,26 @@ export class ImportCSV implements OnInit, OnDestroy {
         filter : User.filter,
         setFilter : User.setFilter,
         hasFilter : User.hasFilter,
+        init(data:{importId:string, softErrors:any}, profiles):void {
+            this.importId = data.importId
+            for (let p of profiles.asArray()) {
+                // merge profile's users 
+                if (data[p]) {
+                    this.users.push(...Array.from(data[p], u => new User(u)));
+                }
+                // merge profile's softErrors list
+                if (data.softErrors && data.softErrors[p]) {
+                    this.softErrors.list.push(...data.softErrors[p]);
+                    this.markUserErrors(data.softErrors[p], p);
+                }
+            }
+            // Set report total user
+            this.page.total = this.users.length;
+            if (data.softErrors) {
+                this.softErrors.reasons = data.softErrors.reasons;
+                this.setFilter('errors');
+            }
+        },
         hasErrors():boolean {
             return this.softErrors.reasons.length > 0;
         },
@@ -550,24 +573,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         } else if (!data.importId) {
             this.globalError.message = 'import.error.importIdNotFound'
         } else { 
-            this.report.importId = data.importId
-            for (let p of this.profiles.asArray()) {
-                // merge profile's users 
-                if (data[p]) {
-                    this.report.users.push(...Array.from(data[p], u => new User(u)));
-                }
-                // merge profile's softErrors list
-                if (data.softErrors && data.softErrors[p]) {
-                    this.report.softErrors.list.push(...data.softErrors[p]);
-                    this.report.markUserErrors(data.softErrors[p], p);
-                }
-            }
-            // Set report total user
-            this.report.page.total = this.report.users.length;
-            if (data.softErrors) {
-                this.report.softErrors.reasons = data.softErrors.reasons;
-                this.report.setFilter('errors');
-            }
+            this.report.init(data, this.profiles);
         }
         this.wizardEl.doNextStep();
         this.cdRef.markForCheck();
