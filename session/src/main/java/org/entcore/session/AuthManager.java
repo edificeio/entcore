@@ -79,11 +79,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
 			}
 			logger.info("Initialize session cluster maps.");
-			vertx.setPeriodic(30000l, event -> {
-				for (Map.Entry<String, String> e: sessions.entrySet()) {
-					logger.info(" - " + e.getKey() + " : " + e.getValue());
-				}
-			});
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
