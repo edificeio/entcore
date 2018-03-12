@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class UserUtils {
@@ -213,10 +214,10 @@ public class UserUtils {
 	public static void groupDisplayName(JsonObject group, String acceptLanguage) {
 		String name = group.getString("name");
 		int idx = name.lastIndexOf('-');
-		if (name == null || idx < 0) { return; }
+		if (idx < 0) { return; }
 		String arg = name.substring(0, idx);
 		String type = name.substring(idx + 1);
-		String displayName = group.getString("groupDisplayName", "group." + type);
+		String displayName = getOrElse(group.getString("groupDisplayName"), "group." + type);
 		String translatedName = i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
 		if(!translatedName.equals(displayName))
 			group.put("name", translatedName);
@@ -224,7 +225,7 @@ public class UserUtils {
 
 	public static String groupDisplayName(String name, String groupDisplayName, String acceptLanguage) {
 		int idx = name.lastIndexOf('-');
-		if (name == null || idx < 0) {
+		if (idx < 0) {
 			return name;
 		}
 		String arg = name.substring(0, idx);
