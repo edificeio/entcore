@@ -13,6 +13,7 @@ import { WizardComponent } from '../../shared/ux/components'
 import { Messages } from './messages.model'
 
 type GlobalError = { message:string, profile:{}, reset:Function }
+type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Guest?:{}, dbClasses:string[]}
 
 @Component({
     selector: 'import-csv',
@@ -339,31 +340,37 @@ export class ImportCSV implements OnInit, OnDestroy {
     };
  
     /*
-    * In @mappings you wiil find for each profile a mapping of profile's classes and stutend's classes.
-    * Notes that student's classes are always map to dbClasses. If you upload only one profileFile, 
-    * it will be directly map against dbClasses.
-    * Finaly we populate @availableClasses, for each profile, with Object.value(mappings[profile]) 
-    * to be compatible with  mapping-table.component input
+    * In @mappings you wiil find for each profile classe's mapping'.
+    * Notes that student's classes are always map to dbClasses. 
+    * - If you upload just 1 profile's file, it will be directly map against dbClasses.
+    * - If the uploaded profile's file don't have any "classes" field class mappind is ignore for it
+    * Finaly we populate @availableClasses, for each profile, by concat mappings[profile] and dbClasses
     */
     classes = {
         mappings: {},
         availableClasses : {},
         profiles : [],
-        initAvailableClasses(profile:string ,dbClasses:Array<string>) : void {
-            let availables = [''];
-            Object.values(this.mappings[profile]).forEach(el => {
-                if (el.trim().length > 0) {
-                    availables.push(el);
-                }
-            });
-            if (dbClasses != null) {
-                dbClasses.forEach(el => {
-                    if (availables.indexOf(el) == -1) {
-                        availables.push(el);
+        init(classesMapping:ClassesMapping) : void {
+            for (let p of Object.keys(classesMapping)) {
+                if (p != 'dbClasses') {
+                    this.profiles.push(p);
+                    this.mappings[p] = classesMapping[p];
+                    let availables = [''];
+                    Object.values(this.mappings[p]).forEach(el => {
+                        if (el.trim().length > 0) {
+                            availables.push(el);
+                        }
+                    });
+                    if (classesMapping.dbClasses != null) {
+                        classesMapping.dbClasses.forEach(el => {
+                            if (availables.indexOf(el) == -1) {
+                                availables.push(el);
+                            }
+                        });
                     }
-                });
+                    this.availableClasses[p] = availables;
+                }
             }
-            this.availableClasses[profile] = availables;
         },
         hasWarning(profile?:Profile) {
             if (profile) {
@@ -523,20 +530,11 @@ export class ImportCSV implements OnInit, OnDestroy {
             return;
         }
         this.globalError.reset();
-        let data = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
+        let data:{ classesMapping:ClassesMapping, errors:string } = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
         if (data.errors) {
             this.globalError.message = data.errors;
         } else {
-            this.classes.profiles = this.profiles.asArray();
-            for (let profile of this.classes.profiles) {
-                if (data.classesMapping[profile] == null) {
-                    // NOTE: another option is to ignore the mapping classes step
-                    this.classes.mappings[profile] = data.classesMapping['dbClasses'];
-                } else {
-                    this.classes.mappings[profile] = data.classesMapping[profile];
-                    this.classes.initAvailableClasses(profile, data.classesMapping['dbClasses']);
-                }
-            }
+            this.classes.init(data.classesMapping);
             this.wizardEl.doNextStep();
         }
         this.cdRef.markForCheck();
