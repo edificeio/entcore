@@ -78,12 +78,19 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				inactivity = cm.getSyncMap("inactivity");
 				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
 			}
+			logger.info("Initialize session cluster maps.");
+			vertx.setPeriodic(30000l, event -> {
+				for (Map.Entry<String, String> e: sessions.entrySet()) {
+					logger.info(" - " + e.getKey() + " : " + e.getValue());
+				}
+			});
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
 			if (getOrElse(config.getBoolean("inactivy"), false)) {
 				inactivity = new HashMap<>();
 			}
+			logger.info("Initialize session hash maps.");
 		}
 		final String address = getOptionalStringConfig("address", "wse.session");
 		Object timeout = config.getValue("session_timeout");
