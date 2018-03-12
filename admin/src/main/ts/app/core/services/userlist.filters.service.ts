@@ -160,6 +160,23 @@ class MailFilter extends UserFilter<string> {
     }
 }
 
+class AdmlFilter extends UserFilter<string> {
+    type = 'functions';
+    label = 'adml.multi.combo.title';
+    comboModel = ['users.adml', 'users.not.adml'];
+    order = '+'
+    filterProp = 'this'
+
+    filter = (functions: [string, Array<string>]) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 
+            || outputModel.indexOf('users.adml') >= 0 
+                && functions.findIndex((f) => f[0] == "ADMIN_LOCAL") >= 0
+            || outputModel.indexOf('users.not.adml') >= 0
+                && functions.findIndex((f) => f[0] == "ADMIN_LOCAL") == -1;
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -176,6 +193,7 @@ export class UserlistFiltersService {
     private sourcesFilter = new SourcesFilter(this.updateSubject)
     private duplicatesFilter = new DuplicatesFilter(this.updateSubject)
     private mailFilter = new MailFilter(this.updateSubject);
+    private admlFilter = new AdmlFilter(this.updateSubject);
 
     filters : UserFilterList<any> = [
         this.profileFilter,
@@ -186,7 +204,8 @@ export class UserlistFiltersService {
         this.functionsFilter,
         this.sourcesFilter,
         this.duplicatesFilter,
-        this.mailFilter
+        this.mailFilter,
+        this.admlFilter
     ]
 
     resetFilters(){
@@ -225,6 +244,10 @@ export class UserlistFiltersService {
 
     setMailsComboModel(combos: string[]) {
         this.mailFilter.comboModel = combos;
+    }
+
+    setAdmlComboModel(combos: string[]) {
+        this.admlFilter.comboModel = combos;
     }
 
     getFormattedFilters() : Object {
