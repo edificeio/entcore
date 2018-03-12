@@ -12,6 +12,7 @@ import { WizardComponent } from '../../shared/ux/components'
 
 import { Messages } from './messages.model'
 
+type GlobalError = { message:string, profile:{}, reset:Function }
 
 @Component({
     selector: 'import-csv',
@@ -226,7 +227,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         profile:{},
         reset(){
             this.message = undefined;
-            this.profile={};
+            this.profile = {};
         }
     };
 
@@ -303,17 +304,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableFields : {},
         mappings : {},
         profiles : [],
-        hasErrors(){
-            for (let p of this.profiles) {
-                for (let requiered of this.requieredFields[p]) {
-                    if (!Object.values(this.mappings[p]).includes(requiered)) { 
-                        return true; 
-                    }
-                }
-            }
-            return false;
-        },
-        errors(){
+        checkErrors(globalError:GlobalError, translate:Function){
             let res = {};
             for (let p of this.profiles) {
                 for (let requiered of this.requieredFields[p]) {
@@ -322,8 +313,15 @@ export class ImportCSV implements OnInit, OnDestroy {
                         res[p].push(requiered);
                     }
                 }
+                if (res[p]) {
+                    globalError.profile[p] = 
+                        res[p].map(field => { return translate(field); }, this);
+                }
             } 
-            return res;
+            if (Object.entries(res).length > 0) {
+                globalError.message = 'import.error.requieredFieldNotFound.global';
+            }
+            return Object.entries(res).length > 0;
         },
         hasWarning(profile?:Profile) { 
             if (profile) {
@@ -513,16 +511,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.columns.mappings = data.mappings;
             this.columns.availableFields = data.availableFields;
             this.columns.profiles = this.profiles.asArray();
-            if (this.columns.hasErrors()) {
-                let errors = this.columns.errors();
-                this.globalError.message = 'import.error.requieredFieldNotFound.global';
-                for(let p of this.columns.profiles) {
-                    if (errors[p]) {
-                        this.globalError.profile[p] = 
-                            errors[p].map(field => { return this.translate(field); }, this);
-                    }
-                }
-            }
+            this.columns.checkErrors(this.globalError, this.translate)
             this.wizardEl.doNextStep();
         }
         this.cdRef.markForCheck();
@@ -530,6 +519,9 @@ export class ImportCSV implements OnInit, OnDestroy {
     }
 
     private async getClassesMapping() {
+        if (this.columns.checkErrors(this.globalError, this.translate)) {
+            return;
+        }
         this.globalError.reset();
         let data = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
         if (data.errors) {
