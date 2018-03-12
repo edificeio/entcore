@@ -45,6 +45,7 @@
     // "matieres.multi.combo.title": "Matières (enseignants)", // FIXME when user model updated
     "functionalGroups.multi.combo.title": "Groupes d'enseignement",
     "manualGroups.multi.combo.title": "Groupes manuels",
+    "adml.multi.combo.title": "Administrateurs locaux",
     "ignore.activation": "Pas de filtre sur l'activation",
     "users.activated": "Utilisateurs activés",
     "users.not.activated": "Utilisateurs non activés",
@@ -65,6 +66,8 @@
     "duplicates.multi.combo.title": "Doublons",
     "users.duplicated": "Utilisateurs doublons",
     "users.not.duplicated": "Utilisateurs uniques",
+    "users.adml": "Administrateurs locaux",
+    "users.not.adml": "Non administrateurs locaux",
     
     "user.inactive": "Inactif",
     "user.icons.tooltip.blocked": "Compte bloqué",
