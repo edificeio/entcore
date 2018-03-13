@@ -137,10 +137,10 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                 </a>
             </div>
             <message-box *ngIf="!!report.filter().reasons" [type]="report.errorType[report.filter().reasons]" 
-            [messages]="[[report.filter().reasons + '.message', {errorNumber:report.countByReason(report.filter().reasons)}]]">
+                [messages]="report.errorReasonMessage(report.filter().reasons)">
             </message-box>
             <div class="pager has-text-right">
-                <a (click)="report.setFilter('none')">{{'view.all' | translate}}</a>
+                <a (click)="report.setFilter('none')">{{'pager.displayAll' | translate}}</a>
                 <pager 
                     [(offset)]="report.page.offset"
                     [limit]="report.page.limit"
@@ -437,6 +437,18 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         hasErrorType (r:string, type:'warning' | 'danger') {
             return this.errorType[r] == type && this.countByReason(r) > 0;
+        },
+        errorReasonMessage(r:string):(string | [string,Object])[] {
+            let res:(string | [string,Object])[] = [];
+            // Main message
+            res.push([r + '.message', { errorNumber:this.countByReason(r)}])
+            // Add server-side translations just for warning 
+            // because some informations can't be gracefully display in report'table
+            if (this.errorType[r] == 'warning') {
+                res.push(...this.softErrors.list
+                    .filter(el => el.reason == r).map(el =>  el.translation));
+            }
+            return res;
         },
         countByReason(r:string):number {
             return this.softErrors.list.reduce((count, item) => {
