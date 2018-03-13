@@ -117,7 +117,7 @@ public class Report {
 	}
 
 	public void addSoftErrorByFile(String file, String key, String lineNumber, String... errors) {
-		JsonObject softErrors = result.getJsonObject("softErrors");
+    JsonObject softErrors = result.getJsonObject("softErrors");
 		if (softErrors == null) {
 			softErrors = new JsonObject();
 			result.put("softErrors", softErrors);

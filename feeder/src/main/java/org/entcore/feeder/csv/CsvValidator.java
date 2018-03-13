@@ -762,6 +762,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										}
 									}
 								}
+								if (classesNames.size() == 0) {
+									// "NO_ATTR" is used because we can't map this soft error to any attribute
+									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1), "NO_ATTR",
+											user.getString("firstName"), user.getString("lastName"));
+								}
 								break;
 						}
 						JsonArray errorsContext = new JsonArray(); // Must follow that shape : [{"reason":"error.key", "attribute":"lastName", "value":""}...]
