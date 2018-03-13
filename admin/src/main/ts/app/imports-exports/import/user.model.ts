@@ -49,7 +49,7 @@ export class User {
         return false;
     };
 
-    private static _filter: any ; // {reasons: string} | {state: string} | Function;
+    private static _filter:any = {} ; // {reasons: string} | {state: string} | Function;
     static filter() { return User._filter }
 
     static setFilter(type:FilterUser , value?:string):void {

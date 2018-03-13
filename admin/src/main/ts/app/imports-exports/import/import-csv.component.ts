@@ -19,7 +19,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
     selector: 'import-csv',
     template : `
         <lightbox [show]="confirmCancel" (onClose)="confirmCancel = false">
-            <div class="container">
+            <div>
                 <h2>{{'import.cancel.header' | translate}}</h2>
                 <article class="message is-warning">
                     {{'import.cancel.message' | translate}}
@@ -122,19 +122,24 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2>{{ 'import.report' | translate }}</h2>
-            <div *ngIf="report.hasErrors()" class="container report-filter">
+            <message-box *ngIf="!report.hasErrors()" [type]="'success'" [messages]="['import.report.success']"></message-box>
+            <message-box *ngIf="report.hasErrors()" [type]="'warning'" [messages]="['import.report.warning.hasErrors']"></message-box>
+            <div *ngIf="report.hasErrors()" class="report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
                     class="button"
-                    [ngClass]="{'is-danger':report.countByReason(r) > 0, 
+                    [ngClass]="{'is-danger':report.hasErrorType(r,'danger'),
+                                'is-warning':report.hasErrorType(r,'warning'),
                                 'is-success':report.countByReason(r) == 0,
                                 'is-outlined':!report.hasFilter('reasons',r)}"
                     (click)="report.setFilter('reasons',r); report.page.offset=0"
                 >
-                {{ [r, report.countByReason(r)] | translate }}
-                    &nbsp;
+                {{ r | translate }}
                 </a>
             </div>
-            <div class="container has-text-right">
+            <message-box *ngIf="!!report.filter().reasons" [type]="report.errorType[report.filter().reasons]" 
+            [messages]="[[report.filter().reasons + '.message', {errorNumber:report.countByReason(report.filter().reasons)}]]">
+            </message-box>
+            <div class="pager has-text-right">
                 <a (click)="report.setFilter('none')">{{'view.all' | translate}}</a>
                 <pager 
                     [(offset)]="report.page.offset"
@@ -182,7 +187,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                         </td>
                         <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
                         <td>{{user.profiles.join(',')}}</td>
-                        <td><span ellipsis>{{user.externalId}}</span></td>
+                        <td><span ellipsis="expand">{{user.externalId}}</span></td>
                         <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
                         <td>{{user.state}}</td>
                     </tr>
@@ -196,6 +201,8 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
     </wizard>
     `,
     styles : [`
+        div.pager { padding: 1em 0 }
+        div.pager a:hover { cursor: pointer; }
         .report-filter .button { margin-right: .5rem; }
         table.report { display: block; max-height : 500px; overflow: scroll; }
         table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
@@ -394,7 +401,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         users : [],
         softErrors : {
             reasons : [],
-            list : []
+            list :  []
         },
         page : {offset: 0, limit: 30, total: 0},
         filter : User.filter,
@@ -422,6 +429,14 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         hasErrors():boolean {
             return this.softErrors.reasons.length > 0;
+        },
+        errorType : {
+            'missing.student.soft' : 'warning',
+            'missing.attribute' : 'danger',
+            'invalid.value' : 'danger'
+        },
+        hasErrorType (r:string, type:'warning' | 'danger') {
+            return this.errorType[r] == type && this.countByReason(r) > 0;
         },
         countByReason(r:string):number {
             return this.softErrors.list.reduce((count, item) => {

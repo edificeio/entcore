@@ -320,9 +320,12 @@
     "import.parameters": "Paramètre de l'import",
     "import.step1.deleteAccountOption": "Pré-supprimer les comptes des utilisateurs absents des fichiers",
     "import.step1.transitionOption": "Changement d'année scolaire",
+    "import.report.success":"Vos fichiers sont valides, vous pouvez valider votre import !",
     "line" : "Ligne",
     "classes" : "Classe(s)",
     "operation" : "Opération",
+    "import.report.warning.hasErrors" : "Vos fichiers contienent une ou plusieurs lignes avec des erreurs. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
+    // import : step 5 : Finish
     "import.finish":"Import terminé",
     "import.cancel.header" : "Annuler l'import ?",
     "import.cancel.message":"Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données imports et modifiées dans l'assistant d'import seront perdues. Êtes vous sûr de vouloir annuler l'import ?",
@@ -331,7 +334,10 @@
 
     "import.file.warning" : "Ce fichier contient des avertissements qui ne bloque pas le chargement du fichier",
     "import.global.warning" : "Les avertissements sont affichées en orange avec ce symboles : <i class=\"fa fa-exclamation-circle is-warning\"></i> Vous pouvez passer à l'étape suivante.",
-
+    "import.warning.":"",
+    "missing.student.soft" : "Élève inconnu",
+    "missing.student.soft.message" : "Votre fichier contient <strong>{{errorNumber}}  parent(s) avec des élèves non reconnus</strong>. Si vous poursuivez l'import, le compte parent sera créé mais sans lien avec le compte élève.",
+    // import : errors
     "import.error.importIdNotFound":"La référence de l'import est inconnue",
     "import.error.noColumnsMappingFound":"Les données d'association de champs de colonnes sont indisponible. Vérifier que vos fichiers possèdes bien une ligne d'entête",
     "missing.csv.files": "Il manque un(des) fichier(s) pour les profils sélectionnés",
@@ -339,9 +345,11 @@
     "import.error.malformedFiles": "Les erreurs affichées en rouge bloquent l'import des fichiers : <strong>Vous devez renouveler le chargement des fichiers</strong>",
     "import.error.requieredFieldNotFound.global":"Nous n'avons pas trouver un ou plusieurs champs obligatoires dans ce fichier. <strong>Vous devez procéder à une association manuelle</strong>",
     "import.error.requieredFieldNotFound":"Champ(s) obligatoire(s) manquant(s) : <strong>{{fields}}</strong>.",
-
-    "import.warning.":"",
-
+    "missing.attribute": "Attribut manquant",
+    "missing.attribute.message": "<strong>{{errorNumber}} ligne(s) contiennent un ou plusieurs champs obligatoire et non renseigné</strong>",
+    "invalid.value" : "Valeur invalide",
+    "invalid.value.message" : "<strong>{{errorNumber}} ligne(s) contiennent un ou plusieurs champs renseigné avec une valeur invalide (ex : mauvaise format de date de naisssance)</strong>",
+    //import : info
     "import.info.file.0": "Notice d'utilisation de l'import de fichier CSV",
     "import.info.file.1":"Si vous souhaitez importer des utilisateurs à partir de fichiers csv constitués à la main ou issus d’un logiciel, vous devez suivre les consignes suivantes :",
     "import.info.file.2":"- Un fichier doit être constitué pour chaque profil d’utilisateurs (enseignants, élèves, parents, personnels).",
