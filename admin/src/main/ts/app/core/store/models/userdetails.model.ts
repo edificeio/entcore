@@ -120,7 +120,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     }
 
     updateLoginAlias() {
-        return this.http.put(`/directory/user/${this.id}/loginAlias`, {loginAlias: this.loginAlias});
+        return this.http.put(`/directory/user/${this.id}`, {loginAlias: this.loginAlias});
     }
 
     toJSON() {
@@ -134,8 +134,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             zipCode:        this.zipCode,
             email:          this.email,
             homePhone:      this.homePhone,
-            mobile:         this.mobile,
-            loginAlias:     this.loginAlias
+            mobile:         this.mobile
         }
     }
 }

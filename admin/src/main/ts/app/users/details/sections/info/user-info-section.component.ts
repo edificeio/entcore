@@ -316,11 +316,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     }
     
     updateLoginAlias() {
-        let payloadUserDetails = new UserDetailsModel();
-        payloadUserDetails.id = this.details.id;
-        payloadUserDetails.loginAlias = this.details.loginAlias;
-
-        this.spinner.perform('portal-content', payloadUserDetails.update()
+        this.spinner.perform('portal-content', this.details.updateLoginAlias()
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.updateLoginAlias.content',
