@@ -160,9 +160,19 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                         <th>{{ 'classes' | translate }}</th>
                         <th>{{ 'operation' | translate }}</th>
                     </tr>
+                    <tr>
+                        <th></th>
+                        <th>
+                        <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
+                        </th>
+                        <th>
+                        <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
+                        </th>
+                        <th colspan="5"></th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | slice: report.page.offset:report.page.offset + report.page.limit">
+                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit">
                         <td>{{user.line}}</td>
                         <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
                             <span  contenteditable="true" 
@@ -405,6 +415,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         page : {offset: 0, limit: 30, total: 0},
         filter : User.filter,
+        columnFilter : { lastName: '', firstName: '' },
         setFilter : User.setFilter,
         hasFilter : User.hasFilter,
         init(data:{importId:string, softErrors:any}, profiles):void {
