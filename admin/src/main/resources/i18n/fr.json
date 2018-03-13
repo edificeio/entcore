@@ -325,6 +325,8 @@
     "classes" : "Classe(s)",
     "operation" : "Opération",
     "import.report.warning.hasErrors" : "Vos fichiers contienent une ou plusieurs lignes avec des erreurs. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
+    "import.report.warning.hasToDelete" : "Attention, certains utilisateurs vont être supprimé.",
+    "import.report.displayUsersToDelete" : "Afficher les utilisateurs à supprimer",
     // import : step 5 : Finish
     "import.finish":"Import terminé",
     "import.cancel.header" : "Annuler l'import ?",

@@ -122,7 +122,12 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         </step>
         <step #step4 name="{{ 'import.report' | translate }}" [class.active]="step4.isActived">
             <h2>{{ 'import.report' | translate }}</h2>
-            <message-box *ngIf="!report.hasErrors()" [type]="'success'" [messages]="['import.report.success']"></message-box>
+            <message-box *ngIf="!report.hasErrors() && !report.hasToDelete()" [type]="'success'" [messages]="['import.report.success']"></message-box>
+            <message-box *ngIf="report.hasToDelete()" [type]="'warning'" [messages]="['import.report.warning.hasToDelete']">
+                <strong><a (click)="report.setFilter('state','Supprimé'); report.page.offset=0">
+                    {{'import.report.displayUsersToDelete' | translate}}
+                </a></strong>
+            </message-box>
             <message-box *ngIf="report.hasErrors()" [type]="'warning'" [messages]="['import.report.warning.hasErrors']"></message-box>
             <div *ngIf="report.hasErrors()" class="report-filter">
                 <a *ngFor="let r of report.softErrors.reasons" 
@@ -172,7 +177,9 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit">
+                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit"
+                    [ngClass]="{'state-delete':user.state == 'Supprimé'}"
+                >
                         <td>{{user.line}}</td>
                         <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
                             <span  contenteditable="true" 
@@ -196,7 +203,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                             </span>
                         </td>
                         <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
-                        <td>{{user.profiles.join(',')}}</td>
+                        <td>{{user.profiles?.join(',')}}</td>
                         <td><span ellipsis="expand">{{user.externalId}}</span></td>
                         <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
                         <td>{{user.state}}</td>
@@ -212,9 +219,10 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
     `,
     styles : [`
         div.pager { padding: 1em 0 }
-        div.pager a:hover { cursor: pointer; }
+        a:hover { cursor: pointer; }
         .report-filter .button { margin-right: .5rem; }
         table.report { display: block; max-height : 500px; overflow: scroll; }
+        table.report tr.state-delete { background: #fdd; }
         table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
         table.report td.is-danger { border: 2px dashed red; }
         table.report td.is-success { border: 2px dashed green; }
@@ -437,6 +445,9 @@ export class ImportCSV implements OnInit, OnDestroy {
                 this.softErrors.reasons = data.softErrors.reasons;
                 this.setFilter('errors');
             }
+        },
+        hasToDelete() {
+            return this.users.filter(el => el.state == "Supprimé").length > 0;
         },
         hasErrors():boolean {
             return this.softErrors.reasons.length > 0;
