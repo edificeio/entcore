@@ -4,6 +4,9 @@ import { NgModel } from '@angular/forms'
 import { AbstractSection } from '../abstract.section'
 import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../../core/services'
 
+import { UserInfoService } from './user-info.service'
+import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'user-info-section',
     template: `
@@ -100,7 +103,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                 </div>
             </div>
         </form-field>
-                <form-field label="massmail">
+        <form-field label="massmail">
             <div>
                 <button class="mobile"
                     (click)="sendIndividualMassMail('pdf')">
@@ -108,7 +111,7 @@ import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../.
                     <i class="fa fa-file-pdf-o"></i>
                 </button>
                 <button class="mobile"
-                    (click)="sendIndividualMassMail('mail')">
+                    (click)="sendIndividualMassMail('mail')" [disabled]="!details.email">
                     <span><s5l>individual.massmail.mail</s5l></span>
                     <i class="fa fa-envelope"></i>
                 </button>
@@ -126,24 +129,32 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     downloadAnchor = null;
     downloadObjectUrl = null;
 
+    userInfoSubscriber: Subscription;
+
     @Input() structure;
     @Input() user;
 
     constructor(
         private ns: NotifyService,
-        private spinner: SpinnerService,
-        private cdRef: ChangeDetectorRef
-    ) {
-        super()
+        public spinner: SpinnerService,
+        private cdRef: ChangeDetectorRef,
+        private userInfoService: UserInfoService) {
+        super();
     }
 
     ngOnInit() {
-        this.passwordResetMail = this.details.email
-        this.passwordResetMobile = this.details.mobile
+        this.passwordResetMail = this.details.email;
+        this.passwordResetMobile = this.details.mobile;
         PlateformeInfoService.isSmsModule().then(res => {
             this.smsModule = res
             this.cdRef.markForCheck()
-        })
+        });
+
+        this.userInfoSubscriber = this.userInfoService.getState().subscribe(
+            userInfoState => {
+                this.cdRef.markForCheck();
+            }
+        );
     }
 
     protected onUserChange(){

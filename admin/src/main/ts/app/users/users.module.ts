@@ -25,6 +25,7 @@ import {
     UserManualGroupsSection, 
     UserFunctionalGroupsSection } from './details/sections'
 import { UserlistFiltersService } from '../core/services'
+import { UserInfoService } from './details/sections/info/user-info.service'
 
 @NgModule({
     imports: [
@@ -53,7 +54,8 @@ import { UserlistFiltersService } from '../core/services'
     providers: [
         UserDetailsResolver,
         UsersResolver,
-        UserlistFiltersService
+        UserlistFiltersService,
+        UserInfoService
     ],
     exports: [
         RouterModule
