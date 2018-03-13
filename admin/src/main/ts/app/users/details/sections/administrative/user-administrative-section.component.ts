@@ -137,7 +137,7 @@ export class UserAdministrativeSection extends AbstractSection {
         this.user.structures.forEach(us => {
             if (us.id !== this.usersStore.structure.id) {
                 let s = globalStore.structures.data.find(gs => gs.id === us.id)
-                if (s.users && s.users.data && s.users.data.length > 0) {
+                if (s && s.users && s.users.data && s.users.data.length > 0) {
                     let u = s.users.data.find(u => u.id === this.user.id)
                     if (u) {
                         u.firstName = this.user.firstName
