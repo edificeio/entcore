@@ -46,12 +46,13 @@
 
 			<div class="schedule-items">
 				<div ng-repeat="item in day.scheduleItems.all">
-					<schedule-item item="scheduleItem" day="day"
+					<schedule-item ng-if="calendar.name" item="scheduleItem" day="day"
 						tooltip
 						tooltip-template="{{ itemTooltipTemplate }}"
 						tooltip-target-selector=".schedule-item"
 						tooltip-restrict-selector=".days"
 					></schedule-item>
+					<schedule-item ng-if="!calendar.name" item="scheduleItem" day="day"></schedule-item>
 				</div>
 			</div>
 			<div class="hidden-schedule-items after" ng-if="day.scheduleItems.afterCalendar() > 0">

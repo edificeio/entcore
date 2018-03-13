@@ -1690,7 +1690,7 @@ calendar.Calendar.prototype.addScheduleItems = function(items) {
 	var schedule = this;
 	items
 		.filter(function(item) {
-			return moment(item.end).isSame(schedule.firstDay, schedule.increment);
+      return moment(item.end._d).isSame(schedule.firstDay._d, schedule.increment);
 		})
 		.forEach(function(item) {
 			var startDay = moment(item.beginning);

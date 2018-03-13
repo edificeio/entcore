@@ -824,6 +824,11 @@ module.directive('calendar', function($compile) {
                 model.calendar.setIncrement($scope.display.mode);
                 refreshCalendar();
             });
+            $scope.$watch('model.calendar.firstDay', function() {
+                if(!model.calendar.name) {
+                    refreshCalendar();
+                }
+            });
         },
         link: function(scope, element, attributes) {
             var allowCreate;
@@ -907,11 +912,11 @@ module.directive('scheduleItem', function($compile) {
                 // compute element positon added to heiht of 7 hours ao avoid negative value side effect
                 var topPos = scheduleItemEl.position().top + (calendar.dayHeight * calendar.startOfDay);
                 var startTime = moment().utc();
-                startTime.hour(Math.floor(topPos / calendar.dayHeight));
+                startTime.hour(Math.floor(topPos / calendar.dayHeight) - 1);
                 startTime.minute((topPos % calendar.dayHeight) * 60 / calendar.dayHeight);
 
                 var endTime = moment().utc();
-                endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight));
+                endTime.hour(Math.floor((topPos + scheduleItemEl.height()) / calendar.dayHeight) - 1);
                 endTime.minute(((topPos + scheduleItemEl.height()) % calendar.dayHeight) * 60 / calendar.dayHeight);
 
                 startTime.year(model.calendar.firstDay.year());
