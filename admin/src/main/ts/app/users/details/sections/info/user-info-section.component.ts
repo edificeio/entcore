@@ -5,6 +5,9 @@ import { AbstractSection } from '../abstract.section'
 import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../../core/services'
 import { UserDetailsModel } from '../../../../core/store';
 
+import { UserInfoService } from './user-info.service'
+import { Subscription } from 'rxjs';
+
 @Component({
     selector: 'user-info-section',
     template: `
@@ -14,6 +17,7 @@ import { UserDetailsModel } from '../../../../core/store';
                 <form-field label="profile">
                     <span>{{ user.type | translate }}</span>
                 </form-field>
+
                 <form-field label="login">
                     <span>{{ details.login }}</span>
                 </form-field>
@@ -39,15 +43,19 @@ import { UserDetailsModel } from '../../../../core/store';
                 <form-field label="activation.code" *ngIf="details.activationCode">
                     <span>{{ details.activationCode }}</span>
                 </form-field>
+
                 <form-field label="id">
                     <span>{{ user.id }}</span>
                 </form-field>
+
                 <form-field label="externalId">
                     <span>{{ details.externalId }}</span>
                 </form-field>
+
                 <form-field label="source">
                     <span>{{ details.source | translate }}</span>
                 </form-field>
+
                 <form-field label="mergeKey">
                     <div>
                         <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
@@ -60,6 +68,7 @@ import { UserDetailsModel } from '../../../../core/store';
                         </button>
                     </div>
                 </form-field>
+
                 <form-field label="functions" *ngIf="!user.deleteDate">
                     <div>
                         <div *ngIf="!details.isAdmc()">
@@ -97,6 +106,7 @@ import { UserDetailsModel } from '../../../../core/store';
                         </div>
                     </div>
                 </form-field>
+
                 <form-field label="send.reset.password" *ngIf="!details.activationCode">
                     <div>
                         <div class="sendPassword">
@@ -123,15 +133,14 @@ import { UserDetailsModel } from '../../../../core/store';
                         </div>
                     </div>
                 </form-field>
-                        <form-field label="massmail">
+
+                <form-field label="massmail">
                     <div>
-                        <button class="mobile"
-                            (click)="sendIndividualMassMail('pdf')">
+                        <button (click)="sendIndividualMassMail('pdf')">
                             <span><s5l>individual.massmail.pdf</s5l></span>
                             <i class="fa fa-file-pdf-o"></i>
                         </button>
-                        <button class="mobile"
-                            (click)="sendIndividualMassMail('mail')">
+                        <button (click)="sendIndividualMassMail('mail')" [disabled]="!details.email">
                             <span><s5l>individual.massmail.mail</s5l></span>
                             <i class="fa fa-envelope"></i>
                         </button>
@@ -153,6 +162,8 @@ export class UserInfoSection extends AbstractSection implements OnInit {
 
     loginAliasPattern = /^[0-9a-z\-\.]+$/;
 
+    userInfoSubscriber: Subscription;
+
     @Input() structure;
     @Input() user;
 
@@ -162,18 +173,24 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     constructor(
         private ns: NotifyService,
         public spinner: SpinnerService,
-        private cdRef: ChangeDetectorRef
-    ) {
-        super()
+        private cdRef: ChangeDetectorRef,
+        private userInfoService: UserInfoService) {
+        super();
     }
 
     ngOnInit() {
-        this.passwordResetMail = this.details.email
-        this.passwordResetMobile = this.details.mobile
+        this.passwordResetMail = this.details.email;
+        this.passwordResetMobile = this.details.mobile;
         PlateformeInfoService.isSmsModule().then(res => {
             this.smsModule = res
             this.cdRef.markForCheck()
-        })
+        });
+
+        this.userInfoSubscriber = this.userInfoService.getState().subscribe(
+            userInfoState => {
+                this.cdRef.markForCheck();
+            }
+        );
     }
 
     protected onUserChange(){

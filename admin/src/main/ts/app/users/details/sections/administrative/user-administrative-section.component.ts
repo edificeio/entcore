@@ -2,7 +2,10 @@ import { Component, Input, ViewChild } from '@angular/core'
 import { NgForm, AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
+
 import { SpinnerService, NotifyService, UserListService } from '../../../../core/services'
+import { UserInfoService } from '../info/user-info.service';
+
 import { globalStore } from '../../../../core/store'
 import { UsersStore } from '../../../users.store'
 
@@ -84,7 +87,8 @@ export class UserAdministrativeSection extends AbstractSection {
         private usersStore: UsersStore,
         private ns: NotifyService,
         public spinner: SpinnerService,
-        private userListService: UserListService) {
+        private userListService: UserListService,
+        private userInfoService: UserInfoService) {
         super()
     }
 
@@ -115,6 +119,8 @@ export class UserAdministrativeSection extends AbstractSection {
                             user: this.details.firstName + ' ' + this.user.lastName 
                         } 
                     }, 'notify.user.update.title')
+
+                this.userInfoService.setState(this.details);
             })
             .catch(err => {
                 this.ns.error(
