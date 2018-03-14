@@ -30,7 +30,7 @@ export class ImportsExportsRoot implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        { label: "import.users", view: "importCSV", disabled: true},
+        { label: "import.users", view: "import-csv"},
         { label: "export.accounts", view: "export" },
         { label: "massmail.accounts", view: "massmail" } // Meld MassMail into export ?
     ]
