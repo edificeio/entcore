@@ -155,7 +155,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		if (!userImportedPronoteId.isEmpty()) {
 			final String query = "MATCH (u:User) where u.IDPN IN {pronoteIds} RETURN COLLECT(u.externalId) as externalIds";
 			TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("pronoteIds",
-					new JsonArray(new ArrayList<>(userImportedPronoteId))), new Handler<Message<JsonObject>>() {
+					new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userImportedPronoteId))), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					JsonArray res = event.body().getJsonArray("result");
@@ -231,7 +231,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					if (j != null) {
 						JsonArray groups = j.getJsonArray("groups");
 						if (groups == null) {
-							groups = new JsonArray();
+							groups = new fr.wseduc.webutils.collections.JsonArray();
 							j.put("groups", groups);
 						}
 						groups.add(id);
@@ -296,7 +296,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 		log.debug(currentEntity);
 		try {
 			JsonObject p = persEducNat.applyMapping(currentEntity);
-			p.put("profiles", new JsonArray().add(profile));
+			p.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
 			p.put("externalId", idPronote);
 			p.put(IDPN, idPronote);
 			if (isNotEmpty(p.getString("lastName")) && isNotEmpty(p.getString("firstName"))) {
@@ -502,7 +502,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Professeur":
 						JsonArray teachersArray = c.getJsonArray("teacherIds");
 						if (teachersArray == null) {
-							teachersArray = new JsonArray();
+							teachersArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("teacherIds", teachersArray);
 						}
 						final String tId = teachers.get(ident);
@@ -513,7 +513,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Classe":
 						JsonArray classesArray = c.getJsonArray("classes");
 						if (classesArray == null) {
-							classesArray = new JsonArray();
+							classesArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("classes", classesArray);
 						}
 						JsonObject ci = classes.get(ident);
@@ -524,7 +524,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Groupe":
 						JsonArray groupsArray = c.getJsonArray("groups");
 						if (groupsArray == null) {
-							groupsArray = new JsonArray();
+							groupsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("groups", groupsArray);
 						}
 						JsonObject g = groups.get(ident);
@@ -535,7 +535,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Materiel":
 						JsonArray equipmentsArray = c.getJsonArray("equipmentLabels");
 						if (equipmentsArray == null) {
-							equipmentsArray = new JsonArray();
+							equipmentsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("equipmentLabels", equipmentsArray);
 						}
 						final String eId = equipments.get(ident);
@@ -547,7 +547,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Salle":
 						JsonArray roomsArray = c.getJsonArray("roomLabels");
 						if (roomsArray == null) {
-							roomsArray = new JsonArray();
+							roomsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("roomLabels", roomsArray);
 						}
 						final String rId = rooms.get(ident);
@@ -558,7 +558,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 					case "Personnel":
 						JsonArray personnelsArray = c.getJsonArray("personnelIds");
 						if (personnelsArray == null) {
-							personnelsArray = new JsonArray();
+							personnelsArray = new fr.wseduc.webutils.collections.JsonArray();
 							c.put("personnelIds", personnelsArray);
 						}
 						final String pId = personnels.get(ident);

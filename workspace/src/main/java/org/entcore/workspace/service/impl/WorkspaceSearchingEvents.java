@@ -153,7 +153,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                 }
             }));
         } else {
-            handler.handle(new Either.Right<String, JsonArray>(new JsonArray()));
+            handler.handle(new Either.Right<String, JsonArray>(new fr.wseduc.webutils.collections.JsonArray()));
         }
     }
 
@@ -200,7 +200,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
     private JsonArray formatSearchResult(final JsonArray results, final JsonArray columnsHeader, final List<String> words,
                                          final String locale, final String userId, final Map<String, Map<String, String>> mapOwnerMapNameFolderId) {
         final List<String> aHeader = columnsHeader.getList();
-        final JsonArray traity = new JsonArray();
+        final JsonArray traity = new fr.wseduc.webutils.collections.JsonArray();
 
         for (int i=0;i<results.size();i++) {
             final JsonObject j = results.getJsonObject(i);
@@ -216,7 +216,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
                     log.error("Can't parse date from modified", e);
                 }
                 final String owner = j.getString("owner", "");
-                final Map<String, Object> map = formatDescription(j.getJsonArray("comments", new JsonArray()),
+                final Map<String, Object> map = formatDescription(j.getJsonArray("comments", new fr.wseduc.webutils.collections.JsonArray()),
                         words, modified, locale);
                 jr.put(aHeader.get(0), j.getString("name"));
                 jr.put(aHeader.get(1), map.get("description").toString());

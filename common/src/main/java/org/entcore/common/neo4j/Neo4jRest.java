@@ -135,7 +135,7 @@ public class Neo4jRest implements GraphDatabase {
 
 	@Override
 	public void executeBatch(JsonArray queries, final Handler<JsonObject> handler) {
-		JsonArray body = new JsonArray();
+		JsonArray body = new fr.wseduc.webutils.collections.JsonArray();
 		int i = 0;
 		for (Object q : queries) {
 			JsonObject query = new JsonObject()
@@ -156,8 +156,8 @@ public class Neo4jRest implements GraphDatabase {
 						public void handle(Buffer b) {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
-								JsonArray json = new JsonArray(b.toString("UTF-8"));
-								JsonArray out = new JsonArray();
+								JsonArray json = new fr.wseduc.webutils.collections.JsonArray(b.toString("UTF-8"));
+								JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
 								for (Object j : json) {
 									JsonObject qr = (JsonObject) j;
 									out.add(new JsonObject().put("result",
@@ -205,9 +205,9 @@ public class Neo4jRest implements GraphDatabase {
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
 								JsonArray results = json.getJsonArray("results");
-								if (json.getJsonArray("errors", new JsonArray()).size() == 0 &&
+								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).size() == 0 &&
 										results != null) {
-									JsonArray out = new JsonArray();
+									JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
 									for (Object o : results) {
 										if (!(o instanceof JsonObject)) continue;
 										out.add(transformJson((JsonObject) o));
@@ -241,7 +241,7 @@ public class Neo4jRest implements GraphDatabase {
 										}
 									}
 									handler.handle(new JsonObject().put("message",
-											json.getJsonArray("errors", new JsonArray()).encode()));
+											json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).encode()));
 								}
 							} else {
 								handler.handle(new JsonObject().put("message",
@@ -258,7 +258,7 @@ public class Neo4jRest implements GraphDatabase {
 
 	@Override
 	public void resetTransactionTimeout(int transactionId, Handler<JsonObject> handler) {
-		executeTransaction(new JsonArray(), transactionId, false, handler);
+		executeTransaction(new fr.wseduc.webutils.collections.JsonArray(), transactionId, false, handler);
 	}
 
 	@Override
@@ -275,12 +275,12 @@ public class Neo4jRest implements GraphDatabase {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
-								if (json.getJsonArray("errors", new JsonArray()).size() == 0) {
+								if (json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).size() == 0) {
 									json.remove("errors");
 									handler.handle(json);
 								} else {
 									handler.handle(new JsonObject().put("message",
-											json.getJsonArray("errors", new JsonArray()).encode()));
+											json.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray()).encode()));
 								}
 							} else {
 								handler.handle(new JsonObject().put("message", resp.statusMessage()));
@@ -334,7 +334,7 @@ public class Neo4jRest implements GraphDatabase {
 	private JsonArray transformJson(JsonObject json) {
 		final JsonArray columns = json.getJsonArray("columns");
 		final JsonArray data = json.getJsonArray("data");
-		final JsonArray out = new JsonArray();
+		final JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
 
 		if (data != null && columns != null) {
 			for (Object r: data) {

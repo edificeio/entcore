@@ -41,7 +41,7 @@ public class AnyAdminOfUser implements ResourcesProvider {
         JsonObject params = new JsonObject()
                 .put("id", request.params().get("groupId"))
                 .put("userId", userId)
-                .put("ids", new JsonArray(new ArrayList<>(ids)));
+                .put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
         request.pause();
         Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
             @Override

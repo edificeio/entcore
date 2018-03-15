@@ -81,7 +81,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					row.put("data", appData);
 					row.remove("application");
 
-					JsonArray actionsCopy = new JsonArray();
+					JsonArray actionsCopy = new fr.wseduc.webutils.collections.JsonArray();
 					for(Object actionObj: actions){
 						JsonObject action = (JsonObject) actionObj;
 						JsonObject data = action.getJsonObject("data");
@@ -94,7 +94,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						JsonObject data = role.getJsonObject("role").getJsonObject("data");
 						role.put("role", data);
 						JsonArray acts = role.getJsonArray("actions");
-						JsonArray actsCopy = new JsonArray();
+						JsonArray actsCopy = new fr.wseduc.webutils.collections.JsonArray();
 						for(Object actionObj : acts){
 							JsonObject action = (JsonObject) actionObj;
 							actsCopy.add(action.getJsonObject("data"));
@@ -152,7 +152,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
-		application.put("scope", new JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
+		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		application.put("id", id);
 		application.put("structureId", structureId);
 
@@ -225,7 +225,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 			"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r) ";
 		JsonObject params = new JsonObject()
 				.put("appId", appId)
-				.put("profiles", new JsonArray(profiles));
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -241,7 +241,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 				"DELETE auth ";
 			JsonObject params = new JsonObject()
 					.put("appId", appId)
-					.put("profiles", new JsonArray(profiles));
+					.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 			neo.execute(query, params, validEmptyHandler(handler));
 	}

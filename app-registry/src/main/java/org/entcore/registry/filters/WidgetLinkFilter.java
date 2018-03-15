@@ -68,7 +68,7 @@ public class WidgetLinkFilter implements ResourcesProvider{
 			"RETURN count(g) = 1 as exists";
 		JsonObject params = new JsonObject()
 			.put("groupId", groupId)
-			.put("adminScope", new JsonArray(adminLocal.getScope()));
+			.put("adminScope", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {

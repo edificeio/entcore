@@ -57,7 +57,7 @@ public class CommunicationFilter implements ResourcesProvider {
 		String startGroupId = resourceRequest.params().get("startGroupId");
 		String endGroupId = resourceRequest.params().get("endGroupId");
 		JsonObject params = new JsonObject();
-		params.put("structures", new JsonArray(adminLocal.getScope()));
+		params.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			String query =
 					"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS*1..2]-(:Group {id : {groupId}}) " +

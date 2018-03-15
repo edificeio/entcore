@@ -150,7 +150,7 @@ public class SwiftStorage implements Storage {
 	@Override
 	public void removeFiles(JsonArray ids, final Handler<JsonObject> handler) {
 		final AtomicInteger count = new AtomicInteger(ids.size());
-		final JsonArray errors = new JsonArray();
+		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (final Object o: ids) {
 			swiftClient.deleteFile(o.toString(), new Handler<AsyncResult<Void>>() {
 				@Override
@@ -192,7 +192,7 @@ public class SwiftStorage implements Storage {
 	public void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
 		final AtomicInteger count = new AtomicInteger(ids.length);
-		final JsonArray errors = new JsonArray();
+		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (final String id: ids) {
 			if (id == null || id.isEmpty()) {
 				count.decrementAndGet();

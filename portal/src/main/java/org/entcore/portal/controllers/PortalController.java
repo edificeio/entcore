@@ -92,7 +92,7 @@ public class PortalController extends BaseController {
 				@Override
 				public void handle(List<String> event) {
 					themes.put(skin, event);
-					JsonArray a = new JsonArray();
+					JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
 					for (final String s : event) {
 						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
 						final JsonObject j = new JsonObject()
@@ -153,7 +153,7 @@ public class PortalController extends BaseController {
 
 			@Override
 			public void handle(JsonObject session) {
-				JsonArray apps = session.getJsonArray("apps", new JsonArray());
+				JsonArray apps = session.getJsonArray("apps", new fr.wseduc.webutils.collections.JsonArray());
 				for (Object o : apps) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;
@@ -326,7 +326,7 @@ public class PortalController extends BaseController {
 
 	@Get("/skins")
 	public void getSkins(final  HttpServerRequest request) {
-		renderJson(request, new JsonObject().put("skins", new JsonArray()), 200);
+		renderJson(request, new JsonObject().put("skins", new fr.wseduc.webutils.collections.JsonArray()), 200);
 	}
 
 	@Put("skin")
@@ -354,18 +354,18 @@ public class PortalController extends BaseController {
 	@Get("/admin-urls")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void adminURLS(HttpServerRequest request){
-		renderJson(request, config.getJsonArray("admin-urls", new JsonArray()));
+		renderJson(request, config.getJsonArray("admin-urls", new fr.wseduc.webutils.collections.JsonArray()));
 	}
 
 	@Get("/resources-applications")
 	public void resourcesApplications(HttpServerRequest request){
-		renderJson(request, config.getJsonArray("resources-applications", new JsonArray()));
+		renderJson(request, config.getJsonArray("resources-applications", new fr.wseduc.webutils.collections.JsonArray()));
 	}
 
 	@Get("/quickstart")
 	@SecuredAction("portal.quickstart")
 	public void quickstart(HttpServerRequest request){
-		renderJson(request, new JsonArray());
+		renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 	}
 
 	@Get("/themes")
@@ -373,7 +373,7 @@ public class PortalController extends BaseController {
 	public void themes(HttpServerRequest request){
 		JsonArray themes = themesDetails.get(getSkinFromConditions(request));
 		if (themes == null) {
-			themes = new JsonArray();
+			themes = new fr.wseduc.webutils.collections.JsonArray();
 		}
 		renderJson(request, themes);
 	}

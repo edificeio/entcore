@@ -72,7 +72,7 @@ public class SqlResult {
 			JsonArray a = res.body().getJsonArray("results");
 			if (a != null && idx < a.size()) {
 				return jsonToEither(a.getJsonObject(idx)
-					.put("jsonb_fields", res.body().getJsonArray("jsonb_fields", new JsonArray())));
+					.put("jsonb_fields", res.body().getJsonArray("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray())));
 			} else {
 				return new Either.Left<>("missing.result");
 			}
@@ -84,7 +84,7 @@ public class SqlResult {
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
 			JsonArray a = res.body().getJsonArray("results");
-			JsonArray r = new JsonArray();
+			JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 			for (Object o : a) {
 				if (!(o instanceof JsonObject)) continue;
 				r.add(transform((JsonObject) o));
@@ -110,7 +110,7 @@ public class SqlResult {
 	private static JsonArray transform(JsonObject body) {
 		JsonArray f = body.getJsonArray("fields");
 		JsonArray r = body.getJsonArray("results");
-		JsonArray result = new JsonArray();
+		JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
 		if (f != null && r != null) {
 			JsonArray jsonbAttributes = body.getJsonArray("jsonb_fields");
 			List ja = (jsonbAttributes != null) ? jsonbAttributes.getList() : new ArrayList<>();
@@ -129,7 +129,7 @@ public class SqlResult {
 					} else if (item != null && ja.contains(f.getValue(i))) {
 						String stringRepresentation = item.toString().trim();
 						if(stringRepresentation.startsWith("[")){
-							j.put(f.getString(i), new JsonArray(item.toString()));
+							j.put(f.getString(i), new fr.wseduc.webutils.collections.JsonArray(item.toString()));
 						} else {
 							j.put(f.getString(i), new JsonObject(item.toString()));
 						}
@@ -202,7 +202,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
+					event.body().put("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validUniqueResult(event));
 			}
@@ -215,7 +215,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
+					event.body().put("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validUniqueResult(idx, event));
 			}
@@ -228,7 +228,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
+					event.body().put("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResult(idx, event));
 			}
@@ -241,7 +241,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
+					event.body().put("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResult(event));
 			}
@@ -254,7 +254,7 @@ public class SqlResult {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if (jsonbFields != null && jsonbFields.length > 0) {
-					event.body().put("jsonb_fields", new JsonArray(Arrays.asList(jsonbFields)));
+					event.body().put("jsonb_fields", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(jsonbFields)));
 				}
 				handler.handle(validResults(event));
 			}
@@ -279,9 +279,9 @@ public class SqlResult {
 
 	private static void parseShared(JsonObject j) {
 		Map<String, JsonObject> shared = new HashMap<>();
-		JsonArray a = new JsonArray();
-		JsonArray s = new JsonArray(j.getString("shared"));
-		JsonArray m = new JsonArray(j.getString("groups"));
+		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray s = new fr.wseduc.webutils.collections.JsonArray(j.getString("shared"));
+		JsonArray m = new fr.wseduc.webutils.collections.JsonArray(j.getString("groups"));
 		for (Object o : s) {
 			if (o == null || !(o instanceof JsonObject)) continue;
 			JsonObject json = (JsonObject) o;
@@ -312,7 +312,7 @@ public class SqlResult {
 			public void handle(Message<JsonObject> message) {
 				Either<String, JsonArray> res = validResult(message);
 				if (res.isRight()) {
-					JsonArray out = new JsonArray();
+					JsonArray out = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object row : res.right().getValue()) {
 						if (!(row instanceof JsonObject)) continue;
 						JsonObject j = (JsonObject) row;

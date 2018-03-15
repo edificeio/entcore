@@ -31,7 +31,7 @@ public class PersRelEleveExportProcessing extends UserExportProcessing {
 
 	public PersRelEleveExportProcessing(String path, String date, String stdPrefix, boolean concat) {
 		super("dictionary/export/eliot/PersRelEleve.json", 10000, path,
-				new JsonArray().add("Relative"), "PersRelEleve", date, stdPrefix, concat);
+				new fr.wseduc.webutils.collections.JsonArray().add("Relative"), "PersRelEleve", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;
 	}

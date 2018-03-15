@@ -92,7 +92,7 @@ public class ClassController extends BaseController {
 							final String userId = r.right().getValue().getString("id");
 							boolean notify = config.getBoolean("createdUserEmail", false) &&
 									request.params().contains("sendCreatedUserEmail");
-							initPostCreate(classId, new JsonArray().add(userId), notify, request);
+							initPostCreate(classId, new fr.wseduc.webutils.collections.JsonArray().add(userId), notify, request);
 							if (notify) {
 								userService.sendUserCreatedEmail(request, userId,
 										new Handler<Either<String, Boolean>>() {
@@ -121,7 +121,7 @@ public class ClassController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
-		JsonArray types = new JsonArray(request.params().getAll("type"));
+		JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("type"));
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
 			handler = new Handler<Either<String, JsonArray>>() {
@@ -181,7 +181,7 @@ public class ClassController extends BaseController {
 										.put("action", "setDefaultCommunicationRules")
 										.put("schoolId", schoolId);
 								eb.send("wse.communication", j);
-								JsonArray a = new JsonArray().add(userId);
+								JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 								ApplicationUtils.publishModifiedUserGroup(eb, a);
 								renderJson(request, res.right().getValue());
 							} else {
@@ -266,7 +266,7 @@ public class ClassController extends BaseController {
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
 					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
-						initPostCreate(classId, new JsonArray().add(userId));
+						initPostCreate(classId, new fr.wseduc.webutils.collections.JsonArray().add(userId));
 						renderJson(request, r.right().getValue(), 200);
 					} else {
 						notFound(request);

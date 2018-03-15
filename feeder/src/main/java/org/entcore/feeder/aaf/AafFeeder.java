@@ -60,7 +60,7 @@ public class AafFeeder implements Feed {
 				if (f.succeeded()) {
 					final JsonArray importSubDirectories;
 					try {
-						importSubDirectories = new JsonArray(f.result().toString());
+						importSubDirectories = new fr.wseduc.webutils.collections.JsonArray(f.result().toString());
 					} catch (RuntimeException e) {
 						handler.handle(new ResultMessage().error("invalid.importDirectories.file"));
 						log.error("Invalid importDirectories file.", e);

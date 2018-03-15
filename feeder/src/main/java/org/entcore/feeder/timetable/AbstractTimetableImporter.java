@@ -124,7 +124,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected long importTimestamp;
 	protected final String UAI;
 	protected final Report report;
-	protected final JsonArray structure = new JsonArray();
+	protected final JsonArray structure = new fr.wseduc.webutils.collections.JsonArray();
 	protected String structureExternalId;
 	protected String structureId;
 	protected JsonObject classesMapping;
@@ -147,7 +147,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String basePath;
 	private boolean txSuccess = false;
 	protected Set<String> userImportedExternalId = new HashSet<>();
-	private volatile JsonArray coursesBuffer = new JsonArray();
+	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 
 	protected AbstractTimetableImporter(String uai, String path, String acceptLanguage) {
 		UAI = uai;
@@ -273,7 +273,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	private void persistBulKCourses() {
 		final JsonArray cf = coursesBuffer;
-		coursesBuffer = new JsonArray();
+		coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
 		final int countCoursesBuffer = cf.size();
 		if (countCoursesBuffer > 0) {
 			mongoDb.bulk(COURSES, cf, new Handler<Message<JsonObject>>() {
@@ -328,8 +328,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			final JsonObject params = new JsonObject()
 					.put("subjectId", subjectId)
 					.put("teacherIds", teacherIds)
-					.put("classes", object.getJsonArray("classes", new JsonArray()))
-					.put("groups", object.getJsonArray("groups", new JsonArray()))
+					.put("classes", object.getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray()))
+					.put("groups", object.getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray()))
 					.put("source", getSource()).put("now", importTimestamp);
 			txXDT.add(LINK_SUBJECT, params);
 		}
@@ -348,7 +348,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				ids.addAll(personnelIds.getList());
 			}
 			if (!ids.isEmpty()) {
-				final JsonArray g = new JsonArray();
+				final JsonArray g = new fr.wseduc.webutils.collections.JsonArray();
 				for (Object o : groups) {
 					g.add(structureExternalId + "$" + o.toString());
 				}
@@ -439,7 +439,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		final JsonObject params = new JsonObject().put("structureExternalId", structureExternalId)
 				.put("source", getSource()).put("now", importTimestamp);
 		persistBulKCourses();
-		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new JsonArray(new ArrayList<>(subjects.values()))));
+		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(subjects.values()))));
 		txXDT.add(UNLINK_SUBJECT, params);
 		txXDT.add(UNLINK_GROUP, params);
 		txXDT.add(DELETE_GROUPS, params);

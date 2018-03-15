@@ -60,7 +60,7 @@ public abstract class AbstractFilter implements ResourcesProvider {
 		}
 		String roleId = resourceRequest.params().get("id");
 		JsonObject params = new JsonObject();
-		params.put("structures", new JsonArray(adminLocal.getScope()));
+		params.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 		if (roleId != null && !roleId.trim().isEmpty()) {
 			String query =
 					"MATCH (r:" + label + " {id : {id}}) " +

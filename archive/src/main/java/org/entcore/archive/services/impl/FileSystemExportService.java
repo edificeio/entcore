@@ -99,7 +99,7 @@ public class FileSystemExportService implements ExportService {
 												.put("action", "export")
 												.put("exportId", exportId)
 												.put("userId", user.getUserId())
-												.put("groups", new JsonArray(new ArrayList<>(g)))
+												.put("groups", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(g)))
 												.put("path", exportDirectory)
 												.put("locale", locale)
 												.put("host", Renders.getScheme(request) + "://" + request.headers().get("Host"));

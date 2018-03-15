@@ -420,7 +420,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					if (m != null && "ok".equals(m.body().getString("status"))) {
-						Transition.publishDeleteGroups(eb, logger, m.body().getJsonArray("result", new JsonArray()));
+						Transition.publishDeleteGroups(eb, logger, m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray()));
 						AbstractTimetableImporter.transition(structureExternalId);
 						if (handler != null) {
 							handler.handle(m);
@@ -562,7 +562,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 										report.addError("import.error");
 									}
 								}
-								report.setUsersExternalId(new JsonArray(new ArrayList<>(importer.getUserImportedExternalId())));
+								report.setUsersExternalId(new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(importer.getUserImportedExternalId())));
 								h.handle(report);
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);

@@ -74,13 +74,13 @@ public class Sql {
 			handler.handle(new ErrorMessage("invalid.parameters"));
 			return;
 		}
-		JsonArray fields = new JsonArray();
-		JsonArray values = new JsonArray();
+		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : params.fieldNames()) {
 			fields.add(attr);
 			values.add(params.getValue(attr));
 		}
-		insert(table, fields, new JsonArray().add(values), returning, handler);
+		insert(table, fields, new fr.wseduc.webutils.collections.JsonArray().add(values), returning, handler);
 	}
 
 	public void insert(String table, JsonArray fields, JsonArray values, Handler<Message<JsonObject>> handler) {

@@ -68,9 +68,9 @@ public class Neo4jUtils {
 				JsonArray res = event.body().getJsonArray("result");
 				JsonArray scripts;
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
-					scripts = res.getJsonObject(0).getJsonArray("scripts", new JsonArray());
+					scripts = res.getJsonObject(0).getJsonArray("scripts", new fr.wseduc.webutils.collections.JsonArray());
 				} else {
-					scripts = new JsonArray();
+					scripts = new fr.wseduc.webutils.collections.JsonArray();
 				}
 				loadAndExecute(appName, vertx, path, true, scripts);
 				loadAndExecute(appName, vertx, path, false, scripts);
@@ -88,7 +88,7 @@ public class Neo4jUtils {
 					final List<String> files = asyncResult.result();
 					Collections.sort(files);
 					final StatementsBuilder s = new StatementsBuilder();
-					final JsonArray newFiles = new JsonArray();
+					final JsonArray newFiles = new fr.wseduc.webutils.collections.JsonArray();
 					final AtomicInteger count = new AtomicInteger(files.size());
 					for (final String f : files) {
 						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);

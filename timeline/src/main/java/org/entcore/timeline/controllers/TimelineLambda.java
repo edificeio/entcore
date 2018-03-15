@@ -102,7 +102,7 @@ public final class TimelineLambda {
 		ctx.put("nestedArray", new Mustache.Lambda() {
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String nestedTemplatePos = frag.execute();
-				JsonArray nestedArray = new JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
+				JsonArray nestedArray = new fr.wseduc.webutils.collections.JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
 				try {
 					JsonObject nestedTemplate = nestedArray.getJsonObject(Integer.parseInt(nestedTemplatePos) - 1);
 					ctx.putAll(nestedTemplate.getJsonObject("params", new JsonObject()).getMap());

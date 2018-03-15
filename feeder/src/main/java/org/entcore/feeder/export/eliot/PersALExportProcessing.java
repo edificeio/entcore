@@ -35,7 +35,7 @@ import java.io.File;
 
 public class PersALExportProcessing extends BaseExportProcessing {
 
-	private static final JsonArray function = new JsonArray().add("ADMIN_LOCAL");
+	private static final JsonArray function = new fr.wseduc.webutils.collections.JsonArray().add("ADMIN_LOCAL");
 
 	public PersALExportProcessing(String path, String date, boolean concat) {
 		super("dictionary/export/eliot/PersAL.json", 5000, path + File.separator + "Complet_" + date + "_PersAL_", concat);

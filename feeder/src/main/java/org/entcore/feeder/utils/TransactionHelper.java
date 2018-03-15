@@ -70,15 +70,15 @@ public class TransactionHelper {
 		this.neo4j = neo4j;
 		this.remainingStatementNumber = new AtomicInteger(statementNumber);
 		this.statementNumber = statementNumber;
-		this.statements = new JsonArray();
-		send(new JsonArray());
+		this.statements = new fr.wseduc.webutils.collections.JsonArray();
+		send(new fr.wseduc.webutils.collections.JsonArray());
 	}
 
 	public void add(String query, JsonObject params) {
 		if (autoSend && !waitingQuery && transactionId != null &&
 				remainingStatementNumber.getAndDecrement() == 0) {
 			final JsonArray s = statements;
-			statements = new JsonArray();
+			statements = new fr.wseduc.webutils.collections.JsonArray();
 			send(s);
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}
@@ -185,7 +185,7 @@ public class TransactionHelper {
 			flushHandler = handler;
 		} else if (transactionId != null) {
 			final JsonArray s = statements;
-			statements = new JsonArray();
+			statements = new fr.wseduc.webutils.collections.JsonArray();
 			send(s, handler);
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}

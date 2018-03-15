@@ -41,7 +41,7 @@ public class AdmlOfTwoUsers extends AdmlResourcesProvider {
 				"WHERE s.id IN {structures} " +
 				"RETURN count(*) > 0 as exists ";
 
-		JsonObject params = new JsonObject().put("structures", new JsonArray(adminLocal.getScope()));
+		JsonObject params = new JsonObject().put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 		StatementsBuilder statements = new StatementsBuilder()
 				.add(query, params.copy().put("userId", userId1))
 				.add(query, params.copy().put("userId", userId2));

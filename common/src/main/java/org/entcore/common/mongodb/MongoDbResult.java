@@ -48,7 +48,7 @@ public class MongoDbResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return new Either.Right<>(res.body().getJsonArray("results", new JsonArray()));
+			return new Either.Right<>(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}

@@ -53,7 +53,7 @@ public class ProEPSRegisteredService extends AbstractCas20ExtensionRegisteredSer
 			}
 
 			// Structures
-			for (Object o : data.getJsonArray("structures", new JsonArray())) {
+			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray())) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject structure = (JsonObject) o;
 				if (structure.containsKey("UAI")) {
