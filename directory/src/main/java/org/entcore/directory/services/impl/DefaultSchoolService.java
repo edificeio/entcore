@@ -469,7 +469,7 @@ public class DefaultSchoolService implements SchoolService {
 		String query = 
 			"MATCH (u:User)-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 			"WHERE s.id = {structureId} " + 
-			"RETURN collect(DISTINCT EXTRACT(function IN u.functions | last(split(function, \"$\")))) as aafFunctions";
+			"RETURN collect(DISTINCT EXTRACT(function IN u.functions | split(function, \"$\"))) as aafFunctions";
 
 		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, Neo4jResult.validResultHandler(result));

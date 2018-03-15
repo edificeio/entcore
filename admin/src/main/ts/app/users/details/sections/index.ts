@@ -1,3 +1,4 @@
+export * from './aaf-functions/user-aaf-functions-section.component'
 export * from './administrative/user-administrative-section.component'
 export * from './info/user-info-section.component'
 export * from './info/user-info.service'
