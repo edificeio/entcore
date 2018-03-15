@@ -1,7 +1,7 @@
 import { globalStore, StructureModel, UserDetailsModel, UserModel } from '../../../core/store';
 
 export abstract class AbstractSection {
-    protected constructor() {
+    constructor() {
     }
 
     get user(): UserModel {
