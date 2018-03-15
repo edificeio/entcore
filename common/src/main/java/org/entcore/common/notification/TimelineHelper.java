@@ -85,7 +85,7 @@ public class TimelineHelper {
 	public void notifyTimeline(final HttpServerRequest req, final String notificationName,
 			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
 		notificationsLoader.getNotification(notificationName, notification -> {
-			JsonArray r = new JsonArray();
+			JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 			for (String userId: recipients) {
 				r.add(new JsonObject().put("userId", userId).put("unread", 1));
 			}
@@ -94,7 +94,7 @@ public class TimelineHelper {
 					.put("type", notification.getString("type"))
 					.put("event-type", notification.getString("event-type"))
 					.put("recipients", r)
-					.put("recipientsIds", new JsonArray(recipients));
+					.put("recipientsIds", new fr.wseduc.webutils.collections.JsonArray(recipients));
 			if (resource != null) {
 				event.put("resource", resource);
 			}
@@ -154,7 +154,7 @@ public class TimelineHelper {
 	@Deprecated
 	public void notifyTimeline(HttpServerRequest request, UserInfos sender, String type, final String eventType,
 			List<String> recipients, String resource, String subResource, String template, JsonObject params) {
-		JsonArray r = new JsonArray();
+		JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 		for (String userId: recipients) {
 			r.add(new JsonObject().put("userId", userId).put("unread", 1));
 		}

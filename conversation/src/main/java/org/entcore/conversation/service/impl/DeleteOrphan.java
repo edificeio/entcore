@@ -66,7 +66,7 @@ public class DeleteOrphan implements Handler<Long> {
 					final JsonArray attachments = res.right().getValue();
 					if (attachments != null && attachments.size() > 0) {
 						log.info("Orphan attachments : " + attachments.encode());
-						JsonArray ids = new JsonArray();
+						JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 						for (Object attObj : attachments) {
 							if (!(attObj instanceof JsonObject)) continue;
 							JsonObject unusedAttachment = (JsonObject) attObj;

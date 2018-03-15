@@ -56,7 +56,7 @@ public class FoldersFilter implements ResourcesProvider {
 		String foldersQuery =
 			"SELECT count(*) as number FROM conversation.folders " +
 			"WHERE user_id = ? AND id = ?";
-		JsonArray values = new JsonArray()
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())
 			.add(folderId);
 
@@ -86,7 +86,7 @@ public class FoldersFilter implements ResourcesProvider {
 				String usersQuery =
 					"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
 					"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
-				JsonArray values = new JsonArray()
+				JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 					.add(user.getUserId());
 				for(String id : messageIds){
 					values.add(id);

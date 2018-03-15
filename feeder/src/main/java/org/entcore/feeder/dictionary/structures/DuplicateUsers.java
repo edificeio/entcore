@@ -80,7 +80,7 @@ public class DuplicateUsers {
 
 	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
 		if (sourcesPriority == null) {
-			sourcesPriority = new JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
+			sourcesPriority = new fr.wseduc.webutils.collections.JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {
@@ -363,7 +363,7 @@ public class DuplicateUsers {
 						if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
 							String mergeKey = result.getJsonObject(0).getString("mergeKey");
 							if (mergeKey != null && mergeKeys.contains(mergeKey)) {
-								final JsonArray tmp = new JsonArray();
+								final JsonArray tmp = new fr.wseduc.webutils.collections.JsonArray();
 								for (Object o : mergeKeys) {
 									if (!mergeKey.equals(o)) {
 										tmp.add(o);
@@ -480,7 +480,7 @@ public class DuplicateUsers {
 			log.error("Error when find duplicate users.", e);
 			return;
 		}
-		final JsonArray result = new JsonArray();
+		final JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
 		for (int i = 0; i < search.size(); i++) {
 			final JsonObject json = search.getJsonObject(i);
 			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.6);
@@ -643,7 +643,7 @@ public class DuplicateUsers {
 					}
 				} else {
 					log.info("No duplicates automatically mergeable.");
-					handler.handle(new DefaultAsyncResult<>(new JsonArray()));
+					handler.handle(new DefaultAsyncResult<>(new fr.wseduc.webutils.collections.JsonArray()));
 				}
 			}
 

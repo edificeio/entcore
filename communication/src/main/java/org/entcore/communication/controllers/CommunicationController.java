@@ -127,9 +127,9 @@ public class CommunicationController extends BaseController {
 		if (userId != null && !userId.trim().isEmpty()) {
 			String schoolId = request.params().get("schoolId");
 			List<String> expectedTypes = request.params().getAll("expectedType");
-			visibleUsers(userId, schoolId, new JsonArray(expectedTypes), arrayResponseHandler(request));
+			visibleUsers(userId, schoolId, new fr.wseduc.webutils.collections.JsonArray(expectedTypes), arrayResponseHandler(request));
 		} else {
-			renderJson(request, new JsonArray());
+			renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}
 
@@ -149,7 +149,7 @@ public class CommunicationController extends BaseController {
 						j = res.right().getValue();
 					} else {
 						log.warn(res.left().getValue());
-						j = new JsonArray();
+						j = new fr.wseduc.webutils.collections.JsonArray();
 					}
 					message.reply(j);
 				}
@@ -180,11 +180,11 @@ public class CommunicationController extends BaseController {
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 				break;
 			default:
-				message.reply(new JsonArray());
+				message.reply(new fr.wseduc.webutils.collections.JsonArray());
 				break;
 			}
 		} else {
-			message.reply(new JsonArray());
+			message.reply(new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}
 
@@ -237,7 +237,7 @@ public class CommunicationController extends BaseController {
 			badRequest(request);
 			return;
 		}
-		communicationService.applyDefaultRules(new JsonArray().add(structureId),
+		communicationService.applyDefaultRules(new fr.wseduc.webutils.collections.JsonArray().add(structureId),
 				defaultResponseHandler(request));
 	}
 
@@ -277,7 +277,7 @@ public class CommunicationController extends BaseController {
 				});
 				break;
 			case "setDefaultCommunicationRules" :
-				communicationService.applyDefaultRules(new JsonArray().add(
+				communicationService.applyDefaultRules(new fr.wseduc.webutils.collections.JsonArray().add(
 						message.body().getString("schoolId")), responseHandler);
 				break;
 			case "setMultipleDefaultCommunicationRules" :

@@ -77,7 +77,7 @@ public class AAFUtil {
 	}
 
 	private static Object structureToFunction(JsonArray value) {
-		JsonArray res = new JsonArray();
+		JsonArray res = new fr.wseduc.webutils.collections.JsonArray();
 		if (value != null) {
 			for (Object o : value) {
 				if (o != null && !o.toString().isEmpty()) {
@@ -89,7 +89,7 @@ public class AAFUtil {
 	}
 
 	private static JsonArray functionsEtabConverter(JsonArray value) {
-		JsonArray res = new JsonArray();
+		JsonArray res = new fr.wseduc.webutils.collections.JsonArray();
 		for (Object o : value) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray a = (JsonArray) o;
@@ -106,7 +106,7 @@ public class AAFUtil {
 
 	private static JsonObject siecleConverter(JsonArray value) {
 		JsonObject res = new JsonObject();
-		JsonArray ENTEleveParents = new JsonArray();
+		JsonArray ENTEleveParents = new fr.wseduc.webutils.collections.JsonArray();
 		Set<String> ENTEleveAutoriteParentale = new HashSet<>();
 		String ENTEleveAutoriteParentale1 = "";
 		String ENTEleveAutoriteParentale2 = "";
@@ -125,7 +125,7 @@ public class AAFUtil {
 					tmp.put(s[0], s[1]);
 				}
 			}
-			JsonArray tmpArray = new JsonArray();
+			JsonArray tmpArray = new fr.wseduc.webutils.collections.JsonArray();
 			for (Map.Entry<String, String> e : tmp.entrySet()) {
 				tmpArray.add(e.getKey() + "$" + e.getValue());
 			}
@@ -195,7 +195,7 @@ public class AAFUtil {
 			ENTEleveAutoriteParentale.add(ENTEleveAutoriteParentale2);
 		}
 		res.put("ENTEleveParents", ENTEleveParents);
-		res.put("ENTEleveAutoriteParentale", new JsonArray(ENTEleveAutoriteParentale.toArray());
+		res.put("ENTEleveAutoriteParentale", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ENTEleveAutoriteParentale)));
 		res.put("ENTElevePersRelEleve1", ENTElevePersRelEleve1);
 		res.put("ENTEleveQualitePersRelEleve1", ENTEleveQualitePersRelEleve1);
 		res.put("ENTElevePersRelEleve2", ENTElevePersRelEleve2);

@@ -59,7 +59,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 		if (r != null) {
 			resp.addAll(r.getList());
 		}
-		object.put("profiles", new JsonArray().add("Student"));
+		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Student"));
 		importer.createOrUpdateStudent(object, DefaultProfiles.STUDENT_PROFILE_EXTERNAL_ID,
 				null, null, null, null, null, true, false);
 	}
@@ -67,7 +67,7 @@ public class StudentImportProcessing extends BaseImportProcessing {
 	protected JsonArray parseRelativeField(JsonArray relative) {
 		JsonArray res = null;
 		if (relative != null && relative.size() > 0) {
-			res = new JsonArray();
+			res = new fr.wseduc.webutils.collections.JsonArray();
 			for (Object o : relative) {
 				if (!(o instanceof String)) continue;
 				String [] r = ((String) o).split("\\$");

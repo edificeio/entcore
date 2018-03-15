@@ -55,7 +55,7 @@ public class Neo4j {
 		JsonArray serverUris = config.getJsonArray("server-uris");
 		String serverUri = config.getString("server-uri");
 		if (serverUris == null && serverUri != null) {
-			serverUris = new JsonArray().add(serverUri);
+			serverUris = new fr.wseduc.webutils.collections.JsonArray().add(serverUri);
 		}
 
 		if (serverUris != null) {

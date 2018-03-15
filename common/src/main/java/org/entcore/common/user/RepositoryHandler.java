@@ -51,7 +51,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				String path = message.body().getString("path", "");
 				final String locale = message.body().getString("locale", "fr");
 				final String host = message.body().getString("host", "");
-				JsonArray groupIds = message.body().getJsonArray("groups", new JsonArray());
+				JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale, host, new Handler<Boolean>() {
 					@Override
 					public void handle(Boolean isExported) {
@@ -66,11 +66,11 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				});
 				break;
 			case "delete-groups" :
-				JsonArray groups = message.body().getJsonArray("old-groups", new JsonArray());
+				JsonArray groups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.deleteGroups(groups);
 				break;
 			case "delete-users" :
-				JsonArray users = message.body().getJsonArray("old-users", new JsonArray());
+				JsonArray users = message.body().getJsonArray("old-users", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.deleteUsers(users);
 				break;
 			default:

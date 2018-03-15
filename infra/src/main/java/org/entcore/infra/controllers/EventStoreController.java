@@ -41,7 +41,7 @@ public class EventStoreController extends BaseController {
 	private JsonArray userBlackList;
 
 	public EventStoreController (JsonObject eventConfig) {
-        this.userBlackList = eventConfig.getJsonArray("user-blacklist", new JsonArray());
+        this.userBlackList = eventConfig.getJsonArray("user-blacklist", new fr.wseduc.webutils.collections.JsonArray());
 	}
 
 	@Post("/event/store")

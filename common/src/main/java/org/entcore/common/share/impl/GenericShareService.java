@@ -72,7 +72,7 @@ public abstract class GenericShareService implements ShareService {
 				JsonObject a = resourceActions.getJsonObject(action.getDisplayName());
 				if (a == null) {
 					a = new JsonObject()
-							.put("name", new JsonArray().add(action.getName().replaceAll("\\.", "-")))
+							.put("name", new fr.wseduc.webutils.collections.JsonArray().add(action.getName().replaceAll("\\.", "-")))
 							.put("displayName", action.getDisplayName())
 							.put("type", action.getType());
 					resourceActions.put(action.getDisplayName(), a);
@@ -81,7 +81,7 @@ public abstract class GenericShareService implements ShareService {
 				}
 			}
 		}
-		this.resourceActions = new JsonArray(new ArrayList<>(resourceActions.getMap().values()));
+		this.resourceActions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(resourceActions.getMap().values()));
 		return this.resourceActions;
 	}
 
@@ -89,9 +89,9 @@ public abstract class GenericShareService implements ShareService {
 			final JsonObject groupCheckedActions, final JsonObject userCheckedActions,
 			final String acceptLanguage, String search, final Handler<JsonObject> handler) {
 		final JsonObject params = new JsonObject().put("groupIds",
-				new JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
+				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
 		final JsonObject params2 = new JsonObject().put("userIds",
-				new JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
+				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
 		if (search != null && search.trim().isEmpty()) {
 			final Neo4j neo4j = Neo4j.getInstance();
 			neo4j.execute(GROUP_SHARED, params, validResultHandler(new Handler<Either<String, JsonArray>>() {
@@ -101,7 +101,7 @@ public abstract class GenericShareService implements ShareService {
 					if (sg.isRight()) {
 						visibleGroups = sg.right().getValue();
 					} else {
-						visibleGroups = new JsonArray();
+						visibleGroups = new fr.wseduc.webutils.collections.JsonArray();
 					}
 					final JsonObject groups = new JsonObject();
 					groups.put("visibles", visibleGroups);
@@ -118,7 +118,7 @@ public abstract class GenericShareService implements ShareService {
 							if (event.isRight()) {
 								visibleUsers = event.right().getValue();
 							} else {
-								visibleUsers = new JsonArray();
+								visibleUsers = new fr.wseduc.webutils.collections.JsonArray();
 							}
 							JsonObject users = new JsonObject();
 							users.put("visibles", visibleUsers);

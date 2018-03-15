@@ -46,7 +46,7 @@ public class EntCoreDataHandlerFactory implements DataHandlerFactory {
 	public EntCoreDataHandlerFactory(EventBus eb, JsonObject conf) {
 		this.eb = eb;
 
-		JsonArray confServices = conf.getJsonArray(CONF_SERVICES, new JsonArray());
+		JsonArray confServices = conf.getJsonArray(CONF_SERVICES, new fr.wseduc.webutils.collections.JsonArray());
 		for (Object confObject : confServices) {
 			try {
 				Map<String, Object> confService = ((JsonObject) confObject).getMap();

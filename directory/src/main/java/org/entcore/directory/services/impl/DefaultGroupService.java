@@ -72,7 +72,7 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {structures} ";
-				params.put("structures", new JsonArray(scope));
+				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		}
 

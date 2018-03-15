@@ -58,9 +58,9 @@ public class SearchingHandler implements Handler<Message<JsonObject>> {
 		final Integer page =  message.body().getInteger("page", 0);
 		final Integer limit =  message.body().getInteger("limit", 0);
 		final String searchId = message.body().getString("searchId", "");
-		final JsonArray groupIds = message.body().getJsonArray("groupIds", new JsonArray());
-		final JsonArray columnsHeader = message.body().getJsonArray("columnsHeader", new JsonArray());
-		final List<String> appFilters = message.body().getJsonArray("appFilters", new JsonArray()).getList();
+		final JsonArray groupIds = message.body().getJsonArray("groupIds", new fr.wseduc.webutils.collections.JsonArray());
+		final JsonArray columnsHeader = message.body().getJsonArray("columnsHeader", new fr.wseduc.webutils.collections.JsonArray());
+		final List<String> appFilters = message.body().getJsonArray("appFilters", new fr.wseduc.webutils.collections.JsonArray()).getList();
 		final String locale = message.body().getString("locale", "fr");
 
 		searchingEvents.searchResource(appFilters, userId, groupIds, searchWords, page, limit, columnsHeader, locale, new Handler<Either<String, JsonArray>>() {

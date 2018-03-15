@@ -155,7 +155,7 @@ public abstract class ControllerHelper extends BaseController {
 							JsonObject n = event.right().getValue()
 									.getJsonObject("notify-timeline");
 							if (n != null && notificationName != null) {
-								notifyShare(request, id, user, new JsonArray().add(n),
+								notifyShare(request, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
 							}
 							renderJson(request, event.right().getValue());

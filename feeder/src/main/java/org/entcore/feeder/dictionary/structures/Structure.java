@@ -113,7 +113,7 @@ public class Structure {
 		if (struct != null) {
 			JsonArray joinKey = struct.getJsonArray("joinKey");
 			if (joinKey == null) {
-				joinKey = new JsonArray();
+				joinKey = new fr.wseduc.webutils.collections.JsonArray();
 				struct.put("joinKey", joinKey);
 			}
 			joinKey.add(externalId);

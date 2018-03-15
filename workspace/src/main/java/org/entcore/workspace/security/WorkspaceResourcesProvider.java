@@ -148,7 +148,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				"WHERE s.id IN {structures} " +
 				"RETURN count(*) > 0 as exists ";
 		JsonObject params = new JsonObject()
-				.put("structures", new JsonArray(adminLocal.getScope()))
+				.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()))
 				.put("userId", userId);
 		Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
@@ -172,9 +172,9 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 						"MATCH (s:Structure)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 						"WHERE s.id IN {structures} AND u.id IN {users} " +
 						"RETURN count(distinct u) as nb ";
-				final JsonArray users = object.getJsonArray("users", new JsonArray());
+				final JsonArray users = object.getJsonArray("users", new fr.wseduc.webutils.collections.JsonArray());
 				JsonObject params = new JsonObject()
-						.put("structures", new JsonArray(adminLocal.getScope()))
+						.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()))
 						.put("users", users);
 				Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
 					@Override
@@ -228,7 +228,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			String serviceMethod, Handler<Boolean> handler) {
 		String ids = request.params().get("ids");
 		if (ids != null && !ids.trim().isEmpty()) {
-			JsonArray idsArray = new JsonArray(Arrays.asList(ids.split(",")));
+			JsonArray idsArray = new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids.split(",")));
 			String query = "{ \"_id\": { \"$in\" : " + idsArray.encode() + "}, "
 					+ "\"$or\" : [{ \"owner\": \"" + user.getUserId() +
 					"\"}, {\"shared\" : { \"$elemMatch\" : " + orSharedElementMatch(user, serviceMethod) + "}}]}";

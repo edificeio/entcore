@@ -148,7 +148,7 @@ public class ColumnsMapper {
 	}
 
 	JsonArray getColumsNames(String[] strings, List<String> columns) {
-		JsonArray errors = new JsonArray();
+		JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (int j = 0; j < strings.length; j++) {
 			String cm = columnsNameMapping(strings[j]);
 			if (namesMapping.containsValue(cm)) {

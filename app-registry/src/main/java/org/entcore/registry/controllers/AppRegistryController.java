@@ -155,7 +155,7 @@ public class AppRegistryController extends BaseController {
 				final String roleId = request.params().get("id");
 				if (roleId != null && !roleId.trim().isEmpty()) {
 					final String roleName = body.getString("role");
-					final JsonArray actions = body.getJsonArray("actions", new JsonArray());
+					final JsonArray actions = body.getJsonArray("actions", new fr.wseduc.webutils.collections.JsonArray());
 					final JsonObject role = new JsonObject();
 					if (roleName != null && !roleName.trim().isEmpty()) {
 						role.put("name", roleName);
@@ -309,7 +309,7 @@ public class AppRegistryController extends BaseController {
             Server.getEventBus(vertx).publish("cas.configuration", new JsonObject()
                     .put("action", "add-patterns")
                     .put("service", casType)
-                    .put("patterns", new JsonArray().add(pattern)));
+                    .put("patterns", new fr.wseduc.webutils.collections.JsonArray().add(pattern)));
         }
 	}
 
@@ -447,7 +447,7 @@ public class AppRegistryController extends BaseController {
 					if (res.isRight()) {
 						message.reply(res.right().getValue());
 					} else {
-						message.reply(new JsonArray());
+						message.reply(new fr.wseduc.webutils.collections.JsonArray());
 					}
 				}
 			};
@@ -462,11 +462,11 @@ public class AppRegistryController extends BaseController {
 					appRegistryService.applicationAllowedProfileGroups(application, responseHandler);
 					break;
 				default:
-					message.reply(new JsonArray());
+					message.reply(new fr.wseduc.webutils.collections.JsonArray());
 					break;
 			}
 		} else {
-			message.reply(new JsonArray());
+			message.reply(new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}
 
@@ -535,7 +535,7 @@ public class AppRegistryController extends BaseController {
 	private void updatedProfileGroupActions(String groupId) {
 		JsonObject message = new JsonObject().put("type", PROFILE_GROUP_ACTIONS_UPDATED);
 		if (groupId != null && !groupId.trim().isEmpty()) {
-			message.put("groups", new JsonArray().add(groupId));
+			message.put("groups", new fr.wseduc.webutils.collections.JsonArray().add(groupId));
 		}
 		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, message);
 	}

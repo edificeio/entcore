@@ -61,7 +61,7 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 	}
 
 	protected void getInfoProcess(final String fileId, final Handler<AsyncResult<FileInfos>> handler) {
-		sql.prepared(getInfoQuery(), new JsonArray().add(fileId), new Handler<Message<JsonObject>>() {
+		sql.prepared(getInfoQuery(), new fr.wseduc.webutils.collections.JsonArray().add(fileId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				Either<String, JsonArray> r = validResult(event);
@@ -93,7 +93,7 @@ public class PostgresqlApplicationStorage extends AbstractApplicationStorage {
 
 	@Override
 	public void updateInfo(String fileId, FileInfos fileInfos, final Handler<AsyncResult<Integer>> handler) {
-		JsonArray params = new JsonArray();
+		JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
 		final String query =
 				"update " + table +
 				" set " + generateColumns(fileInfos.toJsonExcludeEmpty(mapping), params) +

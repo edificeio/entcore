@@ -129,7 +129,7 @@ public class PersEducNat extends AbstractUser {
 					transactionHelper.add(qs, ps);
 				}
 				final JsonObject fosm = new JsonObject();
-				final JsonArray classes = new JsonArray();
+				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
 				if (externalId != null && linkClasses != null) {
 					final JsonObject fcm = new JsonObject();
 					for (String[] structClass : linkClasses) {
@@ -138,7 +138,7 @@ public class PersEducNat extends AbstractUser {
 							if (structClass.length > 2 && isNotEmpty(structClass[2])) {
 								JsonArray fClasses = fcm.getJsonArray(structClass[2]);
 								if (fClasses == null) {
-									fClasses = new JsonArray();
+									fClasses = new fr.wseduc.webutils.collections.JsonArray();
 									fcm.put(structClass[2], fClasses);
 								}
 								fClasses.add(structClass[1]);
@@ -180,7 +180,7 @@ public class PersEducNat extends AbstractUser {
 							.put("classes", classes);
 					transactionHelper.add(q, p);
 				}
-				final JsonArray groups = new JsonArray();
+				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 				final JsonObject fgm = new JsonObject();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -189,7 +189,7 @@ public class PersEducNat extends AbstractUser {
 							if (structGroup.length > 2 && isNotEmpty(structGroup[2])) {
 								JsonArray fGroups = fgm.getJsonArray(structGroup[2]);
 								if (fGroups == null) {
-									fGroups = new JsonArray();
+									fGroups = new fr.wseduc.webutils.collections.JsonArray();
 									fgm.put(structGroup[2], fGroups);
 								}
 								fGroups.add(structGroup[1]);
@@ -220,7 +220,7 @@ public class PersEducNat extends AbstractUser {
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
-					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fosm.fieldNames()))));
+					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fosm.fieldNames()))));
 					for (String fos: fgm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +

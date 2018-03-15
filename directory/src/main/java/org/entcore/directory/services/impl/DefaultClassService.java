@@ -204,7 +204,7 @@ public class DefaultClassService implements ClassService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "WHERE (s.id IN {scope} OR c.id IN {scope}";
-				params.put("scope", new JsonArray(scope));
+				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
 			}
 		}
 

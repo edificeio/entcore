@@ -287,7 +287,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
 		final String address = application.getString("address");
-		application.put("scope", new JsonArray("[\"" +
+		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" +
 				application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		application.put("id", id);
 		final String createApplicationQuery =
@@ -406,7 +406,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"SET " + nodeSetPropertiesFromJson("n", application) +
 				"RETURN n.id as id";
 		application.put("applicationId", applicationId);
-		application.put("scope", new JsonArray("[\"" +
+		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" +
 				application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		neo.execute(query, application, validUniqueResultHandler(handler));
 	}
@@ -497,7 +497,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				for(Object o : results){
 					JsonObject app = (JsonObject) o;
 					String address = app.getString("address", "");
-					JsonArray patterns = app.getJsonArray("patterns", new JsonArray());
+					JsonArray patterns = app.getJsonArray("patterns", new fr.wseduc.webutils.collections.JsonArray());
 					if(patterns.size() == 0 || patterns.size() > 0 && patterns.getString(0).isEmpty()){
 						final URL addressURL = checkCasUrl(address);
 

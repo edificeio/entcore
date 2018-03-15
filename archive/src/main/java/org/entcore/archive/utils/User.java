@@ -39,7 +39,7 @@ public class User {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				Either<String, JsonObject> r = Neo4jResult.validUniqueResult(message);
-				JsonArray a = new JsonArray();
+				JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
 				if (r.isRight()) {
 					a = r.right().getValue().getJsonArray("groups", a);
 				}

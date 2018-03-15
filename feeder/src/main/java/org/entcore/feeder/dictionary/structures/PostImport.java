@@ -187,13 +187,13 @@ public class PostImport {
 			neo4j.execute(q, new JsonObject(), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getJsonArray("result", new JsonArray());
+					JsonArray ids = message.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						JsonObject j = new JsonObject()
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
-										.getJsonArray("ids", new JsonArray()));
+										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
 						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override

@@ -52,7 +52,7 @@ public class TeacherOfClass implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
-				.put("ids", new JsonArray(new ArrayList<>(ids)));
+				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
 		request.pause();
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override

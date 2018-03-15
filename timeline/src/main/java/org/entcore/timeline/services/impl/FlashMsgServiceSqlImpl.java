@@ -35,7 +35,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void update(String id, JsonObject data, Handler<Either<String, JsonObject>> handler){
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : data.fieldNames()) {
 			if("startDate".equals(attr) || "endDate".equals(attr)){
 				sb.append("\"" + attr + "\"").append(" = ?::timestamptz, ");
@@ -56,7 +56,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler) {
 		String query = "DELETE FROM " + resourceTable + " WHERE id IN " + Sql.listPrepared(ids.toArray());
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for(String id : ids){
 			try {
 				long idNb = Long.parseLong(id);
@@ -75,7 +75,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			"SELECT *, \"startDate\"::text, \"endDate\"::text "+
 			"FROM " + resourceTable + " m  WHERE domain = ? ORDER BY modified DESC";
 
-		JsonArray values = new JsonArray().add(domain);
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(domain);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 

@@ -164,7 +164,7 @@ public abstract class BaseExportProcessing implements ExportProcessing {
 	private void writeElement(XMLEventWriter writer, XMLEventFactory eventFactory,
 			JsonObject element) throws XMLStreamException {
 		if (element.getJsonArray("joinKey") == null && element.getString("externalId") != null) {
-			element.put("joinKey", new JsonArray().add(element.getString("externalId")));
+			element.put("joinKey", new fr.wseduc.webutils.collections.JsonArray().add(element.getString("externalId")));
 		}
 		writer.add(eventFactory.createStartElement("", "", "addRequest"));
 		writer.add(eventFactory.createDTD("\n"));
