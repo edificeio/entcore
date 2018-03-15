@@ -235,7 +235,7 @@ public class DefaultFolderService implements FolderService {
 					new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> d) {
-							JsonArray directories = d.body().getJsonArray("values", new JsonArray());
+							JsonArray directories = d.body().getJsonArray("values", new fr.wseduc.webutils.collections.JsonArray());
 							if ("ok".equals(d.body().getString("status")) && directories.size() > 0) {
 								final AtomicInteger remaining = new AtomicInteger(directories.size());
 								final AtomicInteger count = new AtomicInteger(0);
@@ -323,7 +323,7 @@ public class DefaultFolderService implements FolderService {
 									new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> src) {
-									final JsonArray origs = src.body().getJsonArray("results", new JsonArray());
+									final JsonArray origs = src.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray());
 									if ("ok".equals(src.body().getString("status")) && origs.size() > 0) {
 										long size = 0;
 										for (Object o: origs) {
@@ -338,7 +338,7 @@ public class DefaultFolderService implements FolderService {
 											return;
 										}
 										final AtomicInteger number = new AtomicInteger(origs.size());
-										final JsonArray insert = new JsonArray();
+										final JsonArray insert = new fr.wseduc.webutils.collections.JsonArray();
 										String name = (n != null && !n.trim().isEmpty()) ? n : n1;
 										final String destFolderName = (path != null && !path.trim().isEmpty()) ?
 											path + "_" + name : name;
@@ -507,7 +507,7 @@ public class DefaultFolderService implements FolderService {
 									public void handle(Message<JsonObject> res) {
 										if ("ok".equals(res.body().getString("status"))) {
 											result.handle(new Either.Right<String, JsonArray>(results));
-											final JsonArray filesIds = new JsonArray();
+											final JsonArray filesIds = new fr.wseduc.webutils.collections.JsonArray();
 											for (Object o : results) {
 												if (!(o instanceof JsonObject)) continue;
 												String file = ((JsonObject) o).getString("file");
@@ -672,7 +672,7 @@ public class DefaultFolderService implements FolderService {
 
 					public void handle(Message<JsonObject> d) {
 
-						JsonArray files = d.body().getJsonArray("results", new JsonArray());
+						JsonArray files = d.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray());
 
 						if ("ok".equals(d.body().getString("status"))) {
 
@@ -768,7 +768,7 @@ public class DefaultFolderService implements FolderService {
 						mongo.find(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(targetQuery), new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> d) {
-								JsonArray children = d.body().getJsonArray("results", new JsonArray());
+								JsonArray children = d.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray());
 								if ("ok".equals(d.body().getString("status")) && children.size() > 0) {
 									final AtomicInteger remaining = new AtomicInteger(children.size());
 									final AtomicInteger count = new AtomicInteger(0);

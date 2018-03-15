@@ -38,7 +38,7 @@ public class BRNERegisteredService extends DefaultRegisteredService {
     @Override
     protected void prepareUser(User user, String userId, String service, JsonObject data) {
         //return the first uai as principalAttributeName
-        for (Object s : data.getJsonArray("structureNodes", new JsonArray())) {
+        for (Object s : data.getJsonArray("structureNodes", new fr.wseduc.webutils.collections.JsonArray())) {
             if (s == null || !(s instanceof JsonObject)) continue;
             JsonObject structure = (JsonObject) s;
             String uai = structure.getString("UAI", "");
@@ -51,7 +51,7 @@ public class BRNERegisteredService extends DefaultRegisteredService {
         user.setAttributes(new HashMap<String, String>());
 
         // Profile
-        JsonArray profiles = data.getJsonArray("type", new JsonArray());
+        JsonArray profiles = data.getJsonArray("type", new fr.wseduc.webutils.collections.JsonArray());
         if (profiles.contains("Teacher")) {
             user.getAttributes().put(PROFIL, "National_3");
         } else if (profiles.contains("Student")) {

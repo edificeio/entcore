@@ -46,7 +46,7 @@ public class ActionsUtils {
 				if (user != null) {
 					for (UserInfos.Action action : user.getAuthorizedActions()) {
 						if (bindings.containsKey(action.getName())) {
-							JsonArray b = new JsonArray();
+							JsonArray b = new fr.wseduc.webutils.collections.JsonArray();
 							for (Binding binding: bindings.get(action.getName())) {
 								b.add(new JsonObject()
 										.put("verb", binding.getMethod().name())

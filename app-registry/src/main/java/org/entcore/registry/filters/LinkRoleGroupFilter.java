@@ -64,7 +64,7 @@ public class LinkRoleGroupFilter implements ResourcesProvider {
 				final JsonArray roleIds = body.getJsonArray("roleIds");
 				final String groupId = body.getString("groupId");
 				JsonObject params = new JsonObject();
-				params.put("structures", new JsonArray(adminLocal.getScope()));
+				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 				if (roleIds != null && groupId != null &&
 						roleIds.size() > 0 && !groupId.trim().isEmpty()) {
 					String query =

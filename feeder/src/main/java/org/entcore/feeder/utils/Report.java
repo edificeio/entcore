@@ -78,7 +78,7 @@ public class Report {
 		final String file = "error." + filename;
 		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
@@ -91,7 +91,7 @@ public class Report {
 		final String file = "error." + filename;
 		JsonArray f = result.getJsonObject("errors").getJsonArray(file);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			result.getJsonObject("errors").put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
@@ -107,7 +107,7 @@ public class Report {
 		}
 		JsonArray f = softErrors.getJsonArray(file);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			softErrors.put(file, f);
 		}
 		String error = i18n.translate(key, I18n.DEFAULT_DOMAIN, acceptLanguage, errors);
@@ -118,7 +118,7 @@ public class Report {
 	public void addUser(String file, JsonObject props) {
 		JsonArray f = result.getJsonObject("files").getJsonArray(file);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			result.getJsonObject("files").put(file, f);
 		}
 		f.add(props);
@@ -127,7 +127,7 @@ public class Report {
 	public void addProfile(String profile) {
 		JsonArray f = result.getJsonArray(PROFILES);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			result.put(PROFILES, f);
 		}
 		f.add(profile);
@@ -136,7 +136,7 @@ public class Report {
 	public void addIgnored(String file, String reason, JsonObject object) {
 		JsonArray f = result.getJsonObject("ignored").getJsonArray(file);
 		if (f == null) {
-			f = new JsonArray();
+			f = new fr.wseduc.webutils.collections.JsonArray();
 			result.getJsonObject("ignored").put(file, f);
 		}
 		f.add(new JsonObject().put("reason", reason).put("object", object));
@@ -155,7 +155,7 @@ public class Report {
 	}
 
 	public JsonArray getUsersExternalId() {
-		final JsonArray res = new JsonArray();
+		final JsonArray res = new fr.wseduc.webutils.collections.JsonArray();
 		for (String f : result.getJsonObject("files").fieldNames()) {
 			JsonArray a = result.getJsonObject("files").getJsonArray(f);
 			if (a != null) {
@@ -235,7 +235,7 @@ public class Report {
 							result.put("source", source);
 							result.put("startTime", new DateTime(startTime).toString());
 							result.put("endTime", new DateTime(endTime).toString());
-							result.put("loadedFiles", new JsonArray(new ArrayList<>(loadedFiles)));
+							result.put("loadedFiles", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(loadedFiles)));
 //							persist(new Handler<Message<JsonObject>>() {
 //								@Override
 //								public void handle(Message<JsonObject> event) {

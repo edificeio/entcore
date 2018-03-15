@@ -209,7 +209,7 @@ public class IndicatorMongoImpl extends Indicator{
 		}
 
 		final JsonObject aggregation = new JsonObject();
-		JsonArray pipeline = new JsonArray();
+		JsonArray pipeline = new fr.wseduc.webutils.collections.JsonArray();
 		aggregation
 			.put("aggregate", COLLECTIONS.events.name())
 			.put("allowDiskUse", true)

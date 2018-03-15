@@ -62,7 +62,7 @@ public class DB {
 						}
 					});
 				} else if (nb == 0) {
-					loadAndExecute(s, vertx, path, new JsonArray());
+					loadAndExecute(s, vertx, path, new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
@@ -77,7 +77,7 @@ public class DB {
 					final List<String> files = asyncResult.result();
 					Collections.sort(files);
 					final SqlStatementsBuilder s = new SqlStatementsBuilder();
-					final JsonArray newFiles = new JsonArray();
+					final JsonArray newFiles = new fr.wseduc.webutils.collections.JsonArray();
 					final AtomicInteger count = new AtomicInteger(files.size());
 					for (final String f : files) {
 						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);
@@ -89,7 +89,7 @@ public class DB {
 										String script = bufferAsyncResult.result().toString();
 										script = script.replaceAll("\\-\\-\\s.*(\r|\n|$)", "").replaceAll("(\r|\n|\t)", " ");
 										s.raw(script);
-										newFiles.add(new JsonArray().add(filename));
+										newFiles.add(new fr.wseduc.webutils.collections.JsonArray().add(filename));
 									} else {
 										log.error("Error reading file : " + f, bufferAsyncResult.cause());
 									}
@@ -111,7 +111,7 @@ public class DB {
 			}
 
 			private void commit(final String schema, SqlStatementsBuilder s, final JsonArray newFiles) {
-				s.insert(schema + "scripts", new JsonArray().add("filename"), newFiles);
+				s.insert(schema + "scripts", new fr.wseduc.webutils.collections.JsonArray().add("filename"), newFiles);
 				Sql.getInstance().transaction(s.build(), new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> message) {

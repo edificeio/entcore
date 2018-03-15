@@ -66,7 +66,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// Structures
-			for (Object o : data.getJsonArray("structures", new JsonArray())) {
+			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray())) {
 				JsonObject structure = (JsonObject) o;
 				final String uai = structure.getString("UAI");
 				if (!StringUtils.isEmpty(uai) && !uaiList.contains(uai)) {
@@ -75,7 +75,7 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 			}
 
 			// classes
-			for (Object o : data.getJsonArray("classes", new JsonArray())) {
+			for (Object o : data.getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray())) {
 				JsonObject classe = (JsonObject) o;
 				additionnalAttributes.add(createTextElement("classes", classe.getString("name"), doc));
 			}

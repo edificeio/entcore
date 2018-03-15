@@ -238,7 +238,7 @@
 //
 //	private void personaliseComRules(final Handler<Void> handler) {
 //		String query = "MATCH (g:ProfileGroup) WHERE g.name IN {groups} RETURN g.id as id, g.name as name ";
-//		JsonObject params = new JsonObject().put("groups", new JsonArray()
+//		JsonObject params = new JsonObject().put("groups", new fr.wseduc.webutils.collections.JsonArray()
 //				.add("TPS-Student").add("TPS-Teacher")
 //				.add("Ecole primaire Emile Zola-Student").add("Ecole primaire Emile Zola-Teacher"));
 //		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -349,7 +349,7 @@
 //	private void initDefaultComRules(String structureId, final Handler<Void> handler) {
 //		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "initDefaultCommunicationRules")
-//				.put("schoolIds", new JsonArray().add(structureId)),
+//				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
@@ -382,7 +382,7 @@
 //	private void applyDefaultComRules(String structureId, final Handler<Void> handler) {
 //		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "setMultipleDefaultCommunicationRules")
-//				.put("schoolIds", new JsonArray().add(structureId)),
+//				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
@@ -443,7 +443,7 @@
 //	private void initAndApplyDefaultCommunicationRules(String structureId, final Handler<Void> handler) {
 //		eb.send(ENTCORE_COMMUNICATION, new JsonObject()
 //				.put("action", "initAndApplyDefaultCommunicationRules")
-//				.put("schoolIds", new JsonArray().add(structureId)),
+//				.put("schoolIds", new fr.wseduc.webutils.collections.JsonArray().add(structureId)),
 //				new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {

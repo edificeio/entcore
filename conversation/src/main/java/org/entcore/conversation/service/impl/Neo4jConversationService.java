@@ -50,18 +50,18 @@ public class Neo4jConversationService {
 			"coalesce(v.name, ' ') + '$' + coalesce(v.groupDisplayName, ' '))) as displayNames ";
 
 		Set<String> ids = new HashSet<>();
-		ids.addAll(message.getJsonArray("to", new JsonArray()).getList());
-		ids.addAll(message.getJsonArray("cc", new JsonArray()).getList());
+		ids.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
+		ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
 		if (message.containsKey("from")) {
 			ids.add(message.getString("from"));
 		}
 		if(parentMessage != null){
-			ids.addAll(parentMessage.getJsonArray("to", new JsonArray()).getList());
-			ids.addAll(parentMessage.getJsonArray("cc", new JsonArray()).getList());
+			ids.addAll(parentMessage.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
+			ids.addAll(parentMessage.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
 			if(parentMessage.containsKey("from"))
 				ids.add(parentMessage.getString("from"));
 		}
-		neo.execute(query, new JsonObject().put("ids", new JsonArray(new ArrayList<>(ids))),
+		neo.execute(query, new JsonObject().put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids))),
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -87,10 +87,10 @@ public class Neo4jConversationService {
 
 	public void findInactives(final JsonObject message, long size, final Handler<JsonObject> handler){
 		Set<Object> dest = new HashSet<>();
-		dest.addAll(message.getJsonArray("to", new JsonArray()).getList());
-		dest.addAll(message.getJsonArray("cc", new JsonArray()).getList());
+		dest.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
+		dest.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
 
-		JsonObject params = new JsonObject().put("dest", new JsonArray(new ArrayList<Object>(dest)));
+		JsonObject params = new JsonObject().put("dest", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<Object>(dest)));
 
 		String returnClause = "";
 		if(size > 0){
@@ -118,15 +118,15 @@ public class Neo4jConversationService {
 				JsonArray r = event.body().getJsonArray("result");
 
 				JsonObject formattedResult = new JsonObject()
-					.put("inactives", new JsonArray())
-					.put("actives", new JsonArray())
-					.put("allUsers", new JsonArray());
+					.put("inactives", new fr.wseduc.webutils.collections.JsonArray())
+					.put("actives", new fr.wseduc.webutils.collections.JsonArray())
+					.put("allUsers", new fr.wseduc.webutils.collections.JsonArray());
 
 				if ("ok".equals(event.body().getString("status")) && r != null && r.size() == 1) {
 					JsonObject j = r.getJsonObject(0);
-					formattedResult.put("inactives", j.getJsonArray("inactives", new JsonArray()));
-					formattedResult.put("undelivered", j.getJsonArray("undelivered", new JsonArray()));
-					formattedResult.put("allUsers", j.getJsonArray("userTargets", new JsonArray()));
+					formattedResult.put("inactives", j.getJsonArray("inactives", new fr.wseduc.webutils.collections.JsonArray()));
+					formattedResult.put("undelivered", j.getJsonArray("undelivered", new fr.wseduc.webutils.collections.JsonArray()));
+					formattedResult.put("allUsers", j.getJsonArray("userTargets", new fr.wseduc.webutils.collections.JsonArray()));
 				}
 
 				handler.handle(formattedResult);

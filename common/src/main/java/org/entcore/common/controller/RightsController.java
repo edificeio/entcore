@@ -54,7 +54,7 @@ public class RightsController extends BaseController {
 			if (isSharingRight(action)) {
 				JsonArray a = rights.getJsonArray(action.getDisplayName());
 				if (a == null) {
-					a = new JsonArray();
+					a = new fr.wseduc.webutils.collections.JsonArray();
 					rights.put(action.getDisplayName(), a);
 				}
 				a.add(action.getName().replaceAll("\\.", "-"));

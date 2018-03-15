@@ -55,7 +55,7 @@ public class MessageUserFilter implements ResourcesProvider {
 			"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
 
 
-		JsonArray values = new JsonArray()
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId());
 		for(String id : messageIds){
 			values.add(id);

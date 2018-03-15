@@ -44,7 +44,7 @@ public class OwnerOnly implements ResourcesProvider {
 			String query =
 					"SELECT count(*) FROM " + conf.getSchema() + conf.getTable() +
 					" WHERE id = ? AND owner = ?";
-			JsonArray values = new JsonArray().add(Sql.parseId(id)).add(user.getUserId());
+			JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(id)).add(user.getUserId());
 			Sql.getInstance().prepared(query, values, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {

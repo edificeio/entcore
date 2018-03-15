@@ -137,7 +137,7 @@ public class DefaultWidgetService implements WidgetService {
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
-				.put("groupIds", new JsonArray(groupIds));
+				.put("groupIds", new fr.wseduc.webutils.collections.JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -155,7 +155,7 @@ public class DefaultWidgetService implements WidgetService {
 			"DELETE rel";
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
-				.put("groupIds", new JsonArray(groupIds));
+				.put("groupIds", new fr.wseduc.webutils.collections.JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -173,7 +173,7 @@ public class DefaultWidgetService implements WidgetService {
 			"SET rel.mandatory = true";
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
-				.put("groupIds", new JsonArray(groupIds));
+				.put("groupIds", new fr.wseduc.webutils.collections.JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -190,7 +190,7 @@ public class DefaultWidgetService implements WidgetService {
 			"REMOVE rel.mandatory";
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
-				.put("groupIds", new JsonArray(groupIds));
+				.put("groupIds", new fr.wseduc.webutils.collections.JsonArray(groupIds));
 
 		neo.execute(query, params, Neo4jResult.validEmptyHandler(handler));
 	}
@@ -211,7 +211,7 @@ public class DefaultWidgetService implements WidgetService {
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
 				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -232,7 +232,7 @@ public class DefaultWidgetService implements WidgetService {
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
 				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 			neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -253,7 +253,7 @@ public class DefaultWidgetService implements WidgetService {
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
 				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
@@ -275,7 +275,7 @@ public class DefaultWidgetService implements WidgetService {
 		JsonObject params = new JsonObject()
 				.put("widgetId", widgetId)
 				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}

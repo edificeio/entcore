@@ -100,7 +100,7 @@ public class Transition {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					if ("ok".equals(m.body().getString("status"))) {
-						JsonArray r = m.body().getJsonArray("result", new JsonArray());
+						JsonArray r = m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
 						groupsUsers.addAll(r.getList());
 						Structure s = GraphData.getStructures().get(structuresExternalId[j]);
 						if (s == null) {
@@ -125,7 +125,7 @@ public class Transition {
 				}
 			};
 		}
-		handlers[0].handle(new ResultMessage().put("result", new JsonArray()));
+		handlers[0].handle(new ResultMessage().put("result", new fr.wseduc.webutils.collections.JsonArray()));
 	}
 
 	private Handler<Message<JsonObject>> commitHandler(final Handler<Message<JsonObject>> handler,
@@ -134,7 +134,7 @@ public class Transition {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				if ("ok".equals(m.body().getString("status"))) {
-					JsonArray r = m.body().getJsonArray("result", new JsonArray());
+					JsonArray r = m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
 					groupsUsers.addAll(r.getList());
 					try {
 						TransactionManager.getInstance().persist(GRAPH_DATA_UPDATE, false,
@@ -144,7 +144,7 @@ public class Transition {
 								if ("ok".equals(event.body().getString("status"))) {
 									if (handler != null) {
 										handler.handle(new ResultMessage()
-												.put("result", new JsonArray(new ArrayList<>(groupsUsers))));
+												.put("result", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupsUsers))));
 									}
 								} else {
 									log.error("Transition commit error");

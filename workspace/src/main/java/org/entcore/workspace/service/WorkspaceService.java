@@ -171,7 +171,7 @@ public class WorkspaceService extends BaseController {
 				if (event.isRight()) {
 					JsonObject n = event.right().getValue().getJsonObject("notify-timeline");
 					if (n != null) {
-						notifyShare(request, id, user, new JsonArray().add(n));
+						notifyShare(request, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n));
 					}
 					renderJson(request, event.right().getValue());
 				} else {
@@ -211,7 +211,7 @@ public class WorkspaceService extends BaseController {
 							if (event.isRight()) {
 								JsonObject n = event.right().getValue().getJsonObject("notify-timeline");
 								if (n != null) {
-									notifyShare(request, id, user, new JsonArray().add(n), true);
+									notifyShare(request, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n), true);
 								} else {
 									n = new JsonObject();
 								}
@@ -552,15 +552,15 @@ public class WorkspaceService extends BaseController {
 	}
 
 	private void incrementStorage(JsonObject added) {
-		updateStorage(new JsonArray().add(added), null);
+		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), null);
 	}
 
 	private void decrementStorage(JsonObject removed) {
-		updateStorage(null, new JsonArray().add(removed));
+		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed));
 	}
 
 	private void decrementStorage(JsonObject removed, Handler<Either<String, JsonObject>> handler) {
-		updateStorage(null, new JsonArray().add(removed), handler);
+		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed), handler);
 	}
 
 	private void incrementStorage(JsonArray added) {
@@ -572,7 +572,7 @@ public class WorkspaceService extends BaseController {
 	}
 
 	private void updateStorage(JsonObject added, JsonObject removed) {
-		updateStorage(new JsonArray().add(added), new JsonArray().add(removed));
+		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), new JsonArray().add(removed));
 	}
 
 	private void updateStorage(JsonArray addeds, JsonArray removeds) {
@@ -816,7 +816,7 @@ public class WorkspaceService extends BaseController {
 								for(Object obj : r.right().getValue()){
 									JsonObject item = (JsonObject) obj;
 									if(item.containsKey("file"))
-										deleteAllRevisions(item.getString("_id"), new JsonArray().add(item.getString("file")));
+										deleteAllRevisions(item.getString("_id"), new fr.wseduc.webutils.collections.JsonArray().add(item.getString("file")));
 								}
 								//Decrement storage
 								decrementStorage(r.right().getValue());
@@ -879,7 +879,7 @@ public class WorkspaceService extends BaseController {
 	private void createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection,
 			final String documentId, final Handler<Message<JsonObject>> callback) {
 		Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
-		JsonArray outputs = new JsonArray();
+		JsonArray outputs = new fr.wseduc.webutils.collections.JsonArray();
 		for (String thumb: thumbs) {
 			Matcher m = size.matcher(thumb);
 			if (m.matches()) {
@@ -1190,7 +1190,7 @@ public class WorkspaceService extends BaseController {
 											@Override
 											public void handle(final JsonObject result2) {
 												if ("ok".equals(result2.getString("status"))) {
-													deleteAllRevisions(id, new JsonArray().add(file));
+													deleteAllRevisions(id, new fr.wseduc.webutils.collections.JsonArray().add(file));
 													decrementStorage(result, new Handler<Either<String, JsonObject>>() {
 														@Override
 														public void handle(Either<String, JsonObject> event) {
@@ -1252,7 +1252,7 @@ public class WorkspaceService extends BaseController {
 		}
 		final String folder = folder2;
 		if (ids != null && !ids.trim().isEmpty()) {
-			JsonArray idsArray = new JsonArray(Arrays.asList(ids.split(",")));
+			JsonArray idsArray = new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids.split(",")));
 			String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}";
 			if (owner != null) {
 				criteria += ", \"to\" : \"" + owner + "\"";
@@ -1264,7 +1264,7 @@ public class WorkspaceService extends BaseController {
 					JsonObject src = r.body();
 					if ("ok".equals(src.getString("status")) && src.getJsonArray("results") != null) {
 						final JsonArray origs = src.getJsonArray("results");
-						final JsonArray insert = new JsonArray();
+						final JsonArray insert = new fr.wseduc.webutils.collections.JsonArray();
 						final AtomicInteger number = new AtomicInteger(origs.size());
 						emptySize(user, new Handler<Long>() {
 							@Override
@@ -1299,7 +1299,7 @@ public class WorkspaceService extends BaseController {
 									} else if (user != null) {
 										dest.put("owner", user.getUserId());
 										dest.put("ownerName", user.getUsername());
-										dest.put("shared", new JsonArray());
+										dest.put("shared", new fr.wseduc.webutils.collections.JsonArray());
 									}
 									dest.put("_id", UUID.randomUUID().toString());
 									dest.put("created", now);
@@ -1544,7 +1544,7 @@ public class WorkspaceService extends BaseController {
 								@Override
 								public void handle(Message<JsonObject> res) {
 									if ("ok".equals(res.body().getString("status"))) {
-										JsonArray values = res.body().getJsonArray("values", new JsonArray("[]"));
+										JsonArray values = res.body().getJsonArray("values", new fr.wseduc.webutils.collections.JsonArray("[]"));
 										JsonArray out = values;
 										if (hierarchical != null) {
 											Set<String> folders = new HashSet<String>();
@@ -1566,11 +1566,11 @@ public class WorkspaceService extends BaseController {
 													}
 												}
 											}
-											out = new JsonArray(new ArrayList<>(folders));
+											out = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(folders));
 										}
 										renderJson(request, out);
 									} else {
-										renderJson(request, new JsonArray());
+										renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 									}
 								}
 							});
@@ -1622,7 +1622,7 @@ public class WorkspaceService extends BaseController {
 							};
 
 							//'Flatten' the share users & group into a user id list (excluding the current user)
-							flattenShareIds(document.getJsonArray("shared", new JsonArray()), user, shareNotificationHandler);
+							flattenShareIds(document.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray()), user, shareNotificationHandler);
 
 							//If the user commenting is not the owner, send a notification to the owner
 							if(!document.getString("owner").equals(user.getUserId())){
@@ -1895,7 +1895,7 @@ public class WorkspaceService extends BaseController {
 			public void handle(UserInfos user) {
 				if (user != null && user.getUserId() != null) {
 					if (ids != null && !ids.trim().isEmpty()) {
-						JsonArray idsArray = new JsonArray(Arrays.asList(ids.split(",")));
+						JsonArray idsArray = new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids.split(",")));
 						final String criteria = "{ \"_id\" : { \"$in\" : " + idsArray.encode() + "}}";
 
 						if (folder != null && !folder.trim().isEmpty()) {
@@ -2006,7 +2006,7 @@ public class WorkspaceService extends BaseController {
 							if ("ok".equals(status) && results != null) {
 								renderJson(request, results);
 							} else {
-								renderJson(request, new JsonArray());
+								renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 							}
 						}
 					});
@@ -2064,7 +2064,7 @@ public class WorkspaceService extends BaseController {
 							if ("ok".equals(status) && results != null) {
 								renderJson(request, results);
 							} else {
-								renderJson(request, new JsonArray());
+								renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 							}
 						}
 					});
@@ -2156,7 +2156,7 @@ public class WorkspaceService extends BaseController {
 		}
 		String name = message.body().getString("name");
 		String application = message.body().getString("application");
-		JsonArray t = message.body().getJsonArray("thumbs", new JsonArray());
+		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
 		List<String> thumbs = new ArrayList<>();
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
@@ -2181,7 +2181,7 @@ public class WorkspaceService extends BaseController {
 			return;
 		}
 		String name = message.body().getString("name");
-		JsonArray t = message.body().getJsonArray("thumbs", new JsonArray());
+		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
 		List<String> thumbs = new ArrayList<>();
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
@@ -2366,7 +2366,7 @@ public class WorkspaceService extends BaseController {
 			public void handle(Either<String, JsonArray> event) {
 				if (event.isRight()) {
 					final JsonArray results = event.right().getValue();
-					final JsonArray ids = new JsonArray();
+					final JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 					for(Object obj : results){
 						JsonObject json = (JsonObject) obj;
 						String id = json.getString("file");

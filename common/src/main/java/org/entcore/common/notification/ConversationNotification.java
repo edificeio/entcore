@@ -75,7 +75,7 @@ public class ConversationNotification {
 	public void notify(final HttpServerRequest request, String from, JsonArray to, JsonArray cc, String subject,
 		String message, final Handler<Either<String, JsonObject>> result) {
 		if (cc == null) {
-			cc = new JsonArray();
+			cc = new fr.wseduc.webutils.collections.JsonArray();
 		}
 		if (subject == null || message == null || to == null || from == null) {
 			result.handle(new Either.Left<String, JsonObject>("Conversation notification : invalid parameters"));

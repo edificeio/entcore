@@ -147,7 +147,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			@Override
 			public void handle(final Either<String, JsonArray> event) {
 				if (event.isRight()) {
-					JsonArray ids = new JsonArray();
+					JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 					final Set<String> userIds = new HashSet<>();
 					final JsonArray users = event.right().getValue();
 					for (Object o: users) {

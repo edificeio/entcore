@@ -109,7 +109,7 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 								if ("ok".equals(f.getString("status"))) {
 									workspaceHelper.addDocument(f,
 											UserUtils.sessionToUserInfos(session), name, "mediaLibrary",
-											true, new JsonArray(), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+											true, new fr.wseduc.webutils.collections.JsonArray(), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 												@Override
 												public void handle(Message<JsonObject> event) {
 													if ("ok".equals(event.body().getString("status"))) {

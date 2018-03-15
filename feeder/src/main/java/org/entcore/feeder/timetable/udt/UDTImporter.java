@@ -236,7 +236,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String id = currentEntity.getString(CODE);
 			String externalId = currentEntity.getString("epj");
 			JsonObject p = persEducNat.applyMapping(currentEntity);
-			p.put("profiles", new JsonArray().add("Teacher"));
+			p.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Teacher"));
 			if (isEmpty(externalId)) {
 				externalId = JsonUtil.checksum(p, JsonUtil.HashAlgorithm.MD5);
 			}
@@ -300,7 +300,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			JsonArray groups = group.getJsonArray("groups");
 			if (groups == null) {
-				groups = new JsonArray();
+				groups = new fr.wseduc.webutils.collections.JsonArray();
 				group.put("groups", groups);
 			}
 			groups.add(name);
@@ -313,7 +313,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			JsonArray groups = classe.getJsonArray("groups");
 			if (groups == null) {
-				groups = new JsonArray();
+				groups = new fr.wseduc.webutils.collections.JsonArray();
 				classe.put("groups", groups);
 			}
 			groups.add(name);
@@ -516,9 +516,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 		final Set<String> ce = coens.get(start);
 		JsonArray teacherIds;
 		if (ce != null && ce.size() > 0) {
-			teacherIds = new JsonArray(new ArrayList<>(ce));
+			teacherIds = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ce));
 		} else {
-			teacherIds = new JsonArray();
+			teacherIds = new fr.wseduc.webutils.collections.JsonArray();
 		}
 		final String pId = teachers.get(entity.getString("prof"));
 		if (isNotEmpty(pId)) {
@@ -537,16 +537,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 		final String rId = rooms.get(entity.getString("salle"));
 		if (isNotEmpty(rId)) {
-			c.put("roomLabels", new JsonArray().add(rId));
+			c.put("roomLabels", new fr.wseduc.webutils.collections.JsonArray().add(rId));
 		}
 		final JsonObject cId = classes.get(entity.getString("div"));
 		if (cId != null && isNotEmpty(cId.getString("className"))) {
-			c.put("classes", new JsonArray().add(cId.getString("className")));
+			c.put("classes", new fr.wseduc.webutils.collections.JsonArray().add(cId.getString("className")));
 		}
 
 		JsonArray groups;
 		if (isNotEmpty(entity.getString("rgpmt")) || isNotEmpty(entity.getString("gpe"))) {
-			groups = new JsonArray();
+			groups = new fr.wseduc.webutils.collections.JsonArray();
 			c.put("groups", groups);
 			String name = regroup.get(entity.getString("rgpmt"));
 			if (isNotEmpty(name)) {

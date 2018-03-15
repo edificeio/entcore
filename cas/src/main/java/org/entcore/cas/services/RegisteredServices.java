@@ -66,7 +66,7 @@ public class RegisteredServices {
 	}
 
 	public JsonArray getInfos(String acceptLanguage) {
-		JsonArray infos = new JsonArray();
+		JsonArray infos = new fr.wseduc.webutils.collections.JsonArray();
 		for (RegisteredService registeredService: services) {
 			infos.add(registeredService.getInfos(acceptLanguage));
 		}

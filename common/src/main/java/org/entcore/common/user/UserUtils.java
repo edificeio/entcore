@@ -41,7 +41,7 @@ public class UserUtils {
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
 	private static final String SESSION_ADDRESS = "wse.session";
-	private static final JsonArray usersTypes = new JsonArray().add("User");
+	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
@@ -58,7 +58,7 @@ public class UserUtils {
 						&& !session.getString("userId").trim().isEmpty()) {
 					findUsers(eb, session.getString("userId"), query, handler);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
@@ -75,12 +75,12 @@ public class UserUtils {
 					if (res.succeeded()) {
 						handler.handle(res.result().body());
 					} else {
-						handler.handle(new JsonArray());
+						handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 					}
 				}
 			});
 		} else {
-			handler.handle(new JsonArray());
+			handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}
 
@@ -195,7 +195,7 @@ public class UserUtils {
 					}
 					handler.handle(r);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
@@ -291,7 +291,7 @@ public class UserUtils {
 				if (res.succeeded()) {
 					handler.handle(res.result().body());
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});

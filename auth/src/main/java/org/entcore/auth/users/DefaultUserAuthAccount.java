@@ -350,7 +350,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						.put("provider", smsProvider)
 		    			.put("action", "send-sms")
 		    			.put("parameters", new JsonObject()
-		    				.put("receivers", new JsonArray().add(formattedPhone))
+		    				.put("receivers", new fr.wseduc.webutils.collections.JsonArray().add(formattedPhone))
 		    				.put("message", body)
 		    				.put("senderForResponse", true)
 		    				.put("noStopClause", true));

@@ -232,7 +232,7 @@ public class TimetableController extends BaseController {
 				}
 				break;
 			case "get.subjects":
-				final List<String> teachers = message.body().getJsonArray("teacherIds", new JsonArray()).getList();
+				final List<String> teachers = message.body().getJsonArray("teacherIds", new fr.wseduc.webutils.collections.JsonArray()).getList();
 				final String externalGroupId = message.body().getString("externalGroupId");
 				final boolean classes = message.body().getBoolean("classes", false);
 				final boolean groups = message.body().getBoolean("groups", false);

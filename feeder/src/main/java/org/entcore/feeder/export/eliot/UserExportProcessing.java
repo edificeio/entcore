@@ -44,7 +44,7 @@ public abstract class UserExportProcessing extends BaseExportProcessing {
 	protected UserExportProcessing(String mapping, int nbByFile, String basePath, JsonArray profiles,
 			String category, String date, String stdPrefix, boolean concat) {
 		super(mapping, nbByFile, basePath + File.separator + stdPrefix + "_Complet_" + date + "_" + category + "_", concat);
-		attributes = new JsonArray(new ArrayList<>(exportMapping.fieldNames())).add("externalId");
+		attributes = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(exportMapping.fieldNames())).add("externalId");
 		this.profiles = profiles;
 		this.category = category;
 		this.basePath = basePath;

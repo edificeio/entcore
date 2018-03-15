@@ -60,7 +60,7 @@ public class RelativeStudentFilter implements ResourcesProvider {
 				"MATCH (s)<-[:DEPENDS]-(:Group)<-[:IN]-(:User { id : {id}}) " +
 				"WHERE (s:Structure OR s:Class) AND s.id IN {scope} " +
 				"RETURN count(*) > 0 as exists ";
-		JsonArray scope = new JsonArray(adminLocal.getScope());
+		JsonArray scope = new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope());
 		StatementsBuilder s = new StatementsBuilder()
 				.add(query, new JsonObject()
 						.put("id", studentId)

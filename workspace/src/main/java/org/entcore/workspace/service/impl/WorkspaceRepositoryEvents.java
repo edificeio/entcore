@@ -156,7 +156,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 								exported.set(true);
 								handler.handle(exported.get());
 							} else {
-								JsonArray errors = event.getJsonArray("errors", new JsonArray());
+								JsonArray errors = event.getJsonArray("errors", new fr.wseduc.webutils.collections.JsonArray());
 								boolean ignoreErrors = errors.size() > 0;
 								for (Object o : errors) {
 									if (!(o instanceof JsonObject)) continue;
@@ -171,7 +171,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 									exported.set(true);
 									handler.handle(exported.get());
 								} else {
-									log.error("Write to fs : " + new JsonArray(Arrays.asList(ids)).encode() + " - " + event.encode());
+									log.error("Write to fs : " + new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - " + event.encode());
 									handler.handle(exported.get());
 								}
 							}
@@ -220,7 +220,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				}
 			};
 			if (shareOldGroupsToUsers) {
-				JsonArray userShare = new JsonArray();
+				JsonArray userShare = new fr.wseduc.webutils.collections.JsonArray();
 				for (Object u : j.getJsonArray("users")) {
 					JsonObject share = new JsonObject()
 							.put("userId", u.toString())
@@ -278,7 +278,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				String status = res.body().getString("status");
 				JsonArray results = res.body().getJsonArray("results");
 				if ("ok".equals(status) && results != null && results.size() > 0) {
-					JsonArray fileIds = new JsonArray();
+					JsonArray fileIds = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object o : results) {
 						if (o instanceof JsonObject) {
 							fileIds.add(((JsonObject) o).getString("file"));

@@ -40,10 +40,10 @@ public class SSOAten extends AbstractSSOProvider {
 		}
 
 		if (vectors.size() > 1) {
-			JsonArray uais = new JsonArray();
-			JsonArray attachmentId = new JsonArray();
-			JsonArray firstName = new JsonArray();
-			JsonArray lastName = new JsonArray();
+			JsonArray uais = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray attachmentId = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray firstName = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray lastName = new fr.wseduc.webutils.collections.JsonArray();
 			for (String vector : vectors) {
 				String values[] = vector.split("\\|");
 				if (values.length < 5 || values[3].trim().isEmpty() || values[4].trim().isEmpty() ||

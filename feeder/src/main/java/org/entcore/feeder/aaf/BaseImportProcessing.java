@@ -177,7 +177,7 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 				file = file.substring(0, file.length() - 1);
 			}
 			try {
-				JsonArray importDirectories = new JsonArray(vertx.fileSystem()
+				JsonArray importDirectories = new fr.wseduc.webutils.collections.JsonArray(vertx.fileSystem()
 						.readFileBlocking(new File(file).getParent() + File.separator + AafFeeder.IMPORT_DIRECTORIES_JSON).toString());
 				final String[] a = file.split(File.separator);
 				final String dirName = a[a.length - 1];

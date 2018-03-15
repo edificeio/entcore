@@ -81,12 +81,12 @@ public class DefaultConversationService implements ConversationService {
 				"RETURN COLLECT(distinct (v.id + '$' + coalesce(v.displayName, ' ') + '$' + " +
 				"coalesce(v.name, ' ') + '$' + coalesce(v.groupDisplayName, ' '))) as displayNames ";
 		Set<String> ids = new HashSet<>();
-		ids.addAll(message.getJsonArray("to", new JsonArray()).getList());
-		ids.addAll(message.getJsonArray("cc", new JsonArray()).getList());
+		ids.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
+		ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
 		if (message.containsKey("from")) {
 			ids.add(message.getString("from"));
 		}
-		neo.execute(query, new JsonObject().put("ids", new JsonArray(new ArrayList<>(ids))),
+		neo.execute(query, new JsonObject().put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids))),
 				new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -236,7 +236,7 @@ public class DefaultConversationService implements ConversationService {
 						return;
 					}
 
-					JsonArray attachments = event.right().getValue().getJsonArray("attachments", new JsonArray());
+					JsonArray attachments = event.right().getValue().getJsonArray("attachments", new fr.wseduc.webutils.collections.JsonArray());
 
 					if(attachments.size() < 1){
 						sendWithoutAttachments(parentMessageId, messageId, user, result);
@@ -680,8 +680,8 @@ public class DefaultConversationService implements ConversationService {
 			findVisibles(eb, user.getUserId(), groups, params, true, true, true, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
-					JsonArray users = new JsonArray();
-					JsonArray groups = new JsonArray();
+					JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 					visible.put("groups", groups).put("users", users);
 					for (Object o: visibles) {
 						if (!(o instanceof JsonObject)) continue;

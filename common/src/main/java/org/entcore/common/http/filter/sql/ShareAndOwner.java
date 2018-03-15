@@ -56,7 +56,7 @@ public class ShareAndOwner implements ResourcesProvider {
 					" LEFT JOIN " + conf.getSchema() + conf.getShareTable() + " ON id = resource_id " +
 					"WHERE ((member_id IN " + Sql.listPrepared(groupsAndUserIds) + " AND action = ?) " +
 					"OR owner = ?) AND id = ?";
-			JsonArray values = new JsonArray(gu).add(sharedMethod)
+			JsonArray values = new fr.wseduc.webutils.collections.JsonArray(gu).add(sharedMethod)
 					.add(user.getUserId()).add(Sql.parseId(id));
 			Sql.getInstance().prepared(query, values, new Handler<Message<JsonObject>>() {
 				@Override

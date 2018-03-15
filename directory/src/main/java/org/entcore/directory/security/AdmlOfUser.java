@@ -53,7 +53,7 @@ public class AdmlOfUser extends AdmlResourcesProvider {
 						"RETURN count(*) > 0 as exists ";
 
 				JsonObject params = new JsonObject()
-						.put("structures", new JsonArray(adminLocal.getScope()))
+						.put("structures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()))
 						.put("userId", userId);
 				validateQuery(resourceRequest, handler, query, params);
 			}

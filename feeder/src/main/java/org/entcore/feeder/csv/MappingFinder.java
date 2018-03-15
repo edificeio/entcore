@@ -70,7 +70,7 @@ public class MappingFinder {
 			additionalColumn = true;
 			externalIdIdx = 0;
 		}
-		final JsonArray errors = new JsonArray();
+		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		String filter = "";
 		if ("Student".equals(profile)) {
 			filter = "AND u.birthDate = {birthDate} ";
@@ -150,7 +150,7 @@ public class MappingFinder {
 						}
 					} catch (Exception e) {
 						errors.add(new JsonObject().put("key", "parse.line.error").put("params",
-								new JsonArray().add(Integer.toString(rowIdx))));
+								new fr.wseduc.webutils.collections.JsonArray().add(Integer.toString(rowIdx))));
 					}
 
 					tx.add(query, params);
@@ -203,8 +203,8 @@ public class MappingFinder {
 			final JsonArray errors, final Handler<JsonArray> handler) {
 		final List<String[]> lines = new ArrayList<>();
 
-		final JsonArray childLastNameIndex = new JsonArray();
-		final JsonArray childUsernameIndex = new JsonArray();
+		final JsonArray childLastNameIndex = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray childUsernameIndex = new fr.wseduc.webutils.collections.JsonArray();
 		int idx = 0;
 		for (String c : columns) {
 			if ("childLastName".equals(c)) {
@@ -267,8 +267,8 @@ public class MappingFinder {
 					continue;
 				}
 
-				final JsonArray firstNames = new JsonArray();
-				final JsonArray lastNames = new JsonArray();
+				final JsonArray firstNames = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray lastNames = new fr.wseduc.webutils.collections.JsonArray();
 				try {
 					int i = 0;
 					for (String c : columns) {
@@ -285,12 +285,12 @@ public class MappingFinder {
 					}
 				} catch (Exception e) {
 					errors.add(new JsonObject().put("key", "parse.line.error").put("params",
-							new JsonArray().add(Integer.toString(rowIdx))));
+							new fr.wseduc.webutils.collections.JsonArray().add(Integer.toString(rowIdx))));
 				}
 				final int fns = firstNames.size();
 				if (fns != lastNames.size()) {
 					errors.add(new JsonObject().put("key", "child.lastName.firstName.mismatch").put("params",
-							new JsonArray().add(Integer.toString(rowIdx))));
+							new fr.wseduc.webutils.collections.JsonArray().add(Integer.toString(rowIdx))));
 				} else if (fns > 0) {
 //					if (fns > maxNbChild) {
 //						maxNbChild = fns;
@@ -355,7 +355,7 @@ public class MappingFinder {
 		JsonObject o = new JsonObject().put("key", s);
 		errors.add(o);
 		if (params.length > 0) {
-			o.put("params", new JsonArray(Arrays.asList(params)));
+			o.put("params", new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(params)));
 		}
 	}
 

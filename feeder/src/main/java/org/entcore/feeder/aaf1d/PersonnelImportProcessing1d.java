@@ -63,7 +63,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 	@Override
 	public void process(JsonObject object) {
 		String profile = detectProfile(object);
-		object.put("profiles", new JsonArray()
+		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
 		if (email != null && !email.trim().isEmpty()) {
@@ -77,7 +77,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 				if (!(o instanceof String) || !o.toString().contains("$")) continue;
 				s.add(o.toString().substring(0, o.toString().indexOf('$')));
 			}
-			structuresByFunctions = new JsonArray(new ArrayList<>(s));
+			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
 		}
 		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, null, true, true);
 	}

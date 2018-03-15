@@ -65,7 +65,7 @@ public class RoleGroupFilter implements ResourcesProvider {
 		final JsonObject params = new JsonObject()
 			.put("groupId", groupId)
 			.put("roleId", roleId)
-			.put("scopedStructures", new JsonArray(adminLocal.getScope()));
+			.put("scopedStructures", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
 
 		final String regularQuery =
 				"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(:Group {id: {groupId}}), (r:Role) " +

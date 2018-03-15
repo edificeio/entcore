@@ -44,7 +44,7 @@ public class EtabEducNatExportProcessing extends BaseExportProcessing {
 		super("dictionary/export/eliot/EtabEducNat.json", 5000, path + File.separator +
 				stdPrefix + "_Complet_" + date + "_EtabEducNat_", concat);
 		this.basePath = path;
-		attributes = new JsonArray(new ArrayList<>(exportMapping.fieldNames())).add("externalId");
+		attributes = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(exportMapping.fieldNames())).add("externalId");
 		this.date = date;
 	}
 

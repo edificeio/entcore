@@ -33,14 +33,14 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 	@Override
 	public void create(JsonObject data, Handler<Either<String, JsonObject>> handler) {
 		JsonObject now = MongoDb.now();
-		data.put("created", now).put("modified", now).put("readCount", 0).put("markedAsRead", new JsonArray());
+		data.put("created", now).put("modified", now).put("readCount", 0).put("markedAsRead", new fr.wseduc.webutils.collections.JsonArray());
 		mongo.save(collection, data,
 				MongoDbResult.validActionResultHandler(handler));
 	}
 
 	@Override
 	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler) {
-		QueryBuilder q = QueryBuilder.start("_id").in(new JsonArray(ids));
+		QueryBuilder q = QueryBuilder.start("_id").in(new fr.wseduc.webutils.collections.JsonArray(ids));
 		mongo.delete(collection, MongoQueryBuilder.build(q), validActionResultHandler(handler));
 	}
 

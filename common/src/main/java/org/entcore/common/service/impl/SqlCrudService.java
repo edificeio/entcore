@@ -92,7 +92,7 @@ public class SqlCrudService implements CrudService {
 //		);
 //		s.raw(userQuery);
 		String userQuery = "SELECT " + schema + "merge_users(?,?)";
-		s.prepared(userQuery, new JsonArray().add(user.getUserId()).add(user.getUsername()));
+		s.prepared(userQuery, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUsername()));
 		data.put("owner", user.getUserId());
 		s.insert(resourceTable, data, "id");
 		sql.transaction(s.build(), validUniqueResultHandler(1, handler));
@@ -109,10 +109,10 @@ public class SqlCrudService implements CrudService {
 					" LEFT JOIN " + schema + "members ON (member_id = " + schema + "members.id AND group_id IS NOT NULL) " +
 					" WHERE " + resourceTable + ".id = ? " +
 					" GROUP BY " + resourceTable + ".id";
-			sql.prepared(query, new JsonArray().add(parseId(id)), parseSharedUnique(handler));
+			sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(parseId(id)), parseSharedUnique(handler));
 		} else {
 			String query = "SELECT " + expectedValues() + " FROM " + resourceTable + " WHERE id = ?";
-			sql.prepared(query, new JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
+			sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
 		}
 	}
 
@@ -120,7 +120,7 @@ public class SqlCrudService implements CrudService {
 	public void retrieve(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		String filter = user == null ? " AND visibility = '" + VisibilityFilter.PUBLIC.name() + "'" : "";
 		String query = "SELECT " + expectedValues() + " FROM " + resourceTable + " WHERE id = ?" + filter;
-		sql.prepared(query, new JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
+		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(parseId(id)), validUniqueResultHandler(handler));
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class SqlCrudService implements CrudService {
 	@Override
 	public void update(String id, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : data.fieldNames()) {
 			sb.append(attr).append(" = ?, ");
 			values.add(data.getValue(attr));
@@ -151,7 +151,7 @@ public class SqlCrudService implements CrudService {
 	@Override
 	public void delete(String id, UserInfos user, Handler<Either<String, JsonObject>> handler) {
 		String query = "DELETE FROM " + resourceTable + " WHERE id = ?";
-		sql.prepared(query, new JsonArray().add(parseId(id)), validRowsResultHandler(handler));
+		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(parseId(id)), validRowsResultHandler(handler));
 	}
 
 	@Override
@@ -173,7 +173,7 @@ public class SqlCrudService implements CrudService {
 	@Override
 	public void list(VisibilityFilter filter, UserInfos user, Handler<Either<String, JsonArray>> handler) {
 		String query;
-		JsonArray values = new JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		if (user != null) {
 			List<String> gu = new ArrayList<>();
 			gu.add(user.getUserId());
@@ -190,13 +190,13 @@ public class SqlCrudService implements CrudService {
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
 							" LEFT JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) + " OR owner = ?";
-					values = new JsonArray(gu).add(user.getUserId());
+					values = new fr.wseduc.webutils.collections.JsonArray(gu).add(user.getUserId());
 					break;
 				case SHARED:
 					query = "SELECT DISTINCT " + expectedListValues() + " FROM " + resourceTable +
 							" INNER JOIN " + shareTable + " ON id = resource_id " +
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds);
-					values = new JsonArray(gu);
+					values = new fr.wseduc.webutils.collections.JsonArray(gu);
 					break;
 				case PROTECTED:
 					query = "SELECT " + expectedListValues() + " FROM " + resourceTable + " WHERE visibility = ?";
@@ -215,7 +215,7 @@ public class SqlCrudService implements CrudService {
 							"WHERE member_id IN " + Sql.listPrepared(groupsAndUserIds) +
 							" OR owner = ? OR visibility IN (?,?) " +
 							" GROUP BY " + resourceTable + ".id";
-					values = new JsonArray(gu).add(user.getUserId())
+					values = new fr.wseduc.webutils.collections.JsonArray(gu).add(user.getUserId())
 						.add(VisibilityFilter.PROTECTED.name())
 						.add(VisibilityFilter.PUBLIC.name());
 					break;
@@ -233,7 +233,7 @@ public class SqlCrudService implements CrudService {
 	@Override
 	public void isOwner(String id, UserInfos user, final Handler<Boolean> handler) {
 		String query = "SELECT count(*) FROM " + resourceTable + " WHERE owner = ? AND id = ?";
-		sql.prepared(query, new JsonArray().add(user.getUserId()).add(parseId(id)), new Handler<Message<JsonObject>>() {
+		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(parseId(id)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				Long count = countResult(message);

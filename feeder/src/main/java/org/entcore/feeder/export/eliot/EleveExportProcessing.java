@@ -30,7 +30,7 @@ public class EleveExportProcessing extends UserExportProcessing {
 	private final String stdPrefix;
 
 	public EleveExportProcessing(String path, String date, String stdPrefix, boolean concat) {
-		super("dictionary/export/eliot/Eleve.json", 5000, path, new JsonArray().add("Student"),
+		super("dictionary/export/eliot/Eleve.json", 5000, path, new fr.wseduc.webutils.collections.JsonArray().add("Student"),
 				"Eleve", date, stdPrefix, concat);
 		this.date = date;
 		this.stdPrefix = stdPrefix;

@@ -331,7 +331,7 @@ public class FileStorage implements Storage {
 	public void removeFiles(JsonArray ids, final Handler<JsonObject> handler) {
 		final JsonObject res = new JsonObject();
 		final AtomicInteger count = new AtomicInteger(ids.size());
-		final JsonArray errors = new JsonArray();
+		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (final Object o: ids) {
 			if (o == null) {
 				decrementRemove(count, errors, handler, res);
@@ -417,7 +417,7 @@ public class FileStorage implements Storage {
 	public void writeToFileSystem(String[] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
 		final AtomicInteger count = new AtomicInteger(ids.length);
-		final JsonArray errors = new JsonArray();
+		final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (final String id: ids) {
 			if (id == null || id.isEmpty()) {
 				decrementWriteToFS(count, errors, handler);

@@ -90,7 +90,7 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 
 					// Structures
 					Element rootStructures = createElement(EA_STRUCTURE+"s", doc);
-					for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
+					for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
 						Element rootStructure = createElement(EA_STRUCTURE, doc);
 						Map<String, Object> structure = ((Map<String, Object>) o);
 						if (structure.containsKey("UAI")) {

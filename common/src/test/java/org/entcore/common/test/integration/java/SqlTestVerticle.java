@@ -63,8 +63,8 @@
 //				if (ar.succeeded()) {
 //					eb = vertx.eventBus();
 //					Sql.getInstance().init(eb, ADDRESS);
-//					JsonArray r = new JsonArray().add("id").add("name").add("number").add("modified");
-//					JsonArray rl = new JsonArray().add("id").add("name");
+//					JsonArray r = new fr.wseduc.webutils.collections.JsonArray().add("id").add("name").add("number").add("modified");
+//					JsonArray rl = new fr.wseduc.webutils.collections.JsonArray().add("id").add("name");
 //					crudService = new SqlCrudService("test", "tests", null, r, rl, true);
 //					shareService = new SqlShareService(eb, null, null);
 //					SqlTestVerticle.super.start();

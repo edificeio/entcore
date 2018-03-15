@@ -199,7 +199,7 @@
 //				String action = message.body().getString("action", "");
 //				switch (action) {
 //					case "delete-groups" :
-//						JsonArray groups = message.body().getJsonArray("old-groups", new JsonArray());
+//						JsonArray groups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
 //						assertEquals(177 * 5 + 167, groups.size());
 //						String countQuery =
 //								"MATCH (s:Structure) " +
@@ -280,7 +280,7 @@
 //				String action = message.body().getString("action", "");
 //				switch (action) {
 //					case "delete-users":
-//						JsonArray users = message.body().getJsonArray("old-users", new JsonArray());
+//						JsonArray users = message.body().getJsonArray("old-users", new fr.wseduc.webutils.collections.JsonArray());
 //						assertEquals(11769, users.size());
 //						String type = users.<JsonObject>get(0).getString("type");
 //						assertNotNull(type);

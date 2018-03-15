@@ -56,7 +56,7 @@ public class DeleteOldExports implements Handler<Long> {
 			public void handle(Message<JsonObject> event) {
 				JsonArray res = event.body().getJsonArray("results");
 				if ("ok".equals(event.body().getString("status")) && res != null && res.size() > 0) {
-					JsonArray ids = new JsonArray();
+					JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object object: res) {
 						if (!(object instanceof JsonObject)) continue;
 						ids.add(((JsonObject) object).getString("file_id"));

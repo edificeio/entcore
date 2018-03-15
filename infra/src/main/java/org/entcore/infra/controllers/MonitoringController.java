@@ -84,7 +84,7 @@ public class MonitoringController extends BaseController {
 	@SecuredAction(value = "",  type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void checkVersions(final HttpServerRequest request) {
-		final JsonArray versions = new JsonArray();
+		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
 		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		for (Map.Entry<String,String> entry : versionMap.entrySet()) {
 			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));

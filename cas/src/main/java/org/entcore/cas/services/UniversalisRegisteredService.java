@@ -58,7 +58,7 @@ public class UniversalisRegisteredService extends AbstractCas20ExtensionRegister
 			}
 
 			// Structures
-			for (Object o : data.getJsonArray("structures", new JsonArray()).getList()) {
+			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
 				Map<String, Object> structure = ((Map<String, Object>) o);
 				if (structure.containsKey("UAI")) {
 					additionnalAttributes.add(createTextElement(UNVS_STRUCTURE_UAI, structure.get("UAI").toString(), doc));

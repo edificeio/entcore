@@ -67,13 +67,13 @@ public class MongoDbShareService extends GenericShareService {
 				public void handle(Message<JsonObject> event) {
 					if ("ok".equals(event.body().getString("status"))) {
 						JsonArray shared = event.body().getJsonObject("result", new JsonObject())
-								.getJsonArray("shared", new JsonArray());
+								.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
 						JsonObject gs = new JsonObject();
 						JsonObject us = new JsonObject();
 						for (Object o : shared) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject userShared = (JsonObject) o;
-							JsonArray a = new JsonArray();
+							JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
 							for (String attrName : userShared.fieldNames()) {
 								if ("userId".equals(attrName) || "groupId".equals(attrName)) {
 									continue;
@@ -166,7 +166,7 @@ public class MongoDbShareService extends GenericShareService {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result")
-							.getJsonArray("shared", new JsonArray());
+							.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
 					boolean exist = false;
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
@@ -271,8 +271,8 @@ public class MongoDbShareService extends GenericShareService {
 				if ("ok".equals(event.body().getString("status")) &&
 						event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result")
-							.getJsonArray("shared", new JsonArray());
-					JsonArray shared = new JsonArray();
+							.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray shared = new fr.wseduc.webutils.collections.JsonArray();
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);

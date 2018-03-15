@@ -513,7 +513,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	private void createVectors(String userId,final String host, final Handler<Either<String, JsonArray>> handler) {
 		debug("create user Vector(s)");
 		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
-		final JsonArray jsonArrayResult = new JsonArray();
+		final JsonArray jsonArrayResult = new fr.wseduc.webutils.collections.JsonArray();
 		// browse supported type vector required by the service provider
 		for (final AttributeConsumingService attributeConsumingService : spSSODescriptor.getAttributeConsumingServices()) {
 			for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {

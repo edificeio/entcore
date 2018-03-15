@@ -66,7 +66,7 @@ public class SqlShareService extends GenericShareService {
 		final JsonArray actions = getResoureActions(securedActions);
 		String query = "SELECT s.member_id, s.action, m.group_id FROM " + shareTable + " AS s " +
 				"JOIN " + schema + "members AS m ON s.member_id = m.id WHERE resource_id = ?";
-		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
+		sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status"))) {
@@ -81,7 +81,7 @@ public class SqlShareService extends GenericShareService {
 						final JsonObject checkedActions = (row.getValue(2) != null) ? groupCheckedActions : userCheckedActions;
 						JsonArray m = checkedActions.getJsonArray(memberId);
 						if (m == null) {
-							m = new JsonArray();
+							m = new fr.wseduc.webutils.collections.JsonArray();
 							checkedActions.put(memberId, m);
 						}
 						m.add(row.getValue(1));
@@ -129,7 +129,7 @@ public class SqlShareService extends GenericShareService {
 
 	private void inShare(String resourceId, String shareId, final Handler<Boolean> handler) {
 		String query = "SELECT count(*) FROM " + shareTable + " WHERE resource_id = ? AND member_id = ?";
-		JsonArray params = new JsonArray().add(Sql.parseId(resourceId)).add(shareId);
+		JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(Sql.parseId(resourceId)).add(shareId);
 		sql.prepared(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
@@ -182,10 +182,10 @@ public class SqlShareService extends GenericShareService {
 		if (actions != null && actions.size() > 0) {
 			Object[] a = actions.toArray();
 			actionFilter = "action IN " + Sql.listPrepared(a) + " AND ";
-			values = new JsonArray(actions);
+			values = new fr.wseduc.webutils.collections.JsonArray(actions);
 		} else {
 			actionFilter = "";
-			values = new JsonArray();
+			values = new fr.wseduc.webutils.collections.JsonArray();
 		}
 		String query = "DELETE FROM " + shareTable + " WHERE " + actionFilter + "resource_id = ? AND member_id = ?";
 		values.add(Sql.parseId(resourceId)).add(userId);
@@ -206,12 +206,12 @@ public class SqlShareService extends GenericShareService {
 				"INSERT INTO " + shareTable + " (member_id, resource_id, action) SELECT ?, ?, ? WHERE NOT EXISTS " +
 				"(SELECT * FROM " + shareTable + " WHERE member_id = ? AND resource_id = ? AND action = ?);";
 		for (String action : actions) {
-			JsonArray ar = new JsonArray()
+			JsonArray ar = new fr.wseduc.webutils.collections.JsonArray()
 					.add(shareId).add(rId).add(action).add(shareId).add(rId).add(action);
 			s.prepared(query, ar);
 		}
 		sql.prepared("SELECT count(*) FROM " + shareTable + " WHERE member_id = ? AND resource_id = ?",
-				new JsonArray().add(shareId).add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
+				new fr.wseduc.webutils.collections.JsonArray().add(shareId).add(Sql.parseId(resourceId)), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(final Message<JsonObject> message) {
 				final Long nb = SqlResult.countResult(message);

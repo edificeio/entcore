@@ -212,7 +212,7 @@ public class OAuthDataHandler extends DataHandler {
 								r != null && r.size() == 1) {
 							JsonObject j = r.getJsonObject(0);
 							if (j != null &&
-								j.getJsonArray("scope", new JsonArray()).getList()
+								j.getJsonArray("scope", new fr.wseduc.webutils.collections.JsonArray()).getList()
 										.containsAll(Arrays.asList(scope.split("\\s")))) {
 								createAuthInfo(clientId, userId, scope, redirectUri, handler);
 							} else {
