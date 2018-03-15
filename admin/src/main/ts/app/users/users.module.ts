@@ -10,6 +10,7 @@ import { routes } from './users.routing';
 import { UserDetailsResolver } from './details/user-details.resolver';
 import { ConfigResolver } from './details/config.resolver';
 import { UsersResolver } from './users.resolver';
+import { UsersStore } from './users.store';
 import { UsersComponent } from './users.component';
 import { UserCreate } from './create/user-create.component';
 import { UserDetails } from './details/user-details.component';
@@ -18,6 +19,7 @@ import { UserList } from './list/user-list.component';
 import {
 UserAdministrativeSection,
 UserChildrenSection,
+UserAafFunctionsComponent,
 UserClassesSection,
 UserDuplicatesSection,
 UserFunctionalGroupsSection,
@@ -48,6 +50,7 @@ import { globalStoreProvider } from '../core/store';
         UserFilters,
         UserList,
         UserChildrenSection,
+        UserAafFunctionsComponent,
         UserAdministrativeSection,
         UserInfoSection,
         UserRelativesSection,

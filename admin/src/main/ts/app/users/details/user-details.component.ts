@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+   ChangeDetectionStrategy, ChangeDetectorRef, Component,  OnDestroy, OnInit
+, ViewChild } from '@angular/core';
 import { AbstractControl, NgForm } from '@angular/forms';
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
@@ -56,7 +58,9 @@ import { Config } from './Config';
 
             <div class="panel-message" *ngIf="user?.deleteDate">
                 <i class="fa fa-times-circle"></i>
-                <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilEffectiveDeletion(user.deleteDate))}">user.predeleted</s5l>
+                <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilEffectiveDeletion(user.deleteDate))}">
+                    user.predeleted
+                </s5l>
 
                 <button class="action" (click)="restoreUser()"
                         [disabled]="spinner.isLoading('portal-content')">
@@ -137,12 +141,9 @@ import { Config } from './Config';
                                    *ngIf="!user.deleteDate">
             </user-children-section>
 
-            <panel-section section-title="users.details.section.functions"
-                           [folded]="true" *ngIf="!user.deleteDate">
-                <ul>
-                    <li *ngFor="let f of user?.aafFunctions">{{ f }}</li>
-                </ul>
-            </panel-section>
+            <user-aaf-functions-section [user]="user" [structure]="structure"
+                                        *ngIf="user.type == 'Personnel' || user.type == 'Teacher'">
+            </user-aaf-functions-section>
 
             <user-structures-section [user]="user" [structure]="structure"
                                      *ngIf="!user.deleteDate">
@@ -166,9 +167,10 @@ export class UserDetails implements OnInit, OnDestroy {
 
     @ViewChild("codeInput")
     codeInput: AbstractControl;
-
     @ViewChild("administrativeForm")
-    administrativeForm: NgForm;
+    administrativeForm: NgForm
+
+    ;
 
     public config: Config;
 
@@ -195,7 +197,8 @@ export class UserDetails implements OnInit, OnDestroy {
     }
 
     get user() {
-        return this._user;
+        return this._user
+   ;
     }
 
     constructor(
