@@ -353,7 +353,7 @@ public class DefaultSchoolService implements SchoolService {
 				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
 						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
 
-		JsonObject params = new JsonObject().putString("userId", userId);
+		JsonObject params = new JsonObject().put("userId", userId);
 
 		//With clause
 		String withStr =
@@ -473,8 +473,8 @@ public class DefaultSchoolService implements SchoolService {
 			"ORDER BY u.lastName";
 		String inputRegExp = "(?i).*" + input.trim() + ".*";
 		JsonObject params = new JsonObject()
-				.putString("id", structureId)
-				.putString("inputRegExp", inputRegExp);
+				.put("id", structureId)
+				.put("inputRegExp", inputRegExp);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
@@ -516,7 +516,7 @@ public class DefaultSchoolService implements SchoolService {
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";
 
-		JsonObject params = new JsonObject().putString("structureId", structureId);
+		JsonObject params = new JsonObject().put("structureId", structureId);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
