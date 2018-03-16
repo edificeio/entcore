@@ -280,8 +280,8 @@ public class StructureController extends BaseController {
 			return;
 		}
 
-		this.assetsPath = (String) vertx.sharedData().getMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getMap("skins");
+		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
+		this.skins = vertx.sharedData().getLocalMap("skins");
 
 		final String assetsPath = this.assetsPath + "/assets/themes/" + this.skins.get(Renders.getHost(request));
 		final String templatePath = assetsPath + "/template/directory/";
@@ -395,7 +395,7 @@ public class StructureController extends BaseController {
 
 	private void massMailTypePdf(final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final JsonArray users){
 
-		final JsonObject templateProps = new JsonObject().putArray("users", users);
+		final JsonObject templateProps = new JsonObject().put("users", users);
 
 		vertx.fileSystem().readFile(templatePath + "massmail.pdf.xhtml", new Handler<AsyncResult<Buffer>>() {
 
@@ -419,10 +419,10 @@ public class StructureController extends BaseController {
 
 						JsonObject actionObject = new JsonObject();
 						actionObject
-								.putBinary("content", processedTemplate.getBytes())
-								.putString("baseUrl", baseUrl);
+								.put("content", processedTemplate.getBytes())
+								.put("baseUrl", baseUrl);
 
-						eb.send(node + "entcore.pdf.generator", actionObject, new Handler<Message<JsonObject>>() {
+						eb.send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							public void handle(Message<JsonObject> reply) {
 								JsonObject pdfResponse = reply.body();
 								if(!"ok".equals(pdfResponse.getString("status"))){
@@ -434,9 +434,9 @@ public class StructureController extends BaseController {
 								request.response().putHeader("Content-Type", "application/pdf");
 								request.response().putHeader("Content-Disposition",
 										"attachment; filename="+filename+".pdf");
-								request.response().end(new Buffer(pdf));
+								request.response().end(Buffer.buffer(pdf));
 							}
-						});
+						}));
 					}
 
 				});
@@ -456,8 +456,8 @@ public class StructureController extends BaseController {
 				}
 
 				StringReader reader = new StringReader(result.result().toString("UTF-8"));
-				final JsonArray mailHeaders = new JsonArray().addObject(
-						new JsonObject().putString("name", "Content-Type").putString("value", "text/html; charset=\"UTF-8\""));
+				final JsonArray mailHeaders = new JsonArray().add(
+						new JsonObject().put("name", "Content-Type").put("value", "text/html; charset=\"UTF-8\""));
 
 				for(Object userObj : users){
 					final JsonObject user = (JsonObject) userObj;
@@ -466,7 +466,7 @@ public class StructureController extends BaseController {
 						continue;
 					}
 
-					final String mailTitle = !user.containsField("activationCode") ||
+					final String mailTitle = !user.containsKey("activationCode") ||
 							user.getString("activationCode") == null ||
 							user.getString("activationCode").trim().isEmpty() ?
 							"directory.massmail.mail.subject.activated" :
@@ -492,13 +492,13 @@ public class StructureController extends BaseController {
 									userMail, null, null,
 									mailTitle,
 									processedTemplate, null, true, mailHeaders,
-									new Handler<Message<JsonObject>>() {
+									handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 										public void handle(Message<JsonObject> event) {
 											if("error".equals(event.body().getString("status"))){
 												log.error("[MassMail] Error while sending mail ("+event.body().getString("message", "")+")");
 											}
 										}
-									});
+									}));
 						}
 
 					});
