@@ -769,7 +769,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								}
 								break;
 						}
-						JsonArray errorsContext = new JsonArray(); // Must follow that shape : [{"reason":"error.key", "attribute":"lastName", "value":""}...]
+						JsonArray errorsContext = new fr.wseduc.webutils.collections.JsonArray(); // Must follow that shape : [{"reason":"error.key", "attribute":"lastName", "value":""}...]
 						String error = validator.validate(user, acceptLanguage, true, errorsContext);
 						if (error != null) {
 							log.warn(error);

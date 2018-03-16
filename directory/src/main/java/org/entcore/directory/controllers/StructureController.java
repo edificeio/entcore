@@ -511,6 +511,171 @@ public class StructureController extends BaseController {
 	}
 
 
+	private void massMailTypePdf(final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users){
+
+		final JsonObject templateProps = new JsonObject().put("hostname",Renders.getHost(request));
+
+		final String templateName;
+		if ("pdf".equals(type)) {
+			templateName = "massmail.pdf.xhtml";
+			templateProps.put("users", users);
+		} else if ("simplePdf".equals(type)) {
+			templateName = "massmail_simple.pdf.xhtml";
+			List list = users.getList();
+			JsonArray blocks = new JsonArray();
+			for (int i = 0; i < list.size(); i+=8) {
+				blocks.add(new JsonObject().put("users",new JsonArray(list.subList(i,Math.min((i+8),list.size())))));
+			}
+			if (!blocks.isEmpty()) {
+				blocks.getJsonObject(blocks.size()-1).put("end", true);
+			}
+			templateProps.put("blocks", blocks);
+		} else {
+			badRequest(request);
+			return;
+		}
+
+		vertx.fileSystem().readFile(templatePath + templateName, new Handler<AsyncResult<Buffer>>() {
+
+			@Override
+			public void handle(AsyncResult<Buffer> result) {
+				if(!result.succeeded()){
+					badRequest(request);
+					return;
+				}
+
+				StringReader reader = new StringReader(result.result().toString("UTF-8"));
+
+				processTemplate(request, templateProps, templateName, reader, new Handler<Writer>(){
+					public void handle(Writer writer) {
+						String processedTemplate = ((StringWriter) writer).getBuffer().toString();
+
+						if(processedTemplate == null){
+							badRequest(request);
+							return;
+						}
+
+						JsonObject actionObject = new JsonObject();
+						actionObject
+								.put("content", processedTemplate.getBytes())
+								.put("baseUrl", baseUrl);
+
+						eb.send(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
+								.setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+							public void handle(Message<JsonObject> reply) {
+								JsonObject pdfResponse = reply.body();
+								if(!"ok".equals(pdfResponse.getString("status"))){
+									badRequest(request, pdfResponse.getString("message"));
+									return;
+								}
+
+								byte[] pdf = pdfResponse.getBinary("content");
+								request.response().putHeader("Content-Type", "application/pdf");
+								request.response().putHeader("Content-Disposition",
+										"attachment; filename="+filename+".pdf");
+								request.response().end(Buffer.buffer(pdf));
+							}
+						}));
+					}
+
+				});
+			}
+		});
+
+	}
+
+	private void massMailTypeMail(final HttpServerRequest request, final String templatePath, final JsonArray users){
+
+		vertx.fileSystem().readFile(templatePath + "massmail.mail.txt", new Handler<AsyncResult<Buffer>>() {
+			@Override
+			public void handle(AsyncResult<Buffer> result) {
+				if(!result.succeeded()){
+					badRequest(request);
+					return;
+				}
+
+				StringReader reader = new StringReader(result.result().toString("UTF-8"));
+				final JsonArray mailHeaders = new fr.wseduc.webutils.collections.JsonArray().add(
+						new JsonObject().put("name", "Content-Type").put("value", "text/html; charset=\"UTF-8\""));
+
+				for(Object userObj : users){
+					final JsonObject user = (JsonObject) userObj;
+					final String userMail = user.getString("email");
+					if(userMail == null || userMail.trim().isEmpty()){
+						continue;
+					}
+
+					final String mailTitle = !user.containsKey("activationCode") ||
+							user.getString("activationCode") == null ||
+							user.getString("activationCode").trim().isEmpty() ?
+							"directory.massmail.mail.subject.activated" :
+							"directory.massmail.mail.subject.not.activated";
+
+					try{
+						reader.reset();
+					} catch(IOException exc){
+						log.error("[MassMail] Error on StringReader ("+exc.toString()+")");
+					}
+
+					processTemplate(request, user, "massmail.mail.txt", reader, new Handler<Writer>(){
+						public void handle(Writer writer) {
+							String processedTemplate = ((StringWriter) writer).getBuffer().toString();
+
+							if(processedTemplate == null){
+								badRequest(request);
+								return;
+							}
+
+							notifHelper.sendEmail(
+									request,
+									userMail, null, null,
+									mailTitle,
+									processedTemplate, null, true, mailHeaders,
+									handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+										public void handle(Message<JsonObject> event) {
+											if("error".equals(event.body().getString("status"))){
+												log.error("[MassMail] Error while sending mail ("+event.body().getString("message", "")+")");
+											}
+										}
+									}));
+						}
+
+					});
+				}
+
+				ok(request);
+			}
+		});
+	}
+
+	private void massMailTypeCSV(final HttpServerRequest request, JsonArray users){
+		String path = FileResolver.absolutePath("view/text/export.txt");
+
+		vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
+			@Override
+			public void handle(AsyncResult<Buffer> result) {
+				if(!result.succeeded()){
+					badRequest(request);
+					return;
+				}
+				processTemplate(request,"text/export.txt", new JsonObject().put("list", users), new Handler<String>() {
+					@Override
+					public void handle(final String export) {
+						if (export != null) {
+							request.response().putHeader("Content-Type", "application/csv");
+							request.response().putHeader("Content-Disposition", "attachment; filename.csv");
+							request.response().end('\ufeff' + export);
+						} else {
+							renderError(request);
+						}
+					}
+				});
+
+			}
+		});
+
+
+	}
 
 
 	@Get("/structure/:structureId/metrics")

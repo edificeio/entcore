@@ -44,11 +44,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public class Report {
 
@@ -124,6 +120,7 @@ public class Report {
 		}
 		JsonArray reasons = softErrors.getJsonArray("reasons");
 		if (reasons == null) {
+
 			reasons = new JsonArray();
 			softErrors.put("reasons", reasons);
 		}
@@ -228,7 +225,6 @@ public class Report {
 		}
 		MongoDb.getInstance().update("imports", new JsonObject().put("_id", result.getString("_id")),
 				new JsonObject().put("$set", modif), handler);
-
 	}
 
 	protected void cleanKeys() {}
@@ -438,6 +434,7 @@ public class Report {
 								count++;
 								jo.put(attr2.replaceAll("\\.", "_|_"), (String) jo.remove(attr2));
 							}
+
 						}
 					} else if (j instanceof JsonArray && attr.contains(".")) {
 						attribute.put(attr.replaceAll("\\.", "_|_"), (JsonArray) j);
