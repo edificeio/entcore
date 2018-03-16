@@ -416,72 +416,48 @@ public class Validator {
 	}
 
 	public static void initLogin(Neo4j neo4j, Vertx vertx) {
-		final long startInit = System.currentTimeMillis();
-		if (logins == null) {
-//			MapFactory.getClusterMap("usedLogins", vertx, map -> {
-//				if (map == null) {
-//					log.error("Null usedLogins Map.");
-//					return;
-//				}
-//				logins = map;
-//				initLogins(neo4j, startInit, false);
-//			});
-			logins = MapFactory.getSyncClusterMap("usedLogins", vertx);
-			initLogins(neo4j, startInit, false);
-		} else {
-			initLogins(neo4j, startInit, true);
-		}
+			final long startInit = System.currentTimeMillis();
+			if (logins == null) {
+				logins = MapFactory.getSyncClusterMap("usedLogins", vertx);
+				initLogins(neo4j, startInit, false, vertx);
+			} else {
+				initLogins(neo4j, startInit, true, vertx);
+			}
 
-		if (invalidEmails == null) {
-			invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
-//			MapFactory.getClusterMap("invalidEmails", vertx, map -> {
-//				if (map != null) {
-//					invalidEmails = map;
-//				} else {
-//					log.error("Null invalidEmails Map.");
-//				}
-//			});
-		}
+			if (invalidEmails == null) {
+				invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
+			}
 	}
 
-	protected static void initLogins(Neo4j neo4j, final long startInit, final boolean remove) {
+	protected static void initLogins(Neo4j neo4j, final long startInit, final boolean remove, final Vertx vertx) {
 		String query = "MATCH (u:User) RETURN COLLECT(DISTINCT u.login) as logins";
 		neo4j.execute(query, new JsonObject(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> message) {
 				JsonArray r = message.body().getJsonArray("result");
 				if ("ok".equals(message.body().getString("status")) && r != null && r.size() == 1) {
-					JsonArray l = (r.getJsonObject(0)).getJsonArray("logins");
-					if (l != null) {
-						final Set<Object> tmp = new HashSet<>(l.getList());
-						if (remove) {
-//							logins.keys(ar -> {
-//								if (ar.succeeded()) {
-//									for (Object key : ar.result()) {
-//										if (!tmp.contains(key)) {
-//											logins.remove(key, null);
-//										} else {
-//											tmp.remove(key);
-//										}
-//									}
-//									putLogin(tmp);
-//								} else {
-//									log.error("Error listing usedLogins.", ar.cause());
-//								}
-//							});
-
-							for (Object key : logins.keySet()) {
-								if (!tmp.contains(key)) {
-									logins.remove(key, null);
-								} else {
-									tmp.remove(key);
+					vertx.executeBlocking(future -> {
+						JsonArray l = (r.getJsonObject(0)).getJsonArray("logins");
+						if (l != null) {
+							final Set<Object> tmp = new HashSet<>(l.getList());
+							if (remove) {
+								for (Object key : logins.keySet()) {
+									if (!tmp.contains(key)) {
+										logins.remove(key, null);
+									} else {
+										tmp.remove(key);
+									}
 								}
+								putLogin(tmp);
+							} else {
+								putLogin(tmp);
 							}
-							putLogin(tmp);
-						} else {
-							putLogin(tmp);
 						}
-					}
+					}, ar -> {
+						if (ar.failed()) {
+							log.error("Error loading logins.", ar.cause());
+						}
+					});
 				}
 			}
 
