@@ -273,6 +273,7 @@ public class Validator {
 					errorsContext.add(new JsonObject()
 							.put("reason", "missing.attribute")
 							.put("attribute", i18n.translate(o.toString(), I18n.DEFAULT_DOMAIN, acceptLanguage))
+
 					);
 				}
 				return i18n.translate("missing.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage,

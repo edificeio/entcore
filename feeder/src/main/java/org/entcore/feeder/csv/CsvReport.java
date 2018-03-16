@@ -243,7 +243,7 @@ public class CsvReport extends Report {
 
 //	protected void setStructureExternalIdIfAbsent(String structureExternalId) {
 //		if (isEmpty(result.getString("structureExternalId"))) {
-//			result.putString("structureExternalId", structureExternalId);
+//			result.put("structureExternalId", structureExternalId);
 //		}
 //	}
 
