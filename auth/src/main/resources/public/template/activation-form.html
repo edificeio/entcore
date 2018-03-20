@@ -20,9 +20,9 @@
 						</span>
 					</p>
 					<label translate content="auth.activation.confirm.password"></label>
-					<input-password required ng-pattern="user.password" ng-model="user.confirmPassword"
+					<input-password required ng-model="user.confirmPassword"
 						name="confirmPassword" ng-trim="false" tabindex="2"></input-password>
-					<p class="input-errors" ng-if="activationForm.confirmPassword.$viewValue && activationForm.confirmPassword.$invalid && activationForm.confirmPassword.$dirty">
+					<p class="input-errors" ng-if="user.password !== '' && user.confirmPassword && user.confirmPassword !== '' && user.confirmPassword !== user.password">
 						<i18n>password.identical</i18n>
 					</p>
 				</p>
