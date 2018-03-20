@@ -191,7 +191,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	$scope.openRenameView = function(document){
-		document.newName = document.newProperties.name;
+		document.newName = document.newProperties ? document.newProperties.name : document.name;
 		$scope.renameTarget = document;
 		template.open('lightbox', 'rename');
 	};
