@@ -281,7 +281,6 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	$scope.openMoveFileView = function(action){
-		targetFolders = [$scope.folder.children[0]];
 		$scope.newFolder = { name: '' };
 		template.open('lightbox', action);
 	};

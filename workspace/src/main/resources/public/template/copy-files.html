@@ -36,7 +36,7 @@
 		</div>
 		<div class="clear"></div>
 		<div class="lightbox-buttons fluid">
-			<button ng-click="copy()"><i18n>workspace.copy</i18n></button>
+			<button ng-click="copy()" ng-disabled="!anyTargetFolder()"><i18n>workspace.copy</i18n></button>
 			<button type="button" class="cancel" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
 		</div>
 	</div>
