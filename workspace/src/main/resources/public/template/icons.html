@@ -99,7 +99,7 @@
 				</legend>
 
 				<div ng-if="document.showComments">
-					<lightbox show="document.showComments && selectedDocuments()[0] === document" on-close="document.showComments = false;">
+					<lightbox show="document.showComments && selectedDocuments()[0] === document" ng-click="$event.stopPropagation()" on-close="document.showComments = false;">
 						<h2><i18n>comments</i18n></h2>
 
 						<div class="row" ng-if="document.myRights.commentDocument">
