@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultTimelineMailerService extends Renders implements TimelineMailerService {
@@ -155,7 +156,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 							final String userScheme = userPref.getString("lastScheme", "http");
 							String mutableLanguage = "fr";
 							try {
-								mutableLanguage = new JsonObject(userPref.getString("language", "{}")).getString("default-domain", "fr");
+								mutableLanguage = getOrElse(new JsonObject(getOrElse(userPref.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
 							} catch(Exception e) {
 								log.error("UserId [" + userPref.getString("userId", "") + "] - Bad language preferences format");
 							}
@@ -329,7 +330,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 								final String userScheme = userPrefs.getString("lastScheme", "http");
 								String mutableUserLanguage = "fr";
 								try {
-									mutableUserLanguage = new JsonObject(userPrefs.getString("language", "{}")).getString("default-domain", "fr");
+									mutableUserLanguage = getOrElse(new JsonObject(getOrElse(userPrefs.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
 								} catch(Exception e) {
 									log.error("UserId [" + userPrefs.getString("userId", "") + "] - Bad language preferences format");
 								}
@@ -516,7 +517,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 								final String userScheme = userPrefs.getString("lastScheme", "http");
 								String mutableUserLanguage = "fr";
 								try {
-									mutableUserLanguage = new JsonObject(userPrefs.getString("language", "{}")).getString("default-domain", "fr");
+									mutableUserLanguage = getOrElse(new JsonObject(getOrElse(userPrefs.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
 								} catch (Exception e) {
 									log.error("UserId [" + userPrefs.getString("userId", "") + "] - Bad language preferences format");
 								}
