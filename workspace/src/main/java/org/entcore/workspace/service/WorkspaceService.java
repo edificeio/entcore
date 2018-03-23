@@ -733,7 +733,7 @@ public class WorkspaceService extends BaseController {
 				final String id = request.params().get("id");
 				String p;
 				try {
-					p = request.formAttributes().get("path");
+					p = getOrElse(request.formAttributes().get("path"), "");
 				} catch (IllegalStateException e) {
 					p = "";
 				}
