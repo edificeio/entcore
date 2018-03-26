@@ -615,7 +615,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
 				"RETURN distinct " +
-				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct c.id) as classes, " +
+				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
 				"n.birthDate as birthDate, " +
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
@@ -755,7 +755,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						}
 					}
 					j.removeField("childrenInfo");
-
+					final List<String> classesIds = new ArrayList<String>();
+					final List<String> classesNames = new ArrayList<String>() ;
+					for (Object o : j.getArray("classes", new JsonArray())) {
+						if (!(o instanceof JsonArray)) continue;
+						final JsonArray c = (JsonArray) o;
+						classesIds.add((String) c.get(0));
+						classesNames.add((String) c.get(1));
+					}
+					j.removeField("classes");
+					j.putArray("classes", new JsonArray(classesIds));
+					j.putArray("realClassesNames", new JsonArray(classesNames));
 					j.putObject("functions", functions);
 					j.putArray("authorizedActions", actions);
 					j.putArray("apps", apps);

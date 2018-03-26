@@ -250,6 +250,7 @@ public class UserInfos {
 	private String username;
 	private String birthDate;
 	private List<String> classNames;
+	private List<String> realClassNames;
 	private List<String> structureNames;
 	private List<String> uai;
 	private List<String> childrenIds;
@@ -353,12 +354,22 @@ public class UserInfos {
 		this.login = login;
 	}
 
+	// keep only for compatibility with other modules
+	@Deprecated
 	public List<String> getClassNames() {
 		return classNames;
 	}
 
 	public void setClassNames(List<String> classNames) {
 		this.classNames = classNames;
+	}
+
+	public List<String> getRealClassNames() {
+		return realClassNames;
+	}
+
+	public void setRealClassNames(List<String> realClassNames) {
+		this.realClassNames = realClassNames;
 	}
 
 	public List<String> getStructureNames() {
