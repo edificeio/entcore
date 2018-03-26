@@ -36,6 +36,9 @@ public class ResponseAdapterFactory {
 			case "1.0":
 			case "v1.0":
 				return new UserInfoAdapterV1_0Json();
+			case "1.1":
+			case "v1.1":
+				return new UserInfoAdapterV1_1Json();
 			case "2.0":
 			case "v2.0":
 				return new UserInfoAdapterV2_0Json();
