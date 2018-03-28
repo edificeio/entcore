@@ -45,7 +45,7 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 	@Override
 	public JsonObject getInfo(JsonObject info, String clientId) {
 		final JsonObject filteredInfos = getCommonFilteredInfos(info, clientId);
-		filteredInfos.removeField("realClassesNames");
+		filteredInfos.remove("realClassesNames");
 		return filteredInfos;
 	}
 
