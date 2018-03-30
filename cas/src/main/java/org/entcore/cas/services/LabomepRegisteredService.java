@@ -20,14 +20,14 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -52,11 +52,23 @@ public class LabomepRegisteredService extends AbstractCas20ExtensionRegisteredSe
 				additionnalAttributes.add(createTextElement("uid", data.getString("externalId"), doc));
 			}
 
-			// Structures
+			// administratives Structures first
+			final List<String> uaiList = new ArrayList<>();
+
+			for (Object o : data.getJsonArray("administratives", new fr.wseduc.webutils.collections.JsonArray())) {
+				JsonObject structure = (JsonObject) o;
+				final String uai = structure.getString("UAI");
+				if (!StringUtils.isEmpty(uai)) {
+					uaiList.add(uai);
+					additionnalAttributes.add(createTextElement("structures", uai, doc));
+				}
+			}
+
 			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray())) {
 				JsonObject structure = (JsonObject) o;
-				if (structure.getString("UAI") != null) {
-					additionnalAttributes.add(createTextElement("structures", structure.getString("UAI"), doc));
+				final String uai = structure.getString("UAI");
+				if (!StringUtils.isEmpty(uai) && !uaiList.contains(uai)) {
+					additionnalAttributes.add(createTextElement("structures", uai, doc));
 				}
 			}
 
