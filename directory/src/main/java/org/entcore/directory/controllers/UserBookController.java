@@ -63,6 +63,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.user.SessionAttributes.*;
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class UserBookController extends BaseController {
 
@@ -599,8 +600,8 @@ public class UserBookController extends BaseController {
 								JsonObject result = (JsonObject) resultObj;
 								JsonObject prefs = new JsonObject();
 								try {
-									prefs = new JsonObject(result.getJsonObject("preferences", new JsonObject())
-											.getJsonObject("data", new JsonObject()).getString(application, "{}"));
+									prefs = new JsonObject(getOrElse(getOrElse(getOrElse(result.getJsonObject("preferences"), new JsonObject(), false)
+											.getJsonObject("data"), new JsonObject(), false).getString(application), "{}", false));
 								} catch(Exception e) {
 									log.error("UserId [" + result.getString("userId", "") + "] - Bad application preferences format");
 								}
