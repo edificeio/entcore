@@ -33,6 +33,7 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -51,11 +52,9 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultTimelineMailerService extends Renders implements TimelineMailerService {
 
@@ -87,153 +86,125 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	}
 
 	@Override
+	public void sendImmediateMails(HttpServerRequest request, String notificationName, JsonObject notification, JsonObject templateParameters, JsonArray userList, JsonObject notificationProperties) {
+
+		final Map<String, Map<String, String>> processedTemplates = new HashMap<>();
+		templateParameters.put("innerTemplate", notification.getString("template", ""));
+
+		final Map<String, Map<String, List<Object>>> toByDomainLang = new HashMap<>();
+
+		final AtomicInteger userCount = new AtomicInteger(userList.size());
+		final Handler<Void> templatesHandler = new Handler<Void>(){
+			public void handle(Void v) {
+				if(userCount.decrementAndGet() == 0){
+					if(toByDomainLang.size() > 0){
+						//On completion : log
+						final Handler<AsyncResult<Message<JsonObject>>> completionHandler = event -> {
+							if(event.failed() || "error".equals(event.result().body().getString("status", "error"))){
+								log.error("[Timeline immediate emails] Error while sending mails : ", event.cause());
+							} else {
+								log.debug("[Timeline immediate emails] Immediate mails sent.");
+							}
+						};
+
+						JsonArray keys = new fr.wseduc.webutils.collections.JsonArray()
+								.add("timeline.immediate.mail.subject.header")
+								.add(notificationName.toLowerCase());
+
+						for(final String domain : toByDomainLang.keySet()){
+							for(final String lang : toByDomainLang.get(domain).keySet()){
+								translateTimeline(keys, domain, lang, new Handler<JsonArray>() {
+									public void handle(JsonArray translations) {
+										//Send mail containing the "immediate" notification
+										emailSender.sendEmail(request,
+												toByDomainLang.get(domain).get(lang),
+												null,
+												null,
+												translations.getString(0) + translations.getString(1),
+												processedTemplates.get(domain).get(lang),
+												null,
+												false,
+												completionHandler);
+									}
+								});
+							}
+						}
+					}
+				}
+			}
+		};
+
+		for(Object userObj : userList){
+			final JsonObject userPref = ((JsonObject) userObj);
+			final String userDomain = userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN);
+			final String userScheme = userPref.getString("lastScheme", "http");
+			String mutableLanguage = "fr";
+			try {
+				mutableLanguage = getOrElse(new JsonObject(getOrElse(userPref.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
+			} catch(Exception e) {
+				log.error("UserId [" + userPref.getString("userId", "") + "] - Bad language preferences format");
+			}
+			final String userLanguage = mutableLanguage;
+
+			if(!processedTemplates.containsKey(userDomain))
+				processedTemplates.put(userDomain, new HashMap<String, String>());
+			JsonObject notificationPreference = userPref
+					.getJsonObject("preferences", new JsonObject())
+					.getJsonObject("config", new JsonObject())
+					.getJsonObject(notificationName, new JsonObject());
+			// If the frequency is IMMEDIATE
+			// and the restriction is not INTERNAL (timeline only)
+			// and if the user has provided an email
+			if(TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(
+					notificationPreference.getString("defaultFrequency", notificationProperties.getString("defaultFrequency"))) &&
+					!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
+							notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
+					!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
+							notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
+					userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
+				if(!toByDomainLang.containsKey(userDomain)){
+					toByDomainLang.put(userDomain,new HashMap<String, List<Object>>());
+				}
+				if(!toByDomainLang.get(userDomain).containsKey(userLanguage)){
+					toByDomainLang.get(userDomain).put(userLanguage, new ArrayList<Object>());
+				}
+				toByDomainLang.get(userDomain).get(userLanguage).add(userPref.getString("userMail"));
+			}
+			if(!processedTemplates.get(userDomain).containsKey(userLanguage)){
+				processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
+						userDomain, userScheme, userLanguage, false, new Handler<String>(){
+							public void handle(String processedTemplate) {
+								processedTemplates.get(userDomain).put(userLanguage, processedTemplate);
+								templatesHandler.handle(null);
+							}
+						});
+			} else {
+				templatesHandler.handle(null);
+			}
+		}
+	}
+
+	@Override
 	public void sendImmediateMails(final HttpServerRequest request, final String notificationName, final JsonObject notification,
 								   final JsonObject templateParameters, final JsonArray recipientIds){
 		//Get notification properties (mixin : admin console configuration which overrides default properties)
-		getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
+		configService.getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
 			public void handle(final Either<String, JsonObject> properties) {
 				if(properties.isLeft() || properties.right().getValue() == null){
 					log.error("[sendImmediateMails] Issue while retrieving notification (" + notificationName + ") properties.");
 					return;
 				}
 				//Get users preferences (overrides notification properties)
-				getUsersPreferences(recipientIds, new Handler<JsonArray>() {
+				NotificationUtils.getUsersPreferences(eb, recipientIds, "language: uac.language",new Handler<JsonArray>() {
 					public void handle(final JsonArray userList) {
 						if(userList == null){
 							log.error("[sendImmediateMails] Issue while retrieving users preferences.");
 							return;
 						}
-						//Process template once by domain
-						final Map<String, Map<String, String>> processedTemplates = new HashMap<>();
-						templateParameters.put("innerTemplate", notification.getString("template", ""));
 
-						final Map<String, Map<String, List<Object>>> toByDomainLang = new HashMap<>();
-
-						final AtomicInteger userCount = new AtomicInteger(userList.size());
-						final Handler<Void> templatesHandler = new Handler<Void>(){
-							public void handle(Void v) {
-								if(userCount.decrementAndGet() == 0){
-									if(toByDomainLang.size() > 0){
-										//On completion : log
-										final Handler<AsyncResult<Message<JsonObject>>> completionHandler = event -> {
-											if(event.failed() || "error".equals(event.result().body().getString("status", "error"))){
-												log.error("[Timeline immediate emails] Error while sending mails : ", event.cause());
-											} else {
-												log.debug("[Timeline immediate emails] Immediate mails sent.");
-											}
-										};
-
-										JsonArray keys = new fr.wseduc.webutils.collections.JsonArray()
-												.add("timeline.immediate.mail.subject.header")
-												.add(notificationName.toLowerCase());
-
-										for(final String domain : toByDomainLang.keySet()){
-											for(final String lang : toByDomainLang.get(domain).keySet()){
-												translateTimeline(keys, domain, lang, new Handler<JsonArray>() {
-													public void handle(JsonArray translations) {
-														//Send mail containing the "immediate" notification
-														emailSender.sendEmail(request,
-																toByDomainLang.get(domain).get(lang),
-																null,
-																null,
-																translations.getString(0) + translations.getString(1),
-																processedTemplates.get(domain).get(lang),
-																null,
-																false,
-																completionHandler);
-													}
-												});
-											}
-										}
-									}
-								}
-							}
-						};
-
-						for(Object userObj : userList){
-							final JsonObject userPref = ((JsonObject) userObj);
-							final String userDomain = userPref.getString("lastDomain", I18n.DEFAULT_DOMAIN);
-							final String userScheme = userPref.getString("lastScheme", "http");
-							String mutableLanguage = "fr";
-							try {
-								mutableLanguage = getOrElse(new JsonObject(getOrElse(userPref.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
-							} catch(Exception e) {
-								log.error("UserId [" + userPref.getString("userId", "") + "] - Bad language preferences format");
-							}
-							final String userLanguage = mutableLanguage;
-
-							if(!processedTemplates.containsKey(userDomain))
-								processedTemplates.put(userDomain, new HashMap<String, String>());
-							JsonObject notificationPreference = userPref
-									.getJsonObject("preferences", new JsonObject())
-									.getJsonObject("config", new JsonObject())
-									.getJsonObject(notificationName, new JsonObject());
-							// If the frequency is IMMEDIATE
-							// and the restriction is not INTERNAL (timeline only)
-							// and if the user has provided an email
-							if(TimelineNotificationsLoader.Frequencies.IMMEDIATE.name().equals(
-									notificationPreference.getString("defaultFrequency", properties.right().getValue().getString("defaultFrequency"))) &&
-									!TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(
-											notificationPreference.getString("restriction", properties.right().getValue().getString("restriction"))) &&
-									!TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(
-											notificationPreference.getString("restriction", properties.right().getValue().getString("restriction"))) &&
-									userPref.getString("userMail") != null && !userPref.getString("userMail").trim().isEmpty()){
-								if(!toByDomainLang.containsKey(userDomain)){
-									toByDomainLang.put(userDomain,new HashMap<String, List<Object>>());
-								}
-								if(!toByDomainLang.get(userDomain).containsKey(userLanguage)){
-									toByDomainLang.get(userDomain).put(userLanguage, new ArrayList<Object>());
-								}
-								toByDomainLang.get(userDomain).get(userLanguage).add(userPref.getString("userMail"));
-							}
-							if(!processedTemplates.get(userDomain).containsKey(userLanguage)){
-								processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
-										userDomain, userScheme, userLanguage, false, new Handler<String>(){
-											public void handle(String processedTemplate) {
-												processedTemplates.get(userDomain).put(userLanguage, processedTemplate);
-												templatesHandler.handle(null);
-											}
-										});
-							} else {
-								templatesHandler.handle(null);
-							}
-						}
+						sendImmediateMails(request, notificationName, notification, templateParameters, userList, properties.right().getValue());
 					}
 				});
-			}
-		});
-	}
-
-	@Override
-	public void getNotificationProperties(final String notificationKey, final Handler<Either<String, JsonObject>> handler) {
-		configService.list(new Handler<Either<String, JsonArray>>() {
-			public void handle(Either<String, JsonArray> event) {
-				if (event.isLeft()) {
-					handler.handle(new Either.Left<String, JsonObject>(
-							event.left().getValue()));
-					return;
-				}
-				final String notificationStr = registeredNotifications
-						.get(notificationKey.toLowerCase());
-				if (notificationStr == null) {
-					handler.handle(new Either.Left<String, JsonObject>(
-							"invalid.notification.key"));
-					return;
-				}
-				final JsonObject notification = new JsonObject(notificationStr);
-				for (Object notifConfigObj : event.right().getValue()) {
-					JsonObject notifConfig = (JsonObject) notifConfigObj;
-					if (notifConfig.getString("key", "")
-							.equals(notificationKey.toLowerCase())) {
-						notification.put("defaultFrequency",
-								notifConfig.getString("defaultFrequency", ""));
-						notification.put("restriction",
-								notifConfig.getString("restriction", ""));
-						break;
-					}
-				}
-				handler.handle(
-						new Either.Right<String, JsonObject>(notification));
 			}
 		});
 	}
@@ -322,7 +293,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for(Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					getUsersPreferences(userIds, new Handler<JsonArray>(){
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>(){
 						public void handle(JsonArray preferences) {
 							for(Object userObj : preferences){
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -509,7 +480,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					getUsersPreferences(userIds, new Handler<JsonArray>() {
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>() {
 						public void handle(JsonArray preferences) {
 							for (Object userObj : preferences) {
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -699,30 +670,6 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				}
 			}
 		});
-	}
-
-	/**
-	 * Retrieves stored timeline user preferences.
-	 *
-	 * @param userIds : Ids of the users
-	 * @param handler : Handles the preferences
-	 */
-	private void getUsersPreferences(JsonArray userIds, final Handler<JsonArray> handler){
-		eb.send(USERBOOK_ADDRESS, new JsonObject()
-				.put("action", "get.userlist")
-				.put("application", "timeline")
-				.put("additionalMatch", ", u-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) ")
-				.put("additionalWhere", "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\" ")
-				.put("additionalCollectFields", ", language: uac.language")
-				.put("userIds", userIds), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if (!"error".equals(event.body().getString("status"))) {
-					handler.handle(event.body().getJsonArray("results"));
-				} else {
-					handler.handle(null);
-				}
-			}
-		}));
 	}
 
 	/**

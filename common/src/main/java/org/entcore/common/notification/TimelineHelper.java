@@ -112,6 +112,9 @@ public class TimelineHelper {
 				event.put("date", new JsonObject().put("$date", date));
 				params.remove("timeline-publish-date");
 			}
+
+			event.put("pushNotif", params.remove("pushNotif"));
+
 			HttpServerRequest request;
 			if (req == null) {
 				request = new JsonHttpServerRequest(new JsonObject());

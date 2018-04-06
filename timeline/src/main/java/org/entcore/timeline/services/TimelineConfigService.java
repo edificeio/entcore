@@ -28,6 +28,15 @@ import io.vertx.core.json.JsonObject;
 public interface TimelineConfigService{
 
 	public void upsert(JsonObject data, Handler<Either<String, JsonObject>> handler);
+
 	public void list(Handler<Either<String, JsonArray>> handler);
+
+	/**
+	 * Retrieves stored properties for a single notification.
+	 *
+	 * @param notificationKey : Name of the notification
+	 * @param handler : Handles the properties
+	 */
+	public void getNotificationProperties(final String notificationKey, final Handler<Either<String, JsonObject>> handler);
 
 }

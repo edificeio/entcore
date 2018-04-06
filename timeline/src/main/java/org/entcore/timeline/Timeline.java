@@ -20,18 +20,18 @@
 package org.entcore.timeline;
 
 import fr.wseduc.cron.CronTrigger;
-import fr.wseduc.webutils.request.filter.UserAuthFilter;
-import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 
+import java.net.URI;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 import io.vertx.core.shareddata.LocalMap;
+import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
-import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.services.impl.DefaultPushNotifService;
 import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
 import org.entcore.timeline.services.impl.DefaultTimelineMailerService;
 import org.entcore.timeline.controllers.FlashMsgController;
@@ -39,9 +39,8 @@ import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
-import io.vertx.core.impl.VertxInternal;
+import org.entcore.timeline.ws.OssFcm;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.cluster.ClusterManager;
 
 public class Timeline extends BaseServer {
 
@@ -53,13 +52,18 @@ public class Timeline extends BaseServer {
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
-		final TimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
-
+		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
+		configService.setRegisteredNotifications(registeredNotifications);
 		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, config);
 		mailerService.setConfigService(configService);
 		mailerService.setRegisteredNotifications(registeredNotifications);
 		mailerService.setEventsI18n(eventsI18n);
 		mailerService.setLazyEventsI18n(lazyEventsI18n);
+
+		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
+		notificationHelper.setMailerService(mailerService);
+
+		JsonObject pushNotif = config.getJsonObject("push-notif");
 
 		final TimelineController timelineController = new TimelineController();
 		timelineController.setConfigService(configService);
@@ -67,6 +71,25 @@ public class Timeline extends BaseServer {
 		timelineController.setRegisteredNotifications(registeredNotifications);
 		timelineController.setEventsI18n(eventsI18n);
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
+
+		if(pushNotif != null){
+
+			OAuth2Client googleOAuth2SSO = new OAuth2Client(URI.create(pushNotif.getString("uri")),
+					null, null, null,
+					pushNotif.getString("tokenUrn"), null, vertx,
+					pushNotif.getInteger("poolSize", 16), true);
+			OssFcm oss = new OssFcm(googleOAuth2SSO, pushNotif.getString("client_mail") , pushNotif.getString("scope"),
+					pushNotif.getString("aud"), pushNotif.getString("url"), pushNotif.getString("key"));
+
+			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
+			pushNotifService.setEventsI18n(eventsI18n);
+			pushNotifService.setConfigService(configService);
+			timelineController.setPushNotifService(pushNotifService);
+			notificationHelper.setPushNotifService(pushNotifService);
+		}
+
+		timelineController.setNotificationHelper(notificationHelper);
+
 
 		addController(new FlashMsgController());
 
