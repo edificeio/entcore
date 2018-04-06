@@ -171,7 +171,8 @@ public class TimelineNotificationsLoader {
 						.put("app-address", Config.getConf().getString("app-address", "/"))
 						.put("template", templateAsync.result().toString())
 						.put("defaultFrequency", Frequencies.defaultFrequency())
-						.put("restriction", Restrictions.defaultRestriction());
+						.put("restriction", Restrictions.defaultRestriction())
+						.put("push-notif", false);
 
 				vertx.fileSystem().exists(propsFilePath, new Handler<AsyncResult<Boolean>>() {
 					public void handle(AsyncResult<Boolean> ar) {
@@ -186,6 +187,7 @@ public class TimelineNotificationsLoader {
 											registerNotification(fullName, notificationJson
 												.put("defaultFrequency", props.getString("default-frequency", notificationJson.getString("defaultFrequency")))
 												.put("restriction", props.getString("restrict", notificationJson.getString("restriction")))
+												.put("push-notif", props.getBoolean("push-notif", false))
 											);
 										} else {
 											registerNotification(fullName, notificationJson);

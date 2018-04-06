@@ -40,8 +40,10 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
@@ -53,12 +55,12 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.timeline.services.TimelinePushNotifService;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
 import java.io.Writer;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -69,6 +71,7 @@ public class TimelineController extends BaseController {
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
+	private TimelinePushNotifService pushNotifService;
 	private Map<String, String> registeredNotifications;
 	private LocalMap<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n;
@@ -78,6 +81,7 @@ public class TimelineController extends BaseController {
 	private TimelineHelper timelineHelper;
 	private JsonArray eventTypes; // cache to improve perfs
 	private boolean refreshTypesCache;
+	private NotificationHelper notificationHelper;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -579,6 +583,95 @@ public class TimelineController extends BaseController {
 		});
 	}
 
+
+	@Get("/pushNotif/fcmTokens")
+	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
+	public void getFcmTokens(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					NotificationUtils.getFcmTokensByUser(user.getUserId(), new Handler<Either<String,JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> result) {
+							if(result.isRight()){
+								renderJson(request, result.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.put("error", result.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+	@Put("/pushNotif/fcmToken")
+	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
+	public void putFcmToken(final HttpServerRequest request){
+		final String token= request.params().get("fcmToken");
+		if(token != null && !token.trim().isEmpty()) {
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						NotificationUtils.putFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
+							@Override
+							public void handle(Either<String, JsonObject> result) {
+								if (result.isRight()) {
+									renderJson(request, result.right().getValue());
+								} else {
+									JsonObject error = new JsonObject()
+											.put("error", result.left().getValue());
+									renderJson(request, error, 400);
+								}
+							}
+						});
+					} else {
+						unauthorized(request);
+					}
+				}
+			});
+		}else{
+			badRequest(request);
+		}
+	}
+
+	@Delete("/pushNotif/fcmToken")
+	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
+	public void deleteFcmToken(final HttpServerRequest request){
+		final String token= request.params().get("fcmToken");
+		if(token != null && !token.trim().isEmpty()) {
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					if (user != null) {
+						NotificationUtils.deleteFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
+							@Override
+							public void handle(Either<String, JsonObject> result) {
+								if (result.isRight()) {
+									renderJson(request, result.right().getValue());
+								} else {
+									JsonObject error = new JsonObject()
+											.put("error", result.left().getValue());
+									renderJson(request, error, 400);
+								}
+							}
+						});
+					} else {
+						unauthorized(request);
+					}
+				}
+			});
+		}else{
+			badRequest(request);
+		}
+	}
+
 	@BusAddress("wse.timeline")
 	public void busApi(final Message<JsonObject> message) {
 		if (message == null) {
@@ -611,11 +704,7 @@ public class TimelineController extends BaseController {
 			if (sender == null || sender.startsWith("no-reply") || json.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
 				store.add(json, new Handler<JsonObject>() {
 					public void handle(JsonObject result) {
-						mailerService.sendImmediateMails(
-								new JsonHttpServerRequest(json.getJsonObject("request")),
-								json.getString("notificationName"), json.getJsonObject("notification"), json.getJsonObject("params"),
-								json.getJsonArray("recipientsIds")
-						);
+						notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(json.getJsonObject("request")), json);
 						handler.handle(result);
 					}
 				});
@@ -696,6 +785,14 @@ public class TimelineController extends BaseController {
 
 	public void setRegisteredNotifications(Map<String, String> registeredNotifications) {
 		this.registeredNotifications = registeredNotifications;
+	}
+
+	public void setPushNotifService(TimelinePushNotifService pushNotifService) {
+		this.pushNotifService = pushNotifService;
+	}
+
+	public void setNotificationHelper(NotificationHelper notificationHelper) {
+		this.notificationHelper = notificationHelper;
 	}
 
 	public void setEventsI18n(LocalMap<String, String> eventsI18n) {

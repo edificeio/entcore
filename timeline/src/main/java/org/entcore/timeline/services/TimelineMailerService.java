@@ -34,18 +34,22 @@ public interface TimelineMailerService {
 	 * @param notificationName : Name of the notification
 	 * @param notification : Notification properties
 	 * @param templateParameters : Notification parameters
+	 * @param userList : Recipients of the notification
+	 * @param notificationProperties : notificationProperties
+	 */
+	void sendImmediateMails(final HttpServerRequest request, final String notificationName, final JsonObject notification,
+							final JsonObject templateParameters, final JsonArray userList, final JsonObject notificationProperties);
+	/**
+	 * Sends immediate notification emails for users that are concerned.
+	 *
+	 * @param request : Request initiating the notification.
+	 * @param notificationName : Name of the notification
+	 * @param notification : Notification properties
+	 * @param templateParameters : Notification parameters
 	 * @param recipientIds : Recipients of the notification
 	 */
 	void sendImmediateMails(final HttpServerRequest request, final String notificationName, final JsonObject notification,
 							final JsonObject templateParameters, final JsonArray recipientIds);
-
-	/**
-	 * Retrieves stored properties for a single notification.
-	 *
-	 * @param notificationName : Name of the notification
-	 * @param handler : Handles the properties
-	 */
-	void getNotificationProperties(String notificationName, Handler<Either<String, JsonObject>> handler);
 
 	/**
 	 * Translates a key using the usual i18n keys + the timeline folders keys (from all apps).
