@@ -140,6 +140,7 @@ public class CsvFeeder implements Feed {
 			@Override
 			public void handle(Void v) {
 				importer.restorePreDeletedUsers();
+				importer.addStructureNameInGroups(structure.getExternalId(), null);
 				importer.persist(handler);
 			}
 		};

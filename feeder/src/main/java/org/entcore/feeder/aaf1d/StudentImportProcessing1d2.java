@@ -39,6 +39,7 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 		importer.removeOldFunctionalGroup();
 		importer.removeEmptyClasses();
 		importer.restorePreDeletedUsers();
+		importer.addStructureNameInGroups(getAcademyPrefix());
 	}
 
 	@Override
