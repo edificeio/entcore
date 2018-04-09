@@ -833,6 +833,31 @@ public class Importer {
 		transactionHelper.add(query2, new JsonObject());
 	}
 
+
+	public void addStructureNameInGroups(String prefix) {
+		addStructureNameInGroups(null, prefix);
+	}
+
+	public void addStructureNameInGroups(String structureExternalId, String prefix) {
+		final JsonObject params = new JsonObject();
+		final String filter;
+		if (isNotEmpty(structureExternalId)) {
+			filter = "AND s.externalId = {externalId} ";
+			params.put("externalId", structureExternalId);
+		} else if (isNotEmpty(prefix)) {
+			filter = "AND s.externalId STARTS WITH {prefix} ";
+			params.put("prefix", prefix);
+		} else {
+			filter = "AND u.source = {currentSource} ";
+			params.put("currentSource", currentSource);
+		}
+		final String query =
+				"MATCH (s:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:ProfileGroup) " +
+				"WHERE NOT(HAS(pg.structureName)) OR pg.structureName <> s.name " + filter +
+				"SET pg.structureName = s.name";
+		transactionHelper.add(query, new JsonObject());
+	}
+
 	public Report getReport() {
 		return report;
 	}
