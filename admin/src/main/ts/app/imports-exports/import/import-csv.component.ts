@@ -580,7 +580,8 @@ export class ImportCSV implements OnInit, OnDestroy {
                 return;
             }
         }
-        let data = await ImportCSVService.getColumnsMapping(this.importInfos);
+
+        let data = await this.spinner.perform('portal-content', ImportCSVService.getColumnsMapping(this.importInfos));
         if (data.error) {
             this.globalError.message = data.error;
         } else if (data.errors) {
@@ -602,7 +603,9 @@ export class ImportCSV implements OnInit, OnDestroy {
             return;
         }
         this.globalError.reset();
-        let data:{ classesMapping:ClassesMapping, errors:string } = await ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings);
+        let data:{ classesMapping:ClassesMapping, errors:string } = 
+                await this.spinner.perform('portal-content', ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings));
+
         if (data.errors) {
             this.globalError.message = data.errors;
         } else {
@@ -615,7 +618,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     private async validate() {
         this.report.reset();
         this.globalError.reset();
-        let data = await ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings); 
+        let data = await this.spinner.perform('portal-content', ImportCSVService.validate(this.importInfos, this.columns.mappings, this.classes.mappings)); 
         if (data.errors) {
             this.globalError.message = 'import.error.validationGlobalError'
             this.globalError.profile = data.errors;
@@ -664,7 +667,7 @@ export class ImportCSV implements OnInit, OnDestroy {
 
     private async import() {
         this.globalError.reset();
-        let data = await ImportCSVService.import(this.report.importId);
+        let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
         if (data.error) {
             this.globalError.message = data.error;
         } else {
