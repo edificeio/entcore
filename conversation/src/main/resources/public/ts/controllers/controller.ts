@@ -15,7 +15,7 @@ export let conversationController = ng.controller('ConversationController', [
             searchFailed: false,
             draftSaveDate: null
     };
-
+        $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
 
         route({

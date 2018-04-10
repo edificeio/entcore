@@ -230,7 +230,7 @@ export class Mail implements Selectable {
     };
 
     map(id) {
-        if (id instanceof User) {
+        if (id instanceof User || id.deleted ) {
             return id;
         }
         return User.prototype.mapUser(this.displayNames, id);

@@ -56,7 +56,7 @@
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<img ng-if="mail.isAvatarAlone()" ng-src="[[ mail.matchAvatar() ]]"/>
+						<img ng-if="mail.isAvatarAlone()" ng-src="[[ mail.matchAvatar() ]]" default-src="[[defaultAvatar]]"/>
 						<img ng-if="!mail.isAvatarAlone()" skin-src="[[ mail.matchAvatar() ]]"/>
 						<input type="checkbox" ng-model="mail.selected" ng-click="refreshSelectionState(mail)"/>
 						<i18n></i18n>
