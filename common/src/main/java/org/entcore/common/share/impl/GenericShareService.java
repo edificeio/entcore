@@ -42,7 +42,7 @@ public abstract class GenericShareService implements ShareService {
 
 	private static final String GROUP_SHARED =
 			"MATCH (g:Group) WHERE g.id in {groupIds} " +
-			"RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName " +
+			"RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, g.structureName as structureName " +
 			"ORDER BY name ";
 	private static final String USER_SHARED =
 			"MATCH (u:User) WHERE u.id in {userIds} " +
@@ -145,7 +145,7 @@ public abstract class GenericShareService implements ShareService {
 
 			final String q =
 					"RETURN distinct profileGroup.id as id, profileGroup.name as name, " +
-					"profileGroup.groupDisplayName as groupDisplayName " +
+					"profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName " +
 					"ORDER BY name " +
 					"UNION " +
 					GROUP_SHARED;
