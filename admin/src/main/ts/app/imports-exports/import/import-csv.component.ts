@@ -106,8 +106,8 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             <message-box *ngIf="classes.hasWarning()" [type]="'warning'" [messages]="['import.file.warning']"></message-box>
             <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true"> 
                 <span other-actions>
-                    <message-sticker *ngIf="classes.hasWarning(p)" [type]="'warning'" 
-                        [messages]="['importClassesChecking.'+ (profile == 'Student()' ? 'student' : 'generic') + '.warning']"></message-sticker>
+                    <message-sticker *ngIf="classes.hasWarning(profile)" [type]="'warning'" 
+                        [messages]="['importClassesChecking.'+ (profile == 'Student' ? 'student' : 'generic') + '.warning']"></message-sticker>
                 </span>
 
                 <mappings-table 
@@ -401,7 +401,7 @@ export class ImportCSV implements OnInit, OnDestroy {
             }
         },
         hasWarning(profile?:Profile) {
-            if (profile) {
+            if (profile && this.mappings[profile] != null) {
                 return Object.values(this.mappings[profile]).includes('');
             }
             for (let p of this.profiles) {
