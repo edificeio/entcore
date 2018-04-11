@@ -20,7 +20,6 @@
 package org.entcore.timeline.services.impl;
 
 import static org.entcore.common.mongodb.MongoDbResult.*;
-
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.timeline.services.TimelineConfigService;
 import io.vertx.core.Handler;
@@ -29,7 +28,11 @@ import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
 
+import java.util.Map;
+
 public class DefaultTimelineConfigService extends MongoDbCrudService implements TimelineConfigService {
+
+	private Map<String, String> registeredNotifications;
 
 	public DefaultTimelineConfigService(String collection) {
 		super(collection);
@@ -49,6 +52,52 @@ public class DefaultTimelineConfigService extends MongoDbCrudService implements 
 	public void list(Handler<Either<String, JsonArray>> handler) {
 		JsonObject sort = new JsonObject().put("modified", -1);
 		mongo.find(collection, new JsonObject("{}"), sort, defaultListProjection, validResultsHandler(handler));
+	}
+
+	/**
+	 * Retrieves stored properties for a single notification.
+	 *
+	 * @param notificationKey : Name of the notification
+	 * @param handler : Handles the properties
+	 */
+	@Override
+	public void getNotificationProperties(final String notificationKey, final Handler<Either<String, JsonObject>> handler) {
+		this.list(new Handler<Either<String, JsonArray>>() {
+			public void handle(Either<String, JsonArray> event) {
+				if (event.isLeft()) {
+					handler.handle(new Either.Left<String, JsonObject>(
+							event.left().getValue()));
+					return;
+				}
+				final String notificationStr = registeredNotifications
+						.get(notificationKey.toLowerCase());
+				if (notificationStr == null) {
+					handler.handle(new Either.Left<String, JsonObject>(
+							"invalid.notification.key"));
+					return;
+				}
+				final JsonObject notification = new JsonObject(notificationStr);
+				for (Object notifConfigObj : event.right().getValue()) {
+					JsonObject notifConfig = (JsonObject) notifConfigObj;
+					if (notifConfig.getString("key", "")
+							.equals(notificationKey.toLowerCase())) {
+						notification.put("defaultFrequency",
+								notifConfig.getString("defaultFrequency", ""));
+						notification.put("push-notif",
+								notifConfig.getBoolean("push-notif", notification.getBoolean("push-notif")));
+						notification.put("restriction",
+								notifConfig.getString("restriction", ""));
+						break;
+					}
+				}
+				handler.handle(
+						new Either.Right<String, JsonObject>(notification));
+			}
+		});
+	}
+
+	public void setRegisteredNotifications(Map<String, String> registeredNotifications) {
+		this.registeredNotifications = registeredNotifications;
 	}
 
 }

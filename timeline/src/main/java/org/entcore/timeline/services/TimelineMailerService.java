@@ -52,14 +52,6 @@ public interface TimelineMailerService {
 							final JsonObject templateParameters, final JsonArray recipientIds);
 
 	/**
-	 * Retrieves stored properties for a single notification.
-	 *
-	 * @param notificationName : Name of the notification
-	 * @param handler : Handles the properties
-	 */
-	void getNotificationProperties(String notificationName, Handler<Either<String, JsonObject>> handler);
-
-	/**
 	 * Translates a key using the usual i18n keys + the timeline folders keys (from all apps).
 	 *
 	 * @param i18nKeys : Keys to translate

@@ -40,10 +40,10 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.common.notification.PushNotifUtils;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.timeline.controllers.Helper.NotificationHelper;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
@@ -61,7 +61,6 @@ import org.vertx.java.core.http.RouteMatcher;
 import java.io.StringReader;
 import java.io.Writer;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -592,7 +591,7 @@ public class TimelineController extends BaseController {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
-					PushNotifUtils.getFcmTokensByUser(user.getUserId(), new Handler<Either<String,JsonArray>>() {
+					NotificationUtils.getFcmTokensByUser(user.getUserId(), new Handler<Either<String,JsonArray>>() {
 						@Override
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isRight()){
@@ -620,7 +619,7 @@ public class TimelineController extends BaseController {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						PushNotifUtils.putFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
+						NotificationUtils.putFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
 							@Override
 							public void handle(Either<String, JsonObject> result) {
 								if (result.isRight()) {
@@ -651,7 +650,7 @@ public class TimelineController extends BaseController {
 				@Override
 				public void handle(final UserInfos user) {
 					if (user != null) {
-						PushNotifUtils.deleteFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
+						NotificationUtils.deleteFcmToken(user.getUserId(), token, new Handler<Either<String, JsonObject>>() {
 							@Override
 							public void handle(Either<String, JsonObject> result) {
 								if (result.isRight()) {
@@ -706,6 +705,7 @@ public class TimelineController extends BaseController {
 				store.add(json, new Handler<JsonObject>() {
 					public void handle(JsonObject result) {
 						notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(json.getJsonObject("request")), json);
+						handler.handle(result);
 					}
 				});
 				if (refreshTypesCache && eventTypes != null && !eventTypes.contains(json.getString("type"))) {

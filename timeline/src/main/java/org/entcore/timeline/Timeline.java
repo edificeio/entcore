@@ -30,8 +30,7 @@ import io.vertx.core.shareddata.LocalMap;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
-import org.entcore.timeline.controllers.Helper.NotificationHelper;
-import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.services.impl.DefaultPushNotifService;
 import org.entcore.timeline.services.impl.DefaultTimelineConfigService;
 import org.entcore.timeline.services.impl.DefaultTimelineMailerService;
@@ -53,14 +52,15 @@ public class Timeline extends BaseServer {
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
-		final TimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
+		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
+		configService.setRegisteredNotifications(registeredNotifications);
 		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, config);
 		mailerService.setConfigService(configService);
 		mailerService.setRegisteredNotifications(registeredNotifications);
 		mailerService.setEventsI18n(eventsI18n);
 		mailerService.setLazyEventsI18n(lazyEventsI18n);
 
-		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService, registeredNotifications);
+		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
 		notificationHelper.setMailerService(mailerService);
 
 		JsonObject pushNotif = config.getJsonObject("push-notif");
