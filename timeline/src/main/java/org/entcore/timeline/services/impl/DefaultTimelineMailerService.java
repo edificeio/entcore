@@ -33,6 +33,7 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -54,7 +55,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class DefaultTimelineMailerService extends Renders implements TimelineMailerService {
 
@@ -188,14 +188,14 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	public void sendImmediateMails(final HttpServerRequest request, final String notificationName, final JsonObject notification,
 								   final JsonObject templateParameters, final JsonArray recipientIds){
 		//Get notification properties (mixin : admin console configuration which overrides default properties)
-		getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
+		configService.getNotificationProperties(notificationName, new Handler<Either<String, JsonObject>>() {
 			public void handle(final Either<String, JsonObject> properties) {
 				if(properties.isLeft() || properties.right().getValue() == null){
 					log.error("[sendImmediateMails] Issue while retrieving notification (" + notificationName + ") properties.");
 					return;
 				}
 				//Get users preferences (overrides notification properties)
-				getUsersPreferences(recipientIds, new Handler<JsonArray>() {
+				NotificationUtils.getUsersPreferences(eb, recipientIds, "language: uac.language",new Handler<JsonArray>() {
 					public void handle(final JsonArray userList) {
 						if(userList == null){
 							log.error("[sendImmediateMails] Issue while retrieving users preferences.");
@@ -205,40 +205,6 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 						sendImmediateMails(request, notificationName, notification, templateParameters, userList, properties.right().getValue());
 					}
 				});
-			}
-		});
-	}
-
-	@Override
-	public void getNotificationProperties(final String notificationKey, final Handler<Either<String, JsonObject>> handler) {
-		configService.list(new Handler<Either<String, JsonArray>>() {
-			public void handle(Either<String, JsonArray> event) {
-				if (event.isLeft()) {
-					handler.handle(new Either.Left<String, JsonObject>(
-							event.left().getValue()));
-					return;
-				}
-				final String notificationStr = registeredNotifications
-						.get(notificationKey.toLowerCase());
-				if (notificationStr == null) {
-					handler.handle(new Either.Left<String, JsonObject>(
-							"invalid.notification.key"));
-					return;
-				}
-				final JsonObject notification = new JsonObject(notificationStr);
-				for (Object notifConfigObj : event.right().getValue()) {
-					JsonObject notifConfig = (JsonObject) notifConfigObj;
-					if (notifConfig.getString("key", "")
-							.equals(notificationKey.toLowerCase())) {
-						notification.put("defaultFrequency",
-								notifConfig.getString("defaultFrequency", ""));
-						notification.put("restriction",
-								notifConfig.getString("restriction", ""));
-						break;
-					}
-				}
-				handler.handle(
-						new Either.Right<String, JsonObject>(notification));
 			}
 		});
 	}
@@ -327,7 +293,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for(Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					getUsersPreferences(userIds, new Handler<JsonArray>(){
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>(){
 						public void handle(JsonArray preferences) {
 							for(Object userObj : preferences){
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -514,7 +480,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 					for (Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					getUsersPreferences(userIds, new Handler<JsonArray>() {
+					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language", new Handler<JsonArray>() {
 						public void handle(JsonArray preferences) {
 							for (Object userObj : preferences) {
 								final JsonObject userPrefs = (JsonObject) userObj;
@@ -704,30 +670,6 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				}
 			}
 		});
-	}
-
-	/**
-	 * Retrieves stored timeline user preferences.
-	 *
-	 * @param userIds : Ids of the users
-	 * @param handler : Handles the preferences
-	 */
-	private void getUsersPreferences(JsonArray userIds, final Handler<JsonArray> handler){
-		eb.send(USERBOOK_ADDRESS, new JsonObject()
-				.put("action", "get.userlist")
-				.put("application", "timeline")
-				.put("additionalMatch", ", u-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) ")
-				.put("additionalWhere", "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\" ")
-				.put("additionalCollectFields", ", language: uac.language")
-				.put("userIds", userIds), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if (!"error".equals(event.body().getString("status"))) {
-					handler.handle(event.body().getJsonArray("results"));
-				} else {
-					handler.handle(null);
-				}
-			}
-		}));
 	}
 
 	/**
