@@ -313,7 +313,7 @@ public class Validator {
 			String firstName = in[0];
 			String lastName = in[1];
 			if (firstName != null && lastName != null) {
-				String displayName = firstName + " " + lastName;
+				String displayName = lastName + " " + firstName;
 				object.put(attr, displayName);
 				object.put(attr + SEARCH_FIELD, removeAccents(displayName).toLowerCase());
 			}
