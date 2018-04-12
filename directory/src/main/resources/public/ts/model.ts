@@ -90,7 +90,7 @@ export const directory = {
 		this.importFile = function(file, type){
 			var form = new FormData();
 			form.append(type.replace(/(\w)(\w*)/g, function(g0,g1,g2){return g1.toUpperCase() + g2.toLowerCase();}), file);
-			form.append('className', this.name);
+			form.append('classExternalId', this.externalId);
 			http().postFile('/directory/import/' + type + '/class/' + this.id, form)
 				.done(function(){
 					this.sync();

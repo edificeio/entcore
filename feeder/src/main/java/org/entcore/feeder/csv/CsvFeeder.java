@@ -304,8 +304,8 @@ public class CsvFeeder implements Feed {
 
 					// Class Admin
 					if (isNotEmpty(structure.getOverrideClass())) {
-						String eId = structure.getExternalId() + '$' + structure.getOverrideClass();
-						structure.createClassIfAbsent(eId, structure.getOverrideClass());
+						String eId = structure.getOverrideClass(); // structure.getExternalId() + '$' + structure.getOverrideClass();
+						//structure.createClassIfAbsent(eId, structure.getOverrideClass());
 						final String[] classId = new String[3];
 						classId[0] = structure.getExternalId();
 						classId[1] = eId;
