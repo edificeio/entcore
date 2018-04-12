@@ -97,8 +97,8 @@ public class ImportController extends BaseController {
 				importInfos.setStructureName(request.formAttributes().get("structureName"));
 				importInfos.setUAI(request.formAttributes().get("UAI"));
 				importInfos.setLanguage(I18n.acceptLanguage(request));
-				if (isNotEmpty(request.formAttributes().get("className"))) {
-					importInfos.setOverrideClass(request.formAttributes().get("className"));
+				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
+					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
 				}
 				try {
 					importInfos.setFeeder(request.formAttributes().get("type"));

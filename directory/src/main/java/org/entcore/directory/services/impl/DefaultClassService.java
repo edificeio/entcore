@@ -94,7 +94,7 @@ public class DefaultClassService implements ClassService {
 	@Override
 	public void get(String classId, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(result, classId)) return;
-		String query = "MATCH (c:`Class` { id : {classId}}) RETURN c.id as id,  c.name as name, c.level as level";
+		String query = "MATCH (c:`Class` { id : {classId}}) RETURN c.id as id, c.externalId as externalId,  c.name as name, c.level as level";
 		neo.execute(query, new JsonObject().put("classId", classId), validUniqueResultHandler(result));
 	}
 
