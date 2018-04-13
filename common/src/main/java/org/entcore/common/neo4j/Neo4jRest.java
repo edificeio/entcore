@@ -396,7 +396,11 @@ public class Neo4jRest implements GraphDatabase {
 				.add("Content-Type", "application/json")
 				.add("Accept", "application/json; charset=UTF-8");
 
-		req.end(Json.encode(body));
+		final String b = Json.encode(body);
+
+		req.exceptionHandler(event -> logger.error("Neo4j error in request : " + b, event));
+
+		req.end(b);
 	}
 
 }
