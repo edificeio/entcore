@@ -62,6 +62,7 @@ public class HttpLocalhostEventStore extends GenericEventStore {
 				}
 			}
 		});
+		req.exceptionHandler(e -> logger.error("Error storing event : " + event.encode(), e));
 		req.end(event.encode());
 	}
 

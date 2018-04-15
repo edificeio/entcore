@@ -147,6 +147,7 @@ public class PostImport {
 									req.putHeader(h, headers.getString(h));
 								}
 							}
+							req.exceptionHandler(e -> logger.error("Error in ws call post import : " + j.encode(), e));
 							if (j.getString("body") != null) {
 								req.end(j.getString("body"));
 							} else {
