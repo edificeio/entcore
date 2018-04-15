@@ -59,6 +59,7 @@ public class HttpAntivirusClient implements AntivirusClient {
 		});
 		req.putHeader("Content-Type", "application/json");
 		req.putHeader("Authorization", "Basic " + credential);
+		req.exceptionHandler(e -> log.error("Exception when call scan file : " + path, e));
 		req.end(new JsonObject().put("file", path).encode());
 	}
 

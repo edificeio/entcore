@@ -87,6 +87,7 @@ public class Neo4jRest implements GraphDatabase {
 			body.put("config", new JsonObject()
 					.put("type", j.getString("type", "exact"))
 					.put("provider", "lucene"));
+			req.exceptionHandler(e -> logger.error("Error creating index : " + j.encode(), e));
 			req.end(body.encode());
 		} catch (Neo4jConnectionException e) {
 			logger.error(e.getMessage(), e);
@@ -290,6 +291,7 @@ public class Neo4jRest implements GraphDatabase {
 				}
 			});
 			req.headers().add("Accept", "application/json; charset=UTF-8");
+			req.exceptionHandler(e -> logger.error("Error rollbacking transaction : " + transactionId, e));
 			req.end();
 		} catch (Neo4jConnectionException e) {
 			ExceptionUtils.exceptionToJson(e);
@@ -316,6 +318,7 @@ public class Neo4jRest implements GraphDatabase {
 					});
 				}
 			});
+			req.exceptionHandler(e -> logger.error("Neo4j unmanaged extension error.", e));
 			if (body != null) {
 				req.end(body);
 			} else {
