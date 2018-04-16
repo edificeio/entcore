@@ -270,8 +270,7 @@ public class UserController extends BaseController {
 							@Override
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
-									processTemplate(request, "text/export" + exportType + ".id.txt",
-										new JsonObject().put("list", r.right().getValue()), new Handler<String>() {
+									processTemplate(request, new JsonObject().put("list", r.right().getValue()),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
 											@Override
 											public void handle(final String export) {
 												if (export != null) {
