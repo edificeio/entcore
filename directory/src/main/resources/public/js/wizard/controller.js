@@ -145,7 +145,7 @@ function WizardController($scope, $rootScope, model, template, route, date, lang
 	};
 
 	$scope.close = function() {
-		window.location = "/admin";
+		window.location = "/directory/admin-console";
 	};
 
 	$scope.authorizeCreateStructure = function(wizard) {
