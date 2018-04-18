@@ -19,6 +19,7 @@
 
 package org.entcore.common.sql;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.bus.ErrorMessage;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -51,11 +52,15 @@ public class Sql {
 	}
 
 	public void prepared(String query, JsonArray values, Handler<Message<JsonObject>> handler) {
+		prepared(query, values, new DeliveryOptions(), handler);
+	}
+
+	public void prepared(String query, JsonArray values, DeliveryOptions deliveryOptions, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "prepared")
 				.put("statement", query)
 				.put("values", values);
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
 	public void raw(String query, Handler<Message<JsonObject>> handler) {
@@ -109,10 +114,14 @@ public class Sql {
 	}
 
 	public void transaction(JsonArray statements, Handler<Message<JsonObject>> handler) {
+		transaction(statements, new DeliveryOptions(), handler);
+	}
+
+	public void transaction(JsonArray statements, DeliveryOptions deliveryOptions, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "transaction")
 				.put("statements", statements);
-		eb.send(address, j, handlerToAsyncHandler(handler));
+		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
 	public static String upsert(String table, String updateQuery, String insertQuery) {

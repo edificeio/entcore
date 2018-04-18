@@ -20,6 +20,7 @@
 package org.entcore.conversation.service.impl;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -45,6 +46,7 @@ public class DeleteOrphan implements Handler<Long> {
 			"(select m.id from conversation.messages m " +
 			"left join conversation.usermessages um on um.message_id = m.id " +
 			"where um.user_id is NULL);";
+	private static final long TIMEOUT = 300000l;
 
 	private final Storage storage;
 
@@ -58,7 +60,8 @@ public class DeleteOrphan implements Handler<Long> {
 		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		builder.raw(DELETE_ORPHAN_MESSAGE);
 		builder.raw(SELECT_ORPHAN_ATTACHMENT);
-		sql.transaction(builder.build(), SqlResult.validResultHandler(1, new Handler<Either<String, JsonArray>>() {
+		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(TIMEOUT),
+				SqlResult.validResultHandler(1, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> res) {
 				if (res.isRight()) {
@@ -82,7 +85,7 @@ public class DeleteOrphan implements Handler<Long> {
 						}
 						final String deletOrphanAttachments =
 								"delete from conversation.attachments where id IN " + Sql.listPrepared(ids.getList());
-						sql.prepared(deletOrphanAttachments, ids, new Handler<Message<JsonObject>>() {
+						sql.prepared(deletOrphanAttachments, ids, new DeliveryOptions().setSendTimeout(TIMEOUT), new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if (!"ok".equals(event.body().getString("status"))) {
