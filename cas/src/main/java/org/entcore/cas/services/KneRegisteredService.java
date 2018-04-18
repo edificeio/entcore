@@ -80,11 +80,11 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 						String value = pair.substring(pair.indexOf('=') + 1);
 						additionalAttributes.add(createTextElement("ENTPersonStructRattachUAI", value, doc));
 						for (Object o : data.getJsonArray("structureNodes", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
-							@SuppressWarnings("unchecked")
-							Map<String, Object> structure = ((Map<String, Object>) o);
-							if(value.equals(structure.get("UAI"))){
+							if (o == null || !(o instanceof JsonObject)) continue;
+							JsonObject structure = (JsonObject) o;
+							if(value.equals(structure.getString("UAI"))){
 								if(structure.containsKey("type")){
-									String type = (String) structure.get("type");
+									String type = structure.getString("type");
 									switch(type){
 										case "ECOLE DE NIVEAU ELEMENTAIRE":
 											additionalAttributes.add(createTextElement("ENTStructureTypeStruct", "1ORD", doc));
