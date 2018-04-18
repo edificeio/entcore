@@ -523,8 +523,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.currentFolder.countUnread();
                 await folderTarget.countUnread();
             }
-            $scope.$apply();
-
+            await $scope.refreshFolder();
         }
 
         $scope.openNewFolderView = function () {
