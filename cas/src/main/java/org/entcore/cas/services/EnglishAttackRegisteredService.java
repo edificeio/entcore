@@ -91,13 +91,15 @@ public class EnglishAttackRegisteredService extends AbstractCas20ExtensionRegist
 					// Structures
 					Element rootStructures = createElement(EA_STRUCTURE+"s", doc);
 					for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+						if (o == null || !(o instanceof JsonObject)) continue;
+						JsonObject structure = (JsonObject) o;
 						Element rootStructure = createElement(EA_STRUCTURE, doc);
-						Map<String, Object> structure = ((Map<String, Object>) o);
+
 						if (structure.containsKey("UAI")) {
-							rootStructure.appendChild(createTextElement(EA_STRUCTURE_UAI, structure.get("UAI").toString(), doc));
+							rootStructure.appendChild(createTextElement(EA_STRUCTURE_UAI, structure.getString("UAI"), doc));
 						}
 						if (structure.containsKey("name")) {
-							rootStructure.appendChild(createTextElement(EA_STRUCTURE_NAME, structure.get("name").toString(), doc));
+							rootStructure.appendChild(createTextElement(EA_STRUCTURE_NAME, structure.getString("name"), doc));
 						}
 						rootStructures.appendChild(rootStructure);
 					}

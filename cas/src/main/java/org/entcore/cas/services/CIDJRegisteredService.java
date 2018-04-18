@@ -57,9 +57,10 @@ public class CIDJRegisteredService extends AbstractCas20ExtensionRegisteredServi
 
 			// Structures
 			for (Object o : data.getJsonArray("structures", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
-				Map<String, Object> structure = ((Map<String, Object>) o);
+				if (o == null || !(o instanceof JsonObject)) continue;
+				JsonObject structure = (JsonObject) o;
 				if (structure.containsKey("UAI")) {
-					additionnalAttributes.add(createTextElement(CIDJ_STRUCTURE_CODERNE, structure.get("UAI").toString(), doc));
+					additionnalAttributes.add(createTextElement(CIDJ_STRUCTURE_CODERNE, structure.getString("UAI"), doc));
 				}
 			}
 
