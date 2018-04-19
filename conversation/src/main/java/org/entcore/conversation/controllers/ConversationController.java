@@ -70,6 +70,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -428,7 +429,7 @@ public class ConversationController extends BaseController {
 
 	private void translateGroupsNames(JsonObject message, HttpServerRequest request) {
 		JsonArray d3 = new fr.wseduc.webutils.collections.JsonArray();
-		for (Object o2 : message.getJsonArray("displayNames", new fr.wseduc.webutils.collections.JsonArray())) {
+		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new fr.wseduc.webutils.collections.JsonArray())) {
 			if (!(o2 instanceof String)) {
 				continue;
 			}
