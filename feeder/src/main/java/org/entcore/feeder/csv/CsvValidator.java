@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.csv.CsvFeeder.*;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
@@ -408,7 +409,12 @@ public class CsvValidator extends Report implements ImportValidator {
 										Object childUsername = user.getValue(attr);
 										Object childLastName = user.getValue("childLastName");
 										Object childFirstName = user.getValue("childFirstName");
-										Object childClasses = user.getValue("childClasses");
+										Object childClasses;
+										if (isNotEmpty(structure.getOverrideClass())) {
+											childClasses = structure.getOverrideClass();
+										} else {
+											childClasses = user.getValue("childClasses");
+										}
 										if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
 												childFirstName instanceof JsonArray && childClasses instanceof JsonArray &&
 												((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
@@ -438,7 +444,12 @@ public class CsvValidator extends Report implements ImportValidator {
 									} else if ("childLastName".equals(attr) && !user.fieldNames().contains("childUsername")) {
 										Object childLastName = user.getValue(attr);
 										Object childFirstName = user.getValue("childFirstName");
-										Object childClasses = user.getValue("childClasses");
+										Object childClasses;
+										if (isNotEmpty(structure.getOverrideClass())) {
+											childClasses = structure.getOverrideClass();
+										} else {
+											childClasses = user.getValue("childClasses");
+										}
 										if (childLastName instanceof JsonArray && childFirstName instanceof JsonArray &&
 												childClasses instanceof JsonArray &&
 												((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
@@ -509,10 +520,26 @@ public class CsvValidator extends Report implements ImportValidator {
 			public void handle(Message<JsonObject> event) {
 				JsonArray result = event.body().getJsonArray("result");
 				if ("ok".equals(event.body().getString("status")) && result != null && result.size() == 1) {
-					handler.handle(new Structure(result.getJsonObject(0)));
+					final Structure s = new Structure(result.getJsonObject(0));
+					try {
+						final JsonObject structure = CSVUtil.getStructure(path);
+						final String overrideClass = structure.getString("overrideClass");
+						if (isNotEmpty(overrideClass)) {
+							s.setOverrideClass(overrideClass);
+						}
+					} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+						log.error("Error parsing structure path : " + path, e);
+					}
+					handler.handle(s);
 				} else {
 					try {
-						handler.handle(new Structure(CSVUtil.getStructure(path)));
+						final JsonObject structure = CSVUtil.getStructure(path);
+						final String overrideClass = structure.getString("overrideClass");
+						final Structure s = new Structure(structure);
+						if (isNotEmpty(overrideClass)) {
+							s.setOverrideClass(overrideClass);
+						}
+						handler.handle(s);
 					} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
 						handler.handle(null);
 					}
