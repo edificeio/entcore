@@ -51,14 +51,15 @@
 			<div class="flex-row align-center medium-importance medium-text">
 
 				<div class="avatar">
-					<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100" default-src="[[defaultAvatar]]"/>
+					<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100" onerror="this.src=angular.element(this).scope().getAvatar()"/>
 				</div>
 
 				<div class="horizontal-spacing-twice">
 					<!-- from -->
 					<strong><span translate key="from"></span>
 					<span> : </span></strong>
-					<a ng-if="!mail.sender().isMe()" href="/userbook/annuaire#[[mail.sender().id]]">[[mail.sender().displayName]]</a>
+					<span ng-if="!mail.sender().id">[[mail.fromName]]</span>
+					<a ng-if="!mail.sender().isMe() && mail.sender().id" href="/userbook/annuaire#[[mail.sender().id]]">[[mail.sender().displayName]]</a>
 					<span ng-if="mail.sender().isMe()"><i18n>me</i18n></span>
 
 					<!-- to -->
@@ -72,6 +73,11 @@
 							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
 							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
 						</span>
+						<span ng-if="mail.toName && mail.toName.length > 0 && mail.to.length > 0">,</span>
+						<span ng-repeat="receiver in mail.toName">
+							<span>[[receiver]]</span>
+							<span ng-if="$index !== mail.toName.length - 1">,</span>
+						</span>
 					</div>
 
 					<!-- copies -->
@@ -84,6 +90,11 @@
 							<span ng-if="receiver.isMe()"><i18n>me</i18n></span>
 							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
 							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+						</span>
+						<span ng-if="mail.ccName && mail.ccName.length > 0 && mail.cc.length > 0">,</span>
+						<span ng-repeat="receiver in mail.ccName">
+							<span>[[receiver]]</span>
+							<span ng-if="$index !== mail.ccName.length - 1">,</span>
 						</span>
 					</div>
 
