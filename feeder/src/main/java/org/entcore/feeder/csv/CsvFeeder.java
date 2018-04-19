@@ -444,7 +444,12 @@ public class CsvFeeder implements Feed {
 									Object childUsername = user.getValue(attr);
 									Object childLastName = user.getValue("childLastName");
 									Object childFirstName = user.getValue("childFirstName");
-									Object childClasses = user.getValue("childClasses");
+									Object childClasses;
+									if (isNotEmpty(structure.getOverrideClass())) {
+										childClasses = structure.getOverrideClass();
+									} else {
+										childClasses = user.getValue("childClasses");
+									}
 									if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
 											childFirstName instanceof JsonArray && childClasses instanceof JsonArray &&
 											((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
@@ -473,7 +478,12 @@ public class CsvFeeder implements Feed {
 								} else if ("childLastName".equals(attr) && !user.fieldNames().contains("childUsername")) {
 									Object childLastName = user.getValue(attr);
 									Object childFirstName = user.getValue("childFirstName");
-									Object childClasses = user.getValue("childClasses");
+									Object childClasses;
+									if (isNotEmpty(structure.getOverrideClass())) {
+										childClasses = structure.getOverrideClass();
+									} else {
+										childClasses = user.getValue("childClasses");
+									}
 									if (childLastName instanceof JsonArray && childFirstName instanceof JsonArray &&
 											childClasses instanceof JsonArray &&
 											((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
