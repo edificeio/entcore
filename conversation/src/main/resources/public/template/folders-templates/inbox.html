@@ -70,7 +70,7 @@
 			<div class="flex-row align-center">
 				<label class="wrapping-checkbox">
 					<div class="avatar" ng-click="$event.stopPropagation();">
-						<img ng-src="[[ mail.matchAvatar() ]]" default-src="[[defaultAvatar]]"/>
+						<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100" default-src="[[defaultAvatar]]"/>
 
 						<input type="checkbox" ng-model="mail.selected" ng-click="refreshSelectionState(mail)"/>
 

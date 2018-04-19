@@ -80,6 +80,11 @@
 							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
 							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
 						</span>
+						<span ng-if="mail.toName && mail.toName.length > 0 && mail.to.length > 0">,</span>
+						<span ng-repeat="receiver in mail.toName">
+							<span>[[receiver]]</span>
+							<span ng-if="$index !== mail.toName.length - 1">,</span>
+						</span>
 					</div>
 
 					<!-- copies -->
@@ -92,6 +97,11 @@
 							<span ng-if="receiver.isMe()"><i18n>me</i18n></span>
 							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
 							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+						</span>
+						<span ng-if="mail.ccName && mail.ccName.length > 0 && mail.cc.length > 0">,</span>
+						<span ng-repeat="receiver in mail.ccName">
+							<span>[[receiver]]</span>
+							<span ng-if="$index !== mail.ccName.length - 1">,</span>
 						</span>
 					</div>
 

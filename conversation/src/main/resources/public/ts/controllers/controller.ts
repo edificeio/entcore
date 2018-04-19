@@ -702,4 +702,8 @@ export let conversationController = ng.controller('ConversationController', [
            return model.me.functions &&
             model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope
         };
+
+        $scope.getAvatar = function () {
+            return skin.theme + "../../" + $scope.defaultAvatar;
+        }
     }]);
