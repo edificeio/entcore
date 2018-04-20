@@ -218,6 +218,7 @@ public class SqlConversationService implements ConversationService{
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
+		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
 
 		values.add("SENT").add(user.getUserId());
 		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user);
@@ -226,14 +227,13 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
 			values.add(StringUtils.join(checkAndComposeWordFromSearchText(searchText), " & "));
 		}
-		String query = "SELECT m.*, um.unread as unread, " +
+		String query = "SELECT "+messagesFields+", um.unread as unread, " +
 				"CASE when COUNT(distinct r) = 0 THEN false ELSE true END AS response, COUNT(*) OVER() as count, " +
-				"CASE when COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
+				"CASE when COUNT(distinct uma) = 0 THEN false ELSE true END AS  \"hasAttachment\" " +
 				"FROM " + userMessageTable + " um LEFT JOIN " +
 				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
 				messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") LEFT JOIN " +
-				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? LEFT JOIN " +
-				attachmentTable + " att ON uma.attachment_id = att.id " +
+				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? " +
 				"WHERE um.user_id = ? " + additionalWhere + " " +
 				"GROUP BY m.id, unread " +
 				"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
