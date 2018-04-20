@@ -30,6 +30,8 @@ import org.entcore.conversation.service.impl.DeleteOrphan;
 
 import java.text.ParseException;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 public class Conversation extends BaseServer {
 
 	public final static int DEFAULT_FOLDER_DEPTH = 3;
@@ -45,7 +47,7 @@ public class Conversation extends BaseServer {
 
 		addController(new ConversationController(storage, exportPath));
 
-		setRepositoryEvents(new ConversationRepositoryEvents(storage));
+		setRepositoryEvents(new ConversationRepositoryEvents(storage, getOrElse(config.getLong("repositoryEventsTimeout"), 300000l)));
 
 		final String deleteOrphanCron = config.getString("deleteOrphanCron");
 		if (deleteOrphanCron != null) {

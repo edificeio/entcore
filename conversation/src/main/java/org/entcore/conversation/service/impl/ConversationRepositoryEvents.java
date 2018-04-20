@@ -19,6 +19,7 @@
 
 package org.entcore.conversation.service.impl;
 
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -38,9 +39,11 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(ConversationRepositoryEvents.class);
 	private final Sql sql = Sql.getInstance();
 	private final Storage storage;
+	private final long timeout;
 
-	public ConversationRepositoryEvents(Storage storage) {
+	public ConversationRepositoryEvents(Storage storage, long timeout) {
 		this.storage = storage;
+		this.timeout = timeout;
 	}
 
 	@Override
@@ -171,7 +174,7 @@ public class ConversationRepositoryEvents implements RepositoryEvents {
 			builder.prepared(setCC, paramsToCc);
 			builder.prepared(setFrom, paramsFrom);
 		}
-		sql.transaction(builder.build(), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
+		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
 				if(event.isLeft()){
 					log.error("Error deleting conversation data : " + event.left().getValue());
