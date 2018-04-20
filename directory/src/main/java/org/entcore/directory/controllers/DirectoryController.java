@@ -27,6 +27,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.security.BCrypt;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.http.filter.AdminFilter;
@@ -48,6 +49,7 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
@@ -109,7 +111,8 @@ public class DirectoryController extends BaseController {
 		if (structureId != null) {
 			t.put("structureExternalId", structureId);
 		}
-		eb.send("entcore.feeder", t, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.send("entcore.feeder", t, new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("transitionTimeout"), 300000l)),
+				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -122,7 +125,8 @@ public class DirectoryController extends BaseController {
 	@SecuredAction("directory.duplicates.mark")
 	@IgnoreCsrf
 	public void markDuplicates(final HttpServerRequest request) {
-		eb.send("entcore.feeder", new JsonObject().put("action", "mark-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.send("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
+				new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("markDuplicatesTimeout"), 300000l)), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				renderJson(request, event.body());
