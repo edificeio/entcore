@@ -415,12 +415,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void launchTransition(final Message<JsonObject> message, final Handler<Message<JsonObject>> handler) {
 		if (GraphData.isReady()) {
 			final String structureExternalId = message.body().getString("structureExternalId");
-			Transition transition = new Transition();
+			Transition transition = new Transition(vertx, getOrElse(config.getLong("delayBetweenStructure"), 5000l));
 			transition.launch(structureExternalId, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					if (m != null && "ok".equals(m.body().getString("status"))) {
-						Transition.publishDeleteGroups(eb, logger, m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray()));
 						AbstractTimetableImporter.transition(structureExternalId);
 						if (handler != null) {
 							handler.handle(m);

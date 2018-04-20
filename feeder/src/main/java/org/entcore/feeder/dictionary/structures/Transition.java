@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import io.vertx.core.Vertx;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.ResultMessage;
@@ -32,14 +33,21 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class Transition {
 
 	private static final Logger log = LoggerFactory.getLogger(Transition.class);
 	private static final String GRAPH_DATA_UPDATE = "GraphDataUpdate";
+	private final Vertx vertx;
+	private final long delayBetweenStructure;
+
+	public Transition(Vertx vertx, long delayBetweenStructure) {
+		this.vertx = vertx;
+		this.delayBetweenStructure = delayBetweenStructure;
+	}
 
 	public void launch(final String structureExternalId, final Handler<Message<JsonObject>> handler) {
 		if (GraphData.isReady()) {
@@ -80,19 +88,15 @@ public class Transition {
 			}
 			return;
 		}
-		structure.transition(commitHandler(handler, tx, new HashSet<>()));
+		structure.transition(commitHandler(handler, null));
 	}
 
 	private void transitionStructures(final Handler<Message<JsonObject>> handler) {
-		final TransactionHelper tx = getTransaction(handler);
-		if (tx == null) {
-			return;
-		}
-		final Set<Object> groupsUsers = new HashSet<>();
+		getTransaction(handler);
 		Set<String> s = GraphData.getStructures().keySet();
 		final String [] structuresExternalId = s.toArray(new String[s.size()]);
 		final Handler[] handlers = new Handler[structuresExternalId.length + 1];
-		handlers[handlers.length -1] = commitHandler(handler, tx, groupsUsers);
+		handlers[handlers.length -1] = commitHandler(handler, null);
 
 		for (int i = structuresExternalId.length - 1; i >= 0; i--) {
 			final int j = i;
@@ -100,8 +104,7 @@ public class Transition {
 				@Override
 				public void handle(Message<JsonObject> m) {
 					if ("ok".equals(m.body().getString("status"))) {
-						JsonArray r = m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
-						groupsUsers.addAll(r.getList());
+
 						Structure s = GraphData.getStructures().get(structuresExternalId[j]);
 						if (s == null) {
 							log.error("Missing structure with externalId : " +
@@ -113,7 +116,7 @@ public class Transition {
 							}
 							return;
 						}
-						s.transition(handlers[j+1]);
+						s.transition(commitHandler(handler, handlers[j+1]));
 					} else {
 						TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 						log.error("Transition error");
@@ -128,29 +131,34 @@ public class Transition {
 		handlers[0].handle(new ResultMessage().put("result", new fr.wseduc.webutils.collections.JsonArray()));
 	}
 
-	private Handler<Message<JsonObject>> commitHandler(final Handler<Message<JsonObject>> handler,
-			final TransactionHelper tx, final Set<Object> groupsUsers) {
+	private Handler<Message<JsonObject>> commitHandler(final Handler<Message<JsonObject>> resHandler,
+			final Handler<Message<JsonObject>> handler) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
 				if ("ok".equals(m.body().getString("status"))) {
-					JsonArray r = m.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
-					groupsUsers.addAll(r.getList());
 					try {
 						TransactionManager.getInstance().persist(GRAPH_DATA_UPDATE, false,
 								new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
 								if ("ok".equals(event.body().getString("status"))) {
-									if (handler != null) {
-										handler.handle(new ResultMessage()
-												.put("result", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupsUsers))));
+									JsonArray r = getOrElse(m.body().getJsonArray("result"), new fr.wseduc.webutils.collections.JsonArray());
+									if (r.size() > 0) {
+										publishDeleteGroups(vertx.eventBus(), log, r);
+										if (handler != null) {
+											vertx.setTimer(delayBetweenStructure, eventTimer -> next(r));
+										} else {
+											next(r);
+										}
+									} else {
+										next(r);
 									}
 								} else {
 									log.error("Transition commit error");
 									log.error(event.body().encode());
-									if (handler != null) {
-										handler.handle(event);
+									if (resHandler != null) {
+										resHandler.handle(event);
 									}
 								}
 							}
@@ -158,17 +166,28 @@ public class Transition {
 					} catch (Exception e) {
 						log.error("Transition commit error");
 						log.error(e.getMessage(), e);
-						if (handler != null) {
-							handler.handle(new ResultMessage().error(e.getMessage()));
+						if (resHandler != null) {
+							resHandler.handle(new ResultMessage().error(e.getMessage()));
 						}
 					}
 				} else {
 					TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 					log.error("Transition error");
 					log.error(m.body().encode());
-					if (handler != null) {
-						handler.handle(m);
+					if (resHandler != null) {
+						resHandler.handle(m);
 					}
+				}
+			}
+
+			protected void next(JsonArray r) {
+				if (handler != null) {
+					if(getTransaction(resHandler) == null) return;
+				}
+				if (handler != null) {
+					handler.handle(new ResultMessage());
+				} else {
+					resHandler.handle(new ResultMessage().put("result", r));
 				}
 			}
 		};
