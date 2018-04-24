@@ -123,6 +123,10 @@ public class Directory extends BaseServer {
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
 
+		ShareBookmarkController shareBookmarkController = new ShareBookmarkController();
+		shareBookmarkController.setShareBookmarkService(new DefaultShareBookmarkService());
+		addController(shareBookmarkController);
+
 		vertx.eventBus().localConsumer("user.repository",
 				new RepositoryHandler(new UserbookRepositoryEvents(), eb));
 	}

@@ -101,4 +101,7 @@ object DirectoryAdmlScenario {
 //    .delete("""/directory/group/${manual-group-id}""")
 //    .check(status.is(204)))
 
+
+  // ShareBookMark
+
 }
