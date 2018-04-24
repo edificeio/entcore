@@ -12,3 +12,4 @@ db.events.ensureIndex({ "classes" : 1 });
 db.events.ensureIndex({ "groups" : 1 });
 db.events.ensureIndex({ "referer" : 1 });
 db.events.ensureIndex({ "sessionId" : 1 });
+db.documentsRevisions.ensureIndex({ "documentId" : 1 }, { background: true });
