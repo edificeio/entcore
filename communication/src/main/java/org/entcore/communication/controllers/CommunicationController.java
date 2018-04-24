@@ -27,12 +27,15 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 import io.vertx.core.Handler;
@@ -43,9 +46,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class CommunicationController extends BaseController {
 
@@ -131,6 +133,109 @@ public class CommunicationController extends BaseController {
 		} else {
 			renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
 		}
+	}
+
+	@Post("/visible")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void searchVisible(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				String preFilter = "";
+				String match = "";
+				String where = "";
+				JsonObject params = new JsonObject();
+				if (filter != null && filter.size()> 0) {
+					for (String criteria : filter.fieldNames()) {
+						switch (criteria) {
+							case "structures":
+							case "classes":
+								if (!params.containsKey("nIds")) {
+									params.put("nIds", filter.getJsonArray(criteria));
+								} else {
+									params.getJsonArray("nIds").addAll(filter.getJsonArray(criteria));
+								}
+								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
+									match = "MATCH (visibles)-[:IN*0..1]->(g)-[:DEPENDS]->(n) ";
+									where = "WHERE n.id IN {nIds} ";
+								} else if (!match.contains("-[:DEPENDS]->(n)")) {
+									match += "-[:DEPENDS]->(n) ";
+									where += "AND n.id IN {nIds} ";
+								}
+								break;
+
+//								JsonArray profiles = filter.getJsonArray(criteria);
+//								if (profiles != null && profiles.size() > 1) {
+//									preFilter.append("AND HEAD(m.profiles) IN {profiles} ");
+//									//for ()
+//								}
+								//break;
+							case "profiles":
+							case "functions":
+								if (!params.containsKey("filters")) {
+									params.put("filters", filter.getJsonArray(criteria));
+								} else {
+									params.getJsonArray("filters").addAll(filter.getJsonArray(criteria));
+								}
+								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
+									match = "MATCH (visibles)-[:IN*0..1]->(g)";
+									where = " WHERE g.filter IN {filters} ";
+								} else if (!where.contains("g.filter IN {filters}")) {
+									where += "AND  g.filter IN {filters} ";
+								}
+								break;
+							case "search":
+								final String search = filter.getString(criteria);
+								if (isNotEmpty(search)) {
+									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+									String sanitizedSearch = StringValidation.removeAccents(search.trim()).toLowerCase();
+									params.put("search", sanitizedSearch);
+								}
+								break;
+						}
+					}
+				}
+				final String customReturn = match + where +
+						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+						"HEAD(visibles.profiles) as profile";
+				communicationService.visibleUsers(user.getUserId(), null, null, false, true, false,
+						preFilter, customReturn, params, visibles -> {
+							if (visibles.isRight()) {
+								renderJson(request,
+										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
+												I18n.acceptLanguage(request)));
+							} else {
+								leftToResponse(request, visibles.left());
+							}
+						});
+			} else {
+				badRequest(request, "invalid.user");
+			}
+		}));
+	}
+
+	@Get("/visible/group/:groupId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void visibleGroupContains(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				String groupId = request.params().get("groupId");
+				if (groupId == null || groupId.trim().isEmpty()) {
+					badRequest(request, "invalid.groupId");
+					return;
+				}
+				String customReturn =
+						"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
+						"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
+						"visibles.displayName as displayName, visibles.login as login " +
+						"ORDER BY type DESC, displayName ";
+				final JsonObject params = new JsonObject().put("groupId", groupId);
+				communicationService.visibleUsers(user.getUserId(), null, null, true, true, false, null,
+						customReturn, params, arrayResponseHandler(request));
+			} else {
+				badRequest(request, "invalid.user");
+			}
+		});
 	}
 
 	@BusAddress("wse.communication.users")

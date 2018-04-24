@@ -26,6 +26,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+
 public interface SchoolService {
 
 	void create(JsonObject school, Handler<Either<String, JsonObject>> result);
@@ -71,4 +73,7 @@ public interface SchoolService {
 	void userList(String structureId, Handler<Either<String, JsonArray>> handler);
 
 	void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler);
+
+	void searchCriteria(List<String> structures, Handler<Either<String, JsonObject>> handler);
+
 }
