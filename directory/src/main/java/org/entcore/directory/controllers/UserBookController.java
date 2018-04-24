@@ -60,6 +60,7 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.user.SessionAttributes.*;
@@ -881,6 +882,17 @@ public class UserBookController extends BaseController {
 		});
 	}
 
+	@Get("/search/criteria")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void searchCriteria(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				schoolService.searchCriteria(user.getStructures(), defaultResponseHandler(request));
+			} else {
+				badRequest(request, "invalid.user");
+			}
+		});
+	}
 
 	public void setSchoolService(SchoolService schoolService) {
 		this.schoolService = schoolService;

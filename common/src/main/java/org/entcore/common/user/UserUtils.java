@@ -20,6 +20,7 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -238,6 +239,27 @@ public class UserUtils {
 		String type = name.substring(idx + 1);
 		String displayName = groupDisplayName != null ? groupDisplayName : "group." + type;
 		return i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
+	}
+
+	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage) {
+		final JsonObject visible = new JsonObject();
+		final JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+		visible.put("groups", groups).put("users", users);
+		for (Object o: visibles) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			if (j.getString("name") != null) {
+				j.remove("displayName");
+				j.remove("profile");
+				UserUtils.groupDisplayName(j, acceptLanguage);
+				groups.add(j);
+			} else {
+				j.remove("name");
+				users.add(j);
+			}
+		}
+		return visible;
 	}
 
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,

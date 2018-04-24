@@ -49,5 +49,8 @@ object IntegrationTestScenario {
   .group("Duplicate Scenario") {
     DuplicateScenario.scn
   }
+  .group("Groups and shares Scenario") {
+    GroupsAndSharesScenario.scn
+  }
 
 }

@@ -554,7 +554,7 @@ public class StructureController extends BaseController {
 		String structureId = request.params().get("id");
 		this.structureService.userList(structureId, arrayResponseHandler(request));
 	}
-	
+
 	public void setStructureService(SchoolService structureService) {
 		this.structureService = structureService;
 	}
