@@ -535,4 +535,19 @@ public class DefaultSchoolService implements SchoolService {
 			}
 		});
 	}
+
+	@Override
+	public void searchCriteria(List<String> structures, Handler<Either<String, JsonObject>> handler) {
+		final String query =
+				"MATCH (s:Structure) " +
+				"WHERE s.id IN {structures} " +
+				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class) " +
+				"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) " +
+				"RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, " +
+				"COLLECT(DISTINCT { id: c.id, name: c.name}) as classes, " +
+				"COLLECT(DISTINCT fg.filter) as functions, " +
+				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles ";
+		neo.execute(query, new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
+	}
+
 }
