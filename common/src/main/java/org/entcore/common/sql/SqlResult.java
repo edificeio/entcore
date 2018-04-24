@@ -117,7 +117,7 @@ public class SqlResult {
 			for (Object o : r) {
 				if (!(o instanceof JsonArray)) continue;
 				JsonArray a = (JsonArray) o;
-				JsonObject j = new JsonObject();
+				JsonObject j = new fr.wseduc.webutils.collections.JsonObject();
 				for (int i = 0; i < f.size(); i++) {
 					Object item = a.getValue(i);
 					if (item instanceof Boolean) {
@@ -131,7 +131,7 @@ public class SqlResult {
 						if(stringRepresentation.startsWith("[")){
 							j.put(f.getString(i), new fr.wseduc.webutils.collections.JsonArray(item.toString()));
 						} else {
-							j.put(f.getString(i), new JsonObject(item.toString()));
+							j.put(f.getString(i), new fr.wseduc.webutils.collections.JsonObject(item.toString()));
 						}
 					} else if (item != null) {
 						j.put(f.getString(i), item.toString());
