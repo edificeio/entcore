@@ -1235,7 +1235,6 @@ public class ConversationController extends BaseController {
 					public void handle(AsyncResult<Void> event) {
 						if (event.failed())
 							log.error("[Conversation] Error deleting  : " + path, event.cause());
-						badRequest(request);
 					}
 				});
 			}
@@ -1260,6 +1259,7 @@ public class ConversationController extends BaseController {
 										if (!"ok".equals(event.body().getString("status"))) {
 											log.error("[Conversation] Zip folder " + zipDirectory + " error : " + event.body().getString("message"));
 											delete(zipDirectory);
+											badRequest(request);
 										}else {
 											final HttpServerResponse resp = request.response();
 											resp.putHeader("Content-Disposition", "attachment; filename=\"" + zipDownloadName + "\"");
