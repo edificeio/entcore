@@ -67,6 +67,8 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
@@ -756,6 +758,10 @@ public class ConversationController extends BaseController {
 	}
 
 	private void deleteMessages(final HttpServerRequest request, final List<String> ids, final Boolean deleteAll) {
+		deleteMessages(request, ids, deleteAll, null);
+	}
+
+	private void deleteMessages(final HttpServerRequest request, final List<String> ids, final Boolean deleteAll, Handler<Either<String, JsonArray>> handler) {
 		getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
@@ -764,7 +770,11 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> event) {
 							if(event.isLeft()){
-								badRequest(request, event.left().getValue());
+								if (handler != null) {
+									handler.handle(event);
+								} else {
+									badRequest(request, event.left().getValue());
+								}
 								return;
 							}
 
@@ -773,7 +783,11 @@ public class ConversationController extends BaseController {
 
 							updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 								public void handle(Void event) {
-									ok(request);
+									if (handler != null) {
+										handler.handle(new Either.Right<>(new JsonArray()));
+									} else {
+										ok(request);
+									}
 								}
 							});
 
@@ -789,8 +803,22 @@ public class ConversationController extends BaseController {
 	@Delete("emptyTrash")
 	@SecuredAction(value="conversation.empty.trash", type = ActionType.AUTHENTICATED)
 	public void emptyTrash(final HttpServerRequest request) {
-		deleteMessages(request, null, true);
-		deleteFolders(request, null, true);
+		AtomicInteger count = new AtomicInteger(2);
+		AtomicBoolean error = new AtomicBoolean(false);
+		Handler<Either<String, JsonArray>> handler = event -> {
+			if (event.isLeft()) {
+				error.set(true);
+			}
+			if (count.decrementAndGet() == 0) {
+				if (error.get()) {
+					badRequest(request);
+				} else {
+					ok(request);
+				}
+			}
+		};
+		deleteMessages(request, null, true, handler);
+		deleteFolders(request, null, true, handler);
 	}
 
 	//Mark messages as unread / read
@@ -998,6 +1026,10 @@ public class ConversationController extends BaseController {
 	}
 
 	private void deleteFolders(final HttpServerRequest request, final String folderId, final Boolean deleteAll) {
+		deleteFolders(request, folderId, deleteAll, null);
+	}
+
+	private void deleteFolders(final HttpServerRequest request, final String folderId, final Boolean deleteAll, final Handler<Either<String, JsonArray>> handler) {
 		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
 			public void handle(final UserInfos user) {
 				if(user == null){
@@ -1007,7 +1039,11 @@ public class ConversationController extends BaseController {
 				conversationService.deleteFolder(folderId, deleteAll, user, new Handler<Either<String,JsonArray>>() {
 					public void handle(Either<String, JsonArray> event) {
 						if(event.isLeft()){
-							badRequest(request, event.left().getValue());
+							if (handler != null) {
+								handler.handle(event);
+							} else {
+								badRequest(request, event.left().getValue());
+							}
 							return;
 						}
 
@@ -1016,7 +1052,11 @@ public class ConversationController extends BaseController {
 
 						updateUserQuota(user.getUserId(), -freeQuota, new Handler<Void>() {
 							public void handle(Void event) {
-								ok(request);
+								if (handler != null) {
+									handler.handle(new Either.Right<>(new JsonArray()));
+								} else {
+									ok(request);
+								}
 							}
 						});
 
