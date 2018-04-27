@@ -8,7 +8,7 @@
     "e404": "Adresse introuvable",
     "e408": "Temps d'attente dépassé, veuillez réessayer",
     "e500": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
-    "e504": "La demande a dépassé le delai imparti.",
+    "e504": "La demande a dépassé le délai imparti.",
     "export": "Télécharger mes données",
     "export.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "export.download": "ici.",

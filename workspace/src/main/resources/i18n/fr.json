@@ -33,7 +33,7 @@
     "resize": "Redimensionner",
     "crop": "Rogner",
     "gigabyte": "GigaOctet(s)",
-    "group.AdminLocal": "Tous les administrateurs locaux du groupe {0}.",
+    "group.AdminLocal": "Tous les administrateurs locaux de {0}.",
     "group.Guest": "Tous les invités du groupe {0}.",
     "group.Personnel": "Tous les personnels du groupe {0}.",
     "group.Relative": "Tous les parents du groupe {0}.",

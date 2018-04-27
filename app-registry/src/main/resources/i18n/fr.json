@@ -121,7 +121,7 @@
     "support.ticket.list": "Aide et support : lister les demandes",
     "support.view": "Aide et support : accéder au module",
     "tooltip.displayName": "Nom affiché dans l'écran des applications",
-    "tooltip.icon": "Vous pouvez utiliser une image d'un site web (sous la forme http(s)://[lien-vers-image]).<br>Cette image peut provenir de votre espace documentaire si elle est dans \"document ajouté dans mes applis\".<br>Faire un clic droit puis \"copier l'adresse de l'image\".\"",
+    "tooltip.icon": "Vous pouvez utiliser une image d'un site web (sous la forme http(s)://[lien-vers-image]).<br>Cette image peut provenir de votre espace documentaire si elle est dans \"document ajouté dans mes applis\".<br>Faire un clic droit puis \"copier l'adresse de l'image\".",
     "tooltip.name": "Nom technique de l'application",
     "tooltip.password": "Code secret OAuth permettant de communiquer avec ENT Core",
     "tooltip.target": "Manière dont le lien sera affiché dans l'ENT : <br>\"Page\" ouvre l'application dans la même page. <br>\"Nouvelle page\" ouvre l'application dans un onglet séparé.<br>\"Iframe\" inclut l'application dans une iframe.",
