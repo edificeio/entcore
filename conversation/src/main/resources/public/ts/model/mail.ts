@@ -333,13 +333,15 @@ export class Mail implements Selectable {
                 displayName: this.displayNames.find(name => name[0] === user as any)[1]
             })
         ));
-
-        this.cc = this.cc.map(user => (
-            Mix.castAs(User, {
-                id: user,
-                displayName: this.displayNames.find(name => name[0] === user as any)[1]
-            })
-        ));
+        if(!this.cc)
+            this.cc = [];
+        else
+            this.cc = this.cc.map(user => (
+                Mix.castAs(User, {
+                    id: user,
+                    displayName: this.displayNames.find(name => name[0] === user as any)[1]
+                })
+            ));
         if(!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
             await this.updateAllowReply();
