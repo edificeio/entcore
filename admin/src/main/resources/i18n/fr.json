@@ -13,7 +13,7 @@
     "Personnel": "Personnel",
     "Relative": "Parent",
     "Guest": "Invité",
-    
+
     "create.user": "Créer un utilisateur",
     "create.user.classe": "Classe",
     "create.user.sansclasse": "Sans classe",
@@ -25,10 +25,10 @@
     "create.group.name": "Nom du groupe",
     "create.group.submit": "Créer",
     "create.group.cancel": "Annuler",
-    
+
     "manage.duplicates": "Gérer les doublons",
     "manage.reports": "Gérer les signalements",
-    
+
     "filters": "Filtres",
     "filter": "Filtre",
     "sort.alphabetical": "Trier par nom",
@@ -68,14 +68,14 @@
     "users.not.duplicated": "Utilisateurs uniques",
     "users.adml": "Administrateurs locaux",
     "users.not.adml": "Non administrateurs locaux",
-    
+
     "user.inactive": "Inactif",
     "user.icons.tooltip.blocked": "Compte bloqué",
     "user.icons.tooltip.duplicated": "Compte en doublon",
     "user.icons.tooltip.deleted": "Compte pré-supprimé",
     "user.icons.tooltip.disappeared": "Compte en attente de pré-suppression",
     "user.icons.tooltip.inactive": "Compte non activé",
-    
+
     "users.details.section.administrative": "Informations administratives",
     "users.details.section.relatives": "Responsable(s)",
     "users.details.section.children": "Enfant(s)",
@@ -87,7 +87,7 @@
     "users.details.section.duplicates": "Doublon(s)",
     "users.details.button.comm.rules": "Règles de communication de l'utilisateur",
     "users.details.button.app.rights": "Droits applicatifs de l'utilisateur",
-    
+
     "form.error.required": "Champ requis",
     "form.error.minlength": "{{requiredLength}} caractères minimum",
     "form.error.maxlength": "{{requiredLength}} caractères maximum",
@@ -126,6 +126,9 @@
     "adml.current.structure": "Administrateur local sur cet établissement",
     "adml.add": "Attribuer droit d'Administrateur local",
     "adml.remove": "Retirer droit d'Administrateur local",
+    "headTeacherManual.add": "Attribuer droit de professeur principal",
+    "headTeacherManual.remove": "Retirer droit de professeur principal",
+    "headTeacher.aaf.detail": "Les droits pour les professeurs principaux provenant de l'AAF ne peuvent pas être supprimés.",
     "quick.actions": "Actions rapides",
     "structure": "Etablissement",
     "nav.structure": "Accueil administration",
@@ -197,14 +200,14 @@
     "blocking.duplicate.tooltip": "Le doublon bloque l'activation des utilisateurs concernés",
     "minor.duplicate": "Mineur",
     "minor.duplicate.tooltip": "Le doublon est sans conséquence",
-    
+
     "group.details.add.users": "Gérer les utilisateurs du groupe",
     "group.manage.users": "Ajouter/Retirer des utilisateurs",
     "group.manage.users.search": "Rechercher des utilisateurs",
     "group.manage.users.added": "Utilisateur(s) du groupe",
     "group.manage.users.button.add": "Ajouter au groupe les utilisateurs sélectionnés en orange",
     "group.manage.users.button.remove": "Retirer du groupe les utilisateurs sélectionnés en bleu",
-    
+
     "import.files.deposit": "Dépôt des fichiers",
     "import.fields.checking": "Vérification des champs",
     "import.class.checking": "Vérification des classes",
@@ -212,59 +215,67 @@
     "import.parameters" : "Paramètre de l'import",
     "import.step1.deleteAccountOption" :  "Pré-supprimer les comptes des utilisateurs absents des fichiers",
     "import.step1.transitionOption" : "Changement d'année scolaire",  
-    
+
     "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
-    
+
     "notify.user.update.title": "Modifications effectuées",
     "notify.user.update.content": "Les données de l'utilisateur {{user}} ont bien été mises à jour.",
     "notify.user.update.error.title": "Erreur lors de la modification",
     "notify.user.update.error.content": "L'utilisateur {{user}} n'a pas pu être mis à jour.",
-    
+
+    "notify.user.updateLoginAlias.title": "Modification effectuée",
+    "notify.user.updateLoginAlias.content": "L'alias de login de l'utilisateur {{user}} a bien été mis à jour.",
+    "notify.user.updateLoginAlias.error.title": "Erreur lors de la modifiation",
+    "notify.user.updateLoginAlias.error.content": "L'alias de login pour l'utilisateur {{user}} n'a pas pu être mis à jour.",
+
+    "notify.user.updateLoginAlias.uniqueConstraint.title": "Erreur: alias de login déjà utilisé.",
+    "notify.user.updateLoginAlias.uniqueConstraint.content": "L'alias de login {{loginAlias}} est déjà utilisé. Veuillez en saisir un autre.",
+
     "notify.user.toggleblock.title": "{{blocked ? Blocage : Déblocage}} effectué",
     "notify.user.toggleblock.content": "L'utilisateur {{user}} est maintenant {{blocked ? bloqué(e) : débloqué(e)}}.",
     "notify.user.toggleblock.error.title": "Erreur lors du {{blocked ? blocage : déblocage}}",
     "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}.",
-    
+
     "notify.user.remove.title": "Suppression effectuée",
     "notify.user.remove.content": "L'utilisateur {{user}} a bien été supprimé.",
     "notify.user.remove.error.title": "Erreur lors de la suppression",
     "notify.user.remove.error.content": "L'utilisateur {{user}} n'a pas pu être supprimé.",
-    
+
     "notify.user.restore.title": "Restauration effectuée",
     "notify.user.restore.content": "L'utilisateur {{user}} a bien été restauré.",
     "notify.user.restore.error.title": "Erreur lors de la restauration",
     "notify.user.restore.error.content": "L'utilisateur {{user}} n'a pas pu être restauré.",
-    
+
     "notify.user.create.title": "Création effectuée",
     "notify.user.create.content": "L'utilisateur {{user}} a bien été créé.",
     "notify.user.create.error.title" : "Erreur lors de la création",
     "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé.",
-    
+
     "notify.user.add.adml.title": "Rôle d'Administrateur local attribué",
     "notify.user.add.adml.content": "Le rôle d'Administrateur local a bien été attribué à l'utilisateur {{user}}.",
     "notify.user.add.adml.error.title": "Erreur lors de l'attribution de rôle Administrateur local",
     "notify.user.add.adml.error.content": "Le rôle d'Administrateur local n'a pas pu être attribué à l'utilisateur {{user}}.",
-    
+
     "notify.user.remove.adml.title": "Rôle Administrateur local retiré",
     "notify.user.remove.adml.content": "Le rôle d'Administrateur local a bien été retiré à l'utilisateur {{user}}.",
     "notify.user.remove.adml.error.title": "Erreur lors du retrait du rôle Administrateur local",
     "notify.user.remove.adml.error.content": "Le rôle d'Administrateur local n'a pas pu être retiré à l'utilisateur {{user}}.",
-    
+
     "notify.user.add.class.title": "Classe ajoutée.",
     "notify.user.add.class.content": "La classe {{classe}} a bien été ajoutée.",
     "notify.user.add.class.error.title": "Erreur lors de l'ajout de la classe.",
     "notify.user.add.class.error.content": "La classe {{classe}} n'a pas pu être ajoutée à l'utilisateur.",
-    
+
     "notify.user.remove.class.title": "Classe supprimée.",
     "notify.user.remove.class.content": "La classe {{classe}} a bien été supprimée.",
     "notify.user.remove.class.error.title": "Erreur lors de la suppression de la classe.",
     "notify.user.remove.class.error.content": "La classe {{classe}} n'a pas pu être supprimée.",
-    
+
     "notify.user.add.child.title": "Enfant ajouté.",
     "notify.user.add.child.content": "L'enfant {{child}} a bien été ajouté.",
     "notify.user.add.child.error.title": "Erreur lors de l'ajout de l'enfant.",
     "notify.user.add.child.error.content": "L'enfant {{child}} n'a pas pu être ajouté à l'utilisateur.",
-    
+
     "notify.user.remove.child.title": "Enfant supprimé.",
     "notify.user.remove.child.content": "L'enfant {{child}} a bien été supprimé.",
     "notify.user.remove.child.error.title": "Erreur lors de la suppression de l'enfant.",
@@ -274,7 +285,7 @@
     "notify.user.add.relative.content": "Le parent {{relative}} a bien été ajouté.",
     "notify.user.add.relative.error.title": "Erreur lors de l'ajout du parent.",
     "notify.user.add.relative.error.content": "Le parent {{relative}} n'a pas pu être ajouté à l'utilisateur.",
-    
+
     "notify.user.remove.relative.title": "Parent supprimé.",
     "notify.user.remove.relative.content": "Le parent {{relative}} a bien été supprimé.",
     "notify.user.remove.relative.error.title": "Erreur lors de la suppression du parent.",
@@ -284,7 +295,7 @@
     "notify.user.add.structure.content": "La structure {{structure}} a bien été ajoutée.",
     "notify.user.add.structure.error.title": "Erreur lors de l'ajout de la structure.",
     "notify.user.add.structure.error.content": "La structure {{structure}} n'a pas pu être ajoutée à l'utilisateur.",
-    
+
     "notify.user.remove.structure.title": "Structure supprimée.",
     "notify.user.remove.structure.content": "La structure {{structure}} a bien été supprimée.",
     "notify.user.remove.structure.error.title": "Erreur lors de la suppression de la structure.",
@@ -294,51 +305,59 @@
     "notify.user.add.group.content": "Le groupe {{group}} a bien été ajouté.",
     "notify.user.add.group.error.title": "Erreur lors de l'ajout du groupe.",
     "notify.user.add.group.error.content": "Le groupe {{group}} n'a pas pu être ajouté à l'utilisateur.",
-    
+
     "notify.user.remove.group.title": "Groupe supprimé.",
     "notify.user.remove.group.content": "Le groupe {{group}} a bien été supprimé.",
     "notify.user.remove.group.error.title": "Erreur lors de la suppression du groupe.",
     "notify.user.remove.group.error.content": "Le groupe {{group}} n'a pas pu être supprimé.",
 
+    "notify.user.add.head.teacher.title": "Rôle de professeur principal local attribué",
+    "notify.user.add.head.teacher.content": "Le rôle de professeur principal a bien été attribué à l'utilisateur {{user}}.",
+    "notify.user.add.head.teacher.error.title": "Erreur lors de l'attribution de rôle de professeur principal",
+    "notify.user.add.head.teacher.error.content": "Le rôle de professeur principal n'a pas pu être attribué à l'utilisateur {{user}}.",
+    "notify.user.remove.head.teacher.title": "Rôle professeur principal retiré",
+    "notify.user.remove.head.teacher.content": "Le rôle de professeur principal a bien été retiré à l'utilisateur {{user}}.",
+    "notify.user.remove.head.teacher.error.title": "Erreur lors du retrait du rôle professeur principal",
+    "notify.user.remove.head.teacher.error.content": "Le rôle de professeur principal n'a pas pu être retiré à l'utilisateur {{user}}.",
     "notify.user.sendResetPassword.email.title": "Courriel de réinitialisation de mot de passe envoyé",
     "notify.user.sendResetPassword.email.content": "Le courriel de réinitialisation de mot de passe de l'utilisateur {{user}} a bien été envoyé à l'adresse {{mail}}",
     "notify.user.sendResetPassword.email.error.title": "Erreur lors de l'envoi du courriel de réinitialisation de mot de passe",
     "notify.user.sendResetPassword.email.error.content": "Le courriel de réinitialisation de mot de passe de l'utilisateur {{user}} n'a pas pu être envoyé à l'adresse {{mail}}",
-    
+
     "notify.user.sendResetPassword.mobile.title": "SMS de réinitialisation de mot de passe envoyé",
     "notify.user.sendResetPassword.mobile.content": "Le SMS de réinitialisation de mot de passe de l'utilisateur {{user}} a bien été envoyé au {{mobile}}",
     "notify.user.sendResetPassword.mobile.error.title": "Erreur lors de l'envoi du SMS de réinitialisation de mot de passe",
     "notify.user.sendResetPassword.mobile.error.content": "Le SMS de réinitialisation de mot de passe de l'utilisateur {{user}} n'a pas pu être envoyé au {{mobile}}",
-    
+
     "notify.user.merge.success.title": "Fusion des comptes effectuée",
     "notify.user.merge.success.content": "Les comptes ont été fusionnés avec succès",
     "notify.user.merge.error.title": "Erreur lors de la fusion des comptes",
     "notify.user.merge.error.content": "Vous n'avez pas les droits d'administration sur les utilisateurs concernés, veuillez contacter l'assistance",
-    
+
     "notify.user.dissociate.success.title": "Dissociation des comptes effectuée",
     "notify.user.dissociate.success.content": "Les comptes ont été dissociés avec succès",
     "notify.user.dissociate.error.title": "Erreur lors de la dissociation des comptes",
     "notify.user.dissociate.error.content": "Vous n'avez pas les droits d'administration sur les utilisateurs concernés, veuillez contacter l'assistance",    
-    
+
     "notify.group.create.title": "Création effectuée",
     "notify.group.create.content": "Le groupe {{group}} a bien été créé.",
     "notify.group.create.error.title" : "Erreur lors de la création",
     "notify.group.create.error.content" : "Le groupe {{group}} n'a pas pu être créé.",
-    
+
     "notify.group.manage.users.added.content": "Utilisateur(s) ajouté(s) avec succès.",
     "notify.group.manage.users.added.error.content": "Le ou les utilisateurs sélectionnés n'ont pas pu être ajoutés au groupe.",
     "notify.group.manage.users.added.error.title": "Erreur lors de l'ajout d'utilisateur(s) au groupe.",
-    
+
     "notify.group.manage.users.removed.content": "Utilisateur(s) retiré(s) avec succès.",
     "notify.group.manage.users.removed.error.content": "Le ou les utilisateurs sélectionnés n'ont pas pu être retirés du groupe.",
     "notify.group.manage.users.removed.error.title": "Erreur lors du retrait d'utilisateur(s) du groupe.",
-    
+
     "notify.structure.syncusers.error.title": "Erreur lors de la récupération des utilisateurs.",
     "notify.structure.syncusers.error.content": "Les utilisateurs de la structure {{structure}} n'ont pas pu être récupérés.",
-    
+
     "datepicker.open": "Ouvrir le calendrier",
     "datepicker.delete": "Supprimer la date",
-    
+
     "services": "Services",
     "services.rights.give": "Attribution",
     "services.roles.groups.empty": "Aucun groupe lié à ce rôle",
@@ -353,7 +372,7 @@
     "services.connector.search": "Rechercher un connecteur",
     "services.connector.list.empty":" Aucun connecteur",
     "services.connector.roles.list.empty": "Il n'existe aucun rôle configuré pour ce connecteur",
-    
+
     "users.with.mail": "Utilisateur avec courriel",
     "users.without.mail": "Utilisateur sans courriel",
     "mergeKey": "Clé de fusion",
