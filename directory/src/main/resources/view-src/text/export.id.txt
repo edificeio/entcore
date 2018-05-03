@@ -1,4 +1,4 @@
 "Id";"Id Siecle";"Type";"Nom";"Prénom";"Login";"Code d'activation";"Fonction(s)";"Structure(s)";"Classe(s)";"Enfant(s)";"Parent(s)"
 {{#list}}
-"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{code}}";"{{#aafFunctions}}{{.}}, {{/aafFunctions}}";"{{#structures}}{{name}}, {{/structures}}";"{{#allClasses}}{{^-first}}, {{/-first}}{{name}}{{/allClasses}}";"{{#children}}{{^-first}}, {{/-first}}{{firstName}} {{lastName}}{{/children}}";"{{#parents}}{{^-first}}, {{/-first}}{{firstName}} {{lastName}}{{/parents}}"
+"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{login}}";"{{code}}";"{{#aafFunctions}}{{^-first}}, {{/-first}}{{.}} {{/aafFunctions}}";"{{#structures}}{{^-first}}, {{/-first}}{{name}} {{/structures}}";"{{#allClasses}}{{^-first}}, {{/-first}}{{name}}{{/allClasses}}";"{{#children}}{{^-first}}, {{/-first}}{{firstName}} {{lastName}}{{/children}}";"{{#parents}}{{^-first}}, {{/-first}}{{firstName}} {{lastName}}{{/parents}}"
 {{/list}}
