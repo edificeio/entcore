@@ -32,7 +32,7 @@ export class UserModel extends Model<UserModel> {
     manualGroups: string[]
     functions?: Array<[string, Array<string>]>
     structures: { id: string, name: string }[]
-    classes: { id: string, name: string}[]
+    classes: { id: string, name: string , externalId: string}[]
     duplicates: { id: string, firstName: string, lastName: string, code: string, structures: string[] }[]
     deleteDate?: number
     disappearanceDate?: number
@@ -68,15 +68,16 @@ export class UserModel extends Model<UserModel> {
         })
     }
 
-    addClass(classe: {id: string, name: string}) {
+    addClass(classe: {id: string, name: string,externalId: string}) {
         return this.http.put(`/directory/class/${classe.id}/link/${this.id}`).then(() => {
             this.classes.push(classe)
         })
     }
 
-    removeClass(classId: string) {
+    removeClass(classId: string,externalId: string) {
         return this.http.delete(`/directory/class/${classId}/unlink/${this.id}`).then(() => {
             this.classes = this.classes.filter(c => c.id !== classId)
+            this.userDetails.headTeacherManual.splice(this.userDetails.headTeacherManual.findIndex((f) => f == externalId), 1);
         })
     }
 
