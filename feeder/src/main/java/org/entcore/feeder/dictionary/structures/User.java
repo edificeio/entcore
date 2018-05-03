@@ -353,6 +353,10 @@ public class User {
 				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:FunctionalGroup)-[:DEPENDS]->(c:Structure) " +
 				"DELETE r ";
 		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}}) WHERE HAS(u.headTeacherManual) " +
+				"REMOVE u.headTeacherManual ";
+		transaction.add(query, params);
 	}
 
 	public static void getDelete(long delay, int limit, TransactionHelper transactionHelper) {
@@ -391,6 +395,66 @@ public class User {
 				"OPTIONAL MATCH u-[r]-() " +
 				"DELETE u,b,r,rb ";
 		transactionHelper.add(query, params);
+	}
+
+	public static void addHeadTeacherManual(String userId,String structureExternalId, String classExternalId, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("classExternalId", classExternalId)
+				.put("structureExternalId", structureExternalId);
+
+		String query =
+				"MERGE (u:User { id: {userId} })" +
+				"FOREACH(x in CASE WHEN {classExternalId} in u.headTeacherManual THEN [] ELSE [1] END | " +
+				"SET u.headTeacherManual = coalesce(u.headTeacherManual,[]) + {classExternalId} " +
+				") " +
+				"RETURN u.headTeacherManual";
+
+		transactionHelper.add(query, params);
+
+		String query2 =
+				"MATCH (u:User { id : {userId}}), (c:Class {externalId : {classExternalId}})<-[:DEPENDS]-(g:Group:HTGroup)  " +
+				"MERGE u-[:IN {source:'MANUAL'}]->g ";
+
+
+		transactionHelper.add(query2, params);
+
+		String query3 =
+				"MATCH (u:User { id : {userId}}), (s:Structure {externalId : {structureExternalId}})<-[:DEPENDS]-(g:Group:HTGroup) " +
+				"MERGE u-[:IN]->g " +
+				"MERGE g-[:COMMUNIQUE]->u";
+		;
+		transactionHelper.add(query3, params);
+	}
+
+
+	public static void updateHeadTeacherManual(String userId,String structureExternalId , String classExternalId, TransactionHelper transactionHelper) {
+
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("classExternalId", classExternalId)
+				.put("structureExternalId", structureExternalId);
+
+		String query =
+				"MATCH (u:User) " +
+				"WHERE HAS(u.headTeacherManual) AND u.id = {userId} " +
+				"SET u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> {classExternalId}) " +
+				"RETURN u.headTeacherManual";
+
+		transactionHelper.add(query, params);
+
+		String query2 =
+				"MATCH (u:User { id : {userId}})-[r:IN]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {externalId : {classExternalId}}) " +
+				"DELETE r ";
+
+		transactionHelper.add(query2, params);
+
+		String query3 =
+				"MATCH (u:User { id : {userId}})-[r:IN |COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure {externalId : {structureExternalId}}) " +
+				"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+				"DELETE r ";;
+
+		transactionHelper.add(query3, params);
 	}
 
 	public static void addFunction(String userId, String functionCode, JsonArray s,
