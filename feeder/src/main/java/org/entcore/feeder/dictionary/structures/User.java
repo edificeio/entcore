@@ -332,6 +332,10 @@ public class User {
 				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:FunctionalGroup)-[:DEPENDS]->(c:Structure) " +
 				"DELETE r ";
 		transaction.add(query, params);
+		query =
+				"MATCH (u:User { id : {userId}}) WHERE HAS(u.headTeacherManual) " +
+				"REMOVE u.headTeacherManual ";
+		transaction.add(query, params);
 	}
 
 	public static void getDelete(long delay, int limit, TransactionHelper transactionHelper) {
@@ -364,6 +368,32 @@ public class User {
 				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"OPTIONAL MATCH u-[r]-() " +
 				"DELETE u,b,r,rb ";
+		transactionHelper.add(query, params);
+	}
+
+	public static void addHeadTeacherManual(String userId, String scope, TransactionHelper transactionHelper) {
+		String query =
+				"MERGE (u:User { id: {userId} })" +
+				"FOREACH(x in CASE WHEN {scope} in u.headTeacherManual THEN [] ELSE [1] END | " +
+				"SET u.headTeacherManual = coalesce(u.headTeacherManual,[]) + {scope} " +
+				") " +
+				"RETURN u.headTeacherManual";
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("scope", scope);
+		transactionHelper.add(query, params);
+	}
+
+
+	public static void updateHeadTeacherManual(String userId, String scope, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (u:User) " +
+				"WHERE HAS(u.headTeacherManual) AND u.id = {userId} " +
+				"SET u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> {scope}) " +
+				"RETURN u.headTeacherManual";
+		JsonObject params = new JsonObject()
+				.put("userId", userId)
+				.put("scope", scope);
 		transactionHelper.add(query, params);
 	}
 

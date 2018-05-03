@@ -340,6 +340,25 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void addHeadTeacherManual(String id, String scope,
+							Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-add-head-teacher")
+				.put("userId", id)
+				.put("scope", scope);
+		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+	}
+
+	@Override
+	public void updateHeadTeacherManual(String id, String scope, Handler<Either<String, JsonObject>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-update-head-teacher")
+				.put("userId", id)
+				.put("scope", scope);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+	}
+
+	@Override
 	public void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-remove-user-function")

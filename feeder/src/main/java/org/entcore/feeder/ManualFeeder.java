@@ -403,7 +403,7 @@ public class ManualFeeder extends BusModBase {
 				"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 				"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
 				"CREATE UNIQUE dpg<-[:IN]-u " +
-				"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) " +
+				"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
 				"DELETE r " +
 				"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
@@ -632,6 +632,30 @@ public class ManualFeeder extends BusModBase {
 				}
 			});
 		}
+	}
+
+	public void addUserHeadTeacherManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String scope = message.body().getString("scope");
+		if (userId == null || scope == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.addHeadTeacherManual(userId,scope, tx);
+			}
+		});
+	}
+
+	public void updateUserHeadTeacherManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String scope = message.body().getString("scope");
+		if (userId == null || scope == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.updateHeadTeacherManual(userId,scope, tx);
+			}
+		});
 	}
 
 	public void removeUserFunction(Message<JsonObject> message) {

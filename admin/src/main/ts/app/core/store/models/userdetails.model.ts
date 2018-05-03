@@ -29,6 +29,9 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     mobile?: string
     type?: Array<string>
     functions?: Array<[string, Array<string>]>
+    teaches: boolean
+    headTeacher?: Array<string>
+    headTeacherManual?: Array<string>
     children?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     parents?: Array<{id: string, firstName: string, lastName: string, displayName: string, externalId: string}>
     functionalGroups?: GroupModel[]
@@ -83,6 +86,27 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
+    addHeadTeacherManual(structureExternalId: string, classe: any) {
+        let relationToAdd = classe.externalId;
+        return this.http.post(`/directory/user/headteacher/${this.id}`, {
+            scope: relationToAdd
+        }).then(async (res) => {
+            if(this.headTeacherManual === undefined){
+                this.headTeacherManual = [];
+            }
+            this.headTeacherManual.push(relationToAdd);
+        })
+    }
+
+    updateHeadTeacherManual(structureExternalId: string, classe: any) {
+        let relationToRemove = classe.externalId;
+        return this.http.put(`/directory/user/headteacher/${this.id}`,{
+            scope: relationToRemove
+        }).then(() => {
+            this.headTeacherManual.splice(this.headTeacherManual.findIndex((f) => f == relationToRemove), 1);
+        })
+    }
+
     addAdml(structureId) {
         return this.http.post(`/directory/user/function/${this.id}`, {
             functionCode: "ADMIN_LOCAL",
@@ -94,6 +118,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             })
         })
     }
+
 
     removeAdml() {
         return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
@@ -111,6 +136,42 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     isAdmc() {
         return this.functions && this.functions.find((f) => f[0] == 'SUPER_ADMIN');
+    }
+
+    /**
+     * Détermine si l'utilisateur n'est pas un ensseignant ou professeur principal venant de l'AAF
+     * @param {string} structureExternalId
+     * @param {String} classeName
+     * @returns {boolean}
+     */
+    isNotTeacherOrHeadTeacher (structureExternalId: string, classe: any) {
+        if(this.teaches === undefined){
+            return true;
+        }
+
+        if (this.headTeacher && this.headTeacher.length > 0) {
+            let headTeacherIndex = this.headTeacher.findIndex((f) => f == classe.externalId);
+            if (headTeacherIndex >= 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    isHeadTeacherManual (structureExternalId: string,  classe: any) {
+        if (this.headTeacherManual && this.headTeacherManual.length > 0) {
+            let headTeacherManuelIndex = this.headTeacherManual.findIndex((f) => f == classe.externalId);
+            if (headTeacherManuelIndex >= 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     generateMergeKey() {
