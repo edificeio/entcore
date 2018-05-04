@@ -1,12 +1,12 @@
 import { ng, template, idiom as lang, skin } from 'entcore';
 
-export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
+export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', async ($rootScope, $scope, model) => {
 
 	template.open('notifspanel', 'notifspanel');
 
 	$scope.template = template;
 
-	model.applis.list();
+	await model.applis.list();
     $scope.applis = model.applis;
 	$scope.preference = model.preference;
 	$scope.userinfos = model.userinfos;
@@ -46,6 +46,8 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 			delete appli.freq
 		}
 	}
+
+	$scope.applis.all.forEach(function(a){ $scope.updateAppliFreq(a) });
 
 	$scope.savePreferences = function(){
 
