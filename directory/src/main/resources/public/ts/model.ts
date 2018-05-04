@@ -7,7 +7,7 @@
 // published by the Free Software Foundation (version 3 of the License).
 //
 // For the sake of explanation, any module that communicate over native
-// Web protocols, such as HTTP, with ENT Core is outside the scope of this
+// Web protocols, such as oldHttp, with ENT Core is outside the scope of this
 // license and could be license under its own terms. This is merely considered
 // normal use of ENT Core, and does not fall under the heading of "covered work".
 //
@@ -15,7 +15,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { http, model, idiom as lang, Collection, notify, ui, _, moment } from 'entcore';
+import { http as oldHttp, model, idiom as lang, Collection, notify, ui, _, moment } from 'entcore';
+import http from 'axios';
 
 export const directory = {
 	directory: undefined,
@@ -31,7 +32,7 @@ export const directory = {
 
 		this.open = function(){
 			var that = this;
-			http().get('/userbook/api/person?id=' + this.id + '&type=' + this.type).done(function(data){
+			oldHttp().get('/userbook/api/person?id=' + this.id + '&type=' + this.type).done(function(data){
 				if(!data.result[0]){
 					this.id = undefined;
 					return;
@@ -59,7 +60,7 @@ export const directory = {
 			if(model.me.preferences.selectedClass === undefined){
 				model.me.preferences.save('selectedClass', model.me.classes[0]);
 			}
-			http().get('/directory/class/' + model.me.preferences.selectedClass).done(function(data){
+			oldHttp().get('/directory/class/' + model.me.preferences.selectedClass).done(function(data){
 				this.id = model.me.preferences.selectedClass;
 				this.updateData(data);
 			}.bind(this));
@@ -67,12 +68,12 @@ export const directory = {
 		};
 
 		this.saveClassInfos = function(){
-			http().putJson('/directory/class/' + this.id, { name: this.name, level: this.level })
+			oldHttp().putJson('/directory/class/' + this.id, { name: this.name, level: this.level })
 		};
 
 		this.collection(directory.User, {
 			sync: function(){
-				http().get('/directory/class/' + model.me.preferences.selectedClass + '/users', { requestName: 'loadingUsers' }).done(function(data){
+				oldHttp().get('/directory/class/' + model.me.preferences.selectedClass + '/users', { requestName: 'loadingUsers' }).done(function(data){
 					data.sort(function(a, b) {
 						return a.lastName > b.lastName?1:-1;
 					});
@@ -80,7 +81,7 @@ export const directory = {
 				}.bind(this));
 			},
 			removeSelection: function(){
-				http().postJson('/directory/user/delete', { users : _.map(this.selection(), function(user){ return user.id; }) });
+				oldHttp().postJson('/directory/user/delete', { users : _.map(this.selection(), function(user){ return user.id; }) });
 				Collection.prototype.removeSelection.call(this);
 			}
 		});
@@ -91,7 +92,7 @@ export const directory = {
 			var form = new FormData();
 			form.append(type.replace(/(\w)(\w*)/g, function(g0,g1,g2){return g1.toUpperCase() + g2.toLowerCase();}), file);
 			form.append('classExternalId', this.externalId);
-			http().postFile('/directory/import/' + type + '/class/' + this.id, form)
+			oldHttp().postFile('/directory/import/' + type + '/class/' + this.id, form)
 				.done(function(){
 					this.sync();
 				}.bind(this))
@@ -120,7 +121,7 @@ export const directory = {
 		};
 
 		this.grabUser = function(user){
-			http().put('/directory/class/' + this.id + '/add/' + user.id).done(function(){
+			oldHttp().put('/directory/class/' + this.id + '/add/' + user.id).done(function(){
 				directory.classAdmin.sync();
 			});
 		};
@@ -128,13 +129,13 @@ export const directory = {
 		this.blockUsers = function(value){
 			this.users.selection().forEach(function(user){
 				user.blocked = value;
-				http().putJson('/auth/block/' + user.id, { block: value });
+				oldHttp().putJson('/auth/block/' + user.id, { block: value });
 			});
 		};
 
 		this.resetPasswords = function(){
 			this.users.selection().forEach(function(user){
-				http().post('/auth/sendResetPassword', {
+				oldHttp().post('/auth/sendResetPassword', {
 					login: user.login,
 					email: model.me.email
 				});
@@ -149,8 +150,8 @@ export const directory = {
 		this.collection(directory.School, {
 			sync: function(){
 				var that = this
-				http().get('/userbook/structures').done(function(d){
-					this.load(d);
+				return http.get('/userbook/structures').then(function(d){
+					this.load(d.data);
 					_.forEach(that.all, function(struct){
 						struct.parents = _.filter(struct.parents, function(parent){
 							var parentMatch = _.findWhere(that.all, {id: parent.id})
@@ -191,7 +192,7 @@ export const directory = {
 
 		this.collection(directory.User, {
 			sync: function(){
-				http().get('/userbook/api/class', { id: that.id }).done(function(users){
+				oldHttp().get('/userbook/api/class', { id: that.id }).done(function(users){
 					this.load(users);
 					this.trigger('sync');
 				}.bind(this))
@@ -217,7 +218,7 @@ export const directory = {
 		});
 
 		this.sync = function(){
-			http().get('/userbook/structure/' + this.id).done(function(d){
+			oldHttp().get('/userbook/structure/' + this.id).done(function(d){
 				this.classrooms.load(d.classes);
 				this.users.load(d.users);
 				this.classrooms.trigger('sync');
@@ -236,7 +237,7 @@ export const directory = {
 				var structure = filters.structure ? filters.structure : "";
 				var profile = filters.profile ? filters.profile : "";
 				this.loading = true;
-				http().get('/userbook/api/search?name=' + searchTerm + "&structure=" + structure + "&profile=" + profile).done(function(result){
+				oldHttp().get('/userbook/api/search?name=' + searchTerm + "&structure=" + structure + "&profile=" + profile).done(function(result){
 					this.loading = false;
 					this.load(_.map(result, function(user){
 						if(!user.mood){
@@ -282,7 +283,7 @@ directory.User.prototype.saveUserbook = function(){
 		if(this.hobbies[i].values === undefined)
 			this.hobbies[i].values = ""
 
-	http().putJson('/directory/userbook/' + this.id, {
+	oldHttp().putJson('/directory/userbook/' + this.id, {
 		health: this.health,
 		hobbies: this.hobbies,
 		picture: this.picture
@@ -295,7 +296,7 @@ directory.User.prototype.saveUserbookProperty = function(prop){
 	if(prop === 'mood'){
 		data.mood = data.mood.id;
 	}
-	http().putJson('/directory/userbook/' + this.id, data);
+	oldHttp().putJson('/directory/userbook/' + this.id, data);
 };
 
 directory.User.prototype.saveInfos = function(){
@@ -314,7 +315,7 @@ directory.User.prototype.saveInfos = function(){
 			return user.id;
 		});
 	}
-	http().putJson('/directory/user/' + this.id, userData);
+	oldHttp().putJson('/directory/user/' + this.id, userData);
 };
 
 directory.User.prototype.saveChanges = function(){
@@ -338,7 +339,7 @@ directory.User.prototype.saveAccount = function(cb){
 			return user.id;
 		});
 	}
-	http().postJson('/directory/class/' + model.me.preferences.selectedClass + '/user', accountData).done(function(data){
+	oldHttp().postJson('/directory/class/' + model.me.preferences.selectedClass + '/user', accountData).done(function(data){
 		this.updateData(data);
 		if(typeof cb === 'function'){
 			cb();
@@ -352,7 +353,7 @@ directory.User.prototype.moods = ['default', 'happy','proud','dreamy','love','ti
 directory.User.prototype.loadUserbook = function(){
 	this.pictureVersion = 0;
 
-	http().get('/directory/userbook/' + this.id).done(function(data){
+	oldHttp().get('/directory/userbook/' + this.id).done(function(data){
 		if(this.type){
 			data.type = this.type;
 		}
@@ -372,7 +373,7 @@ directory.User.prototype.loadUserbook = function(){
 };
 
 directory.User.prototype.loadVisibility = function(){
-	http().get('/userbook/api/person').done(function(data){
+	oldHttp().get('/userbook/api/person').done(function(data){
 		model.me.email = data.result[0].email;
 		this.updateData({
 			schoolName: data.result[0].schools[0].name,
@@ -390,7 +391,7 @@ directory.User.prototype.loadVisibility = function(){
 };
 
 directory.User.prototype.loadInfos = function(){
-	http().get('/directory/user/' + this.id).done(function(data){
+	oldHttp().get('/directory/user/' + this.id).done(function(data){
 		if(this.edit.visibility && !this.edit.userbook){
 			this.loadVisibility();
 		}
@@ -411,7 +412,7 @@ directory.User.prototype.load = function(){
 
 directory.User.prototype.loadFederatedAddress = function(){
 	if(model.me.federated){
-		http().get('/directory/conf/public').done(function(conf){
+		oldHttp().get('/directory/conf/public').done(function(conf){
 			this.federatedAddress = conf.federatedAddress[directory.account.federatedIDP];
 			this.disabledFederatedAdress = conf.disabledFederatedAdress;
 			this.trigger('change');
@@ -422,7 +423,7 @@ directory.User.prototype.loadFederatedAddress = function(){
 directory.User.prototype.uploadAvatar = function(){
 	var form = new FormData();
 	form.append("image", this.photo[0]);
-	http()
+	oldHttp()
 		.putFile("/directory/avatar/" + this.id + "?" + directory.User.prototype.thumbs, form, { requestName: 'photo'})
 		.done(function(data){
 			this.updateData({
@@ -449,14 +450,14 @@ directory.User.prototype.removeRelative = function(relative){
 };
 
 directory.User.prototype.generateMergeKey = function() {
-	http().get("/directory/duplicate/user/mergeKey").done(function(data) {
+	oldHttp().get("/directory/duplicate/user/mergeKey").done(function(data) {
 		this.mergeKey = data.mergeKey;
         this.trigger('change');
 	}.bind(this));
 };
 
 directory.User.prototype.mergeByKeys = function(keys, handler) {
-	http().postJson("/directory/duplicate/user/mergeByKey", { mergeKeys : keys }).done(function(data) {
+	oldHttp().postJson("/directory/duplicate/user/mergeByKey", { mergeKeys : keys }).done(function(data) {
 		this.mergedLogins = data.mergedLogins;
         this.trigger('change');
         if(typeof handler === 'function') {
@@ -472,7 +473,7 @@ model.build = function(){
 	directory.network = new directory.Network();
 
 	if(window.location.href.indexOf('mon-compte') === -1){
-		http().get('/userbook/api/person').done(function(data){
+		oldHttp().get('/userbook/api/person').done(function(data){
 			model.me.email = data.result[0].email;
 		});
 	}
