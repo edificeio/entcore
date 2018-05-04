@@ -140,6 +140,8 @@ export class Mail implements Selectable {
     };
 
     isMeInsideGroup(list) {
+        if(!list)
+            return false;
         if(list[0] instanceof User){
             for (let user of list) {
                 if (model.me.groupsIds.indexOf(user.id) !== -1 || user.id === model.me.userId)
@@ -352,12 +354,12 @@ export class Mail implements Selectable {
         if(!this.id)
             return;
         if ((Conversation.instance.currentFolder as SystemFolder).folderName !== 'trash') {
-            await http.put('/conversation/trash?id=' + this.id);
+            await http.put('/conversation/trash', {id:[ this.id]});
             Conversation.instance.currentFolder.mails.refresh();
             Conversation.instance.folders['trash'].mails.refresh();
         }
         else {
-            await http.delete('/conversation/delete?id=' + this.id);
+            await http.put('/conversation/delete', {id:[ this.id]});
             Conversation.instance.folders['trash'].mails.refresh();
         }
     };
@@ -367,7 +369,7 @@ export class Mail implements Selectable {
     }
 
     async restore() {
-        await http.put('/conversation/restore?id=' + this.id);
+        await http.put('/conversation/restore', {id:[ this.id]});
         Conversation.instance.folders['trash'].mails.refresh();
     }
 
@@ -378,7 +380,7 @@ export class Mail implements Selectable {
     }
 
     async trash() {
-        await http.put('/conversation/trash?id=' + this.id);
+        await http.put('/conversation/trash', {id:[ this.id]});
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
     }
@@ -559,7 +561,7 @@ export class Mails {
     }
 
     async toTrash() {
-        await http.put('/conversation/trash?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
+        await http.put('/conversation/trash', { id: _.pluck(this.selection.selected, 'id') });
         Conversation.instance.folders.trash.mails.refresh();
         quota.refresh();
         this.selection.removeSelection();
