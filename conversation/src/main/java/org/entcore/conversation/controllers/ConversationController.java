@@ -46,6 +46,7 @@ import org.entcore.common.utils.Zip;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.filters.MessageOwnerFilter;
 import org.entcore.conversation.filters.MessageUserFilter;
+import org.entcore.conversation.filters.MultipleMessageUserFilter;
 import org.entcore.conversation.filters.VisiblesFilter;
 import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.service.ConversationService;
@@ -707,56 +708,75 @@ public class ConversationController extends BaseController {
 
 	@Put("trash")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(MessageUserFilter.class)
+	@ResourceFilter(MultipleMessageUserFilter.class)
 	public void trash(final HttpServerRequest request) {
-		final List<String> ids = request.params().getAll("id");
-		if (ids == null || ids.isEmpty()) {
-			badRequest(request);
-			return;
-		}
-		getUserInfos(eb, request, new Handler<UserInfos>() {
+
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					conversationService.trash(ids, user, defaultResponseHandler(request));
-				} else {
-					unauthorized(request);
+			public void handle(JsonObject body) {
+				JsonArray ids = body.getJsonArray("id");
+				if (ids == null || ids.isEmpty()) {
+					badRequest(request);
+					return;
 				}
+
+				getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							conversationService.trash(ids.getList(), user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
 			}
 		});
 	}
 
 	@Put("restore")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(MessageUserFilter.class)
+	@ResourceFilter(MultipleMessageUserFilter.class)
 	public void restore(final HttpServerRequest request) {
-		final List<String> ids = request.params().getAll("id");
-		if (ids == null || ids.isEmpty()) {
-			badRequest(request);
-			return;
-		}
-		getUserInfos(eb, request, new Handler<UserInfos>() {
+
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					conversationService.restore(ids, user, defaultResponseHandler(request));
-				} else {
-					unauthorized(request);
+			public void handle(JsonObject body) {
+				JsonArray ids = body.getJsonArray("id");
+				if (ids == null || ids.isEmpty()) {
+					badRequest(request);
+					return;
 				}
+
+				getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							conversationService.restore(ids.getList(), user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
 			}
 		});
 	}
 
-	@Delete("delete")
+	@Put("delete")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(MessageUserFilter.class)
+	@ResourceFilter(MultipleMessageUserFilter.class)
 	public void delete(final HttpServerRequest request) {
-		final List<String> ids = request.params().getAll("id");
-		if (ids == null || ids.isEmpty()) {
-			badRequest(request);
-			return;
-		}
-		deleteMessages(request, ids, false);
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray ids = body.getJsonArray("id");
+				if (ids == null || ids.isEmpty()) {
+					badRequest(request);
+					return;
+				}
+				deleteMessages(request, ids.getList(), false);
+			}
+		});
 	}
 
 	private void deleteMessages(final HttpServerRequest request, final List<String> ids, final Boolean deleteAll) {
