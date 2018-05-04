@@ -149,16 +149,12 @@ export class Trash extends SystemFolder {
         if(!this.mails.selection.length){
             return;
         }
-        await http.put('/conversation/restore?' + toFormData({
-            id: _.pluck(this.mails.selection.selected, 'id')
-        }));
+        await http.put('/conversation/restore', {id: _.pluck(this.mails.selection.selected, 'id')});
         this.mails.removeSelection();
     }
 
     async removeMails () {
-        const response = await http.delete('/conversation/delete?' + toFormData({
-            id: _.pluck(this.mails.selection.selected, 'id')
-        }));
+        const response = await http.put('/conversation/delete', {id: _.pluck(this.mails.selection.selected, 'id')});
         this.mails.removeSelection();
     }
 
