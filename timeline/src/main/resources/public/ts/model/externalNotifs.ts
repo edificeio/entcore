@@ -1,4 +1,5 @@
-import { idiom as lang, http, model as entcoreModel, BaseModel, _ } from 'entcore';
+import { idiom as lang, model as entcoreModel, BaseModel, _ } from 'entcore';
+import http from 'axios'
 
 interface ExternalNotifsModel extends BaseModel{
 	userinfos: any;
@@ -25,19 +26,19 @@ export let ExternalNotifs = {
 }
 
 ExternalNotifs.UserInfos.prototype.getinfo = function(callback){
-    http().get('/userbook/api/person').done(function(data){
-        this.updateData(data.result['0'])
+    http.get('/userbook/api/person').then(function(res){
+        this.updateData(res.data.result['0'])
     }.bind(this))
 }
 
 ExternalNotifs.UserInfos.prototype.putinfo = function(){
-    http().putJson('/directory/user/' + this.id, {email: this.email});
+    http.put('/directory/user/' + this.id, {email: this.email});
 }
 
 ExternalNotifs.Preference.prototype.getinfo = function(callback){
-    http().get('/userbook/preference/timeline').done(function(data){
+    http.get('/userbook/preference/timeline').then(function(res){
         try {
-            this.preference = JSON.parse(data.preference);
+            this.preference = JSON.parse(res.data.preference);
         } catch (e) {
             this.preference = {}
         }
@@ -49,7 +50,7 @@ ExternalNotifs.Preference.prototype.getinfo = function(callback){
 
 ExternalNotifs.Preference.prototype.putinfo = function(){
     var json = this.preference
-    http().putJson('/userbook/preference/timeline', json).done(function(){
+    http.put('/userbook/preference/timeline', json).then(function(){
         window.location.href = "/userbook/mon-compte";
     })
 }
@@ -63,8 +64,8 @@ export const build = function(){
 
     this.collection(ExternalNotifs.Appli, {
         list: function(){
-            http().get('/timeline/notifications-defaults').done(function(data){
-
+            return http.get('/timeline/notifications-defaults').then(function(res){
+                let data = res.data
                 data = _.reject(data, function(notif){
                     return notif.restriction === "INTERNAL" || notif.restriction === "HIDDEN"
                 })
