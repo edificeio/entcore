@@ -70,18 +70,19 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			template.open('details', 'user-infos');
 			$scope.title = 'profile';
 		},
-		directory: function(){
+		directory: async function(){
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
 			directory.network.schools.all = [];
 			$scope.users = directory.directory.users;
 			$scope.schools = directory.network.schools;
-			$scope.schools.sync();
+			await $scope.schools.sync();
 			$scope.filters = {};
 			template.open('page', 'directory');
 			template.close('list');
 			$scope.title = 'directory';
+			$scope.$apply();
 		},
 		myClass: function(){
 			if($scope.network !== undefined){
