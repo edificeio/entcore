@@ -52,6 +52,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createGroups(object.getJsonArray("groups"), c, null);
 		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
+		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		linkMef(object.getJsonArray("modules"));
 		String profile = detectProfile(object);
 		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
@@ -172,6 +173,33 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 							group[0] = s.getExternalId();
 							group[1] = groupExternalId;
 							linkStructureGroups.add(group);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	protected void createHeadTeacherGroups(JsonArray headTeacher, List<String[]> linkStructureGroups) {
+		if (headTeacher != null && headTeacher.size() > 0) {
+			for (Object o: headTeacher) {
+				if (!(o instanceof String)) continue;
+				String [] g = ((String) o).split("\\$");
+				if (g.length == 2) {
+					Structure s = importer.getStructure(g[0]);
+					if (s != null) {
+						String structureGroupExternalId = s.getExternalId() + "-ht";
+						String classGroupExternalId = s.getExternalId() + "$" + g[1] + "-ht";
+						s.createHeadTeacherGroupIfAbsent(structureGroupExternalId, classGroupExternalId, g[1]);
+						if (linkStructureGroups != null) {
+							final String[] structureGroup = new String[2];
+							structureGroup[0] = s.getExternalId();
+							structureGroup[1] = structureGroupExternalId;
+							linkStructureGroups.add(structureGroup);
+							final String[] classGroup = new String[2];
+							classGroup[0] = s.getExternalId();
+							classGroup[1] = classGroupExternalId;
+							linkStructureGroups.add(classGroup);
 						}
 					}
 				}
