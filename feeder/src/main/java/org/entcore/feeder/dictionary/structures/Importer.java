@@ -696,9 +696,9 @@ public class Importer {
 	}
 
 	public void removeOldFunctionalGroup() {
-		transactionHelper.add("MATCH (g:Group) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] set g.notEmptyGroup = false;", null);
-		transactionHelper.add("MATCH (g:Group)<-[:IN]-(:User) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] set g.notEmptyGroup = true;", null);
-		transactionHelper.add("MATCH (g:Group {notEmptyGroup:false}) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup'] detach delete g;", null);
+		transactionHelper.add("MATCH (g:Group) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup', 'HTGroup'] set g.notEmptyGroup = false;", null);
+		transactionHelper.add("MATCH (g:Group)<-[:IN]-(:User) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup', 'HTGroup'] set g.notEmptyGroup = true;", null);
+		transactionHelper.add("MATCH (g:Group {notEmptyGroup:false}) WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup', 'HTGroup'] detach delete g;", null);
 		// prevent difference between relationships and properties
 		String query2 =
 				"MATCH (u:User) " +
@@ -864,7 +864,7 @@ public class Importer {
 				"MATCH (s:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:ProfileGroup) " +
 				"WHERE NOT(HAS(pg.structureName)) OR pg.structureName <> s.name " + filter +
 				"SET pg.structureName = s.name";
-		transactionHelper.add(query, new JsonObject());
+		transactionHelper.add(query, params);
 	}
 
 	public Report getReport() {
