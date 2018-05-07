@@ -44,6 +44,7 @@ public class Structure {
 	protected JsonObject struct;
 	protected final Set<String> classes = Collections.synchronizedSet(new HashSet<String>());
 	protected final Set<String> groups = Collections.synchronizedSet(new HashSet<String>());
+	protected final Set<String> classesGroups = Collections.synchronizedSet(new HashSet<String>());
 	private transient String overrideClass;
 
 	public Structure(JsonObject struct) {
@@ -205,6 +206,38 @@ public class Structure {
 									.put("name", name)
 									.put("filter", name)
 					);
+			getTransaction().add(query, params);
+		}
+	}
+
+	public void createHeadTeacherGroupIfAbsent(String structureGroupExternalId, String classGroupExternalId, String name) {
+		if (groups.add(structureGroupExternalId)) {
+			String query =
+					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
+					"CREATE s<-[:DEPENDS]-(:Group:HTGroup {props}) ";
+			JsonObject params = new JsonObject()
+					.put("structureExternalId", externalId)
+					.put("props", new JsonObject()
+							.put("externalId", structureGroupExternalId)
+							.put("id", UUID.randomUUID().toString())
+							.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
+							.put("name", struct.getString("name") + "-ht")
+					);
+			getTransaction().add(query, params);
+		}
+		if (classesGroups.add(classGroupExternalId)) {
+			String query =
+					"MATCH (c:Class { externalId : {classExternalId}}) " +
+					"MERGE c<-[:DEPENDS]-(cg:Group:HTGroup {externalId: {externalId}}) " +
+					"ON CREATE SET cg.id = {id}, cg.displayNameSearchField = {displayNameSearchField}, " +
+					"cg.name = {name}, cg.structureName = {structureName} ";
+			JsonObject params = new JsonObject()
+					.put("classExternalId", classGroupExternalId.substring(0, classGroupExternalId.length() - 3))
+					.put("externalId", classGroupExternalId)
+					.put("id", UUID.randomUUID().toString())
+					.put("displayNameSearchField", Validator.sanitize(name))
+					.put("structureName", struct.getString("name"))
+					.put("name", name + "-ht");
 			getTransaction().add(query, params);
 		}
 	}
