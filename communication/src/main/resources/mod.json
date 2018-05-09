@@ -5,20 +5,20 @@
 	"address" : "wse.communication",
 	"initDefaultCommunicationRules" : {
 		"Structure-Personnel" : {
-			"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student"]
+			"users" : "BOTH", "communiqueWith" : ["Structure-Teacher", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher"]
 		},
 		"Structure-Teacher" : {
-			"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student"]
+			"users" : "BOTH", "communiqueWith" : ["Structure-Personnel", "Structure-Relative", "Structure-Student", "Structure-Func", "Structure-Discipline", "Structure-HeadTeacher"]
 		},
 		"Structure-Student" : {"users" : "OUTGOING"},
 		"Structure-Relative" : {"users" : "OUTGOING"},
 		"Class-Personnel" : {"users" : "OUTGOING"},
 		"Class-Teacher" : {"users" : "OUTGOING"},
 		"Class-Student" : {
-			"users" : "BOTH", "communiqueWith" : ["Class-Personnel", "Class-Teacher"]
+			"users" : "BOTH", "communiqueWith" : ["Class-Personnel", "Class-Teacher", "Class-HeadTeacher"]
 		},
 		"Class-Relative" : {
-			"users" : "BOTH", "Relative-Student" : "INCOMING", "communiqueWith" : ["Class-Personnel", "Class-Student", "Class-Teacher"]
+			"users" : "BOTH", "Relative-Student" : "INCOMING", "communiqueWith" : ["Class-Personnel", "Class-Student", "Class-Teacher", "Class-HeadTeacher"]
 		}
 	}
 }
