@@ -221,7 +221,7 @@ public class Structure {
 							.put("externalId", structureGroupExternalId)
 							.put("id", UUID.randomUUID().toString())
 							.put("displayNameSearchField", Validator.sanitize(struct.getString("name")))
-							.put("name", struct.getString("name") + "-ht")
+							.put("name", struct.getString("name") + "-HeadTeacher")
 					);
 			getTransaction().add(query, params);
 		}
@@ -237,7 +237,7 @@ public class Structure {
 					.put("id", UUID.randomUUID().toString())
 					.put("displayNameSearchField", Validator.sanitize(name))
 					.put("structureName", struct.getString("name"))
-					.put("name", name + "-ht");
+					.put("name", name + "-HeadTeacher");
 			getTransaction().add(query, params);
 		}
 	}
