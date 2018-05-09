@@ -75,6 +75,7 @@ public class Auth extends BaseServer {
 						try {
 							SamlController samlController = new SamlController();
 							JsonObject conf = new JsonObject()
+									.put("cwd", config.getString("cwd"))
 									.put("saml-metadata-folder", samlMetadataFolder)
 									.put("saml-private-key", config.getString("saml-private-key"))
 									.put("saml-public-key", config.getString("saml-public-key"))
