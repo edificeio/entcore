@@ -161,10 +161,10 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 					if (s != null) {
 						if ("ENS".equals(g[1])) {
 							groupExternalId = s.getExternalId() + "$" + g[3];
-							s.createFunctionGroupIfAbsent(groupExternalId, g[4]);
+							s.createFunctionGroupIfAbsent(groupExternalId, g[4], "Discipline");
 						} else if (!"-".equals(g[1])) {
 							groupExternalId = s.getExternalId() + "$" + g[1];
-							s.createFunctionGroupIfAbsent(groupExternalId, g[2]);
+							s.createFunctionGroupIfAbsent(groupExternalId, g[2], "Func");
 						} else {
 							continue;
 						}
