@@ -192,12 +192,12 @@ public class Structure {
 		}
 	}
 
-	public void createFunctionGroupIfAbsent(String groupExternalId, String name) {
-		if (groups.add(groupExternalId)) {
+	public void createFunctionGroupIfAbsent(String groupExternalId, String name, String label) {
+		if (isNotEmpty(label) && groups.add(groupExternalId)) {
 			String query =
 					"MATCH (s:Structure { externalId : {structureExternalId}}) " +
 					"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
-					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup {props}) ";
+					"CREATE s<-[:DEPENDS]-(c:Group:FunctionGroup:" + label + "Group {props}) ";
 			JsonObject params = new JsonObject()
 					.put("structureExternalId", externalId)
 					.put("props", new JsonObject()
@@ -205,7 +205,7 @@ public class Structure {
 									.put("id", UUID.randomUUID().toString())
 									.put("displayNameSearchField", Validator.sanitize(name))
 									.put("structureName", struct.getString("name"))
-									.put("name", name)
+									.put("name", name + "-" + label)
 									.put("filter", name)
 					);
 			getTransaction().add(query, params);
