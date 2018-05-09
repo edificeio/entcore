@@ -291,17 +291,27 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonArray communiqueWith = defaultRules.getJsonArray("communiqueWith", new fr.wseduc.webutils.collections.JsonArray());
 		Set<String> classes = new HashSet<>();
 		Set<String> structures = new HashSet<>();
+		StringBuilder groupLabelSB = new StringBuilder("g:ProfileGroup");
 		for (Object o : communiqueWith) {
 			if (!(o instanceof String)) continue;
 			String [] s = ((String) o).split("\\-");
 			if ("Class".equals(s[0]) && "Structure".equals(a[0])) {
 				log.warn("Invalid default configuration " + attr + "->" + o.toString());
 			} else if ("Class".equals(s[0])) {
+				if ("HeadTeacher".equals(s[1])) {
+					groupLabelSB.append(" OR g:HTGroup");
+				}
 				classes.add(s[1]);
 			} else {
+				if ("Func".equals(s[1]) || "Discipline".equals(s[1])) {
+					groupLabelSB.append(" OR g:FunctionGroup");
+				} else if ("HeadTeacher".equals(s[1])) {
+					groupLabelSB.append(" OR g:HTGroup");
+				}
 				structures.add(s[1]);
 			}
 		}
+		final String groupLabel = groupLabelSB.toString();
 		JsonObject params = new JsonObject()
 				.put("structures", structureIds)
 				.put("profile", "^.*?" + a[1] + "$");
@@ -310,15 +320,15 @@ public class DefaultCommunicationService implements CommunicationService {
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
 					"WITH cg, c " +
-					"MATCH c<-[:DEPENDS]-(g:ProfileGroup) " +
-					"WHERE NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
+					"MATCH c<-[:DEPENDS]-(g) " +
+					"WHERE (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
 					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> g.id) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
 					"WITH cg, c, s " +
-					"MATCH c<-[:DEPENDS]-(g:ProfileGroup) " +
-					"WHERE g.name =~ {otherProfile} " +
+					"MATCH c<-[:DEPENDS]-(g) " +
+					"WHERE  (" + groupLabel + ") AND g.name =~ {otherProfile} " +
 					"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			if (!structures.isEmpty()) {
 				query2 +=
@@ -335,14 +345,14 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		if (!structures.isEmpty() && "Structure".equals(a[0])) {
 			String query =
-					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g:ProfileGroup) " +
+					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
-					"AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
+					"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
 					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> g.id) + g.id ";
 			String query2 =
-					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g:ProfileGroup) " +
+					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
-					"AND g.name =~ {otherProfile} " +
+					"AND (" + groupLabel + ") AND g.name =~ {otherProfile} " +
 					"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			params.put("otherProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
 			existingGroups.add(query, params);
