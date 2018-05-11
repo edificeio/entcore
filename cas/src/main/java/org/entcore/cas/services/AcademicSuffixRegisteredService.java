@@ -20,6 +20,7 @@
 package org.entcore.cas.services;
 
 import fr.wseduc.cas.entities.User;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,7 +43,7 @@ public class AcademicSuffixRegisteredService extends AbstractCas20ExtensionRegis
 		if (conf.containsKey("academicSuffix") && conf.containsKey("academicPattern")) {
 			ACADEMIC_SUFFIX.clear();
 
-			final List<String> academicSuffixString =  (List<String>) conf.get("academicSuffix");
+			final List<String> academicSuffixString = ((JsonArray) conf.get("academicSuffix")).getList();
 			for (final String as : academicSuffixString) {
 				final JsonObject jo = new JsonObject(as);
 				ACADEMIC_SUFFIX.put(jo.getString("source"), jo.getString("target"));
