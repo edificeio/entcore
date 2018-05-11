@@ -108,7 +108,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
 		if (neo4jConfig != null) {
-			neo4j = Neo4j.getInstance();
+			neo4j = Neo4j.getSpecificInstance();
 			neo4j.init(vertx, new JsonObject(neo4jConfig));
 		}
 

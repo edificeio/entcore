@@ -50,6 +50,14 @@ public class Neo4j {
 		return Neo4jHolder.instance;
 	}
 
+	/**
+	 * Warning : use in some specifics case as two verticle with neo4j in same module.
+	 * In others cases use getInstance() method.
+	 */
+	public static Neo4j getSpecificInstance() {
+		return new Neo4j();
+	}
+
 	public void init(Vertx vertx, JsonObject config) {
 		this.eb = Server.getEventBus(vertx);
 		JsonArray serverUris = config.getJsonArray("server-uris");
