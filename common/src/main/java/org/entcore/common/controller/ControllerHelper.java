@@ -300,6 +300,50 @@ public abstract class ControllerHelper extends BaseController {
 		});
 	}
 
+	protected void shareResource(final HttpServerRequest request, final String notificationName,
+			final boolean checkIsOwner, final JsonObject params, final String resourceNameAttribute) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		getUserInfos(eb, request, user -> {
+			if (user != null) {
+				if (checkIsOwner) {
+					crudService.isOwner(id, user, event -> {
+						if (Boolean.TRUE.equals(event)) {
+							doShare(request, id, user, notificationName, params, resourceNameAttribute);
+						} else {
+							unauthorized(request, "not.owner");
+						}
+					});
+				} else {
+					doShare(request, id, user, notificationName, params, resourceNameAttribute);
+				}
+			} else {
+				unauthorized(request, "invalid.user");
+			}
+		});
+	}
+
+	private void doShare(HttpServerRequest request, String id, UserInfos user, final String notificationName,
+			final JsonObject params, final String resourceNameAttribute) {
+		RequestUtils.bodyToJson(request, share -> {
+			shareService.share(user.getUserId(), id, share, r -> {
+				if (r.isRight()) {
+					JsonArray nta = r.right().getValue().getJsonArray("notify-timeline-array");
+					if (nta != null && notificationName != null) {
+						notifyShare(request, id, user, nta,	notificationName, params, resourceNameAttribute);
+					}
+					renderJson(request, r.right().getValue());
+				} else {
+					JsonObject error = new JsonObject().put("error", r.left().getValue());
+					renderJson(request, error, 400);
+				}
+			});
+		});
+	}
+
 	protected void create(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override

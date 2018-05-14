@@ -334,6 +334,27 @@ public class WorkspaceService extends BaseController {
 		});
 	}
 
+	@Put("/share/resource/:id")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void shareResource(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user != null) {
+				RequestUtils.bodyToJson(request, share -> {
+					shareService.share(user.getUserId(), request.params().get("id"), share, r ->  {
+						if (r.isRight()) {
+							renderJson(request, r.right().getValue());
+						} else {
+							JsonObject error = new JsonObject().put("error", r.left().getValue());
+							renderJson(request, error, 400);
+						}
+					});
+				});
+			} else {
+				badRequest(request, "invalid.user");
+			}
+		});
+	}
+
 	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray){
 		notifyShare(request, resource, user, sharedArray, false);
 	}

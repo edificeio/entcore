@@ -71,6 +71,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "removeShare":
 			case "getRevision":
 			case "listRevisions":
+			case "shareResource":
 				authorizeDocument(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "deleteRevision":
