@@ -22,7 +22,7 @@
 							ng-model="state.newItem.to"
 							ng-change="quickSaveDraft()"
                             restriction="isLocalAdmin()"
-							update-found-items="updateFoundUsers(search, model, founds)">
+							update-found-items="updateFoundUsers(search, model, founds, restriction)">
 						</recipient-list>
 					</div>
 				</div>
@@ -35,7 +35,7 @@
 							ng-model="state.newItem.cc"
 							ng-change="quickSaveDraft()"
                             restriction="isLocalAdmin()"
-                            update-found-items="updateFoundUsers(search, model, founds)">
+                            update-found-items="updateFoundUsers(search, model, founds, restriction)">
 						</recipient-list>
 					</div>
 				</div>
