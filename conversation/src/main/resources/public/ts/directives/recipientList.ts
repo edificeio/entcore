@@ -144,7 +144,7 @@ export const recipientList = ng.directive('recipientList', () => {
             };
 
             scope.doSearch = () => {
-                scope.updateFoundItems({search:scope.searchText, model:scope.ngModel, founds:scope.itemsFound});
+                scope.updateFoundItems({search:scope.searchText, model:scope.ngModel, founds:scope.itemsFound, restriction:scope.restriction});
             };
 
             // Focus when items list changes
