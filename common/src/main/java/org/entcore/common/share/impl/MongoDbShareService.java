@@ -33,7 +33,10 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class MongoDbShareService extends GenericShareService {
 
@@ -147,8 +150,8 @@ public class MongoDbShareService extends GenericShareService {
 				JsonObject res = event.body();
 				handler.handle(
 						res != null &&
-						"ok".equals(res.getString("status")) &&
-						1 == res.getInteger("count")
+								"ok".equals(res.getString("status")) &&
+								1 == res.getInteger("count")
 				);
 			}
 		});
@@ -172,11 +175,11 @@ public class MongoDbShareService extends GenericShareService {
 						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);
 						if (groupShareId.equals(id)) {
-							for (String action: actions) {
+							for (String action : actions) {
 								s.put(action, true);
 							}
 							if (groupedActions != null) {
-								for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
+								for (Map.Entry<String, List<String>> ga : groupedActions.entrySet()) {
 									if (actions.containsAll(ga.getValue())) {
 										s.put(ga.getKey(), true);
 									}
@@ -190,11 +193,11 @@ public class MongoDbShareService extends GenericShareService {
 					if (!exist) {
 						JsonObject t = new JsonObject().put(shareIdAttr, groupShareId);
 						actual.add(t);
-						for (String action: actions) {
+						for (String action : actions) {
 							t.put(action, true);
 						}
 						if (groupedActions != null) {
-							for (Map.Entry<String, List<String>> ga: groupedActions.entrySet()) {
+							for (Map.Entry<String, List<String>> ga : groupedActions.entrySet()) {
 								if (actions.containsAll(ga.getValue())) {
 									t.put(ga.getKey(), true);
 								}
@@ -258,6 +261,29 @@ public class MongoDbShareService extends GenericShareService {
 		removeShare(resourceId, userId, actions, false, handler);
 	}
 
+	@Override
+	public void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
+		shareValidation(resourceId, userId, share, res -> {
+			if (res.isRight()) {
+				final JsonObject query = new JsonObject().put("_id", resourceId);
+				final JsonObject update = new JsonObject().put("$set", new JsonObject()
+						.put("shared", res.right().getValue().getJsonArray("shared")));
+				final JsonObject keys = new JsonObject().put("shared", 1);
+				mongo.findAndModify(collection, query, update, null, keys, mongoRes -> {
+					if ("ok".equals(mongoRes.body().getString("status"))) {
+						JsonArray oldShared = getOrElse(mongoRes.body().getJsonObject("result"), new JsonObject()).getJsonArray("shared");
+						JsonArray members = res.right().getValue().getJsonArray("notify-members");
+						getNotifyMembers(handler, oldShared, members, (m -> getOrElse(((JsonObject) m).getString("groupId"), ((JsonObject) m).getString("userId"))));
+					} else {
+						handler.handle(new Either.Left<>(mongoRes.body().getString("message")));
+					}
+				});
+			} else {
+				handler.handle(res);
+			}
+		});
+	}
+
 	private void removeShare(String resourceId, final String shareId, List<String> removeActions,
 			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
@@ -301,6 +327,15 @@ public class MongoDbShareService extends GenericShareService {
 				}
 			}
 		});
+	}
+
+	@Override
+	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr, Set<String> actions) {
+		JsonObject el = new JsonObject().put(type, attr);
+		for (String action : actions) {
+			el.put(action, true);
+		}
+		shared.add(el);
 	}
 
 }
