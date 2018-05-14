@@ -20,6 +20,7 @@
 package org.entcore.common.share.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.security.SecuredAction;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -32,6 +33,10 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class SqlShareService extends GenericShareService {
 
@@ -175,6 +180,50 @@ public class SqlShareService extends GenericShareService {
 		removeShare(resourceId, userId, actions, handler);
 	}
 
+	@Override
+	public void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler) {
+		shareValidation(resourceId, userId, share, res -> {
+			if (res.isRight()) {
+				final SqlStatementsBuilder s = new SqlStatementsBuilder();
+				s.prepared("SELECT member_id FROM " + shareTable + " WHERE resource_id = ?", new JsonArray().add(resourceId));
+				s.prepared("DELETE FROM " + shareTable + " WHERE resource_id = ?", new JsonArray().add(resourceId));
+				final JsonArray users = res.right().getValue().getJsonArray("users");
+				if (users != null && users.size() > 0) {
+					s.raw("LOCK TABLE " + schema + "users IN SHARE ROW EXCLUSIVE MODE");
+					for (Object u: users) {
+						s.raw(
+								"INSERT INTO " + schema + "users (id) SELECT '" + u.toString() +
+								"' WHERE NOT EXISTS (SELECT * FROM " + schema + "users WHERE id='" + u.toString() + "');"
+						);
+					}
+				}
+				final JsonArray groups = res.right().getValue().getJsonArray("groups");
+				if (groups != null && groups.size() > 0) {
+					s.raw("LOCK TABLE " + schema + "groups IN SHARE ROW EXCLUSIVE MODE");
+					for (Object g: groups) {
+						s.raw(
+								"INSERT INTO " + schema + "groups (id) SELECT '" + g.toString() +
+								"' WHERE NOT EXISTS (SELECT * FROM " + schema + "groups WHERE id='" + g.toString() + "');"
+						);
+					}
+				}
+				s.insert(shareTable, new JsonArray().add("member_id").add("resource_id").add("action"),
+						res.right().getValue().getJsonArray("shared"));
+				sql.transaction(s.build(), SqlResult.validResultHandler(0, old -> {
+					if (old.isRight()) {
+						JsonArray oldMembers = old.right().getValue();
+						JsonArray members = res.right().getValue().getJsonArray("notify-members");
+						getNotifyMembers(handler, oldMembers, members, (m -> ((JsonObject) m).getString("member_id")));
+					} else {
+						handler.handle(new Either.Left<>(old.left().getValue()));
+					}
+				}));
+			} else {
+				handler.handle(res);
+			}
+		});
+	}
+
 	private void removeShare(String resourceId, String userId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler) {
 		String actionFilter;
@@ -229,6 +278,14 @@ public class SqlShareService extends GenericShareService {
 				});
 			}
 		});
+	}
+
+	@Override
+	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr, Set<String> actions) {
+		for (String action : actions) {
+			shared.add(new JsonArray().add(attr).add(resourceId).add(action));
+		}
+
 	}
 
 }
