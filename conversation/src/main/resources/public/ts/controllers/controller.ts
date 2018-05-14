@@ -448,7 +448,7 @@ export let conversationController = ng.controller('ConversationController', [
             }
         }
 
-        $scope.updateFoundUsers = async (search, model, founds) => {
+        $scope.updateFoundUsers = async (search, model, founds, restriction?: boolean) => {
             var include = [];
             var exclude = model || [];
             if ($scope.mail) {
@@ -456,7 +456,7 @@ export let conversationController = ng.controller('ConversationController', [
                     return new User(item[0], item[1]);
                 });
             }
-            var users = await Conversation.instance.users.findUser(search, include, exclude);
+            var users = await Conversation.instance.users.findUser(search, include, exclude, restriction);
             Object.assign(founds, users, { length: users.length });
             $scope.$apply();
         };
