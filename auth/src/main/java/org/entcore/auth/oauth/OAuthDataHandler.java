@@ -68,14 +68,15 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void validateClient(String clientId, String clientSecret,
 			String grantType, final Handler<Boolean> handler) {
-		if ("refresh_token".equals(grantType)) {
-			handler.handle(true);
-		} else {
+
 			String query =
 					"MATCH (n:Application) " +
 							"WHERE n.name = {clientId} " +
-							"AND n.secret = {secret} AND n.grantType = {grantType} " +
-							"RETURN count(n) as nb";
+							"AND n.secret = {secret} ";
+			if (!"refresh_token".equals(grantType)) {
+			    query += " AND n.grantType = {grantType} ";
+            }
+            query += "RETURN count(n) as nb";
 			Map<String, Object> params = new HashMap<>();
 			params.put("clientId", clientId);
 			params.put("secret", clientSecret);
@@ -83,16 +84,15 @@ public class OAuthDataHandler extends DataHandler {
 			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
-					JsonArray a = res.body().getJsonArray("result");
-					if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
-						JsonObject r = a.getJsonObject(0);
-						handler.handle(r != null && r.getInteger("nb") == 1);
-					} else {
-						handler.handle(false);
-					}
-				}
+                    JsonArray a = res.body().getJsonArray("result");
+                    if ("ok".equals(res.body().getString("status")) && a != null && a.size() == 1) {
+                        JsonObject r = a.getJsonObject(0);
+                        handler.handle(r != null && r.getInteger("nb") == 1);
+                    } else {
+                        handler.handle(false);
+                    }
+                }
 			});
-		}
 
 	}
 
@@ -378,8 +378,10 @@ public class OAuthDataHandler extends DataHandler {
 				public void handle(Message<JsonObject> res) {
 					if ("ok".equals(res.body().getString("status"))) {
 						JsonObject r = res.body().getJsonObject("result");
-						if (r == null)
+						if (r == null) {
 							handler.handle(null);
+							return ;
+						}
 						r.put("id", r.getString("_id"));
 						r.remove("_id");
 						r.remove("createdAt");
