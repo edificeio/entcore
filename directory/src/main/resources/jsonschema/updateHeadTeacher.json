@@ -3,11 +3,15 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "scope": {
+    "classExternalId": {
+      "type": "string"
+    },
+    "structureExternalId" : {
       "type": "string"
     }
   },
   "required": [
-    "scope"
+    "classExternalId",
+    "structureExternalId"
   ]
 }

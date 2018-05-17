@@ -51,6 +51,11 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
                             <s5l>headTeacherManual.remove</s5l>
                         </button>
                     </span>
+                    <span class="headteacher-buttons" *ngIf="details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, c)" [tooltip]="'headTeacher.aaf.detail' | translate">
+                         <button disabled>
+                            <s5l>headTeacherManual.remove</s5l>
+                        </button>
+                    </span>
                 </li>
             </ul>
         </panel-section>

@@ -129,6 +129,7 @@
     "adml.remove": "Retirer droit d'Administrateur local",
     "headTeacherManual.add": "Attribuer droit de professeur principal",
     "headTeacherManual.remove": "Retirer droit de professeur principal",
+    "headTeacher.aaf.detail": "Les droits pour les professeurs principaux provenant de l'AAF ne peuvent pas être supprimés.",
     "quick.actions": "Actions rapides",
     "structure": "Etablissement",
     "nav.structure": "Accueil administration",

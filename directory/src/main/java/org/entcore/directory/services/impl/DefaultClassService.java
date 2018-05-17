@@ -177,7 +177,7 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
-	public void unlink(String classId, String userId, Handler<Either<String, JsonObject>> result) {
+	public void unlink( String classId, String userId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-remove-user")
 				.put("classId", classId)

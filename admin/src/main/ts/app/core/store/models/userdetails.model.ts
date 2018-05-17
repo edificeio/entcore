@@ -89,7 +89,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     addHeadTeacherManual(structureExternalId: string, classe: any) {
         let relationToAdd = classe.externalId;
         return this.http.post(`/directory/user/headteacher/${this.id}`, {
-            scope: relationToAdd
+            classExternalId: relationToAdd,
+            structureExternalId : structureExternalId
         }).then(async (res) => {
             if(this.headTeacherManual === undefined){
                 this.headTeacherManual = [];
@@ -101,7 +102,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     updateHeadTeacherManual(structureExternalId: string, classe: any) {
         let relationToRemove = classe.externalId;
         return this.http.put(`/directory/user/headteacher/${this.id}`,{
-            scope: relationToRemove
+            classExternalId: relationToRemove,
+            structureExternalId : structureExternalId
         }).then(() => {
             this.headTeacherManual.splice(this.headTeacherManual.findIndex((f) => f == relationToRemove), 1);
         })
@@ -151,11 +153,26 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
         if (this.headTeacher && this.headTeacher.length > 0) {
             let headTeacherIndex = this.headTeacher.findIndex((f) => f == classe.externalId);
-            if (headTeacherIndex >= 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return (headTeacherIndex >= 0);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Détermine si l'utilisateur est ensseignant et professeur principal venant de l'AAF
+     * @param {string} structureExternalId
+     * @param {String} classeName
+     * @returns {boolean}
+     */
+    isTeacherAndHeadTeacherFromAAF (structureExternalId: string, classe: any) {
+        if(this.teaches === undefined){
+            return false;
+        }
+
+        if (this.headTeacher && this.headTeacher.length > 0) {
+            let headTeacherIndex = this.headTeacher.findIndex((f) => f == classe.externalId);
+            return (headTeacherIndex >= 0);
         } else {
             return false;
         }
@@ -164,11 +181,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     isHeadTeacherManual (structureExternalId: string,  classe: any) {
         if (this.headTeacherManual && this.headTeacherManual.length > 0) {
             let headTeacherManuelIndex = this.headTeacherManual.findIndex((f) => f == classe.externalId);
-            if (headTeacherManuelIndex >= 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return (headTeacherManuelIndex >= 0);
         } else {
             return false;
         }

@@ -328,7 +328,7 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "addHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				userService.addHeadTeacherManual(userId, event.getString("scope") ,defaultResponseHandler(request));
+				userService.addHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId") ,defaultResponseHandler(request));
 			}
 		});
 	}
@@ -341,7 +341,7 @@ public class UserController extends BaseController {
 		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-			userService.updateHeadTeacherManual(userId, event.getString("scope"), defaultResponseHandler(request));
+			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"), defaultResponseHandler(request));
 			}
 		});
 	}

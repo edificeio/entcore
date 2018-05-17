@@ -340,21 +340,23 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void addHeadTeacherManual(String id, String scope,
+	public void addHeadTeacherManual(String id,String structureExternalId, String classExternalId,
 							Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-add-head-teacher")
 				.put("userId", id)
-				.put("scope", scope);
+				.put("classExternalId", classExternalId)
+				.put("structureExternalId", structureExternalId);
 		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
-	public void updateHeadTeacherManual(String id, String scope, Handler<Either<String, JsonObject>> result) {
+	public void updateHeadTeacherManual(String id,String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-update-head-teacher")
 				.put("userId", id)
-				.put("scope", scope);
+				.put("classExternalId", classExternalId)
+				.put("structureExternalId", structureExternalId);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
