@@ -267,9 +267,9 @@ public class SqlConversationService implements ConversationService{
 		values.add(user.getUserId());
 		values.add(user.getUserId());
 		String query = " WITH threads AS ( " +
-				" SELECT DISTINCT thread_id, date from (SELECT m.thread_id, m.date FROM " + userMessageTable + " um " +
+				" SELECT thread_id from (SELECT  DISTINCT ON (m.thread_id) m.thread_id, m.date FROM " + userMessageTable + " um " +
 				" JOIN "+messageTable+" m ON um.message_id = m.id " +
-				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false) a "+
+				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false ORDER BY m.thread_id, m.date DESC) a "+
 				" ORDER BY date DESC LIMIT "+ nbThread +" OFFSET "+ skip + ") " +
 
 				"SELECT * FROM ( " +
