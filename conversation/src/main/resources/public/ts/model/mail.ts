@@ -563,12 +563,21 @@ export class Mails {
     async toTrash() {
         await http.put('/conversation/trash', { id: _.pluck(this.selection.selected, 'id') });
         Conversation.instance.folders.trash.mails.refresh();
-        quota.refresh();
-        this.selection.removeSelection();
+        await quota.refresh();
     }
 
     removeSelection(){
         this.selection.removeSelection();
+    }
+
+    async refreshSegment(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
+        var head = this.all.findIndex(mail => mail.selected)
+        data.pageNumber = Math.floor(head/25);
+        this.full = false;
+        this.all.splice(25*data.pageNumber, this.all.length);
+        this.selection.removeSelection();
+        await this.sync(data);
+        return data.pageNumber;
     }
 
     async moveSelection(destinationFolder) {
