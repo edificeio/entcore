@@ -157,6 +157,7 @@ export let conversationController = ng.controller('ConversationController', [
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
                 await Conversation.instance.folders.inbox.countUnread();
                 await Conversation.instance.folders.draft.countTotal();
+                $scope.state.selectAll = false;
                 $scope.$apply();
             }
         };
@@ -403,17 +404,20 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.inbox.countUnread();
             await $scope.userFolders.countUnread();
             await Conversation.instance.folders.draft.countTotal();
+            $scope.state.selectAll = false;
             $scope.$apply();
         };
 
         $scope.removeSelection = async () => {
             await Conversation.instance.currentFolder.removeSelection();
             await Conversation.instance.currentFolder.countUnread();
+            $scope.state.selectAll = false;
             $scope.$apply();
         };
 
         $scope.toggleUnreadSelection = async (unread) => {
             await Conversation.instance.currentFolder.toggleUnreadSelection(unread);
+            $scope.state.selectAll = false;
             $scope.$apply();
         };
 

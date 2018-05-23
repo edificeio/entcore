@@ -128,7 +128,6 @@ export class Trash extends SystemFolder {
     async removeSelection(){
         if(this.mails.selection.selected.length > 0) {
             await this.removeMails();
-            await this.mails.removeSelection();
         }
         for(let folder of this.userFolders.selected){
             await folder.delete();
@@ -150,12 +149,12 @@ export class Trash extends SystemFolder {
             return;
         }
         await http.put('/conversation/restore', {id: _.pluck(this.mails.selection.selected, 'id')});
-        this.mails.removeSelection();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     async removeMails () {
         const response = await http.put('/conversation/delete', {id: _.pluck(this.mails.selection.selected, 'id')});
-        this.mails.removeSelection();
+        this.pageNumber= await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     async removeAll() {
@@ -178,7 +177,7 @@ export class Inbox extends SystemFolder {
 
     async removeSelection(){
         await this.mails.toTrash();
-        await quota.refresh();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     selectAll(){
@@ -217,7 +216,7 @@ export class Draft extends SystemFolder {
 
     async removeSelection(){
         await this.mails.toTrash();
-        await quota.refresh();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     async saveDraft(draft: Mail): Promise<any> {
@@ -271,7 +270,7 @@ export class Outbox extends SystemFolder {
 
     async removeSelection(){
         await this.mails.toTrash();
-        await quota.refresh();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 }
 
@@ -286,12 +285,12 @@ export class UserFolder extends Folder {
         for(let mail of this.mails.selection.selected){
             await mail.removeFromFolder();
         }
-        this.mails.removeSelection();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     async removeSelection(){
         await this.mails.toTrash();
-        await quota.refresh();
+        this.pageNumber = await this.mails.refreshSegment({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter });
     }
 
     async open(){
