@@ -150,6 +150,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = function(){
+		console.log("a");
 		$scope.display.searchmobile = false;
 
 		directory.directory.users.all = [];

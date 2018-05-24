@@ -3,6 +3,7 @@ import { directory } from './model';
 import { accountController } from './controllers/account';
 import { classAdminController } from './controllers/classAdmin';
 import { directoryController } from './controllers/directory';
+import { searchModule } from './directives/searchModule';
 
 routes.define(function($routeProvider){
     if(window.location.href.indexOf('mon-compte') !== -1){
@@ -46,3 +47,4 @@ routes.define(function($routeProvider){
 ng.controllers.push(accountController);
 ng.controllers.push(classAdminController);
 ng.controllers.push(directoryController);
+ng.directives.push(searchModule);
