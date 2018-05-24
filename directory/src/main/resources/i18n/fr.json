@@ -151,7 +151,6 @@
     "directory.deleteDate": "Supprimer la date",
     "directory.deleteLocalAdmin": "Supprimer (toutes structures)",
     "directory.directlink": "Lien direct",
-    "directory.explaination": "Cette fonctionnalité vous permet de rechercher une personne dans l'annuaire de l'établissement ou des établissements auxquels vous avez accès.<br>Saisissez quelques caractères et cliquez sur OK pour afficher les résultats.",
     "directory.export": "Exporter",
     "directory.exportClass": "Exporter la classe",
     "directory.exportStructure": "Exporter la structure",
