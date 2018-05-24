@@ -19,7 +19,6 @@
  -->
 
 <div class="row">
-
 	<app-title>
 		<h1 class="upper-title cell">
 			<a data-reload>
@@ -28,63 +27,23 @@
 			</a>
 		</h1>
 	</app-title>
-
-	<div class="right-magnet three cell twelve-mobile">
-		<div class="row" ng-if="users.all.length > 0">
-			<i class="show-details right-magnet"
-			   ng-click="selectUser(users.first())"
-			   ng-class="{ selected: currentUser }"
-			   ng-if="users.first()"></i>
-			<i class="show-icons right-magnet"
-			   ng-click="deselectUser('dominos')"
-			   ng-class="{ selected: !template.contains('details', 'user-infos') }"></i>
-		</div>
-	</div>
-
 </div>
 
-
-
-
-<div class="row info zero-mobile" translate content="directory.explaination"></div>
-<form name="searchForm" ng-submit="searchDirectory()" novalidate>
-	<div class="row">
-		<div class="twelve cell search reduce-block-six">
-
-			<div class="seven centered row centered-text twelve-mobile">
-				<input type="search"
-						ng-model="search.field"
-						translate attr="placeholder"
-						placeholder="userBook.search"
-						class="nine text-flow"
-						required ng-minlength="1"/>
-				<input type="submit" value="OK" ng-disabled="searchForm.$invalid" class="text-flow two"/>
-
-				<select class="five styled-combo-box" ng-model="filters.structure" ng-options="school.id as school.name for school in schools.all">
-					<option value="" selected="selected" translate content="directory.allStructures"></option>
-				</select>
-
-				<select class="five styled-combo-box" ng-model="filters.profile">
-					<option value="" selected="selected" translate content="directory.allProfiles"></option>
-					<option value="Teacher" translate content="directory.Teacher"></option>
-					<option value="Personnel" translate content="directory.Personnel"></option>
-					<option value="Relative" translate content="directory.Relative"></option>
-					<option value="Student" translate content="directory.Student"></option>
-					<option value="Guest" translate content="directory.Guest"></option>
-				</select>
-
-			</div>
-
-			<div class="one cell">&nbsp</div>
-
-		</div>
-	</div>
-</form>
 <div class="row">
-	<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
-		<div data-ng-include="template.containers.list"></div>
-	</div>
-	<div ng-if="currentUser !== undefined" ng-class="{ 'zero-mobile': display.searchmobile }" >
-		<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
+	<search-module class="two cell"
+		ng-model="search.field"
+		ng-change="searchDirectory()"
+		structure="filters.structure"
+		profile="filters.profile"
+		schools="schools.all">
+	</search-module>
+
+	<div class="ten cell">
+		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
+			<div data-ng-include="template.containers.list"></div>
+		</div>
+		<div ng-if="currentUser !== undefined" ng-class="{ 'zero-mobile': display.searchmobile }" >
+			<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
+		</div>
 	</div>
 </div>
