@@ -10,8 +10,10 @@ export const searchModule = ng.directive('searchModule', () => {
     return {
         restrict: 'E',
         template: `
+            <pastilles>
+            </pastilles>
             <form name="searchForm" ng-submit="ngChange()" novalidate>
-                <div class="twelve cell search reduce-block-six">
+                <div class="twelve cell search reduce-block-six border-shadow" style="padding-top: 50px;">
         
                     <div class="seven centered row centered-text twelve-mobile">
                         <input type="search"
@@ -40,7 +42,7 @@ export const searchModule = ng.directive('searchModule', () => {
                     <div class="one cell">&nbsp</div>
         
                 </div>
-            </form>
+            </div>
         `,
 
         scope: {
@@ -52,8 +54,7 @@ export const searchModule = ng.directive('searchModule', () => {
         },
 
         link: (scope, element, attributes) => {
-            console.log("ok");
-            console.log(scope.ngModel);
+
         }
     };
 });

@@ -18,32 +18,31 @@
  ~
  -->
 
-<div class="row">
-	<app-title>
-		<h1 class="upper-title cell">
-			<a data-reload>
-				<i class="userbook"></i>
-				<span translate content="userBook.directory.title"></span>
-			</a>
-		</h1>
-	</app-title>
-</div>
-
-<div class="row">
-	<search-module class="two cell"
-		ng-model="search.field"
-		ng-change="searchDirectory()"
-		structure="filters.structure"
-		profile="filters.profile"
-		schools="schools.all">
-	</search-module>
-
-	<div class="ten cell">
+<div class="row rigid-grid">
+	<section class="four cell">
+		<app-title>
+			<h1>
+				<a data-reload>
+					<i class="userbook"></i>
+					<span translate content="userBook.directory.title"></span>
+				</a>
+			</h1>
+		</app-title>
+		<div class="clear"></div>
+		<search-module
+			ng-model="search.field"
+			ng-change="searchDirectory()"
+			structure="filters.structure"
+			profile="filters.profile"
+			schools="schools.all">
+		</search-module>
+	</section>
+	<section class="margin-four">
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 		<div ng-if="currentUser !== undefined" ng-class="{ 'zero-mobile': display.searchmobile }" >
 			<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
 		</div>
-	</div>
+	</section>
 </div>
