@@ -9,52 +9,42 @@ import { ng, _ } from 'entcore';
 export const searchModule = ng.directive('searchModule', () => {
     return {
         restrict: 'E',
+        transclude: true,
         template: `
-            <pastilles images='["/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg"]'>
+            <pastilles 
+                index="indexForm"
+                images='["/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg"]'>
             </pastilles>
-            <form name="searchForm" ng-submit="ngChange()" novalidate>
-                <div class="twelve cell search reduce-block-six border-shadow" style="padding-top: 50px;">
-        
-                    <div class="seven centered row centered-text twelve-mobile">
-                        <input type="search"
-                                ng-model="ngModel"
-                                translate attr="placeholder"
-                                placeholder="userBook.search"
-                                class="nine text-flow"
-                                required ng-minlength="1"/>
-                        <input type="submit" value="OK" ng-disabled="searchForm.$invalid" class="text-flow two"/>
-        
-                        <select class="five styled-combo-box" ng-model="structure" ng-options="school.id as school.name for school in schools">
-                            <option value="" selected="selected" translate content="directory.allStructures"></option>
-                        </select>
-        
-                        <select class="five styled-combo-box" ng-model="profile">
-                            <option value="" selected="selected" translate content="directory.allProfiles"></option>
-                            <option value="Teacher" translate content="directory.Teacher"></option>
-                            <option value="Personnel" translate content="directory.Personnel"></option>
-                            <option value="Relative" translate content="directory.Relative"></option>
-                            <option value="Student" translate content="directory.Student"></option>
-                            <option value="Guest" translate content="directory.Guest"></option>
-                        </select>
-        
-                    </div>
-        
-                    <div class="one cell">&nbsp</div>
-        
-                </div>
-            </div>
+            <form name="searchForm" ng-submit="search()" novalidate>
+                <article class="twelve cell search reduce-block-six" style="padding-top: 80px;">
+                    <ng-transclude></ng-transclude>
+                </article>
+            </form>
         `,
 
         scope: {
-            ngModel: '=',
-            ngChange: '&',
-            structure: '=',
-            profile: '=',
-            schools: '='
+            search: '&'
         },
 
         link: (scope, element, attributes) => {
+            scope.indexForm = 0;
 
+            var pages = element.find("ng-transclude").children();
+            var i, l = pages.length;
+
+            var hideAll = () => {
+                for (i = 0; i < l; i++) {
+                    pages.eq(i).hide();
+                }
+            }
+
+            hideAll();
+            
+            // Pastilles changing index
+            scope.$watch("indexForm", function(newValue) {
+                hideAll();
+                pages.eq(newValue).show();
+            });
         }
     };
 });
