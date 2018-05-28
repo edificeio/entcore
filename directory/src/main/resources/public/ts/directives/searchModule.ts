@@ -10,7 +10,7 @@ export const searchModule = ng.directive('searchModule', () => {
     return {
         restrict: 'E',
         template: `
-            <pastilles>
+            <pastilles images='["/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/group-avatar.svg"]'>
             </pastilles>
             <form name="searchForm" ng-submit="ngChange()" novalidate>
                 <div class="twelve cell search reduce-block-six border-shadow" style="padding-top: 50px;">
