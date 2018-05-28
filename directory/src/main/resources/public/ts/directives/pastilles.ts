@@ -18,7 +18,7 @@ export const pastilles = ng.directive('pastilles', () => {
         `,
 
         scope: {
-            ngModel: '='
+            index: '='
         },
 
         link: (scope, element, attributes) => {
@@ -52,6 +52,7 @@ export const pastilles = ng.directive('pastilles', () => {
                     }
                 });
 
+                // Set active on click
                 element.find('.round').on('click', function() {
                     element.find(".active").addClass("inactive");
                     element.find(".active").removeClass("active");
@@ -60,6 +61,8 @@ export const pastilles = ng.directive('pastilles', () => {
                     this.classList.remove("inactive");
                     this.classList.add("active");
                     scope.setActive(this);
+                    scope.index = nbPastilles - Array.prototype.slice.call(element.find("div")[0].children).indexOf(this) - 1;
+                    scope.$apply();
                 });
 
                 scope.setActive = (e) => {
