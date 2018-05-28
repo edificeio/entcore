@@ -48,16 +48,30 @@ export const pastilles = ng.directive('pastilles', () => {
 
                 element.find('.round').on('mouseleave', function() {
                     if (this.classList.contains("inactive")) {
-                        this.style.left = this.originalLeft + "px";
-                        this.style.top = "0px";
-                        this.style.marginTop = "0px";
+                        scope.setInactive(this);
                     }
+                });
+
+                element.find('.round').on('click', function() {
+                    element.find(".active").addClass("inactive");
+                    element.find(".active").removeClass("active");
+                    for (i = 0; i < nbPastilles; i++)
+                        scope.setInactive(pastilles[i]);
+                    this.classList.remove("inactive");
+                    this.classList.add("active");
+                    scope.setActive(this);
                 });
 
                 scope.setActive = (e) => {
                     e.style.left = this.originalLeft - 3 + "px";
                     e.style.top = "-3px";
                     e.style.marginTop = "-3px";
+                };
+
+                scope.setInactive = (e) => {
+                    e.style.left = this.originalLeft + "px";
+                    e.style.top = "0px";
+                    e.style.marginTop = "0px";
                 };
 
                 // Activate the first pastille
@@ -69,7 +83,7 @@ export const pastilles = ng.directive('pastilles', () => {
                 setTimeout(function () {
                     for (i = 0; i < nbPastilles; i++)
                         pastilles.eq(i).addClass("animated");
-                }, 0);
+                }, 250);
 
                 element.find("div").removeClass("invisible-content");
             }, 0);
