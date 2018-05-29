@@ -29,24 +29,22 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.service.CrudService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.share.ShareService;
+import org.entcore.common.share.Shareable;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
-public abstract class ControllerHelper extends BaseController {
+public abstract class ControllerHelper extends BaseController implements Shareable {
 
 	protected ShareService shareService;
 	protected TimelineHelper notification;
@@ -155,7 +153,7 @@ public abstract class ControllerHelper extends BaseController {
 							JsonObject n = event.right().getValue()
 									.getJsonObject("notify-timeline");
 							if (n != null && notificationName != null) {
-								notifyShare(request, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
+								notifyShare(request, eb, id, user, new fr.wseduc.webutils.collections.JsonArray().add(n),
 										notificationName, params, resourceNameAttribute);
 							}
 							renderJson(request, event.right().getValue());
@@ -235,47 +233,8 @@ public abstract class ControllerHelper extends BaseController {
 		});
 	}
 
-	private void notifyShare(final HttpServerRequest request, final String resource,
-			final UserInfos user, JsonArray sharedArray, final String notificationName,
-			final JsonObject params, final String resourceNameAttribute) {
-		final List<String> recipients = new ArrayList<>();
-		final AtomicInteger remaining = new AtomicInteger(sharedArray.size());
-		for (Object j : sharedArray) {
-			JsonObject json = (JsonObject) j;
-			String userId = json.getString("userId");
-			if (userId != null) {
-				recipients.add(userId);
-				remaining.getAndDecrement();
-			} else {
-				String groupId = json.getString("groupId");
-				if (groupId != null) {
-					UserUtils.findUsersInProfilsGroups(groupId, eb, user.getUserId(), false, new Handler<JsonArray>() {
-						@Override
-						public void handle(JsonArray event) {
-							if (event != null) {
-								for (Object o : event) {
-									if (!(o instanceof JsonObject)) continue;
-									JsonObject j = (JsonObject) o;
-									String id = j.getString("id");
-									log.debug(id);
-									recipients.add(id);
-								}
-							}
-							if (remaining.decrementAndGet() < 1) {
-								sendNotify(request, resource, user, recipients, notificationName,
-										params, resourceNameAttribute);
-							}
-						}
-					});
-				}
-			}
-		}
-		if (remaining.get() < 1) {
-			sendNotify(request, resource, user, recipients, notificationName, params, resourceNameAttribute);
-		}
-	}
-
-	private void sendNotify(final HttpServerRequest request, final String resource,
+	@Override
+	public void sendNotify(final HttpServerRequest request, final String resource,
 			final UserInfos user, final List<String> recipients, final String notificationName,
 			JsonObject p, final String resourceNameAttribute) {
 		if (p == null) {
@@ -312,35 +271,17 @@ public abstract class ControllerHelper extends BaseController {
 				if (checkIsOwner) {
 					crudService.isOwner(id, user, event -> {
 						if (Boolean.TRUE.equals(event)) {
-							doShare(request, id, user, notificationName, params, resourceNameAttribute);
+							doShare(request, eb, id, user, notificationName, params, resourceNameAttribute);
 						} else {
 							unauthorized(request, "not.owner");
 						}
 					});
 				} else {
-					doShare(request, id, user, notificationName, params, resourceNameAttribute);
+					doShare(request, eb, id, user, notificationName, params, resourceNameAttribute);
 				}
 			} else {
 				unauthorized(request, "invalid.user");
 			}
-		});
-	}
-
-	private void doShare(HttpServerRequest request, String id, UserInfos user, final String notificationName,
-			final JsonObject params, final String resourceNameAttribute) {
-		RequestUtils.bodyToJson(request, share -> {
-			shareService.share(user.getUserId(), id, share, r -> {
-				if (r.isRight()) {
-					JsonArray nta = r.right().getValue().getJsonArray("notify-timeline-array");
-					if (nta != null && notificationName != null) {
-						notifyShare(request, id, user, nta,	notificationName, params, resourceNameAttribute);
-					}
-					renderJson(request, r.right().getValue());
-				} else {
-					JsonObject error = new JsonObject().put("error", r.left().getValue());
-					renderJson(request, error, 400);
-				}
-			});
 		});
 	}
 
@@ -435,6 +376,16 @@ public abstract class ControllerHelper extends BaseController {
 
 	public void setShareService(ShareService shareService) {
 		this.shareService = shareService;
+	}
+
+	@Override
+	public ShareService getShareService() {
+		return shareService;
+	}
+
+	@Override
+	public TimelineHelper getNotification() {
+		return notification;
 	}
 
 }

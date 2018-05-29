@@ -67,11 +67,11 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "deleteDocument":
 			case "restoreTrash":
 			case "shareJson":
+			case "shareResource":
 			case "shareJsonSubmit":
 			case "removeShare":
 			case "getRevision":
 			case "listRevisions":
-			case "shareResource":
 				authorizeDocument(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "deleteRevision":

@@ -42,6 +42,7 @@ import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.share.Shareable;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.Workspace;
@@ -75,7 +76,7 @@ import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class WorkspaceService extends BaseController {
+public class WorkspaceService extends BaseController implements Shareable {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 	public static final String DOCUMENT_REVISION_COLLECTION = "documentsRevisions";
@@ -195,6 +196,48 @@ public class WorkspaceService extends BaseController {
 		} else {
 			badRequest(request);
 		}
+	}
+
+	private void shareFileAction(final HttpServerRequest request, final String id, final UserInfos user, JsonObject doc){
+		final JsonObject params = new JsonObject()
+				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.put("username", user.getUsername())
+				.put("appPrefix", pathPrefix + "/workspace")
+				.put("resourceUri", pathPrefix + "/document/" + id)
+				.put("resourceName", doc.getString("name", ""));
+		doShare(request, eb, id, user, WORKSPACE_NAME.toLowerCase() + ".share", params, "name");
+	}
+
+	private void shareFolderAction(HttpServerRequest request, String id, UserInfos user, JsonObject doc) {
+		RequestUtils.bodyToJson(request, share -> {
+			folderService.shareFolderAction(id, user, share, shareService, res -> {
+				if (res.isRight()) {
+					final int number = res.right().getValue().getInteger("number");
+					final int errorsNb = res.right().getValue().getInteger("number-errors");
+					getShareService().share(user.getUserId(), id, share, r -> {
+						if (r.isRight()) {
+							final JsonObject params = new JsonObject()
+									.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+									.put("username", user.getUsername())
+									.put("appPrefix", pathPrefix + "/workspace")
+									.put("resourceUri", pathPrefix + "/workspace#/shared/folder/" + id)
+									.put("resourceName", doc.getString("name", ""));
+							JsonArray nta = r.right().getValue().getJsonArray("notify-timeline-array");
+							if (nta != null) {
+								notifyShare(request, eb, id, user, nta,	WORKSPACE_NAME.toLowerCase() + ".share-folder", params, "name");
+							}
+							renderJson(request, r.right().getValue().put("number", number+1).put("number-errors", errorsNb));
+						} else {
+							JsonObject error = new JsonObject().put("error", r.left().getValue());
+							renderJson(request, error, 400);
+						}
+					});
+				} else {
+					JsonObject error = new JsonObject().put("error", res.left().getValue());
+					renderJson(request, error, 400);
+				}
+			});
+		});
 	}
 
 	private void shareFolderAction(final HttpServerRequest request, final String id, final UserInfos user, final List<String> actions, final String groupId, final String userId, final boolean remove){
@@ -337,22 +380,31 @@ public class WorkspaceService extends BaseController {
 	@Put("/share/resource/:id")
 	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void shareResource(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		request.pause();
 		getUserInfos(eb, request, user -> {
 			if (user != null) {
-				RequestUtils.bodyToJson(request, share -> {
-					shareService.share(user.getUserId(), request.params().get("id"), share, r ->  {
-						if (r.isRight()) {
-							renderJson(request, r.right().getValue());
+				mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, new JsonObject().put("_id", id), new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
+							request.resume();
+							final JsonObject res = event.body().getJsonObject("result");
+							final boolean isFolder = !res.containsKey("file");
+							if(isFolder)
+								shareFolderAction(request, id, user, res);
+							else
+								shareFileAction(request, id, user, res);
 						} else {
-							JsonObject error = new JsonObject().put("error", r.left().getValue());
-							renderJson(request, error, 400);
+							unauthorized(request);
 						}
-					});
+					}
 				});
 			} else {
 				badRequest(request, "invalid.user");
 			}
 		});
+
 	}
 
 	private void notifyShare(final HttpServerRequest request, final String resource, final UserInfos user, JsonArray sharedArray){
@@ -2537,6 +2589,16 @@ public class WorkspaceService extends BaseController {
 			n = n.replaceAll("_", "＿"); // "&#95;"
 		}
 		return n;
+	}
+
+	@Override
+	public ShareService getShareService() {
+		return shareService;
+	}
+
+	@Override
+	public TimelineHelper getNotification() {
+		return notification;
 	}
 
 }
