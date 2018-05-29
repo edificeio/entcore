@@ -51,6 +51,8 @@ public interface FolderService {
 	void shareFolderAction(String id, UserInfos owner, List<String> actions, String groupId,
 			String userId, ShareService shareService, boolean remove, Handler<Either<String, JsonObject>> result);
 
+	void shareFolderAction(String id, UserInfos owner, JsonObject share, ShareService shareService, Handler<Either<String, JsonObject>> result);
+
 	void rename(String id, String newName, UserInfos owner, Handler<Either<String, JsonObject>> result);
 
 	public void getParentRights(String parentName, String parentFolder, String owner, Handler<Either<String, JsonArray>> result);

@@ -625,8 +625,7 @@ public class DefaultFolderService implements FolderService {
 				});
 	}
 
-	@Override
-	public void shareFolderAction(final String id, final UserInfos owner, final List<String> actions, final String groupId, final String userId, final ShareService shareService, final boolean remove, final Handler<Either<String, JsonObject>> result) {
+	private void shareFolderAction(final String id, final UserInfos owner, final List<String> actions, final String groupId, final String userId, final ShareService shareService, final boolean remove, final JsonObject share, final Handler<Either<String, JsonObject>> result) {
 
 		if (owner == null) {
 			result.handle(new Either.Left<String, JsonObject>("workspace.invalid.user"));
@@ -706,16 +705,20 @@ public class DefaultFolderService implements FolderService {
 								if (!(o instanceof JsonObject)) continue;
 								JsonObject file = (JsonObject) o;
 
-								if (groupId != null) {
-									if(remove)
-										shareService.removeGroupShare(groupId, file.getString("_id"), actions, recursiveHandler);
-									else
-										shareService.groupShare(owner.getUserId(), groupId, file.getString("_id"), actions, recursiveHandler);
-								} else if (userId != null) {
-									if(remove)
-										shareService.removeUserShare(userId, file.getString("_id"), actions, recursiveHandler);
-									else
-										shareService.userShare(owner.getUserId(), userId, file.getString("_id"), actions, recursiveHandler);
+								if (share != null) {
+									shareService.share(owner.getUserId(), file.getString("_id"), share, recursiveHandler);
+								} else {
+									if (groupId != null) {
+										if (remove)
+											shareService.removeGroupShare(groupId, file.getString("_id"), actions, recursiveHandler);
+										else
+											shareService.groupShare(owner.getUserId(), groupId, file.getString("_id"), actions, recursiveHandler);
+									} else if (userId != null) {
+										if (remove)
+											shareService.removeUserShare(userId, file.getString("_id"), actions, recursiveHandler);
+										else
+											shareService.userShare(owner.getUserId(), userId, file.getString("_id"), actions, recursiveHandler);
+									}
 								}
 							}
 
@@ -729,6 +732,16 @@ public class DefaultFolderService implements FolderService {
 		};
 
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys, folderHandler);
+	}
+
+	@Override
+	public void shareFolderAction(final String id, final UserInfos owner, final List<String> actions, final String groupId, final String userId, final ShareService shareService, final boolean remove, final Handler<Either<String, JsonObject>> result) {
+		shareFolderAction(id, owner, actions, groupId, userId, shareService, remove, null, result);
+	}
+
+	@Override
+	public void shareFolderAction(String id, UserInfos owner, JsonObject share, ShareService shareService, Handler<Either<String, JsonObject>> result) {
+		shareFolderAction(id, owner, null, null, null, shareService, false, share, result);
 	}
 
 	public void rename(String id, final String newName, final UserInfos owner, final Handler<Either<String, JsonObject>> result){
