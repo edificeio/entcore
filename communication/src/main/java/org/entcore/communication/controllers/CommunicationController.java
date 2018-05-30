@@ -144,6 +144,7 @@ public class CommunicationController extends BaseController {
 				String match = "";
 				String where = "";
 				JsonObject params = new JsonObject();
+				JsonArray expectedTypes = null;
 				if (filter != null && filter.size()> 0) {
 					for (String criteria : filter.fieldNames()) {
 						switch (criteria) {
@@ -191,6 +192,12 @@ public class CommunicationController extends BaseController {
 									params.put("search", sanitizedSearch);
 								}
 								break;
+							case "types":
+								JsonArray types = filter.getJsonArray(criteria);
+								if (types != null && types.size() > 0 && CommunicationService.EXPECTED_TYPES.containsAll(types.getList())) {
+									expectedTypes = types;
+								}
+								break;
 						}
 					}
 				}
@@ -198,7 +205,7 @@ public class CommunicationController extends BaseController {
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile";
-				communicationService.visibleUsers(user.getUserId(), null, null, false, true, false,
+				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
 						preFilter, customReturn, params, visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
