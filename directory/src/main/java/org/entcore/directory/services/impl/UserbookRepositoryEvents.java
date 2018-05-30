@@ -55,6 +55,7 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 				"WHERE NOT(p<--(:User)) " +
 				"DETACH DELETE p";
 		b.add(query);
+		b.add("MATCH (sb:ShareBookmark) WHERE NOT(sb<--(:User)) DELETE sb");
 		Neo4j.getInstance().executeTransaction(b.build(), null, true, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
