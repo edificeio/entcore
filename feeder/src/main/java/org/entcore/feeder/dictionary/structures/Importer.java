@@ -606,7 +606,8 @@ public class Importer {
 								"WHERE NOT(HAS(r.mergedWith)) " +
 								"MERGE u-[:RELATED]->r " +
 								"WITH r, u " +
-								"SET u.relative = coalesce(FILTER(eId IN u.relative WHERE eId <> (r.externalId + '$1$1$1$1$0')), []) + (r.externalId + '$1$1$1$1$0') ";
+								"WHERE {user} <> r.externalId AND LENGTH(FILTER(eId IN u.relative WHERE eId STARTS WITH r.externalId)) = 0 " +
+								"SET u.relative = coalesce(u.relative, []) + (r.externalId + '$10$1$1$0$0') ";
 						JsonObject p = new JsonObject()
 								.put("userExternalId", externalId)
 								.put("user", (String) o);
@@ -728,7 +729,7 @@ public class Importer {
 		String query =
 				"MATCH (u:User {source: {source}})-[:RELATED]->(u2:User) " +
 				"WHERE HEAD(u.profiles) = 'Student' AND NOT(HAS(u.relative)) " +
-				"SET u.relative = coalesce(u.relative, []) + (u2.externalId + '$1$1$1$1$0')";
+				"SET u.relative = coalesce(u.relative, []) + (u2.externalId + '$10$1$1$0$0')";
 		transactionHelper.add(query, new JsonObject().put("source", source));
 	}
 

@@ -549,7 +549,7 @@ public class User {
 				"MERGE r-[:IN]->rspg " +
 				"WITH s, r, st " +
 				"SET s.relative = CASE WHEN r.externalId IN s.relative THEN " +
-				"s.relative ELSE coalesce(s.relative, []) + (r.externalId + '$1$1$1$1$0') END " +
+				"s.relative ELSE coalesce(s.relative, []) + (r.externalId + '$10$1$1$0$0') END " +
 				"RETURN COLLECT(st.id) as structures "; 
 		String query2 =
 				"MATCH (r:User {id : {relativeId}})-[:IN]->(:ProfileGroup)-[:HAS_PROFILE]->(:Profile { name : 'Relative'}) " +
