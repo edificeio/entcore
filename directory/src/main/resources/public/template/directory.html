@@ -71,6 +71,12 @@
 		</search-module>
 	</section>
 	<section class="margin-four">
+		<div class="emptyscreen" ng-if="users.length() == 0 && !users.searched && !users.loading">
+			<img skin-src="/img/illustrations/illus-annuaire-exp2.svg">
+			<p class="header"><i18n>userBook.directory.emptyScreen.users.header</i18n></p>
+			<p class="content"><i18n>userBook.directory.emptyScreen.users.content</i18n></p>
+		</div>
+		
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
 			<div data-ng-include="template.containers.list"></div>
 		</div>

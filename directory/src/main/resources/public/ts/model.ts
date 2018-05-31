@@ -237,6 +237,7 @@ export const directory = {
 				var structure = filters.structure ? filters.structure : "";
 				var profile = filters.profile ? filters.profile : "";
 				this.loading = true;
+				this.searched = true;
 				oldHttp().get('/userbook/api/search?name=' + searchTerm + "&structure=" + structure + "&profile=" + profile).done(function(result){
 					this.loading = false;
 					this.load(_.map(result, function(user){
