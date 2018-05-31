@@ -28,7 +28,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		text: '',
 		field: '',
 		schoolField: '',
-		maxLength: 20,
+		maxLength: 50,
 		maxSchoolsLength: 7,
 		clear: function(){
 			this.text = '';
