@@ -5,6 +5,7 @@ import { classAdminController } from './controllers/classAdmin';
 import { directoryController } from './controllers/directory';
 import { searchModule } from './directives/searchModule';
 import { pastilles } from './directives/pastilles';
+import { multiComboboxes } from "./directives/multiComboboxes";
 
 routes.define(function($routeProvider){
     if(window.location.href.indexOf('mon-compte') !== -1){
@@ -50,3 +51,4 @@ ng.controllers.push(classAdminController);
 ng.controllers.push(directoryController);
 ng.directives.push(pastilles);
 ng.directives.push(searchModule);
+ng.directives.push(multiComboboxes);

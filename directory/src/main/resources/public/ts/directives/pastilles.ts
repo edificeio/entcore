@@ -2,10 +2,15 @@ import { ng, _ } from 'entcore';
 
 /**
  * @description Display pastilles that can be used as tabs.
- * @param ngModel ...
+ * @param images An array of string containing the list of images paths.
+ * @param index The activated pastille index.
  * @example
- * example
+ *  <pastilles 
+        index="<index>"
+        images="<images>">
+    </pastilles>
  */
+
 export const pastilles = ng.directive('pastilles', () => {
     return {
         restrict: 'E',
@@ -18,12 +23,12 @@ export const pastilles = ng.directive('pastilles', () => {
         `,
 
         scope: {
+            images: '=',
             index: '='
         },
 
         link: (scope, element, attributes) => {
-            scope.images = JSON.parse(attributes.images);
-            
+
             // Waiting for pastilles to be created
             setTimeout(function () {
                 var i, l;
