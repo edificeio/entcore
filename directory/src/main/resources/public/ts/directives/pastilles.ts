@@ -35,7 +35,7 @@ export const pastilles = ng.directive('pastilles', () => {
                 var pastilles = element.find("div").children();
                 var totalWidth, pastilleWidth, leftOffset, offset, pastilleOffset, nbPastilles = pastilles.length;
 
-                totalWidth = element.width();
+                totalWidth = element.find('div').width();
                 pastilleWidth = pastilles[0].offsetWidth;
                 offset = pastilleWidth * 3 / 4;
                 leftOffset = (totalWidth - (pastilleWidth + ((nbPastilles - 1) * offset))) / 2;
@@ -94,7 +94,7 @@ export const pastilles = ng.directive('pastilles', () => {
                 }, 250);
 
                 element.find("div").removeClass("invisible-content");
-            }, 0);
+            }, 250);
         }
     };
 });

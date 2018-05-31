@@ -116,7 +116,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                 var article = element.find('article').eq(0);
                 article.css('top', element.find('button')[0].offsetHeight + 'px');
                 article.css('left', '2px');
-            }, 0);
+            }, 250);
         }
     };
 });
