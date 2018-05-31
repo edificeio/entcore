@@ -23,6 +23,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	template.open('userActions', 'user-actions');
 	$scope.users = [];
 	$scope.lang = lang;
+
 	$scope.search = {
 		text: '',
 		field: '',
@@ -78,7 +79,19 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.users = directory.directory.users;
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
-			$scope.filters = {};
+			$scope.filters = {
+				structures: null,
+				profiles: null
+			};
+			$scope.filtersOptions = {
+				profiles: [ 
+					{ label: lang.translate("directory.Teacher"), type: "Teacher" }, 
+					{ label: lang.translate("directory.Personnel"), type: "Personnel" }, 
+					{ label: lang.translate("directory.Relative"), type: "Relative" }, 
+					{ label: lang.translate("directory.Student"), type: "Student" },
+					{ label: lang.translate("directory.Guest"), type: "Guest" }
+				]
+			};
 			template.open('page', 'directory');
 			template.close('list');
 			$scope.title = 'directory';

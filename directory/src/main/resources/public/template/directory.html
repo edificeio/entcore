@@ -29,21 +29,23 @@
 			</h1>
 		</app-title>
 		<div class="clear"></div>
-		<search-module index-form="testIndex" search="searchDirectory()">
-			<div class="centered row centered-text twelve-mobile">
+		<search-module 
+			search="searchDirectory()"
+			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
+			<div class="centered row centered-text twelve">
 				<input type="search"
-						ng-model="search.field"
-						translate attr="placeholder"
-						placeholder="userBook.search"
-						class="nine text-flow"
-						required ng-minlength="1"/>
+					ng-model="search.field"
+					translate attr="placeholder"
+					placeholder="userBook.search"
+					class="nine text-flow"
+					required ng-minlength="1"/>
 				<input type="submit" value="OK" ng-disabled="searchForm.$invalid" class="text-flow two"/>
 
 				<div class="reduce-block-eight">
 					<select class="five styled-combo-box" ng-model="filters.structure" ng-options="school.id as school.name for school in schools.all">
 						<option value="" selected="selected" translate content="directory.allStructures"></option>
 					</select>
-	
+
 					<select class="five styled-combo-box" ng-model="filters.profile">
 						<option value="" selected="selected" translate content="directory.allProfiles"></option>
 						<option value="Teacher" translate content="directory.Teacher"></option>
@@ -53,6 +55,12 @@
 						<option value="Guest" translate content="directory.Guest"></option>
 					</select>
 				</div>
+				<multi-comboboxes 
+					ng-model="filters.profiles"
+					options="filtersOptions.profiles"
+					title-all="[[lang.translate('directory.allProfiles')]]"
+					title="[[lang.translate('directory.profiles')]]">
+				</multi-comboboxes>
 			</div>
 			<div class="centered row centered-text twelve-mobile">
 				Page 2
