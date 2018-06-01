@@ -32,38 +32,77 @@
 		<search-module 
 			search="searchDirectory()"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
-			<div class="centered row centered-text twelve">
-				<input type="search"
-					ng-model="search.field"
-					translate attr="placeholder"
-					placeholder="userBook.search"
-					class="nine text-flow"
-					required ng-minlength="1"/>
-				<input type="submit" value="OK" ng-disabled="searchForm.$invalid" class="text-flow two"/>
-
-				<div class="reduce-block-eight">
-					<select class="five styled-combo-box" ng-model="filters.structure" ng-options="school.id as school.name for school in schools.all">
-						<option value="" selected="selected" translate content="directory.allStructures"></option>
-					</select>
-
-					<select class="five styled-combo-box" ng-model="filters.profile">
-						<option value="" selected="selected" translate content="directory.allProfiles"></option>
-						<option value="Teacher" translate content="directory.Teacher"></option>
-						<option value="Personnel" translate content="directory.Personnel"></option>
-						<option value="Relative" translate content="directory.Relative"></option>
-						<option value="Student" translate content="directory.Student"></option>
-						<option value="Guest" translate content="directory.Guest"></option>
-					</select>
+			<div class="reduce-block-eight centered row centered-text twelve">
+				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
+				<div class="spacer-small"></div>
+				<div class="reduce-block-eight horizontal-margin">
+					<input type="search"
+						ng-model="search.field"
+						translate attr="placeholder"
+						placeholder="userBook.search"
+						class="text-flow twelve"
+						required ng-minlength="1"/>
+					<div class="reduce-block-eight horizontal-margin">
+						<multi-comboboxes 
+							ng-model="filters.structures"
+							options="filtersOptions.structures"
+							title-all="[[lang.translate('directory.allStructures')]]"
+							title="[[lang.translate('directory.structures')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.classes"
+							options="filtersOptions.classes"
+							title-all="[[lang.translate('directory.allClasses')]]"
+							title="[[lang.translate('directory.classes')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.profiles"
+							options="filtersOptions.profiles"
+							title-all="[[lang.translate('directory.allProfiles')]]"
+							title="[[lang.translate('directory.profiles')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.functions"
+							options="filtersOptions.functions"
+							title-all="[[lang.translate('directory.allFunctions')]]"
+							title="[[lang.translate('directory.functions')]]">
+						</multi-comboboxes>
+						<div class="spacer-small"></div>
+						<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
+							<i18n>directory.search</i18n>
+						</button>
+					</div>
 				</div>
-				<multi-comboboxes 
-					ng-model="filters.profiles"
-					options="filtersOptions.profiles"
-					title-all="[[lang.translate('directory.allProfiles')]]"
-					title="[[lang.translate('directory.profiles')]]">
-				</multi-comboboxes>
 			</div>
-			<div class="centered row centered-text twelve-mobile">
-				Page 2
+			<div class="reduce-block-eight centered row centered-text twelve">
+				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.group</i18n></strong></div>
+				<div class="spacer-small"></div>
+				<div class="reduce-block-eight horizontal-margin">
+					<input type="search"
+						ng-model="search.field"
+						translate attr="placeholder"
+						placeholder="userBook.search"
+						class="text-flow twelve"
+						required ng-minlength="1"/>
+					<div class="reduce-block-eight horizontal-margin">
+						<multi-comboboxes 
+							ng-model="filters.structures"
+							options="filtersOptions.structures"
+							title-all="[[lang.translate('directory.allStructures')]]"
+							title="[[lang.translate('directory.structures')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.groups"
+							options="filtersOptions.groups"
+							title-all="[[lang.translate('directory.allGroupsTypes')]]"
+							title="[[lang.translate('directory.groupsTypes')]]">
+						</multi-comboboxes>
+						<div class="spacer-small"></div>
+						<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
+							<i18n>directory.search</i18n>
+						</button>
+					</div>
+				</div>
 			</div>
 			<div class="centered row centered-text twelve-mobile">
 				Page 3
