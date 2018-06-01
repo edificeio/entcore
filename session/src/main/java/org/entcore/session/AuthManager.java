@@ -761,8 +761,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					for (Object o : getOrElse(j.getJsonArray("classes"), new fr.wseduc.webutils.collections.JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						final JsonArray c = (JsonArray) o;
-						classesIds.add(c.getString(0));
-						classesNames.add(c.getString(1));
+						if (c.getString(0) != null) {
+							classesIds.add(c.getString(0));
+							classesNames.add(c.getString(1));
+						}
 					}
 					j.remove("classes");
 					j.put("classes", new fr.wseduc.webutils.collections.JsonArray(classesIds));
