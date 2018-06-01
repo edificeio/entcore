@@ -256,6 +256,7 @@ public class UserUtils {
 				groups.add(j);
 			} else {
 				j.remove("name");
+				j.remove("nbUsers");
 				users.add(j);
 			}
 		}

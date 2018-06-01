@@ -842,7 +842,6 @@ public class Importer {
 		transactionHelper.add(query2, new JsonObject());
 	}
 
-
 	public void addStructureNameInGroups(String prefix) {
 		addStructureNameInGroups(null, prefix);
 	}
@@ -865,6 +864,11 @@ public class Importer {
 				"WHERE NOT(HAS(pg.structureName)) OR pg.structureName <> s.name " + filter +
 				"SET pg.structureName = s.name";
 		transactionHelper.add(query, params);
+	}
+
+	public void countUsersInGroups() {
+		final String query = "MATCH (g:Group)<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";
+		transactionHelper.add(query, new JsonObject());
 	}
 
 	public Report getReport() {
