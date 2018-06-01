@@ -48,6 +48,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 		importer.removeEmptyClasses();
 		importer.restorePreDeletedUsers();
 		importer.addStructureNameInGroups(getAcademyPrefix());
+		importer.countUsersInGroups();
 	}
 
 	@Override

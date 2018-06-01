@@ -143,6 +143,7 @@ public class CommunicationController extends BaseController {
 				String preFilter = "";
 				String match = "";
 				String where = "";
+				String nbUsers = "";
 				JsonObject params = new JsonObject();
 				JsonArray expectedTypes = null;
 				if (filter != null && filter.size()> 0) {
@@ -198,13 +199,18 @@ public class CommunicationController extends BaseController {
 									expectedTypes = types;
 								}
 								break;
+							case "nbUsersInGroups":
+								if (filter.getBoolean("nbUsersInGroups", false)) {
+									nbUsers = ", visibles.nbUsers as nbUsers";
+								}
+								break;
 						}
 					}
 				}
 				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-						"HEAD(visibles.profiles) as profile";
+						"HEAD(visibles.profiles) as profile" + nbUsers;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
 						preFilter, customReturn, params, visibles -> {
 							if (visibles.isRight()) {
