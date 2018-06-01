@@ -22,7 +22,10 @@ package org.entcore.cas.controllers;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.cas.endpoint.Credential;
 import fr.wseduc.rs.Get;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.cas.http.OAuthWrappedRequest;
 import org.entcore.cas.http.WrappedRequest;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -35,6 +38,12 @@ public class CredentialController extends BaseController {
 	@Get("/login")
 	public void login(HttpServerRequest request) {
 		credential.loginRequestor(new WrappedRequest(request));
+	}
+
+	@Get("/oauth/login")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void loginOauth(HttpServerRequest request) {
+		credential.loginRequestor(new OAuthWrappedRequest(request));
 	}
 
 	@BusAddress("cas")
