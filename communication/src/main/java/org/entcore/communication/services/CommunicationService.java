@@ -30,7 +30,8 @@ import java.util.List;
 
 public interface CommunicationService {
 
-	List<String> EXPECTED_TYPES = Arrays.asList("User", "Group", "ManuelGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup");
+	List<String> EXPECTED_TYPES = Arrays.asList(
+			"User", "Group", "ManuelGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup");
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { INCOMING, OUTGOING, BOTH }

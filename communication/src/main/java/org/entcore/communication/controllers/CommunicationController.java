@@ -144,6 +144,7 @@ public class CommunicationController extends BaseController {
 				String match = "";
 				String where = "";
 				String nbUsers = "";
+				String groupTypes = "";
 				JsonObject params = new JsonObject();
 				JsonArray expectedTypes = null;
 				if (filter != null && filter.size()> 0) {
@@ -204,19 +205,25 @@ public class CommunicationController extends BaseController {
 									nbUsers = ", visibles.nbUsers as nbUsers";
 								}
 								break;
+							case "groupType":
+								if (filter.getBoolean("groupType", false)) {
+									groupTypes = ", labels(visibles) as groupType";
+								}
+								break;
 						}
 					}
 				}
+				final boolean returnGroupType = !groupTypes.isEmpty();
 				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-						"HEAD(visibles.profiles) as profile" + nbUsers;
+						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
 						preFilter, customReturn, params, visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
 										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
-												I18n.acceptLanguage(request)));
+												I18n.acceptLanguage(request), returnGroupType));
 							} else {
 								leftToResponse(request, visibles.left());
 							}
