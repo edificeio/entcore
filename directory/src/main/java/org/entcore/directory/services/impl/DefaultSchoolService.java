@@ -546,7 +546,8 @@ public class DefaultSchoolService implements SchoolService {
 				"RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, " +
 				"COLLECT(DISTINCT { id: c.id, name: c.name}) as classes, " +
 				"COLLECT(DISTINCT fg.filter) as functions, " +
-				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles ";
+				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, " +
+				"['ManuelGroup','FunctionalGroup','CommunityGroup'] as groupTypes";
 		neo.execute(query, new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
 	}
 

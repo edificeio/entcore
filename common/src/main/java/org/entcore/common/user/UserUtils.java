@@ -242,6 +242,10 @@ public class UserUtils {
 	}
 
 	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage) {
+		return translateAndGroupVisible(visibles, acceptLanguage, false);
+	}
+
+	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage, boolean returnGroupType) {
 		final JsonObject visible = new JsonObject();
 		final JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
 		final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
@@ -252,6 +256,17 @@ public class UserUtils {
 			if (j.getString("name") != null) {
 				j.remove("displayName");
 				j.remove("profile");
+				if (returnGroupType) {
+					Object gt = j.remove("groupType");
+					if (gt instanceof JsonArray) {
+						for (Object gti: (JsonArray) gt) {
+							if (gti != null && !"Group".equals(gti) && gti.toString().endsWith("Group")) {
+								j.put("groupType", gti);
+								break;
+							}
+						}
+					}
+				}
 				UserUtils.groupDisplayName(j, acceptLanguage);
 				groups.add(j);
 			} else {
