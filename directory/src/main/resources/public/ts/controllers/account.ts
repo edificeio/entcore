@@ -104,7 +104,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	async function init(){
 		$scope.me = model.me;
-		directory.account.one('change', function(){
+		directory.account.on('change', function(){
 			$scope.$apply();
 		});
 
