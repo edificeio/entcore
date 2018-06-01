@@ -76,12 +76,16 @@
 			<p class="header"><i18n>userBook.directory.emptyScreen.users.header</i18n></p>
 			<p class="content"><i18n>userBook.directory.emptyScreen.users.content</i18n></p>
 		</div>
-		
-		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" class="cell">
+
+		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
+			class="cell"
+			ng-if="!currentUser">
 			<div data-ng-include="template.containers.list"></div>
 		</div>
-		<div ng-if="currentUser !== undefined" ng-class="{ 'zero-mobile': display.searchmobile }" >
-			<div data-ng-include="template.containers.details" class="side-panel-right eight cell twelve-mobile"></div>
+
+		<div ng-if="currentUser" ng-class="{ 'zero-mobile': display.searchmobile }" class="left-spacing-four">
+			<h2><i class="back" ng-click="backToList()"></i><i18n>userBook.backToList</i18n></h2>
+			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>
 </div>
