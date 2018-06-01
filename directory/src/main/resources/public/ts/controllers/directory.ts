@@ -204,6 +204,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('details', 'user-infos');
 	};
 
+	$scope.backToList = function() {
+		$scope.currentUser = undefined;
+		template.close('details');
+	}
+
 	$scope.selectClassroom = function(classroom){
 		classroom.sync();
 		$scope.classrooms = undefined;
