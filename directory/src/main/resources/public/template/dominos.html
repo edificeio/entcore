@@ -34,9 +34,6 @@
 
 			<div class="top">
 				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
-				<div class="mood">
-					<i class="liquid [[user.mood]]"></i>
-				</div>
 			</div>
 
 			<span class="medium-text" translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
@@ -44,8 +41,8 @@
 			<div class="bottom">
 				<div class="content">
 					<span>[[user.displayName]]</span>
-					<div class="bottom-locked">
-						<a ng-href="/conversation/conversation#/write-mail/[[user.id]]"><i class="send-mail"></i></a>
+					<div class="bottom-locked" ng-if="user.mood != 'default'">
+						<i class="[[user.mood]]"></i>
 					</div>
 				</div>
 			</div>
