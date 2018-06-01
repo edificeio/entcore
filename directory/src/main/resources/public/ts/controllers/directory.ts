@@ -79,19 +79,32 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.users = directory.directory.users;
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
+
+			// Filters for search
+			$scope.criteria = await directory.directory.users.getSearchCriteria();
 			$scope.filters = {
 				structures: null,
-				profiles: null
+				classes: null,
+				profiles: null,
+				functions: null,
+				groups: null
 			};
 			$scope.filtersOptions = {
-				profiles: [ 
-					{ label: lang.translate("directory.Teacher"), type: "Teacher" }, 
-					{ label: lang.translate("directory.Personnel"), type: "Personnel" }, 
-					{ label: lang.translate("directory.Relative"), type: "Relative" }, 
-					{ label: lang.translate("directory.Student"), type: "Student" },
-					{ label: lang.translate("directory.Guest"), type: "Guest" }
-				]
+				structures: $scope.criteria.structures.map((element) => {
+					return { label: element.name, type: element.id };
+				}),
+				classes: $scope.criteria.classes.map((element) => {
+					return { label: element.name, type: element.id };
+				}),
+				profiles: $scope.criteria.profiles.map((element) => {
+					return { label: lang.translate("directory." + element), type: element };
+				}),
+				functions: $scope.criteria.functions.map((element) => {
+					return { label: element, type: element };
+				}),
+				groups: []
 			};
+
 			template.open('page', 'directory');
 			template.close('list');
 			$scope.title = 'directory';

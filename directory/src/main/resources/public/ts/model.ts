@@ -251,6 +251,9 @@ export const directory = {
 						callback();
 					}
 				}.bind(this));
+			},
+			getSearchCriteria: async function() {
+				return (await http.get('/userbook/search/criteria')).data;
 			}
 		})
 	},

@@ -19,12 +19,12 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
     return {
         restrict: 'E',
         template: `
-            <div class="fluid">
+            <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-click="showOptions = !showOptions">
                     <span ng-if="!ngModel">[[ titleAll ]]</span>
-                    <span ng-if="ngModel" ng-class="{ active : ngModel }">[[ title ]]: [[ ngModel.length ]] <i18n>selected</i18n></span> <i class="sort right-magnet"/>
+                    <span ng-if="ngModel" ng-class="{ active : ngModel }">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort right-magnet"/>
                 </button>
-                <article ng-show="showOptions" class="absolute-w">
+                <article ng-show="showOptions" class="absolute-w high-index">
                     <div class="search-pagination flex-row align-center">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
@@ -32,14 +32,14 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                             <i class="search"></i>
                         </div>
                     </div>
-                    <div class="top-spacing-twice left-text small-text">
-                        <a class="text-underline-hover" ng-click="selectNone()"><i18n>none</i18n></a> <span> | </span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>select.all</i18n></a>
+                    <div class="top-spacing-twice left-text smaller-text">
+                        <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.select.all</i18n></a>
                     </div>
                     <div class="top-spacing-twice left-text">
                         <div class="row top-spacing" ng-repeat="option in options | filter:filterByLabel">
                             <label class="wrapping-checkbox relative">
                                 <input type="checkbox" ng-model="option.checked" />
-                                <i18n class="medium-text">[[ option.label ]]</i18n>
+                                <i18n class="small-text">[[ option.label ]]</i18n>
                             </label>
                         </div>
                     </div>
@@ -112,11 +112,11 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             };
 
             // Placing article correctly
-            setTimeout(function() {
+            scope.$watch(function() { return element.find('button').css("height"); }, function(newValue) {
                 var article = element.find('article').eq(0);
-                article.css('top', element.find('button')[0].offsetHeight + 'px');
+                article.css('top', (element.find('button')[0].offsetHeight + 1) + 'px');
                 article.css('left', '2px');
-            }, 250);
+            });
         }
     };
 });
