@@ -91,6 +91,10 @@
 		"addressDiffusion" : {
 		  "type" : "boolean"
 		},
+		"students" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
 		"birthDate" : {
 			"type" : "string",
 			"validator" : "birthDate"

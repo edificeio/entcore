@@ -123,6 +123,10 @@
 			"type" : "array-string",
 			"validator" : "notEmpty"
 		},
+		"relativeAddress" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
 		"transport" : {
 			"type" : "boolean"
 		},
