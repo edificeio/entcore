@@ -39,7 +39,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                         <div class="row top-spacing" ng-repeat="option in options | filter:filterByLabel">
                             <label class="wrapping-checkbox relative">
                                 <input type="checkbox" ng-model="option.checked" />
-                                <i18n class="small-text">[[ option.label ]]</i18n>
+                                <i18n class="low-importance">[[ option.label ]]</i18n>
                             </label>
                         </div>
                     </div>

@@ -1,4 +1,4 @@
-import { ng, _ } from 'entcore';
+import { ng, _, angular } from 'entcore';
 
 /**
  * @description Display pastilles that can be used as tabs.
@@ -11,7 +11,7 @@ import { ng, _ } from 'entcore';
     </pastilles>
  */
 
-export const pastilles = ng.directive('pastilles', () => {
+export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
     return {
         restrict: 'E',
         template: `
@@ -35,15 +35,25 @@ export const pastilles = ng.directive('pastilles', () => {
                 var pastilles = element.find("div").children();
                 var totalWidth, pastilleWidth, leftOffset, offset, pastilleOffset, nbPastilles = pastilles.length;
 
-                totalWidth = element.find('div').width();
-                pastilleWidth = pastilles[0].offsetWidth;
-                offset = pastilleWidth * 3 / 4;
-                leftOffset = (totalWidth - (pastilleWidth + ((nbPastilles - 1) * offset))) / 2;
+                // Update pastille position (also if resizing)
+                var updatePastillesPosition = function() {
+                    totalWidth = element.find('div').width();
+                    pastilleWidth = pastilles[0].offsetWidth;
+                    offset = pastilleWidth * 3 / 5;
+                    leftOffset = (totalWidth - (pastilleWidth + ((nbPastilles - 1) * offset))) / 2;
 
-                for (i = nbPastilles - 1; i >= 0; i--) {
-                    pastilles[nbPastilles - 1 - i].originalLeft = leftOffset + (i * offset);
-                    pastilles.eq(nbPastilles - 1 - i).css("left", pastilles[nbPastilles - 1 - i].originalLeft + "px");
+                    for (i = nbPastilles - 1; i >= 0; i--) {
+                        pastilles[nbPastilles - 1 - i].originalLeft = leftOffset + (i * offset);
+                        pastilles.eq(nbPastilles - 1 - i).css("left", pastilles[nbPastilles - 1 - i].originalLeft + "px");
+                    }
                 }
+                scope.$watch(function() { return element.find('div').css('width'); }, function(newValue) {
+                    updatePastillesPosition();
+                });
+                angular.element($window).bind('resize', function() {
+                    updatePastillesPosition();
+                });
+                updatePastillesPosition();
 
                 // Centering when hovering (padding+absolute position)
                 element.find('.round').on('mouseenter', function() {
@@ -97,4 +107,4 @@ export const pastilles = ng.directive('pastilles', () => {
             }, 250);
         }
     };
-});
+}]);
