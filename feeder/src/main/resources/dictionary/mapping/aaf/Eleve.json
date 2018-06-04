@@ -28,6 +28,7 @@
 	"ENTPersonVille" : { "attribute" : "city", "type" : "string" },
 	"ENTPersonPays" : { "attribute" : "country", "type" : "string" },
 	"homePhone" : { "attribute" : "homePhone", "type" : "string" },
+	"ENTEleveAdresseRel" : { "attribute" : "relativeAddress", "type" : "array-string" },
 	"ENTEleveParents" : { "attribute" : "deprecated", "type" : "array-string" },
 	"ENTElevePere" : { "attribute" : "deprecated", "type" : "array-string" },
 	"ENTEleveMere" : { "attribute" : "deprecated", "type" : "array-string" },

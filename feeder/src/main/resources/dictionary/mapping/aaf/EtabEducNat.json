@@ -18,5 +18,6 @@
 	"ENTServAcAcademie" : { "attribute" : "academy", "type" : "string" },
 	"ENTStructureClasses" : { "attribute" : "classes", "type" : "array-string" },
 	"ENTStructureGroupes" : { "attribute" : "groups", "type" : "array-string" },
+	"ENTStructureMailSI" : { "attribute" : "email", "type" : "string" },
 	"categorieStructure" : { "attribute" : "category", "type" : "string" }
 }

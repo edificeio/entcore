@@ -15,6 +15,6 @@
 	"mobile" : { "attribute" : "mobilePhone", "type" : "array-string" },
 	"mail" : { "attribute" : "email", "type" : "string" },
 	"ENTPersonMobileSMS" : { "attribute" : "mobile", "type" : "string" },
-	"categoriePersonne" : { "attribute" : "category", "type" : "string" },
-	"ENTAuxPersRelEleveEleve" : { "attribute" : "students", "type" : "array-string" } // TODO Implement in importer
+	"ENTAuxPersRelEleveEleve" : { "attribute" : "students", "type" : "array-string" },
+	"categoriePersonne" : { "attribute" : "category", "type" : "string" }
 }

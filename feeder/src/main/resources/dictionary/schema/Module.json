@@ -19,6 +19,14 @@
 		"stat" : {
 			"type" : "string",
 			"validator" : "notEmpty"
+		},
+		"level" : {
+			"type" : "string",
+			"validator" : "notEmpty"
+		},
+		"filiere" : {
+			"type" : "string",
+			"validator" : "notEmpty"
 		}
 
 	},
