@@ -19,7 +19,7 @@
  -->
 
 <div class="row rigid-grid">
-	<section class="four cell">
+	<section class="four cell twelve-mobile center-component-tablette" ng-class="{ 'only-desktop':display.searchmobile }">
 		<app-title>
 			<h1>
 				<a data-reload>
@@ -29,8 +29,11 @@
 			</h1>
 		</app-title>
 		<div class="clear"></div>
-		<search-module 
+		<div class="spacer-small zero-desktop"></div>
+		<search-module class="eight-tablette-mobile"
 			search="searchDirectory()"
+			on-close="onCloseSearchModule()"
+			show-close="display.showCloseMobile"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 			<div class="reduce-block-eight centered row centered-text twelve">
 				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
@@ -109,7 +112,7 @@
 			</div>
 		</search-module>
 	</section>
-	<section class="margin-four">
+	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
 		<div class="emptyscreen" ng-if="users.length() == 0 && !users.searched && !users.loading">
 			<img skin-src="/img/illustrations/illus-annuaire-exp2.svg">
 			<p class="header"><i18n>userBook.directory.emptyScreen.users.header</i18n></p>
@@ -122,7 +125,7 @@
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
-		<div ng-if="currentUser" ng-class="{ 'zero-mobile': display.searchmobile }" class="left-spacing-four">
+		<div ng-if="currentUser" ng-class="{ 'zero-mobile':display.searchmobile }" class="left-spacing-four">
 			<h2><i class="back" ng-click="backToList()"></i><i18n>userBook.backToList</i18n></h2>
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
