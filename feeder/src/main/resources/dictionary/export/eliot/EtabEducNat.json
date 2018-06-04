@@ -14,5 +14,6 @@
 	"fax" : { "attribute" : "facsimileTelephoneNumber" },
 	"functionalAttachment" : { "attribute" : "ENTEtablissementStructRattachFctl" },
 	"area" : { "attribute" : "ENTEtablissementBassin" },
-	"academy" : { "attribute" : "ENTServAcAcademie" }
+	"academy" : { "attribute" : "ENTServAcAcademie" },
+	"timetable" : { "attribute" : "ENTEtabStructureSource", "converter" : "groups-source" }
 }
