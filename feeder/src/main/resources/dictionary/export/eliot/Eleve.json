@@ -8,7 +8,6 @@
 	"surname" : { "attribute" : "ENTPersonNomPatro" },
 	"title" : { "attribute" : "personalTitle" },
 	"structures" : { "attribute" : "ENTPersonStructRattach", "converter" : "head-array" },
-	"attachmentId" : { "attribute" : "ENTEleveStructRattachId" },
 	"accommodation" : { "attribute" : "ENTEleveRegime" },
 	"module" : { "attribute" : "ENTEleveMEF" },
 	"moduleName" : { "attribute" : "ENTEleveLibelleMEF" },
@@ -21,6 +20,7 @@
 	"transport" : { "attribute" : "ENTEleveTransport", "converter": "boolean-ON" },
 	"status" : { "attribute" : "ENTEleveStatutEleve" },
 	"fieldOfStudyLabels" : { "attribute" : "ENTEleveEnseignements" },
-	"relative" : { "converter" : "siecle" },
-	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" }
+	"relative" : { "attribute" : "ENTElevePersRelEleve" },
+	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" },
+	"ine" : { "attribute" : "ENTEleveINE" }
 }

@@ -33,9 +33,10 @@ public class AAFUtil {
 	private static final Pattern datePatter = Pattern.compile("^([0-9]{4})-([0-9]{2})-([0-9]{2})$");
 	private static final JsonObject functionCodes = new JsonObject().put("ADMIN_LOCAL", "AL");
 	private static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
+	private static final List<String> groupImportsList = Arrays.asList("AAF", "EDT", "UDT");
 
 	public static Object convert(Object value, String type) {
-		if (value == null) {
+		if (value == null && !"groups-source".equals(type)) {
 			return "";
 		}
 		if (type == null) {
@@ -67,6 +68,9 @@ public class AAFUtil {
 				case "structure-to-function":
 					res = structureToFunction((JsonArray) value);
 					break;
+				case "groups-source" :
+					res = groupsSource(value);
+					break;
 				default :
 					res = value;
 			}
@@ -74,6 +78,13 @@ public class AAFUtil {
 			res = value;
 		}
 		return res;
+	}
+
+	private static Object groupsSource(Object value) {
+		if (value instanceof String) {
+			return groupImportsList.contains(value.toString()) ? value : "";
+		}
+		return "AAF";
 	}
 
 	private static Object structureToFunction(JsonArray value) {
