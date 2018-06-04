@@ -44,11 +44,11 @@ export const searchModule = ng.directive('searchModule', () => {
         scope: {
             search: '&',
             onClose: '&',
-            showClose: '='
+            showClose: '=',
+            indexForm: '='
         },
 
         link: (scope, element, attributes) => {
-            scope.indexForm = 0;
             scope.images = JSON.parse(attributes.images).reverse();
 
             var pages = element.find("ng-transclude").children();

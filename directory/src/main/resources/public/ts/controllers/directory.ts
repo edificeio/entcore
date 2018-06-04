@@ -23,6 +23,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	template.open('userActions', 'user-actions');
 	$scope.users = [];
 	$scope.lang = lang;
+	$scope.indexSearch = 0;
 
 	$scope.search = {
 		text: '',
