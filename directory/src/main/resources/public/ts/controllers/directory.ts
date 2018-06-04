@@ -72,6 +72,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.title = 'profile';
 		},
 		directory: async function(){
+			$scope.display.searchmobile = false;
+			$scope.display.showCloseMobile = false;
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
@@ -182,14 +184,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		directory.directory.users.searchDirectory($scope.search.field, $scope.filters);
 		directory.directory.users.one('change', function(){
 			$scope.users = directory.directory.users;
+			$scope.display.searchmobile = $scope.users.all.length > 0;
+			$scope.display.showCloseMobile = $scope.display.searchmobile;
 			$scope.$apply('users');
 		});
 
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
-		if (ui.breakpoints.checkMaxWidth("tablette") && $scope.currentUser) {
-			$scope.display.searchmobile = true;
-		}
 	};
 
 	$scope.deselectUser = function(tpl){
@@ -250,5 +251,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.displayFamily = function(currentUser) {
 		return currentUser.relatives.length && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	};
+
+	$scope.onCloseSearchModule = function() {
+		$scope.display.searchmobile = true;
 	};
 }]);

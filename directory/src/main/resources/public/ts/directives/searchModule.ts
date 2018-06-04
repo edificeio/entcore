@@ -7,6 +7,7 @@ import { ng, _ } from 'entcore';
  * @example
  *  <search-module 
         search="<function>(index)"
+        on-close="<function>()"
         images='["path1", "path2", "path3"]'>
         <div>
             Page 1
@@ -32,13 +33,18 @@ export const searchModule = ng.directive('searchModule', () => {
             </pastilles>
             <form name="searchForm" ng-submit="search()" novalidate>
                 <article class="twelve cell search reduce-block-six" style="padding-top: 80px;">
+                    <a ng-click="onClose()" class="zero-desktop" ng-show="showClose">
+                        <i class="close close-lightbox" />
+                    </a>
                     <ng-transclude></ng-transclude>
                 </article>
             </form>
         `,
 
         scope: {
-            search: '&'
+            search: '&',
+            onClose: '&',
+            showClose: '='
         },
 
         link: (scope, element, attributes) => {
