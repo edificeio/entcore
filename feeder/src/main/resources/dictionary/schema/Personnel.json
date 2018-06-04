@@ -123,6 +123,9 @@
 		"teaches" : {
 			"type" : "boolean"
 		},
+		"isTeacher" : {
+			"type" : "boolean"
+		},
 		"IDPN" : {
 			"type" : "string",
 			"validator" : "notEmpty"
