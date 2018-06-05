@@ -209,7 +209,7 @@ public class CommunicationController extends BaseController {
 								break;
 							case "groupType":
 								if (filter.getBoolean("groupType", false)) {
-									groupTypes = ", labels(visibles) as groupType";
+									groupTypes = ", labels(visibles) as groupType, visibles.filter as groupProfile";
 								}
 								break;
 							case "mood":
