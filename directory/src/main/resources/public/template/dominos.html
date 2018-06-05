@@ -26,7 +26,6 @@
 		<p class="header"><i18n>userBook.directory.noresult.users.header</i18n></p>
 		<p class="content"><i18n>userBook.directory.noresult.users.content</i18n></p>
 	</div>
-	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
 
 	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength">
 
