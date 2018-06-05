@@ -34,40 +34,40 @@
 			search="searchDirectory()"
 			on-close="onCloseSearchModule()"
 			show-close="display.showCloseMobile"
-			index-form="indexSearch"
+			index-form="search.index"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 			<div class="reduce-block-eight centered row centered-text twelve">
 				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
 				<div class="spacer-small"></div>
 				<div class="reduce-block-eight horizontal-margin">
 					<input type="search"
-						ng-model="search.field"
+						ng-model="search.users"
 						translate attr="placeholder"
 						placeholder="userBook.search"
 						class="text-flow twelve"
 						required ng-minlength="1"/>
 					<div class="reduce-block-eight horizontal-margin">
 						<multi-comboboxes 
-							ng-model="filters.structures"
-							options="filtersOptions.structures"
+							ng-model="filters.users.structures"
+							options="filtersOptions.users.structures"
 							title-all="[[lang.translate('directory.allStructures')]]"
 							title="[[lang.translate('directory.structures')]]">
 						</multi-comboboxes>
 						<multi-comboboxes 
-							ng-model="filters.classes"
-							options="filtersOptions.classes"
+							ng-model="filters.users.classes"
+							options="filtersOptions.users.classes"
 							title-all="[[lang.translate('directory.allClasses')]]"
 							title="[[lang.translate('directory.classes')]]">
 						</multi-comboboxes>
 						<multi-comboboxes 
-							ng-model="filters.profiles"
-							options="filtersOptions.profiles"
+							ng-model="filters.users.profiles"
+							options="filtersOptions.users.profiles"
 							title-all="[[lang.translate('directory.allProfiles')]]"
 							title="[[lang.translate('directory.profiles')]]">
 						</multi-comboboxes>
 						<multi-comboboxes 
-							ng-model="filters.functions"
-							options="filtersOptions.functions"
+							ng-model="filters.users.functions"
+							options="filtersOptions.users.functions"
 							title-all="[[lang.translate('directory.allFunctions')]]"
 							title="[[lang.translate('directory.functions')]]">
 						</multi-comboboxes>
@@ -83,21 +83,39 @@
 				<div class="spacer-small"></div>
 				<div class="reduce-block-eight horizontal-margin">
 					<input type="search"
-						ng-model="search.field"
+						ng-model="search.groups"
 						translate attr="placeholder"
 						placeholder="userBook.search"
 						class="text-flow twelve"
 						required ng-minlength="1"/>
 					<div class="reduce-block-eight horizontal-margin">
 						<multi-comboboxes 
-							ng-model="filters.structures"
-							options="filtersOptions.structures"
+							ng-model="filters.groups.structures"
+							options="filtersOptions.groups.structures"
 							title-all="[[lang.translate('directory.allStructures')]]"
 							title="[[lang.translate('directory.structures')]]">
 						</multi-comboboxes>
 						<multi-comboboxes 
-							ng-model="filters.groups"
-							options="filtersOptions.groups"
+							ng-model="filters.groups.classes"
+							options="filtersOptions.groups.classes"
+							title-all="[[lang.translate('directory.allClasses')]]"
+							title="[[lang.translate('directory.classes')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.groups.profiles"
+							options="filtersOptions.groups.profiles"
+							title-all="[[lang.translate('directory.allProfiles')]]"
+							title="[[lang.translate('directory.profiles')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.groups.functions"
+							options="filtersOptions.groups.functions"
+							title-all="[[lang.translate('directory.allFunctions')]]"
+							title="[[lang.translate('directory.functions')]]">
+						</multi-comboboxes>
+						<multi-comboboxes 
+							ng-model="filters.groups.types"
+							options="filtersOptions.groups.types"
 							title-all="[[lang.translate('directory.allGroupsTypes')]]"
 							title="[[lang.translate('directory.groupsTypes')]]">
 						</multi-comboboxes>

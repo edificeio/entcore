@@ -23,14 +23,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	template.open('userActions', 'user-actions');
 	$scope.users = [];
 	$scope.lang = lang;
-	$scope.indexSearch = 0;
 
 	$scope.search = {
+		users: '',
+		groups: '',
+		favorite: '',
 		text: '',
-		field: '',
 		schoolField: '',
 		maxLength: 50,
 		maxSchoolsLength: 7,
+		index: 0,
 		clear: function(){
 			this.text = '';
 			this.field = '';
@@ -86,26 +88,52 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			// Filters for search
 			$scope.criteria = await directory.directory.users.getSearchCriteria();
 			$scope.filters = {
-				structures: null,
-				classes: null,
-				profiles: null,
-				functions: null,
-				groups: null
+				users: {
+					structures: null,
+					classes: null,
+					profiles: null,
+					functions: null
+				},
+				groups: {
+					structures: null,
+					classes: null,
+					profiles: null,
+					functions: null,
+					types: null
+				}
 			};
 			$scope.filtersOptions = {
-				structures: $scope.criteria.structures.map((element) => {
-					return { label: element.name, type: element.id };
-				}),
-				classes: $scope.criteria.classes.map((element) => {
-					return { label: element.name, type: element.id };
-				}),
-				profiles: $scope.criteria.profiles.map((element) => {
-					return { label: lang.translate("directory." + element), type: element };
-				}),
-				functions: $scope.criteria.functions.map((element) => {
-					return { label: element, type: element };
-				}),
-				groups: []
+				users: {
+					structures: $scope.criteria.structures.map((element) => {
+						return { label: element.name, type: element.id };
+					}),
+					classes: $scope.criteria.classes.map((element) => {
+						return { label: element.name, type: element.id };
+					}),
+					profiles: $scope.criteria.profiles.map((element) => {
+						return { label: lang.translate("directory." + element), type: element };
+					}),
+					functions: $scope.criteria.functions.map((element) => {
+						return { label: lang.translate("directory." + element), type: element };
+					})
+				},
+				groups: {
+					structures: $scope.criteria.structures.map((element) => {
+						return { label: element.name, type: element.id };
+					}),
+					classes: $scope.criteria.classes.map((element) => {
+						return { label: element.name, type: element.id };
+					}),
+					profiles: $scope.criteria.profiles.map((element) => {
+						return { label: lang.translate("directory." + element), type: element };
+					}),
+					functions: $scope.criteria.functions.map((element) => {
+						return { label: lang.translate("directory." + element), type: element };
+					}),
+					types: $scope.criteria.groupTypes.map((element) => {
+						return { label: lang.translate("directory." + element), type: element };
+					})
+				}
 			};
 
 			template.open('page', 'directory');
@@ -178,20 +206,29 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	
 	$scope.display = {};
 
-	$scope.searchDirectory = function(){
+	$scope.searchDirectory = async function(){
+		var searchField, filters;
+		switch ($scope.search.index) {
+			case 0:
+				searchField = $scope.search.users;
+				filters = $scope.filters.users;
+				break;
+			case 1:
+				searchField = $scope.search.groups;
+				filters = $scope.filters.groups;
+				break;
+			case 2:
+				break;
+		}
 		$scope.display.searchmobile = false;
-
 		directory.directory.users.all = [];
-		directory.directory.users.searchDirectory($scope.search.field, $scope.filters);
-		directory.directory.users.one('change', function(){
-			$scope.users = directory.directory.users;
-			$scope.display.searchmobile = $scope.users.all.length > 0;
-			$scope.display.showCloseMobile = $scope.display.searchmobile;
-			$scope.$apply('users');
-		});
-
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
+		await directory.directory.users.searchDirectory(searchField, filters);
+		$scope.users = directory.directory.users;
+		$scope.display.searchmobile = $scope.users.all.length > 0;
+		$scope.display.showCloseMobile = $scope.display.searchmobile;
+		$scope.$apply('users');
 	};
 
 	$scope.deselectUser = function(tpl){
@@ -241,9 +278,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.colorFromType = function(type){
-		if(type instanceof Array)
-			return colorsMatch[type[0].toLowerCase()];
-		return colorsMatch[type.toLowerCase()];
+		if (type) {
+			if(type instanceof Array)
+				return colorsMatch[type[0].toLowerCase()];
+			return colorsMatch[type.toLowerCase()];
+		}
+		return "grey";
 	};
 
 	$scope.filterTopStructures = function(structure){

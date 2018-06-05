@@ -2,7 +2,7 @@
 	<h2 ng-if="group.users.length">[[group.translatedName]]</h2>
 	<div class="dominos">
 		<div class="item" ng-repeat="user in group.users">
-			<section class="domino" ng-class="colorFromType(user.type)">
+			<section class="domino" ng-class="colorFromType(user.profile)">
 				<div class="top" ng-click="viewUserInfos(user.id)">
 					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed twelve cell" />
 				</div>
