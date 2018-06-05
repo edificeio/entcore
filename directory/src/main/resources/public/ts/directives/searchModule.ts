@@ -2,11 +2,11 @@ import { ng, _ } from 'entcore';
 
 /**
  * @description Display pastilles and a particular search template according to the selected pastille.
- * @param search Function taking an index and applying a search according to the selected pastille.
+ * @param search Function applying a search according to the selected pastille.
  * @param images A string representing an array of string containing the list of images paths.
  * @example
  *  <search-module 
-        search="<function>(index)"
+        search="<function>()"
         on-close="<function>()"
         images='["path1", "path2", "path3"]'>
         <div>

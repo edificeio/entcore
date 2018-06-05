@@ -30,7 +30,7 @@
 
 	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength">
 
-		<section class="domino" ng-class="colorFromType(user.type)" ng-click="selectUser(user)" ng-class="{ selected: user === currentUser }">
+		<section class="domino" ng-class="colorFromType(user.profile)" ng-click="selectUser(user)" ng-class="{ selected: user === currentUser }">
 
 			<div class="top">
 				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
