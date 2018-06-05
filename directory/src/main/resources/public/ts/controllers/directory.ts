@@ -21,7 +21,9 @@ import { directory } from '../model';
 export const directoryController = ng.controller('DirectoryController',['$scope', 'route', ($scope, route) => {
 	$scope.template = template;
 	template.open('userActions', 'user-actions');
-	$scope.users = [];
+	$scope.users = {
+		loading: false
+	};
 	$scope.lang = lang;
 
 	$scope.search = {
@@ -76,6 +78,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		},
 		directory: async function(){
 			$scope.display.searchmobile = false;
+			$scope.display.loadingmobile = false;
 			$scope.display.showCloseMobile = false;
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
@@ -208,6 +211,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.searchDirectory = async function(){
 		var searchField, filters;
+
+		// Loading activation
+		$scope.users.loading = true;
+		if (ui.breakpoints.checkMaxWidth("tablette")) { 
+			$scope.display.loadingmobile = true; 
+		} 
+
+		// Filters & searchfield
 		switch ($scope.search.index) {
 			case 0:
 				searchField = $scope.search.users;
@@ -228,6 +239,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.users = directory.directory.users;
 		$scope.display.searchmobile = $scope.users.all.length > 0;
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
+		$scope.users.loading = false;
+		$scope.display.loadingmobile = false; 
 		$scope.$apply('users');
 	};
 

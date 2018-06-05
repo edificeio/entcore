@@ -19,7 +19,7 @@
  -->
 
 <div class="row rigid-grid">
-	<section class="four cell twelve-mobile center-component-tablette" ng-class="{ 'only-desktop':display.searchmobile }">
+	<section class="flex-row f-column justify-center four cell twelve-mobile center-component-tablette" ng-class="{ 'only-desktop':display.searchmobile }">
 		<app-title>
 			<h1>
 				<a data-reload>
@@ -36,7 +36,7 @@
 			show-close="display.showCloseMobile"
 			index-form="search.index"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
-			<div class="reduce-block-eight centered row centered-text twelve">
+			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
 				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
 				<div class="spacer-small"></div>
 				<div class="reduce-block-eight horizontal-margin">
@@ -78,7 +78,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="reduce-block-eight centered row centered-text twelve">
+			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
 				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.group</i18n></strong></div>
 				<div class="spacer-small"></div>
 				<div class="reduce-block-eight horizontal-margin">
@@ -126,16 +126,26 @@
 					</div>
 				</div>
 			</div>
-			<div class="centered row centered-text twelve-mobile">
+			<div class="centered row centered-text twelve-mobile" ng-class='{ "divide-opacity": display.loadingmobile }'>
 				Page 3
 			</div>
 		</search-module>
+		<div class="absolute-position-w centered-text" ng-if="display.loadingmobile">
+			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+		</div>
 	</section>
 	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
 		<div class="emptyscreen" ng-if="users.length() == 0 && !users.searched && !users.loading">
 			<img skin-src="/img/illustrations/illus-annuaire-exp2.svg">
 			<p class="header"><i18n>userBook.directory.emptyScreen.users.header</i18n></p>
 			<p class="content"><i18n>userBook.directory.emptyScreen.users.content</i18n></p>
+		</div>
+
+		<div class="dominos centered-text" ng-if="users.loading">
+			<div class="row reduce-block-six">
+				<div class="spacer-large"></div>
+				<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+			</div>
 		</div>
 
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 

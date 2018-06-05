@@ -21,8 +21,8 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         template: `
             <div class="fluid row">
                 <button type="button" class="select-button left-text low-text row" ng-class="{ selected : showOptions }" ng-click="showOptions = !showOptions">
-                    <span ng-if="!ngModel">[[ titleAll ]]</span>
-                    <span ng-if="ngModel" ng-class="{ active : ngModel }">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort right-magnet"/>
+                    <span ng-if="!ngModel" class="block cell-ellipsis right-spacing">[[ titleAll ]]</span>
+                    <span ng-if="ngModel" class="block cell-ellipsis right-spacing active">[[ title ]]: [[ ngModel.length ]] <i18n>portal.selected</i18n></span> <i class="sort horizontal-margin top-spacing absolute-magnet"/>
                 </button>
                 <article ng-show="showOptions" class="absolute-w high-index">
                     <div class="search-pagination flex-row align-center">

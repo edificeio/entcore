@@ -236,7 +236,6 @@ export const directory = {
 				var searchTerm = encodeURIComponent(search.toLowerCase());
 				this.areGroups = filters.hasOwnProperty('types');
 				var types = this.areGroups ? ["Group"] : ["User"];
-				this.loading = true;
 				this.searched = true;
 				var body = {
 					search: searchTerm,
@@ -253,7 +252,6 @@ export const directory = {
 				if (filters.groupsType)
 					body["groupsType"] = filters.groupsType;
 				var response = await http.post('/communication/visible', body);
-				this.loading = false;
 				this.load(_.map(this.areGroups ? response.data.groups : response.data.users, function(user){
 					if(!user.mood){
 						user.mood = 'default';
