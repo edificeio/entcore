@@ -256,6 +256,7 @@ public class UserUtils {
 			if (j.getString("name") != null) {
 				j.remove("displayName");
 				j.remove("profile");
+				j.remove("mood");
 				if (returnGroupType) {
 					Object gt = j.remove("groupType");
 					if (gt instanceof JsonArray) {
