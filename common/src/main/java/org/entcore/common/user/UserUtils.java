@@ -263,6 +263,9 @@ public class UserUtils {
 						for (Object gti: (JsonArray) gt) {
 							if (gti != null && !"Group".equals(gti) && gti.toString().endsWith("Group")) {
 								j.put("groupType", gti);
+								if ("ProfileGroup".equals(gti)) {
+									j.put("profile", j.remove("groupProfile"));
+								}
 								break;
 							}
 						}
