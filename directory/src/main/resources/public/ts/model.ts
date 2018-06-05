@@ -232,25 +232,38 @@ export const directory = {
 			match: function(){
 				return this.all;
 			},
-			searchDirectory: function(search, filters, callback){
+			searchDirectory: async function(search, filters, callback){
 				var searchTerm = encodeURIComponent(search.toLowerCase());
-				var structure = filters.structure ? filters.structure : "";
-				var profile = filters.profile ? filters.profile : "";
+				this.areGroups = filters.hasOwnProperty('types');
+				var types = this.areGroups ? ["Group"] : ["User"];
 				this.loading = true;
 				this.searched = true;
-				oldHttp().get('/userbook/api/search?name=' + searchTerm + "&structure=" + structure + "&profile=" + profile).done(function(result){
-					this.loading = false;
-					this.load(_.map(result, function(user){
-						if(!user.mood){
-							user.mood = 'default';
-						}
-						return user;
-					}));
-
-					if(typeof callback === 'function'){
-						callback();
+				var body = {
+					search: searchTerm,
+					types: types
+				};
+				if (filters.structures)
+					body["structures"] = filters.structures;
+				if (filters.classes)
+					body["classes"] = filters.classes;
+				if (filters.profiles)
+					body["profiles"] = filters.profiles;
+				if (filters.functions)
+					body["functions"] = filters.functions;
+				if (filters.groupsType)
+					body["groupsType"] = filters.groupsType;
+				var response = await http.post('/communication/visible', body);
+				this.loading = false;
+				this.load(_.map(this.areGroups ? response.data.groups : response.data.users, function(user){
+					if(!user.mood){
+						user.mood = 'default';
 					}
-				}.bind(this));
+					return user;
+				}));
+
+				if(typeof callback === 'function'){
+					callback();
+				}
 			},
 			getSearchCriteria: async function() {
 				return (await http.get('/userbook/search/criteria')).data;

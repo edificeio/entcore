@@ -6,7 +6,7 @@
 			<article class="twelve cell clip fluid" ng-class="{ selected: user === currentUser }" ng-click="selectUser(user)">
 				<div>
 					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100" class="fluid cell" />
-					<div class="banner" ng-class="colorFromType(user.type)"></div>
+					<div class="banner" ng-class="colorFromType(user.profile)"></div>
 				</div>
 
 				<div>
