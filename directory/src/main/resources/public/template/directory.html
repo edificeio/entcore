@@ -135,10 +135,16 @@
 		</div>
 	</section>
 	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
-		<div class="emptyscreen" ng-if="users.length() == 0 && !users.searched && !users.loading">
-			<img skin-src="/img/illustrations/illus-annuaire-exp2.svg">
-			<p class="header"><i18n>userBook.directory.emptyScreen.users.header</i18n></p>
-			<p class="content"><i18n>userBook.directory.emptyScreen.users.content</i18n></p>
+		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !users.loading">
+			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
+			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
+		</div>
+
+		<div class="emptyscreen" ng-if="search.index == 1 && users.length() == 0 && !users.searched && !users.loading">
+			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
+			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
 		</div>
 
 		<div class="dominos centered-text" ng-if="users.loading">
