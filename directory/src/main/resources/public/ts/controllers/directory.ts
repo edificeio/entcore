@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { template, idiom as lang, ng, ui, model, moment, $ } from 'entcore';
+import { template, notify, idiom as lang, ng, ui, model, moment, $ } from 'entcore';
 import { directory } from '../model';
 
 export const directoryController = ng.controller('DirectoryController',['$scope', 'route', ($scope, route) => {
@@ -240,7 +240,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.searchmobile = $scope.users.all.length > 0;
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
 		$scope.users.loading = false;
-		$scope.display.loadingmobile = false; 
+		$scope.display.loadingmobile = false;
+		if (ui.breakpoints.checkMaxWidth("tablette") && $scope.users.all.length === 0) { 
+			notify.info("noresult");
+		} 
 		$scope.$apply('users');
 	};
 
