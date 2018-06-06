@@ -229,9 +229,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				filters = $scope.filters.groups;
 				break;
 			case 2:
-				break;
+				$scope.searchFavorite();
+				return;
 		}
-		
+
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
 		await directory.directory.users.searchDirectory(searchField, filters);
@@ -248,6 +249,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		} 
 		$scope.$apply('users');
 	};
+
+	$scope.searchFavorite = async function() {
+		
+	}
 
 	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;

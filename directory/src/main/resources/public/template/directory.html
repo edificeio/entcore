@@ -126,8 +126,17 @@
 					</div>
 				</div>
 			</div>
-			<div class="centered row centered-text twelve-mobile" ng-class='{ "divide-opacity": display.loadingmobile }'>
-				Page 3
+			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
+				<div class="underlined-title"><i18n>directory.manage.my</i18n> <strong><i18n>directory.favorite.share</i18n></strong></div>
+				<div class="spacer-small"></div>
+				<div class="reduce-block-eight horizontal-margin">
+					<div class="row info"><i18n>directory.nofavorite</i18n></div>
+					<div class="reduce-block-eight horizontal-margin">
+						<button type="submit" class="twelve">
+							<i18n>directory.create.favorite</i18n>
+						</button>
+					</div>
+				</div>
 			</div>
 		</search-module>
 		<div class="absolute-position-w centered-text" ng-if="display.loadingmobile">
