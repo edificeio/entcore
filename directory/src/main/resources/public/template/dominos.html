@@ -27,8 +27,6 @@
 </div>
 
 <div class="dominos centered-text">
-	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
-
 	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength">
 
 		<section class="domino" ng-class="colorFromType(user.profile)" ng-click="selectUser(user)" ng-class="{ selected: user === currentUser }">

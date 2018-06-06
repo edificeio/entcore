@@ -233,6 +233,8 @@ export const directory = {
 				return this.all;
 			},
 			searchDirectory: async function(search, filters, callback){
+				if (!search)
+					search = "";
 				var searchTerm = encodeURIComponent(search.toLowerCase());
 				this.areGroups = filters.hasOwnProperty('types');
 				var types = this.areGroups ? ["Group"] : ["User"];
