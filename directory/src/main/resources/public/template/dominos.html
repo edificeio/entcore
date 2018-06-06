@@ -20,12 +20,14 @@
 
 <h3 whereami class="twelve centered-text"></h3>
 
+<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.match(search.text).length === 0 && !users.loading && !classrooms.match(search.text).length">
+	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
+	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
+	<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.users.footer</i18n></p>
+</div>
+
 <div class="dominos centered-text">
-	<div class="row reduce-block-six emptyscreen" ng-if="(users.match(search.text).length === 0 && !users.loading) && !classrooms.match(search.text).length">
-		<img skin-src="/img/illustrations/illus-autres-cas-exp2.svg">
-		<p class="header"><i18n>userBook.directory.noresult.users.header</i18n></p>
-		<p class="content"><i18n>userBook.directory.noresult.users.content</i18n></p>
-	</div>
+	<div class="row reduce-block-six" ng-if="users.loading" translate content="loading"></div>
 
 	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength">
 
