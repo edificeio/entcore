@@ -231,18 +231,20 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			case 2:
 				break;
 		}
-		$scope.display.searchmobile = false;
-		directory.directory.users.all = [];
+		
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
 		await directory.directory.users.searchDirectory(searchField, filters);
 		$scope.users = directory.directory.users;
-		$scope.display.searchmobile = $scope.users.all.length > 0;
+		$scope.display.searchmobile = false;
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
 		$scope.users.loading = false;
 		$scope.display.loadingmobile = false;
-		if (ui.breakpoints.checkMaxWidth("tablette") && $scope.users.all.length === 0) { 
-			notify.info("noresult");
+		if (ui.breakpoints.checkMaxWidth("tablette")) {
+			if ($scope.users.all.length === 0)
+				notify.info("noresult");
+			else
+				$scope.display.searchmobile = true;
 		} 
 		$scope.$apply('users');
 	};
@@ -275,6 +277,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.backToList = function() {
 		$scope.currentUser = undefined;
 		template.close('details');
+	}
+
+	$scope.backToSearch = function() {
+		$scope.display.searchmobile = false;
 	}
 
 	$scope.selectClassroom = function(classroom){

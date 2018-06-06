@@ -33,10 +33,10 @@ export const searchModule = ng.directive('searchModule', () => {
             </pastilles>
             <form name="searchForm" ng-submit="search()" novalidate>
                 <article class="twelve cell search reduce-block-six">
-                    <a ng-click="onClose()" class="zero-desktop" ng-show="showClose">
-                        <i class="close close-lightbox" />
-                    </a>
                     <div class="spacer-large"></div>
+                    <a ng-click="onClose()" class="zero-desktop close-lightbox" ng-show="showClose">
+                        <i class="close" />
+                    </a>
                     <ng-transclude></ng-transclude>
                 </article>
             </form>

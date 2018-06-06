@@ -401,6 +401,7 @@
     "userBook.teachers": "Enseignants",
     "userBook.title": "Mon compte",
     "userBook.backToList": "Retour à la liste",
+    "userBook.backToSearch": "Retour à la recherche",
     "userbook.renewpassword.error": "Le formulaire contient des erreurs, veuillez vérifier que votre ancien mot de passe est correct et que les deux mots de passe concordent et respectent les contraintes de sécurité.",
     "welcome.class.admin": "\"Paramétrage de la classe\".",
     "welcome.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
