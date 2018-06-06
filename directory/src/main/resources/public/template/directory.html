@@ -33,7 +33,7 @@
 		<search-module class="eight-tablette-mobile"
 			search="searchDirectory()"
 			on-close="onCloseSearchModule()"
-			show-close="display.showCloseMobile"
+			show-close="users.all.length > 0"
 			index-form="search.index"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
@@ -157,11 +157,12 @@
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
 			class="cell"
 			ng-if="!currentUser">
+			<a class="zero-desktop" ng-if="display.searchmobile"><h2 ng-click="backToSearch()"><i class="back"></i> <i18n>userBook.backToSearch</i18n></h2></a>
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
 		<div ng-if="currentUser" ng-class="{ 'zero-mobile':display.searchmobile }" class="left-spacing-four">
-			<h2><i class="back" ng-click="backToList()"></i><i18n>userBook.backToList</i18n></h2>
+			<a><h2 ng-click="backToList()"><i class="back"></i> <i18n>userBook.backToList</i18n></h2></a>
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>
