@@ -88,7 +88,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.increaseSearchSize = function(){
-		$scope.search.maxLength += 15;
+		$scope.search.maxLength += 50;
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
@@ -123,6 +123,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			directory.directory.users.all = [];
 			directory.network.schools.all = [];
 			$scope.users = directory.directory.users;
+			$scope.groups = directory.directory.groups;
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
 
@@ -248,43 +249,43 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = async function(){
-		var searchField, filters;
-
 		// Loading activation
-		$scope.users.loading = true;
+		$scope.loading = true;
+		
 		if (ui.breakpoints.checkMaxWidth("tablette")) { 
 			$scope.display.loadingmobile = true; 
 		} 
 
+		$scope.display.searchmobile = false;
+		directory.directory.users.all = [];
+		directory.directory.groups.all = [];
+		template.open('main', 'mono-class');
+		template.open('list', 'dominos');
+		
 		// Filters & searchfield
 		switch ($scope.search.index) {
 			case 0:
-				searchField = $scope.search.users;
-				filters = $scope.filters.users;
+				await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
+				$scope.users = directory.directory.users;
 				break;
 			case 1:
-				searchField = $scope.search.groups;
-				filters = $scope.filters.groups;
+				await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
+				$scope.groups = directory.directory.groups;
 				break;
 			case 2:
 				$scope.createFavorite();
 				return;
 		}
 
-		template.open('main', 'mono-class');
-		template.open('list', 'dominos');
-		await directory.directory.users.searchDirectory(searchField, filters);
-		$scope.users = directory.directory.users;
-		$scope.display.searchmobile = false;
-		$scope.display.showCloseMobile = $scope.display.searchmobile;
 		$scope.users.loading = false;
-		$scope.display.loadingmobile = false;
 		if (ui.breakpoints.checkMaxWidth("tablette")) {
 			if ($scope.users.all.length === 0)
 				notify.info("noresult");
 			else
 				$scope.display.searchmobile = true;
 		} 
+		
+		$scope.display.loadingmobile = false;
 		$scope.$apply('users');
 	};
 
@@ -325,13 +326,24 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('details', 'user-infos');
 	};
 
-	$scope.backToList = function() {
+	$scope.backToUsers = function() {
 		$scope.currentUser = undefined;
 		template.close('details');
 	}
 
 	$scope.backToSearch = function() {
-		$scope.display.searchmobile = false;
+		$scope.display.searchmobile = false;$scope.display.loadingmobile = false;
+	}
+	$scope.backToGroups = function() {
+	}
+
+	$scope.showGroupUsers = async function(group) {
+		$scope.loading = true;
+		await group.getUsers();
+		$scope.group = group;
+		$scope.groups = null;
+		$scope.loading = false;
+		$scope.$apply();
 	}
 
 	$scope.selectClassroom = function(classroom){

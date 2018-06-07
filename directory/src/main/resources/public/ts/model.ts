@@ -55,6 +55,17 @@ export const directory = {
 			}.bind(this));
 		};
 	},
+	Group: function(data?){
+		this.users = [];
+
+		this.getUsers = async function() {
+			var response = await http.get('/communication/visible/group/' + this.id);
+			this.users = _.map(response.data, function(item) {
+				return new directory.User(item);
+			});
+			console.log(this.users);
+		}
+	},
 	ClassAdmin: function(){
 		this.sync = function(){
 			if(model.me.preferences.selectedClass === undefined){
@@ -235,14 +246,13 @@ export const directory = {
 			searchDirectory: async function(search, filters, callback){
 				if (!search)
 					search = "";
-				var searchTerm = encodeURIComponent(search.toLowerCase());
-				this.areGroups = filters.hasOwnProperty('types');
-				var types = this.areGroups ? ["Group"] : ["User"];
 				this.searched = true;
+
 				var body = {
-					search: searchTerm,
-					types: types
+					search: encodeURIComponent(search.toLowerCase()),
+					types: ["User"]
 				};
+				
 				if (filters.structures)
 					body["structures"] = filters.structures;
 				if (filters.classes)
@@ -251,10 +261,12 @@ export const directory = {
 					body["profiles"] = filters.profiles;
 				if (filters.functions)
 					body["functions"] = filters.functions;
-				if (filters.groupsType)
-					body["groupsType"] = filters.groupsType;
+				
+				body["mood"] = true;
+				
 				var response = await http.post('/communication/visible', body);
-				this.load(_.map(this.areGroups ? response.data.groups : response.data.users, function(user){
+				
+				this.load(_.map(response.data.users, function(user){
 					if(!user.mood){
 						user.mood = 'default';
 					}
@@ -267,6 +279,40 @@ export const directory = {
 			},
 			getSearchCriteria: async function() {
 				return (await http.get('/userbook/search/criteria')).data;
+			}
+		}),
+		this.collection(directory.Group, {
+			match: function(){
+				return this.all;
+			},
+			searchDirectory: async function(search, filters, callback){
+				this.searched = true;
+				
+				var body = {
+					search: encodeURIComponent(search.toLowerCase()),
+					types: ["Group"]
+				};
+				
+				if (filters.structures) 
+					body["structures"] = filters.structures;
+				if (filters.classes) 
+					body["classes"] = filters.classes;
+				if (filters.profiles) 
+					body["profiles"] = filters.profiles;
+				if (filters.functions) 
+					body["functions"] = filters.functions;
+				if (filters.groupsType) 
+					body["groupsType"] = filters.groupsType;
+
+				body["nbUsersInGroups"] = true;
+				body["groupType"] = true;
+
+				var response = await http.post('/communication/visible', body);
+				this.load(response.data.groups);
+
+				if(typeof callback === 'function'){
+					callback();
+				}
 			}
 		})
 	},

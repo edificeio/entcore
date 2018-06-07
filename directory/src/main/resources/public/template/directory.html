@@ -149,13 +149,15 @@
 		</div>
 	</section>
 	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
-		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !users.loading">
+		<!-- Users emptyscreen -->
+		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !loading">
 			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
 			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
 		</div>
 
-		<div class="emptyscreen" ng-if="search.index == 1 && users.length() == 0 && !users.searched && !users.loading">
+		<!-- Groups emptyscreen -->
+		<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !loading">
 			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
 			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
@@ -167,6 +169,7 @@
 			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
 		</div>
 
+		<!-- Loading animation -->
 		<div class="dominos centered-text" ng-if="users.loading">
 			<div class="row reduce-block-six">
 				<div class="spacer-large"></div>
@@ -174,6 +177,7 @@
 			</div>
 		</div>
 
+		<!-- Results list template (dominos) -->		
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
 			class="cell"
 			ng-if="!currentUser">
@@ -181,8 +185,9 @@
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
+		<!-- User details template -->
 		<div ng-if="currentUser" ng-class="{ 'zero-mobile':display.searchmobile }" class="left-spacing-four">
-			<a><h2 ng-click="backToList()"><i class="back"></i> <i18n>userBook.backToList</i18n></h2></a>
+			<a><h2 ng-click="backToUsers()"><i class="back"></i> <i18n>userBook.backToList</i18n></h2></a>
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>
