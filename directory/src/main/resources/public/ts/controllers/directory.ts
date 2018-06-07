@@ -24,12 +24,49 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.users = {
 		loading: false
 	};
+	$scope.favorites = [
+		{
+			name: "test"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		},
+		{
+			name: "test2"
+		}
+	];
 	$scope.lang = lang;
 
 	$scope.search = {
 		users: '',
 		groups: '',
-		favorite: '',
 		text: '',
 		schoolField: '',
 		maxLength: 50,
@@ -229,7 +266,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				filters = $scope.filters.groups;
 				break;
 			case 2:
-				$scope.searchFavorite();
+				$scope.createFavorite();
 				return;
 		}
 
@@ -250,9 +287,17 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.$apply('users');
 	};
 
-	$scope.searchFavorite = async function() {
+	$scope.createFavorite = async function() {
 		
-	}
+	};
+
+	$scope.selectFavorite = async function(favorite) {
+		console.log("select");
+	};
+
+	$scope.deleteFavorite = async function(favorite) {
+		console.log("delete");
+	};
 
 	$scope.deselectUser = function(tpl){
 		$scope.currentUser = undefined;
