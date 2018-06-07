@@ -63,7 +63,6 @@ export const directory = {
 			this.users = _.map(response.data, function(item) {
 				return new directory.User(item);
 			});
-			console.log(this.users);
 		}
 	},
 	ClassAdmin: function(){

@@ -51,7 +51,15 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                     updatePastillesPosition();
                 });
                 angular.element($window).bind('resize', function() {
+                    // Avoid weird left/top animation when resizing
+                    for (i = 0; i < nbPastilles; i++)
+                        pastilles.eq(i).removeClass("animated");
                     updatePastillesPosition();
+
+                    setTimeout(function () {
+                        for (i = 0; i < nbPastilles; i++)
+                            pastilles.eq(i).addClass("animated");
+                    }, 250);
                 });
                 updatePastillesPosition();
 

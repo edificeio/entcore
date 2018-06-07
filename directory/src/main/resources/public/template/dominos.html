@@ -21,14 +21,14 @@
 <h3 whereami class="twelve centered-text"></h3>
 
 <!--Users no results screen-->
-<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.match(search.text).length === 0 && loading == false && !classrooms.match(search.text).length">
+<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
 	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
 	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
 	<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.users.footer</i18n></p>
 </div>
 
 <!--Groups no results screen-->
-<div class="emptyscreen row reduce-block-six" ng-if="search.index == 1 && groups.match(search.text).length === 0 && loading == false && !classrooms.match(search.text).length">
+<div class="emptyscreen row reduce-block-six" ng-if="search.index == 1 && groups.all.length === 0 && !display.loading && groups.searched">
 	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.groups.header</i18n></h2>
 	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
 	<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.groups.footer</i18n></p>
@@ -36,7 +36,9 @@
 	
 
 <div class="dominos centered-text">
-	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength">
+
+	<!-- Users -->
+	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength" ng-if="search.index === 0 && !display.loading">
 		<section class="domino" ng-class="colorFromType(user.profile)" ng-click="selectUser(user)">
 			<div class="top">
 				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
@@ -58,7 +60,7 @@
 	</div>
 
 	<!-- Groups -->
-	<div class="item" ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength">
+	<div class="item" ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength" ng-if="search.index === 1 && !display.loading">
 		<section class="domino" ng-class="colorFromType(group.profile)" ng-click="showGroupUsers(group)">
 			<div class="top">
 				<div class="round active">
