@@ -513,8 +513,8 @@ public class Importer {
 							.put("structures", structures);
 					transactionHelper.add(qs, ps);
 				}
+				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
 				if (externalId != null && linkClasses != null) {
-					JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							classes.add(structClass[1]);
@@ -531,6 +531,8 @@ public class Importer {
 							.put("profileExternalId", profileExternalId)
 							.put("classes", classes);
 					transactionHelper.add(query, p0);
+				}
+				if (externalId != null) {
 					String q =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(c:Class) " +
 							"WHERE NOT(c.externalId IN {classes}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
@@ -718,11 +720,17 @@ public class Importer {
 		transactionHelper.add("MATCH (c:Class {notEmptyClass : false})<-[r1:DEPENDS]-(g:Group) DETACH DELETE c, g, r1", null);
 		// prevent difference between relationships and properties
 		String query2 =
+				"MATCH (u:User) " +
+				"WHERE NOT(HAS(u.deleteDate)) AND has(u.classes) AND LENGTH(u.classes) > 0 " +
+				"AND NOT(u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class)) " +
+				"SET u.classes = [];";
+		transactionHelper.add(query2, null);
+		String query3 =
 				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 				"WHERE has(u.classes) " +
 				"WITH u, collect(c.externalId) as classes " +
 				"SET u.classes = classes";
-		transactionHelper.add(query2, null);
+		transactionHelper.add(query3, null);
 	}
 
 	public void addRelativeProperties(String source) {
