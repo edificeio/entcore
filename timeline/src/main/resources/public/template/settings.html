@@ -20,7 +20,8 @@
 				<div class="twelve cell widgets-picker" ng-if="widgets.all.length > 0">
 					<h2><i18n>panel.widgets</i18n></h2>
 					<div class="row">
-						<div ng-repeat="widget in widgets.all" ng-click="switchHide(widget, $event)" class="three cell" ng-class="{ inactive: widget.hide, locked: widget.mandatory }">
+						<div ng-repeat="widget in widgets.all" ng-click="switchHide(widget, $event)" class="three cell" 
+							ng-class="{ inactive: widget.hide, locked: widget.mandatory }" ng-if="widget.themeHide == false">
 							<i class="[[widget.name]]-icon" ng-class="{ selected: !widget.hide }"></i>
 							<em class="medium-importance">[[lang.translate(widget.name)]]</em>
 						</div>
