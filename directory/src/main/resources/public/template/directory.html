@@ -150,14 +150,14 @@
 	</section>
 	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
 		<!-- Users emptyscreen -->
-		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !loading">
+		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !display.loading">
 			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
 			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
 		</div>
 
 		<!-- Groups emptyscreen -->
-		<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !loading">
+		<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
 			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
 			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
@@ -170,7 +170,7 @@
 		</div>
 
 		<!-- Loading animation -->
-		<div class="dominos centered-text" ng-if="users.loading">
+		<div class="dominos centered-text" ng-if="display.loading">
 			<div class="row reduce-block-six">
 				<div class="spacer-large"></div>
 				<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
