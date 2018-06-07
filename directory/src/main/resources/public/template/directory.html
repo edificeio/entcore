@@ -130,7 +130,12 @@
 				<div class="underlined-title"><i18n>directory.manage.my</i18n> <strong><i18n>directory.favorite.share</i18n></strong></div>
 				<div class="spacer-small"></div>
 				<div class="reduce-block-eight horizontal-margin">
-					<div class="row info"><i18n>directory.nofavorite</i18n></div>
+					<removable-list
+						ng-model="favorites"
+						select-item="selectFavorite(item)"
+						delete-item="deleteFavorite(item)"
+						placeholder="[[lang.translate('userBook.search.title')]]"/>
+					<div class="spacer-small"></div>
 					<div class="reduce-block-eight horizontal-margin">
 						<button type="submit" class="twelve">
 							<i18n>directory.create.favorite</i18n>
