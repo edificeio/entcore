@@ -21,9 +21,8 @@ import { directory } from '../model';
 export const directoryController = ng.controller('DirectoryController',['$scope', 'route', ($scope, route) => {
 	$scope.template = template;
 	template.open('userActions', 'user-actions');
-	$scope.users = {
-		loading: false
-	};
+	$scope.users = {};
+	$scope.groups = {};
 	$scope.favorites = [
 		{
 			name: "test"
@@ -116,11 +115,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		},
 		directory: async function(){
 			$scope.display.searchmobile = false;
+			$scope.display.loading = false;
 			$scope.display.loadingmobile = false;
 			$scope.display.showCloseMobile = false;
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
+			directory.directory.groups.all = [];
 			directory.network.schools.all = [];
 			$scope.users = directory.directory.users;
 			$scope.groups = directory.directory.groups;
@@ -250,43 +251,38 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.searchDirectory = async function(){
 		// Loading activation
-		$scope.loading = true;
-		
+		$scope.display.loading = true;
 		if (ui.breakpoints.checkMaxWidth("tablette")) { 
 			$scope.display.loadingmobile = true; 
 		} 
 
-		$scope.display.searchmobile = false;
-		directory.directory.users.all = [];
-		directory.directory.groups.all = [];
-		template.open('main', 'mono-class');
-		template.open('list', 'dominos');
-		
-		// Filters & searchfield
-		switch ($scope.search.index) {
-			case 0:
-				await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
-				$scope.users = directory.directory.users;
-				break;
-			case 1:
-				await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
-				$scope.groups = directory.directory.groups;
-				break;
-			case 2:
-				$scope.createFavorite();
-				return;
+		// Favorite
+		if ($scope.search.index == 2) {
+			$scope.createFavorite();
+			return;
 		}
 
-		$scope.users.loading = false;
+		template.open('main', 'mono-class');
+		template.open('list', 'dominos');
+		if ($scope.search.index === 0) {
+			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
+			$scope.users = directory.directory.users;
+		}
+		else {
+			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
+			$scope.groups = directory.directory.groups;
+		}
+		$scope.display.searchmobile = false;
+		$scope.display.showCloseMobile = $scope.display.searchmobile;
+		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
 		if (ui.breakpoints.checkMaxWidth("tablette")) {
-			if ($scope.users.all.length === 0)
+			if (directory.directory.users.all.length === 0)
 				notify.info("noresult");
 			else
 				$scope.display.searchmobile = true;
 		} 
-		
-		$scope.display.loadingmobile = false;
-		$scope.$apply('users');
+		$scope.$apply();
 	};
 
 	$scope.createFavorite = async function() {
@@ -381,5 +377,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.onCloseSearchModule = function() {
 		$scope.display.searchmobile = true;
+	};
+
+	$scope.getCurrentItems = function() {
+		switch($scope.search.index) {
+			case 0:
+				return $scope.users;
+			case 1:
+				return $scope.groups;
+			case 2:
+				return $scope.users; // TODO
+		}
 	};
 }]);
