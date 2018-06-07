@@ -71,7 +71,7 @@ public class StudentImportProcessing1d extends StudentImportProcessing {
 				if (c.length == 5) {
 					Structure s = importer.getStructure(c[0]);
 					if (s != null) {
-						String classExternalId = c[3];
+						String classExternalId = getAcademyPrefix() + c[3];
 						s.createClassIfAbsent(classExternalId, c[4]);
 						linkStructureClasses[i][0] = s.getExternalId();
 						linkStructureClasses[i++][1] = classExternalId;
