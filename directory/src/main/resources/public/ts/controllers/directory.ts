@@ -62,6 +62,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			name: "test2"
 		}
 	];
+	$scope.currentFavorite = null;
 	$scope.lang = lang;
 
 	$scope.search = {
