@@ -27,6 +27,8 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.feeder.exceptions.TransactionException;
+import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
@@ -74,33 +76,62 @@ public class PostImport {
 					duplicateUsers.autoMergeDuplicatesInStructure(new Handler<AsyncResult<JsonArray>>() {
 						@Override
 						public void handle(AsyncResult<JsonArray> mergedUsers) {
-							applyComRules(new Handler<Void>() {
-								@Override
-								public void handle(Void v) {
-									if (config.getBoolean("notify-apps-after-import", true)) {
-										ApplicationUtils.afterImport(eb);
-									}
-									if (config.getJsonObject("ws-call-after-import") != null) {
-										wsCall(config.getJsonObject("ws-call-after-import"));
-									}
-								}
-							});
+							applyComRules(getFinalHandler(source));
 						}
 					});
 				}
 			});
 		} else {
-			applyComRules(new Handler<Void>() {
-				@Override
-				public void handle(Void v) {
-					if (config.getBoolean("notify-apps-after-import", true)) {
-						ApplicationUtils.afterImport(eb);
+			applyComRules(getFinalHandler(source));
+		}
+	}
+
+	private Handler<Void> getFinalHandler(String source) {
+		return new Handler<Void>() {
+			@Override
+			public void handle(Void v) {
+				if (config.getBoolean("notify-apps-after-import", true)) {
+					ApplicationUtils.afterImport(eb);
+				}
+				if (config.getJsonObject("ws-call-after-import") != null) {
+					wsCall(config.getJsonObject("ws-call-after-import"));
+				}
+				if (config.getJsonArray("publish-classes-update") != null &&
+						config.getJsonArray("publish-classes-update").contains(source)) {
+					publishClassesUpdate();
+				}
+			}
+		};
+	}
+
+	private void publishClassesUpdate() {
+		final String query =
+				"MATCH (u:User) " +
+				"WHERE u.classes <> u.oldClasses " +
+				"RETURN u.id as userId, u.externalId as userExternalId, u.classes as classes, u.oldClasses as oldClasses, timestamp() as timestamp";
+		final String setOldClasses =
+				"MATCH (u:User) " +
+				"WHERE has(u.classes) " +
+				"SET u.oldClasses = u.classes ";
+		try {
+			final TransactionHelper tx = TransactionManager.getTransaction();
+			final JsonObject params = new JsonObject();
+			tx.add(query, params);
+			tx.add(setOldClasses, params);
+			tx.commit(res -> {
+				if ("ok".equals(res.body().getString("status"))) {
+					JsonArray r = res.body().getJsonArray("results");
+					if (r != null && r.getJsonArray(0) != null && r.getJsonArray(0).size() > 0) {
+						eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+								.put("action", "users-classes-update")
+								.put("users-classes-update", r.getJsonArray(0)));
 					}
-					if (config.getJsonObject("ws-call-after-import") != null) {
-						wsCall(config.getJsonObject("ws-call-after-import"));
-					}
+				} else {
+					logger.error("Error in publish classes update transaction : " + res.body().getString("message"));
 				}
 			});
+		} catch (TransactionException e) {
+			logger.error("Error in publish classes update transaction.", e);
 		}
 	}
 
