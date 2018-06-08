@@ -81,21 +81,26 @@
 	</div>
 
 	<!-- Groups -->
-	<div class="item" ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength" ng-if="search.index === 1 && !display.loading">
+	<div ng-if="search.index === 1 && !display.loading && !currentGroup" 
+		ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength"
+		class="item">
 		<section class="domino" ng-class="colorFromType(group.profile)" ng-click="showGroupUsers(group)">
-			<div class="top">
-				<div class="round active">
-					<img skin-src="/img/illustrations/group-avatar.svg" />
-				</div>
+			<div class="top domino-group" ng-class="lightenColorFromType(group.profile)">
 				<div>
-					[[group.nbUsers]]
+					<img class="domino-group round active" skin-src="/img/illustrations/group-avatar.svg" />
+				</div>
+				<div class="nb-users">
+					<span>[[group.nbUsers]]</span> <i class="person"></i>
 				</div>
 			</div>
 
-			<div class="center">
+			<div class="center" ng-if="group.groupType == 'ProfileGroup'">
 				<span><i18n>userBook.profile.type</i18n></span>
 				<br/>
 				<span translate content="directory.[[getType(group.profile).toLowerCase()]]"></span>
+			</div>
+			<div class="center" ng-if="group.groupType != 'ProfileGroup'">
+				<span translate content="userBook.directory.group.[[group.groupType]]"></span>
 			</div>
 
 			<div class="bottom">
@@ -107,27 +112,47 @@
 	</div>
 
 	<!-- Group Users -->
-	<h2 ng-if="group.users && group.users.length > 0"><i class="back" ng-click="backToGroups()"></i><i18n>userBook.backToList</i18n></h2>
-	
-	<div class="item" ng-repeat="user in group.users | orderBy:'displayName' | limitTo:search.maxLength">
-		<section class="domino" ng-class="colorFromType(user.type)" ng-click="selectUser(user)">
-			<div class="top">
-				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
-			</div>
+	<div ng-if="search.index === 1 && !display.loading && currentGroup">
+		<h2 class="left-text"><a ng-click="backToGroups()"><i18n>userBook.directory.groups</i18n></a> <i class="open-right"></i> [[currentGroup.name]]</h2>
 
-			<div class="center">
-				<span translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
-			</div>
-
-			<div class="bottom">
-				<div class="content">
-					<span>[[user.displayName]]</span>
-					<div class="bottom-locked" ng-if="user.mood != 'default'">
-						<i class="[[user.mood]]"></i>
-					</div>
+		<div class="flex-row justify-between medium-importance">
+			<div>
+				<div ng-if="currentGroup.groupType == 'ProfileGroup'" class="inline">
+					<i18n>userBook.profile.type</i18n> <span translate content="directory.[[getType(currentGroup.profile).toLowerCase()]]"></span>
+				</div>
+				<div ng-if="currentGroup.groupType != 'ProfileGroup'" class="inline">
+					<span translate content="userBook.directory.group.[[currentGroup.groupType]]"></span>
 				</div>
 			</div>
-		</section>
+			<div class="italic-text">
+				[[currentGroup.nbUsers]] <i18n>userBook.directory.group.members</i18n>
+			</div>
+		</div>
+
+		<article class="twelve cell actions-list left-text" ng-include="template.containers.groupActions">
+		</article>
+
+		<div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
+			class="item">
+			<section class="domino" ng-class="colorFromType(user.type)" ng-click="selectUser(user)">
+				<div class="top">
+					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
+				</div>
+
+				<div class="center">
+					<span translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
+				</div>
+
+				<div class="bottom">
+					<div class="content">
+						<span>[[user.displayName]]</span>
+						<div class="bottom-locked" ng-if="user.mood != 'default'">
+							<i class="[[user.mood]]"></i>
+						</div>
+					</div>
+				</div>
+			</section>
+		</div>
 	</div>
 
 	<!-- Classrooms -->
