@@ -63,6 +63,10 @@ public interface UserService {
 	void addFunction(String id, String functionCode, JsonArray scope, String inherit,
 			Handler<Either<String, JsonObject>> result);
 
+	void addHeadTeacherManual(String id, String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result);
+
+	void updateHeadTeacherManual(String id, String structureExternalId, String classExternalId, Handler<Either<String, JsonObject>> result);
+
 	void removeFunction(String id, String functionCode, Handler<Either<String, JsonObject>> result);
 
 	void listFunctions(String userId, Handler<Either<String, JsonArray>> handler);

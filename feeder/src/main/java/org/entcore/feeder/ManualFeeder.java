@@ -367,6 +367,7 @@ public class ManualFeeder extends BusModBase {
 				}
 			}
 		});
+
 	}
 
 	private void addUserInClass(final Message<JsonObject> message,
@@ -395,23 +396,52 @@ public class ManualFeeder extends BusModBase {
 
 	private void removeUserFromClass(final Message<JsonObject> message,
 								String userId, String classId) {
-		JsonObject params = new JsonObject()
-				.put("classId", classId)
-				.put("userId", userId);
-		String query =
-				"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-				"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-				"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-				"CREATE UNIQUE dpg<-[:IN]-u " +
-				"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) " +
-				"DELETE r " +
-				"RETURN DISTINCT u.id as id";
-		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> m) {
-				message.reply(m.body());
-			}
-		});
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+
+			JsonObject params = new JsonObject()
+					.put("classId", classId)
+					.put("userId", userId);
+			String query =
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+					"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+					"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+					"CREATE UNIQUE dpg<-[:IN]-u " +
+					"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
+					"DELETE r " +
+					"RETURN DISTINCT u.id as id";
+
+			tx.add(query, params);
+
+			String query2 =
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
+					"DELETE r ";
+
+			tx.add(query2, params);
+
+			String query3 =
+					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure)<-[b:BELONGS]-(c:Class {id : {classId}}) " +
+					"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+					"DELETE r " +
+					"RETURN DISTINCT u.id as id";
+
+			tx.add(query3, params);
+
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+					} else {
+						message.reply(event.body());
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when remove user from structure", e);
+			sendError(message, "transaction.error");
+		}
 	}
 
 	public void updateUser(final Message<JsonObject> message) {
@@ -632,6 +662,32 @@ public class ManualFeeder extends BusModBase {
 				}
 			});
 		}
+	}
+
+	public void addUserHeadTeacherManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String classExternalId = message.body().getString("classExternalId");
+		final String structureExternalId = message.body().getString("structureExternalId");
+		if (userId == null || classExternalId == null || structureExternalId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.addHeadTeacherManual(userId,structureExternalId,classExternalId, tx);
+			}
+		});
+	}
+
+	public void updateUserHeadTeacherManual(final Message<JsonObject> message) {
+		final String userId = getMandatoryString("userId", message);
+		final String classExternalId = message.body().getString("classExternalId");
+		final String structureExternalId = message.body().getString("structureExternalId");
+		if (userId == null || classExternalId == null || structureExternalId == null) return;
+		executeTransaction(message, new VoidFunction<TransactionHelper>() {
+			@Override
+			public void apply(TransactionHelper tx) {
+				User.updateHeadTeacherManual(userId, structureExternalId,classExternalId, tx);
+			}
+		});
 	}
 
 	public void removeUserFunction(Message<JsonObject> message) {

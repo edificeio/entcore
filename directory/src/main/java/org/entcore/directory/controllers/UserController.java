@@ -319,6 +319,34 @@ public class UserController extends BaseController {
 		});
 	}
 
+	@Post("/user/headteacher/:userId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructures.class)
+	@IgnoreCsrf
+	public void addHeadTeacherManual(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		bodyToJson(request, pathPrefix + "addHeadTeacher", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				userService.addHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId") ,defaultResponseHandler(request));
+			}
+		});
+	}
+
+	@Put("/user/headteacher/:userId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructures.class)
+	public void updateHeadTeacherManual(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		bodyToJson(request, pathPrefix + "updateHeadTeacher", new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+			userService.updateHeadTeacherManual(userId, event.getString("structureExternalId"), event.getString("classExternalId"), defaultResponseHandler(request));
+			}
+		});
+	}
+
+
 	@Delete("/user/function/:userId/:function")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void removeFunction(final HttpServerRequest request) {
