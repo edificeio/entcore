@@ -7,6 +7,7 @@ import { searchModule } from './directives/searchModule';
 import { pastilles } from './directives/pastilles';
 import { multiComboboxes } from "./directives/multiComboboxes";
 import { removableList } from "./directives/removableList";
+import { transferColumns } from "./directives/transferColumns";
 
 routes.define(function($routeProvider){
     if(window.location.href.indexOf('mon-compte') !== -1){
@@ -54,3 +55,4 @@ ng.directives.push(pastilles);
 ng.directives.push(searchModule);
 ng.directives.push(multiComboboxes);
 ng.directives.push(removableList);
+ng.directives.push(transferColumns);

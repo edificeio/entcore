@@ -31,10 +31,11 @@
 		<div class="clear"></div>
 		<div class="spacer-small zero-desktop"></div>
 		<search-module class="eight-tablette-mobile"
+			ng-model="search.index"
+			show-close="users.all.length > 0"
+			ng-change="indexFormChanged(index)"
 			search="searchDirectory()"
 			on-close="onCloseSearchModule()"
-			show-close="users.all.length > 0"
-			index-form="search.index"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
 				<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
@@ -137,7 +138,7 @@
 						placeholder="[[lang.translate('userBook.search.title')]]"/>
 					<div class="spacer-small"></div>
 					<div class="reduce-block-eight horizontal-margin">
-						<button type="submit" class="twelve">
+						<button type="submit" class="twelve zero-mobile-fat-mobile" ng-disabled="display.creatingFavorite">
 							<i18n>directory.create.favorite</i18n>
 						</button>
 					</div>
@@ -149,26 +150,7 @@
 		</div>
 	</section>
 	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
-		<!-- Users emptyscreen -->
-		<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !display.loading">
-			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
-			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
-		</div>
-
-		<!-- Groups emptyscreen -->
-		<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
-			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
-			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
-		</div>
-
-		<div class="emptyscreen" ng-if="search.index == 2 && !currentFavorite">
-			<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
-			<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-			<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
-		</div>
-
+	
 		<!-- Loading animation -->
 		<div class="dominos centered-text" ng-if="display.loading">
 			<div class="row reduce-block-six">

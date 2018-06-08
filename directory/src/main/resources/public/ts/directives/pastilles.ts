@@ -3,10 +3,10 @@ import { ng, _, angular } from 'entcore';
 /**
  * @description Display pastilles that can be used as tabs.
  * @param images An array of string containing the list of images paths.
- * @param index The activated pastille index.
+ * @param ngModel The activated pastille index.
  * @example
  *  <pastilles 
-        index="<index>"
+        ng-model="<index>"
         images="<images>">
     </pastilles>
  */
@@ -23,8 +23,8 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
         `,
 
         scope: {
+            ngModel: '=',
             images: '=',
-            index: '='
         },
 
         link: (scope, element, attributes) => {
@@ -84,7 +84,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                     this.classList.remove("inactive");
                     this.classList.add("active");
                     scope.setActive(this);
-                    scope.index = nbPastilles - Array.prototype.slice.call(element.find("div")[0].children).indexOf(this) - 1;
+                    scope.ngModel = nbPastilles - Array.prototype.slice.call(element.find("div")[0].children).indexOf(this) - 1;
                     scope.$apply();
                 });
 
