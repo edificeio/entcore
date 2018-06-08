@@ -22,6 +22,7 @@ package org.entcore.feeder.timetable.udt;
 import fr.wseduc.swift.storage.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.dictionary.structures.PostImport;
@@ -63,6 +64,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 			"WHERE lower(u.firstName) = {firstName} AND lower(u.lastName) = {lastName} AND u.birthDate = {birthDate} " +
 			"MERGE u-[r:IN]->fg " +
 			"SET r.lastUpdated = {now}, r.source = {source}, r.inDate = {inDate}, r.outDate = {outDate} ";
+	private static final String PERSIST_USED_GROUPS =
+			"MATCH (:Structure {externalId:{structureExternalId}})<-[:DEPENDS]-(fg:FunctionalGroup) " +
+			"WHERE fg.idgpe IN {usedGroups} " +
+			"SET fg.usedInCourses = true ";
 	public static final String UDT = "UDT";
 	public static final String CODE = "code";
 	private static final Pattern filenameWeekPatter = Pattern.compile("UDCal_[0-9]{2}_([0-9]{2})\\.xml$");
@@ -80,6 +85,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Set<DateTime> holidays = new HashSet<>();
 	private Set<Integer> holidaysWeeks = new HashSet<>();
 	private Map<String, JsonObject> eleves = new HashMap<>();
+	private Map<String, String> codeGepDiv = new HashMap<>();
+	private Set<String> usedGroupInCourses = new HashSet<>();
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage) {
 		super(uai, path, acceptLanguage);
@@ -115,7 +122,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					vertx.fileSystem().readDir(basePath, "UDCal_12_[0-9]+.xml", new Handler<AsyncResult<List<String>>>() {
 						@Override
 						public void handle(AsyncResult<List<String>> event) {
-							if (event.succeeded() && event.result().size() > 0) {
+							if (event.succeeded()) {
 								try {
 									for (String p : event.result()) {
 										Matcher m = filenameWeekPatter.matcher(p);
@@ -129,6 +136,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 											}
 										}
 									}
+									persistUsedGroups();
 									commit(handler);
 								} catch (Exception e) {
 									handler.handle(new DefaultAsyncResult<Report>(e));
@@ -267,6 +275,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 	void addClasse(JsonObject currentEntity) {
 		final String id = currentEntity.getString(CODE);
 		classes.put(id, currentEntity);
+		final String codeGep =  currentEntity.getString("code_gep");
+		if (isNotEmpty(codeGep)) {
+			codeGepDiv.put(id, codeGep);
+		}
 		final String ocn = getOrElse(currentEntity.getString("libelle"), id, false);
 		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
 		currentEntity.put("className", className);
@@ -282,7 +294,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (isEmpty(name)) {
 			name = id;
 		}
-		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+		currentEntity.put("code_gep", codeGepDiv.get(currentEntity.getString("code_div")));
+		currentEntity.put("idgpe", currentEntity.remove("id"));
+		final String set = "SET " + Neo4jUtils.nodeSetPropertiesFromJson("fg", currentEntity);
+		txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
 				.put("externalId", structureExternalId + "$" + name)
 				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
@@ -319,10 +334,17 @@ public class UDTImporter extends AbstractTimetableImporter {
 			groups.add(name);
 		}
 		regroup.put(currentEntity.getString(CODE), name);
-		txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+		txXDT.add(CREATE_GROUPS + "SET fg.idrgpmt = {idrgpmt} " , new JsonObject()
+				.put("structureExternalId", structureExternalId)
 				.put("name", name).put("displayNameSearchField", Validator.sanitize(name))
 				.put("externalId", structureExternalId + "$" + name)
-				.put("id", UUID.randomUUID().toString()).put("source", getSource()));
+				.put("id", UUID.randomUUID().toString()).put("source", getSource())
+				.put("idrgpmt", currentEntity.getString("id")));
+	}
+
+	private void persistUsedGroups() {
+		txXDT.add(PERSIST_USED_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
+				.put("usedGroups", new JsonArray(new ArrayList<>(usedGroupInCourses))));
 	}
 
 	void eleveMapping(JsonObject currentEntity) {
@@ -420,6 +442,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (isEmpty(fic)) {
 			report.addError("invalid.fic");
 			return;
+		}
+		final String idgpe = entity.getString("idgpe");
+		if ("0".equals(entity.getString("rgpmt")) && isNotEmpty(idgpe) && isNotEmpty(entity.getString("gpe"))) {
+			usedGroupInCourses.add(idgpe);
 		}
 		final String tmpId = calculateTmpId(entity);
 		List<JsonObject> l = lfts.get(tmpId);
