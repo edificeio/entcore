@@ -31,4 +31,6 @@ public interface RepositoryEvents {
 
 	void deleteUsers(JsonArray users);
 
+	default void usersClassesUpdated(JsonArray updates) {}
+
 }
