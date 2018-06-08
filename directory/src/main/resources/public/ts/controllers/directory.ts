@@ -146,41 +146,26 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				}
 			};
 			$scope.filtersOptions = {
-				users: {
-					structures: $scope.criteria.structures.map((element) => {
-						return { label: element.name, type: element.id };
-					}),
-					classes: $scope.criteria.classes.map((element) => {
-						return { label: element.name, type: element.id };
-					}),
-					profiles: $scope.criteria.profiles.map((element) => {
-						return { label: lang.translate("directory." + element), type: element };
-					}),
-					functions: $scope.criteria.functions.map((element) => {
-						return { label: lang.translate("directory." + element), type: element };
-					})
-				},
-				groups: {
-					structures: $scope.criteria.structures.map((element) => {
-						return { label: element.name, type: element.id };
-					}),
-					classes: $scope.criteria.classes.map((element) => {
-						return { label: element.name, type: element.id };
-					}),
-					profiles: $scope.criteria.profiles.map((element) => {
-						return { label: lang.translate("directory." + element), type: element };
-					}),
-					functions: $scope.criteria.functions.map((element) => {
-						return { label: lang.translate("directory." + element), type: element };
-					}),
-					types: $scope.criteria.groupTypes.map((element) => {
-						return { label: lang.translate("directory." + element), type: element };
-					})
-				}
+				users: $scope.generateCriteriaOptions(),
+				groups: $scope.generateCriteriaOptions()
 			};
+
+			$scope.create = {
+				favorite: {
+					title: '',
+					search: '',
+					structures: null,
+					classes: null,
+					profiles: null,
+					functions: null,
+					types: null,
+					options: $scope.generateCriteriaOptions()
+				}
+			}
 
 			template.open('page', 'directory');
 			template.close('list');
+			template.open('list', 'dominos');
 			$scope.title = 'directory';
 			$scope.$apply();
 		},
@@ -227,6 +212,26 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.$apply('users');
 	});
 
+	$scope.generateCriteriaOptions = function() {
+		return {
+			structures: $scope.criteria.structures.map((element) => {
+				return { label: element.name, type: element.id };
+			}),
+			classes: $scope.criteria.classes.map((element) => {
+				return { label: element.name, type: element.id };
+			}),
+			profiles: $scope.criteria.profiles.map((element) => {
+				return { label: lang.translate("directory." + element), type: element };
+			}),
+			functions: $scope.criteria.functions.map((element) => {
+				return { label: lang.translate("directory." + element), type: element };
+			}),
+			types: $scope.criteria.groupTypes.map((element) => {
+				return { label: lang.translate("directory." + element), type: element };
+			})
+		};
+	}
+
 	$scope.showSchool = function(school){
 
 		$scope.currentSchool = school;
@@ -250,16 +255,17 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = async function(){
-		// Loading activation
-		$scope.display.loading = true;
-		if (ui.breakpoints.checkMaxWidth("tablette")) { 
-			$scope.display.loadingmobile = true; 
-		} 
-
+		
 		// Favorite
 		if ($scope.search.index == 2) {
 			$scope.createFavorite();
 			return;
+		}
+
+		// Loading activation
+		$scope.display.loading = true;
+		if (ui.breakpoints.checkMaxWidth("tablette")) { 
+			$scope.display.loadingmobile = true; 
 		}
 
 		template.open('main', 'mono-class');
@@ -286,7 +292,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.createFavorite = async function() {
-		
+		$scope.display.creatingFavorite = true;
+		$('removable-list *').off();
+		template.close('list');
+		template.open('list', 'favorite-form');
 	};
 
 	$scope.selectFavorite = async function(favorite) {
@@ -295,6 +304,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.deleteFavorite = async function(favorite) {
 		console.log("delete");
+	};
+
+	$scope.cancelFavorite = async function(favorite) {
+		$scope.display.creatingFavorite = false;
+		template.close('list');
+		template.open('list', 'dominos');
 	};
 
 	$scope.deselectUser = function(tpl){
@@ -389,4 +404,15 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				return $scope.users; // TODO
 		}
 	};
+
+	$scope.indexFormChanged = function(index) {
+		if ($scope.display.creatingFavorite) {
+			template.close('list');
+			if (index === 2)
+				template.open('list', 'favorite-form');
+			else
+				template.open('list', 'dominos');
+		}
+		$scope.backToUsers();
+	}
 }]);

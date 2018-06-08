@@ -28,7 +28,7 @@ export const searchModule = ng.directive('searchModule', () => {
         priority: 100,
         template: `
             <pastilles 
-                index="indexForm"
+                ng-model="ngModel"
                 images="images">
             </pastilles>
             <form name="searchForm" ng-submit="search()" novalidate>
@@ -43,10 +43,11 @@ export const searchModule = ng.directive('searchModule', () => {
         `,
 
         scope: {
+            ngModel: '=',
+            showClose: '=',
+            ngChange: '&',
             search: '&',
             onClose: '&',
-            showClose: '=',
-            indexForm: '='
         },
 
         link: (scope, element, attributes) => {
@@ -64,9 +65,10 @@ export const searchModule = ng.directive('searchModule', () => {
             hideAll();
             
             // Pastilles changing index
-            scope.$watch("indexForm", function(newValue) {
+            scope.$watch("ngModel", function(newValue) {
                 hideAll();
                 pages.eq(newValue).show();
+                scope.ngChange({ index: newValue });
             });
         }
     };
