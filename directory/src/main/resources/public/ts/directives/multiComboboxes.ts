@@ -95,6 +95,8 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
 
             // Filter labels in search field
             scope.filterByLabel = (option) => {
+                if (!option.label)
+                    option.label = '';
                 return option.label.toLowerCase().includes(scope.searchField.toLowerCase());
             };
 

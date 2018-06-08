@@ -285,6 +285,8 @@ export const directory = {
 				return this.all;
 			},
 			searchDirectory: async function(search, filters, callback){
+				if (!search)
+					search = "";
 				this.searched = true;
 				
 				var body = {
