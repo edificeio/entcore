@@ -346,13 +346,22 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.searchmobile = false;$scope.display.loadingmobile = false;
 	}
 	$scope.backToGroups = function() {
+		$scope.currentGroup = null;
+		if(!$scope.$$phase){		
+			$scope.$apply('currentGroup');
+		}
+	}
+
+	$scope.backToGroup = function() {
+		template.close('details');
+		$scope.currentUser = undefined;
 	}
 
 	$scope.showGroupUsers = async function(group) {
 		$scope.loading = true;
 		await group.getUsers();
-		$scope.group = group;
-		$scope.groups = null;
+		$scope.currentGroup = group;
+		template.open('groupActions', 'group-actions');
 		$scope.loading = false;
 		$scope.$apply();
 	}
@@ -380,6 +389,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			return colorsMatch[type.toLowerCase()];
 		}
 		return "grey";
+	};
+
+	$scope.lightenColorFromType = function(type){
+		return "lighten-" + this.colorFromType(type);
 	};
 
 	$scope.filterTopStructures = function(structure){

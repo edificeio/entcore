@@ -161,15 +161,28 @@
 
 		<!-- Results list template (dominos) -->		
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
-			class="cell"
+			class="cell left-spacing-twice top-spacing-twice"
 			ng-if="!currentUser">
-			<a class="zero-desktop" ng-if="display.searchmobile"><h2 ng-click="backToSearch()"><i class="back"></i> <i18n>userBook.backToSearch</i18n></h2></a>
+			<a class="zero-desktop" ng-if="display.searchmobile">
+				<h2 ng-click="backToSearch()">
+					<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
+				</h2>
+			</a>
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
 		<!-- User details template -->
-		<div ng-if="currentUser" ng-class="{ 'zero-mobile':display.searchmobile }" class="left-spacing-four">
-			<a><h2 ng-click="backToUsers()"><i class="back"></i> <i18n>userBook.backToList</i18n></h2></a>
+		<div ng-if="currentUser" 
+			ng-class="{ 'zero-mobile':display.searchmobile }" 
+			class="left-spacing-twice top-spacing-twice">
+			<a ng-if="search.index === 0">
+				<h2 ng-click="backToUsers()"><i class="back"></i> <i18n>userBook.directory.backToUsersList</i18n></h2>
+			</a>
+
+			<div ng-if="search.index === 1">
+				<h2 ng-click="backToGroup()"><i class="back"></i> <i18n>userBook.directory.backToGroup</i18n></h2>
+			</div>
+			
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>
