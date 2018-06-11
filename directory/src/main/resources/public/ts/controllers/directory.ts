@@ -95,6 +95,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.groups = directory.directory.groups;
 			$scope.favorites = directory.directory.favorites;
 			$scope.favoriteFormUsersGroups = [];
+			
+			if(!$scope.favorites.empty()) {
+				$scope.selectFavorite($scope.favorites.first());
+			}
+			
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
 
