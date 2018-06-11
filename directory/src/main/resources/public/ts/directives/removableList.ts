@@ -18,9 +18,9 @@ export const removableList = ng.directive('removableList', () => {
                     class="text-flow twelve"
                     required ng-minlength="1"/>
                 <nav class="removable-list wrapper left-text">
-                    <div class="row big-block-container" ng-repeat="item in ngModel" ng-click="selectItem({item:[[ item ]]})">
+                    <div class="row big-block-container" ng-repeat="item in ngModel" ng-click="selectItem({item: item})">
                         <span class="block cell-ellipsis right-spacing-twice">[[ item.name ]]</span>
-                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet" ng-click="deleteItem({item:[[ item ]]}); $event.stopPropagation();"/>
+                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet" ng-click="deleteItem({item: item}); $event.stopPropagation();"/>
                     </div>
                 </nav>
             </div>
