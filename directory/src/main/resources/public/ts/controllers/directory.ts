@@ -271,10 +271,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.selectFavorite = async function(favorite) {
-		$scope.loading = true;
+		$scope.display.loading = true;
 		await favorite.getUsersAndGroups();
 		$scope.currentFavorite = favorite;
-		$scope.loading = false;
+		$scope.display.loading = false;
 		$scope.$apply();
 	};
 
@@ -289,12 +289,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.searchUsersAndGroups = async function(favorite) {
-		$scope.loading = true;
+		$scope.display.loadingFavoriteForm = true;
 		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
 		await directory.favoriteForm.groups.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
-		console.log($scope.create.favorite.filters);
-		$scope.favoriteFormUsersGroups = directory.favoriteForm.users.all.concat(directory.favoriteForm.groups.all);
-		$scope.loading = false;
+		$scope.favoriteFormUsersGroups = directory.favoriteForm.groups.all.concat(directory.favoriteForm.users.all);
+		$scope.display.loadingFavoriteForm = false;
 		$scope.$apply('favoriteFormUsersGroups');
 	};
 
