@@ -12,7 +12,7 @@
 	"module" : { "attribute" : "ENTEleveMEF" },
 	"moduleName" : { "attribute" : "ENTEleveLibelleMEF" },
 	"classes" : { "attribute" : "ENTEleveClasses" },
-	"groups" : { "attribute" : "ENTEleveGroupes" },
+	"manualAndFunctionalGroups" : { "attribute" : "ENTEleveGroupes", "converter" : "functionalGroup" },
 	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"level" : { "attribute" : "ENTEleveNivFormation" },
 	"sector" : { "attribute" : "ENTEleveFiliere" },

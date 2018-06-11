@@ -26,7 +26,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class AAFUtil {
 
@@ -71,11 +73,46 @@ public class AAFUtil {
 				case "groups-source" :
 					res = groupsSource(value);
 					break;
+				case "functionalGroup" :
+					res = functionalGroupConverter(value);
+					break;
 				default :
 					res = value;
 			}
 		} catch (RuntimeException e) {
 			res = value;
+		}
+		return res;
+	}
+
+	private static Object functionalGroupConverter(Object value) {
+		final JsonArray res = new JsonArray();
+		if (value instanceof JsonArray) {
+			for (Object o : ((JsonArray) value)) {
+				if (o instanceof JsonObject) {
+					final JsonObject j = (JsonObject) o;
+					final String structureExternalId = j.getString("structureExternalId");
+					if (isNotEmpty(structureExternalId)) {
+						final String idrgpmt = j.getString("idrgpmt");
+						final String name = j.getString("name");
+						if (isNotEmpty(idrgpmt)) {
+							res.add(structureExternalId + "$" + name + "$" + idrgpmt);
+						} else if (isNotEmpty(j.getString("idgpe"))) {
+							if (!getOrElse(j.getBoolean("usedInCourses"), false)) continue;
+							final String code = j.getString("code");
+							if (isNotEmpty(code) && isNotEmpty(j.getString("code_gep"))) {
+								res.add(structureExternalId + "$" + j.getString("code_gep") + "_" + code + "$" + j.getString("idgpe"));
+							} else if (isNotEmpty(code) && isNotEmpty(j.getString("code_div"))) {
+								res.add(structureExternalId + "$" + j.getString("code_div") + "_" + code + "$" + j.getString("idgpe"));
+							}
+						} else if (isEmpty(j.getString("externalId"))) {
+							res.add(structureExternalId + "$" + name + "$" + j.getString("id"));
+						} else {
+							res.add(j.getString("externalId") + "$" + j.getString("id"));
+						}
+					}
+				}
+			}
 		}
 		return res;
 	}

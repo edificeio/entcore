@@ -15,12 +15,11 @@
 	"classCategories" : { "attribute" : "ENTAuxEnsCategoDiscipline" },
 	"modules" : { "attribute" : "ENTAuxEnsMEF" },
 	"subjectTaught" : { "attribute" : "ENTAuxEnsMatiereEnseignEtab" },
-	"classes" : { "attribute" : "ENTAuxEnsClasses" },
-	"groups" : { "attribute" : "ENTAuxEnsGroupes" },
+	"classes" : { "attribute" : "ENTAuxEnsClassesMatieres" },
+	"functionalGroups" : { "attribute" : "ENTAuxEnsGroupesMatieres", "converter" : "functionalGroup" },
 	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"headTeacher" : { "attribute" : "ENTAuxEnsClassesPrincipal" },
 	"functions" : { "attribute" : "ENTPersonFonctions" },
-	"teaches" : { "attribute" : "PersEducNatPresenceDevantEleves", "converter" : "boolean-ON" },
-	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" },
+	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
 	"isTeacher" : { "attribute" : "ENTPersonCategorieEnseignant", "converter" : "boolean-ON" }
 }

@@ -475,15 +475,25 @@ public class User {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		String filter = "";
+		String unionManualGroups = "as functionalGroups ";
 		if (isNotEmpty(exportType)) {
 			filter = "AND HAS(s0.exports) AND {exportType} IN s0.exports ";
 			params.put("exportType", exportType);
 		}
+		if (attributes != null && attributes.contains("manualAndFunctionalGroups")) {
+			unionManualGroups = " + COLLECT(DISTINCT { structureExternalId : s.externalId, id: g.id, name: g.name }) as manualAndFunctionalGroups ";
+		}
 		if (profiles != null && profiles.size() > 0) {
 			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) " +
-					"WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) ").append(filter).append(
-					"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) " +
-					"WITH u, COLLECT(DISTINCT s.externalId + '$' + g.id + '$' + g.name) as manualGroups ");
+			"WHERE HEAD(u.profiles) IN {profiles} AND NOT(HAS(u.deleteDate)) ").append(filter).append(
+			"OPTIONAL MATCH u-[:IN]->(g:ManualGroup)-[:DEPENDS]->(s:Structure) ").append(
+			(attributes != null && (attributes.contains("functionalGroups") || attributes.contains("manualAndFunctionalGroups"))) ?
+					"OPTIONAL MATCH u-[:IN]->(fg:FunctionalGroup)-[:DEPENDS]->(s:Structure) " : "")
+			.append("WITH u, COLLECT(DISTINCT s.externalId + '$' + g.id + '$' + g.name) as manualGroups ").append(
+			(attributes != null && (attributes.contains("functionalGroups") || attributes.contains("manualAndFunctionalGroups"))) ?
+					", COLLECT(DISTINCT { structureExternalId : s.externalId, id: fg.id, externalId: fg.externalId, name: fg.name, idrgpmt : fg.idrgpmt, " +
+					"idgpe : fg.idgpe, code_gep : fg.code_gep, code : fg.code, code_div : fg.code_div, usedInCourses : fg.usedInCourses }) " + unionManualGroups : "")
+			;
 			params.put("profiles", profiles);
 		} else {
 			query.append("MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s0:Structure) WHERE NOT(HAS(u.deleteDate)) ")
@@ -502,7 +512,7 @@ public class User {
 			query.deleteCharAt(query.length() - 1);
 			query.append(" ");
 		} else {
-			query.append("RETURN DISTINCT u ");
+			query.append(" RETURN DISTINCT u ");
 		}
 		if (skip != null && limit != null) {
 			query.append("ORDER BY externalId ASC " +
