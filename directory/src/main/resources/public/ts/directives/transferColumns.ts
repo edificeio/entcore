@@ -29,14 +29,14 @@ export const transferColumns = ng.directive('transferColumns', () => {
                     </div>
                 </div>
             </div>
-            <div class="scroll-nine-chips">
+            <div class="scroll-nine-chips" bottom-scroll="updatingMaxItems()">
                 <div class="flex-row">
                     <div class="six">
                         <div class="row info" ng-if="searchedItems.length === 0 && !loading">[[ textLeftInfo ]]</div>
                         <div class="row centered-text reduce-block-six" ng-if="loading">
                             <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px"/>
                         </div>
-                        <label class="block row twelve chip movable low-importance" ng-repeat="item in searchedItems" ng-if="!loading">
+                        <label class="block row twelve chip movable low-importance" ng-repeat="item in searchedItems | limitTo:maxItems" ng-if="!loading">
                             <span class="cell round square-small" ng-class="{ group: item.name }">
                                 <img ng-if="item.name" skin-src="/img/illustrations/group-avatar.svg"/>
                                 <img ng-if="!item.name" ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100"/>
@@ -56,7 +56,7 @@ export const transferColumns = ng.directive('transferColumns', () => {
                                 <div>[[ textRightWarningDescription ]]</div>
                             </div>
                         </div>
-                        <label class="block row twelve chip removable low-importance" ng-repeat="item in ngModel">
+                        <label class="block row twelve chip removable low-importance" ng-repeat="item in ngModel | limitTo:maxItems">
                             <span class="cell round square-small" ng-class="{ group: item.name }">
                                 <img skin-src="/img/illustrations/group-avatar.svg"/>
                             </span>
@@ -81,6 +81,20 @@ export const transferColumns = ng.directive('transferColumns', () => {
             scope.textLeftInfo = attributes.textLeftInfo;
             scope.textRightWarningTitle = attributes.textRightWarningTitle;
             scope.textRightWarningDescription = attributes.textRightWarningDescription;
+
+            scope.initMaxItems = function() {
+                scope.maxItems = 50;
+            }
+
+            scope.updatingMaxItems = function() {
+                scope.maxItems += 50;
+            }
+
+            scope.$watchCollection("searchedItems", function() {
+                scope.initMaxItems();
+            });
+
+            scope.initMaxItems();
         }
     };
 });
