@@ -33,7 +33,20 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
             setTimeout(function () {
                 var i, l;
                 var pastilles = element.find("div").children();
-                var totalWidth, pastilleWidth, leftOffset, offset, pastilleOffset, nbPastilles = pastilles.length;
+                var totalWidth, pastilleWidth, leftOffset, offset, pastilleOffset, count, nbPastilles = pastilles.length;
+
+                // Update z index
+                var updateZIndex = function() {
+                    pastilles.eq(nbPastilles - 1 - scope.ngModel).css("z-index", "" + (1000 + nbPastilles));
+                    for (i = scope.ngModel - 1, count = 0; i >= 0; i--) {
+                        pastilles.eq(nbPastilles - 1 - i).css("z-index", "" + (1000 + nbPastilles - count - 1));
+                        count++;
+                    }
+                    for (i = scope.ngModel + 1, count = 0; i < nbPastilles; i++) {
+                        pastilles.eq(nbPastilles - 1 - i).css("z-index", "" + (1000 + nbPastilles - count - 1));
+                        count++;
+                    }
+                }
 
                 // Update pastille position (also if resizing)
                 var updatePastillesPosition = function() {
@@ -46,10 +59,13 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                         pastilles[nbPastilles - 1 - i].originalLeft = leftOffset + (i * offset);
                         pastilles.eq(nbPastilles - 1 - i).css("left", pastilles[nbPastilles - 1 - i].originalLeft + "px");
                     }
+                    updateZIndex();
                 }
+
                 scope.$watch(function() { return element.find('div').css('width'); }, function(newValue) {
                     updatePastillesPosition();
                 });
+
                 angular.element($window).bind('resize', function() {
                     // Avoid weird left/top animation when resizing
                     for (i = 0; i < nbPastilles; i++)
@@ -85,6 +101,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                     this.classList.add("active");
                     scope.setActive(this);
                     scope.ngModel = nbPastilles - Array.prototype.slice.call(element.find("div")[0].children).indexOf(this) - 1;
+                    updateZIndex();
                     scope.$apply();
                 });
 
