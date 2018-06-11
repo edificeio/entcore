@@ -57,7 +57,6 @@ export const directory = {
 	},
 	Group: function(data?){
 		this.users = [];
-		this.groups = [];
 
 		this.getUsers = async function() {
 			var response = await http.get('/communication/visible/group/' + this.id);
@@ -69,6 +68,16 @@ export const directory = {
 	Favorite: function(data?){
 		this.users = [];
 		this.groups = [];
+
+		this.getUsersAndGroups = async function() {
+			var response = await http.get('/directory/sharebookmark/' + this.id);
+			this.users = _.map(response.data.users, function(item) {
+				return new directory.User(item);
+			});
+			this.groups = _.map(response.data.groups, function(item) {
+				return new directory.Group(item);
+			});
+		}
 	},
 	ClassAdmin: function(){
 		this.sync = function(){

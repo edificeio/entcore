@@ -265,7 +265,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.selectFavorite = async function(favorite) {
-		console.log("select");
+		$scope.loading = true;
+		await favorite.getUsersAndGroups();
+		$scope.currentFavorite = favorite;
+		$scope.loading = false;
+		$scope.$apply();
 	};
 
 	$scope.deleteFavorite = async function(favorite) {
