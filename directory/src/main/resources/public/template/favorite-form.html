@@ -73,8 +73,8 @@
             <div class="search-pagination flex-row vertical-spacing-four">
                 <div class="cell six top-spacing-twice">
                     <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
-                        i18n-placeholder="directory.placeholder.search.example" ng-click="doSearch()"/>
-                    <i class="search"></i>
+                        i18n-placeholder="directory.placeholder.search.example"/>
+                    <i class="search" ng-click="searchUsersAndGroups()"></i>
                 </div>
                 <div class="cell absolute-magnet">
                     <button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
@@ -87,7 +87,11 @@
         <div class="row vertical-spacing-four">
             <transfer-columns
                 ng-model="currentFavoriteCreation"
-                searched-items="favoriteFormUsersGroups">
+                searched-items="favoriteFormUsersGroups"
+                text-title="[[lang.translate('directory.composition.favorite')]]"
+                text-left-info = "[[lang.translate('directory.enter.criterias.search')]]"
+                text-right-warning-title = "[[lang.translate('directory.empty.favorite.composition.title')]]"
+                text-right-warning-description = "[[lang.translate('directory.empty.favorite.composition.description')]]">
             </transfer-columns>
         </div>
         <div class="row vertical-spacing-four">
