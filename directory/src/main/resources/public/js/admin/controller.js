@@ -15,6 +15,9 @@ routes.define(function($routeProvider){
 		.when('/classUsers/:structureId/:classId', {
 			action: 'viewClassUsers'
 		})
+		.when('/structure/:structureId/users/blocked', {
+			action: 'viewBlockedUsers'
+		})
 		.otherwise({
 			redirectTo: '/'
 		})
@@ -147,6 +150,28 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 								$scope.structure.addClassUsers(classe, [$scope.refreshScope])
 							}
 						})
+					}
+				)
+			})
+		},
+		viewBlockedUsers: function(params){
+			var structureId = params.structureId
+
+			template.open('body', 'admin-user-tab')
+			$scope.currentLeaf = "userTab"
+			$scope.showWhat = 'showStructureUser'
+
+			$scope.structures.sync(function(){
+				$scope.structure = $scope.structures.find(function(structure){
+					return structure.id === structureId
+				})
+				$scope.selectOnly($scope.structure)
+				$scope.structure.loadStructure(
+					null,
+					function(){
+						$scope.userFilters.showBlockedUsers = true;
+						$scope.userFilters.showUnblockedUsers = false;
+						$scope.refreshScope();
 					}
 				)
 			})
@@ -484,7 +509,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showGuests: true,
 		showFeedModeManual: true,
 		showFeedModeAuto: true,
-		showLocalAdmin: false
+		showLocalAdmin: false,
+		showBlockedUsers: true,
+		showUnblockedUsers: true
 	}
 	$scope.toggleFilter = function(filterName){
 		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
@@ -503,11 +530,14 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var filterFeedManual = user.source === "MANUAL"  ? $scope.userFilters.showFeedModeManual : true
 		var filterFeedAuto   = user.source !== "MANUAL"  ? $scope.userFilters.showFeedModeAuto : true
 		var filterLocalAdmin = $scope.userFilters.showLocalAdmin ? _.chain(user.functions).map(function(f){ return f[0]}).uniq().value().indexOf("ADMIN_LOCAL") >= 0 : true
+		var filterBlocked	 = $scope.userFilters.showBlockedUsers && user.blocked
+		var filterUnblocked	 = $scope.userFilters.showUnblockedUsers && !user.blocked
 
         return filterByInput && (filterByClass || filterIsolated) &&
 			filterInactive && filterTeachers && filterPersonnel &&
 			filterRelative && filterStudents && filterGuests &&
-			filterFeedAuto && filterFeedManual && filterLocalAdmin
+			filterFeedAuto && filterFeedManual && filterLocalAdmin &&
+			(filterBlocked || filterUnblocked)
 	}
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){
@@ -716,6 +746,52 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		if(params)
 			$scope.exportData.params = params
 		$scope.openExport()
+	}
+
+	$scope.topNotification = {
+        show: false,
+        message: "",
+        confirm: null,
+        labels: {
+            confirm: lang.translate('confirm'),
+            cancel: lang.translate('cancel'),
+            ok: lang.translate('ok')
+        }
+	}
+	
+	$scope.notifyTop = function(text, action){
+        $scope.topNotification.message = "<p>"+text+"</p>"
+        $scope.topNotification.confirm = action
+        $scope.topNotification.show = true
+	}
+	
+	$scope.blockUsers = function(profile, block){
+		if (profile != undefined){
+			let blockFun = function(){
+				$scope.executeBlockingRequest = true;
+				$scope.structure.blockUsers(profile, block, function(res){
+					if (res == "ok"){
+						block == true ? notify.success("admin.notify.blocked.profile") : notify.success("admin.notify.unblocked.profile");;
+					}
+					else{
+						notify.error("unexpected.error");
+					}
+					$scope.executeBlockingRequest = false;
+					$scope.$apply();
+				})
+			};
+			if (block){
+				$scope.notifyTop(
+					lang.translate('directory.block.users.warning'),
+					blockFun
+				);
+			}
+			else {
+				blockFun();
+			}
+		}
+		else
+			notify.error("directory.block.must.select.profile");
 	}
 
     //Refresh the isolated users list.
