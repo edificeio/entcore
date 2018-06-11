@@ -357,6 +357,7 @@
     "userBook.class.title": "La classe",
     "userBook.class.write-message": "Envoyer un message",
     "userBook.directory.title": "Annuaire",
+    "userBook.directory.addToFavorite": "Ajouter aux favoris de partage",
     "userBook.directory.groups": "Groupes",    
     "userBook.directory.group.ManualGroup": "Groupe manuel",
     "userBook.directory.group.ProfileGroup": "Groupe de profil",
