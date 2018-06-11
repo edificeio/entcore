@@ -526,6 +526,21 @@ Structure.prototype.getMetrics = function(cb){
     })
 }
 
+Structure.prototype.blockUsers = function(profile, block, cb){
+    var structure = this
+    http().putJson("structure/"+structure.id+"/profile/block", {
+        profile, 
+        block
+    }).done(function(data){
+        if(typeof cb === "function")
+            cb("ok");
+    })
+    .e400(function(){
+        if(typeof cb === "function")
+            cb("ko");
+    })
+}
+
 Structure.prototype.toString = function(){
     return this.name;
 }

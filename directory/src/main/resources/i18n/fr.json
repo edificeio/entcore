@@ -557,5 +557,14 @@
     "group.Relative": "Tous les parents du groupe {0}.",
     "group.Student": "Tous les élèves du groupe {0}.",
     "group.Teacher": "Tous les enseignants du groupe {0}.",
-    "password.warning.federated" : "Le mot de passe que vous allez changer correspond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT."
+    "password.warning.federated" : "Le mot de passe que vous allez changer correspond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT.",
+    "admin.notify.blocked.profile": "Les utilisateurs appartenant au profil selectionné ont été bloqués",
+    "admin.notify.unblocked.profile": "Les utilisateurs appartenant au profil selectionné ont été débloqués",
+    "directory.block.users": "Blocage de comptes par profil",
+    "directory.block": "Bloquer",
+    "directory.unblock": "Debloquer",
+    "directory.block.users.warning" : "Attention : si vous bloquez tous les comptes, vous ne pourrez plus dissocier les utilisateurs qui seraient actuellement bloqués.",
+    "directory.block.must.select.profile" : "Vous devez selectionner un profil",
+    "directory.block.users.desc": "Vous pouvez bloquer des utilisateurs par profil. ",
+    "directory.blocked.link": "Consulter la liste des utilisateurs bloqués"
 }

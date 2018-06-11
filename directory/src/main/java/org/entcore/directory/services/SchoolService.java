@@ -69,4 +69,6 @@ public interface SchoolService {
 	void quickSearchUsers(String structureId, String input, Handler<Either<String, JsonArray>> handler);
 	
 	void userList(String structureId, Handler<Either<String, JsonArray>> handler);
+
+	void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler);
 }

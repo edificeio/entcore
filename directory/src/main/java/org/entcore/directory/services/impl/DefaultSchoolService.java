@@ -21,6 +21,7 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 
+import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
@@ -520,4 +521,18 @@ public class DefaultSchoolService implements SchoolService {
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
 	}
 
+	@Override
+	public void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler) {
+		String query = "MATCH (s:Structure {id:{structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) WHERE g.name ENDS WITH {profile} SET u.blocked = {blocked} RETURN COLLECT(DISTINCT u.id) as usersId";
+		JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("profile", profile)
+				.put("blocked", block);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) { ;
+				handler.handle(r.body());
+			}
+		});
+	}
 }

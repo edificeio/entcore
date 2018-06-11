@@ -66,6 +66,32 @@
         <button class="three cell margin-top-5" ng-click="exportItem(structure, 'structureId')" style="margin-left: 0%; font-size: 12; padding: 2;">
             [[lang.translate("directory.export")]]
         </button>
+        <!-- Block users by profiles -->
+        <hr class="separator cell">
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.block.users")]]</h3>
+        <div class="row">
+            <p>
+                <i18n>directory.block.users.desc</i18n> 
+                <a href="[['/directory/admin-console#/structure/'+structure.id+'/users/blocked']]" target="_blank">[[lang.translate("directory.blocked.link")]]</a>
+            </p>
+        </div>
+        <div class="row" ng-init="exportData.params.filterActive = ''">
+            <select class="five cell row-item" ng-model="blockProfile">
+                <option value="Personnel">[[lang.translate("directory.Personnel")]]</option>
+                <option value="Teacher">[[lang.translate("directory.Teacher")]]</option>
+                <option value="Relative">[[lang.translate("directory.Relative")]]</option>
+                <option value="Student">[[lang.translate("directory.Student")]]</option>
+                <option value="Guest">[[lang.translate("directory.Guest")]]</option>
+            </select>
+        </div>
+        <div class="twelve cell">
+            <button class="three cell margin-top-5" ng-click="blockUsers(blockProfile, true)" style="margin-left: 0%; font-size: 12; padding: 2;" ng-disabled="executeBlockingRequest">
+                [[lang.translate("directory.block")]]
+            </button>
+            <button class="three cell margin-top-5" ng-click="blockUsers(blockProfile, false)" style="margin-left: 0%; font-size: 12; padding: 2;" ng-disabled="executeBlockingRequest">
+                [[lang.translate("directory.unblock")]]
+            </button>
+        </div>
         <!-- Metrics -->
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.metrics")]]</h3>
@@ -150,5 +176,4 @@
             <input class="eight cell" type="text" ng-model="createdStructure.name"/>
         </div>
     </div>
-
 </article>
