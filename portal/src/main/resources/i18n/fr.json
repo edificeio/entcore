@@ -309,6 +309,8 @@
   "quickstart.see.later": "Voir plus tard",
   "quickstart.done": "Terminé",
   "imageeditor.scale": "L'image d'origine est [[scale()]]x plus grande que cet aperçu",
+  "portal.all.add": "Tout ajouter",
+  "portal.all.remove": "Tout retirer",
   "portal.none": "Aucun",
   "portal.pulsar.apps": "Accédez ici à l’ensemble des applications de L'ENT (messagerie, documents, vie-scolaire etc…) et choisissez vos favorites pour un accès plus rapide.",
   "portal.pulsar.search": "Recherchez directement depuis la page d'accueil une information ou un document dans L'ENT.",

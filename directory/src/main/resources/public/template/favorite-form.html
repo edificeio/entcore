@@ -88,6 +88,8 @@
             <transfer-columns
                 ng-model="currentFavoriteCreation"
                 searched-items="favoriteFormUsersGroups"
+                get-color="colorFromType(profile)"
+                loading="display.loadingFavoriteForm"
                 text-title="[[lang.translate('directory.composition.favorite')]]"
                 text-left-info = "[[lang.translate('directory.enter.criterias.search')]]"
                 text-right-warning-title = "[[lang.translate('directory.empty.favorite.composition.title')]]"
