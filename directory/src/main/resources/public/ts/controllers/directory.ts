@@ -178,6 +178,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 					}
 
 					template.open('list', 'dominos');
+					template.open('dominosUser', 'dominos-user');					
 					$scope.title = 'class';
 					$scope.$apply();
 				});
