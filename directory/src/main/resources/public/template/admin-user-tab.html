@@ -84,6 +84,13 @@
             <li ng-class="{selected : userFilters.showGuests}" ng-click="toggleFilter('showGuests')">
                 [[lang.translate("directory.admin.showGuests")]]
             </li>
+            <h3><i18n>blocked.users</i18n></h3>
+            <li ng-class="{selected :userFilters.showBlockedUsers}" ng-click="toggleFilter('showBlockedUsers')">
+                [[lang.translate("directory.admin.showBlockedUsers")]]
+            </li>
+            <li ng-class="{selected :userFilters.showUnblockedUsers}" ng-click="toggleFilter('showUnblockedUsers')">
+                [[lang.translate("directory.admin.showUnblockedUsers")]]
+            </li>
             <h3><i18n>origin</i18n></h3>
             <li ng-class="{selected :userFilters.showFeedModeManual}" ng-click="toggleFilter('showFeedModeManual')">
                 [[lang.translate("directory.admin.showFeedModeManual")]]

@@ -29,6 +29,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
@@ -553,6 +554,49 @@ public class StructureController extends BaseController {
 	public void userList(HttpServerRequest request) {
 		String structureId = request.params().get("id");
 		this.structureService.userList(structureId, arrayResponseHandler(request));
+	}
+
+	@Put("structure/:structureId/profile/block")
+	@SecuredAction( value = "", type = ActionType.RESOURCE)
+	public void blockUsers(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				final String structureId = request.params().get("structureId");
+				final String profile = json.getString("profile");
+				final boolean block = json.getBoolean("block", true);
+				structureService.blockUsers(structureId, profile, block, new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject r) {
+						if ("ok".equals(r.getString("status"))) {
+							request.response().end();
+							JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
+							for (Object userId : usersId) {
+								UserUtils.deletePermanentSession(eb, (String) userId, null, new Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (!event) {
+											log.error("Error delete permanent session with userId : " + userId);
+										}
+									}
+								});
+								UserUtils.deleteCacheSession(eb, (String) userId, new Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (!event) {
+											log.error("Error delete cache session with userId : " + userId);
+										}
+									}
+								});
+							}
+						}
+						else {
+							badRequest(request);
+						}
+					}
+				});
+			}
+		});
 	}
 	
 	public void setStructureService(SchoolService structureService) {

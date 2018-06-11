@@ -8,6 +8,12 @@
     </head>
 </html>
 <body ng-controller="AdminDirectoryController" >
+        <top-notification
+            trigger="topNotification.show"
+            confirm="topNotification.confirm"
+            content="topNotification.message"
+            labels="topNotification.labels">
+        </top-notification>
     <admin-portal>
         <article class="twelve cell list-view">
 
