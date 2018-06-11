@@ -250,10 +250,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		if ($scope.search.index === 0) {
 			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
 			$scope.users = directory.directory.users;
+			template.open('dominosUser', 'dominos-user');
 		}
 		else {
 			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
 			$scope.groups = directory.directory.groups;
+			template.open('dominosGroup', 'dominos-group');
 		}
 		$scope.display.searchmobile = false;
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
@@ -279,7 +281,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.loading = true;
 		await favorite.getUsersAndGroups();
 		$scope.currentFavorite = favorite;
-		$scope.display.loading = false;
+		template.open('dominosUser', 'dominos-user')
+		template.open('dominosGroup', 'dominos-group')		
+		$scope.loading = false;
 		$scope.$apply();
 	};
 
@@ -327,7 +331,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('details', 'user-infos');
 	};
 
-	$scope.backToUsers = function() {
+	$scope.back = function() {
 		$scope.currentUser = undefined;
 		template.close('details');
 	}
@@ -342,15 +346,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 	}
 
-	$scope.backToGroup = function() {
-		template.close('details');
-		$scope.currentUser = undefined;
-	}
-
 	$scope.showGroupUsers = async function(group) {
 		$scope.loading = true;
 		await group.getUsers();
 		$scope.currentGroup = group;
+		template.open('dominosUser', 'dominos-user')
 		template.open('groupActions', 'group-actions');
 		$scope.loading = false;
 		$scope.$apply();
@@ -416,6 +416,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			else
 				template.open('list', 'dominos');
 		}
-		$scope.backToUsers();
+		$scope.currentGroup = null;
+		$scope.back();
 	}
 }]);

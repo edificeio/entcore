@@ -175,13 +175,7 @@
 		<div ng-if="currentUser" 
 			ng-class="{ 'zero-mobile':display.searchmobile }" 
 			class="left-spacing-twice top-spacing-twice">
-			<a ng-if="search.index === 0">
-				<h2 ng-click="backToUsers()"><i class="back"></i> <i18n>userBook.directory.backToUsersList</i18n></h2>
-			</a>
-
-			<div ng-if="search.index === 1">
-				<h2 ng-click="backToGroup()"><i class="back"></i> <i18n>userBook.directory.backToGroup</i18n></h2>
-			</div>
+			<a><h2 ng-click="back()"><i class="back"></i> <i18n>userBook.directory.back</i18n></h2></a>
 			
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>

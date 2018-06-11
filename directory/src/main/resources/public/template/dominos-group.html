@@ -1,0 +1,25 @@
+<section class="domino" ng-class="colorFromType(group.profile)" ng-click="showGroupUsers(group)">
+    <div class="top domino-group" ng-class="lightenColorFromType(group.profile)">
+        <div>
+            <img class="domino-group round active" skin-src="/img/illustrations/group-avatar.svg" />
+        </div>
+        <div class="nb-users">
+            <span>[[group.nbUsers]]</span> <i class="person"></i>
+        </div>
+    </div>
+
+    <div class="center" ng-if="group.groupType == 'ProfileGroup'">
+        <span><i18n>userBook.profile.type</i18n></span>
+        <br/>
+        <span translate content="directory.[[getType(group.profile).toLowerCase()]]"></span>
+    </div>
+    <div class="center" ng-if="group.groupType != 'ProfileGroup'">
+        <span translate content="userBook.directory.group.[[group.groupType]]"></span>
+    </div>
+
+    <div class="bottom">
+        <div class="content">
+            <span>[[group.name]]</span>
+        </div>
+    </div>
+</section>

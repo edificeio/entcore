@@ -1,0 +1,18 @@
+<section class="domino" ng-class="colorFromType(user.profile != null ? user.profile : user.type)" ng-click="selectUser(user)">
+    <div class="top">
+        <img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
+    </div>
+
+    <div class="center">
+        <span translate content="directory.[[getType(user.profile != null ? user.profile : user.type).toLowerCase()]]"></span>
+    </div>
+
+    <div class="bottom">
+        <div class="content">
+            <span>[[user.displayName]]</span>
+            <div class="bottom-locked" ng-if="user.mood != 'default'">
+                <i class="[[user.mood]]"></i>
+            </div>
+        </div>
+    </div>
+</section>
