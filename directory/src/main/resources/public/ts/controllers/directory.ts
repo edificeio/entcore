@@ -23,44 +23,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	template.open('userActions', 'user-actions');
 	$scope.users = {};
 	$scope.groups = {};
-	$scope.favorites = [
-		{
-			name: "test"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		},
-		{
-			name: "test2"
-		}
-	];
+	$scope.favorites = {};
 	$scope.currentFavorite = null;
 	$scope.lang = lang;
 
@@ -122,9 +85,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
 			directory.directory.groups.all = [];
+			directory.directory.favorites.all = [];
 			directory.network.schools.all = [];
+			await directory.directory.favorites.getAll();
 			$scope.users = directory.directory.users;
 			$scope.groups = directory.directory.groups;
+			$scope.favorites = directory.directory.favorites;
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
 
