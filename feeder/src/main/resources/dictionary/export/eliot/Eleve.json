@@ -21,6 +21,6 @@
 	"status" : { "attribute" : "ENTEleveStatutEleve" },
 	"fieldOfStudyLabels" : { "attribute" : "ENTEleveEnseignements" },
 	"relative" : { "attribute" : "ENTElevePersRelEleve" },
-	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" },
+	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
 	"ine" : { "attribute" : "ENTEleveINE" }
 }
