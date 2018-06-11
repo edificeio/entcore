@@ -57,6 +57,7 @@ export const directory = {
 	},
 	Group: function(data?){
 		this.users = [];
+		this.groups = [];
 
 		this.getUsers = async function() {
 			var response = await http.get('/communication/visible/group/' + this.id);
@@ -64,6 +65,10 @@ export const directory = {
 				return new directory.User(item);
 			});
 		}
+	},
+	Favorite: function(data?){
+		this.users = [];
+		this.groups = [];
 	},
 	ClassAdmin: function(){
 		this.sync = function(){
@@ -314,6 +319,15 @@ export const directory = {
 				if(typeof callback === 'function'){
 					callback();
 				}
+			}
+		}),
+		this.collection(directory.Favorite, {
+			match: function() {
+				return this.all;
+			},
+			getAll: async function() {
+				var response = await http.get('/directory/sharebookmark/all');
+				this.load(response.data);
 			}
 		})
 	},
