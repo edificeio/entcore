@@ -83,14 +83,18 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.display.showCloseMobile = false;
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
+			$scope.currentFavoriteCreation = [];
 			directory.directory.users.all = [];
 			directory.directory.groups.all = [];
 			directory.directory.favorites.all = [];
+			directory.favoriteForm.users.all = [];
+			directory.favoriteForm.groups.all = [];
 			directory.network.schools.all = [];
 			await directory.directory.favorites.getAll();
 			$scope.users = directory.directory.users;
 			$scope.groups = directory.directory.groups;
 			$scope.favorites = directory.directory.favorites;
+			$scope.favoriteFormUsersGroups = [];
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
 
@@ -120,11 +124,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				favorite: {
 					title: '',
 					search: '',
-					structures: null,
-					classes: null,
-					profiles: null,
-					functions: null,
-					types: null,
+					filters: {
+						structures: null,
+						classes: null,
+						profiles: null,
+						functions: null,
+						types: null,
+					},
 					options: $scope.generateCriteriaOptions()
 				}
 			}
@@ -280,6 +286,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.creatingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');
+	};
+
+	$scope.searchUsersAndGroups = async function(favorite) {
+		$scope.loading = true;
+		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
+		await directory.favoriteForm.groups.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
+		console.log($scope.create.favorite.filters);
+		$scope.favoriteFormUsersGroups = directory.favoriteForm.users.all.concat(directory.favoriteForm.groups.all);
+		$scope.loading = false;
+		$scope.$apply('favoriteFormUsersGroups');
 	};
 
 	$scope.deselectUser = function(tpl){

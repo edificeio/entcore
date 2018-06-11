@@ -20,6 +20,7 @@ import http from 'axios';
 
 export const directory = {
 	directory: undefined,
+	favoriteForm: undefined,
 	network: undefined,
 	classAdmin: undefined,
 	account: undefined,
@@ -556,6 +557,7 @@ directory.User.prototype.mergeByKeys = function(keys, handler) {
 model.build = function(){
 	this.makeModels(directory);
 	directory.directory = new directory.Directory();
+	directory.favoriteForm = new directory.Directory();
 	directory.classAdmin = new directory.ClassAdmin();
 	directory.network = new directory.Network();
 
