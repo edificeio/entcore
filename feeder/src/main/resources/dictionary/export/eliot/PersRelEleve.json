@@ -15,5 +15,5 @@
 	"mobile" : { "attribute" : "ENTPersonMobileSMS" },
 	"mobilePhone" : { "attribute" : "ENTPersonMobile" },
 	"students" : { "attribute" : "ENTAuxPersRelEleveEleve" },
-	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" }
+	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" }
 }

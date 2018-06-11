@@ -14,6 +14,6 @@
 	"country" : { "attribute" : "ENTPersonPays" },
 	"mobile" : { "attribute" : "ENTPersonMobileSMS" },
 	"mobilePhone" : { "attribute" : "ENTPersonMobile" },
-	"mergedIds" : { "attribute" : "ENTManuelPersonJointure" },
+	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
 	"structures" : { "attribute" : "eliot.fonctionPortail", "converter" : "structure-to-function" }
 }
