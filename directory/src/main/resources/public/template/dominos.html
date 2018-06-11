@@ -60,61 +60,21 @@
 
 	<!-- Users -->
 	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength" ng-if="search.index === 0 && !display.loading">
-		<section class="domino" ng-class="colorFromType(user.profile)" ng-click="selectUser(user)">
-			<div class="top">
-				<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
-			</div>
-
-			<div class="center">
-				<span translate content="directory.[[getType(user.profile).toLowerCase()]]"></span>
-			</div>
-
-			<div class="bottom">
-				<div class="content">
-					<span>[[user.displayName]]</span>
-					<div class="bottom-locked" ng-if="user.mood != 'default'">
-						<i class="[[user.mood]]"></i>
-					</div>
-				</div>
-			</div>
-		</section>
+		<div data-ng-include="template.containers.dominosUser"></div>
 	</div>
 
 	<!-- Groups -->
 	<div ng-if="search.index === 1 && !display.loading && !currentGroup" 
 		ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength"
 		class="item">
-		<section class="domino" ng-class="colorFromType(group.profile)" ng-click="showGroupUsers(group)">
-			<div class="top domino-group" ng-class="lightenColorFromType(group.profile)">
-				<div>
-					<img class="domino-group round active" skin-src="/img/illustrations/group-avatar.svg" />
-				</div>
-				<div class="nb-users">
-					<span>[[group.nbUsers]]</span> <i class="person"></i>
-				</div>
-			</div>
-
-			<div class="center" ng-if="group.groupType == 'ProfileGroup'">
-				<span><i18n>userBook.profile.type</i18n></span>
-				<br/>
-				<span translate content="directory.[[getType(group.profile).toLowerCase()]]"></span>
-			</div>
-			<div class="center" ng-if="group.groupType != 'ProfileGroup'">
-				<span translate content="userBook.directory.group.[[group.groupType]]"></span>
-			</div>
-
-			<div class="bottom">
-				<div class="content">
-					<span>[[group.name]]</span>
-				</div>
-			</div>
-		</section>
+		<div data-ng-include="template.containers.dominosGroup"></div>
 	</div>
 
 	<!-- Group Users -->
-	<div ng-if="search.index === 1 && !display.loading && currentGroup">
-		<h2 class="left-text"><a ng-click="backToGroups()"><i18n>userBook.directory.groups</i18n></a> <i class="open-right"></i> [[currentGroup.name]]</h2>
-
+	<div ng-if="(search.index === 1 || search.index === 2) && !display.loading && currentGroup">
+		<a class="left-text"><h2 ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></h2></a>
+		<h2 class="center-text">[[currentGroup.name]]</h2>
+		
 		<div class="flex-row justify-between medium-importance">
 			<div>
 				<div ng-if="currentGroup.groupType == 'ProfileGroup'" class="inline">
@@ -134,26 +94,28 @@
 
 		<div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
 			class="item">
-			<section class="domino" ng-class="colorFromType(user.type)" ng-click="selectUser(user)">
-				<div class="top">
-					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=290x290" class="fixed ten cell" />
-				</div>
-
-				<div class="center">
-					<span translate content="directory.[[getType(user.type).toLowerCase()]]"></span>
-				</div>
-
-				<div class="bottom">
-					<div class="content">
-						<span>[[user.displayName]]</span>
-						<div class="bottom-locked" ng-if="user.mood != 'default'">
-							<i class="[[user.mood]]"></i>
-						</div>
-					</div>
-				</div>
-			</section>
+			<div data-ng-include="template.containers.dominosUser"></div>
 		</div>
 	</div>
+
+	<!-- Favorites -->
+	<div ng-if="search.index === 2 && currentFavorite && !currentGroup">
+		<div class="flex-row justify-between">
+			<h2 class="left-text">[[ currentFavorite.name ]]</h2>
+
+			<button type="button">
+				<i18n>userBook.directory.button.edit.favorite</i18n>
+			</button>
+		</div>
+
+		<div ng-repeat="group in currentFavorite.groups | orderBy: 'name' | limitTo:search.maxLength" class="item">
+			<div data-ng-include="template.containers.dominosGroup"></div>
+		</div>
+
+		<div ng-repeat="user in currentFavorite.users | orderBy:'displayName' | limitTo:search.maxLength" class="item">
+			<div data-ng-include="template.containers.dominosUser"></div>
+		</div>
+	</div>	
 
 	<!-- Classrooms -->
     <div class="item" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
