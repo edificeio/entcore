@@ -374,7 +374,7 @@
     "userBook.directory.emptyScreen.groups.header": "C'est désert... Il y a quelqu'un ?",
     "userBook.directory.emptyScreen.groups.footer": "Pour trouver un groupe, lancer une recherche.",
     "userBook.directory.emptyScreen.favorite.header": "Il n’y a pas l’ombre d’un favori de partage...",
-    "userBook.directory.emptyScreen.favorite.footer": "Formez une liste de vos utilisateurs et groupes favoris. Vous pourrez ensuite leur partager vos ressources en un clic !",
+    "userBook.directory.emptyScreen.favorite.footer": "Formez une liste de vos utilisateurs et groupes favoris.<br/>Vous pourrez ensuite leur partager vos ressources en un clic !",
     "userBook.directory.noresults.users.header": "Personne à l'horizon...",
     "userBook.directory.noresults.users.footer": "Aucun utilisateur ne correspond à votre recherche.<br/>Essayez de nouveau en modifiant les critères !",
     "userBook.directory.noresults.groups.header": "Pas de groupe à l’horizon...",
