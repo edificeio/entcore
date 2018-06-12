@@ -72,21 +72,16 @@
 
 	<!-- Group Users -->
 	<div ng-if="(search.index === 1 || search.index === 2) && !display.loading && currentGroup">
-		<a class="left-text"><h2 ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></h2></a>
-		<h2 class="center-text">[[currentGroup.name]]</h2>
+		<div class="flex-row justify-between">
+			<h2 class="flex-all-remains left-text">
+				<a ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
+			</h2>
+			<h2>[[currentGroup.name]]</h2>
+			<div class="flex-all-remains"></div>
+		</div>
 		
-		<div class="flex-row justify-between medium-importance">
-			<div>
-				<div ng-if="currentGroup.groupType == 'ProfileGroup'" class="inline">
-					<i18n>userBook.profile.type</i18n> <span translate content="directory.[[getType(currentGroup.profile).toLowerCase()]]"></span>
-				</div>
-				<div ng-if="currentGroup.groupType != 'ProfileGroup'" class="inline">
-					<span translate content="userBook.directory.group.[[currentGroup.groupType]]"></span>
-				</div>
-			</div>
-			<div class="italic-text">
-				[[currentGroup.nbUsers]] <i18n>userBook.directory.group.members</i18n>
-			</div>
+		<div class="low-importance italic-text">
+			[[currentGroup.nbUsers]] <i18n>userBook.directory.group.members</i18n>
 		</div>
 
 		<article class="twelve cell actions-list left-text" ng-include="template.containers.groupActions">
