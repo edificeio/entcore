@@ -99,7 +99,7 @@
 	</div>
 
 	<!-- Favorites -->
-	<div ng-if="search.index === 2 && currentFavorite && !currentGroup">
+	<div ng-if="search.index === 2 && currentFavorite && !currentGroup && !display.loading">
 		<div class="flex-row justify-between">
 			<h2 class="left-text">[[ currentFavorite.name ]]</h2>
 
