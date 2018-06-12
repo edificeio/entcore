@@ -56,7 +56,7 @@ public class DuplicateUsers {
 			"DELETE r, r2, u2 " +
 			"WITH u1, IDPN, oldId, u2ExternalId " +
 			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-			"SET u1.IDPN = IDPN, u1.mergedIds = coalesce(u1.mergedIds, []) + oldId, u1.mergedExternalIds = coalesce(u1.mergedExternalIds, []) + u2ExternalId, " +
+			"SET u1.IDPN = IDPN, u1.mergedIds = coalesce(u1.mergedIds, []) + oldId, u1.mergedExternalIds = coalesce(u1.mergedExternalIds, []) + u2ExternalId " +
 			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private static final String SWITCH_MERGE_QUERY =
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
