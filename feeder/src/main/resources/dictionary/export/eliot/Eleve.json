@@ -15,11 +15,9 @@
 	"manualAndFunctionalGroups" : { "attribute" : "ENTEleveGroupes", "converter" : "functionalGroup" },
 	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"level" : { "attribute" : "ENTEleveNivFormation" },
-	"sector" : { "attribute" : "ENTEleveFiliere" },
 	"scholarshipHolder" : { "attribute" : "ENTEleveBoursier", "converter": "boolean-ON" },
 	"transport" : { "attribute" : "ENTEleveTransport", "converter": "boolean-ON" },
 	"status" : { "attribute" : "ENTEleveStatutEleve" },
-	"fieldOfStudyLabels" : { "attribute" : "ENTEleveEnseignements" },
 	"relative" : { "attribute" : "ENTElevePersRelEleve" },
 	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
 	"ine" : { "attribute" : "ENTEleveINE" }
