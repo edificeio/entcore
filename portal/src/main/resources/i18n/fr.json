@@ -311,6 +311,7 @@
   "imageeditor.scale": "L'image d'origine est [[scale()]]x plus grande que cet aperçu",
   "portal.all.add": "Tout ajouter",
   "portal.all.remove": "Tout retirer",
+  "portal.confirm.remove": "Confirmation de suppression",
   "portal.enter.criterias.search": "Saisissez les critères de votre recherche pour afficher des résultats.",
   "portal.select.users.criterias": "Sélectionnez les utilisateurs à ajouter depuis la liste.",
   "portal.none": "Aucun",

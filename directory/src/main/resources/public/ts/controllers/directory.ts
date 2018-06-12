@@ -26,6 +26,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.favorites = {};
 	$scope.currentFavorite = null;
 	$scope.lang = lang;
+	$scope.lightbox = {};
 
 	$scope.search = {
 		users: '',
@@ -447,5 +448,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			element.checked = check;
 		});
 		$scope.favoriteFormUsersGroups = [];
+	}
+
+	$scope.tryRemoveFavorite = function() {
+		$scope.lightbox.show = true;
+		template.open('lightbox', 'confirm-favorite-remove');
+	}
+
+	$scope.confirmRemoveFavorite = function() {
+		$scope.display.favoriteConfirmation = true;
+		$scope.lightbox.show = false;;
+		template.close('lightbox');
 	}
 }]);
