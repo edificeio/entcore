@@ -32,7 +32,9 @@
             required ng-minlength="1"/>
         <div class="flex-row">
             <h4><i18n>directory.search.favorite</i18n></h4>
-            <a class="absolute-magnet vertical-spacing-four"><i18n>directory.init.search</i18n></a>
+            <a ng-if="canFavoriteFormInitSearch()" class="absolute-magnet vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
+                <i18n>directory.init.search</i18n>
+            </a>
         </div>
         <form class="vertical-spacing-four" name="searchForm" ng-submit="searchUsersAndGroups()" novalidate>
             <div class="flex-row">

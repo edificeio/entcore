@@ -421,4 +421,31 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.search.maxLength = 50;
 		$scope.back();
 	}
+
+	$scope.canFavoriteFormInitSearch = function() {
+		return $scope.create.favorite.search || $scope.create.favorite.filters.structures || $scope.create.favorite.filters.classes || 
+				$scope.create.favorite.filters.profles || $scope.create.favorite.filters.functions || 
+				$scope.create.favorite.filters.types || $scope.favoriteFormUsersGroups.length > 0;
+	}
+
+	$scope.favoriteFormInitSearch = function() {
+		$scope.create.favorite.search = '';
+		$scope.create.favorite.filters.structures = null;
+		$scope.create.favorite.filters.classes = null;
+		$scope.create.favorite.filters.profles = null;
+		$scope.create.favorite.filters.functions = null;
+		$scope.create.favorite.filters.types = null;
+		$scope.checkOption($scope.create.favorite.options.structures, true);
+		$scope.checkOption($scope.create.favorite.options.classes, true);
+		$scope.checkOption($scope.create.favorite.options.profiles, true);
+		$scope.checkOption($scope.create.favorite.options.functions, true);
+		$scope.checkOption($scope.create.favorite.options.types, true);
+	}
+
+	$scope.checkOption = function(array, check) {
+		array.forEach(element => {
+			element.checked = check;
+		});
+		$scope.favoriteFormUsersGroups = [];
+	}
 }]);
