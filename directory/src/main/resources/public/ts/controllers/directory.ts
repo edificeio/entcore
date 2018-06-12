@@ -418,6 +418,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				template.open('list', 'dominos');
 		}
 		$scope.currentGroup = null;
+		$scope.search.maxLength = 50;
 		$scope.back();
 	}
 }]);
