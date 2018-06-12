@@ -63,8 +63,10 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
 
                     scope.$watch(function() { return option; }, function(newValue, oldValue) {
                         if (newValue != oldValue) {
-                            if (newValue.checked)
-                                scope.ngModel.push(newValue.type);
+                            if (newValue.checked) {
+                                if (scope.ngModel)
+                                    scope.ngModel.push(newValue.type);
+                            }
                             else {
                                 if (!scope.ngModel) {
                                     scope.ngModel = [];
@@ -74,7 +76,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                                 }
                                 scope.ngModel.splice(scope.ngModel.indexOf(newValue.type), 1);
                             }
-                            if (scope.ngModel.length === scope.options.length)
+                            if (scope.ngModel && scope.ngModel.length === scope.options.length)
                                 scope.ngModel = null;
                         }
                     }, true);
