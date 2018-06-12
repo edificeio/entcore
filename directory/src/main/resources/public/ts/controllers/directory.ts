@@ -284,7 +284,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.currentFavorite = favorite;
 		template.open('dominosUser', 'dominos-user')
 		template.open('dominosGroup', 'dominos-group')		
-		$scope.loading = false;
+		$scope.display.loading = false;
 		$scope.$apply();
 	};
 
@@ -348,12 +348,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.showGroupUsers = async function(group) {
-		$scope.loading = true;
+		$scope.display.loading = true;
 		await group.getUsers();
 		$scope.currentGroup = group;
 		template.open('dominosUser', 'dominos-user')
 		template.open('groupActions', 'group-actions');
-		$scope.loading = false;
+		$scope.display.loading = false;
 		$scope.$apply();
 	}
 
