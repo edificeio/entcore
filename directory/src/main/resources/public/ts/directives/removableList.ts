@@ -1,4 +1,4 @@
-import { ng, _ } from 'entcore';
+import { ng, _, angular } from 'entcore';
 
 /**
  * @description A list that can be filtered and items can be removed.
@@ -20,7 +20,9 @@ export const removableList = ng.directive('removableList', () => {
                 <nav class="removable-list wrapper left-text">
                     <div class="row big-block-container" ng-repeat="item in ngModel" ng-click="selectItem({item: item})">
                         <span class="block cell-ellipsis right-spacing-twice">[[ item.name ]]</span>
-                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet" ng-click="deleteItem({item: item}); $event.stopPropagation();"/>
+                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet" 
+                            ng-click="deleteItem({item: item}); $event.stopPropagation();" 
+                            ng-if="removable"/>
                     </div>
                 </nav>
             </div>
@@ -35,6 +37,7 @@ export const removableList = ng.directive('removableList', () => {
         link: (scope, element, attributes) => {
             scope.placeholder = attributes.placeholder;
             scope.search = '';
+            scope.removable = !angular.isUndefined(attributes.deleteItem);
         }
     };
 });
