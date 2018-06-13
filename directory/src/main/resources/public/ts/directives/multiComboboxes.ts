@@ -35,8 +35,8 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     <div class="top-spacing-twice left-text smaller-text">
                         <a class="text-underline-hover" ng-click="selectNone()"><i18n>portal.none</i18n></a> <span class="horizontal-margin-small">|</span> <a class="text-underline-hover" ng-click="selectAll()"><i18n>portal.select.all</i18n></a>
                     </div>
-                    <div class="top-spacing-twice left-text">
-                        <div class="row top-spacing" ng-repeat="option in options | filter:filterByLabel">
+                    <div class="top-spacing-twice left-text scroll-seven-checks" bottom-scroll="updatingMaxItems()">
+                        <div class="row cell-ellipsis top-spacing" ng-repeat="option in options | filter:filterByLabel">
                             <label class="wrapping-checkbox relative">
                                 <input type="checkbox" ng-model="option.checked" />
                                 <i18n class="low-importance">[[ option.label ]]</i18n>
@@ -55,6 +55,11 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
         link: (scope, element, attributes) => {
             scope.titleAll = attributes.titleAll;
             scope.title = attributes.title;
+            scope.maxItems = 20;
+
+            scope.updatingMaxItems = function() {
+                scope.maxItems += 20;
+            };
 
             // When options are available, run !
             scope.$watchCollection("options", function(newValue) {
