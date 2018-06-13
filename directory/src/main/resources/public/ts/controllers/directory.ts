@@ -496,7 +496,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				$scope.create.favorite.filters.types || $scope.favoriteFormUsersGroups.length > 0;
 	}
 
-	$scope.favoriteFormInitSearch = function() {$scope.display.loadingFavoriteForm = true;
+	$scope.favoriteFormInitSearch = function() {
 		$scope.create.favorite.search = '';
 		$scope.create.favorite.filters.structures = null;
 		$scope.create.favorite.filters.classes = null;
