@@ -124,8 +124,8 @@ public abstract class BaseServer extends Server {
 	protected Server addController(BaseController controller) {
 		controller.setAccessLogger(accessLogger);
 		super.addController(controller);
-		if (config.getString("override-theme") != null) {
-			controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getString("override-theme")));
+		if (config.getJsonObject("override-theme") != null) {
+			controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getJsonObject("override-theme")));
 		}
 		if (config.getBoolean("csrf-token", true) || contentSecurityPolicy != null) {
 			controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
