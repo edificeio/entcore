@@ -1,4 +1,6 @@
 {
+    "push.notif.file.share": "Un fichier a été partagé avec vous",
+    "push.notif.folder.share": "Un dossier a été partagé avec vous",
     "workspace.share": "Partage d'un fichier",
     "workspace.share-folder": "Partage d'un dossier",
     "workspace.comment": "Ajout de commentaire sur un fichier",
