@@ -21,13 +21,13 @@
  <h3 whereami class="twelve centered-text"></h3>
  <lightbox show="lightbox.show" on-close="lightbox.show = false">
     <container template="lightbox"></container>
-</lightbox>
+ </lightbox>
  <div class="spacer-large"></div>
  <article class="horizontal-margin">
     <h3><i18n>directory.title.create.favorite</i18n></h3>
     <div class="reduce-block-eight horizontal-margin">
         <input type="search"
-            ng-model="create.favorite.title"
+            ng-model="create.favorite.name"
             translate attr="placeholder"
             placeholder="directory.placeholder.title.favorite"
             class="text-flow twelve vertical-spacing-four"
@@ -90,7 +90,7 @@
         <h4><i18n>directory.search.favorite.add</i18n></h4>
         <div class="row vertical-spacing-four">
             <transfer-columns
-                ng-model="currentFavoriteCreation"
+                ng-model="create.favorite.members"
                 searched-items="favoriteFormUsersGroups"
                 get-color="colorFromType(profile)"
                 loading="display.loadingFavoriteForm"
@@ -101,13 +101,13 @@
         </div>
         <div class="row vertical-spacing-four">
             <div class="right-magnet">
-                <button type="button" class="flat-button" ng-click="tryRemoveFavorite()">
+                <button type="button" class="flat-button" ng-click="tryRemoveFavorite(currentFavorite)" ng-if="display.editingFavorite">
                     <i18n>directory.deleteFavorite</i18n>
                 </button>
                 <button type="button" class="flat-button" ng-click="cancelFavorite()">
                     <i18n>cancel</i18n>
                 </button>
-                <button type="button" class="left-spacing">
+                <button type="button" class="left-spacing" ng-click="saveFavorite()" ng-disabled="create.favorite.members.length === 0">
                     <i18n>directory.save</i18n>
                 </button>
             </div>

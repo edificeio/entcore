@@ -94,11 +94,11 @@
 	</div>
 
 	<!-- Favorites -->
-	<div ng-if="search.index === 2 && currentFavorite && !currentGroup && !display.loading">
+	<div ng-if="search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
 		<div class="flex-row justify-between">
 			<h2 class="left-text">[[ currentFavorite.name ]]</h2>
 
-			<button type="button">
+			<button type="button" ng-click="editFavorite()">
 				<i18n>userBook.directory.button.edit.favorite</i18n>
 			</button>
 		</div>
