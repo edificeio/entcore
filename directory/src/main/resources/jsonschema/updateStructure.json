@@ -5,6 +5,9 @@
   "properties": {
     "name": {
       "type": "string"
+    },
+    "UAI": {
+      "type": "string"
     }
   },
   "required": [
