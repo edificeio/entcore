@@ -376,14 +376,24 @@ public class WorkspaceService extends BaseController {
 
 	private void sendNotify(final HttpServerRequest request, final String resource, final UserInfos user, final List<String> recipients, final boolean isFolder) {
 		final JsonObject params = new JsonObject()
-		.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-		.put("username", user.getUsername())
-		.put("appPrefix", pathPrefix+"/workspace");
+				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.put("username", user.getUsername())
+				.put("appPrefix", pathPrefix + "/workspace")
+				.put("doc", "share");
 
-		if(isFolder){
+		final JsonObject pushNotif = new JsonObject();
+		final String i18nPushNotifBody;
+
+		if (isFolder) {
 			params.put("resourceUri", pathPrefix + "/workspace#/shared/folder/" + resource);
+			pushNotif.put("title", "push.notif.folder.share");
+			i18nPushNotifBody = user.getUsername() + " " + I18n.getInstance().translate("workspace.shared.folder",
+					getHost(request), I18n.acceptLanguage(request)) + " : ";
 		} else {
 			params.put("resourceUri", pathPrefix + "/document/" + resource);
+			pushNotif.put("title", "push.notif.file.share");
+			i18nPushNotifBody = user.getUsername() + " " + I18n.getInstance().translate("workspace.shared.document",
+					getHost(request), I18n.acceptLanguage(request)) + " : ";
 		}
 
 		final String notificationName = WORKSPACE_NAME.toLowerCase() + "." + (isFolder ? "share-folder" : "share");
@@ -393,7 +403,9 @@ public class WorkspaceService extends BaseController {
 					@Override
 					public void handle(Message<JsonObject> event) {
 						if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
-							params.put("resourceName", event.body().getJsonObject("result").getString("name", ""));
+							String resourceName = event.body().getJsonObject("result").getString("name", "");
+							params.put("resourceName", resourceName);
+							params.put("pushNotif", pushNotif.put("body", i18nPushNotifBody + resourceName));
 							notification.notifyTimeline(request, notificationName, user, recipients, resource, params);
 						} else {
 							log.error("Unable to send timeline notification : missing name on resource " + resource);
