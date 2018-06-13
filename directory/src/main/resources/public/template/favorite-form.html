@@ -19,14 +19,11 @@
  -->
 
  <h3 whereami class="twelve centered-text"></h3>
- <lightbox show="lightbox.show" on-close="lightbox.show = false">
-    <container template="lightbox"></container>
- </lightbox>
  <div class="spacer-large"></div>
  <article class="horizontal-margin">
     <h3><i18n>directory.title.create.favorite</i18n></h3>
-    <div class="reduce-block-eight horizontal-margin">
-        <input type="search"
+    <form class="reduce-block-eight horizontal-margin" ng-submit="saveFavorite()">
+        <input type="text"
             ng-model="create.favorite.name"
             translate attr="placeholder"
             placeholder="directory.placeholder.title.favorite"
@@ -38,7 +35,7 @@
                 <i18n>directory.init.search</i18n>
             </a>
         </div>
-        <form class="vertical-spacing-four" name="searchForm" ng-submit="searchUsersAndGroups()" novalidate>
+        <div class="vertical-spacing-four">
             <div class="flex-row">
                 <multi-comboboxes class="twelve min-w-zero"
                     ng-model="create.favorite.filters.structures"
@@ -81,12 +78,12 @@
                     <i class="search" ng-click="searchUsersAndGroups()"></i>
                 </div>
                 <div class="cell absolute-magnet">
-                    <button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
+                    <button type="button" ng-click="searchUsersAndGroups()" class="twelve">
                         <i18n>directory.search</i18n>
                     </button>
                 </div>
             </div>
-        </form>
+        </div>
         <h4><i18n>directory.search.favorite.add</i18n></h4>
         <div class="row vertical-spacing-four">
             <transfer-columns
@@ -107,10 +104,10 @@
                 <button type="button" class="flat-button" ng-click="cancelFavorite()">
                     <i18n>cancel</i18n>
                 </button>
-                <button type="button" class="left-spacing" ng-click="saveFavorite()" ng-disabled="create.favorite.members.length === 0">
+                <button class="left-spacing" ng-disabled="create.favorite.members.length === 0">
                     <i18n>directory.save</i18n>
                 </button>
             </div>
         </div>
-    </div>
+    </form>
  </article>
