@@ -70,6 +70,16 @@ export const directory = {
 		this.users = [];
 		this.groups = [];
 
+		var registerChanges = (name, members) => {
+			this.name = name;
+			members.forEach(member => {
+				if (member.name)
+					this.groups.push(member);
+				else
+					this.users.push(member);
+			});
+		}
+
 		this.getUsersAndGroups = async function() {
 			var response = await http.get('/directory/sharebookmark/' + this.id);
 			this.users = _.map(response.data.users, function(item) {
@@ -78,6 +88,25 @@ export const directory = {
 			this.groups = _.map(response.data.groups, function(item) {
 				return new directory.Group(item);
 			});
+		}
+		this.save = async function(name, members, editing) {
+			registerChanges(name, members);
+			var body = {
+				name: name,
+				members: _.map(members, function(member) {
+					return member.id;
+				})
+			};
+			if (editing) {
+				await http.put('/directory/sharebookmark/' + this.id, body);
+			}
+			else {
+				var response = await http.post('/directory/sharebookmark', body);
+				this.id = response.data.id;
+			}
+		}
+		this.delete = async function() {
+			await http.delete('/directory/sharebookmark/' + this.id);
 		}
 	},
 	ClassAdmin: function(){

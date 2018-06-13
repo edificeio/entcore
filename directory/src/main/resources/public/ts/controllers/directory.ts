@@ -27,6 +27,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.currentFavorite = null;
 	$scope.lang = lang;
 	$scope.lightbox = {};
+	$scope.currentDeletingFavorite = null;
 
 	$scope.search = {
 		users: '',
@@ -85,7 +86,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.display.lightbox = { "addFavorite" : false };
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
-			$scope.currentFavoriteCreation = [];
 			directory.directory.users.all = [];
 			directory.directory.groups.all = [];
 			directory.directory.favorites.all = [];
@@ -97,10 +97,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.groups = directory.directory.groups;
 			$scope.favorites = directory.directory.favorites;
 			$scope.favoriteFormUsersGroups = [];
-			
-			if(!$scope.favorites.empty()) {
-				$scope.selectFavorite($scope.favorites.first());
-			}
+			await $scope.selectFirstFavortite();
 			
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
@@ -129,7 +126,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 			$scope.create = {
 				favorite: {
-					title: '',
+					name: '',
+					members: [],
 					search: '',
 					filters: {
 						structures: null,
@@ -274,11 +272,27 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.createFavorite = async function() {
+		$scope.showFavoriteForm();
+		$scope.currentFavorite = new directory.Favorite();
+		$scope.create.favorite.name = '';
+		$scope.create.favorite.members = [];
+	};
+
+	$scope.editFavorite = function() {
+		$scope.display.editingFavorite = true;
+		$scope.showFavoriteForm();
+		$scope.create.favorite.name = $scope.currentFavorite.name;
+		$scope.create.favorite.members = $scope.currentFavorite.groups.concat($scope.currentFavorite.users);
+	}
+
+	$scope.showFavoriteForm = function() {
 		$scope.display.creatingFavorite = true;
 		$('removable-list *').off();
 		template.close('list');
+		template.close('dominosUser');
+		template.close('dominosGroup');
 		template.open('list', 'favorite-form');
-	};
+	}
 
 	$scope.selectFavorite = async function(favorite) {
 		$scope.display.loading = true;
@@ -290,14 +304,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.$apply();
 	};
 
-	$scope.deleteFavorite = async function(favorite) {
-		console.log("delete");
-	};
-
 	$scope.cancelFavorite = async function(favorite) {
-		$scope.display.creatingFavorite = false;
-		template.close('list');
-		template.open('list', 'dominos');
+		if (!$scope.display.editingFavorite)
+			$scope.currentFavorite = null;
+
+		$scope.hideFavoriteForm();
+		await $scope.selectFirstFavortite();
 	};
 
 	$scope.addToFavorite = function(item) {
@@ -337,6 +349,47 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 		template.open('details', 'user-infos');
 	};
+
+	$scope.tryRemoveFavorite = function(favorite) {
+		$scope.currentDeletingFavorite = favorite;
+		$scope.lightbox.show = true;
+		template.open('lightbox', 'confirm-favorite-remove');
+	}
+
+	$scope.confirmRemoveFavorite = async function() {
+		$scope.lightbox.show = false;
+		template.close('lightbox');
+		if ($scope.display.creatingFavorite)
+			$scope.hideFavoriteForm();
+		$scope.display.loading = true;
+		await $scope.currentDeletingFavorite.delete();
+		$scope.favorites.splice($scope.favorites.indexOf($scope.currentDeletingFavorite), 1);
+		$scope.currentDeletingFavorite = null;
+		await $scope.selectFirstFavortite();
+		$scope.display.loading = false;
+		$scope.$apply();
+	}
+
+	$scope.saveFavorite = async function() {
+		var isEditing = $scope.display.editingFavorite;
+		$scope.hideFavoriteForm();
+		$scope.display.loading = true;
+		await $scope.currentFavorite.save($scope.create.favorite.name, $scope.create.favorite.members, isEditing);
+		if (!isEditing)
+			$scope.favorites.push($scope.currentFavorite);
+		$scope.hideFavoriteForm();
+		await $scope.selectFavorite($scope.currentFavorite);
+		$scope.display.loading = false;
+		$scope.$apply();
+	}
+	
+	$scope.hideFavoriteForm = function() {
+		$scope.display.creatingFavorite = false;
+		$scope.display.editingFavorite = false;
+		$scope.favoriteFormUsersGroups = [];
+		template.close('list');
+		template.open('list', 'dominos');
+	}
 
 	$scope.back = function() {
 		$scope.currentUser = undefined;
@@ -434,7 +487,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				$scope.create.favorite.filters.types || $scope.favoriteFormUsersGroups.length > 0;
 	}
 
-	$scope.favoriteFormInitSearch = function() {
+	$scope.favoriteFormInitSearch = function() {$scope.display.loadingFavoriteForm = true;
 		$scope.create.favorite.search = '';
 		$scope.create.favorite.filters.structures = null;
 		$scope.create.favorite.filters.classes = null;
@@ -455,14 +508,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.favoriteFormUsersGroups = [];
 	}
 
-	$scope.tryRemoveFavorite = function() {
-		$scope.lightbox.show = true;
-		template.open('lightbox', 'confirm-favorite-remove');
-	}
-
-	$scope.confirmRemoveFavorite = function() {
-		$scope.display.favoriteConfirmation = true;
-		$scope.lightbox.show = false;;
-		template.close('lightbox');
+	$scope.selectFirstFavortite = async function() {
+		if($scope.favorites.empty()) {
+			$scope.currentFavorite = null;
+		}
+		else {
+			await $scope.selectFavorite($scope.favorites.first());
+		}
 	}
 }]);
