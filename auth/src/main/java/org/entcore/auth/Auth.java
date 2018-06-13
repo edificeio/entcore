@@ -101,6 +101,10 @@ public class Auth extends BaseServer {
 								if (callbackParam != null && !callbackParam.trim().isEmpty()) {
 									server.putIfAbsent("callbackParam", callbackParam);
 								}
+								final JsonObject authLocations = config.getJsonObject("authLocations");
+								if (authLocations != null && authLocations.size() > 0) {
+									server.putIfAbsent("authLocations", authLocations.encode());
+								}
 							}
 						} catch (ConfigurationException e) {
 							log.error("Saml loading error.", e);
