@@ -22,32 +22,41 @@ package org.entcore.common.http.response;
 import fr.wseduc.webutils.http.HookProcess;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 public class OverrideThemeHookRender implements HookProcess {
 
 	private final EventBus eb;
-	private final String theme;
+	private final JsonObject themeByDomain;
 
-	public OverrideThemeHookRender(EventBus eb, String theme) {
+	public OverrideThemeHookRender(EventBus eb, JsonObject themeByDomain) {
 		this.eb = eb;
-		this.theme = theme;
+		this.themeByDomain = themeByDomain;
 	}
 
 	@Override
 	public void execute(final HttpServerRequest request, final Handler<Void> handler) {
-		if (theme.isEmpty()) {
+		if (themeByDomain.isEmpty()) {
 			if (CookieHelper.get("theme", request) != null) {
 				CookieHelper.set("theme", "", 0l, request);
 			}
 		} else {
-			CookieHelper.set("theme", theme, request);
+			final String theme = themeByDomain.getString(Renders.getHost(request));
+			if (isNotEmpty(theme)) {
+				CookieHelper.set("theme", theme, request);
+			} else {
+				if (CookieHelper.get("theme", request) != null) {
+					CookieHelper.set("theme", "", 0l, request);
+				}
+			}
 		}
 		// remove theme cache
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
