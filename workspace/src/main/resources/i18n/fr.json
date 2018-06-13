@@ -168,6 +168,8 @@
     "workspace.download":  "Télécharger",
     "workspace.search.description.one": "Un commentaire contenant, '{0}', répond à vos critères de recherche.",
     "workspace.search.description.several" : "{0} commentaires répondent à vos critères de recherche, dont le plus récent contient : '{1}'.",
+    "workspace.shared.document": "a partagé avec vous le document",
+    "workspace.shared.folder": "a partagé avec vous le dossier",
     "tuto.title": "Naviguez au sein de vos documents en vue vignettes :",
     "tuto.action.select": "Cliquez",
     "tuto.text.select": "pour séléctionner et accéder au menu d'options,",
