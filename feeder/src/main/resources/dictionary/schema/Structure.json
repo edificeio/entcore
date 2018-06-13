@@ -111,5 +111,5 @@
 		"modified" : { "generator" : "nowDate", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
-	"modifiable" : ["name"]
+	"modifiable" : ["name", "UAI"]
 }

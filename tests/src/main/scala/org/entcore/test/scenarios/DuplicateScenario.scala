@@ -31,6 +31,17 @@ object DuplicateScenario {
   val names = List("Devot", "Devost", "PIREZ", "PIRES", "MonjeUa", "MonjeUa")
 
   val scn = Authenticate.authenticateAdmin
+    .exec(http("Set UAI on Structure ")
+        .put("/directory/structure/${schoolId}")
+        .header("Content-Type", "application/json")
+        .body(StringBody("""{ "UAI": "0123456Z", "name": "Emile Zola" }"""))
+        .check(status.is(200))
+    )
+    .exec(http("Launch AAF import")
+      .post("/directory/import")
+      .check(status.is(200))
+    )
+    .pause(10)
     .exec(http("Create manual teacher")
     .post("""/directory/api/user""")
     .formParam("""classId""", """${classId}""")
@@ -92,7 +103,7 @@ object DuplicateScenario {
     .get("""/directory/duplicates""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
-    }).is(9)))
+    }).is(4)))
 
     .exec(Authenticate.authenticateUser("${teacherLogin}", "blipblop"))
     .exec(http("List duplicates")
@@ -106,7 +117,7 @@ object DuplicateScenario {
     .exec(http("List duplicates")
     .get("""/directory/duplicates?structure=${parent-structure-id}&inherit=true""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
-      JSONValue.parse(j).asInstanceOf[JSONArray].size()}).is(9),
+      JSONValue.parse(j).asInstanceOf[JSONArray].size()}).is(4),
       jsonPath("$").find.transformOption(_.map{ j =>
         JSONValue.parse(j).asInstanceOf[JSONArray].asScala.toList
           .filter{i =>
@@ -145,7 +156,7 @@ object DuplicateScenario {
     .get("""/directory/duplicates?structure=${parent-structure-id}&inherit=true""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
-    }).is(1)))
+    }).is(3)))
 
     .foreach("${mergeDuplicates}", "merge") {
       doIf{session =>
@@ -220,7 +231,7 @@ object DuplicateScenario {
         exec(http("Merge duplicate")
           .put("""/directory/duplicate/merge/${merge(0)}/${merge(2)}""")
           .header("Content-Length", "0")
-          .check(status.is(400)))
+          .check(status.is(200)))
         .exec{session =>
           val cmc = session("countMergeConflict").asOption[Int].getOrElse(0)
           session.set("countMergeConflict", cmc + 1)
