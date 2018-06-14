@@ -105,9 +105,9 @@ public class AAFUtil {
 							} else if (isNotEmpty(code) && isNotEmpty(j.getString("code_div"))) {
 								res.add(structureExternalId + "$" + j.getString("code_div") + "_" + code + "$" + j.getString("idgpe"));
 							}
-						} else if (isEmpty(j.getString("externalId"))) {
+						} else if (isEmpty(j.getString("externalId")) && isNotEmpty(name)) {
 							res.add(structureExternalId + "$" + name + "$" + j.getString("id"));
-						} else {
+						} else if (isNotEmpty(j.getString("externalId"))) {
 							res.add(j.getString("externalId") + "$" + j.getString("id"));
 						}
 					}
