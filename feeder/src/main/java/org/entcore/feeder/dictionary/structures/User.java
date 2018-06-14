@@ -502,8 +502,8 @@ public class User {
 		if (attributes != null && attributes.size() > 0) {
 			query.append("RETURN DISTINCT");
 			for (Object attribute : attributes) {
-				if ("manualGroups".equals(attribute)) {
-					query.append(" manualGroups");
+				if ("manualGroups".equals(attribute) || "manualAndFunctionalGroups".equals(attribute) || "functionalGroups".equals(attribute)) {
+					query.append(" ").append(attribute);
 				} else {
 					query.append(" u.").append(attribute);
 				}
