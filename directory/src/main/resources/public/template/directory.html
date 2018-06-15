@@ -21,8 +21,18 @@
 <lightbox show="lightbox.show" on-close="lightbox.show = false">
 	<container template="lightbox"></container>
 </lightbox>
+
+<!-- Empty screen when portrait tablet in favorite form -->
+<div class="zero-desktop twelve-mobile twelve-tablette-wide center-component-tablette">
+	<div class="emptyscreen row reduce-block-six eight-tablette-wide" ng-if="display.creatingFavorite">
+		<h2 class="emptyscreen-header"><i18n>portal.emptyscreen.rotatedevice.title</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-rotatedevice.svg">
+		<p class="emptyscreen-footer"><i18n>portal.emptyscreen.rotatedevice.description</i18n></p>
+	</div>
+</div>
+
 <div class="row rigid-grid">
-	<section class="flex-row f-column justify-center four cell twelve-mobile center-component-tablette" ng-class="{ 'only-desktop':display.searchmobile }">
+	<section class="flex-row f-column justify-center four cell twelve-mobile twelve-tablette-wide center-component-tablette" ng-class="{ 'only-large-desktop':display.searchmobile }">
 		<app-title>
 			<h1>
 				<a data-reload>
@@ -33,7 +43,7 @@
 		</app-title>
 		<div class="clear"></div>
 		<div class="spacer-small zero-desktop"></div>
-		<search-module class="eight-tablette-mobile"
+		<search-module class="eight-tablette-wide"
 			ng-model="search.index"
 			show-close="users.all.length > 0"
 			ng-change="indexFormChanged(index)"
@@ -89,7 +99,7 @@
 					<input type="search"
 						ng-model="search.groups"
 						translate attr="placeholder"
-						placeholder="userBook.search"
+						placeholder="userBook.search.name"
 						class="text-flow twelve"
 						required ng-minlength="1"/>
 					<div class="reduce-block-eight horizontal-margin">
@@ -139,44 +149,33 @@
 						select-item="selectFavorite(item)"
 						delete-item="deleteFavorite(item)"
 						placeholder="[[lang.translate('userBook.search.title')]]"/>
-					<div class="spacer-small"></div>
-					<div class="reduce-block-eight horizontal-margin">
-						<button type="submit" class="twelve zero-mobile-fat-mobile" ng-disabled="display.creatingFavorite">
-							<i18n>directory.create.favorite</i18n>
-						</button>
+					<div class="only-desktop">
+						<div class="spacer-small"></div>
+						<div class="reduce-block-eight horizontal-margin">
+							<button type="submit" class="twelve" ng-disabled="display.creatingFavorite">
+								<i18n>directory.create.favorite</i18n>
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</search-module>
-		<div class="absolute-position-w centered-text" ng-if="display.loadingmobile">
+		<div class="absolute-position-w centered-text zero-large-desktop" ng-if="display.loadingmobile">
 			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
 		</div>
 	</section>
-	<section class="margin-four" ng-class="{ 'only-desktop' : !display.searchmobile  }">
-	
-		<!-- Loading animation -->
-		<div class="dominos centered-text" ng-if="display.loading">
-			<div class="row reduce-block-six">
-				<div class="spacer-large"></div>
-				<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
-			</div>
-		</div>
+	<section class="margin-four margin-wide-four" ng-class="{ 'only-large-desktop' : !display.searchmobile  }">
 
-		<!-- Results list template (dominos) -->		
+		<!-- Results list template (dominos) -->	
 		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
-			class="cell left-spacing-twice top-spacing-twice"
+			class="cell horizontal-spacing top-spacing-twice"
 			ng-if="!currentUser">
-			<a class="zero-desktop" ng-if="display.searchmobile">
-				<h2 ng-click="backToSearch()">
-					<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
-				</h2>
-			</a>
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
 		<!-- User details template -->
 		<div ng-if="currentUser" 
-			ng-class="{ 'zero-mobile':display.searchmobile }" 
+			ng-class="{ 'zero-large-desktop':display.searchmobile }" 
 			class="left-spacing-twice top-spacing-twice">
 			<a><h2 ng-click="back()"><i class="back"></i> <i18n>userBook.directory.back</i18n></h2></a>
 			

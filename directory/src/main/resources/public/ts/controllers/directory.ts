@@ -98,7 +98,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.favorites = directory.directory.favorites;
 			$scope.favorites.all = $scope.favorites.all.sort($scope.sortByName);
 			$scope.favoriteFormUsersGroups = [];
-			await $scope.selectFirstFavortite();
+			if (!ui.breakpoints.checkMaxWidth("wideScreen")) {
+				await $scope.selectFirstFavorite();
+			}
 			
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
@@ -234,19 +236,18 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = async function(){
-		
+		$scope.search.maxLength = 50;
+
 		// Favorite
 		if ($scope.search.index == 2) {
 			$scope.createFavorite();
 			return;
 		}
 
-		// Loading activation
 		$scope.display.loading = true;
-		if (ui.breakpoints.checkMaxWidth("tablette")) { 
-			$scope.display.loadingmobile = true; 
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
 		}
-
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
 		if ($scope.search.index === 0) {
@@ -263,12 +264,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
 		$scope.display.loading = false;
 		$scope.display.loadingmobile = false;
-		if (ui.breakpoints.checkMaxWidth("tablette")) {
-			if (directory.directory.users.all.length === 0)
+		if (($scope.search.index === 0 && $scope.users.all.length === 0) || ($scope.search.index === 1 && $scope.groups.all.length === 0)) {
+			if (ui.breakpoints.checkMaxWidth("wideScreen")) {
 				notify.info("noresult");
-			else
-				$scope.display.searchmobile = true;
-		} 
+			}
+		}
+		else
+			$scope.display.searchmobile = true;
 		$scope.$apply();
 	};
 
@@ -287,6 +289,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.showFavoriteForm = function() {
+		$scope.display.searchmobile = true;
 		$scope.display.creatingFavorite = true;
 		template.close('list');
 		template.close('dominosUser');
@@ -294,32 +297,58 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('list', 'favorite-form');
 	}
 
-	$scope.hideFavoriteForm = function() {
+	$scope.preHideFavoriteForm = function() {
 		$scope.display.creatingFavorite = false;
-		$scope.display.editingFavorite = false;
 		$scope.favoriteFormUsersGroups = [];
+	}
+
+	$scope.hideFavoriteForm = function() {
+		$scope.display.editingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');
 	}
 
-	$scope.selectFavorite = async function(favorite) {
+	$scope.selectFavorite = async function(favorite, noupdate) {
 		if (!$scope.display.creatingFavorite) {
+			$scope.search.maxLength = 50;
+			
 			$scope.display.loading = true;
+			if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+				$scope.display.loadingmobile = true;
+			}
 			await favorite.getUsersAndGroups();
+			$scope.display.searchmobile = true;
 			$scope.currentFavorite = favorite;
 			template.open('dominosUser', 'dominos-user')
 			template.open('dominosGroup', 'dominos-group')		
 			$scope.display.loading = false;
-			$scope.$apply();
+			$scope.display.loadingmobile = false;
+			if (!noupdate)
+				$scope.$apply();
 		}
 	};
 
-	$scope.cancelFavorite = async function(favorite) {
-		if (!$scope.display.editingFavorite)
-			$scope.currentFavorite = null;
+	$scope.cancelFavorite = async function() {
+		$scope.search.maxLength = 50;
+		
+		var editing = $scope.display.editingFavorite;
+		$scope.preHideFavoriteForm();
 
+		if (editing) {
+			await $scope.selectFavorite($scope.currentFavorite, true);
+			$scope.display.searchmobile = true;
+		}
+
+		if (!editing) {
+			$scope.currentFavorite = null;
+			
+			if (!ui.breakpoints.checkMaxWidth("wideScreen"))
+				await $scope.selectFirstFavorite(true);
+			$scope.display.searchmobile = false;
+		}
 		$scope.hideFavoriteForm();
-		await $scope.selectFirstFavortite();
+		if (editing || !ui.breakpoints.checkMaxWidth("wideScreen"))
+			$scope.$apply();
 	};
 
 	$scope.addToFavorite = function(item) {
@@ -375,28 +404,43 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.confirmRemoveFavorite = async function() {
 		$scope.lightbox.show = false;
 		template.close('lightbox');
-		if ($scope.display.creatingFavorite)
-			$scope.hideFavoriteForm();
 		$scope.display.loading = true;
+		$scope.search.maxLength = 50;
+		if ($scope.display.creatingFavorite)
+			$scope.preHideFavoriteForm();
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
+		}
 		await $scope.currentDeletingFavorite.delete();
 		$scope.favorites.splice($scope.favorites.indexOf($scope.currentDeletingFavorite), 1);
 		$scope.currentDeletingFavorite = null;
-		await $scope.selectFirstFavortite();
+		if (!ui.breakpoints.checkMaxWidth("wideScreen")) {
+			await $scope.selectFirstFavorite();
+		}
 		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+		if ($scope.display.creatingFavorite)
+			$scope.hideFavoriteForm();
 		$scope.$apply();
 	}
 
 	$scope.saveFavorite = async function() {
 		var isEditing = $scope.display.editingFavorite;
-		$scope.hideFavoriteForm();
 		$scope.display.loading = true;
+		$scope.search.maxLength = 50;
+		$scope.preHideFavoriteForm();
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
+		}
 		await $scope.currentFavorite.save($scope.create.favorite.name, $scope.create.favorite.members, isEditing);
 		if (!isEditing) {
 			$scope.favorites.push($scope.currentFavorite);
 		}
 		$scope.favorites.all.sort($scope.sortByName);
-		await $scope.selectFavorite($scope.currentFavorite);
+		await $scope.selectFavorite($scope.currentFavorite, true);
 		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+		$scope.hideFavoriteForm();
 		$scope.$apply();
 	}
 
@@ -406,7 +450,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.backToSearch = function() {
-		$scope.display.searchmobile = false;$scope.display.loadingmobile = false;
+		$scope.search.maxLength = 50;
+		$scope.display.searchmobile = false;
+		$scope.display.loadingmobile = false;
 	}
 	$scope.backToGroups = function() {
 		$scope.currentGroup = null;
@@ -417,11 +463,15 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.showGroupUsers = async function(group) {
 		$scope.display.loading = true;
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
+		}
 		await group.getUsers();
 		$scope.currentGroup = group;
 		template.open('dominosUser', 'dominos-user')
 		template.open('groupActions', 'group-actions');
 		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
 		$scope.$apply();
 	}
 
@@ -517,12 +567,12 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.favoriteFormUsersGroups = [];
 	}
 
-	$scope.selectFirstFavortite = async function() {
+	$scope.selectFirstFavorite = async function(noupdate) {
 		if($scope.favorites.empty()) {
 			$scope.currentFavorite = null;
 		}
 		else {
-			await $scope.selectFavorite($scope.favorites.first());
+			await $scope.selectFavorite($scope.favorites.first(), noupdate);
 		}
 	}
 

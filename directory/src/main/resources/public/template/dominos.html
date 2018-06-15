@@ -20,6 +20,14 @@
 
 <h3 whereami class="twelve centered-text"></h3>
 
+<!-- Loading animation -->
+<div class="dominos centered-text only-large-desktop" ng-if="display.loading">
+	<div class="row reduce-block-six">
+		<div class="spacer-large"></div>
+		<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+	</div>
+</div>
+
 <!--Users no results screen-->
 <div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
 	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
@@ -54,7 +62,12 @@
 	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 	<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
 </div>
-	
+
+<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite">
+	<h2 ng-click="backToSearch()">
+		<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
+	</h2>
+</a>
 
 <div class="dominos centered-text">
 
@@ -98,7 +111,7 @@
 		<div class="flex-row justify-between">
 			<h2 class="left-text">[[ currentFavorite.name ]]</h2>
 
-			<button type="button" ng-click="editFavorite()">
+			<button type="button" ng-click="editFavorite()" class="only-desktop">
 				<i18n>userBook.directory.button.edit.favorite</i18n>
 			</button>
 		</div>

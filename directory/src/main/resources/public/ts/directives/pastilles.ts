@@ -50,6 +50,10 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
 
                 // Update pastille position (also if resizing)
                 var updatePastillesPosition = function() {
+                    // Avoid weird left/top animation when resizing
+                    for (i = 0; i < nbPastilles; i++)
+                        pastilles.eq(i).removeClass("animated");
+
                     totalWidth = element.find('div').width();
                     pastilleWidth = pastilles[0].offsetWidth;
                     offset = pastilleWidth * 3 / 5;
@@ -60,6 +64,10 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                         pastilles.eq(nbPastilles - 1 - i).css("left", pastilles[nbPastilles - 1 - i].originalLeft + "px");
                     }
                     updateZIndex();
+                    setTimeout(function () {
+                        for (i = 0; i < nbPastilles; i++)
+                            pastilles.eq(i).addClass("animated");
+                    }, 250);
                 }
 
                 scope.$watch(function() { return element.find('div').css('width'); }, function(newValue) {
@@ -67,15 +75,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                 });
 
                 angular.element($window).bind('resize', function() {
-                    // Avoid weird left/top animation when resizing
-                    for (i = 0; i < nbPastilles; i++)
-                        pastilles.eq(i).removeClass("animated");
                     updatePastillesPosition();
-
-                    setTimeout(function () {
-                        for (i = 0; i < nbPastilles; i++)
-                            pastilles.eq(i).addClass("animated");
-                    }, 250);
                 });
                 updatePastillesPosition();
 
@@ -122,13 +122,12 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
                 pastilles.eq(nbPastilles - 1).removeClass("inactive");
                 pastilles.eq(nbPastilles - 1).addClass("active");
 
-                // Animated class added after fix positioned
-                setTimeout(function () {
-                    for (i = 0; i < nbPastilles; i++)
-                        pastilles.eq(i).addClass("animated");
-                }, 250);
-
                 element.find("div").removeClass("invisible-content");
+
+                // Update position a last time to be sure
+                setTimeout(function () {
+                    updatePastillesPosition();
+                }, 250);
             }, 250);
         }
     };
