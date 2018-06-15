@@ -20,7 +20,7 @@ export const removableList = ng.directive('removableList', () => {
                 <nav class="removable-list wrapper left-text">
                     <div class="row big-block-container" ng-repeat="item in ngModel" ng-click="selectItem({item: item})">
                         <span class="block cell-ellipsis right-spacing-twice">[[ item.name ]]</span>
-                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet" 
+                        <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet only-desktop" 
                             ng-click="deleteItem({item: item}); $event.stopPropagation();" 
                             ng-if="removable"/>
                     </div>
