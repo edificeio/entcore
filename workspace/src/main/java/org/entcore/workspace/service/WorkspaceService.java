@@ -2143,6 +2143,8 @@ public class WorkspaceService extends BaseController {
 				break;
 			case "getDocument" : getDocument(message);
 				break;
+			case "copyDocument" : copyDocument(message);
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));
@@ -2206,6 +2208,98 @@ public class WorkspaceService extends BaseController {
 				}
 			}
 		});
+	}
+
+	public void copyDocument(final Message<JsonObject> message) {
+		emptySize(message.body().getJsonObject("user").getString("userId"), new Handler<Long>() {
+			@Override
+			public void handle(Long emptySize) {
+				copyFile(message.body(), documentDao, emptySize, new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject res) {
+						if ("ok".equals(res.getString("status")))
+							message.reply(res);
+						else
+							message.fail(500, res.getString("status"));
+					}
+				});
+			}
+		});
+	}
+
+	private void copyFile(JsonObject message, final GenericDao dao, final long emptySize, Handler<JsonObject> handler) {
+		try {
+			dao.findById(message.getString("documentId"), message.getString("ownerId"), new Handler<JsonObject>() {
+				@Override
+				public void handle(JsonObject src) {
+					if ("ok".equals(src.getString("status")) && src.getJsonObject("result") != null) {
+						JsonObject orig = src.getJsonObject("result");
+						if (orig.getJsonObject("metadata", new JsonObject()).getLong("size", 0l) > emptySize) {
+							handler.handle(new JsonObject().put("status", "ko").put("error", "file.too.large"));
+							return;
+						}
+						final JsonObject dest = orig.copy();
+						String now = MongoDb.formatDate(new Date());
+						dest.remove("_id");
+						dest.remove("protected");
+						if (message.getBoolean("protected") != null)
+							dest.put("protected", message.getBoolean("protected"));
+						dest.put("application", WORKSPACE_NAME);
+						if (message.getJsonObject("user") != null) {
+							dest.put("owner", message.getJsonObject("user").getString("userId"));
+							dest.put("ownerName", message.getJsonObject("user").getString("userName"));
+							dest.remove("to");
+							dest.remove("from");
+							dest.remove("toName");
+							dest.remove("fromName");
+						}
+						dest.put("created", now);
+						dest.put("modified", now);
+						String folder = getOrElse(message.getString("folder"), "");
+						try {
+							folder = URLDecoder.decode(folder, "UTF-8");
+						} catch (UnsupportedEncodingException e) {
+							log.warn(e.getMessage(), e);
+						}
+						dest.put("folder", folder);
+						String filePath = orig.getString("file");
+						if (filePath != null) {
+							storage.copyFile(filePath, new Handler<JsonObject>() {
+
+								@Override
+								public void handle(JsonObject event) {
+									if (event != null && "ok".equals(event.getString("status"))) {
+										dest.put("file", event.getString("_id"));
+										persist(dest);
+									}
+								}
+							});
+						} else {
+							persist(dest);
+						}
+					}
+					else {
+						handler.handle(new JsonObject().put("status", "ko").put("error", "not.found"));
+					}
+				}
+
+				private void persist(final JsonObject dest) {
+					documentDao.save(dest, new Handler<JsonObject>() {
+						@Override
+						public void handle(JsonObject res) {
+							if ("ok".equals(res.getString("status"))) {
+								incrementStorage(dest);
+								handler.handle(res);
+							} else {
+								handler.handle(res);
+							}
+						}
+					});
+				}
+
+			});
+		}
+		catch (Exception e){ log.error(e); }
 	}
 
 	public void setQuotaService(QuotaService quotaService) {
