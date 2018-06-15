@@ -288,6 +288,18 @@ public class User {
 
 	public static void preDelete(String userId, TransactionHelper transaction) {
 		JsonObject params = new JsonObject().put("userId", userId);
+		String mQuery =
+				"MATCH (u:User { id : {userId}})<-[r:MERGED]-(um:User), " +
+				"u<-[:RELATED]-(us:User) " +
+				"WHERE has(us.relative) AND LENGTH(FILTER(eId IN us.relative WHERE eId STARTS WITH um.externalId)) > 0 " +
+				"REMOVE um.mergedWith, u.mergedLogins " +
+				"CREATE UNIQUE um<-[:RELATED]-us " +
+				"DELETE r " +
+				"WITH um, us " +
+				"MATCH us-[:IN]->(scg:ProfileGroup)-[:DEPENDS]->(c:Structure)<-[:DEPENDS]-(rcg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+				"WHERE p.name = head(um.profiles) " +
+				"CREATE UNIQUE um-[:IN]->rcg ";
+		transaction.add(mQuery, params);
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
 				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE]-() " +
