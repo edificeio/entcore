@@ -209,6 +209,7 @@
     "directory.modifyDate": "Modifier la date",
     "directory.name": "Nom :",
     "directory.nofavorite": "Aucun favori de partage",
+    "directory.nofavorite.result": "Aucun favori correspondant",
     "directory.notFilled": "Non renseignée",
     "directory.notify.classUpdate": "Classe mise à jour",
     "directory.notify.csv.imported": "Le fichier a été importé",
