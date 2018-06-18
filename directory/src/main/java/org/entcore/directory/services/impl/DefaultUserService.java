@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
@@ -334,7 +335,21 @@ public class DefaultUserService implements UserService {
 				.put("function", functionCode)
 				.put("inherit", inherit)
 				.put("scope", scope);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.send(Directory.FEEDER, action, ar -> {
+			if (ar.succeeded()) {
+				JsonArray res = ((JsonObject) ar.result().body()).getJsonArray("results");
+				JsonObject json = new JsonObject();
+				if (res.size() == 2) {
+					JsonArray r = res.getJsonArray(1);
+					if (r.size() == 1) {
+						json = r.getJsonObject(0);
+					}
+				}
+				result.handle(new Either.Right<>(json));
+			} else {
+				result.handle(new Either.Left<>(ar.cause().getMessage()));
+			}
+		});
 	}
 
 	@Override
