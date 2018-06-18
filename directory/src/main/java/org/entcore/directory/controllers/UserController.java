@@ -58,6 +58,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
@@ -313,7 +314,20 @@ public class UserController extends BaseController {
 			@Override
 			public void handle(JsonObject event) {
 				userService.addFunction(userId, event.getString("functionCode"),
-						event.getJsonArray("scope"), event.getString("inherit", ""), defaultResponseHandler(request));
+						event.getJsonArray("scope"), event.getString("inherit", ""), r -> {
+					if (r.isRight()) {
+						final String groupId = (String) r.right().getValue().remove("groupId");
+						if (isNotEmpty(groupId)) {
+							JsonObject j = new JsonObject()
+									.put("action", "setCommunicationRules")
+									.put("groupId", groupId);
+							eb.send("wse.communication", j);
+						}
+						renderJson(request, r.right().getValue());
+					} else {
+						badRequest(request, r.left().getValue());
+					}
+				});
 			}
 		});
 	}
