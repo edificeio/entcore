@@ -407,7 +407,8 @@ public class User {
 				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
 				"WITH fg " +
 				"MATCH (u:User { id : {userId}}) " +
-				"CREATE UNIQUE fg<-[:IN {source:'MANUAL'}]-u";
+				"CREATE UNIQUE fg<-[:IN {source:'MANUAL'}]-u " +
+				"RETURN fg.id as groupId ";
 			JsonObject p2 = new JsonObject()
 				.put("scope", scope)
 				.put("functionCode", functionCode)
@@ -424,7 +425,7 @@ public class User {
 				"DELETE r " +
 				"WITH coalesce(scope, []) as ids, u, f " +
 				"UNWIND ids as s " +
-				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN]-u " +
+				"MATCH (fg:FunctionGroup {externalId : s + '-' + f.externalId})<-[r:IN|COMMUNIQUE]-u " +
 				"DELETE r";
 		JsonObject params = new JsonObject()
 				.put("userId", userId)
