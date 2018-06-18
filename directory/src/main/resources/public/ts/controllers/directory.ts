@@ -406,7 +406,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.close('lightbox');
 		$scope.display.loading = true;
 		$scope.search.maxLength = 50;
-		if ($scope.display.creatingFavorite)
+		var form = $scope.display.creatingFavorite;
+		if (form)
 			$scope.preHideFavoriteForm();
 		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
 			$scope.display.loadingmobile = true;
@@ -419,7 +420,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 		$scope.display.loading = false;
 		$scope.display.loadingmobile = false;
-		if ($scope.display.creatingFavorite)
+		if (form)
 			$scope.hideFavoriteForm();
 		$scope.$apply();
 	}
