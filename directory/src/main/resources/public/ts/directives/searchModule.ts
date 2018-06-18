@@ -1,4 +1,4 @@
-import { ng, _ } from 'entcore';
+import { ng, _, angular } from 'entcore';
 
 /**
  * @description Display pastilles and a particular search template according to the selected pastille.
@@ -21,11 +21,10 @@ import { ng, _ } from 'entcore';
 	</search-module>
  */
 
-export const searchModule = ng.directive('searchModule', () => {
+export const searchModule = ng.directive('searchModule', ['$window', ($window) => {
     return {
         restrict: 'E',
         transclude: true,
-        priority: 100,
         template: `
             <pastilles 
                 ng-model="ngModel"
@@ -51,18 +50,30 @@ export const searchModule = ng.directive('searchModule', () => {
         },
 
         link: (scope, element, attributes) => {
-            scope.images = JSON.parse(attributes.images).reverse();
-
+            var imgs = JSON.parse(attributes.images);
             var pages = element.find("ng-transclude").children();
             var i, l = pages.length;
+            scope.images = [];
+            for (i = 0; i < l; i++) {
+                scope.images[i] = {
+                    img: imgs[i],
+                    visible: true
+                };
+            }
 
             var hideAll = () => {
                 for (i = 0; i < l; i++) {
                     pages.eq(i).hide();
                 }
             }
-
             hideAll();
+
+            var fillImages = () => {
+                for (i = 0; i < l; i++) {
+                    scope.images[i].visible = pages.eq(i).children().eq(0).css("display") !== "none";
+                }
+                scope.$apply();
+            }
             
             // Pastilles changing index
             scope.$watch("ngModel", function(newValue) {
@@ -70,6 +81,14 @@ export const searchModule = ng.directive('searchModule', () => {
                 pages.eq(newValue).show();
                 scope.ngChange({ index: newValue });
             });
+
+            angular.element($window).bind('resize', function() {
+                fillImages();
+            });
+
+            setTimeout(function() {
+                fillImages();
+            }, 0);
         }
     };
-});
+}]);
