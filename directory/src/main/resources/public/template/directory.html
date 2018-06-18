@@ -153,7 +153,9 @@
 							ng-model="favorites.all"
 							select-item="selectFavorite(item)"
 							delete-item="deleteFavorite(item)"
-							placeholder="[[lang.translate('userBook.search.title')]]"/>
+							placeholder="[[lang.translate('userBook.search.title')]]"
+							noitems="[[lang.translate('directory.nofavorite')]]"
+							noresult="[[lang.translate('directory.nofavorite.result')]]"/>
 						<div class="only-desktop">
 							<div class="spacer-small"></div>
 							<div class="reduce-block-eight horizontal-margin">
