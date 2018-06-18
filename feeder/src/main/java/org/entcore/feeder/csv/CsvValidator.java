@@ -20,6 +20,7 @@
 package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
 import org.entcore.feeder.dictionary.structures.Structure;
@@ -39,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.csv.CsvFeeder.*;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
@@ -269,6 +271,7 @@ public class CsvValidator extends Report implements ImportValidator {
 					handler.handle(result);
 					return;
 				}
+				final JsonObject checkChildExists = new JsonObject();
 				try {
 					CSVReader csvParser = getCsvReader(path, charset, 1);
 					final int nbColumns = columns.size();
@@ -390,6 +393,7 @@ public class CsvValidator extends Report implements ImportValidator {
 						}
 						switch (profile) {
 							case "Relative":
+								boolean checkChildMapping = true;
 								JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
 								if ("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) {
 									break csvParserWhile;
@@ -397,6 +401,9 @@ public class CsvValidator extends Report implements ImportValidator {
 								user.put("linkStudents", linkStudents);
 								for (String attr : user.fieldNames()) {
 									if ("childExternalId".equals(attr)) {
+										if (checkChildMapping) {
+											checkChildMapping = false;
+										}
 										Object o = user.getValue(attr);
 										if (o instanceof JsonArray) {
 											for (Object c : (JsonArray) o) {
@@ -477,15 +484,37 @@ public class CsvValidator extends Report implements ImportValidator {
 										}
 									}
 								}
-								for (Object o : linkStudents) {
-									if (!(o instanceof String)) continue;
-									if (classesNamesMapping.get(o) != null) {
-										classesNames.add(classesNamesMapping.get(o));
+								if (checkChildMapping || classesNamesMapping.size() > 0) {
+									for (Object o : linkStudents) {
+										if (!(o instanceof String)) continue;
+										if (classesNamesMapping.get(o) != null) {
+											classesNames.add(classesNamesMapping.get(o));
+										}
 									}
-								}
-								if (classesNames.size() == 0) {
-									addSoftErrorByFile(profile, "missing.student.soft", "" + (i+1),
-											user.getString("firstName"), user.getString("lastName"));
+									if (classesNames.size() == 0) {
+										addSoftErrorByFile(profile, "missing.student.soft", "" + (i + 1),
+												user.getString("firstName"), user.getString("lastName"));
+									}
+								} else {
+									Object c = user.getValue("childExternalId");
+									JsonObject u = new JsonObject()
+											.put("lastName", user.getString("lastName"))
+											.put("firstName", user.getString("firstName"))
+											.put("line", i);
+									if (c instanceof String) {
+										c = new JsonArray().add(c);
+									}
+									if (c instanceof JsonArray) {
+										for (Object ceId : ((JsonArray) c)) {
+											if (isEmpty((String) ceId)) continue;
+											JsonArray jr = checkChildExists.getJsonArray((String) ceId);
+											if (jr == null) {
+												jr = new JsonArray();
+												checkChildExists.put((String) ceId, jr);
+											}
+											jr.add(u);
+										}
+									}
 								}
 								break;
 						}
@@ -495,7 +524,9 @@ public class CsvValidator extends Report implements ImportValidator {
 							addErrorByFile(profile, "validator.errorWithLine", "" + (i+1), error); // Note that 'error' is already translated
 						} else {
 							final String classesStr = Joiner.on(", ").join(classesNames);
-							classesNamesMapping.put(user.getString("externalId"), classesStr);
+							if (!"Relative".equals(profile)) {
+								classesNamesMapping.put(user.getString("externalId"), classesStr);
+							}
 							addUser(profile, user.put("state", translate(state.name()))
 									.put("translatedProfile", translate(profile))
 									.put("classesStr", classesStr));
@@ -506,7 +537,36 @@ public class CsvValidator extends Report implements ImportValidator {
 					addError(profile, "csv.exception");
 					log.error("csv.exception", e);
 				}
-				handler.handle(result);
+				if (!checkChildExists.isEmpty()) {
+					final String query =
+							"MATCH (u:User) " +
+							"WHERE u.externalId IN {childExternalIds} " +
+							"RETURN COLLECT(u.externalId) as childExternalIds ";
+					final JsonObject params = new JsonObject().put("childExternalIds", new JsonArray(
+							new ArrayList<>(checkChildExists.fieldNames())));
+					Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+						@Override
+						public void handle(Message<JsonObject> event) {
+							if ("ok".equals(event.body().getString("status"))) {
+								JsonArray existsChilds = getOrElse(getOrElse(getOrElse(event.body().getJsonArray("result"), new JsonArray())
+										.getJsonObject(0), new JsonObject()).getJsonArray("childExternalIds"), new JsonArray());
+								for (String cexternalId : checkChildExists.fieldNames()) {
+									if (!existsChilds.contains(cexternalId)) {
+										for (Object o: checkChildExists.getJsonArray(cexternalId)) {
+											if (!(o instanceof JsonObject)) continue;
+											JsonObject user = (JsonObject) o;
+											addSoftErrorByFile(profile, "missing.student.soft", "" + (user.getInteger("line") + 1),
+													user.getString("firstName"), user.getString("lastName"));
+										}
+									}
+								}
+							}
+							handler.handle(result);
+						}
+					});
+				} else {
+					handler.handle(result);
+				}
 			}
 		});
 
