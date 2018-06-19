@@ -28,7 +28,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
                     <div class="search-pagination flex-row align-center">
                         <div class="cell twelve">
                             <input class="twelve" name="searchField" type="text" ng-model="searchField"
-                                i18n-placeholder="search" ng-click="doSearch()"/>
+                                i18n-placeholder="search"/>
                             <i class="search"></i>
                         </div>
                     </div>
@@ -121,7 +121,7 @@ export const multiComboboxes = ng.directive('multiComboboxes', () => {
             };
 
             // Placing article correctly
-            scope.$watch(function() { return element.find('button').css("height"); }, function(newValue) {
+            scope.$watch(function() { return element.find('button')[0].offsetHeight }, function(newValue) {
                 var article = element.find('article').eq(0);
                 article.css('top', (element.find('button')[0].offsetHeight + 1) + 'px');
                 article.css('left', '2px');

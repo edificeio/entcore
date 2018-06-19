@@ -299,10 +299,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.preHideFavoriteForm = function() {
 		$scope.display.creatingFavorite = false;
-		$scope.favoriteFormUsersGroups = [];
 	}
 
 	$scope.hideFavoriteForm = function() {
+		$scope.favoriteFormUsersGroups = [];
 		$scope.display.editingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');

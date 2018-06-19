@@ -31,7 +31,7 @@ export const searchModule = ng.directive('searchModule', ['$window', ($window) =
                 images="images">
             </pastilles>
             <form name="searchForm" ng-submit="search()" novalidate>
-                <article class="twelve cell search reduce-block-six">
+                <article class="twelve cell reduce-block-six">
                     <div class="spacer-large"></div>
                     <a ng-click="onClose()" class="zero-large-desktop close-lightbox" ng-show="showClose">
                         <i class="close" />
