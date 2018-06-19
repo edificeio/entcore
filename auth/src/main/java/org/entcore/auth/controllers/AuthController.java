@@ -20,6 +20,7 @@
 package org.entcore.auth.controllers;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
@@ -286,12 +287,25 @@ public class AuthController extends BaseController {
 	}
 
 	@Get("/login")
-	public void login(HttpServerRequest request) {
+	public void login(final HttpServerRequest request) {
 		final String host = getHost(request);
 		if (authorizedHostsLogin != null && isNotEmpty(host) && !authorizedHostsLogin.contains(host)) {
 			redirect(request, pathPrefix + "/openid/login");
 		} else {
-			viewLogin(request, null, request.params().get("callBack"));
+            UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
+                @Override
+                public void handle(UserInfos user) {
+                    if (user == null || !config.getBoolean("auto-redirect", true)) {
+                        viewLogin(request, null, request.params().get("callBack"));
+                    } else {
+                        String callBack = request.params().get("callBack");
+                        if (isEmpty(callBack)) {
+                            callBack = getScheme(request) + "://" + host;
+                        }
+                        redirect(request, callBack, "");
+                    }
+                }
+            });
 		}
 	}
 
