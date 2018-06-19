@@ -33,10 +33,10 @@
             required ng-minlength="1"/>
         <div class="flex-row">
             <h4><i18n>directory.search.favorite</i18n></h4>
-            <a ng-if="canFavoriteFormInitSearch()" class="absolute-magnet vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
-                <i18n>directory.init.search</i18n>
-            </a>
         </div>
+        <a ng-if="canFavoriteFormInitSearch()" class="vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
+            <i18n>directory.init.search</i18n>
+        </a>
         <div class="vertical-spacing-four">
             <div class="flex-row">
                 <multi-comboboxes class="twelve min-w-zero"

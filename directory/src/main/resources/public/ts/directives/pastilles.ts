@@ -16,7 +16,7 @@ export const pastilles = ng.directive('pastilles', ['$window', ($window) => {
         restrict: 'E',
         template: `
             <div class="spacer-medium invisible-content">
-                <a ng-if="image.visible" class="absolute-w round square-large img-shadow high-index inactive" ng-repeat="image in images track by $index">
+                <a ng-if="image.visible" class="absolute-w round square-large img-shadow high-index inactive" ng-click="" ng-repeat="image in images track by $index">
                     <img skin-src="[[ image.img ]]"/>
                 </a>
             </div>
