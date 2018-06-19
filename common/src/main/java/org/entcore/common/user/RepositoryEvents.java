@@ -21,6 +21,7 @@ package org.entcore.common.user;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 public interface RepositoryEvents {
 
@@ -32,5 +33,7 @@ public interface RepositoryEvents {
 	void deleteUsers(JsonArray users);
 
 	default void usersClassesUpdated(JsonArray updates) {}
+
+	default void transition(JsonObject structure) {}
 
 }

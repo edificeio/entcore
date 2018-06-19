@@ -77,6 +77,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				JsonArray updates = message.body().getJsonArray("users-classes-update", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.usersClassesUpdated(updates);
 				break;
+			case "transition" :
+				JsonObject structure = message.body().getJsonObject("structure");
+				repositoryEvents.transition(structure);
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));

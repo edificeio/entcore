@@ -88,7 +88,7 @@ public class Transition {
 			}
 			return;
 		}
-		structure.transition(commitHandler(handler, null));
+		structure.transition(commitHandler(handler, null, structure.getStruct()));
 	}
 
 	private void transitionStructures(final Handler<Message<JsonObject>> handler) {
@@ -96,7 +96,7 @@ public class Transition {
 		Set<String> s = GraphData.getStructures().keySet();
 		final String [] structuresExternalId = s.toArray(new String[s.size()]);
 		final Handler[] handlers = new Handler[structuresExternalId.length + 1];
-		handlers[handlers.length -1] = commitHandler(handler, null);
+		handlers[handlers.length -1] = commitHandler(handler, null, null);
 
 		for (int i = structuresExternalId.length - 1; i >= 0; i--) {
 			final int j = i;
@@ -116,7 +116,7 @@ public class Transition {
 							}
 							return;
 						}
-						s.transition(commitHandler(handler, handlers[j+1]));
+						s.transition(commitHandler(handler, handlers[j+1], s.getStruct()));
 					} else {
 						TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 						log.error("Transition error");
@@ -132,7 +132,7 @@ public class Transition {
 	}
 
 	private Handler<Message<JsonObject>> commitHandler(final Handler<Message<JsonObject>> resHandler,
-			final Handler<Message<JsonObject>> handler) {
+			final Handler<Message<JsonObject>> handler, final JsonObject structure) {
 		return new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -144,6 +144,7 @@ public class Transition {
 							public void handle(Message<JsonObject> event) {
 								if ("ok".equals(event.body().getString("status"))) {
 									JsonArray r = getOrElse(m.body().getJsonArray("result"), new fr.wseduc.webutils.collections.JsonArray());
+									publishTransition(structure);
 									if (r.size() > 0) {
 										publishDeleteGroups(vertx.eventBus(), log, r);
 										if (handler != null) {
@@ -206,6 +207,17 @@ public class Transition {
 		return tx;
 	}
 
+	private void publishTransition(JsonObject struct) {
+		if (struct == null) return;
+		final JsonObject structure = struct.copy();
+		structure.remove("created");
+		structure.remove("modified");
+		structure.remove("checksum");
+		log.info("Publish transition : " + structure.encode());
+		vertx.eventBus().publish(Feeder.USER_REPOSITORY, new JsonObject()
+				.put("action", "transition")
+				.put("structure", structure));
+	}
 
 	public static void publishDeleteGroups(EventBus eb, Logger logger, JsonArray groups) {
 		logger.info("Delete groups : " + groups.encode());

@@ -361,4 +361,8 @@ public class Structure {
 		this.overrideClass = overrideClass;
 	}
 
+	public JsonObject getStruct() {
+		return struct;
+	}
+
 }
