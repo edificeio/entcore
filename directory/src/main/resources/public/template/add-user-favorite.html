@@ -1,50 +1,56 @@
-<div class="flex-row">
-    <h2><i18n>userBook.directory.addToFavorite</i18n></h2>
-    <span class="tipbox top-spacing">
-        <div><i class="help sticker square-medium"></i></div>
-        <div class="tipbox-content"><span class="small-text"><i18n>directory.tip.addFavorite</i18n></span></div>
-    </span>
-</div>
-<div class="spacer-small"></div>
-<div class="flex-row horizontal-margin-height" ng-if="!display.showUserCreationFavorite">
-    <div class="flex-all-remains horizontal-margin-height">
-        <div class="row vertical-spacing-four">
-            <h4 ng-if="favorites.all.length > 0"><i18n>directory.choose.existingFavorite</i18n></h4>
-            <removable-list
-                ng-model="favorites.all"
-                select-item="addToFavorite(item)"
-                placeholder="[[lang.translate('userBook.search.title')]]"
-                noitems="[[lang.translate('directory.nofavorite.create')]]"
-                noresult="[[lang.translate('directory.nofavorite.result')]]"/>
-        </div>
-        <div class="spacer-medium"></div>
-        <div ng-if="favorites.all.length > 0">
-            <div class="flex-row align-center">
-                <div class="divider-border-horizontal"></div>
-                <div class="horizontal-spacing"><strong>[[ lang.translate('or').toUpperCase() ]]</strong></div>
-                <div class="divider-border-horizontal"></div>
+<div class="flex-row f-column justify-center" ng-class='{ "divide-opacity": display.loading }'>
+    <div class="flex-row">
+        <h2><i18n>userBook.directory.addToFavorite</i18n></h2>
+        <span class="tipbox top-spacing">
+            <div><i class="help sticker square-medium"></i></div>
+            <div class="tipbox-content"><span class="small-text"><i18n>directory.tip.addFavorite</i18n></span></div>
+        </span>
+    </div>
+    <div class="spacer-small"></div>
+    <div class="flex-row horizontal-margin-height horizontal-margin-zero-mobile" ng-if="!display.showUserCreationFavorite">
+        <div class="flex-all-remains horizontal-margin-height horizontal-margin-zero-mobile">
+            <div class="row vertical-spacing-four">
+                <h4 ng-if="favorites.all.length > 0"><i18n>directory.choose.existingFavorite</i18n></h4>
+                <removable-list
+                    ng-model="favorites.all"
+                    select-item="addToFavorite(item)"
+                    placeholder="[[lang.translate('userBook.search.title')]]"
+                    noitems="[[lang.translate('directory.nofavorite.create')]]"
+                    noresult="[[lang.translate('directory.nofavorite.result')]]"/>
+            </div>
+            <div class="spacer-medium"></div>
+            <div ng-if="favorites.all.length > 0">
+                <div class="flex-row align-center">
+                    <div class="divider-border-horizontal"></div>
+                    <div class="horizontal-spacing"><strong>[[ lang.translate('or').toUpperCase() ]]</strong></div>
+                    <div class="divider-border-horizontal"></div>
+                </div>
+            </div>
+            <div class="spacer-medium"></div>
+            <div class="flex-row justify-around align-center bottom-spacing-twice">
+                <button ng-click="display.showUserCreationFavorite = true"><i18n>directory.newFavorite</i18n></button>
             </div>
         </div>
-        <div class="spacer-medium"></div>
-        <div class="flex-row justify-around align-center bottom-spacing-twice">
-            <button ng-click="display.showUserCreationFavorite = true"><i18n>directory.newFavorite</i18n></button>
-        </div>
     </div>
-</div>
-<div class="horizontal-margin-four" ng-if="display.showUserCreationFavorite">
-    <h4><i18n>directory.name.newFavorite</i18n></h4>
-    <form ng-submit="confirmAddFavorite()">
-        <div class="row">
-            <input type="text"
-                ng-model="create.favorite.name"
-                translate attr="placeholder"
-                placeholder="directory.placeholder.title.favorite"
-                class="text-flow twelve vertical-spacing-four"
-                required ng-minlength="1"/>
-        </div>
-        <div class="row top-spacing-twice">
-            <button type="submit" class="right-magnet"><i18n>create</i18n></button>
-            <button type="button" class="cancel right-magnet" ng-click="display.showUserCreationFavorite = false"><i18n>cancel</i18n></button>
-        </div>
-    </form>
+    <div class="horizontal-margin-four horizontal-margin-zero-mobile" ng-if="display.showUserCreationFavorite">
+        <h4><i18n>directory.name.newFavorite</i18n></h4>
+        <form ng-submit="confirmAddToFavorite()">
+            <div class="row">
+                <input type="text"
+                    ng-model="create.favorite.userName"
+                    translate attr="placeholder"
+                    placeholder="directory.placeholder.title.favorite"
+                    class="text-flow twelve vertical-spacing-four"
+                    required ng-minlength="1"/>
+            </div>
+            <div class="row top-spacing-twice">
+                <button type="submit" class="right-magnet"><i18n>create</i18n></button>
+                <button type="button" class="cancel right-magnet" ng-click="display.showUserCreationFavorite = false"><i18n>cancel</i18n></button>
+            </div>
+        </form>
+    </div>
+    <!-- Loading animation -->
+    <div class="absolute-position-w centered-text" ng-if="display.loading">
+        <img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+    </div>
 </div>

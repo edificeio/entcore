@@ -128,6 +128,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 			$scope.create = {
 				favorite: {
+					userName: '',
 					name: '',
 					members: [],
 					search: '',
@@ -352,13 +353,43 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.tryAddFavorite = function(favorite) {
 		$scope.display.showUserCreationFavorite = false;
+		$scope.create.favorite.userName = '';
 		$scope.lightbox.show = true;
 		template.open('lightbox', 'add-user-favorite');
 	}
 
-	$scope.addToFavorite = function(item) {
+	$scope.addToFavorite = async function(favorite) {
+		$scope.display.loading = true;
+		var members = favorite.groups.concat(favorite.users);
+		var alreadyIn = false;
+		members.forEach(member => {
+			if (member.id === $scope.currentUser.id) {
+				alreadyIn = true;
+				return;
+			}
+		});
+		if (!alreadyIn) {
+			members.push($scope.currentUser);
+			await favorite.save(favorite.name, members, true);
+		}
+		$scope.display.loading = false;
 		$scope.lightbox.show = false;
 		template.close('lightbox');
+		if (!alreadyIn) {
+			$scope.$apply();
+		}
+	}
+
+	$scope.confirmAddToFavorite = async function() {
+		$scope.display.loading = true;
+		var favorite = new directory.Favorite();
+		await favorite.save($scope.create.favorite.userName, [$scope.currentUser], false);
+		$scope.favorites.push(favorite);
+		$scope.favorites.all.sort($scope.sortByName);
+		$scope.display.loading = false;
+		$scope.lightbox.show = false;
+		template.close('lightbox');
+		$scope.$apply();
 	}
 
 	$scope.searchUsersAndGroups = async function(favorite) {
@@ -452,7 +483,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.back = function() {
-		$scope.currentUser = undefined;
+		$scope.currentUser = null;
 		template.close('details');
 	}
 
@@ -516,7 +547,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.displayFamily = function(currentUser) {
-		return currentUser.relatives.length && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+		return currentUser && currentUser.relatives.length && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};
 
 	$scope.onCloseSearchModule = function() {

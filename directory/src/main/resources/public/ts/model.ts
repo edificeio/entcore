@@ -72,6 +72,8 @@ export const directory = {
 
 		var registerChanges = (name, members) => {
 			this.name = name;
+			this.users = [];
+			this.groups = [];
 			members.forEach(member => {
 				if (member.name)
 					this.groups.push(member);
