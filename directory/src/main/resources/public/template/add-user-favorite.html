@@ -1,0 +1,14 @@
+<h2><i18n>userBook.directory.addToFavorite</i18n></h2>
+<div class="spacer-small"></div>
+<div class="row vertical-spacing-four">
+	<removable-list
+        ng-model="favorites.all"
+        select-item="addToFavorite(item)"
+        placeholder="[[lang.translate('userBook.search.title')]]"
+        noitems="[[lang.translate('directory.nofavorite.create')]]"
+        noresult="[[lang.translate('directory.nofavorite.result')]]"/>
+</div>
+<div class="spacer-small"></div>
+<div class="flex-row justify-around align-center">
+	<button ng-click="display.showUserCreationFavorite"><i18n>directory.newFavorite</i18n></button>
+</div>

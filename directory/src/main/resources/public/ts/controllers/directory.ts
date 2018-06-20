@@ -83,7 +83,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.display.loading = false;
 			$scope.display.loadingmobile = false;
 			$scope.display.showCloseMobile = false;
-			$scope.display.lightbox = { "addFavorite" : false };
 			$scope.classrooms = [];
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
@@ -351,8 +350,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.$apply();
 	};
 
+	$scope.tryAddFavorite = function(favorite) {
+		$scope.lightbox.show = true;
+		template.open('lightbox', 'add-user-favorite');
+	}
+
 	$scope.addToFavorite = function(item) {
-		console.log("addToFavorite");
+		$scope.lightbox.show = false;
+		template.close('lightbox');
 	}
 
 	$scope.searchUsersAndGroups = async function(favorite) {

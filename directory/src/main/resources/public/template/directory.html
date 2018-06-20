@@ -189,16 +189,5 @@
 			class="left-spacing-twice">
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
-
-		<!-- Lightbox add to favorite -->
-		<lightbox show="display.lightbox.addFavorite" on-close="display.display.lightbox.addFavorite = false">
-			<div>
-				<h2><i18n>userBook.directory.addToFavorite</i18n></h2>
-				<removable-list
-					ng-model="favorites.all"
-					select-item="addToFavorite(item)"
-					placeholder="[[lang.translate('userBook.search.title')]]"/>
-			</div>
-		</lightbox>
 	</section>
 </div>
