@@ -6,7 +6,7 @@
     </span>
 </div>
 <div class="spacer-small"></div>
-<div class="flex-row horizontal-margin-height">
+<div class="flex-row horizontal-margin-height" ng-if="!display.showUserCreationFavorite">
     <div class="flex-all-remains horizontal-margin-height">
         <div class="row vertical-spacing-four">
             <h4 ng-if="favorites.all.length > 0"><i18n>directory.choose.existingFavorite</i18n></h4>
@@ -27,7 +27,24 @@
         </div>
         <div class="spacer-medium"></div>
         <div class="flex-row justify-around align-center bottom-spacing-twice">
-            <button ng-click="display.showUserCreationFavorite"><i18n>directory.newFavorite</i18n></button>
+            <button ng-click="display.showUserCreationFavorite = true"><i18n>directory.newFavorite</i18n></button>
         </div>
     </div>
+</div>
+<div class="horizontal-margin-four" ng-if="display.showUserCreationFavorite">
+    <h4><i18n>directory.name.newFavorite</i18n></h4>
+    <form ng-submit="confirmAddFavorite()">
+        <div class="row">
+            <input type="text"
+                ng-model="create.favorite.name"
+                translate attr="placeholder"
+                placeholder="directory.placeholder.title.favorite"
+                class="text-flow twelve vertical-spacing-four"
+                required ng-minlength="1"/>
+        </div>
+        <div class="row top-spacing-twice">
+            <button type="submit" class="right-magnet"><i18n>create</i18n></button>
+            <button type="button" class="cancel right-magnet" ng-click="display.showUserCreationFavorite = false"><i18n>cancel</i18n></button>
+        </div>
+    </form>
 </div>
