@@ -6,15 +6,28 @@
     </span>
 </div>
 <div class="spacer-small"></div>
-<div class="row vertical-spacing-four">
-	<removable-list
-        ng-model="favorites.all"
-        select-item="addToFavorite(item)"
-        placeholder="[[lang.translate('userBook.search.title')]]"
-        noitems="[[lang.translate('directory.nofavorite.create')]]"
-        noresult="[[lang.translate('directory.nofavorite.result')]]"/>
-</div>
-<div class="spacer-small"></div>
-<div class="flex-row justify-around align-center">
-	<button ng-click="display.showUserCreationFavorite"><i18n>directory.newFavorite</i18n></button>
+<div class="flex-row horizontal-margin-height">
+    <div class="flex-all-remains horizontal-margin-height">
+        <div class="row vertical-spacing-four">
+            <h4 ng-if="favorites.all.length > 0"><i18n>directory.choose.existingFavorite</i18n></h4>
+            <removable-list
+                ng-model="favorites.all"
+                select-item="addToFavorite(item)"
+                placeholder="[[lang.translate('userBook.search.title')]]"
+                noitems="[[lang.translate('directory.nofavorite.create')]]"
+                noresult="[[lang.translate('directory.nofavorite.result')]]"/>
+        </div>
+        <div class="spacer-medium"></div>
+        <div ng-if="favorites.all.length > 0">
+            <div class="flex-row align-center">
+                <div class="divider-border-horizontal"></div>
+                <div class="horizontal-spacing"><strong>[[ lang.translate('or').toUpperCase() ]]</strong></div>
+                <div class="divider-border-horizontal"></div>
+            </div>
+        </div>
+        <div class="spacer-medium"></div>
+        <div class="flex-row justify-around align-center bottom-spacing-twice">
+            <button ng-click="display.showUserCreationFavorite"><i18n>directory.newFavorite</i18n></button>
+        </div>
+    </div>
 </div>
