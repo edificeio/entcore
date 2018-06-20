@@ -209,6 +209,7 @@
     "directory.modify": "Modifier",
     "directory.modifyDate": "Modifier la date",
     "directory.name": "Nom :",
+    "directory.name.newFavorite": "Nom du nouveau favori",
     "directory.newFavorite": "Nouveau favori",
     "directory.nofavorite": "Aucun favori de partage",
     "directory.nofavorite.create": "Vous n'avez aucun favori pour le moment ! Creez en un pour continuer",

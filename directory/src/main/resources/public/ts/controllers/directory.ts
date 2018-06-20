@@ -351,6 +351,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.tryAddFavorite = function(favorite) {
+		$scope.display.showUserCreationFavorite = false;
 		$scope.lightbox.show = true;
 		template.open('lightbox', 'add-user-favorite');
 	}
