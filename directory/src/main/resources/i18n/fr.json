@@ -144,6 +144,7 @@
     "directory.byte": "Octet(s)",
     "directory.centralAdmin": "Administrateur central",
     "directory.children": "Enfants",
+    "directory.choose.existingFavorite": "Choisir un favori existant",
     "directory.classOps": "Opérations sur les classes",
     "directory.classUsers": "Voir les personnes rattachées à cette classe",
     "directory.classe": "Classe",
