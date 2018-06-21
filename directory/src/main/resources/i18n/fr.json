@@ -215,6 +215,7 @@
     "directory.nofavorite.create": "Vous n'avez aucun favori pour le moment ! Creez en un pour continuer",
     "directory.nofavorite.result": "Aucun favori correspondant",
     "directory.notFilled": "Non renseignée",
+    "directory.notify.confirmAddUser": "Ajouté au favori de partage",
     "directory.notify.classUpdate": "Classe mise à jour",
     "directory.notify.csv.imported": "Le fichier a été importé",
     "directory.admin.email": "Courriel",
