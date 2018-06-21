@@ -360,16 +360,17 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.addToFavorite = async function(favorite) {
 		$scope.display.loading = true;
+		var newMember = $scope.currentUser ? $scope.currentUser : $scope.currentGroup;
 		var members = favorite.groups.concat(favorite.users);
 		var alreadyIn = false;
 		members.forEach(member => {
-			if (member.id === $scope.currentUser.id) {
+			if (member.id === newMember.id) {
 				alreadyIn = true;
 				return;
 			}
 		});
 		if (!alreadyIn) {
-			members.push($scope.currentUser);
+			members.push(newMember);
 			await favorite.save(favorite.name, members, true);
 		}
 		$scope.display.loading = false;
@@ -384,7 +385,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.confirmAddToFavorite = async function() {
 		$scope.display.loading = true;
 		var favorite = new directory.Favorite();
-		await favorite.save($scope.create.favorite.userName, [$scope.currentUser], false);
+		await favorite.save($scope.create.favorite.userName, [$scope.currentUser ? $scope.currentUser : $scope.currentGroup], false);
 		$scope.favorites.push(favorite);
 		$scope.favorites.all.sort($scope.sortByName);
 		$scope.display.loading = false;
