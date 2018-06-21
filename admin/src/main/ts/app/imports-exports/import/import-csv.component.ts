@@ -18,24 +18,13 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
 @Component({
     selector: 'import-csv',
     template : `
-        <lightbox [show]="confirmCancel" (onClose)="confirmCancel = false">
-            <div>
-                <h2>{{'import.cancel.header' | translate}}</h2>
-                <article class="message is-warning">
-                    {{'import.cancel.message' | translate}}
-                </article>
-                    <button 
-                        (click)="confirmCancel = false"
-                        [title]="'import.cancel.backToImport'  | translate">
-                        {{'import.cancel.backToImport' | translate}}
-                    </button>
-                    <button 
-                        (click)="cancel();confirmCancel = false;"
-                        [title]="'import.cancel.confirm' | translate">
-                        {{'import.cancel.confirm'  | translate}}
-                    </button>
-            </div>
-        </lightbox>
+        <lightbox-confirm
+            [show]="confirmCancel"
+            [title]="'warning'"
+            (onConfirm)="cancel(); confirmCancel = false;"
+            (onCancel)="confirmCancel = false">
+            <p>{{ 'import.cancel.message' | translate }}</p>
+        </lightbox-confirm>
         <wizard
             (cancel)="confirmCancel=true"
             (finish)="finish()"
@@ -257,6 +246,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         }
     };
 
+    // Control displaying of cancel confirmation lightbox
     confirmCancel : boolean;
 
     profiles = { 
