@@ -132,6 +132,8 @@ public class User {
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
 		private final long delay;
 		private final String profile;
+		private static final int LIMIT = 5000;
+		private int page;
 
 		public PreDeleteTask(long delay) {
 			this(delay, null);
@@ -144,8 +146,12 @@ public class User {
 
 		@Override
 		public void handle(Long event) {
+			launchPreDelete();
+		}
+
+		private void launchPreDelete() {
 			log.info("Execute task pre-delete user.");
-			JsonObject params = new JsonObject().put("date", System.currentTimeMillis() - delay);
+			JsonObject params = new JsonObject().put("date", System.currentTimeMillis() - delay).put("limit", LIMIT);
 			String filter = "";
 			if (profile != null) {
 				params.put("profile", profile);
@@ -155,7 +161,8 @@ public class User {
 					"MATCH (u:User) " +
 					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) AND u.disappearanceDate < {date} " +
 					filter +
-					"RETURN u.id as id ";
+					"RETURN u.id as id " +
+					"LIMIT {limit} ";
 			TransactionManager.getInstance().getNeo4j().execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
@@ -216,6 +223,8 @@ public class User {
 						}
 						if (handler != null) {
 							handler.handle(m);
+						} else {
+							launchPreDelete();
 						}
 					}
 				});
