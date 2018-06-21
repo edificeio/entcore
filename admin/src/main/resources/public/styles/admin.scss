@@ -2338,7 +2338,7 @@ message-sticker {
     i.fa {
         transition: color 0.25s;
         &.is-succcess { color: green; }
-        &.is-info { color: blue; }
+        &.is-info { color: $main-dark; }
         &.is-danger { color: red; }
         &.is-warning { color: orange; }
         &:hover { color: $accent;}
