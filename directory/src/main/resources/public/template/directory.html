@@ -45,7 +45,7 @@
 		<div class="spacer-small zero-desktop"></div>
 		<search-module class="eight-tablette-wide"
 			ng-model="search.index"
-			show-close="users.all.length > 0"
+			show-close="getCurrentItemsLength() > 0"
 			ng-change="indexFormChanged(index)"
 			search="searchDirectory()"
 			on-close="onCloseSearchModule()"
@@ -184,9 +184,8 @@
 		</div>
 
 		<!-- User details template -->
-		<div ng-if="currentUser" 
-			ng-class="{ 'zero-large-desktop':display.searchmobile }" 
-			class="left-spacing-twice">
+		<div ng-if="currentUser"
+			class="left-spacing-twice horizontal-margin-zero-mobile">
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>

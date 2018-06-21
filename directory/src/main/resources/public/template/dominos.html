@@ -63,7 +63,7 @@
 	<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
 </div>
 
-<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite">
+<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite && !currentGroup">
 	<h2 ng-click="backToSearch()">
 		<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
 	</h2>
@@ -85,12 +85,18 @@
 
 	<!-- Group Users -->
 	<div ng-if="(search.index === 1 || search.index === 2) && !display.loading && currentGroup">
-		<div class="flex-row justify-between">
+		<div class="flex-row justify-between zero-mobile-fat-mobile">
 			<h2 class="flex-all-remains left-text">
 				<a ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
 			</h2>
 			<h2>[[currentGroup.name]]</h2>
 			<div class="flex-all-remains"></div>
+		</div>
+		<div class="mobile-fat-mobile">
+			<h2 class="flex-all-remains left-text">
+				<a ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
+			</h2>
+			<h2>[[currentGroup.name]]</h2>
 		</div>
 		
 		<div class="low-importance italic-text">

@@ -79,7 +79,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.title = 'profile';
 		},
 		directory: async function(){
-			$scope.display.searchmobile = false;
 			$scope.display.loading = false;
 			$scope.display.loadingmobile = false;
 			$scope.display.showCloseMobile = false;
@@ -100,6 +99,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if (!ui.breakpoints.checkMaxWidth("wideScreen")) {
 				await $scope.selectFirstFavorite();
 			}
+			$scope.display.searchmobile = false;
 			
 			$scope.schools = directory.network.schools;
 			await $scope.schools.sync();
@@ -413,8 +413,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.selectUser = function(user){
-		$scope.display.searchmobile = false;
-
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
@@ -560,14 +558,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.searchmobile = true;
 	};
 
-	$scope.getCurrentItems = function() {
+	$scope.getCurrentItemsLength = function() {
 		switch($scope.search.index) {
 			case 0:
-				return $scope.users;
+				return $scope.users.all.length;
 			case 1:
-				return $scope.groups;
+				return $scope.groups.all.length;
 			case 2:
-				return $scope.users; // TODO
+				return $scope.currentFavorite === null ? 0 : $scope.currentFavorite.users.length + $scope.currentFavorite.groups.length;
 		}
 	};
 
