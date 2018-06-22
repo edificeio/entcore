@@ -19,6 +19,7 @@ export class DynamicComponentDirective {
     componentDesc: ComponentDescriptor;
 
     load(data?:any):void {
+        if (this.isLoaded()) return;
         let componentFactory = this.cfr.resolveComponentFactory(this.componentDesc.type);
         this.vcr.clear();
         this.componentRef = this.vcr.createComponent(componentFactory);
