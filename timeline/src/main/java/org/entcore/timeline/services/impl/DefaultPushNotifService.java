@@ -183,7 +183,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 String body = pushNotif.getString("body", "");
                 body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
 
-                notif.put("title", keys.getString(pushNotif.getString("title"), ""));
+                notif.put("title", keys.getString(pushNotif.getString("title"), pushNotif.getString("title", "")));
                 notif.put("body", body);
                 if(typeData) {
                     if (notification.containsKey("params"))
