@@ -1,6 +1,8 @@
+import { ImportCSVService } from './import-csv.service'
 
 export type Profile = 'Student' | 'Teacher' | 'Relative' | 'Personnel' | 'Guest';
-export type FilterUser = 'errors'| 'reasons' | 'state' | 'none'
+export type FilterUser = 'errors'| 'reasons' | 'state' | 'none';
+export type UserEditableProps = 'lastName'| 'firstName' | 'birthDate';
 
 export type Error = {
     line:string, 
@@ -67,5 +69,16 @@ export class User {
             }
         }
         return false;
+    }
+
+    async update(importId:string, property:UserEditableProps){
+        let data = {
+            line : this.line,
+        };
+        data[property] = this[property];
+        let res = await ImportCSVService.updateReport('put', importId,this.profiles[0], data);
+        if (res.error) {
+            throw new Error(res.error);
+        }
     }
 }

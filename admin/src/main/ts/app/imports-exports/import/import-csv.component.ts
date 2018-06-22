@@ -1,15 +1,15 @@
 import { Component, 
     OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges,
-    Input, Output, ViewChild } from '@angular/core'
+    Input, Output, ViewChild, ViewChildren, QueryList } from '@angular/core'
 import { Mix } from 'entcore-toolkit'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { SpinnerService,routing } from '../../core/services'
 import { BundlesService } from 'sijil'
 import { ImportCSVService } from './import-csv.service'
-import { User, Error, Profile } from './user.model'
+import { User, Error, Profile, UserEditableProps } from './user.model'
 import { WizardComponent } from '../../shared/ux/components'
-
+import { NotifyService } from '../../core/services/notify.service'
 import { Messages } from './messages.model'
 
 type GlobalError = { message:string, profile:{}, reset:Function }
@@ -166,30 +166,37 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit"
+                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
                     [ngClass]="{'state-delete':user.state == 'Supprimé'}"
                 >
                         <td>{{user.line}}</td>
-                        <td [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
-                            <span  contenteditable="true" 
-                                (blur)="updateReport($event)"
-                                field="lastName">
-                                {{user.lastName?.length > 0 ? user.lastName : 'empty.lastName' | translate}}
-                            </span>
+                        <td (dblclick)="editLastName.disabled = !editLastName.disabled"
+                            [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
+                            <input 
+                                [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
+                                (keyup.enter)="report.update(user, 'lastName')"
+                                (blur)="report.update(user, 'lastName')"
+                                disabled="true"
+                                #editLastName
+                            />
                         </td>
-                        <td [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
-                            <span  contenteditable="true" 
-                                (blur)="updateReport($event)"
-                                field="firstName">
-                                {{user.firstName?.length > 0 ? user.firstName : 'empty.firstName' | translate}}
-                            </span>
+                        <td (dblclick)="editFirstName.disabled = !editFirstName.disabled"
+                            [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
+                            <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
+                                (keyup.enter)="report.update(user, 'firstName')"
+                                (blur)="report.update(user, 'firstName')"
+                                disabled="true"
+                                #editFirstName
+                            />            
                         </td>
-                        <td [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
-                            <span  contenteditable="true" 
-                                (blur)="updateReport($event)"
-                                field="birthDate">
-                                {{user.birthDate?.length > 0 ? user.birthDate : 'empty.birthDate' | translate}}
-                            </span>
+                        <td (dblclick)="editBirthDate.disabled = !editBirthDate.disabled"
+                            [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
+                            <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
+                                (keyup.enter)="report.update(user, 'birthDate')"
+                                (blur)="report.update(user, 'birthDate')"
+                                disabled="true"
+                                #editBirthDate
+                            />
                         </td>
                         <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
                         <td>{{user.profiles?.join(',')}}</td>
@@ -215,7 +222,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
         table.report td.is-danger { border: 2px dashed red; }
         table.report td.is-success { border: 2px dashed green; }
-        table.report td span[contenteditable]:focus { background : yellow; }
+        table.report td input[disabled] { background : transparent; border:0; cursor:pointer; }
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
@@ -225,6 +232,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         private router:Router,
         private spinner: SpinnerService,
         private bundles: BundlesService,
+        private ns: NotifyService,
         private cdRef: ChangeDetectorRef){}
 
     private translate = (...args) => { return (<any> this.bundles.translate)(...args) }
@@ -416,6 +424,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         columnFilter : { lastName: '', firstName: '' },
         setFilter : User.setFilter,
         hasFilter : User.hasFilter,
+        ns : this.ns,
         init(data:{importId:string, softErrors:any}, profiles):void {
             this.importId = data.importId
             for (let p of profiles.asArray()) {
@@ -489,6 +498,23 @@ export class ImportCSV implements OnInit, OnDestroy {
                 },
                 page : {offset: 0, limit: 30, total: 0},
             });
+        },
+        update(user:User, property:UserEditableProps) {
+            try {
+                user.update(this.importId, property)
+                // Update error report 
+                // TODO : Control (if possible) with Feeder's validator
+                if (user.errors.get(property) && user[property].length > 0) {
+                    this.softErrors.list.splice(
+                        this.softErrors.list.indexOf(user.errors.get(property)),
+                        1
+                    );
+                    user.errors.get(property).corrected = true;
+                } 
+                this.ns.success('import.report.notifySuccessEdit');
+            } catch (error) {
+                this.ns.error('import.report.notifyErrorEdit');
+            }
         }
     }
 
@@ -621,40 +647,6 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.cdRef.markForCheck();
     }
     
-    private async updateReport(event) {
-        // TODO replace implementation by a "contenteditable" directive that manage binding
-        let tdEls = event.target.parentElement.parentElement.children
-        let profile = tdEls[4].innerText
-        let body = {
-            line : Number.parseInt(tdEls[0].innerText)
-        };
-        body[event.target.getAttribute('field')] = event.target.innerText;
-
-        let data = await ImportCSVService.updateReport('put', this.report.importId,profile, body);
-        if (data.error) {
-            this.globalError.message = data.error; // use an other variable to manage inline error check
-        } else {
-            let user:User = this.report.users.find(el => { return el.line == body.line});
-            for (let p in body) {
-                if ('line' != p) {
-                    // Synchronize model with view.  
-                    user[p] = body[p];
-
-                    // Update error report 
-                    // TODO : Control (if possible) with Feeder's validator
-                    if (user.errors.get(p) && body[p].length > 0) {
-                        this.report.softErrors.list.splice(
-                            this.report.softErrors.list.indexOf(user.errors.get(p)),
-                            1
-                        );
-                        user.errors.get(p).corrected = true;
-                    }
-                    this.cdRef.markForCheck();
-                }
-            }
-        }
-    }
-
     private async import() {
         this.globalError.reset();
         let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
