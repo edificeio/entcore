@@ -17,6 +17,8 @@ $.noty.defaults.template = `
         <div class="noty_close"></div>
     </div>`
 
+export type I18nKey = string | {key: string, parameters: {}};
+
 @Injectable()
 export class NotifyService {
 
@@ -30,18 +32,18 @@ export class NotifyService {
         return _1
     }
 
-    private translate(key: string | {key: string, parameters: {}}) {
+    private translate(key: I18nKey) {
         return this.bundles.translate(
                     typeof key === "string" ? key : key.key,
                     typeof key === "object" ? key.parameters : null)
     }
 
     public notify(
-            content:    string | {key: string, parameters: {}},
-            title?:     string | {key: string, parameters: {}},
-            footer?:    string | {key: string, parameters: {}},
-            type?:      'alert' | 'success' | 'error' | 'warning' | 'information' | 'notification',
-            opts?:      NotyOptions) {
+            content: I18nKey,
+            title?: I18nKey,
+            footer?: I18nKey,
+            type?: 'alert' | 'success' | 'error' | 'warning' | 'information' | 'notification',
+            opts?: NotyOptions) {
 
         const titleDiv = title ?
             `<div class="notify-title">
@@ -69,22 +71,20 @@ export class NotifyService {
         noty(this.mixin(options, opts))
     }
 
-    public success(content: string | {key: string, parameters: {}},
-            title?: string | {key: string, parameters: {}}, opts?: NotyOptions) {
+    public success(content: I18nKey, title?: I18nKey, opts?: NotyOptions) {
         this.notify(content, title, null, 'success', opts)
     }
 
-    public info(content: string | {key: string, parameters: {}},
-            title?: string | {key: string, parameters: {}}, opts?: NotyOptions) {
+    public info(content: I18nKey, title?: I18nKey, opts?: NotyOptions) {
         this.notify(content, title, null, 'information', opts)
     }
 
-    public error(content: string | {key: string, parameters: {}},
-            title : string | {key: string, parameters: {}}, err?, opts?: NotyOptions) {
-        const errorMessage = (err && err.response && err.response.data && err.response.data.error) || (err && err.message)
+    public error(content: I18nKey, title? : I18nKey, err?, opts?: NotyOptions) {
+        const errorMessage = err ? 
+            (err && err.response && err.response.data && err.response.data.error || err.message)
+            : undefined;
         this.notify(content, title, errorMessage, 'error', this.mixin({
             timeout: false
         }, opts))
     }
-
 }
