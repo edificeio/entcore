@@ -53,10 +53,12 @@ public class DuplicateUsers {
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
 			"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId, u2.externalId as u2ExternalId " +
+			"SET u1.mergedIds = FILTER(oldIdF IN coalesce(u1.mergedIds, []) WHERE oldIdF <> oldId) + oldId, " +
+			"u1.mergedExternalIds = FILTER(u2ExternalIdF IN coalesce(u1.mergedExternalIds, []) WHERE u2ExternalIdF <> u2ExternalId) + u2ExternalId " +
 			"DELETE r, r2, u2 " +
 			"WITH u1, IDPN, oldId, u2ExternalId " +
 			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
-			"SET u1.IDPN = IDPN, u1.mergedIds = coalesce(u1.mergedIds, []) + oldId, u1.mergedExternalIds = coalesce(u1.mergedExternalIds, []) + u2ExternalId " +
+			"SET u1.IDPN = IDPN " +
 			"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private static final String SWITCH_MERGE_QUERY =
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
@@ -64,8 +66,8 @@ public class DuplicateUsers {
 			"DELETE r, r2, u2 " +
 			"WITH u1, source, externalId, IDPN, oldId, u1.externalId as u1ExternalId " +
 			"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
-			"u1.mergedIds = coalesce(u1.mergedIds, []) + oldId, " +
-			"u1.mergedExternalIds = coalesce(u1.mergedExternalIds, []) + u1ExternalId, " +
+			"u1.mergedIds = FILTER(oldIdF IN coalesce(u1.mergedIds, []) WHERE oldIdF <> oldId) + oldId, " +
+			"u1.mergedExternalIds = FILTER(u1ExternalIdF IN coalesce(u1.mergedExternalIds, []) WHERE u1ExternalIdF <> u1ExternalId) + u1ExternalId, " +
 			"u1.externalId = externalId, u1.source = source, u1.disappearanceDate = null " +
 			"WITH u1, IDPN, oldId " +
 			"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
