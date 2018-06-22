@@ -153,11 +153,13 @@
 					<div class="reduce-block-eight horizontal-margin">
 						<removable-list
 							ng-model="favorites.all"
+							selected-item="currentFavorite"
 							select-item="selectFavorite(item)"
 							delete-item="deleteFavorite(item)"
 							placeholder="[[lang.translate('userBook.search.title')]]"
 							noitems="[[lang.translate('directory.nofavorite')]]"
-							noresult="[[lang.translate('directory.nofavorite.result')]]"/>
+							noresult="[[lang.translate('directory.nofavorite.result')]]"
+							ng-disabled="display.creatingFavorite"/>
 						<div class="only-desktop">
 							<div class="spacer-small"></div>
 							<div class="reduce-block-eight horizontal-margin">

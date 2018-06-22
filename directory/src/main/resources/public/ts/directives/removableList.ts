@@ -23,7 +23,10 @@ export const removableList = ng.directive('removableList', () => {
                 </div>
                 <div class="spacer-small"></div>
                 <nav class="removable-list wrapper left-text" ng-show="filteredItems.length > 0">
-                    <div class="row big-block-container" ng-repeat="item in filteredItems = (ngModel | filter:filterByName)" ng-click="selectItem({item: item})">
+                    <div class="row big-block-container" 
+                        ng-repeat="item in filteredItems = (ngModel | filter:filterByName)" 
+                        ng-click="selectItem({item: item})"
+                        ng-class="{ 'active': item.id === selectedItem.id }">
                         <span class="block cell-ellipsis right-spacing-twice">[[ item.name ]]</span>
                         <i class="trash right-spacing-twice vertical-spacing-four absolute-magnet only-desktop" 
                             ng-click="deleteItem({item: item}); $event.stopPropagation();" 
@@ -36,6 +39,7 @@ export const removableList = ng.directive('removableList', () => {
 
         scope: {
             ngModel: '=',
+            selectedItem: '=',
             selectItem: '&',
             deleteItem: '&',
         },

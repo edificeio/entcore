@@ -76,7 +76,8 @@
             <div class="search-pagination flex-row vertical-spacing-four">
                 <div class="cell six top-spacing-twice">
                     <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
-                        i18n-placeholder="directory.placeholder.search.example"/>
+                        i18n-placeholder="directory.placeholder.search.example"
+                        ng-keydown="$event.keyCode == 13 ? searchUsersAndGroups($event) : null"/>
                     <i class="search" ng-click="searchUsersAndGroups()"></i>
                 </div>
                 <div class="cell absolute-magnet">

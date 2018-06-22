@@ -236,7 +236,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.display = {};
 
 	$scope.searchDirectory = async function(){
-		$scope.search.maxLength = 50;
+		$scope.indexFormChanged($scope.search.index);
 
 		// Favorite
 		if ($scope.search.index == 2) {
@@ -399,7 +399,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		notify.success(lang.translate('directory.notify.confirmAddUser') + '</br>"' + name + '"');
 	};
 
-	$scope.searchUsersAndGroups = async function(favorite) {
+	$scope.searchUsersAndGroups = async function(event) {
+		// Avoid submit form when pressing enter
+		if (event)
+			event.preventDefault();
+
 		$scope.display.loadingFavoriteForm = true;
 		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
 		await directory.favoriteForm.groups.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
