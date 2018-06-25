@@ -156,14 +156,33 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                     <tr>
                         <th></th>
-                        <th></th>
+                        <th>
+                        </th>
                         <th>
                             <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
                         </th>
                         <th>
                             <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
                         </th>
-                        <th colspan="4"></th>
+                        <th></th>
+                        <th></th>
+                        <th>
+                            <select [(ngModel)]="report.columnFilter.profiles">
+                                <option [value]=""></option>
+                                <option *ngFor="let p of columns.profiles" [value]="p">
+                                    {{ p | translate }}
+                                </option>
+                            </select>
+                        </th>
+                        <th></th>
+                        <th>
+                            <select [(ngModel)]="report.columnFilter.classesStr">
+                                <option [value]=""></option>
+                                <option *ngFor="let c of classes.getAvailableClasses()" [value]="c">
+                                    {{ c }}
+                                </option>
+                            </select>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -172,7 +191,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                 >
                         <td>{{user.line}}</td>
                         <td>
-                        <select (change)="report.changeState($event, user)">
+                            <select (change)="report.changeState($event, user)">
                                 <option *ngFor="let state of report.possibleState(user.state)" [value]="state" [selected]="state === user.state">
                                     {{state}}
                                 </option>
@@ -415,6 +434,17 @@ export class ImportCSV implements OnInit, OnDestroy {
                 } 
             }
             return false;
+        },
+        getAvailableClasses() {
+            let res:string[] = [];
+            for (let p of Object.keys(this.availableClasses)) {
+                this.availableClasses[p].forEach(el => {
+                    if (el && el.length > 0 && res.indexOf(el) == -1) {
+                        res.push(el);
+                    }
+                });
+            }
+            return res;
         }
     };
 
@@ -428,7 +458,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         page : {offset: 0, limit: 30, total: 0},
         filter : User.filter,
-        columnFilter : { lastName: '', firstName: '' },
+        columnFilter : { lastName: '', firstName: '', profiles : '', classesStr : '' },
         setFilter : User.setFilter,
         hasFilter : User.hasFilter,
         possibleState : User.possibleState,
