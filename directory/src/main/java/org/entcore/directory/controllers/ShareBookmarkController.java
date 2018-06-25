@@ -77,7 +77,8 @@ public class ShareBookmarkController extends BaseController {
 						if (r.isRight()) {
 							final JsonObject res = r.right().getValue();
 							res.mergeIn(UserUtils.translateAndGroupVisible(
-									res.getJsonArray("members"),I18n.acceptLanguage(request)));
+									res.getJsonArray("members"), I18n.acceptLanguage(request), true)
+							);
 							res.remove("members");
 							renderJson(request, res);
 						} else {

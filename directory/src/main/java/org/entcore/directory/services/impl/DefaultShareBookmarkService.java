@@ -20,21 +20,19 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
 
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.validation.StringValidation.cleanId;
 
 public class DefaultShareBookmarkService implements ShareBookmarkService {
 
@@ -84,14 +82,11 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 				"UNWIND TAIL(sb." + cleanId + ") as vid " +
 				"MATCH (v:Visible {id : vid}) " +
 				"RETURN \"" + cleanId + "\" as id, HEAD(sb." + cleanId + ") as name, " +
-				"COLLECT(DISTINCT {id : v.id, name : v.name, displayName :  v.displayName }) as members;";
+				"COLLECT(DISTINCT {id : v.id, name : v.name, displayName :  v.displayName, groupType : labels(v), " +
+				"groupProfile : v.filter, nbUsers : v.nbUsers, profile : HEAD(v.profiles) }) as members;";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
-	}
-
-	private String cleanId(String id) {
-		return id;
 	}
 
 	@Override
