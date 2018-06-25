@@ -35,17 +35,12 @@ export const transferColumns = ng.directive('transferColumns', () => {
                     <div class="row centered-text reduce-block-six" ng-if="loading">
                         <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px"/>
                     </div>
-                    <label class="block row twelve chip movable low-importance" ng-repeat="item in searchedItems | limitTo:maxLeftItems" 
-                        ng-if="!loading" ng-class="{ 'divide-opacity': item.selected, 'chip-hover': !item.selected }" ng-click="addItem(item)">
-                        <span class="cell round square-small" ng-class="{ group: item.name }">
-                            <img ng-if="item.name" skin-src="/img/illustrations/group-avatar.svg"/>
-                            <img ng-if="!item.name" ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100"/>
-                        </span>
-                        <span ng-if="!item.name" class="cell circle square-mini" ng-class="getColor({profile: item.profile})"></span>
-                        <span ng-if="item.name" class="cell-ellipsis block left-text">[[ item.name ]]</span>
-                        <span ng-if="!item.name" class="cell-ellipsis block left-text">[[ item.displayName ]]</span>
-                        <i class="right-arrow absolute-magnet" ng-if="!item.selected"></i>
-                    </label>
+                    <contact-chip class="block relative movable" 
+                        ng-model="item"
+                        action="addItem(item)"
+                        ng-class="{ 'divide-opacity': item.selected, 'chip-hover': !item.selected }"
+                        ng-repeat="item in searchedItems | limitTo:maxLeftItems">
+                    </contact-chip>
                 </div>
                 <div class="horizontal-margin-twice divider-border"></div>
                 <div class="six scroll-nine-chips" bottom-scroll="updatingMaxRightItems()">
@@ -57,17 +52,11 @@ export const transferColumns = ng.directive('transferColumns', () => {
                         </div>
                     </div>
                     <div class="row info" ng-if="ngModel.length === 0 && searchedItems.length > 0"><i18n>portal.select.users.criterias</i18n></div>
-                    <label class="block row twelve chip chip-hover removable low-importance" ng-repeat="item in ngModel | limitTo:maxRightItems" 
-                        ng-click="removeItem(item)">
-                        <span class="cell round square-small" ng-class="{ group: item.name }">
-                            <img ng-if="item.name" skin-src="/img/illustrations/group-avatar.svg"/>
-                            <img ng-if="!item.name" ng-src="/userbook/avatar/[[item.id]]?thumbnail=100x100"/>
-                        </span>
-                        <span ng-if="!item.name" class="cell circle square-mini" ng-class="getColor({profile: item.profile})"></span>
-                        <span ng-if="item.name" class="cell-ellipsis block left-text">[[ item.name ]]</span>
-                        <span ng-if="!item.name" class="cell-ellipsis block left-text">[[ item.displayName ]]</span>
-                        <i class="close absolute-magnet"></i>
-                    </label>
+                    <contact-chip class="block relative removable chip-hover" stickerNotSelected
+                        ng-model="item"
+                        action="removeItem(item)"
+                        ng-repeat="item in ngModel | limitTo:maxRightItems">
+                    </contact-chip>
                 </div>
             </div>
         `,
