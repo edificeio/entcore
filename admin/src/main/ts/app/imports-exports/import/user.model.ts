@@ -2,7 +2,8 @@ import { ImportCSVService } from './import-csv.service'
 
 export type Profile = 'Student' | 'Teacher' | 'Relative' | 'Personnel' | 'Guest';
 export type FilterUser = 'errors'| 'reasons' | 'state' | 'none';
-export type UserEditableProps = 'lastName'| 'firstName' | 'birthDate';
+export type UserEditableProps = 'lastName'| 'firstName' | 'birthDate' | 'state';
+export type UserState = 'Créé'|'Modifié'|'Supprimé' ;
 
 export type Error = {
     line:string, 
@@ -14,11 +15,12 @@ export type Error = {
 
 export class User {
 
-    private attributes = ['line','firstName','lastName', 'birthDate','login','externalId','profiles','classesStr','state'];
+    private attributes = ['line','firstName','lastName', 'birthDate','login','externalId','profiles','classesStr','state','profile'];
 
     constructor(data:any){
         this.attributes.forEach(attr => { this[attr] = data[attr] });
-        this.errors = new Map<string, Error>();    
+        this.profiles = this.profiles || [this.profile]; // Hack 
+        this.errors = new Map<string, Error>();
         this.reasons = [];
     };
     line: number;
@@ -32,6 +34,7 @@ export class User {
     state : string;
     errors : Map<string,Error>; // <K=attribute,V=error>
     reasons : string[];
+    profile : string; // Use for delete lines. TODO use properties 'profiles' instead 
 
     isCorrected(attribute:string):boolean {
         if (!!this.errors.has(attribute))
@@ -71,6 +74,48 @@ export class User {
         return false;
     }
 
+    static possibleState(state:UserState):UserState[]{
+        switch (state) {
+            case 'Créé' : return ['Créé','Supprimé'];
+            case 'Modifié' :return ['Modifié','Supprimé'];
+            case 'Supprimé': return ['Supprimé', 'Modifié'];
+        }
+    }
+
+    /**
+    * 
+    * @param importId 
+    * @param property 
+    */
+    async delete(importId:string){
+        let res = await ImportCSVService.deleteLineReport(importId, this.profiles[0], this.line);
+        if (res.error) {
+            throw new Error(res.error);
+        }
+    }
+
+    /**
+     * Create a user's line in repport to keep user (avoid pre-deletion)
+     * @param importId 
+     * @param property 
+     */
+    async keep(importId:string){
+        let data = {
+            externalId : this.externalId,
+            firstName : this.firstName,
+            lastName : this.lastName
+        };
+        let res = await ImportCSVService.updateReport('post', importId, this.profiles[0], data);
+        if (res.error) {
+            throw new Error(res.error);
+        }
+    }
+
+    /**
+     * 
+     * @param importId 
+     * @param property 
+     */
     async update(importId:string, property:UserEditableProps){
         let data = {
             line : this.line,

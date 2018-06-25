@@ -41,7 +41,17 @@ export class ImportCSVService {
         let response;
         let path = ['directory/wizard/update', importId, profile].join('/');
         try {
-            response = await http.put(path, data);
+            response = await http[action](path, data);
+        } catch(error) {
+            return error.response.data;
+        }
+        return response.data;
+    }
+
+    static async deleteLineReport(importId, profile, line): Promise<any> {
+        let response;
+        try {
+            response = await http.delete(['directory/wizard/update', importId, profile, line].join('/'));
         } catch(error) {
             return error.response.data;
         }
