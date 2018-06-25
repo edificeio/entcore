@@ -44,6 +44,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
+import static org.entcore.common.validation.StringValidation.cleanId;
 
 public abstract class GenericShareService implements ShareService {
 
@@ -308,9 +309,10 @@ public abstract class GenericShareService implements ShareService {
 			final JsonObject p = new JsonObject().put("userId", userId);
 			StatementsBuilder statements = new StatementsBuilder();
 			for (String sbId: shareBookmark.fieldNames()) {
+				final String csbId = cleanId(sbId);
 				final String query =
 						"MATCH (:User {id:{userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
-						"RETURN DISTINCT '" + sbId + "' as id, TAIL(sb." + sbId + ") as members ";
+						"RETURN DISTINCT '" + csbId + "' as id, TAIL(sb." + csbId + ") as members ";
 				statements.add(query, p);
 			}
 			Neo4j.getInstance().executeTransaction(statements.build(), null, true, Neo4jResult.validResultsHandler(sbRes -> {

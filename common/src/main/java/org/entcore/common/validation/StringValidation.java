@@ -103,4 +103,15 @@ public class StringValidation {
 		return date;
 	}
 
+	public static String cleanId(String id) {
+		return cleanId(id, "emptyId");
+	}
+
+	public static String cleanId(String id, String defaultValue) {
+		if (id != null) {
+			return id.replaceAll("\\W+", "-");
+		}
+		return defaultValue;
+	}
+
 }
