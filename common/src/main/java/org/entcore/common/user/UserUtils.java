@@ -259,12 +259,13 @@ public class UserUtils {
 				j.remove("mood");
 				if (returnGroupType) {
 					Object gt = j.remove("groupType");
-					if (gt instanceof JsonArray) {
-						for (Object gti: (JsonArray) gt) {
+					Object gp = j.remove("groupProfile");
+					if (gt instanceof Iterable) {
+						for (Object gti: (Iterable) gt) {
 							if (gti != null && !"Group".equals(gti) && gti.toString().endsWith("Group")) {
 								j.put("groupType", gti);
 								if ("ProfileGroup".equals(gti)) {
-									j.put("profile", j.remove("groupProfile"));
+									j.put("profile", gp);
 								}
 								break;
 							}
@@ -274,6 +275,10 @@ public class UserUtils {
 				UserUtils.groupDisplayName(j, acceptLanguage);
 				groups.add(j);
 			} else {
+				if (returnGroupType) {
+					j.remove("groupProfile");
+					j.remove("groupType");
+				}
 				j.remove("name");
 				j.remove("nbUsers");
 				users.add(j);
