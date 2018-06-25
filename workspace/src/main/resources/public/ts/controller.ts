@@ -164,8 +164,13 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	};
 
 	$scope.viewFile = function(document){
-		$scope.openedFolder.content.forEach(f => f.selected = false);
-		$scope.openedFolder.folder.children.forEach(f => f.selected = false);
+		if ($scope.openedFolder){
+			if ($scope.openedFolder.content)
+				$scope.openedFolder.content.forEach(f => f.selected = false);
+			if ($scope.openedFolder.folder && $scope.openedFolder.folder.children) 
+				$scope.openedFolder.folder.children.forEach(f => f.selected = false);
+		}
+
 		$scope.display.viewFile = document;
 		template.open('documents', 'viewer');
 	};
