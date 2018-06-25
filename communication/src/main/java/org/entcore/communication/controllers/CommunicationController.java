@@ -145,8 +145,6 @@ public class CommunicationController extends BaseController {
 				String where = "";
 				String nbUsers = "";
 				String groupTypes = "";
-				String optionalUserBook = "";
-				String mood = "";
 				JsonObject params = new JsonObject();
 				JsonArray expectedTypes = null;
 				if (filter != null && filter.size()> 0) {
@@ -212,20 +210,14 @@ public class CommunicationController extends BaseController {
 									groupTypes = ", labels(visibles) as groupType, visibles.filter as groupProfile";
 								}
 								break;
-							case "mood":
-								if (filter.getBoolean("mood", false)) {
-									optionalUserBook = "OPTIONAL MATCH (visibles)-[:USERBOOK]->(ub:UserBook) ";
-									mood = ", ub.mood as mood";
-								}
-								break;
 						}
 					}
 				}
 				final boolean returnGroupType = !groupTypes.isEmpty();
-				final String customReturn = match + where + optionalUserBook +
+				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes + mood;
+						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
 						preFilter, customReturn, params, visibles -> {
 							if (visibles.isRight()) {
