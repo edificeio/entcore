@@ -101,6 +101,7 @@
     "login.update": "Enregistrer",
     "id": "Identifiant",
     "externalId": "Identifiant externe",
+    "externalId.short": "ID ext",
     "source": "Source",
     "creation": "Date de création",
     "MANUAL": "Manuel",

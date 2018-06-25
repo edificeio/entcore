@@ -144,25 +144,26 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             <table class="report">
                 <thead>
                     <tr>
-                        <th>{{ 'line' | translate }}</th>
+                        <th></th>
+                        <th>{{ 'operation' | translate }}</th>
                         <th>{{ 'lastName' | translate }}</th>
                         <th>{{ 'firstName' | translate }}</th>
                         <th>{{ 'birthDate' | translate }}</th>
                         <th>{{ 'login' | translate }}</th>
                         <th>{{ 'profile' | translate }}</th>
-                        <th>{{ 'externalId'| translate }}</th>
+                        <th>{{ 'externalId.short'| translate }}</th>
                         <th>{{ 'classes' | translate }}</th>
-                        <th>{{ 'operation' | translate }}</th>
                     </tr>
                     <tr>
                         <th></th>
+                        <th></th>
                         <th>
-                        <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
+                            <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
                         </th>
                         <th>
-                        <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
+                            <input type="text" [(ngModel)]="report.columnFilter.firstName" [attr.placeholder]="'search' | translate"/>
                         </th>
-                        <th colspan="5"></th>
+                        <th colspan="4"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -170,6 +171,13 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     [ngClass]="{'state-delete':user.state == 'Supprimé'}"
                 >
                         <td>{{user.line}}</td>
+                        <td>
+                        <select (change)="report.changeState($event, user)">
+                                <option *ngFor="let state of report.possibleState(user.state)" [value]="state" [selected]="state === user.state">
+                                    {{state}}
+                                </option>
+                            </select>
+                        </td>
                         <td (dblclick)="editLastName.disabled = !editLastName.disabled"
                             [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
                             <input 
@@ -202,7 +210,6 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                         <td>{{user.profiles?.join(',')}}</td>
                         <td><span ellipsis="expand">{{user.externalId}}</span></td>
                         <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
-                        <td>{{user.state}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -424,6 +431,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         columnFilter : { lastName: '', firstName: '' },
         setFilter : User.setFilter,
         hasFilter : User.hasFilter,
+        possibleState : User.possibleState,
         ns : this.ns,
         init(data:{importId:string, softErrors:any}, profiles):void {
             this.importId = data.importId
@@ -499,9 +507,9 @@ export class ImportCSV implements OnInit, OnDestroy {
                 page : {offset: 0, limit: 30, total: 0},
             });
         },
-        update(user:User, property:UserEditableProps) {
+        async update(user:User, property:UserEditableProps) {
             try {
-                user.update(this.importId, property)
+                await user.update(this.importId, property)
                 // Update error report 
                 // TODO : Control (if possible) with Feeder's validator
                 if (user.errors.get(property) && user[property].length > 0) {
@@ -511,6 +519,19 @@ export class ImportCSV implements OnInit, OnDestroy {
                     );
                     user.errors.get(property).corrected = true;
                 } 
+                this.ns.success('import.report.notifySuccessEdit');
+            } catch (error) {
+                this.ns.error('import.report.notifyErrorEdit');
+            }
+        },
+        async changeState(event, user:User) {
+            let newState = event.target.value;
+            try {
+                switch (newState) {
+                    case 'Crée': await user.keep(this.importId); break;
+                    case 'Modifié': await user.keep(this.importId); break;
+                    case 'Supprimé': await user.delete(this.importId); break; 
+                }
                 this.ns.success('import.report.notifySuccessEdit');
             } catch (error) {
                 this.ns.error('import.report.notifyErrorEdit');
