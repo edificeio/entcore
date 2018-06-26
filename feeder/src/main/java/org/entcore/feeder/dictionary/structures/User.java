@@ -423,6 +423,7 @@ public class User {
 				.put("functionCode", functionCode)
 				.put("userId", userId);
 			transactionHelper.add(query2, p2);
+			countUsersInGroups(null, "FunctionGroup", transactionHelper);
 		}
 	}
 
@@ -440,6 +441,7 @@ public class User {
 				.put("userId", userId)
 				.put("functionCode", functionCode);
 		transactionHelper.add(query, params);
+		countUsersInGroups(null, "FunctionGroup", transactionHelper);
 	}
 
 	public static void addGroup(String userId, String groupId, TransactionHelper transactionHelper) {
@@ -454,6 +456,7 @@ public class User {
 				.put("userId", userId)
 				.put("groupId", groupId);
 		transactionHelper.add(query, params);
+		countUsersInGroups(groupId, null, transactionHelper);
 	}
 
 	public static void removeGroup(String userId, String groupId, TransactionHelper transactionHelper) {
@@ -466,6 +469,7 @@ public class User {
 				.put("userId", userId)
 				.put("groupId", groupId);
 		transactionHelper.add(query, params);
+		countUsersInGroups(groupId, null, transactionHelper);
 	}
 
 	public static void count(String exportType, JsonArray profiles, TransactionHelper transactionHelper) {
@@ -615,6 +619,24 @@ public class User {
 			.put("studentId", studentId);
 		tx.add(query, params);
 		tx.add(query2, params);
+	}
+
+	public static void countUsersInGroups(String groupId, String groupType, TransactionHelper tx) {
+		JsonObject params = new JsonObject();
+		String filter = "";
+		String type = "Group";
+		if (isNotEmpty(groupId)) {
+			filter = " {id: {id}}";
+			params.put("id", groupId);
+			final String query0 = "MATCH (g:Group {id: {id}}) SET g.nbUsers = 0;";
+			tx.add(query0, params);
+		} else if (isNotEmpty(groupType)) {
+			type = groupType;
+			final String query0 = "MATCH (g:" + type + ") SET g.nbUsers = 0;";
+			tx.add(query0, params);
+		}
+		final String query = "MATCH (g:" + type + filter + ")<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";
+		tx.add(query, params);
 	}
 
 }
