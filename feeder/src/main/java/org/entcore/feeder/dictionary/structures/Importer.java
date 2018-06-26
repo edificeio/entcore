@@ -867,8 +867,7 @@ public class Importer {
 	}
 
 	public void countUsersInGroups() {
-		final String query = "MATCH (g:Group)<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";
-		transactionHelper.add(query, new JsonObject());
+		User.countUsersInGroups(null, null, transactionHelper);
 	}
 
 	public Report getReport() {
