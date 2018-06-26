@@ -19,18 +19,18 @@ export const recipientList = ng.directive('recipientList', () => {
         restrict: 'E',
         template: `
             <div class="twelve flex-row align-center" ng-click="unfoldChip()">
-                <label ng-model="ngModel" ng-change="ngChange" class="chip removable" ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)" ng-click="giveFocus()">
-                    <i class="close right-magnet" ng-click="deleteItem(item)"></i>
-                    <span class="cell-ellipsis block">[[item.toString()]]</span>
-                </label>
+                <contact-chip class="block relative removable" 
+                    ng-model="item"
+                    action="deleteItem(item)"
+                    ng-repeat="item in ngModel | limitTo : (needChipDisplay() ? 2 : ngModel.length)">
+                </contact-chip>
                 <label class="chip selected" ng-if="needChipDisplay()" ng-click="giveFocus()">
                     <span class="cell">... <i18n>chip.more1</i18n> [[ngModel.length - 2]] <i18n>chip.more2</i18n></span>
                 </label>
                 <form class="input-help" ng-submit="update(true)">
                     <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" 
                     i18n-placeholder="[[restriction ? 'share.search.help' : 'share.search.placeholder' ]]"
-                    />
-                    
+                    />    
                 </form>
                 <drop-down
                     options="itemsFound"
@@ -68,8 +68,10 @@ export const recipientList = ng.directive('recipientList', () => {
                 scope.focused = false;
                 element.find('div').removeClass('focus');
                 setTimeout(function(){
-                    if (!scope.focused)
+                    if (!scope.focused) {
                         element.find('form').width(0);
+                        scope.itemsFound = [];
+                    }
                 }, 250);
             });
 
@@ -128,6 +130,10 @@ export const recipientList = ng.directive('recipientList', () => {
                     scope.currentReceiver = item;
                 }
                 scope.ngModel.push(scope.currentReceiver);
+                setTimeout(function(){
+                    scope.itemsFound.splice(scope.itemsFound.indexOf(scope.currentReceiver), 1);
+                    scope.$apply('itemsFound');
+                }, 0);
                 scope.$apply('ngModel');
 				scope.$eval(scope.ngChange);
             };
@@ -135,12 +141,15 @@ export const recipientList = ng.directive('recipientList', () => {
             scope.deleteItem = (item) => {
                 scope.ngModel = _.reject(scope.ngModel, function (i) { return i === item; });
                 scope.$apply('ngModel');
-				scope.$eval(scope.ngChange);
+                scope.$eval(scope.ngChange);
+                scope.doSearch();
             };
 
             scope.clearSearch = () => {
-                scope.itemsFound = [];
-                scope.searchText = '';
+                if (!scope.focused) {
+                    scope.searchText = '';
+                    scope.itemsFound = [];
+                }
             };
 
             scope.doSearch = () => {
