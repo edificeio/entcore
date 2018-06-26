@@ -10,7 +10,6 @@
 	"address" : { "attribute" : "ENTPersonAdresse" },
 	"zipCode" : { "attribute" : "ENTPersonCodePostal" },
 	"city" : { "attribute" : "ENTPersonVille" },
-	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"country" : { "attribute" : "ENTPersonPays" },
 	"mobile" : { "attribute" : "ENTPersonMobileSMS" },
 	"mobilePhone" : { "attribute" : "ENTPersonMobile" },

@@ -14,7 +14,6 @@
 	"structures" : { "attribute" : "ENTPersonStructRattach", "converter" : "head-array" },
 	"classCategories" : { "attribute" : "ENTAuxEnsCategoDiscipline" },
 	"modules" : { "attribute" : "ENTAuxEnsMEF" },
-	"manualGroups" : { "attribute" : "ENTGroupesEnt" },
 	"headTeacher" : { "attribute" : "ENTAuxEnsClassesPrincipal" },
 	"functions" : { "attribute" : "ENTPersonFonctions" },
 	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
