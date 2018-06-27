@@ -659,6 +659,8 @@
     "generate": "Générer",
     "groups.local": "Groupes locaux :",
     "role.substructure": "Structures bénéficiaires du droit :",
+    "next": "Suivant",
+    "previous": "Précédent",
     "cancel": "Annuler",
     "confirm": "Confirmer",
     "warning": "Attention !",

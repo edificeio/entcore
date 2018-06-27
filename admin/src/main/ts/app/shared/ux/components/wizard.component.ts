@@ -3,8 +3,6 @@ import {
     ContentChildren, AfterContentInit, QueryList, 
     ElementRef, EventEmitter,
     OnDestroy } from '@angular/core'
-import { LabelsService } from '../services'
-
 
 @Component({
     selector : 'step',
@@ -41,29 +39,23 @@ export class StepComponent {
         </nav>
         <section class="steps-content">
             <ng-content select="step"></ng-content>
-            <nav class="steps-nav-button">
+            <nav class="steps-nav-button" *ngIf="activeStep < steps.length - 1">
                 <button class="cancel" 
                     (click)="cancel.emit()"
-                    [title]="labels('cancel')">
-                    {{ labels('cancel') }}
+                    [title]="'cancel' | translate">
+                    {{ 'cancel' | translate }}
                 </button>
                 <button class="previous" 
                     (click)="onPreviousStep()" 
                     *ngIf="activeStep > 0" 
-                    [title]="labels('previous')">
-                    {{ labels('previous') }}
+                    [title]="'previous' | translate">
+                    {{ 'previous' | translate }}
                 </button>
                 <button class="next" 
                     (click)="onNextStep()" 
-                    *ngIf="activeStep < steps.length - 1" ng-disabled="!canDoNext()"
-                    [title]="labels('next')">
-                    {{ labels('next') }}
-                </button>
-                <button class="finish" 
-                    *ngIf="activeStep === steps.length - 1" 
-                    (click)="finish.emit()" ng-disabled="!canDoFinish()"
-                    [title]="labels('finish')">
-                    {{ labels('finish') }}
+                    [disabled]="!canDoNext"
+                    [title]="'next' | translate">
+                    {{ 'next' | translate }}
                 </button>
             </nav>
         </section>
@@ -103,13 +95,11 @@ export class StepComponent {
 export class WizardComponent implements AfterContentInit, OnDestroy {
 
     constructor(
-            private labelsService: LabelsService,
             private renderer : Renderer,
             private ref : ElementRef)
     {}
     
     @Output("cancel") cancel: EventEmitter<{}> = new EventEmitter();
-    @Output("finish") finish: EventEmitter<{}> = new EventEmitter();
     @Output("previousStep") previousStep : EventEmitter<Number> = new EventEmitter();
     @Output("nextStep") nextStep : EventEmitter<Number> = new EventEmitter();
 
@@ -118,9 +108,6 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
         this.steps.forEach((step, index) => {
             index == 0 ? step.isActived = true : step.isActived = false; 
         })
-    }
-
-    doFinish() {
     }
 
     onPreviousStep() {
@@ -135,16 +122,20 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
         }
     }
 
+    canDoNext:boolean = true;
+
     onNextStep() {
         this.nextStep.emit(this.activeStep);
     }
     doNextStep() {
         if (this.activeStep < this.steps.length -1) {
+            this.canDoNext = true;
             this.steps.toArray()[this.activeStep].isActived = false;
             this.steps.toArray()[this.activeStep + 1].isActived = true;
             this.activeStep++;
         }
     }
+
 
     @ContentChildren(StepComponent) steps: QueryList<StepComponent>;
     activeStep:number = 0;
@@ -156,17 +147,4 @@ export class WizardComponent implements AfterContentInit, OnDestroy {
 
     ngOnDestroy() : void {
     }
-
-    labels(label){
-        return this.labelsService.getLabel(label)
-    }
-
-    canDoNext():boolean {
-        return true;
-    }
-
-    canDoFinish():boolean {
-        return true;
-    }
-
 }
