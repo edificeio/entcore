@@ -856,7 +856,7 @@ public class Importer {
 			filter = "AND s.externalId STARTS WITH {prefix} ";
 			params.put("prefix", prefix);
 		} else {
-			filter = "AND u.source = {currentSource} ";
+			filter = "AND s.source = {currentSource} ";
 			params.put("currentSource", currentSource);
 		}
 		final String query =
