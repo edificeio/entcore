@@ -21,6 +21,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -550,7 +551,7 @@ public class DuplicateUsers {
 		}
 		String d = (distance > 0.9 || distance < 0.1) ? "" : ("~" + distance);
 		StringBuilder sb = new StringBuilder().append("(");
-		String[] values = value.split("\\s+");
+		String[] values = StringValidation.removeAccents(value).split("\\s+");
 		for (String v : values) {
 			if (v.startsWith("-")) {
 				v = v.replaceFirst("-+", "");
