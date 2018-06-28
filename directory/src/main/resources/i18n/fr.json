@@ -310,6 +310,8 @@
     "directory.userSource": "Source",
     "directory.userType": "Profil :",
     "directory.userZipCode": "Code postal :",
+    "AdminLocal" : "Administrateur local",
+    "HeadTeacher" : "Professeur principal",
     "dissociate": "Dissocier",
     "email.activation.infos": "(notez-le bien, il vous sera demandé à chaque connexion).",
     "email.activation.uri": "Pour activer votre compte, cliquez ici :",
