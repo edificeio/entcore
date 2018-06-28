@@ -543,9 +543,10 @@ public class DefaultSchoolService implements SchoolService {
 				"WHERE s.id IN {structures} " +
 				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class) " +
 				"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) " +
+				"OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) " +
 				"RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, " +
 				"COLLECT(DISTINCT { id: c.id, name: c.name}) as classes, " +
-				"COLLECT(DISTINCT fg.filter) + 'HeadTeacher' as functions, " +
+				"CASE WHEN htg IS null THEN COLLECT(DISTINCT fg.filter) ELSE COLLECT(DISTINCT fg.filter) + 'HeadTeacher' END as functions, " +
 				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, " +
 				"['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes";
 		neo.execute(query, new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
