@@ -58,13 +58,19 @@ export class Users {
 
     async sync(search: string){
         let newArr = [];
-        const response = await http.get('/conversation/visible?search=' + search);
+        var response = await http.get('/directory/sharebookmark/all');
+        var bookmarks = _.map(response.data, function(bookmark) {
+            bookmark.type = 'sharebookmark';
+            return bookmark;
+        });
+        newArr = Mix.castArrayAs(User, bookmarks);
+        response = await http.get('/conversation/visible?search=' + search);
         response.data.groups.forEach(group => {
             group.isGroup = true;
             newArr.push(Mix.castAs(User, group));
         });
-
         newArr = newArr.concat(Mix.castArrayAs(User, response.data.users));
+
         return newArr;
     }
 
@@ -98,6 +104,7 @@ export class Users {
                     testName.indexOf(searchTerm) !== -1;
             }
         );
+
         return _.reject(found, function (element) {
             return _.findWhere(exclude, { id: element.id });
         });
