@@ -127,8 +127,8 @@ object AppRegistryAdmlScenario {
           json.asScala.foldLeft[List[String]](List("","")){(acc, c) =>
             val app = c.asInstanceOf[JSONObject]
             app.get("name").asInstanceOf[String] match {
-              case "Tous les enseignants du groupe CM2." => List(app.get("id").asInstanceOf[String], acc.last)
-              case "Tous les élèves du groupe CM2." => List(acc.head, app.get("id").asInstanceOf[String])
+              case "Enseignants du groupe CM2." => List(app.get("id").asInstanceOf[String], acc.last)
+              case "Élèves du groupe CM2." => List(acc.head, app.get("id").asInstanceOf[String])
               case _ => acc
             }
           }
