@@ -142,9 +142,10 @@ public class Transition {
 								new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
-								if ("ok".equals(event.body().getString("status"))) {
-									JsonArray r = getOrElse(m.body().getJsonArray("result"), new fr.wseduc.webutils.collections.JsonArray());
-									publishTransition(structure);
+								JsonArray results = m.body().getJsonArray("results");
+								if ("ok".equals(event.body().getString("status")) && results != null && results.size() == 2) {
+									JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
+									publishTransition(structure, results.getJsonArray(1));
 									if (r.size() > 0) {
 										publishDeleteGroups(vertx.eventBus(), log, r);
 										if (handler != null) {
@@ -207,9 +208,10 @@ public class Transition {
 		return tx;
 	}
 
-	private void publishTransition(JsonObject struct) {
+	private void publishTransition(JsonObject struct, JsonArray classes) {
 		if (struct == null) return;
 		final JsonObject structure = struct.copy();
+		structure.put("classes", classes);
 		structure.remove("created");
 		structure.remove("modified");
 		structure.remove("checksum");
