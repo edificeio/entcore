@@ -107,8 +107,9 @@ public class PostImport {
 	private void publishClassesUpdate() {
 		final String query =
 				"MATCH (u:User) " +
-				"WHERE u.classes <> u.oldClasses " +
-				"RETURN u.id as userId, u.externalId as userExternalId, u.classes as classes, u.oldClasses as oldClasses, timestamp() as timestamp";
+				"WHERE (has(u.classes) AND not(has(u.oldClasses))) OR u.classes <> u.oldClasses " +
+				"RETURN u.id as userId, u.externalId as userExternalId, u.classes as classes, " +
+				"u.oldClasses as oldClasses, u.created as created, timestamp() as timestamp";
 		final String setOldClasses =
 				"MATCH (u:User) " +
 				"WHERE has(u.classes) " +
