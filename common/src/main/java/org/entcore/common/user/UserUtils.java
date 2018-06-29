@@ -20,7 +20,6 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -36,7 +35,6 @@ import java.io.IOException;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class UserUtils {
 
@@ -217,12 +215,7 @@ public class UserUtils {
 		String name = group.getString("name");
 		int idx = name.lastIndexOf('-');
 		if (idx < 0) { return; }
-		final String arg;
-		if (isNotEmpty(group.getString("structureName"))) {
-			arg = name.substring(0, idx) + " - " + group.getString("structureName");
-		} else {
-			arg = name.substring(0, idx);
-		}
+		final String arg = name.substring(0, idx);
 		String type = name.substring(idx + 1);
 		String displayName = getOrElse(group.getString("groupDisplayName"), "group." + type);
 		String translatedName = i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
