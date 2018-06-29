@@ -50,6 +50,8 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
 
     private filteredApps = [
         "Auth",
+        "Application Mobile",
+        "AppRegistry",
         "Cas",
         "Communication",
         "Directory",
@@ -57,6 +59,7 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         "FakeSSO",
         "Portal",
         "Rss",
+        "Starter",
         "Timeline",
         "Xiti",
         "Searchengine",
