@@ -33,8 +33,7 @@ import { DatepickerComponent,
     PagerComponent,
     LengthPipe } from './components'
 
-import { AnchorDirective, DynamicTemplateDirective, DynamicComponentDirective, DragAndDropFilesDirective } from './directives'
-
+import { AnchorDirective, DynamicTemplateDirective, DynamicComponentDirective, DragAndDropFilesDirective, ObjectURLDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe, LocalizedDatePipe, BytesPipe } from './pipes'
 import { DynamicModuleImportsService, LabelsService, InputFileService } from './services';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
@@ -83,6 +82,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         DynamicTemplateDirective,
         DynamicComponentDirective,
         DragAndDropFilesDirective,
+        ObjectURLDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
@@ -129,6 +129,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         DynamicTemplateDirective,
         DynamicComponentDirective,
         DragAndDropFilesDirective,
+        ObjectURLDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
