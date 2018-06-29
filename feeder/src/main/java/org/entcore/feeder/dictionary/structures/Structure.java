@@ -21,6 +21,8 @@ package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.feeder.exceptions.TransactionException;
+import org.entcore.feeder.utils.ResultMessage;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
@@ -223,12 +225,18 @@ public class Structure {
 
 						@Override
 						public void handle(Message<JsonObject> event) {
-							for (Object u : res.getJsonArray("users")) {
-								User.backupRelationship(u.toString(), tx);
-								User.transition(u.toString(), tx);
+							if ("ok".equals(event.body().getString("status"))) {
+								for (Object u : res.getJsonArray("users")) {
+									User.backupRelationship(u.toString(), tx);
+									User.transition(u.toString(), tx);
+								}
+								transitionClassGroup();
+								handler.handle(event);
+							} else {
+								log.error("Structure " + id + " transition error - useringroups.");
+								log.error(event.body().encode());
+								handler.handle(event);
 							}
-							transitionClassGroup();
-							handler.handle(event);
 						}
 					});
 				} else {
@@ -241,18 +249,30 @@ public class Structure {
 	}
 
 	private void usersInGroups(Handler<Message<JsonObject>> handler) {
-		final Neo4j neo4j = TransactionManager.getInstance().getNeo4j();
-		final JsonObject params = new JsonObject().put("id", id);
-		String query =
-				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
-				"<-[:DEPENDS]-(cpg:Group) " +
-				"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
-				"RETURN cpg.id as group, cpg.name as groupName, collect(u.id) as users " +
-				"UNION " +
-				"MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
-				"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
-				"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
-		neo4j.execute(query, params, handler);
+		final TransactionHelper tx;
+		try {
+			tx = TransactionManager.getInstance().begin();
+			final JsonObject params = new JsonObject().put("id", id);
+			String query =
+					"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
+					"<-[:DEPENDS]-(cpg:Group) " +
+					"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
+					"RETURN cpg.id as group, cpg.name as groupName, collect(u.id) as users " +
+					"UNION " +
+					"MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
+					"OPTIONAL MATCH fg<-[:IN]-(u:User) " +
+					"RETURN fg.id as group, fg.name as groupName, collect(u.id) as users ";
+			tx.add(query, params);
+			String queryClasses =
+					"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
+					"<-[:DEPENDS]-(cpg:ProfileGroup) " +
+					"OPTIONAL MATCH cpg<-[:IN]-(u:User) " +
+					"RETURN c.id as classId, c.name as className, collect(u.id) as users ";
+			tx.add(queryClasses, params);
+			tx.commit(handler);
+		} catch (TransactionException e) {
+			handler.handle(new ResultMessage().error(e.getMessage()));
+		}
 	}
 
 	private void transitionClassGroup() {
