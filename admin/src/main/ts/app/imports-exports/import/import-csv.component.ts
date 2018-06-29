@@ -11,6 +11,7 @@ import { User, Error, Profile, UserEditableProps } from './user.model'
 import { WizardComponent } from '../../shared/ux/components'
 import { NotifyService } from '../../core/services/notify.service'
 import { Messages } from './messages.model'
+import { ObjectURLDirective } from '../../shared/ux/directives/object-url.directive'
 
 type GlobalError = { message:string, profile:{}, reset:Function }
 type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Guest?:{}, dbClasses:string[]}
@@ -234,8 +235,9 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             </table>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
-            <h2>{{ 'import.finish' | translate }}</h2>
-            <message-box [type]="'success'" [messages]="['import.finish.success']"></message-box>
+            <message-box style="font-size: 1.5em;" [type]="'success'" [messages]="['import.finish.success']">
+                <a object-url>{{ 'import.finish.report' | translate }}</a>
+            </message-box>
             <button 
                 (click)="cancel()"
                 [title]="'import.finish.otherImport' | translate">
@@ -280,7 +282,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     private routerSubscriber:Subscription;
 
     @ViewChild(WizardComponent) wizardEl: WizardComponent;
-
+    
     globalError:{ message:string,profile:{},reset:Function } = {
         message:undefined,
         profile:{},
@@ -641,11 +643,6 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.wizardEl.doPreviousStep();
     }
 
-    
-    finish() {
-        // TODO : close Wizard
-    }
-    
     /*
     * Next Step operations
     */
@@ -708,12 +705,19 @@ export class ImportCSV implements OnInit, OnDestroy {
         this.cdRef.markForCheck();
     }
     
+    @ViewChild(ObjectURLDirective) objectURLEl: ObjectURLDirective;
+    
     private async import() {
         this.globalError.reset();
         let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
         if (data.error) {
             this.globalError.message = data.error;
         } else {
+            // TODO maybe set objectURL directive by @input
+            this.objectURLEl.create(
+                new Blob([JSON.stringify(data,null, '\t')], { type: 'text/json' }), 
+                this.translate('import.finish.report')
+            );
             this.wizardEl.doNextStep();
             this.cdRef.markForCheck();
         }
