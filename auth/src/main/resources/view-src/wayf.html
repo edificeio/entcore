@@ -31,31 +31,26 @@
 
 <body class="wayf">
 <default-styles>
-
 	<header>
-		<i class="logo cell horizontal-spacing-twice"></i>
-		<h1 class="cell">
-			<i18n>wayf.title</i18n>
-		</h1>
+		<i class="cell horizontal-spacing-twice"></i>
 	</header>
-
-	<h2>
-		<i18n>wayf.select.profile</i18n>
-	</h2>
-
-	<div class="container">
+	<div>
 		<section id="credentials-content">
-			<div class="vertical-divider horizontal-margin"></div>
-			<ul>
+			<i class="logo"></i>
+			<h2 class="row vertical-spacing">
+				<i18n>wayf.select.profile</i18n>
+			</h2>
+			<section class="dominos">
 				{{#providers}}
-				<li> <a href="{{uri}}"><i18n>{{name}}</i18n></a> </li>
+				<div class="item">
+					<a class="centered-text domino {{name}}" href="{{uri}}">
+						<div style="margin: 20px;"><i18n>{{name}}</i18n></div>
+					</a>
+				</div>
 				{{/providers}}
-			</ul>
+			</section>
 		</section>
 	</div>
-
-
-
 </default-styles>
 </body>
 
