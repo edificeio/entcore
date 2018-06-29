@@ -1,6 +1,5 @@
 {
-    "wayf.title": "Bienvenue sur votre ENT !",
-    "wayf.select.profile": "Sélectionnez votre profil :",
+    "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
     "activation.error": "Erreur lors de l'activation, veuillez vérifier votre identifiant et votre code d'activation.",
     "auth.activate": "Activer",
     "auth.activateAccount": "Activer mon compte",
