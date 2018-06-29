@@ -374,7 +374,7 @@ export class Mail implements Selectable {
     }
 
     async move(destinationFolder) {
-        await http.put('move/userfolder/' + destinationFolder.id + '?id=' + this.id);
+        await http.put('move/userfolder/' + destinationFolder.id , {id:[ this.id]});
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
     }
@@ -581,7 +581,7 @@ export class Mails {
     }
 
     async moveSelection(destinationFolder) {
-        await http.put('move/userfolder/' + destinationFolder.id + '?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }));
+        await http.put('move/userfolder/' + destinationFolder.id, { id: _.pluck(this.selection.selected, 'id') });
     }
 
     async toggleUnread(unread) {
@@ -598,11 +598,8 @@ export class Mails {
         if (selected.length === 0)
             return;
 
-        var paramsIds = toFormData({ id: _.pluck(selected, 'id') });
-        var paramUnread = `unread=${unread}`;
-
         try{
-            await http.post(`/conversation/toggleUnread?${paramsIds}&${paramUnread}`);
+            await http.post('/conversation/toggleUnread', { id: _.pluck(this.selection.selected, 'id'), unread: unread });
             quota.refresh();
             selected.forEach(mail => mail.unread = unread);
         }
