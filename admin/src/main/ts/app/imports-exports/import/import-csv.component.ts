@@ -235,7 +235,17 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
             <h2>{{ 'import.finish' | translate }}</h2>
-            <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+            <message-box [type]="'success'" [messages]="['import.finish.success']"></message-box>
+            <button 
+                (click)="cancel()"
+                [title]="'import.finish.otherImport' | translate">
+                {{ 'import.finish.otherImport' | translate }}
+            </button>
+            <button
+                [routerLink]="'/admin/' + importInfos.structureId + '/users'"
+                [title]="'import.finish.usersList' | translate">
+                {{ 'import.finish.usersList' | translate }}
+            </button>
         </step>
     </wizard>
     `,
