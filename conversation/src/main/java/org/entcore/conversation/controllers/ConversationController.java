@@ -846,22 +846,27 @@ public class ConversationController extends BaseController {
 	//Mark messages as unread / read
 	@Post("toggleUnread")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(MessageUserFilter.class)
+	@ResourceFilter(MultipleMessageUserFilter.class)
 	public void toggleUnread(final HttpServerRequest request) {
-		final List<String> ids = request.params().getAll("id");
-		final String unread = request.params().get("unread");
-		if (ids == null || ids.isEmpty() || unread == null || (!unread.equals("true") && !unread.equals("false"))) {
-			badRequest(request);
-			return;
-		}
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
-			public void handle(final UserInfos user) {
-				if (user != null) {
-					conversationService.toggleUnread(ids, Boolean.valueOf(unread), user, defaultResponseHandler(request));
-				} else {
-					unauthorized(request);
+			public void handle(JsonObject body) {
+				final JsonArray ids = body.getJsonArray("id");
+				final Boolean unread = body.getBoolean("unread");
+				if (ids == null || ids.isEmpty() || unread == null) {
+					badRequest(request);
+					return;
 				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							conversationService.toggleUnread(ids.getList(), unread, user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
 			}
 		});
 	}
@@ -952,24 +957,29 @@ public class ConversationController extends BaseController {
 	@ResourceFilter(FoldersFilter.class)
 	public void move(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
-		final List<String> messageIds = request.params().getAll("id");
-
-		if(messageIds == null || messageIds.size() == 0){
-			badRequest(request);
-			return;
-		}
-
-		Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
-			public void handle(final UserInfos user) {
-				if(user == null){
-					unauthorized(request);
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				final JsonArray messageIds = body.getJsonArray("id");
+				if(messageIds == null || messageIds.size() == 0){
+					badRequest(request);
 					return;
 				}
-				conversationService.moveToFolder(messageIds, folderId, user, defaultResponseHandler(request));
-			}
-		};
 
-		UserUtils.getUserInfos(eb, request, userInfosHandler);
+				Handler<UserInfos> userInfosHandler = new Handler<UserInfos>() {
+					public void handle(final UserInfos user) {
+						if(user == null){
+							unauthorized(request);
+							return;
+						}
+						conversationService.moveToFolder(messageIds.getList(), folderId, user, defaultResponseHandler(request));
+					}
+				};
+
+				UserUtils.getUserInfos(eb, request, userInfosHandler);
+
+			}
+		});
 	}
 
 	//Move messages into a system folder
