@@ -335,7 +335,7 @@
     "import.finish.success":"<i class=\"fa fa-check-circle\"></i> L'import s'est correctement effectué !",
     "import.finish.otherImport":"Effectuer un autre import",
     "import.finish.usersList":"Accéder à la liste des utilisateurs",
-    
+    "import.finish.report":"Télécharger le rapport d'import",
     // import : cancel
     "import.cancel.header" : "Annuler l'import ?",
     "import.cancel.message":"Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données imports et modifiées dans l'assistant d'import seront perdues. Êtes vous sûr de vouloir annuler l'import ?",
