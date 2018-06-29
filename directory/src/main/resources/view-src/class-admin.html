@@ -209,7 +209,7 @@
 	<section class="toggle-buttons" ng-class="{ hide: users.selection().length === 0 }">
 		<div class="toggle block-container">
 			<div class="row">
-				<button translate content="directory.resetPassword" ng-click="resetPasswords()"></button>
+				<button translate content="directory.resetPassword" ng-click="resetPasswords()"  ng-if="checkAllActivated()"></button>
 				<button ng-click="blockUsers()"
 						ng-if="!users.where({ blocked: true, selected: true }).length"
 						translate content="admin.block">

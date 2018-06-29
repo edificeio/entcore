@@ -191,4 +191,8 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 		}).length < 1;
 	}
 
+	$scope.checkAllActivated = function(){
+		return $scope.users.selection().every(function(u){return u.activationCode == null})
+	}
+
 }]);
