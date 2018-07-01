@@ -1,5 +1,5 @@
 /*
- * Copyright © WebServices pour l'Éducation, 2014
+ * Copyright © WebServices pour l'Éducation, 2018
  *
  * This file is part of ENT Core. ENT Core is a versatile ENT engine based on the JVM.
  *
@@ -19,29 +19,23 @@
 
 package org.entcore.common.events.impl;
 
-import fr.wseduc.mongodb.MongoDb;
+
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.elasticsearch.ElasticSearch;
 
-public class MongoDbEventStore extends GenericEventStore {
+public class ElasticSearchEventStore extends GenericEventStore {
 
-	private final MongoDb mongoDb = MongoDb.getInstance();
-	private static final String COLLECTION = "events";
+	private final ElasticSearch elasticSearch = ElasticSearch.getInstance();
 
 	@Override
-	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
-		mongoDb.insert(COLLECTION, event, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> res) {
-				if ("ok".equals(res.body().getString("status"))) {
-					handler.handle(new Either.Right<String, Void>(null));
-				} else {
-					handler.handle(new Either.Left<String, Void>(
-							"Error : " + res.body().getString("message") + ", Event : " + event.encode()));
-				}
+	protected void storeEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		elasticSearch.post("events", event, ar -> {
+			if (ar.succeeded()) {
+				handler.handle(new Either.Right<>(null));
+			} else {
+				handler.handle(new Either.Left<>(ar.cause().getMessage()));
 			}
 		});
 	}
