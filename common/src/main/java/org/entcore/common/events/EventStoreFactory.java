@@ -19,8 +19,8 @@
 
 package org.entcore.common.events;
 
-import org.entcore.common.events.impl.MongoDbEventStoreFactory;
 import io.vertx.core.Vertx;
+import org.entcore.common.events.impl.MongoDbEventStoreFactory;
 
 import java.util.ServiceLoader;
 

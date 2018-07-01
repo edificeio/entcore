@@ -35,6 +35,7 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
+import org.entcore.common.elasticsearch.ElasticSearch;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.*;
 import org.entcore.common.http.response.SecurityHookRender;
@@ -175,6 +176,14 @@ public abstract class BaseServer extends Server {
 					config.getString("sql-address", "sql.persistor"));
 			schema = config.getString("db-schema", getPathPrefix(config).replaceAll("/", ""));
 			DB.loadScripts(schema, vertx, FileResolver.absolutePath(config.getString("init-scripts", "sql")));
+		}
+		if (config.getBoolean("elasticsearch", false)) {
+			if (config.getJsonObject("elasticsearchConfig") != null) {
+				ElasticSearch.getInstance().init(vertx, config.getJsonObject("elasticsearchConfig"));
+			} else {
+				String elasticsearchConfig = (String) vertx.sharedData().getLocalMap("server").get("elasticsearchConfig");
+				ElasticSearch.getInstance().init(vertx, new JsonObject(elasticsearchConfig));
+			}
 		}
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
