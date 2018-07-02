@@ -10,7 +10,8 @@ Behaviours.register('directory', {
 			showMoodMotto: "org.entcore.directory.controllers.UserBookController|userBookMottoMood",
 			switchTheme: "org.entcore.directory.controllers.UserBookController|userBookSwitchTheme",
             generateMergeKey: "org.entcore.directory.controllers.UserController|generateMergeKey",
-            mergeByKey: "org.entcore.directory.controllers.UserController|mergeByKey"
+			mergeByKey: "org.entcore.directory.controllers.UserController|mergeByKey",
+			allowSharebookmarks: "org.entcore.directory.controllers.ShareBookmarkController|allowSharebookmarks"
 		}
 	},
 	sniplets: {
