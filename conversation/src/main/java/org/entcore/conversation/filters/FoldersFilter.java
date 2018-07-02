@@ -36,7 +36,7 @@ import fr.wseduc.webutils.http.Binding;
 
 public class FoldersFilter implements ResourcesProvider {
 
-	private Sql sql;
+	protected Sql sql;
 
 	public FoldersFilter(){
 		this.sql = Sql.getInstance();
@@ -46,78 +46,36 @@ public class FoldersFilter implements ResourcesProvider {
 	public void authorize(final HttpServerRequest request, Binding binding,
 			final UserInfos user, final Handler<Boolean> handler) {
 
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			public void handle(final JsonObject body) {
-				final List<String> messageIds = body.getJsonArray("id", new fr.wseduc.webutils.collections.JsonArray()).getList();
-				final String folderId = request.params().get("folderId");
+		final String folderId = request.params().get("folderId");
 
-				if(folderId == null | folderId.trim().isEmpty()){
+		if(folderId == null | folderId.trim().isEmpty()){
+			handler.handle(false);
+			return;
+		}
+
+		String foldersQuery =
+				"SELECT count(*) as number FROM conversation.folders " +
+						"WHERE user_id = ? AND id = ?";
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+				.add(user.getUserId())
+				.add(folderId);
+
+		request.pause();
+
+		sql.prepared(foldersQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+			public void handle(Either<String, JsonObject> event) {
+
+				request.resume();
+
+				if(event.isLeft()){
 					handler.handle(false);
 					return;
 				}
 
-				String foldersQuery =
-						"SELECT count(*) as number FROM conversation.folders " +
-								"WHERE user_id = ? AND id = ?";
-				JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-						.add(user.getUserId())
-						.add(folderId);
-
-				request.pause();
-
-				sql.prepared(foldersQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-					public void handle(Either<String, JsonObject> event) {
-
-						request.resume();
-
-						if(event.isLeft()){
-							handler.handle(false);
-							return;
-						}
-
-						int folderCount = event.right().getValue().getInteger("number", 0);
-						if(messageIds == null || messageIds.isEmpty()){
-							handler.handle(folderCount == 1);
-							return;
-						}
-
-						if(folderCount != 1){
-							handler.handle(false);
-							return;
-						}
-
-						String usersQuery =
-								"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
-										"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
-						JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-								.add(user.getUserId());
-						for(String id : messageIds){
-							values.add(id);
-						}
-
-						request.pause();
-
-						sql.prepared(usersQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-							public void handle(Either<String, JsonObject> event) {
-
-								request.resume();
-
-								if(event.isLeft()){
-									handler.handle(false);
-									return;
-								}
-
-								int count = event.right().getValue().getInteger("number", 0);
-								handler.handle(count == messageIds.size());
-							}
-						}));
-
-					}
-				}));
-
+				int folderCount = event.right().getValue().getInteger("number", 0);
+				handler.handle(folderCount == 1);
 			}
-		});
-
+		}));
 	}
 
 }
