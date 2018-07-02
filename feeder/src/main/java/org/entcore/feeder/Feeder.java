@@ -117,15 +117,16 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						final JsonObject i = imports.getJsonObject(f);
 						if (i != null && i.getString("cron") != null) {
 							new CronTrigger(vertx, i.getString("cron")).schedule(
-									new ImporterTask(eb, f, i.getBoolean("auto-export", false)));
+									new ImporterTask(vertx, f, i.getBoolean("auto-export", false),
+											config.getLong("auto-export-delay", 1800000l)));
 						}
 					}
 				} else {
 					logger.error("Invalid imports configuration.");
 				}
 			} else if (importCron != null && !importCron.trim().isEmpty()) {
-				new CronTrigger(vertx, importCron).schedule(new ImporterTask(eb, defaultFeed,
-						config.getBoolean("auto-export", false)));
+				new CronTrigger(vertx, importCron).schedule(new ImporterTask(vertx, defaultFeed,
+						config.getBoolean("auto-export", false), config.getLong("auto-export-delay", 1800000l)));
 			}
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);

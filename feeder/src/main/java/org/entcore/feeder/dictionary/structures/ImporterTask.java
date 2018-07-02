@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import io.vertx.core.Vertx;
 import org.entcore.feeder.Feeder;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -29,14 +30,18 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class ImporterTask implements Handler<Long> {
 
+	private final Vertx vertx;
 	private final EventBus eb;
 	private final boolean export;
 	private final String feeder;
+	private final long autoExportDelay;
 
-	public ImporterTask(EventBus eb, String feeder, boolean export) {
-		this.eb = eb;
+	public ImporterTask(Vertx vertx, String feeder, boolean export, long autoExportDelay) {
+		this.eb = vertx.eventBus();
 		this.export = export;
 		this.feeder = feeder;
+		this.vertx = vertx;
+		this.autoExportDelay = autoExportDelay;
 	}
 
 	@Override
@@ -45,7 +50,8 @@ public class ImporterTask implements Handler<Long> {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && export) {
-					eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "export"));
+					vertx.setTimer(autoExportDelay, timerId ->
+							eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "export")));
 				}
 			}
 		}));
