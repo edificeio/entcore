@@ -49,6 +49,7 @@ import org.entcore.conversation.filters.MessageUserFilter;
 import org.entcore.conversation.filters.MultipleMessageUserFilter;
 import org.entcore.conversation.filters.VisiblesFilter;
 import org.entcore.conversation.filters.FoldersFilter;
+import org.entcore.conversation.filters.FoldersMessagesFilter;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
 import org.entcore.conversation.service.impl.SqlConversationService;
@@ -954,7 +955,7 @@ public class ConversationController extends BaseController {
 	//Move messages into a folder
 	@Put("move/userfolder/:folderId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(FoldersFilter.class)
+	@ResourceFilter(FoldersMessagesFilter.class)
 	public void move(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 		bodyToJson(request, new Handler<JsonObject>() {
