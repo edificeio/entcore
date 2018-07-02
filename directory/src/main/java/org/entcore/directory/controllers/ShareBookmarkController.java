@@ -104,6 +104,13 @@ public class ShareBookmarkController extends BaseController {
 		});
 	}
 
+	@Get("/allowSharebookmarks")
+	@SecuredAction("directory.allow.sharebookmarks")
+	public void allowSharebookmarks(final HttpServerRequest request) {
+		// This route is used to create directory.allow.sharebookmarks Workflow right, nothing to do
+		request.response().end();
+	}
+
 	public void setShareBookmarkService(ShareBookmarkService shareBookmarkService) {
 		this.shareBookmarkService = shareBookmarkService;
 	}
