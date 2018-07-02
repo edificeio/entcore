@@ -328,8 +328,8 @@ public abstract class GenericShareService implements ShareService {
 								if (actionsShare == null) {
 									actionsShare = new HashSet<>(new HashSet<>(actions.getList()));
 									membersActions.put(mId.toString(), actionsShare);
-								} else {
-									actionsShare.addAll(new HashSet<>(actions.getList()));
+//								} else {
+//									actionsShare.addAll(new HashSet<>(actions.getList()));
 								}
 							}
 						}
