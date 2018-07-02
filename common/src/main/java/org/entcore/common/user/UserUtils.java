@@ -259,6 +259,7 @@ public class UserUtils {
 								j.put("groupType", gti);
 								if ("ProfileGroup".equals(gti)) {
 									j.put("profile", gp);
+									j.put("sortName", j.getString("name"));
 								}
 								break;
 							}
