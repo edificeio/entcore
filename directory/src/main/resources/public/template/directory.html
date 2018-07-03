@@ -63,7 +63,7 @@
 							required ng-minlength="1"/>
 						<div class="reduce-block-eight horizontal-margin">
 							<div class="spacer-small no-2d"></div>
-							<multi-comboboxes 
+							<multi-comboboxes ng-if="filtersOptions.users.structures.length > 1"
 								ng-model="filters.users.structures"
 								options="filtersOptions.users.structures"
 								title-all="[[lang.translate('directory.allStructures')]]"
@@ -108,7 +108,7 @@
 							required ng-minlength="1"/>
 						<div class="reduce-block-eight horizontal-margin">
 							<div class="spacer-small no-2d"></div>
-							<multi-comboboxes 
+							<multi-comboboxes  ng-if="filtersOptions.groups.structures.length > 1"
 								ng-model="filters.groups.structures"
 								options="filtersOptions.groups.structures"
 								title-all="[[lang.translate('directory.allStructures')]]"
