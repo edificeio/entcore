@@ -89,10 +89,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
-				"WITH n, FILTER(x IN COLLECT(distinct r.score) WHERE x > 3) as duplicates, p.blocked as blockedProfile " +
-				"WHERE LENGTH(duplicates) = 0 AND (blockedProfile IS NULL OR blockedProfile = false) " +
-				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone} " +
-				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile ";
+				"WITH n, LENGTH(FILTER(x IN COLLECT(distinct r.score) WHERE x > 3)) as duplicates, p.blocked as blockedProfile " +
+				"WHERE (blockedProfile IS NULL OR blockedProfile = false) " +
+				"FOREACH (duplicate IN CASE duplicates WHEN 0 THEN [1] ELSE [] END | " +
+				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.mobile = {phone}) " +
+				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate ";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
@@ -105,6 +106,9 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))
 						&& res.body().getJsonObject("result").getJsonObject("0") != null) {
+					if(res.body().getJsonObject("result").getJsonObject("0").getBoolean("hasDuplicate")){
+						handler.handle(new Either.Left<String, String>("activation.error.duplicated"));
+					}
 					JsonObject jo = new JsonObject()
 							.put("userId", res.body().getJsonObject("result").getJsonObject("0").getString("id"))
 							.put("profile", res.body().getJsonObject("result").getJsonObject("0").getString("profile"))
@@ -138,7 +142,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 								handler.handle(new Either.Right<String, String>(
 										event.body().getJsonObject("result").getJsonObject("0").getString("id")));
 							} else {
-								handler.handle(new Either.Left<String, String>("invalid.activation"));
+								handler.handle(new Either.Left<String, String>("activation.error"));
 							}
 						}
 					});
