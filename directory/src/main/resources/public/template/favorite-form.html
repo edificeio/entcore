@@ -39,38 +39,45 @@
         </a>
         <div class="vertical-spacing-four">
             <div class="flex-row">
-                <multi-comboboxes class="twelve min-w-zero"
+                <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
                     ng-model="create.favorite.filters.structures"
                     options="create.favorite.options.structures"
                     title-all="[[lang.translate('directory.allStructures')]]"
                     title="[[lang.translate('directory.structures')]]">
                 </multi-comboboxes>
-                <multi-comboboxes class="twelve horizontal-margin-twice min-w-zero"
+                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
                     ng-model="create.favorite.filters.classes"
                     options="create.favorite.options.classes"
                     title-all="[[lang.translate('directory.allClasses')]]"
                     title="[[lang.translate('directory.classes')]]">
                 </multi-comboboxes>
-                <multi-comboboxes class="twelve min-w-zero"
+                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length < 2 }"
                     ng-model="create.favorite.filters.profiles"
                     options="create.favorite.options.profiles"
                     title-all="[[lang.translate('directory.allProfiles')]]"
                     title="[[lang.translate('directory.profiles')]]">
                 </multi-comboboxes>
-            </div>
-            <div class="flex-row">
-                <multi-comboboxes class="twelve min-w-zero"
+                <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
                     ng-model="create.favorite.filters.functions"
                     options="create.favorite.options.functions"
                     title-all="[[lang.translate('directory.allFunctions')]]"
                     title="[[lang.translate('directory.functions')]]">
                 </multi-comboboxes>
-                <multi-comboboxes class="twelve horizontal-margin-twice min-w-zero"
+            </div>
+            <div class="flex-row">
+                <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
+                    ng-model="create.favorite.filters.functions"
+                    options="create.favorite.options.functions"
+                    title-all="[[lang.translate('directory.allFunctions')]]"
+                    title="[[lang.translate('directory.functions')]]">
+                </multi-comboboxes>
+                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
                     ng-model="create.favorite.filters.types"
                     options="create.favorite.options.types"
                     title-all="[[lang.translate('directory.allGroupsTypes')]]"
                     title="[[lang.translate('directory.groupsTypes')]]">
                 </multi-comboboxes>
+                <div ng-if="filtersOptions.users.structures.length < 2" class="twelve horizontal-margin-twice min-w-zero"></div>
                 <div class="twelve min-w-zero"></div>
             </div>
             <div class="search-pagination flex-row vertical-spacing-four">
