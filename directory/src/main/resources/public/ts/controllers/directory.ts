@@ -302,7 +302,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.hideFavoriteForm = function() {
-		$scope.favoriteFormUsersGroups = [];
+		$scope.favoriteFormInitSearch();
 		$scope.display.editingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');
@@ -605,13 +605,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.checkOption($scope.create.favorite.options.profiles, true);
 		$scope.checkOption($scope.create.favorite.options.functions, true);
 		$scope.checkOption($scope.create.favorite.options.types, true);
+		$scope.favoriteFormUsersGroups = [];
 	};
 
 	$scope.checkOption = function(array, check) {
 		array.forEach(element => {
 			element.checked = check;
 		});
-		$scope.favoriteFormUsersGroups = [];
 	};
 
 	$scope.selectFirstFavorite = async function(noupdate) {
