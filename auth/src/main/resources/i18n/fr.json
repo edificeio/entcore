@@ -1,6 +1,7 @@
 {
     "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
     "activation.error": "Erreur lors de l'activation, veuillez vérifier votre identifiant et votre code d'activation.",
+    "activation.error.duplicated": "Votre compte a été identifié comme doublon d'un autre compte ce qui empêche son activation. Veuillez contacter l'administrateur de votre espace.",
     "auth.activate": "Activer",
     "auth.activateAccount": "Activer mon compte",
     "auth.activation.code": "Code d'activation",
