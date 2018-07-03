@@ -337,19 +337,17 @@ export const directory = {
 				
 				var body = {
 					search: encodeURIComponent(search.toLowerCase()),
-					types: ["Group"]
+					types: filters.types ? filters.types : ["Group"]
 				};
 				
-				if (filters.structures) 
+				if (filters.structures)
 					body["structures"] = filters.structures;
-				if (filters.classes) 
+				if (filters.classes)
 					body["classes"] = filters.classes;
-				if (filters.profiles) 
+				if (filters.profiles)
 					body["profiles"] = filters.profiles;
-				if (filters.functions) 
+				if (filters.functions)
 					body["functions"] = filters.functions;
-				if (filters.groupsType) 
-					body["groupsType"] = filters.groupsType;
 
 				body["nbUsersInGroups"] = true;
 				body["groupType"] = true;
