@@ -19,5 +19,5 @@
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"PersEducNatPresenceDevantEleves" : { "attribute" : "teaches", "type" : "boolean" },
 	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" },
-	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher" }
+	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" }
 }
