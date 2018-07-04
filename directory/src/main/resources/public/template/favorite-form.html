@@ -25,17 +25,22 @@
     <h3 ng-if="!display.editingFavorite"><i18n>directory.title.create.favorite</i18n></h3>
     <h3 ng-if="display.editingFavorite"><i18n>directory.title.edit.favorite</i18n></h3>
     <form class="reduce-block-eight horizontal-margin" ng-submit="saveFavorite()">
-        <input type="text"
-            ng-model="create.favorite.name"
-            translate attr="placeholder"
-            placeholder="directory.placeholder.title.favorite"
-            class="text-flow twelve vertical-spacing-four"
-            required ng-minlength="1"/>
-        <div class="flex-row">
-            <h4><i18n>directory.search.favorite</i18n></h4>
+        <div class="bottom-spacing-twice">
+            <div class="flex-row">
+                <h4><i18n>directory.favorite.name</i18n></h4>
+            </div>
+            <input type="text"
+                ng-model="create.favorite.name"
+                translate attr="placeholder"
+                placeholder="directory.placeholder.title.favorite"
+                class="text-flow twelve"
+                required ng-minlength="1"/>
         </div>
         <div class="vertical-spacing-four">
-            <div class="search-pagination flex-row vertical-spacing-four">
+            <div class="flex-row">
+                <h4><i18n>directory.search.favorite</i18n></h4>
+            </div>
+            <div class="search-pagination flex-row">
                 <div class="cell six top-spacing-twice">
                     <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
                         i18n-placeholder="directory.placeholder.search.example"
@@ -48,55 +53,57 @@
                     </button>
                 </div>
             </div>
-            <div class="flex-row medium-importance vertical-spacing-twice">
-                <i18n>directory.filters</i18n>
-                <div class="cell absolute-magnet">
-                    <a ng-if="canFavoriteFormInitSearch()" class="vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
-                        <i18n>directory.init.search</i18n>
-                    </a>
+            <div class="vertical-spacing-four"> 
+                <div class="flex-row medium-importance vertical-spacing-twice">
+                    <i18n>directory.filters</i18n>
+                    <div class="cell absolute-magnet">
+                        <a ng-if="canFavoriteFormInitSearch()" class="vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
+                            <i18n>directory.init.search</i18n>
+                        </a>
+                    </div>
                 </div>
-            </div>
-            <div class="flex-row">
-                <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
-                    ng-model="create.favorite.filters.structures"
-                    options="create.favorite.options.structures"
-                    title-all="[[lang.translate('directory.allStructures')]]"
-                    title="[[lang.translate('directory.structures')]]">
-                </multi-comboboxes>
-                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
-                    ng-model="create.favorite.filters.classes"
-                    options="create.favorite.options.classes"
-                    title-all="[[lang.translate('directory.allClasses')]]"
-                    title="[[lang.translate('directory.classes')]]">
-                </multi-comboboxes>
-                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length < 2 }"
-                    ng-model="create.favorite.filters.profiles"
-                    options="create.favorite.options.profiles"
-                    title-all="[[lang.translate('directory.allProfiles')]]"
-                    title="[[lang.translate('directory.profiles')]]">
-                </multi-comboboxes>
-                <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
-                    ng-model="create.favorite.filters.functions"
-                    options="create.favorite.options.functions"
-                    title-all="[[lang.translate('directory.allFunctions')]]"
-                    title="[[lang.translate('directory.functions')]]">
-                </multi-comboboxes>
-            </div>
-            <div class="flex-row">
-                <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
-                    ng-model="create.favorite.filters.functions"
-                    options="create.favorite.options.functions"
-                    title-all="[[lang.translate('directory.allFunctions')]]"
-                    title="[[lang.translate('directory.functions')]]">
-                </multi-comboboxes>
-                <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
-                    ng-model="create.favorite.filters.types"
-                    options="create.favorite.options.types"
-                    title-all="[[lang.translate('directory.allGroupsTypes')]]"
-                    title="[[lang.translate('directory.groupsTypes')]]">
-                </multi-comboboxes>
-                <div ng-if="filtersOptions.users.structures.length < 2" class="twelve horizontal-margin-twice min-w-zero"></div>
-                <div class="twelve min-w-zero"></div>
+                <div class="flex-row">
+                    <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
+                        ng-model="create.favorite.filters.structures"
+                        options="create.favorite.options.structures"
+                        title-all="[[lang.translate('directory.allStructures')]]"
+                        title="[[lang.translate('directory.structures')]]">
+                    </multi-comboboxes>
+                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
+                        ng-model="create.favorite.filters.classes"
+                        options="create.favorite.options.classes"
+                        title-all="[[lang.translate('directory.allClasses')]]"
+                        title="[[lang.translate('directory.classes')]]">
+                    </multi-comboboxes>
+                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length < 2 }"
+                        ng-model="create.favorite.filters.profiles"
+                        options="create.favorite.options.profiles"
+                        title-all="[[lang.translate('directory.allProfiles')]]"
+                        title="[[lang.translate('directory.profiles')]]">
+                    </multi-comboboxes>
+                    <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
+                        ng-model="create.favorite.filters.functions"
+                        options="create.favorite.options.functions"
+                        title-all="[[lang.translate('directory.allFunctions')]]"
+                        title="[[lang.translate('directory.functions')]]">
+                    </multi-comboboxes>
+                </div>
+                <div class="flex-row">
+                    <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
+                        ng-model="create.favorite.filters.functions"
+                        options="create.favorite.options.functions"
+                        title-all="[[lang.translate('directory.allFunctions')]]"
+                        title="[[lang.translate('directory.functions')]]">
+                    </multi-comboboxes>
+                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
+                        ng-model="create.favorite.filters.types"
+                        options="create.favorite.options.types"
+                        title-all="[[lang.translate('directory.allGroupsTypes')]]"
+                        title="[[lang.translate('directory.groupsTypes')]]">
+                    </multi-comboboxes>
+                    <div ng-if="filtersOptions.users.structures.length < 2" class="twelve horizontal-margin-twice min-w-zero"></div>
+                    <div class="twelve min-w-zero"></div>
+                </div>
             </div>
         </div>
         <div class="row vertical-spacing-four">
