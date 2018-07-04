@@ -34,10 +34,28 @@
         <div class="flex-row">
             <h4><i18n>directory.search.favorite</i18n></h4>
         </div>
-        <a ng-if="canFavoriteFormInitSearch()" class="vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
-            <i18n>directory.init.search</i18n>
-        </a>
         <div class="vertical-spacing-four">
+            <div class="search-pagination flex-row vertical-spacing-four">
+                <div class="cell six top-spacing-twice">
+                    <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
+                        i18n-placeholder="directory.placeholder.search.example"
+                        ng-keydown="$event.keyCode == 13 ? searchUsersAndGroups($event) : null"/>
+                    <i class="search" ng-click="searchUsersAndGroups()"></i>
+                </div>
+                <div class="cell absolute-magnet">
+                    <button type="button" ng-click="searchUsersAndGroups()" class="twelve">
+                        <i18n>directory.search</i18n>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-row medium-importance vertical-spacing-twice">
+                <i18n>directory.filters</i18n>
+                <div class="cell absolute-magnet">
+                    <a ng-if="canFavoriteFormInitSearch()" class="vertical-spacing-four small-text" ng-click="favoriteFormInitSearch()">
+                        <i18n>directory.init.search</i18n>
+                    </a>
+                </div>
+            </div>
             <div class="flex-row">
                 <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
                     ng-model="create.favorite.filters.structures"
@@ -80,27 +98,20 @@
                 <div ng-if="filtersOptions.users.structures.length < 2" class="twelve horizontal-margin-twice min-w-zero"></div>
                 <div class="twelve min-w-zero"></div>
             </div>
-            <div class="search-pagination flex-row vertical-spacing-four">
-                <div class="cell six top-spacing-twice">
-                    <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
-                        i18n-placeholder="directory.placeholder.search.example"
-                        ng-keydown="$event.keyCode == 13 ? searchUsersAndGroups($event) : null"/>
-                    <i class="search" ng-click="searchUsersAndGroups()"></i>
+        </div>
+        <div class="row vertical-spacing-four">
+            <div class="flex-row">
+                <div class="six">
+                    <h4><i18n>directory.search.favorite.add</i18n></h4>
                 </div>
-                <div class="cell absolute-magnet">
-                    <button type="button" ng-click="searchUsersAndGroups()" class="twelve">
-                        <i18n>directory.search</i18n>
-                    </button>
+                <div class="six">
+                    <h4><i18n>directory.composition.favorite</i18n></h4>
                 </div>
             </div>
-        </div>
-        <h4><i18n>directory.search.favorite.add</i18n></h4>
-        <div class="row vertical-spacing-four">
             <transfer-columns
                 ng-model="create.favorite.members"
                 searched-items="favoriteFormUsersGroups"
                 loading="display.loadingFavoriteForm"
-                text-title="[[lang.translate('directory.composition.favorite')]]"
                 text-right-warning-title = "[[lang.translate('directory.empty.favorite.composition.title')]]"
                 text-right-warning-description = "[[lang.translate('directory.empty.favorite.composition.description')]]">
             </transfer-columns>
