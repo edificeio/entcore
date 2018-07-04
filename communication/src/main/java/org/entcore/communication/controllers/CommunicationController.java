@@ -152,10 +152,12 @@ public class CommunicationController extends BaseController {
 						switch (criteria) {
 							case "structures":
 							case "classes":
+								JsonArray itemssc = filter.getJsonArray(criteria);
+								if (itemssc == null || itemssc.isEmpty()) continue;
 								if (!params.containsKey("nIds")) {
-									params.put("nIds", filter.getJsonArray(criteria));
+									params.put("nIds", itemssc);
 								} else {
-									params.getJsonArray("nIds").addAll(filter.getJsonArray(criteria));
+									params.getJsonArray("nIds").addAll(itemssc);
 								}
 								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
 									match = "MATCH (visibles)-[:IN*0..1]->(g)-[:DEPENDS]->(n) ";
@@ -174,10 +176,12 @@ public class CommunicationController extends BaseController {
 								//break;
 							case "profiles":
 							case "functions":
+								JsonArray itemspf = filter.getJsonArray(criteria);
+								if (itemspf == null || itemspf.isEmpty()) continue;
 								if (!params.containsKey("filters")) {
-									params.put("filters", filter.getJsonArray(criteria));
+									params.put("filters", itemspf);
 								} else {
-									params.getJsonArray("filters").addAll(filter.getJsonArray(criteria));
+									params.getJsonArray("filters").addAll(itemspf);
 								}
 								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
 									match = "MATCH (visibles)-[:IN*0..1]->(g)";
