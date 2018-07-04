@@ -108,17 +108,17 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.criteria = await directory.directory.users.getSearchCriteria();
 			$scope.filters = {
 				users: {
-					structures: null,
-					classes: null,
-					profiles: null,
-					functions: null
+					structures: [],
+					classes: [],
+					profiles: [],
+					functions: []
 				},
 				groups: {
-					structures: null,
-					classes: null,
-					profiles: null,
-					functions: null,
-					types: null
+					structures: [],
+					classes: [],
+					profiles: [],
+					functions: [],
+					types: []
 				}
 			};
 			$scope.filtersOptions = {
@@ -133,11 +133,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 					members: [],
 					search: '',
 					filters: {
-						structures: null,
-						classes: null,
-						profiles: null,
-						functions: null,
-						types: null,
+						structures: [],
+						classes: [],
+						profiles: [],
+						functions: [],
+						types: [],
 					},
 					options: $scope.generateCriteriaOptions()
 				}
@@ -595,16 +595,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.favoriteFormInitSearch = function() {
 		$scope.create.favorite.search = '';
-		$scope.create.favorite.filters.structures = null;
-		$scope.create.favorite.filters.classes = null;
-		$scope.create.favorite.filters.profles = null;
-		$scope.create.favorite.filters.functions = null;
-		$scope.create.favorite.filters.types = null;
-		$scope.checkOption($scope.create.favorite.options.structures, true);
-		$scope.checkOption($scope.create.favorite.options.classes, true);
-		$scope.checkOption($scope.create.favorite.options.profiles, true);
-		$scope.checkOption($scope.create.favorite.options.functions, true);
-		$scope.checkOption($scope.create.favorite.options.types, true);
+		$scope.create.favorite.filters.structures = [];
+		$scope.create.favorite.filters.classes = [];
+		$scope.create.favorite.filters.profiles = [];
+		$scope.create.favorite.filters.functions = [];
+		$scope.create.favorite.filters.types = [];
+		$scope.checkOption($scope.create.favorite.options.structures, false);
+		$scope.checkOption($scope.create.favorite.options.classes, false);
+		$scope.checkOption($scope.create.favorite.options.profiles, false);
+		$scope.checkOption($scope.create.favorite.options.functions, false);
+		$scope.checkOption($scope.create.favorite.options.types, false);
 		$scope.favoriteFormUsersGroups = [];
 	};
 
