@@ -198,7 +198,7 @@ public class PersEducNat extends AbstractUser {
 					}
 					String query =
 							"MATCH (g:Group), (u:User {externalId : {userExternalId}}) " +
-							"WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup', 'HTGroup'] AND g.externalId IN {groups} " +
+							"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup) AND g.externalId IN {groups} " +
 							"MERGE u-[:IN]->g";
 					JsonObject p = new JsonObject()
 							.put("userExternalId", externalId)
@@ -208,7 +208,7 @@ public class PersEducNat extends AbstractUser {
 				if (externalId != null) {
 					final String qdfg =
 							"MATCH (:User {externalId : {userExternalId}})-[r:IN|COMMUNIQUE]-(g:Group) " +
-							"WHERE labels(g) IN ['FunctionalGroup', 'FunctionGroup', 'HTGroup'] AND " +
+							"WHERE (g:FunctionalGroup OR g:FunctionGroup OR g:HTGroup) AND " +
 							"NOT(g.externalId IN {groups}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					final JsonObject pdfg = new JsonObject()
