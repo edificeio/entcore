@@ -194,7 +194,7 @@ public class CommunicationController extends BaseController {
 								final String search = filter.getString(criteria);
 								if (isNotEmpty(search)) {
 									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
-									String sanitizedSearch = StringValidation.removeAccents(search.trim()).toLowerCase();
+									String sanitizedSearch = StringValidation.sanitize(search);
 									params.put("search", sanitizedSearch);
 								}
 								break;

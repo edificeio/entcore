@@ -114,4 +114,12 @@ public class StringValidation {
 		return defaultValue;
 	}
 
+	public static String sanitize(String field) {
+		return removeAccents(field)
+				.replaceAll("\\s+", "")
+				.replaceAll("\\-","")
+				.replaceAll("'","")
+				.toLowerCase();
+	}
+
 }
