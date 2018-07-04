@@ -54,15 +54,19 @@
 				<div>
 					<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
 					<div class="spacer-small"></div>
-					<div class="reduce-block-eight horizontal-margin">
-						<input type="search"
-							ng-model="search.users"
-							translate attr="placeholder"
-							placeholder="userBook.search"
-							class="text-flow twelve"
-							required ng-minlength="1"/>
+					<div class="reduce-block-four">
+						<div class="search-pagination flex-row align-center">
+							<div class="cell twelve">
+								<input class="twelve" 
+									type="text" 
+									translate attr="placeholder"
+									ng-model="search.users"
+									placeholder="userBook.search"/>
+								<i class="search" ng-click="searchDirectory()"></i>
+							</div>
+						</div>
 						<div class="reduce-block-eight horizontal-margin">
-							<div class="spacer-small no-2d"></div>
+							<div class="spacer-small"></div>
 							<multi-comboboxes ng-if="filtersOptions.users.structures.length > 1"
 								ng-model="filters.users.structures"
 								options="filtersOptions.users.structures"
@@ -89,7 +93,7 @@
 							</multi-comboboxes>
 							<div class="spacer-small"></div>
 							<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
-								<i18n>directory.search</i18n>
+								<i18n>portal.search</i18n>
 							</button>
 						</div>
 					</div>
@@ -99,15 +103,19 @@
 				<div>
 					<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.group</i18n></strong></div>
 					<div class="spacer-small"></div>
-					<div class="reduce-block-eight horizontal-margin">
-						<input type="search"
-							ng-model="search.groups"
-							translate attr="placeholder"
-							placeholder="userBook.search.name"
-							class="text-flow twelve"
-							required ng-minlength="1"/>
+					<div class="reduce-block-four">
+						<div class="search-pagination flex-row align-center">
+							<div class="cell twelve">
+								<input class="twelve" 
+									type="text" 
+									translate attr="placeholder"
+									ng-model="search.groups"
+									placeholder="userBook.search.name"/>
+								<i class="search" ng-click="searchDirectory()"></i>
+							</div>
+						</div>
 						<div class="reduce-block-eight horizontal-margin">
-							<div class="spacer-small no-2d"></div>
+							<div class="spacer-small"></div>
 							<multi-comboboxes  ng-if="filtersOptions.groups.structures.length > 1"
 								ng-model="filters.groups.structures"
 								options="filtersOptions.groups.structures"
@@ -140,7 +148,7 @@
 							</multi-comboboxes>
 							<div class="spacer-small"></div>
 							<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
-								<i18n>directory.search</i18n>
+								<i18n>portal.search</i18n>
 							</button>
 						</div>
 					</div>
