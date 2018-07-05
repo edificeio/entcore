@@ -9,9 +9,7 @@
     </div>
 
     <div class="center" ng-if="group.groupType == 'ProfileGroup'">
-        <span><i18n>userBook.profile.type</i18n></span>
-        <br/>
-        <span translate content="directory.[[getType(group.profile).toLowerCase()]]"></span>
+        <span><i18n>userBook.profile.type</i18n></span>&nbsp;<span translate content="directory.[[getType(group.profile).toLowerCase()]]"></span>
     </div>
     <div class="center" ng-if="group.groupType != 'ProfileGroup'">
         <span translate content="userBook.directory.group.[[group.groupType]]"></span>
