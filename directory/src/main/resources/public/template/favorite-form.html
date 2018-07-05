@@ -41,11 +41,11 @@
                 <h4><i18n>directory.search.favorite</i18n></h4>
             </div>
             <div class="search-pagination flex-row">
-                <div class="cell six top-spacing-twice">
+                <div class="cell seven top-spacing-twice">
                     <input class="twelve" name="searchField" type="text" ng-model="create.favorite.search"
                         i18n-placeholder="directory.placeholder.search.example"
                         ng-keydown="$event.keyCode == 13 ? searchUsersAndGroups($event) : null"/>
-                    <i class="search" ng-click="searchUsersAndGroups()"></i>
+                    <i class="search centered" ng-click="searchUsersAndGroups()"></i>
                 </div>
                 <div class="cell absolute-magnet">
                     <button type="button" ng-click="searchUsersAndGroups()" class="twelve">
@@ -109,13 +109,14 @@
         <div class="row vertical-spacing-four">
             <div class="flex-row">
                 <div class="six">
-                    <h4><i18n>directory.search.favorite.add</i18n></h4>
+                    <strong class="medium-importance medium-text"><i18n>directory.search.favorite.add</i18n></strong>
                 </div>
+                <div class="horizontal-margin-twice"></div>
                 <div class="six">
-                    <h4><i18n>directory.composition.favorite</i18n></h4>
+                    <strong class="medium-importance medium-text"><i18n>directory.composition.favorite</i18n></strong>
                 </div>
             </div>
-            <transfer-columns
+            <transfer-columns class="block top-spacing-twice"
                 ng-model="create.favorite.members"
                 searched-items="favoriteFormUsersGroups"
                 loading="display.loadingFavoriteForm"
