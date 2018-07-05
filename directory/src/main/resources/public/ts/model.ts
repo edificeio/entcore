@@ -294,7 +294,7 @@ export const directory = {
 				this.searched = true;
 
 				var body = {
-					search: encodeURIComponent(search.toLowerCase()),
+					search: search.toLowerCase(),
 					types: ["User"]
 				};
 				
@@ -336,7 +336,7 @@ export const directory = {
 				this.searched = true;
 				
 				var body = {
-					search: encodeURIComponent(search.toLowerCase()),
+					search: search.toLowerCase(),
 					types: filters.types ? filters.types : ["Group"]
 				};
 				
