@@ -217,7 +217,7 @@ public class TimetableController extends BaseController {
 		switch(action){
 			case "get.course":
 				final String teacherId = message.body().getString("teacherId");
-				final List<String> groupNames = message.body().getArray("group", new JsonArray()).toList();
+				final List<String> groupNames = message.body().getJsonArray("group", new JsonArray()).getList();
 				final String beginDate = message.body().getString("begin");
 				final String endDate = message.body().getString("end");
 
