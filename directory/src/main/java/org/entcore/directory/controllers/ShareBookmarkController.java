@@ -28,6 +28,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
@@ -76,8 +77,18 @@ public class ShareBookmarkController extends BaseController {
 					shareBookmarkService.get(user.getUserId(), id, r -> {
 						if (r.isRight()) {
 							final JsonObject res = r.right().getValue();
+							JsonArray members = res.getJsonArray("members");
+							if (members == null || members.isEmpty()) {
+								shareBookmarkService.delete(user.getUserId(), id, dres -> {
+									if (dres.isLeft()) {
+										log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
+									}
+								});
+								notFound(request, "empty.sharebookmark");
+								return;
+							}
 							res.mergeIn(UserUtils.translateAndGroupVisible(
-									res.getJsonArray("members"), I18n.acceptLanguage(request), true)
+									members, I18n.acceptLanguage(request), true)
 							);
 							res.remove("members");
 							renderJson(request, res);
