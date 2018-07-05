@@ -23,6 +23,8 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.services.ShareBookmarkService;
 
@@ -37,6 +39,7 @@ import static org.entcore.common.validation.StringValidation.cleanId;
 public class DefaultShareBookmarkService implements ShareBookmarkService {
 
 	private static final Neo4j neo4j = Neo4j.getInstance();
+	private static final Logger log = LoggerFactory.getLogger(DefaultShareBookmarkService.class);
 
 	@Override
 	public void create(String userId, JsonObject bookmark, Handler<Either<String, JsonObject>> handler) {
@@ -100,7 +103,14 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 				final JsonArray result = new JsonArray();
 				for (String id: j.fieldNames()) {
 					final JsonArray value = j.getJsonArray(id);
-					if (value == null || value.size() < 1) continue;
+					if (value == null || value.size() < 2) {
+						delete(userId, id, dres -> {
+							if (dres.isLeft()) {
+								log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
+							}
+						});
+						continue;
+					}
 					final JsonObject r = new fr.wseduc.webutils.collections.JsonObject();
 					r.put("id", id);
 					r.put("name", value.remove(0));
