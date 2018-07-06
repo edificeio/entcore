@@ -124,15 +124,15 @@
                 text-right-warning-description = "[[lang.translate('directory.empty.favorite.composition.description')]]">
             </transfer-columns>
         </div>
-        <div class="row vertical-spacing-four">
-            <div class="right-magnet">
+        <div class="row">
+            <div class="right-magnet top-spacing-four">
                 <button type="button" class="flat-button" ng-click="tryRemoveFavorite(currentFavorite)" ng-if="display.editingFavorite">
                     <i18n>directory.deleteFavorite</i18n>
                 </button>
                 <button type="button" class="flat-button" ng-click="cancelFavorite()">
                     <i18n>cancel</i18n>
                 </button>
-                <button class="left-spacing" ng-disabled="create.favorite.members.length === 0">
+                <button ng-disabled="create.favorite.members.length === 0">
                     <i18n>directory.save</i18n>
                 </button>
             </div>
