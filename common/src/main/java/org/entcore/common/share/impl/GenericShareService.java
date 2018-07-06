@@ -350,7 +350,7 @@ public abstract class GenericShareService implements ShareService {
 		final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
-			if (res != null && res.size() > 0) {
+			if (res != null) {
 				final JsonArray users = new JsonArray();
 				final JsonArray groups = new JsonArray();
 				final JsonArray shared = new JsonArray();
