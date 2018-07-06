@@ -15,5 +15,6 @@
 	"ENTPersonAdresseDiffusion" : { "attribute" : "addressDiffusion", "type" : "boolean" },
 	"ENTPersonMail" : { "attribute" : "email", "type" : "string" },
 	"ENTPersRelEleveTelMobile" : { "attribute" : "mobile", "type" : "string" },
+	"ENTPersRelEleveEleve" : { "attribute" : "students", "type" : "array-string", "prefix" : true },
 	"categoriePersonne" : { "attribute" : "category", "type" : "string" }
 }

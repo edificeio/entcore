@@ -2,7 +2,7 @@
 	"ENTStructureJointure" : { "attribute" : "joinKey", "type" : "array-string", "prefix" : true },
 	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
 	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
-	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
+	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "structure-name" },
 	"ENTStructureTypeStruct" : { "attribute" : "type", "type" : "string" },
 	"ENTEcoleMinistereTutelle" : { "attribute" : "ministry", "type" : "string" },
 	"ENTEtablissementContrat" : { "attribute" : "contract", "type" : "string" },
