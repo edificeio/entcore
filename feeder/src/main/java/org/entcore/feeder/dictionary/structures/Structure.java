@@ -186,6 +186,7 @@ public class Structure {
 							.put("externalId", groupExternalId)
 							.put("id", UUID.randomUUID().toString())
 							.put("displayNameSearchField", Validator.sanitize(name))
+							.put("structureName", struct.getString("name"))
 							.put("name", name)
 					);
 			getTransaction().add(query, params);
