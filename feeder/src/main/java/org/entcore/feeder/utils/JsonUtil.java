@@ -78,6 +78,13 @@ public final class JsonUtil {
 						res = value;
 					}
 					break;
+				case "structure-name" :
+					if (value != null) {
+						res = value.replaceAll("\\$", "-");
+					} else {
+						res = value;
+					}
+					break;
 				default :
 					res = value;
 			}

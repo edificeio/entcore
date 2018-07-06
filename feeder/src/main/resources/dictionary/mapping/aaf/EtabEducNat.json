@@ -3,7 +3,7 @@
 	"ENTStructureUAI" : { "attribute" : "UAI", "type" : "string" },
 	"ENTEtablissementUAI" : { "attribute" : "oldUAI", "type" : "string" },
 	"ENTStructureSIREN" : { "attribute" : "SIRET", "type" : "string" },
-	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "string" },
+	"ENTStructureNomCourant" : { "attribute" : "name", "type" : "structure-name" },
 	"ENTStructureTypeStruct" : { "attribute" : "type", "type" : "string" },
 	"ENTEtablissementMinistereTutelle" : { "attribute" : "ministry", "type" : "string" },
 	"ENTEtablissementContrat" : { "attribute" : "contract", "type" : "string" },

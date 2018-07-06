@@ -47,17 +47,23 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 
 	@Override
 	protected String detectProfile(JsonObject object) {
-		JsonArray functions = object.getJsonArray("functions");
-		if (functions != null && functions.size() > 0) {
-			for (Object f : functions) {
-				if (!(f instanceof String)) continue;
-				String function = (String) f;
-				if (function.contains("ENS") || function.contains("DOC")) {
-					return TEACHER_PROFILE_EXTERNAL_ID;
+		Boolean isTeacher = object.getBoolean("isTeacher");
+
+		if (isTeacher != null) {
+			return isTeacher ? TEACHER_PROFILE_EXTERNAL_ID : PERSONNEL_PROFILE_EXTERNAL_ID;
+		} else {
+			JsonArray functions = object.getJsonArray("functions");
+			if (functions != null && functions.size() > 0) {
+				for (Object f : functions) {
+					if (!(f instanceof String)) continue;
+					String function = (String) f;
+					if (function.contains("ENS") || function.contains("DOC")) {
+						return TEACHER_PROFILE_EXTERNAL_ID;
+					}
 				}
 			}
+			return PERSONNEL_PROFILE_EXTERNAL_ID;
 		}
-		return PERSONNEL_PROFILE_EXTERNAL_ID;
 	}
 
 	@Override
