@@ -43,12 +43,14 @@
 		</app-title>
 		<div class="clear"></div>
 		<div class="spacer-small zero-desktop"></div>
+		<h2 class="eight-tablette-wide zero-large-desktop" ng-if="getCurrentItemsLength() > 0">
+			<a ng-click="onCloseSearchModule()" class="right-magnet"><i18n>userBook.directory.backToResults</i18n> <i class="forward"></i></a>
+		</h2>
+		<div class="spacer-small zero-desktop"></div>
 		<search-module class="eight-tablette-wide"
 			ng-model="search.index"
-			show-close="getCurrentItemsLength() > 0"
 			ng-change="indexFormChanged(index)"
 			search="searchDirectory()"
-			on-close="onCloseSearchModule()"
 			images='["/img/illustrations/user-avatar.svg", "/img/illustrations/group-avatar.svg", "/img/illustrations/fav-avatar.svg"]'>
 			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
 				<div>
