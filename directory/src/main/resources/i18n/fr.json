@@ -394,6 +394,7 @@
     "userBook.directory.noresults.users.footer": "Aucun utilisateur ne correspond à votre recherche.<br/>Essayez de nouveau en modifiant les critères !",
     "userBook.directory.noresults.groups.header": "Pas de groupe à l’horizon...",
     "userBook.directory.noresults.groups.footer": "Aucun groupe ne correspond à votre recherche. Essayez de nouveau en modifiant les critères !",
+    "userBook.directory.backToResults": "Retour aux résultats",
     "userBook.directory.backToSearch": "Retour à la recherche",
     "userBook.directory.back": "Retour",    
     "userBook.directory.button.edit.favorite": "Modifier le favori",
