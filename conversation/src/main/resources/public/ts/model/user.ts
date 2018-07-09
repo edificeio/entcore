@@ -18,7 +18,7 @@ export class User implements Selectable {
     }
 
     toString() {
-        return (this.displayName || '') + (this.name || '') + (this.profile ? ' (' + lang.translate(this.profile) + ')' : '')
+        return (this.displayName || '') + (this.name || '');
     }
 
     async findData(): Promise<boolean> {
