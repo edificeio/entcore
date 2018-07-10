@@ -26,6 +26,8 @@ import io.vertx.core.json.JsonObject;
 
 import jp.eisbahn.oauth2.server.models.Request;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 public class JsonRequestAdapter implements Request {
 
 	private final JsonObject request;
@@ -36,7 +38,7 @@ public class JsonRequestAdapter implements Request {
 
 	@Override
 	public String getHeader(String name) {
-		return request.getJsonObject("headers").getString(name);
+        return getOrElse(request.getJsonObject("headers").getString(name), request.getJsonObject("headers").getString(name.toLowerCase()));
 	}
 
 	@Override
