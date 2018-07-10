@@ -18,7 +18,7 @@
 import { template, notify, idiom as lang, ng, ui, model, moment, $ } from 'entcore';
 import { directory } from '../model';
 
-export const directoryController = ng.controller('DirectoryController',['$scope', 'route', ($scope, route) => {
+export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', ($scope, $window, route) => {
 	$scope.template = template;
 	template.open('userActions', 'user-actions');
 	$scope.users = {};
@@ -295,6 +295,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.close('dominosUser');
 		template.close('dominosGroup');
 		template.open('list', 'favorite-form');
+		$window.scrollTo(0, 0);
 	}
 
 	$scope.preHideFavoriteForm = function() {
@@ -306,6 +307,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.editingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');
+		$window.scrollTo(0, 0);
 	}
 
 	$scope.selectFavorite = async function(favorite, noupdate) {
