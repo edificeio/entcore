@@ -9,7 +9,9 @@
 
     <div class="bottom">
         <div class="content">
-            <span>[[user.displayName]]</span>
+            <div class="multiline-ellipsis-three">
+                <span>[[user.displayName]]</span>
+            </div>
             <div class="bottom-locked" ng-if="user.mood != 'default'">
                 <i class="[[user.mood]]"></i>
             </div>
