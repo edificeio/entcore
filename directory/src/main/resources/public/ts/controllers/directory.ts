@@ -43,14 +43,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 	};
 
-	var colorsMatch = {
-		relative: 'cyan',
-		teacher: 'green',
-		student: 'orange',
-		personnel: 'purple',
-		guest: 'pink'
-	};
-
 	$scope.increaseSearchSize = function(){
 		$scope.search.maxLength += 50;
 		if(!$scope.$$phase){
@@ -539,12 +531,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.colorFromType = function(type){
-		if (type) {
-			if(type instanceof Array)
-				return colorsMatch[type[0].toLowerCase()];
-			return colorsMatch[type.toLowerCase()];
-		}
-		return "grey";
+		return ui.profileColors.match(type);
 	};
 
 	$scope.lightenColorFromType = function(type){
