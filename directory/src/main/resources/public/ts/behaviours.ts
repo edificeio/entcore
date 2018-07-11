@@ -1,4 +1,4 @@
-import { Behaviours, http, idiom as lang, _ } from 'entcore';
+import { Behaviours, http, idiom as lang, _, ui } from 'entcore';
 
 console.log('directory behaviours loaded');
 
@@ -68,8 +68,7 @@ Behaviours.register('directory', {
 					this.setSnipletSource(this.source);
 				},
 				colorFromType: function(type){
-					var colorsMatch = { relative: 'cyan', teacher: 'green', student: 'orange', personnel: 'purple' };
-					return colorsMatch[type.toLowerCase()];
+					return ui.profileColors.match(type);
 				},
 				groupTranslation: function(groupName){
 					var splittedName = groupName.split('-')
