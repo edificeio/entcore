@@ -88,7 +88,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			directory.directory.groups.all = [];
 			directory.directory.favorites.all = [];
 			directory.favoriteForm.users.all = [];
-			directory.favoriteForm.groups.all = [];
 			directory.network.schools.all = [];
 			await directory.directory.favorites.getAll();
 			$scope.users = directory.directory.users;
@@ -407,9 +406,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			event.preventDefault();
 
 		$scope.display.loadingFavoriteForm = true;
-		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
-		await directory.favoriteForm.groups.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters);
-		$scope.favoriteFormUsersGroups = directory.favoriteForm.groups.all.concat(directory.favoriteForm.users.all);
+		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters, true);
+		$scope.favoriteFormUsersGroups = directory.favoriteForm.users.all;
 		$scope.display.loadingFavoriteForm = false;
 		$scope.$apply('favoriteFormUsersGroups');
 	};
