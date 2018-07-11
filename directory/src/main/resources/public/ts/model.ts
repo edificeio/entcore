@@ -288,14 +288,14 @@ export const directory = {
 			match: function(){
 				return this.all;
 			},
-			searchDirectory: async function(search, filters, callback){
+			searchDirectory: async function(search, filters, all, callback){
 				if (!search)
 					search = "";
 				this.searched = true;
 
 				var body = {
 					search: search.toLowerCase(),
-					types: ["User"]
+					types: all ? [] : ["User"]
 				};
 				
 				if (filters.structures)
@@ -310,13 +310,17 @@ export const directory = {
 				body["mood"] = true;
 				
 				var response = await http.post('/communication/visible', body);
-				
-				this.load(_.map(response.data.users, function(user){
+				var users = _.map(response.data.users, function(user){
 					if(!user.mood){
 						user.mood = 'default';
 					}
 					return user;
-				}));
+				});
+				
+				this.load(all ? _.map(response.data.groups, function(group){
+					group.isGroup = true;
+					return group;
+				}).concat(users) : users);
 
 				if(typeof callback === 'function'){
 					callback();
