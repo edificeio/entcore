@@ -177,7 +177,7 @@ public abstract class GenericShareService implements ShareService {
 						JsonObject group = (JsonObject) u;
 						UserUtils.groupDisplayName(group, acceptLanguage);
 					}
-					findVisibleUsers(eb, userId, true, preFilter, q2, params2, new Handler<JsonArray>() {
+					findVisibleUsers(eb, userId, false, preFilter, q2, params2, new Handler<JsonArray>() {
 						@Override
 						public void handle(JsonArray visibleUsers) {
 							JsonObject users = new JsonObject();

@@ -67,7 +67,7 @@ public class VisiblesFilter implements ResourcesProvider{
 				final Handler<Void> checkHandler = new Handler<Void>() {
 					public void handle(Void v) {
 						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-						findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, true, new Handler<JsonArray>() {
+						findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, false, new Handler<JsonArray>() {
 							public void handle(JsonArray visibles) {
 								handler.handle(visibles.size() == ids.size());
 							}

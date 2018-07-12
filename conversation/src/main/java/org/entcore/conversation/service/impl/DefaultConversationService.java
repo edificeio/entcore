@@ -677,7 +677,7 @@ public class DefaultConversationService implements ConversationService {
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile, visibles.structureName as structureName";
-			findVisibles(eb, user.getUserId(), groups, params, true, true, true, new Handler<JsonArray>() {
+			findVisibles(eb, user.getUserId(), groups, params, true, true, false, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray visibles) {
 					JsonArray users = new fr.wseduc.webutils.collections.JsonArray();

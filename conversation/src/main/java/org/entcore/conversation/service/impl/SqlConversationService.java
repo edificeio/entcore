@@ -520,7 +520,7 @@ public class SqlConversationService implements ConversationService{
 
 	private void callFindVisibles(UserInfos user, final String acceptLanguage, final Handler<Either<String, JsonObject>> result,
 			final JsonObject visible, JsonObject params, String preFilter, String customReturn) {
-		findVisibles(eb, user.getUserId(), customReturn, params, true, true, true, acceptLanguage, preFilter, new Handler<JsonArray>() {
+		findVisibles(eb, user.getUserId(), customReturn, params, true, true, false, acceptLanguage, preFilter, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray visibles) {
 				JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
