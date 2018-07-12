@@ -536,9 +536,8 @@ public class DefaultCommunicationService implements CommunicationService {
 				"MATCH p=(n:User)<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-(m:User) " +
 				"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
 				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
-				"OPTIONAL MATCH m-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 				"RETURN distinct m.id as id, m.login as login, " +
-				"m.displayName as username, profile.name as type " +
+				"m.displayName as username, HEAD(m.profiles) as type " +
 				"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
