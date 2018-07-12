@@ -223,7 +223,7 @@ public class CommunicationController extends BaseController {
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
-						preFilter, customReturn, params, visibles -> {
+						preFilter, customReturn, params, user.getType(), visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
 										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
