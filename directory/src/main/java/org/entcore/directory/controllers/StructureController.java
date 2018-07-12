@@ -556,13 +556,14 @@ public class StructureController extends BaseController {
 		this.structureService.userList(structureId, arrayResponseHandler(request));
 	}
 
-	@Put("structure/:structureId/profile/block")
+	@Put("structure/:id/profile/block")
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminStructureFilter.class)
 	public void blockUsers(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject json) {
-				final String structureId = request.params().get("structureId");
+				final String structureId = request.params().get("id");
 				final String profile = json.getString("profile");
 				final boolean block = json.getBoolean("block", true);
 				structureService.blockUsers(structureId, profile, block, new Handler<JsonObject>() {
