@@ -481,20 +481,27 @@ public class DefaultCommunicationService implements CommunicationService {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
+		StringBuilder union = null;
+		String conditionUnion = itSelf ? "" : "AND m.id <> {userId} ";
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", structureId);
 		} else {
-			String l = (myGroup) ? " AND (length(p) >= 2 OR m.users <> 'INCOMING')" : " AND length(p) >= 2";
-			query.append(" MATCH p=(n:User)-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]->t-[:COMMUNIQUE*0..1]->ipg" +
+			String l = (myGroup) ? " (length(p) >= 2 OR m.users <> 'INCOMING')" : " length(p) >= 2";
+			query.append(" MATCH p=(n:User)-[:COMMUNIQUE*0..2]->ipg" +
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
-			condition += "AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-					"XOR (type(r) = 'COMMUNIQUE'"+ l +
+			condition += "AND (("+ l +
 					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
+			union = new StringBuilder("MATCH p=(n:User)-[COMMUNIQUE_DIRECT]->m " +
+					"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 		}
 		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 		if (preFilter != null) {
 			query.append(preFilter);
+			if (union != null) {
+				union.append(preFilter);
+				union.append(conditionUnion);
+			}
 		}
 		query.append(condition);
 		if (expectedTypes != null && expectedTypes.size() > 0) {
@@ -506,6 +513,9 @@ public class DefaultCommunicationService implements CommunicationService {
 				types.append(" OR m:").append(t);
 			}
 			query.append(types.substring(4)).append(") ");
+			if (union != null) {
+				union.append("AND (").append(types.substring(4)).append(") ");
+			}
 		}
 		String pcr = " ";
 		String pr = "";
@@ -513,21 +523,40 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
 			pcr = ", profile ";
 			pr = "profile.name as type, ";
+			if (union != null) {
+				union.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
+			}
 		}
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			query.append("WITH DISTINCT m as visibles").append(pcr);
 			query.append(customReturn);
+			if (union != null) {
+				union.append("WITH DISTINCT m as visibles").append(pcr);
+				union.append(customReturn);
+			}
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
 					+ "m.login as login, m.displayName as username, ").append(pr)
 					.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 							+ "ORDER BY name, username ");
+			if (union != null) {
+				union.append("RETURN distinct m.id as id, m.name as name, "
+						+ "m.login as login, m.displayName as username, ").append(pr)
+						.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
+								+ "ORDER BY name, username ");
+			}
 		}
 		params.put("userId", userId);
 		if (additionnalParams != null) {
 			params.mergeIn(additionnalParams);
 		}
-		neo4j.execute(query.toString(), params, validResultHandler(handler));
+		String q;
+		if (union != null) {
+			q = query.append(" union ").append(union.toString()).toString();
+		} else {
+			q = query.toString();
+		}
+		neo4j.execute(q, params, validResultHandler(handler));
 	}
 
 	@Override
