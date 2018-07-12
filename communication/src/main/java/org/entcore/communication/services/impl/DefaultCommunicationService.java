@@ -476,7 +476,14 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
+							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
+							 final Handler<Either<String, JsonArray>> handler) {
+		visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, null, handler);
+	}
+
+	@Override
+	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
+			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
 			final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
@@ -492,8 +499,10 @@ public class DefaultCommunicationService implements CommunicationService {
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
 			condition += "AND (("+ l +
 					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
-			union = new StringBuilder("MATCH p=(n:User)-[COMMUNIQUE_DIRECT]->m " +
-					"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
+			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile)) {
+				union = new StringBuilder("MATCH p=(n:User)-[COMMUNIQUE_DIRECT]->m " +
+						"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
+			}
 		}
 		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 		if (preFilter != null) {
