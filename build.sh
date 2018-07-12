@@ -18,6 +18,25 @@ case `uname -s` in
     fi
 esac
 
+# options
+SPRINGBOARD="recette"
+MODULE="conversation"
+for i in "$@"
+do
+case $i in
+    -s=*|--springboard=*)
+    SPRINGBOARD="${i#*=}"
+    shift
+    ;;
+    -m=*|--module=*)
+    MODULE="${i#*=}"
+    shift
+    ;;
+    *)
+    ;;
+esac
+done
+
 clean () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle clean
 }
@@ -25,15 +44,23 @@ clean () {
 buildNode () {
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && node_modules/gulp/bin/gulp.js build"
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
   esac
 }
 
 buildGradle () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle shadowJar install publishToMavenLocal
+}
+
+watch () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js watch-$MODULE --springboard=/home/node/$SPRINGBOARD"
+}
+
+infra () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
 }
 
 publish () {
@@ -61,6 +88,12 @@ do
       ;;
     install)
       buildNode && buildGradle
+      ;;
+    watch)
+      watch
+      ;;
+    infra)
+      infra
       ;;
     publish)
       publish

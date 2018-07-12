@@ -12,4 +12,5 @@ node:
   volumes:
     - ./:/home/node/app
     - ~/.npm:/.npm
-
+    - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
+    - ../infra-front:/home/node/infra-front 
