@@ -244,6 +244,13 @@ public class Structure {
 					.put("name", name + "-HeadTeacher")
 					.put("filter", "HeadTeacher");
 			getTransaction().add(query, params);
+			String linkParent =
+					"MATCH (sg:HTGroup {externalId: {structureGroupExternalId}}), (cg:HTGroup {externalId: {classGroupExternalId}}) " +
+					"MERGE sg<-[:DEPENDS]-cg ";
+			JsonObject pl = new JsonObject()
+					.put("structureGroupExternalId", structureGroupExternalId)
+					.put("classGroupExternalId", classGroupExternalId);
+			getTransaction().add(linkParent, pl);
 		}
 	}
 
