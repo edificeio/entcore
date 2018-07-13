@@ -22,17 +22,8 @@
 	<container template="lightbox"></container>
 </lightbox>
 
-<!-- Empty screen when portrait tablet in favorite form -->
-<div class="zero-desktop twelve-mobile twelve-tablette-wide center-component-tablette">
-	<div class="emptyscreen row reduce-block-six eight-tablette-wide" ng-if="display.creatingFavorite || (search.index === 2 && favorites.all.length === 0)">
-		<h2 class="emptyscreen-header"><i18n>portal.emptyscreen.rotatedevice.title</i18n></h2>
-		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-rotatedevice.svg">
-		<p class="emptyscreen-footer"><i18n>portal.emptyscreen.rotatedevice.description</i18n></p>
-	</div>
-</div>
-
 <div class="row rigid-grid">
-	<section class="flex-row f-column justify-center four cell twelve-mobile twelve-tablette-wide center-component-tablette" ng-class="{ 'only-large-desktop':display.searchmobile, 'only-desktop':(search.index === 2 && favorites.all.length === 0) }">
+	<section class="flex-row f-column justify-center four cell twelve-mobile twelve-tablette-wide center-component-tablette" ng-class="{ 'only-large-desktop':display.searchmobile }">
 		<app-title>
 			<h1>
 				<a data-reload>
@@ -157,27 +148,36 @@
 				</div>
 			</div>
 			<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
-				<div ng-class='{ "only-desktop": favorites.all.length === 0 }'
-					workflow="directory.allowSharebookmarks">
-					<div class="underlined-title"><i18n>directory.manage.my</i18n> <strong><i18n>directory.favorite.share</i18n></strong></div>
-					<div class="spacer-small"></div>
-					<div class="reduce-block-eight horizontal-margin">
-						<removable-list
-							ng-model="favorites.all"
-							selected-item="currentFavorite"
-							select-item="selectFavorite(item)"
-							delete-item="deleteFavorite(item)"
-							placeholder="[[lang.translate('userBook.search.title')]]"
-							noitems="[[lang.translate('directory.nofavorite')]]"
-							noresult="[[lang.translate('directory.nofavorite.result')]]"
-							ng-disabled="display.creatingFavorite"/>
-						<div class="only-desktop">
-							<div class="spacer-small"></div>
-							<div class="reduce-block-eight horizontal-margin">
-								<button type="submit" class="twelve" ng-disabled="display.creatingFavorite">
-									<i18n>directory.create.favorite</i18n>
-								</button>
+				<div workflow="directory.allowSharebookmarks">
+					<div ng-class='{"only-desktop":favorites.all.length === 0}' >
+						<div class="underlined-title"><i18n>directory.manage.my</i18n> <strong><i18n>directory.favorite.share</i18n></strong></div>
+						<div class="spacer-small"></div>
+						<div class="reduce-block-eight horizontal-margin">
+							<removable-list
+								ng-model="favorites.all"
+								selected-item="currentFavorite"
+								select-item="selectFavorite(item)"
+								delete-item="deleteFavorite(item)"
+								placeholder="[[lang.translate('userBook.search.title')]]"
+								noitems="[[lang.translate('directory.nofavorite')]]"
+								noresult="[[lang.translate('directory.nofavorite.result')]]"
+								ng-disabled="display.creatingFavorite"/>
+							<div class="only-desktop">
+								<div class="spacer-small"></div>
+								<div class="reduce-block-eight horizontal-margin">
+									<button type="submit" class="twelve" ng-disabled="display.creatingFavorite">
+										<i18n>directory.create.favorite</i18n>
+									</button>
+								</div>
 							</div>
+						</div>
+					</div>
+					<div  ng-class='{"zero-desktop":favorites.all.length === 0}' class= "center-component-tablette">
+						<div class="emptyscreen row reduce-block-six eight-tablette-wide" ng-if="search.index == 2 && !currentFavorite">
+							<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
+							<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+							<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
+							<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.mobile.footer</i18n></p>
 						</div>
 					</div>
 				</div>
@@ -186,6 +186,7 @@
 		<div class="absolute-position-w centered-text zero-large-desktop" ng-if="display.loadingmobile">
 			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
 		</div>
+		
 	</section>
 	<section class="margin-four margin-wide-four top-spacing-twice" ng-class="{ 'only-large-desktop' : !display.searchmobile  }">
 
