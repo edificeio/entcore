@@ -145,7 +145,7 @@ public abstract class GenericShareService implements ShareService {
 			final String preFilter;
 			if (search != null) {
 				preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
-				String sanitizedSearch = StringValidation.removeAccents(search.trim()).toLowerCase();
+				String sanitizedSearch = StringValidation.sanitize(search);
 				params.put("search", sanitizedSearch);
 				params2.put("search", sanitizedSearch);
 			} else {

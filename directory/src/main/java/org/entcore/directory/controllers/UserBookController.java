@@ -178,7 +178,7 @@ public class UserBookController extends BaseController {
 			params.put("structureId", structure);
 		}
 		String preFilter = "AND m.displayNameSearchField CONTAINS {search} " + filter;
-		params.put("search", StringValidation.removeAccents(name.trim()).toLowerCase());
+		params.put("search", StringValidation.sanitize(name));
 		String customReturn =
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
