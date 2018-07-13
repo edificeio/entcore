@@ -315,7 +315,7 @@ public class Validator {
 			if (firstName != null && lastName != null) {
 				String displayName = lastName + " " + firstName;
 				object.put(attr, displayName);
-				object.put(attr + SEARCH_FIELD, removeAccents(displayName).toLowerCase());
+				object.put(attr + SEARCH_FIELD, sanitize(displayName));
 			}
 		}
 	}

@@ -478,7 +478,7 @@ public class SqlConversationService implements ConversationService{
 		final String preFilter;
 		if (isNotEmpty(search)) {
 			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
-			params.put("search", StringValidation.removeAccents(search.trim()).toLowerCase());
+			params.put("search", StringValidation.sanitize(search));
 		} else {
 			preFilter = null;
 		}
