@@ -28,7 +28,6 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         </lightbox-confirm>
         <wizard
             (cancel)="confirmCancel=true"
-            (finish)="finish()"
             (nextStep)="nextStep($event)"
             (previousStep)="previousStep($event)"
         >
