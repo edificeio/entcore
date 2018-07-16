@@ -100,6 +100,8 @@ export const recipientList = ng.directive('recipientList', () => {
             };
 
             scope.update = async (force?: boolean) => {
+                scope.addedFavorites = [];
+                
                 if (force) {
                     await scope.doSearch();
                 }
@@ -185,7 +187,6 @@ export const recipientList = ng.directive('recipientList', () => {
                 if (!scope.focused) {
                     scope.searchText = '';
                     scope.itemsFound = [];
-                    scope.addedFavorites = [];
                 }
             };
 
