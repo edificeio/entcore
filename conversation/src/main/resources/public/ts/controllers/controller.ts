@@ -471,7 +471,6 @@ export let conversationController = ng.controller('ConversationController', [
             }
             var users = await Conversation.instance.users.findUser(search, include, exclude, restriction);
             Object.assign(founds, users, { length: users.length });
-            $scope.$apply();
         };
 
         $scope.template = template
