@@ -29,7 +29,7 @@ import { Subscription } from 'rxjs';
         <form-field label="source">
             <span>{{ details.source | translate }}</span>
         </form-field>
-        <form-field label="mergeKey">
+        <form-field label="mergeKey" *ngIf="user.type === 'Relative'">
             <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
             <button class= "noflex"
                 *ngIf="!details.mergeKey"
