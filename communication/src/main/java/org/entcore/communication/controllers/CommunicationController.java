@@ -166,6 +166,9 @@ public class CommunicationController extends BaseController {
 									match += "-[:DEPENDS]->(n) ";
 									where += "AND n.id IN {nIds} ";
 								}
+								if ("structures".equals(criteria)) {
+									match = match.replaceFirst("\\[:DEPENDS]", "[:DEPENDS*1..2]");
+								}
 								break;
 
 //								JsonArray profiles = filter.getJsonArray(criteria);
