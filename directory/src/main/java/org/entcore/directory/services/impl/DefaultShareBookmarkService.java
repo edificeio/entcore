@@ -84,6 +84,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 				"MATCH (:User {id:{userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
 				"UNWIND TAIL(sb." + cleanId + ") as vid " +
 				"MATCH (v:Visible {id : vid}) " +
+				"WHERE not(has(v.deleteDate)) " +
 				"RETURN \"" + cleanId + "\" as id, HEAD(sb." + cleanId + ") as name, " +
 				"COLLECT(DISTINCT {id : v.id, name : v.name, displayName :  v.displayName, groupType : labels(v), " +
 				"groupProfile : v.filter, nbUsers : v.nbUsers, profile : HEAD(v.profiles) }) as members;";
