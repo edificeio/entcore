@@ -398,7 +398,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			event.preventDefault();
 
 		$scope.display.loadingFavoriteForm = true;
-		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters, true);
+		await directory.favoriteForm.users.searchDirectory($scope.create.favorite.search, $scope.create.favorite.filters, null, true);
 		$scope.favoriteFormUsersGroups = directory.favoriteForm.users.all;
 		$scope.display.loadingFavoriteForm = false;
 		$scope.$apply('favoriteFormUsersGroups');

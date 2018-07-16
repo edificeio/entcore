@@ -288,7 +288,7 @@ export const directory = {
 			match: function(){
 				return this.all;
 			},
-			searchDirectory: async function(search, filters, all, callback){
+			searchDirectory: async function(search, filters, callback, all){
 				if (!search)
 					search = "";
 				this.searched = true;
