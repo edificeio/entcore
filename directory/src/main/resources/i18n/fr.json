@@ -48,6 +48,7 @@
     "directory.admin.address": "Adresse",
     "directory.admin.attachChildStructures": "Rattacher des structures à ce regroupement",
     "directory.admin.birthDate": "Date de naissance",
+    "directory.admin.blocked.users": "Comptes bloqués",
     "directory.admin.class": "Classe",
     "directory.admin.classGroup": "Groupe de classe",
     "directory.admin.create": "Créer",
