@@ -102,7 +102,6 @@ export const recipientList = ng.directive('recipientList', () => {
             scope.update = async (force?: boolean) => {
                 if (force) {
                     await scope.doSearch();
-                    scope.$apply('itemsFound');
                 }
                 else {
                     if(scope.restriction && scope.searchText.length < 3 || scope.searchText.length < 1) {
@@ -110,7 +109,6 @@ export const recipientList = ng.directive('recipientList', () => {
                     }
                     else {
                         await scope.doSearch();
-                        scope.$apply('itemsFound');
                     }
                 }
             };
@@ -157,25 +155,30 @@ export const recipientList = ng.directive('recipientList', () => {
                 }
                 else {
                     scope.ngModel.push(scope.currentReceiver);
+                    setTimeout(function () {
+                        scope.itemsFound.splice(scope.itemsFound.indexOf(scope.currentReceiver), 1);
+                        scope.$apply('itemsFound');
+                    }, 0);
                 }
-                setTimeout(function(){
-                    scope.itemsFound.splice(scope.itemsFound.indexOf(scope.currentReceiver), 1);
-                    scope.$apply('itemsFound');
-                }, 0);
                 scope.$apply('ngModel');
                 scope.$eval(scope.ngChange);
                 
                 if (scope.currentReceiver.type === 'sharebookmark') {
-                    scope.doSearch();
+                    setTimeout(async function () {
+                        await scope.doSearch();
+                    }, 0)
                 }
             };
 
-            scope.deleteItem = (item) => {
+            scope.deleteItem = async (item) => {
                 scope.ngModel = _.reject(scope.ngModel, function (i) { return i === item; });
                 scope.$apply('ngModel');
                 scope.$eval(scope.ngChange);
-                if (scope.itemsFound.length > 0)
-                    scope.doSearch();
+                if (scope.itemsFound.length > 0) {
+                    setTimeout(async function () {
+                        await scope.doSearch();
+                    }, 0);
+                }
             };
 
             scope.clearSearch = () => {
@@ -191,6 +194,7 @@ export const recipientList = ng.directive('recipientList', () => {
                 scope.itemsFound = _.reject(scope.itemsFound, function (element) {
                     return _.findWhere(scope.addedFavorites, { id: element.id });
                 });
+                scope.$apply('itemsFound');
             };
 
             // Focus when items list changes
