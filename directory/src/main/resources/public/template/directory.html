@@ -161,7 +161,7 @@
 								placeholder="[[lang.translate('userBook.search.title')]]"
 								noitems="[[lang.translate('directory.nofavorite')]]"
 								noresult="[[lang.translate('directory.nofavorite.result')]]"
-								ng-disabled="display.creatingFavorite"/>
+				 				ng-disabled="display.creatingFavorite"/>
 							<div class="only-desktop">
 								<div class="spacer-small"></div>
 								<div class="reduce-block-eight horizontal-margin">
@@ -172,7 +172,7 @@
 							</div>
 						</div>
 					</div>
-					<div  ng-class='{"zero-desktop":favorites.all.length === 0}' class= "center-component-tablette">
+					<div ng-if='favorites.all.length === 0' class= "center-component-tablette zero-desktop">
 						<div class="emptyscreen row reduce-block-six eight-tablette-wide" ng-if="search.index == 2 && !currentFavorite">
 							<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
 							<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
