@@ -77,14 +77,14 @@
 <div class="dominos centered-text">
 
 	<!-- Users -->
-	<div class="item" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength" ng-if="search.index === 0 && !display.loading">
+	<div class="item user" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength" ng-if="search.index === 0 && !display.loading">
 		<div data-ng-include="template.containers.dominosUser"></div>
 	</div>
 
 	<!-- Groups -->
 	<div ng-if="search.index === 1 && !display.loading && !currentGroup" 
 		ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength"
-		class="item">
+		class="item group">
 		<div data-ng-include="template.containers.dominosGroup"></div>
 	</div>
 
@@ -127,17 +127,17 @@
 			</button>
 		</div>
 
-		<div ng-repeat="group in currentFavorite.groups | orderBy: 'name' | limitTo:search.maxLength" class="item">
+		<div ng-repeat="group in currentFavorite.groups | orderBy: 'name' | limitTo:search.maxLength" class="item group">
 			<div data-ng-include="template.containers.dominosGroup"></div>
 		</div>
 
-		<div ng-repeat="user in currentFavorite.users | orderBy:'displayName' | limitTo:search.maxLength" class="item">
+		<div ng-repeat="user in currentFavorite.users | orderBy:'displayName' | limitTo:search.maxLength" class="item user">
 			<div data-ng-include="template.containers.dominosUser"></div>
 		</div>
 	</div>	
 
 	<!-- Classrooms -->
-    <div class="item" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
+    <div class="item user" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
         <section class="domino grey" ng-click="selectClassroom(classroom)">
             <div class="top">
                 <img skin-src="/img/illustrations/classroom.png" class="fixed twelve cell" />
