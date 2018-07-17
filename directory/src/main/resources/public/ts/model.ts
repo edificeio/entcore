@@ -295,7 +295,7 @@ export const directory = {
 
 				var body = {
 					search: search.toLowerCase(),
-					types: all ? [] : ["User"]
+					types: all ? filters.types : ["User"]
 				};
 				
 				if (filters.structures)
