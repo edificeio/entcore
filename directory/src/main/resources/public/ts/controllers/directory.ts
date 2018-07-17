@@ -458,8 +458,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 		$scope.display.loading = false;
 		$scope.display.loadingmobile = false;
-		if (form)
+		if (form) {
+			if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+				$scope.currentFavorite = null;
+			}
+			$scope.display.searchmobile = false;
 			$scope.hideFavoriteForm();
+		}
 		$scope.$apply();
 	};
 
