@@ -153,30 +153,29 @@ public class CommunicationController extends BaseController {
 							case "structures":
 							case "classes":
 								JsonArray itemssc = filter.getJsonArray(criteria);
-								if (itemssc == null || itemssc.isEmpty()) continue;
+								if (itemssc == null || itemssc.isEmpty() ||
+										("structures".equals(criteria) &&  filter.getJsonArray("classes") != null &&
+												!filter.getJsonArray("classes").isEmpty())) continue;
 								if (!params.containsKey("nIds")) {
 									params.put("nIds", itemssc);
 								} else {
 									params.getJsonArray("nIds").addAll(itemssc);
 								}
-								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
-									match = "MATCH (visibles)-[:IN*0..1]->(g)-[:DEPENDS]->(n) ";
-									where = "WHERE n.id IN {nIds} ";
-								} else if (!match.contains("-[:DEPENDS]->(n)")) {
-									match += "-[:DEPENDS]->(n) ";
-									where += "AND n.id IN {nIds} ";
+								if (!match.contains("-[:DEPENDS")) {
+									if (!match.contains("MATCH ")) {
+										match = "MATCH ";
+										where = " WHERE ";
+									} else {
+										match += ", ";
+										where += "AND ";
+									}
+									match += "(visibles)-[:IN*0..1]->()-[:DEPENDS]->(n) ";
+									where += "n.id IN {nIds} ";
 								}
 								if ("structures".equals(criteria)) {
 									match = match.replaceFirst("\\[:DEPENDS]", "[:DEPENDS*1..2]");
 								}
 								break;
-
-//								JsonArray profiles = filter.getJsonArray(criteria);
-//								if (profiles != null && profiles.size() > 1) {
-//									preFilter.append("AND HEAD(m.profiles) IN {profiles} ");
-//									//for ()
-//								}
-								//break;
 							case "profiles":
 							case "functions":
 								JsonArray itemspf = filter.getJsonArray(criteria);
@@ -184,13 +183,22 @@ public class CommunicationController extends BaseController {
 								if (!params.containsKey("filters")) {
 									params.put("filters", itemspf);
 								} else {
-									params.getJsonArray("filters").addAll(itemspf);
+									//params.getJsonArray("filters").addAll(itemspf);
+									params.put("filters2", itemspf);
+								}
+								if (!match.contains("MATCH ")) {
+									match = "MATCH ";
+									where = " WHERE ";
+								} else {
+									match += ", ";
+									where += "AND ";
 								}
 								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
-									match = "MATCH (visibles)-[:IN*0..1]->(g)";
-									where = " WHERE g.filter IN {filters} ";
-								} else if (!where.contains("g.filter IN {filters}")) {
-									where += "AND  g.filter IN {filters} ";
+									match += "(visibles)-[:IN*0..1]->(g)";
+									where += "g.filter IN {filters} ";
+								} else {
+									match += "(visibles)-[:IN*0..1]->(g2) ";
+									where += "g2.filter IN {filters2} ";
 								}
 								break;
 							case "search":
