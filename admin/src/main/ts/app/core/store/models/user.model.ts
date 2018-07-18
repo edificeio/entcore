@@ -77,7 +77,9 @@ export class UserModel extends Model<UserModel> {
     removeClass(classId: string,externalId: string) {
         return this.http.delete(`/directory/class/${classId}/unlink/${this.id}`).then(() => {
             this.classes = this.classes.filter(c => c.id !== classId)
-            this.userDetails.headTeacherManual.splice(this.userDetails.headTeacherManual.findIndex((f) => f == externalId), 1);
+            if(this.userDetails.headTeacherManual) {
+                this.userDetails.headTeacherManual.splice(this.userDetails.headTeacherManual.findIndex((f) => f == externalId), 1);
+            }
         })
     }
 
