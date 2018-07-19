@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.Directory;
@@ -254,7 +255,7 @@ public class DefaultTimetableService implements TimetableService {
 							.put("path", path)
 							.put("UAI", event.right().getValue().getString("UAI"))
 							.put("language", acceptLanguage);
-					eb.send(Directory.FEEDER, action, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+					eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
