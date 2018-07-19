@@ -352,6 +352,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	void addEleve(JsonObject currentEntity) {
+		if("0".equals(currentEntity.getString("theorique"))) {
+			return;
+		}
 		final String ele = currentEntity.getString("ele");
 		if (isEmpty(ele)) {
 			report.addErrorWithParams("invalid.epj", currentEntity.encode());
