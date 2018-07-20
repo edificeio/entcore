@@ -20,6 +20,7 @@
 package org.entcore.common.share.impl;
 
 import fr.wseduc.webutils.I18n;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -345,11 +346,12 @@ public abstract class GenericShareService implements ShareService {
 	}
 
 	private void shareValidationVisible(String userId, String resourceId, Handler<Either<String, JsonObject>> handler, HashMap<String, Set<String>> membersActions, Set<String> shareBookmarkIds) {
-		final String preFilter = "AND m.id IN {members} ";
+//		final String preFilter = "AND m.id IN {members} ";
 		final Set<String> members = membersActions.keySet();
 		final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
-		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
-		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
+//		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
+//		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
+		checkMembers(params, res -> {
 			if (res != null) {
 				final JsonArray users = new JsonArray();
 				final JsonArray groups = new JsonArray();
@@ -377,6 +379,20 @@ public abstract class GenericShareService implements ShareService {
 				}
 			} else {
 				handler.handle(new Either.Left<>("Invalid members count."));
+			}
+		});
+	}
+
+	private void checkMembers(JsonObject params, Handler<JsonArray> handler) {
+		final String query =
+				"MATCH (v:Visible) " +
+				"WHERE v.id IN {members} AND NOT(HAS(v.deleteDate)) AND (NOT(HAS(v.blocked)) OR v.blocked = false) " +
+				"RETURN DISTINCT v.id as id, has(v.login) as isUser ";
+		Neo4j.getInstance().execute(query, params, event -> {
+			if ("ok".equals(event.body().getString("status"))) {
+				handler.handle(event.body().getJsonArray("result"));
+			} else {
+				handler.handle(null);
 			}
 		});
 	}
