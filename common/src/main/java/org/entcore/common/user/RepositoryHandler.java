@@ -81,6 +81,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				JsonObject structure = message.body().getJsonObject("structure");
 				repositoryEvents.transition(structure);
 				break;
+			case "merge-users":
+				JsonObject body = message.body();
+				repositoryEvents.mergeUsers(body.getString("keepedUserId"), body.getString("deletedUserId"));
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));

@@ -21,7 +21,12 @@ package org.entcore.feeder.dictionary.structures;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
+
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.feeder.Feeder;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -31,6 +36,7 @@ import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -78,12 +84,15 @@ public class DuplicateUsers {
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
 	private final boolean autoMergeOnlyInSameStructure;
+	private final EventBus eb;
+	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 
-	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
-		this(null, updateCourses, autoMergeOnlyInSameStructure);
+	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure, EventBus eb) {
+		this(null, updateCourses, autoMergeOnlyInSameStructure, eb);
 	}
 
-	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure) {
+	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure,
+			EventBus eb) {
 		if (sourcesPriority == null) {
 			sourcesPriority = new fr.wseduc.webutils.collections.JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 		}
@@ -91,6 +100,7 @@ public class DuplicateUsers {
 		for (int i = 0; i < size; i++) {
 			sourcePriority.put(sourcesPriority.getString(i), size - i);
 		}
+		this.eb = eb;
 		this.updateCourses = updateCourses;
 		this.autoMergeOnlyInSameStructure = autoMergeOnlyInSameStructure;
 	}
@@ -260,6 +270,13 @@ public class DuplicateUsers {
 		});
 	}
 
+	private void sendMergedEvent(String keepedUserId, String deletedUserId) {
+		JsonObject body = new JsonObject().put("keepedUserId", keepedUserId).put("deletedUserId", deletedUserId);
+		eb.publish(Feeder.USER_REPOSITORY, body.copy().put("action", "merge-users"));
+		eventStore.createAndStoreEvent(Feeder.FeederEvent.MERGE_USER.name(), (UserInfos) null, body);
+
+	}
+
 	private void mergeDuplicate(final JsonObject r, final Message<JsonObject> message, final TransactionHelper tx) {
 		final String source1 = r.getString("source1");
 		final String source2 = r.getString("source2");
@@ -322,6 +339,7 @@ public class DuplicateUsers {
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
 			tx.add(query, params);
+			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
 			message.reply(new JsonObject().put("status", "ok"));
 		} else {
 			try {
@@ -336,6 +354,7 @@ public class DuplicateUsers {
 							if (updateCourses) {
 								AbstractTimetableImporter.updateMergedUsers(event.body().getJsonArray("results"));
 							}
+							sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
 						}
 						message.reply(event.body());
 					}

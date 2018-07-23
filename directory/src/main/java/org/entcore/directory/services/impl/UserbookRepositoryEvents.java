@@ -19,9 +19,16 @@
 
 package org.entcore.directory.services.impl;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.utils.StringUtils;
+import org.entcore.directory.services.UserBookService;
+
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -32,6 +39,19 @@ import io.vertx.core.logging.LoggerFactory;
 public class UserbookRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(UserbookRepositoryEvents.class);
+	private final UserBookService userBookService;
+
+	public UserbookRepositoryEvents(UserBookService userBookService) {
+		super();
+		this.userBookService = userBookService;
+	}
+
+	@Override
+	public void mergeUsers(String keepedUserId, String deletedUserId) {
+		userBookService.cleanAvatarCache(Arrays.asList(deletedUserId), res -> {
+
+		});
+	}
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
@@ -62,6 +82,13 @@ public class UserbookRepositoryEvents implements RepositoryEvents {
 				if (!"ok".equals(event.body().getString("status"))) {
 					log.error("Error deleting userbook data : " + event.body().encode());
 				}
+			}
+		});
+		List<String> userIds = users.stream().filter(u -> u instanceof JsonObject)
+				.map(u -> ((JsonObject) u).getString("id")).collect(Collectors.toList());
+		userBookService.cleanAvatarCache(userIds, res -> {
+			if (!res) {
+				log.error("Error cleaning avatars for ids : " + StringUtils.join(userIds, " "));
 			}
 		});
 	}

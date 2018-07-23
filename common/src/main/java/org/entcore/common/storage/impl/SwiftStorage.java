@@ -23,6 +23,7 @@ import fr.wseduc.swift.SwiftClient;
 import fr.wseduc.swift.storage.StorageObject;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -53,6 +54,18 @@ public class SwiftStorage implements Storage {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void fileStats(String id, Handler<AsyncResult<FileStats>> handler) {
+		// TODO to implement
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+
+	@Override
+	public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
+		// TODO to implement
+		throw new UnsupportedOperationException("not yet implemented");
 	}
 
 	@Override
