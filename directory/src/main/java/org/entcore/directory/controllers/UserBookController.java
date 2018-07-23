@@ -19,52 +19,56 @@
 
 package org.entcore.directory.controllers;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
+import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
+
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.ConversationNotification;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.UserBookService;
+import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
-
-import io.vertx.core.http.HttpClientOptions;
-import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.notification.ConversationNotification;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.services.SchoolService;
+import fr.wseduc.webutils.http.HttpClientUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.neo4j.Neo;
-import org.entcore.common.neo4j.Neo4jResult;
-
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.http.HttpClientUtils;
-
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.user.UserInfos;
-
-import fr.wseduc.security.SecuredAction;
-import org.vertx.java.core.http.RouteMatcher;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
-import static org.entcore.common.user.SessionAttributes.*;
-import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class UserBookController extends BaseController {
 
@@ -73,12 +77,18 @@ public class UserBookController extends BaseController {
 	private JsonObject userBookData;
 	private HttpClient client;
 	private SchoolService schoolService;
+	private UserBookService userBookService;
 	private EventStore eventStore;
 	private ConversationNotification conversationNotification;
 	private enum DirectoryEvent { ACCESS }
 	private static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
 
+
+	public void setUserBookService(UserBookService userBookService) {
+		this.userBookService = userBookService;
+	}
+	
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -625,43 +635,10 @@ public class UserBookController extends BaseController {
 	@Get("/avatar/:id")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
-		String id = request.params().get("id");
-		final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
-				"/assets/themes/" + vertx.sharedData().getLocalMap("skins").get(getHost(request));
-		final String defaultAvatarPath = assetsPath + "/img/illustrations/no-avatar.svg";
-
-		if (id != null && !id.trim().isEmpty()) {
-			String query =
-					"MATCH (n:User)-[:USERBOOK]->(u:UserBook) " +
-					"WHERE n.id = {id} " +
-					"RETURN distinct u.picture as photo";
-			Map<String, Object> params = new HashMap<>();
-			params.put("id", id);
-			neo.send(query, params, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						String photo = event.body().getJsonObject("result", new JsonObject())
-								.getJsonObject("0", new JsonObject()).getString("photo");
-						if (StringValidation.isAbsoluteDocumentUri(photo)) {
-							redirectPermanent(request, photo + "?" + request.query());
-							return;
-						}
-					}
-					request.response().sendFile(defaultAvatarPath, ar -> {
-						if (ar.failed() && !request.response().ended()) {
-							notFound(request);
-						}
-					});
-				}
-			});
-		} else {
-			request.response().sendFile(defaultAvatarPath, ar -> {
-				if (ar.failed() && !request.response().ended()) {
-					notFound(request);
-				}
-			});
-		}
+		final String id = request.params().get("id"); 
+		String thumbnail = request.params().get("thumbnail");
+		String defAVatar = userBookData.getString("default-avatar");
+		this.userBookService.getAvatar(id, Optional.ofNullable(thumbnail), defAVatar, request);
 	}
 
 	@Get("/person/birthday")

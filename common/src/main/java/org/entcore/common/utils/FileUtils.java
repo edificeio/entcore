@@ -26,12 +26,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 
 public final class FileUtils {
@@ -110,6 +112,19 @@ public final class FileUtils {
 
 	public static String getParentPath(String path) {
 		return Paths.get(path).getParent().toString();
+	}
+
+	public static String getFilename(String name) {
+		return StringUtils.substringAfterLast(name, File.separator);
+	}
+
+	public static String stripExtension(String name) {
+		return StringUtils.substringBeforeLast(name, ".");
+	}
+
+	public static Optional<String> getFileExtension(String name) {
+		String ext = StringUtils.substringAfter(name, ".");
+		return Optional.ofNullable(StringUtils.isEmpty(ext) ? null : ext);
 	}
 
 }

@@ -66,7 +66,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private DuplicateUsers duplicateUsers;
 	private PostImport postImport;
 	private final ConcurrentLinkedQueue<Message<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
-	public enum FeederEvent { IMPORT, DELETE_USER, CREATE_USER }
+
+	public enum FeederEvent {
+		IMPORT, DELETE_USER, CREATE_USER, MERGE_USER
+	}
+
 	private EDTUtils edtUtils;
 
 	@Override
@@ -136,7 +140,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		Validator.initLogin(neo4j, vertx);
 		manual = new ManualFeeder(neo4j);
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
-				config.getBoolean("autoMergeOnlyInSameStructure", true));
+				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);
 		vertx.eventBus().localConsumer(
 				config.getString("address", FEEDER_ADDRESS), this);

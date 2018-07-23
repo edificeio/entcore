@@ -22,7 +22,6 @@ package org.entcore.common.utils;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Created by dbreyton on 30/03/2016.
@@ -220,51 +219,44 @@ public final class StringUtils {
         return trimToBlank(str).replaceAll("<[^>]*>", "");
     }
 
-    /**
-     * Indicates if the string 1 starts with string2.
-     * 
-     * @param string1 String to test
-     * @param string2 String to be contained
-     * 
-     * @return true, If the string1 starts with string2
-     */
-    public static Boolean startWith(String string1, String string2) {
-        return (string1 != null) ? string1.startsWith(string2) : false;
-    }
-    
-    /**
-     * Indicates whether the string1 ends with string2.
-     * 
-     * @param string1 String to test
-     * @param string2 String to be contained
-     * 
-     * @return true, If the string1 ends with string2
-     */
-    public static Boolean endWith(String string1, String string2) {
-        return (string1 != null) ? string1.endsWith(string2) : false;
-    }
+	public static String substringBeforeLast(final String str, final String separator) {
+		if (isEmpty(str) || isEmpty(separator)) {
+			return str;
+		}
+		final int pos = str.lastIndexOf(separator);
+		if (pos == -1) {
+			return str;
+		}
+		return str.substring(0, pos);
+	}
 
-    /**
-     * returns true if the searched string is found.
-     * 
-     * @param find : the string to find.
-     * @param seeks : the string where seeks.
-     * @param separator : the separator.
-     * 
-     * @return : true, if found
-     */
-    public static boolean isIn(final String find, String seeks, String separator){
-        if(trimToNull(find)!= null && trimToNull(seeks)!= null){
-            final StringTokenizer st = new StringTokenizer(seeks, separator);
-            while (st.hasMoreTokens()) {
-                if(st.nextToken().equals(find)){
-                    return true;
-                }
-            }
-        }
+	public static String substringAfterLast(final String str, final String separator) {
+		if (isEmpty(str)) {
+			return str;
+		}
+		if (isEmpty(separator)) {
+			return EMPTY_STRING;
+		}
+		final int pos = str.lastIndexOf(separator);
+		if (pos == -1 || pos == str.length() - separator.length()) {
+			return EMPTY_STRING;
+		}
+		return str.substring(pos + separator.length());
+	}
 
-        return false;
-    }
+	public static String substringAfter(final String str, final String separator) {
+		if (isEmpty(str)) {
+			return str;
+		}
+		if (separator == null) {
+			return EMPTY_STRING;
+		}
+		final int pos = str.indexOf(separator);
+		if (pos == -1) {
+			return EMPTY_STRING;
+		}
+		return str.substring(pos + separator.length());
+	}
 
     public static String padRight(String s, int n, char c) {
         return String.format("%1$-" + n + "s", s).replace(' ', c);

@@ -19,13 +19,14 @@
 
 package org.entcore.directory.services;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-
-import java.util.Arrays;
-import java.util.List;
 
 public interface UserBookService {
 
@@ -34,5 +35,9 @@ public interface UserBookService {
 	void update(String userId, JsonObject userBook, Handler<Either<String, JsonObject>> result);
 
 	void get(String userId, Handler<Either<String, JsonObject>> result);
+
+	void getAvatar(String fileId, Optional<String> size, String defaultAVatar, HttpServerRequest request);
+
+	public void cleanAvatarCache(List<String> usersId, final Handler<Boolean> handler);
 
 }

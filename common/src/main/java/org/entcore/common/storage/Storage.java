@@ -62,6 +62,10 @@ public interface Storage {
 
 	void stats(Handler<AsyncResult<BucketStats>> handler);
 
+	void fileStats(String id, Handler<AsyncResult<FileStats>> handler);
+
 	FileValidator getValidator();
+
+	void findByFilenameEndingWith(String endsWith, Handler<AsyncResult<JsonArray>> handler);
 
 }

@@ -19,6 +19,46 @@
 
 package org.entcore.directory.controllers;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
+import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+
+import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.IgnoreCsrf;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.pojo.Users;
+import org.entcore.directory.security.AddFunctionFilter;
+import org.entcore.directory.security.AdmlOfStructures;
+import org.entcore.directory.security.AdmlOfStructuresByUAI;
+import org.entcore.directory.security.AdmlOfTwoUsers;
+import org.entcore.directory.security.AdmlOfUser;
+import org.entcore.directory.security.AnyAdminOfUser;
+import org.entcore.directory.security.RelativeStudentFilter;
+import org.entcore.directory.security.TeacherOfUser;
+import org.entcore.directory.security.UserAccess;
+import org.entcore.directory.services.UserBookService;
+import org.entcore.directory.services.UserService;
+import org.vertx.java.core.http.RouteMatcher;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,38 +70,12 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
-
 import fr.wseduc.webutils.request.RequestUtils;
-import org.entcore.common.appregistry.ApplicationUtils;
-import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.user.DefaultFunctions;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.pojo.Users;
-import org.entcore.directory.security.*;
-import org.entcore.directory.services.UserBookService;
-import org.entcore.directory.services.UserService;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
-import java.io.IOException;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.*;
-import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 
 public class UserController extends BaseController {
@@ -70,6 +84,12 @@ public class UserController extends BaseController {
 	private UserBookService userBookService;
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
+
+	@Override
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+	}
 
 	@Put("/user/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

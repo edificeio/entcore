@@ -13,5 +13,6 @@
         "default-avatar": "no-avatar.svg",
         "default-mood" : "default",
         "hobbies": ["sport","cinema", "animals", "music", "places"]
-    }
+    },
+	"avatar-path":"/srv/storage/avatars/"
 }
