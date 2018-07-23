@@ -25,11 +25,15 @@ import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.utils.StringUtils;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.FileSystemProps;
 import io.vertx.core.http.HttpServerFileUpload;
@@ -244,6 +248,44 @@ public class FileStorage implements Storage {
 			});
 		} catch (FileNotFoundException e) {
 			handler.handle(new JsonObject().put("status", "error").put("message", "invalid.path"));
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
+		try {
+			String path = StringUtils.substringBeforeLast(getPath(name), File.separator);
+			fs.readDir(path, String.format("(.*)%s", name), event -> {
+				if (event.succeeded()) {
+					JsonArray json = event.result().stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+					handler.handle(new DefaultAsyncResult<>(json));
+				} else {
+					handler.handle(new DefaultAsyncResult<>(event.cause()));
+					log.error(event.cause().getMessage(), event.cause());
+				}
+			});
+		} catch (FileNotFoundException e) {
+			handler.handle(new DefaultAsyncResult<>(e));
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void fileStats(String id, Handler<AsyncResult<FileStats>> handler) {
+		try {
+			fs.props(getPath(id), res -> {
+				if (res.succeeded()) {
+					FileProps props = res.result();
+					handler.handle(new DefaultAsyncResult<>(
+							new FileStats(props.creationTime(), props.lastModifiedTime(), props.size())));
+				} else {
+					handler.handle(new DefaultAsyncResult<>(res.cause()));
+					log.error(res.cause().getMessage(), res.cause());
+				}
+			});
+		} catch (FileNotFoundException e) {
+			handler.handle(new DefaultAsyncResult<>(e));
 			log.warn(e.getMessage(), e);
 		}
 	}

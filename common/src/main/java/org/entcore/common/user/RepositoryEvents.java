@@ -36,4 +36,7 @@ public interface RepositoryEvents {
 
 	default void transition(JsonObject structure) {}
 
+	default void mergeUsers(String keepedUserId, String deletedUserId) {
+	};
+
 }
