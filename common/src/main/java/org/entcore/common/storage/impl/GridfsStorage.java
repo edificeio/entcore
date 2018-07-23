@@ -27,6 +27,7 @@ import fr.wseduc.webutils.http.ETag;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerFileUpload;
 import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageException;
 import io.vertx.core.AsyncResult;
@@ -62,6 +63,18 @@ public class GridfsStorage implements Storage {
 	private final Vertx vertx;
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(GridfsStorage.class);
+
+	@Override
+	public void fileStats(String id, Handler<AsyncResult<FileStats>> handler) {
+		// TODO to implement
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+
+	@Override
+	public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
+		// TODO to implement
+		throw new UnsupportedOperationException("not yet implemented");
+	}
 
 	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
 		this(vertx, eb, gridfsAddress, "fs");
