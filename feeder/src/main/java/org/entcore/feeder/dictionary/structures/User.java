@@ -364,18 +364,23 @@ public class User {
 				.put("date", System.currentTimeMillis() - delay)
 				.put("limit", limit);
 		String query =
-				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
 				"OPTIONAL MATCH (fgroup:FunctionalGroup) " +
 				"WHERE fgroup.externalId IN u.groups " +
+				"OPTIONAL MATCH (mgroup:ManualGroup) " +
+				"WHERE mgroup.id IN b.IN_OUTGOING " +
 				"OPTIONAL MATCH (c:Class) " +
 				"WHERE c.externalId IN u.classes " +
 				"OPTIONAL MATCH (s:Structure) " +
 				"WHERE s.externalId IN u.structures " +
-				"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, u.externalId as externalId, u.displayName as displayName, " +
+				"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+				"u.deleteDate as deleteDate, u.birthDate as birthDate," +
+				"u.externalId as externalId, u.displayName as displayName, " +
 				"HEAD(u.profiles) as type, " +
 				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
 				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
+				"CASE WHEN mgroup IS NULL THEN [] ELSE collect(distinct mgroup.id) END as manualGroupsIds, " +
 				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds " +
 				"LIMIT {limit} ";
 		transactionHelper.add(query, params);

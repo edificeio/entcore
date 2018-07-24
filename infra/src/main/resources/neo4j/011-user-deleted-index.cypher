@@ -1,0 +1,2 @@
+CREATE INDEX ON :Backup(IN_OUTGOING);
+CREATE INDEX ON :ManualGroup(id);
