@@ -259,6 +259,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			} else {
 				final String userId = UUID.randomUUID().toString();
 				p.put("id", userId);
+				p.put("structures", new JsonArray().add(structureExternalId));
 				persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 				teachers.put(id, userId);
 			}
