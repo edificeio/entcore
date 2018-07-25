@@ -327,6 +327,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 							TransactionHelper tx = TransactionManager.getTransaction();
 							persEducNat.setTransactionHelper(tx);
 							for (JsonObject p : notFoundPersEducNat.values()) {
+								p.put("structures", new JsonArray().add(structureExternalId));
 								if ("Teacher".equals(p.getJsonArray("profiles").getString(0))){
 									persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
 								} else {
