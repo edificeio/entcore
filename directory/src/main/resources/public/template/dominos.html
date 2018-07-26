@@ -28,51 +28,53 @@
 	</div>
 </div>
 
-<!--Users no results screen-->
-<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
-	<div class="spacer-large"></div>
-	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
-	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
-	<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.users.footer</i18n></p>
-</div>
+<div ng-if="!currentSchool">
+	<!--Users no results screen-->
+	<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.users.footer</i18n></p>
+	</div>
 
-<!--Groups no results screen-->
-<div class="emptyscreen row reduce-block-six" ng-if="search.index == 1 && groups.all.length === 0 && !display.loading && groups.searched">
-	<div class="spacer-large"></div>
-	<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.groups.header</i18n></h2>
-	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
-	<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.groups.footer</i18n></p>
-</div>
+	<!--Groups no results screen-->
+	<div class="emptyscreen row reduce-block-six" ng-if="search.index == 1 && groups.all.length === 0 && !display.loading && groups.searched">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.groups.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.noresults.groups.footer</i18n></p>
+	</div>
 
-<!-- Users emptyscreen -->
-<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !display.loading">
-	<div class="spacer-large"></div>
-	<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
-	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-	<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
-</div>
+	<!-- Users emptyscreen -->
+	<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !display.loading">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
+	</div>
 
-<!-- Groups emptyscreen -->
-<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
-	<div class="spacer-large"></div>
-	<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
-	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-	<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
-</div>
+	<!-- Groups emptyscreen -->
+	<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.groups.footer</i18n></p>
+	</div>
 
-<!-- Favorites emptyscreen -->
-<div class="emptyscreen" ng-if="search.index == 2 && !currentFavorite">
-	<div class="spacer-large"></div>
-	<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
-	<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-	<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
-</div>
+	<!-- Favorites emptyscreen -->
+	<div class="emptyscreen" ng-if="search.index == 2 && !currentFavorite">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
+	</div>
 
-<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite && !currentGroup">
-	<h2 ng-click="backToSearch()">
-		<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
-	</h2>
-</a>
+	<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite && !currentGroup">
+		<h2 ng-click="backToSearch()">
+			<i class="back"></i> <i18n>userBook.directory.backToSearch</i18n>
+		</h2>
+	</a>
+</div>
 
 <div class="dominos centered-text">
 
