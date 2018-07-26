@@ -1189,6 +1189,9 @@ var skin = (function(){
 						disableNotifications: true,
 						success: function(override){
 							that.templateMapping = override;
+							if (window.template) {
+								window.template.loadPortalTemplates();
+							}
 						}
 					});
 				}
