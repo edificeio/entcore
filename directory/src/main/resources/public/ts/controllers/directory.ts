@@ -27,6 +27,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.currentFavorite = null;
 	$scope.lang = lang;
 	$scope.lightbox = {};
+	$scope.lightboxAddOneFavorite = {};
 	$scope.currentDeletingFavorite = null;
 
 	$scope.search = {
@@ -42,6 +43,22 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			this.field = '';
 		}
 	};
+
+	$scope.create = {
+		favorite: {
+			userName: '',
+			name: '',
+			members: [],
+			search: '',
+			filters: {
+				structures: [],
+				classes: [],
+				profiles: [],
+				functions: [],
+				types: [],
+			}
+		}
+	}
 
 	$scope.increaseSearchSize = function(){
 		$scope.search.maxLength += 50;
@@ -62,13 +79,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	route({
-		viewUser: function(params){
+		viewUser: async function(params){
 			$scope.currentUser = new directory.User({ id: params.userId });
 			$scope.currentUser.open();
 			$scope.users = directory.directory.users;
 			template.open('page', 'profile');
 			template.open('details', 'user-infos');
 			$scope.title = 'profile';
+			await $scope.createAllFavorites();
 		},
 		directory: async function(){
 			$scope.display.loading = false;
@@ -78,14 +96,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.currentSchool = undefined;
 			directory.directory.users.all = [];
 			directory.directory.groups.all = [];
-			directory.directory.favorites.all = [];
 			directory.favoriteForm.users.all = [];
 			directory.network.schools.all = [];
-			await directory.directory.favorites.getAll();
 			$scope.users = directory.directory.users;
 			$scope.groups = directory.directory.groups;
-			$scope.favorites = directory.directory.favorites;
-			$scope.favorites.all = $scope.favorites.all.sort($scope.sortByName);
+			await $scope.createAllFavorites();
 			$scope.favoriteFormUsersGroups = [];
 			if (!ui.breakpoints.checkMaxWidth("wideScreen")) {
 				await $scope.selectFirstFavorite();
@@ -116,23 +131,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				users: $scope.generateCriteriaOptions(),
 				groups: $scope.generateCriteriaOptions()
 			};
-
-			$scope.create = {
-				favorite: {
-					userName: '',
-					name: '',
-					members: [],
-					search: '',
-					filters: {
-						structures: [],
-						classes: [],
-						profiles: [],
-						functions: [],
-						types: [],
-					},
-					options: $scope.generateCriteriaOptions()
-				}
-			}
+			$scope.create.favorite.options = $scope.generateCriteriaOptions();
 
 			template.open('page', 'directory');
 			template.close('list');
@@ -183,6 +182,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	directory.directory.on('users.change', function(){
 		$scope.$apply('users');
 	});
+
+	$scope.createAllFavorites = async function(dateString){
+		directory.directory.favorites.all = [];
+		await directory.directory.favorites.getAll();
+		$scope.favorites = directory.directory.favorites;
+		$scope.favorites.all = $scope.favorites.all.sort($scope.sortByName);
+	};
 
 	$scope.generateCriteriaOptions = function() {
 		return {
@@ -347,12 +353,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.tryAddFavorite = function(favorite) {
 		$scope.display.showUserCreationFavorite = false;
 		$scope.create.favorite.userName = '';
-		$scope.lightbox.show = true;
+		$scope.lightboxAddOneFavorite.show = true;
 		template.open('lightbox', 'add-user-favorite');
 	};
 
 	$scope.addToFavorite = async function(favorite) {
 		$scope.display.loading = true;
+		await favorite.getUsersAndGroups();
 		var newMember = $scope.currentUser ? $scope.currentUser : $scope.currentGroup;
 		var members = favorite.groups.concat(favorite.users);
 		var alreadyIn = false;
@@ -367,7 +374,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			await favorite.save(favorite.name, members, true);
 		}
 		$scope.display.loading = false;
-		$scope.lightbox.show = false;
+		$scope.lightboxAddOneFavorite.show = false;
 		template.close('lightbox');
 		if (!alreadyIn) {
 			$scope.$apply();
@@ -382,7 +389,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.favorites.push(favorite);
 		$scope.favorites.all.sort($scope.sortByName);
 		$scope.display.loading = false;
-		$scope.lightbox.show = false;
+		$scope.lightboxAddOneFavorite.show = false;
 		template.close('lightbox');
 		$scope.$apply();
 		$scope.notifyAddUser(favorite.name);
