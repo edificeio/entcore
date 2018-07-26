@@ -139,10 +139,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.title = 'directory';
 			$scope.$apply();
 		},
-		myClass: function(){
+		myClass: async function(){
 			if($scope.network !== undefined){
 				return;
 			}
+			await $scope.createAllFavorites();
 			$scope.network = directory.network;
 			directory.network.schools.sync();
 			directory.network.schools.one('sync', function(){
