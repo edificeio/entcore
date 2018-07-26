@@ -22,24 +22,39 @@ var lang = window.idiom;
 var template = {
     viewPath: '/' + appPrefix + '/public/template/',
     containers: {},
-    open: function(name, view) {
-        var path = this.viewPath + view + '.html';
-        var folder = appPrefix;
-        if (appPrefix === '.') {
-            folder = 'portal';
-        }
-        if (skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1) {
-            path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html';
-        }
+    getCompletePath(view, isPortal) {
+		const split = $('#context').attr('src').split('-');
+		const hash = split[split.length - 1].split('.')[0];
+		var path = this.viewPath + view + '.html?hash=' + hash;
+		var folder = appPrefix;
+		if(appPrefix === '.' || !!isPortal){
+			folder = 'portal';
+		}
+		if(skin.templateMapping[folder] && skin.templateMapping[folder].indexOf(view) !== -1){
+			path = '/assets/themes/' + skin.skin + '/template/' + folder + '/' + view + '.html?hash=' + hash;
+		}
+		return path;
+	},
+	/**
+	 * Enable overriding template into portal directive 
+	 */
+	loadPortalTemplates(){
+		this.containers
+		this.containers['portal'] = {};
+		this.containers.portal['conversationUnread'] = this.getCompletePath('conversation-unread', true);
+	},
+	open: function(name, view){
+		if(!view){
+			view = name;
+		}
+		this.containers[name] = this.getCompletePath(view);
 
-        this.containers[name] = path;
-
-        if (this.callbacks && this.callbacks[name]) {
-            this.callbacks[name].forEach(function(cb) {
-                cb();
-            });
-        }
-    },
+		if(this.callbacks && this.callbacks[name]){
+			this.callbacks[name].forEach(function(cb){
+				cb();
+			});
+		}
+	},
     contains: function(name, view) {
         return this.containers[name] === this.viewPath + view + '.html';
     },
@@ -1481,6 +1496,9 @@ module.directive('portal', function($compile) {
             Http.prototype.bind('disconnected', function() {
                 window.location.href = '/';
             })
+            return function postLink( scope, element, attributes, controller, transcludeFn ) {
+				scope.template = template;
+			};
         }
     }
 });
