@@ -17,7 +17,7 @@
     "export.hi": "Bonjour,",
     "export.info": "Vous avez demandé un export de vos données.",
     "export.regards": "Cordialement,",
-    "export.signature": "L'équipe Ent-Core",
+    "export.signature": "L'équipe Open Digital Education",
     "exportId.not.found": "L'export demandé n'existe pas.",
     "get.export.path.error": "Erreur lors de la recherche de l'export.",
     "zip.export.error": "Erreur durant la création de l'archive"
