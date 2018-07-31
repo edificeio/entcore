@@ -12,8 +12,12 @@
             <div class="multiline-ellipsis-three">
                 <span>[[user.displayName]]</span>
             </div>
-            <div class="bottom-locked" ng-if="user.mood != 'default'">
-                <i class="[[user.mood]]"></i>
+            <div class="bottom-locked">
+                <i class="[[user.mood]]" ng-if="user.mood != 'default'"></i>
+                <a ng-href="/conversation/conversation#/write-mail/[[user.id]]"
+                    ng-if="classView == true">
+                    <i class="send-mail"></i>
+                </a>
             </div>
         </div>
     </div>

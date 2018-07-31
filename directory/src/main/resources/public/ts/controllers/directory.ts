@@ -89,6 +89,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			await $scope.createAllFavorites();
 		},
 		directory: async function(){
+			$scope.classView = false;
 			$scope.display.loading = false;
 			$scope.display.loadingmobile = false;
 			$scope.display.showCloseMobile = false;
@@ -140,6 +141,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.$apply();
 		},
 		myClass: async function(){
+			$scope.classView = true;
 			if($scope.network !== undefined){
 				return;
 			}
