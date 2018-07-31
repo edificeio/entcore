@@ -183,6 +183,7 @@
   "share.mysharebookmark": "Donner un nom à mon favori",
   "share.mysharebookmarks": "mes favoris de partage",
   "share.notify.success": "Partage effectué",
+  "share.notify.error": "Une erreur s'est produite lors du partage",
   "share.tip.addFavorite": "Vos favoris de partage s'affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l'annuaire",
   "stats": "Statistiques",
   "statistics": "Statistiques",
