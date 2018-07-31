@@ -79,7 +79,15 @@
 <div class="dominos centered-text">
 
 	<!-- Users -->
-	<div class="item user" ng-repeat="user in users.match(search.text) | orderBy:'displayName' | limitTo:search.maxLength" ng-if="search.index === 0 && !display.loading">
+	<div class="item user" 
+		ng-repeat="user in users.match(search.text) | orderBy: 'displayName' | limitTo:search.maxLength" 
+		ng-if="search.index === 0 && !display.loading && !classView">
+		<div data-ng-include="template.containers.dominosUser"></div>
+	</div>
+
+	<div class="item user" 
+		ng-repeat="user in users.match(search.text) | limitTo:search.maxLength" 
+		ng-if="search.index === 0 && !display.loading && classView == true">
 		<div data-ng-include="template.containers.dominosUser"></div>
 	</div>
 
