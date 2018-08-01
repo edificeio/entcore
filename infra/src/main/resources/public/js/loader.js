@@ -180,6 +180,28 @@ Model.prototype.build = function(){};
 var model = new Model();
 
 var loader = (function(){
+	function overrideConfig(configurations){
+		if(typeof window.overrideLoaderConfig == "function"){
+			var wrapper = {
+				removeDep:function(name){
+					configurations.portal = configurations.portal.filter(function(dep){ 
+						return name != dep.path;
+					})
+				},
+				prependDep:function(name){
+					configurations.portal.unshift({path:name})
+				},
+				appendDep:function(name){
+					configurations.portal.push({path:name})
+				},
+				getDeps:function(){
+					return configurations.portal;
+				}
+			}
+			window.overrideLoaderConfig(wrapper)
+		}
+	}
+
 	var configurations = {
 		'portal': [
 			{ path: 'moment+langs.js' },
@@ -195,6 +217,7 @@ var loader = (function(){
 			{ path: 'humane.min.js' },
 			{ path: 'angular-app.js' }]
 	};
+	overrideConfig(configurations)
 
 	var loadedScripts = {};
 
