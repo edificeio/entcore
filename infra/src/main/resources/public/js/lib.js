@@ -1575,8 +1575,8 @@ var calendar = {
         model.calendar = cal;
     },
 	getHours: function(scheduleItem, day){
-		var startTime = 7;
-		var endTime = 20;
+		var startTime = 0;
+		var endTime = 24;
 
 		if(scheduleItem.beginning.dayOfYear() === day.index){
 			startTime = scheduleItem.beginning.hours();
