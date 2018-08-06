@@ -55,6 +55,12 @@ export const directory = {
 				this.trigger('sync');
 			}.bind(this));
 		};
+		this.getProfileName = function() {
+			return lang.translate("directory." + this.profiles[0]);
+		};
+		this.getProfile = function() {
+			return ui.profileColors.match(this.profiles[0]);
+		};
 	},
 	Group: function(data?){
 		this.users = [];
