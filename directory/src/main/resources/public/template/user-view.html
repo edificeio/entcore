@@ -32,9 +32,13 @@
 			</div>
 		</div>
 
-		<h2>[[account.displayName]]</h2>
+		<h2 class="no-margin">[[account.displayName]]</h2>
+		<div class="flex-row">
+			<span class="cell circle square-mini top-spacing-small right-spacing-small" ng-class="account.getProfile()"></span>
+			<span class="cell low-importance">[[ account.getProfileName() ]]</span>
+		</div>
 
-		<form class="sheet small-text" name="userForm" novalidate>
+		<form class="sheet small-text top-spacing-twice" name="userForm" novalidate>
 
 			<div class="row">
 				<div class="four cell">
