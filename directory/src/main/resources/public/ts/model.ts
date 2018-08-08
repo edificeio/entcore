@@ -31,29 +31,28 @@ export const directory = {
 		this.updateData(data);
 		this.relatives = [];
 
-		this.open = function(){
+		this.open = async function(){
 			var that = this;
-			oldHttp().get('/userbook/api/person?id=' + this.id + '&type=' + this.type).done(function(data){
-				if(!data.result[0]){
-					this.id = undefined;
-					return;
-				}
-				data.result[0].hobbies = _.filter(data.result[0].hobbies, function(hobby){
-					return hobby.values
-				})
-				data.result[0].relatives = _.map(data.result, function(item){
-					return new directory.User({ displayName: item.relatedName, id: item.relatedId, type: item.relatedType });
-				})
-				.filter(function(relative){
-					return relative.id;
-				});
-				data.result[0].relatives = _.filter(data.result[0].relatives, function(user){
-					return user.id !== '';
-				});
+			var data = (await http.get('/userbook/api/person?id=' + this.id + '&type=' + this.type)).data;
+			if(!data.result[0]){
+				this.id = undefined;
+				return;
+			}
+			data.result[0].hobbies = _.filter(data.result[0].hobbies, function(hobby){
+				return hobby.values
+			})
+			data.result[0].relatives = _.map(data.result, function(item){
+				return new directory.User({ displayName: item.relatedName, id: item.relatedId, type: item.relatedType });
+			})
+			.filter(function(relative){
+				return relative.id;
+			});
+			data.result[0].relatives = _.filter(data.result[0].relatives, function(user){
+				return user.id !== '';
+			});
 
-				this.updateData(data.result[0]);
-				this.trigger('sync');
-			}.bind(this));
+			this.updateData(data.result[0]);
+			this.trigger('sync');
 		};
 		this.getProfileName = function() {
 			return lang.translate("directory." + this.profiles[0]);

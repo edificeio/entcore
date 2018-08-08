@@ -17,6 +17,18 @@
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  ~
  -->
+ <div class="row reduce-block-six" ng-if="account.schools.length">
+	<article>
+        <h1 translate key="userBook.profile.schools"></h1>
+		<div ng-repeat="school in account.schools | orderBy:'name'">
+			<h3>[[school.name]]</h3>
+			<strong ng-if="school.classes && school.classes.length"><i18n>userBook.profile.classes</i18n></strong>
+			<ul ng-if="school.classes && school.classes.length" class="list">
+				<li ng-repeat="class in school.classes track by $index">[[class]]</li>
+			</ul>
+		</div>
+	</article>
+</div>
 
 <div class="row rigid-grid" workflow="directory.showMoodMotto">
 	<div class="four cell twelve-mobile mood" style="height: 100px;">
