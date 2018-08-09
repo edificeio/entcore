@@ -63,7 +63,8 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
         "Timeline",
         "Xiti",
         "Searchengine",
-        "Signets"
+        "Signets",
+        "Supportpivot"
     ];
 
     constructor(
