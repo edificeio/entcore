@@ -82,7 +82,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     [emptyWarning]="'import.fieldsChecking.warning.ignore.1'"
                 >
                 </mappings-table>
-            </panel-section>
+            </panel-section>    
         </step>
         <step #step3 name="{{'import.classesChecking' | translate }}" [class.active]="step3.isActived">
             <h2>{{ 'import.classesChecking' | translate }}
@@ -99,7 +99,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                         [messages]="['importClassesChecking.'+ (profile == 'Student' ? 'student' : 'generic') + '.warning']"></message-sticker>
                 </span>
 
-                <mappings-table 
+                <mappings-table
                     [headers]="['import.classFromFile','import.classToMap']"
                     [mappings]="classes.mappings[profile]"
                     [availables]="classes.availableClasses[profile]"
@@ -244,6 +244,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             </button>
             <button
                 [routerLink]="'/admin/' + importInfos.structureId + '/users'"
+                [queryParams]="{sync: true}"
                 [title]="'import.finish.usersList' | translate">
                 {{ 'import.finish.usersList' | translate }}
             </button>
