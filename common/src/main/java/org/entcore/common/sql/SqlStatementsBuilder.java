@@ -74,7 +74,7 @@ public class SqlStatementsBuilder {
 	}
 
 	public SqlStatementsBuilder insert(String table, JsonArray fields, JsonArray values, String returning) {
-		if (table != null && !table.trim().isEmpty()) {
+		if (table != null && !table.trim().isEmpty() && values != null && !values.isEmpty()) {
 			JsonObject statement = new JsonObject()
 					.put("action", "insert")
 					.put("table", table)
