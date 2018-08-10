@@ -34,6 +34,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
@@ -260,9 +261,11 @@ public class CommunicationController extends BaseController {
 					return;
 				}
 				String customReturn =
-						"MATCH (s:Group { id : {groupId}})<-[:IN]-(visibles) " +
-						"RETURN DISTINCT HEAD(visibles.profiles) as type, visibles.id as id, " +
-						"visibles.displayName as displayName, visibles.login as login " +
+						"WITH COLLECT(visibles.id) as vIds " +
+						"MATCH (s:Group { id : {groupId}})<-[:IN]-(u:User) " +
+						"WHERE u.id IN vIds " +
+						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, " +
+						"u.displayName as displayName, u.login as login " +
 						"ORDER BY type DESC, displayName ";
 				final JsonObject params = new JsonObject().put("groupId", groupId);
 				communicationService.visibleUsers(user.getUserId(), null, null, true, true, false, null,
