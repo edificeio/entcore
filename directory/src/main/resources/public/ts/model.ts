@@ -341,7 +341,7 @@ export const directory = {
 				
 				var body = {
 					search: search.toLowerCase(),
-					types: filters.types ? filters.types : ["Group"]
+					types: filters.types.length > 0 ? filters.types : ["Group"]
 				};
 				
 				if (filters.structures)
