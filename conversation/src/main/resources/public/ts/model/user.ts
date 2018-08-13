@@ -33,6 +33,11 @@ export class User implements Selectable {
         return true;
     }
 
+    async findGroupData(): Promise<any> {
+        const response = await http.get('/directory/group/' + this.id);
+        Mix.extend(this, { id: this.id, name: response.data.name, isGroup: true });
+    }
+
     mapUser(displayNames, id) {
         return _.map(_.filter(displayNames, function (user) {
             return user[0] === id;
