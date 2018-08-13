@@ -584,6 +584,17 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
+	public void listChildren(String userId, Handler<Either<String, JsonArray>> handler) {
+		final String query =
+				"MATCH (n:User {id : {id}})<-[:RELATED]-(child:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH (child)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WITH COLLECT(distinct c.name) as classesNames, s, child " +
+				"RETURN s.name as structureName, COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId, classesNames : classesNames}) as children ";
+		final JsonObject params = new JsonObject().put("id", userId);
+		neo.execute(query, params, validResultHandler(handler));
+	}
+
+	@Override
 	public void list(String groupId, boolean itSelf, String userId,
 			final Handler<Either<String, JsonArray>> handler) {
 		String condition = (itSelf || userId == null) ? "" : "AND u.id <> {userId} ";
