@@ -375,6 +375,14 @@ public class UserController extends BaseController {
 		userService.listFunctions(userId, arrayResponseHandler(request));
 	}
 
+	@Get("/user/:userId/children")
+	@ResourceFilter(UserAccess.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void listChildren(final HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		userService.listChildren(userId, arrayResponseHandler(request));
+	}
+
 	@Post("/user/group/:userId/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addGroup(final HttpServerRequest request) {
