@@ -40,4 +40,7 @@ public interface GroupService {
 	void addUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
 	
 	void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
+
+	void getInfos(String groupId, Handler<Either<String,JsonObject>> handler);
+
 }

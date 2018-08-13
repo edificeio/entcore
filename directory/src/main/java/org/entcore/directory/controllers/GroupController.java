@@ -181,4 +181,19 @@ public class GroupController extends BaseController {
 			});
 		}
 	}
+
+	@Get("/group/:groupId")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getGroup(HttpServerRequest request) {
+		groupService.getInfos(request.params().get("groupId"), r -> {
+			if (r.isRight()) {
+				JsonObject res = r.right().getValue();
+				UserUtils.translateGroupsNames(new JsonArray().add(res), I18n.acceptLanguage(request));
+				renderJson(request, res);
+			} else {
+				leftToResponse(request, r.left());
+			}
+		});
+	}
+
 }
