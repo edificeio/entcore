@@ -150,4 +150,13 @@ public class DefaultGroupService implements GroupService {
 		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
+	@Override
+	public void getInfos(String groupId, Handler<Either<String, JsonObject>> handler) {
+		final String query =
+				"MATCH (g:Group {id:{id}}) " +
+				"RETURN g.id as id, g.name as name ";
+		final JsonObject params = new JsonObject().put("id", groupId);
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
 }
