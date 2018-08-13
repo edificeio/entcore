@@ -35,13 +35,20 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('main', 'mail-actions/write-mail');
                 $scope.constructNewItem();
 
-                if(_.isString(params.userId)){
-                    let user = new User(params.userId);
-                    await user.findData();
-                    $scope.addUser(user);
-                }else if(params.userId !== undefined) {
-                    for(let i = 0; i < params.userId.length; i++){
-                        let user = new User(params.userId[i]);
+                if(_.isString(params.id)){
+                    if (!params.type || params.type === 'User') {
+                        let user = new User(params.id);
+                        await user.findData();
+                        $scope.addUser(user);
+                    }
+                    else if (params.type === 'Group') {
+                        let group = new User(params.id);
+                        await group.findGroupData();
+                        $scope.addUser(group);
+                    }
+                }else if(params.id !== undefined) {
+                    for(let i = 0; i < params.id.length; i++){
+                        let user = new User(params.id[i]);
                         await user.findData();
                         $scope.addUser(user);
                     }
