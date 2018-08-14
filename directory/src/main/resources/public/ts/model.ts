@@ -30,6 +30,7 @@ export const directory = {
 		}
 		this.updateData(data);
 		this.relatives = [];
+		this.profiles = [];
 
 		this.open = async function(){
 			var that = this;
@@ -50,8 +51,19 @@ export const directory = {
 			data.result[0].relatives = _.filter(data.result[0].relatives, function(user){
 				return user.id !== '';
 			});
+			if(!data.result[0]){
+				this.id = undefined;
+				return;
+			}
 
 			this.updateData(data.result[0]);
+			this.trigger('sync');
+		};
+		this.loadChildren = async function() {
+			var data = {
+				childrenStructure: (await http.get('/directory/user/' + this.id + '/children')).data
+			};
+			this.updateData(data);
 			this.trigger('sync');
 		};
 		this.getProfileName = function() {

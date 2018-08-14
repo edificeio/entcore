@@ -558,7 +558,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.displayFamily = function(currentUser) {
-		return currentUser && currentUser.relatives.length && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+		return currentUser && currentUser.relatives.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};
 
 	$scope.onCloseSearchModule = function() {

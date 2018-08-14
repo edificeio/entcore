@@ -20,27 +20,28 @@ import { directory } from '../model';
 
 export const accountController = ng.controller('MyAccount', ['$scope', 'route', ($scope, route) => {
 	route({
-		editUserInfos: function(params){
+		editUserInfos: async function(params){
 			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: params.id, edit: { infos: true } });
-			init();
+			await init();
 			$scope.openView('user-edit', 'user');
 		},
-		editUser: function(params){
+		editUser: async function(params){
 			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: params.id, edit: { userbook: true, infos: true } });
-			init();
+			await init();
 			$scope.openView('user-edit', 'user');
 			$scope.openView('userbook-edit', 'userbook');
 		},
-		themes: function(){
+		themes: async function(){
 			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
 			template.open('account/main', 'account/themes');
-			init();
+			await init();
 		},
-		editMe: function(params){
+		editMe: async function(params){
 			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
+			await init();
 			if(model.me.type !== 'ELEVE'){
 				directory.account.edit.infos = true;
 				$scope.openView('user-edit', 'user');
@@ -48,8 +49,6 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			else{
 				$scope.openView('user-view', 'user');
 			}
-			init();
-
 			$scope.openView('userbook-edit', 'userbook');
 		}
 	});
@@ -104,6 +103,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	async function init(){
 		await directory.account.open();
+		await directory.account.loadChildren();
 		$scope.me = model.me;
 		directory.account.on('change', function(){
 			$scope.$apply();
@@ -286,6 +286,10 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.displayPassword = function(account, me) {
 		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
 	}
+	
+	$scope.displayFamily = function(currentUser) {
+		return currentUser && currentUser.relatives.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	};
 
 	$scope.generateMergeKey = function() {
 		directory.account.generateMergeKey();

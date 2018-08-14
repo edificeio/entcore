@@ -30,6 +30,28 @@
 	</article>
 </div>
 
+<div class="row reduce-block-six" ng-if="displayFamily(account)">
+	<article class="row">
+		<h1 translate content="userBook.profile.family"></h1>
+		<content-divider
+			ng-model="account.childrenStructure"
+			order="structureName">
+			<div>
+				<strong class="cell-ellipsis">[[content.structureName]]</strong>
+				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
+					<div class="cell round bg-white square-medium right-spacing">
+						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
+					</div>
+					<div>
+						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
+					</div>
+				</div>
+			</div>
+		</content-divider>
+	</article>
+</div>
+
 <div class="row rigid-grid" workflow="directory.showMoodMotto">
 	<div class="four cell twelve-mobile mood" style="height: 100px;">
 
