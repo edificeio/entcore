@@ -431,6 +431,22 @@ export class Mail implements Selectable {
         await http.delete("message/" + this.id + "/attachment/" + attachment.id);
         quota.refresh();
     }
+
+    async addFavorite(id) {
+        if (!this.to) {
+            this.to = [];
+        }
+
+        var data = (await http.get('/directory/sharebookmark/' + id)).data;
+        data.groups.forEach((element) => {
+            let group = new User(element.id, element.name, null, true);
+            this.to.push(group);
+        });
+        data.users.forEach((element) => {
+            let user = new User(element.id, element.displayName, element.profile, false);
+            this.to.push(user);
+        });
+    }
 }
 
 export class Mails {
