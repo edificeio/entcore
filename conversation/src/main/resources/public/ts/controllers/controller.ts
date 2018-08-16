@@ -46,6 +46,9 @@ export let conversationController = ng.controller('ConversationController', [
                         await group.findGroupData();
                         $scope.addUser(group);
                     }
+                    else if (params.type === 'Favorite') {
+                        await $scope.state.newItem.addFavorite(params.id);
+                    }
                 }else if(params.id !== undefined) {
                     for(let i = 0; i < params.id.length; i++){
                         let user = new User(params.id[i]);
