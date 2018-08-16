@@ -324,6 +324,7 @@
   "portal.emptyscreen.rotatedevice.title": "Revenez au paysage !",
   "portal.emptyscreen.rotatedevice.description": "Vous pourrez profiter de cette fonctionalité sur un écran plus large !",
   "portal.enter.criterias.search": "Saisissez les critères de votre recherche pour afficher des résultats.",
+  "portal.groups": "groupe(s)",
   "portal.group.added" : "Groupes ajoutés",
   "portal.group.none.added" : "Aucun groupe ajouté.",
   "portal.select.users.criterias": "Sélectionnez les utilisateurs à ajouter depuis la liste.",

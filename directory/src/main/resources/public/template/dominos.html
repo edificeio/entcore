@@ -129,13 +129,29 @@
 
 	<!-- Favorites -->
 	<div ng-if="search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
-		<div class="flex-row justify-between">
-			<h2 class="left-text">[[ currentFavorite.name ]]</h2>
-
-			<button type="button" ng-click="editFavorite()" class="only-desktop">
-				<i18n>userBook.directory.button.edit.favorite</i18n>
-			</button>
-		</div>
+		<article class="rigid-grid cell twelve small-text">
+			<div class="flex-row justify-between">
+				<div class="left-text">
+					<strong>[[ currentFavorite.name ]]</strong>
+					<!-- <div class="top-spacing-twice left-text italic-text indication">Créée le...</div> -->
+					<div class="top-spacing-twice left-text italic-text indication">[[ currentFavorite.users.length ]] <i18n>portal.users</i18n> - [[ currentFavorite.groups.length ]] <i18n>portal.groups</i18n></div>
+					<div class="flex-row">
+						<div class="action-item">
+							<a ng-href="/conversation/conversation#/write-mail/[[currentFavorite.id]]/Favorite" class="twelve">
+								<i class="send-mail inline"></i>
+								<span><i18n>userBook.directory.favorite.write-message</i18n></span>
+							</a>
+						</div>
+						<div></div>
+					</div>
+				</div>
+				<div class="flex-row align-center">
+					<button type="button" ng-click="editFavorite()" class="only-desktop">
+						<i18n>userBook.directory.button.edit.favorite</i18n>
+					</button>
+				</div>
+			</div>
+		</article>
 
 		<div ng-repeat="group in currentFavorite.groups | orderBy: 'name' | limitTo:search.maxLength" class="item group">
 			<div data-ng-include="template.containers.dominosGroup"></div>
