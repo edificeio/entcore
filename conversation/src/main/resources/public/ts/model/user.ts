@@ -13,11 +13,11 @@ export class User implements Selectable {
     isGroup: boolean;
 
     constructor(id?: string, displayName?: string, profile?: string, isGroup?: boolean){
+        this.id = id;
         this.displayName = displayName;
         this.name = displayName;
         this.profile = profile;
-        this.isGroup = isGroup;
-        this.id = id;
+        this.isGroup = typeof isGroup === 'undefined' ? this.isAGroup() : isGroup;
     }
 
     toString() {
@@ -31,7 +31,8 @@ export class User implements Selectable {
         if (!userData.result[0]) // If group
             return true;
         // If deleted ??
-        Mix.extend(this, { id: that.id, displayName: userData.result[0].displayName });
+        var result = userData.result[0];
+        Mix.extend(this, { id: that.id, displayName: result.displayName, profile: result.type[0] });
 
         return true;
     }
