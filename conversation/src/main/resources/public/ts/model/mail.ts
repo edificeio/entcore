@@ -239,27 +239,8 @@ export class Mail implements Selectable {
     };
 
     async updateAllowReply() {
-        const systemFolder = this.getSystemFolder();
-
-        // Reply
-        var id = systemFolder === "INBOX" ? this.from : this.to[0];
-        var exists;
-        if (!id) // completely deleted user
-            exists = false;
-        else
-            exists = await this.map(id).findData();
-        this.allowReply = exists;
-
-        // Reply all
-        if (exists) {
-            for (let to of this.to) {
-                var receiver = this.map(to);
-                exists = await receiver.findData();
-                if (!exists)
-                    break;
-            }
-        }
-        this.allowReplyAll = exists;
+        this.allowReply = true; // TODO
+        this.allowReplyAll = true; // TODO
     };
 
     async saveAsDraft(): Promise<any> {
@@ -329,21 +310,15 @@ export class Mail implements Selectable {
         this.unread = false;
         let response = await http.get('/conversation/message/' + this.id)
         Mix.extend(this, response.data);
-        this.to = this.to.map(user => (
-            Mix.castAs(User, {
-                id: user,
-                displayName: this.displayNames.find(name => name[0] === user as any)[1]
-            })
-        ));
+        this.to = _.map(this.to, user => {
+            return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
+        });
         if(!this.cc)
             this.cc = [];
         else
-            this.cc = this.cc.map(user => (
-                Mix.castAs(User, {
-                    id: user,
-                    displayName: this.displayNames.find(name => name[0] === user as any)[1]
-                })
-            ));
+            this.cc = _.map(this.cc, user => {
+                return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
+            });
         if(!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
             await this.updateAllowReply();
