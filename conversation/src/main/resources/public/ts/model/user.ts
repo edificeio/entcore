@@ -12,8 +12,11 @@ export class User implements Selectable {
     selected: boolean;
     isGroup: boolean;
 
-    constructor(id?: string, displayName?: string){
+    constructor(id?: string, displayName?: string, profile?: string, isGroup?: boolean){
         this.displayName = displayName;
+        this.name = displayName;
+        this.profile = profile;
+        this.isGroup = isGroup;
         this.id = id;
     }
 
