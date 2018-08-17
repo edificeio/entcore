@@ -1,7 +1,4 @@
-import { Component, 
-    OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges,
-    Input, Output, ViewChild, ViewChildren, QueryList } from '@angular/core'
-import { Mix } from 'entcore-toolkit'
+import { Component, OnDestroy, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core'
 import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { SpinnerService,routing } from '../../core/services'

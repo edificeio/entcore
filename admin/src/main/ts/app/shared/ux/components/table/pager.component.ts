@@ -1,6 +1,4 @@
-import { 
-    ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit,
-    Component, Input, Output, EventEmitter } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core'
 import { BundlesService } from 'sijil'
 
 
