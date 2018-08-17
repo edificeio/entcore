@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, OnDestroy } from '@angular/core'
+import { Component, Input, ElementRef } from '@angular/core'
 
 type EllipsisBehavior = "expand" | "hide";
 

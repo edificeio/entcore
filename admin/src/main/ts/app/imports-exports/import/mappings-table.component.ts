@@ -1,6 +1,6 @@
 import { 
     ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit,
-    Component, Input, OnInit, ComponentRef, ViewChildren, QueryList } from '@angular/core'
+    Component, Input, OnInit, ViewChildren, QueryList } from '@angular/core'
 import { BundlesService } from 'sijil'
 import { ComponentDescriptor, DynamicComponentDirective } from '../../shared/ux/directives'
 import { SimpleSelectComponent } from '../../shared/ux/components'
