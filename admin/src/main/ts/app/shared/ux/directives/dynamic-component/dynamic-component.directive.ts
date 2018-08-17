@@ -29,6 +29,10 @@ export class DynamicComponentDirective {
         }
         for (let attribute in this.componentDesc.data) {
             this.componentRef.instance[attribute] = this.componentDesc.data[attribute];
+            if (attribute == 'hideEvent')
+                this.componentRef.instance.hideEvent.subscribe(e => {
+                    this.destroy();
+                });
         } 
     }
 
@@ -40,7 +44,10 @@ export class DynamicComponentDirective {
     }
 
     destroy():void {
-        this.componentRef.destroy();
+        if (this.componentRef.instance.hideEvent != undefined)
+            this.componentRef.instance.hideEvent.unsubscribe()
+        // this.componentRef.destroy(); => This one usually should work, better to use but do nothing...
+        delete this.componentRef;
         this.vcr.clear();
     }
 }
