@@ -1,4 +1,4 @@
-import { Component, Input,ChangeDetectorRef, ViewChild, OnInit } from '@angular/core'
+import { Component, Input,ChangeDetectorRef, ViewChild, OnInit, EventEmitter } from '@angular/core'
 import { ComponentDescriptor, DynamicComponentDirective } from '../../directives'
 import { BundlesService } from 'sijil'
 import { MessageBoxComponent, MessageType, icons } from './message-box.component'
@@ -44,12 +44,12 @@ export class MessageStickerComponent implements OnInit {
             type: this.type,
             header: this.header, 
             messages:this.messages,
-            position:'absolute'
+            position:'absolute',
+            hideEvent: new EventEmitter<void>()
         });
     }
 
     loadMessageBox() : void {
         this.dComponent.load();
     }
-
 }
