@@ -259,13 +259,13 @@ public class UserUtils {
 								j.put("groupType", gti);
 								if ("ProfileGroup".equals(gti)) {
 									j.put("profile", gp);
-									j.put("sortName", j.getString("name"));
 								}
 								break;
 							}
 						}
 					}
 				}
+				j.put("sortName", j.getString("name"));
 				UserUtils.groupDisplayName(j, acceptLanguage);
 				groups.add(j);
 			} else {
