@@ -223,7 +223,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                             />
                         </td>
                         <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
-                        <td>{{user.profiles?.join(',')}}</td>
+                        <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
                         <td><span ellipsis="expand">{{user.externalId}}</span></td>
                         <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
                     </tr>
@@ -575,6 +575,11 @@ export class ImportCSV implements OnInit, OnDestroy {
             } catch (error) {
                 this.ns.error('import.report.notifyErrorEdit');
             }
+        },
+        getTranslatedProfiles(profiles: Array<string>, translate: Function) {
+            return profiles.map((p) => {
+                return translate(p)
+            }).join(',');
         }
     }
 
