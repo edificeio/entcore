@@ -18,6 +18,7 @@ import { MessageBoxComponent, MessageType, icons } from './message-box.component
         }
         span[message-box-anchor] {
             position: absolute;
+            z-index: 8;
         }
         i { cursor : pointer; }
     `]
