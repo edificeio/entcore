@@ -194,8 +194,12 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                                 </option>
                             </select>
                         </td>
-                        <td (dblclick)="editLastName.disabled = !editLastName.disabled"
+                        <td (mouseenter)="lastNameEditIcon.hide = false" (mouseleave)="lastNameEditIcon.hide = true; editLastName.disabled = true"
                             [ngClass]="{'is-success':user.isCorrected('lastName'), 'is-danger': user.isWrong('lastName'), 'clickable':true}">
+                            <i #lastNameEditIcon 
+                                class="fa fa-pencil" 
+                                [ngStyle]="{'display': lastNameEditIcon.hide == undefined || lastNameEditIcon.hide == true ? 'none' : 'inline'}"
+                                (click)="editLastName.disabled = undefined"></i>
                             <input 
                                 [(ngModel)]="user.lastName" placeholder="{{'empty.lastName' | translate}}" type="text" 
                                 (keyup.enter)="report.update(user, 'lastName')"
@@ -204,8 +208,12 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                                 #editLastName
                             />
                         </td>
-                        <td (dblclick)="editFirstName.disabled = !editFirstName.disabled"
+                        <td (mouseenter)="firstNameEditIcon.hide = false" (mouseleave)="firstNameEditIcon.hide = true; editFirstName.disabled = true"
                             [ngClass]="{'is-success':user.isCorrected('firstName'), 'is-danger': user.isWrong('firstName'), 'clickable':true}">
+                            <i #firstNameEditIcon 
+                                class="fa fa-pencil" 
+                                [ngStyle]="{'display': firstNameEditIcon.hide == undefined || firstNameEditIcon.hide == true ? 'none' : 'inline'}"
+                                (click)="editFirstName.disabled = undefined"></i>
                             <input [(ngModel)]="user.firstName" placeholder="{{'empty.firstName' | translate}}" type="text" 
                                 (keyup.enter)="report.update(user, 'firstName')"
                                 (blur)="report.update(user, 'firstName')"
@@ -213,8 +221,12 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                                 #editFirstName
                             />            
                         </td>
-                        <td (dblclick)="editBirthDate.disabled = !editBirthDate.disabled"
+                        <td (mouseenter)="birthDateEditIcon.hide = false" (mouseleave)="birthDateEditIcon.hide = true; editBirthDate.disabled = true"
                             [ngClass]="{'is-success':user.isCorrected('birthDate'), 'is-danger': user.isWrong('birthDate'), 'clickable':true}">
+                            <i #birthDateEditIcon 
+                                class="fa fa-pencil" 
+                                [ngStyle]="{'display': birthDateEditIcon.hide == undefined || birthDateEditIcon.hide == true ? 'none' : 'inline'}"
+                                (click)="editBirthDate.disabled = undefined"></i>
                             <input [(ngModel)]="user.birthDate" placeholder="{{'empty.birthDate' | translate}}" type="text"
                                 (keyup.enter)="report.update(user, 'birthDate')"
                                 (blur)="report.update(user, 'birthDate')"
@@ -258,6 +270,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         table.report td.is-danger { border: 2px dashed red; }
         table.report td.is-success { border: 2px dashed green; }
         table.report td input[disabled] { background : transparent; border:0; cursor:pointer; }
+        table.report td i.fa-pencil { float: right; display: none }
     `]
 })
 export class ImportCSV implements OnInit, OnDestroy {
