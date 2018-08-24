@@ -529,8 +529,8 @@ Structure.prototype.getMetrics = function(cb){
 Structure.prototype.blockUsers = function(profile, block, cb){
     var structure = this
     http().putJson("structure/"+structure.id+"/profile/block", {
-        profile, 
-        block
+        "profile": profile,
+        "block": block
     }).done(function(data){
         if(typeof cb === "function")
             cb("ok");
