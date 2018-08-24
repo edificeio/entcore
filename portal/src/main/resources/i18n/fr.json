@@ -336,5 +336,9 @@
   "portal.selected": "sélectionné(e)s",
   "agenda-widget":"Agenda",
   "blocked.extension" : "Erreur : l'extension du fichier est interdite.",
-  "max.file.size": "52428800"
+  "max.file.size": "52428800",
+  "sharepanel.close.title": "Annuler les modifications de partage",
+  "sharepanel.close.explanation": "En fermant cette fenetre, les modifications de partage que vous avez effectués ne seront pas pris en compte",
+  "sharepanel.close.confirmation": "Etes vous sûr de vouloir quitter cette fenetre ?",
+  "sharepanel.close.confirm": "Confirmer"
 }
