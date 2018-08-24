@@ -22,9 +22,9 @@ var lang = window.idiom;
 var template = {
     viewPath: '/' + appPrefix + '/public/template/',
     containers: {},
-    getCompletePath(view, isPortal) {
-		const split = $('#context').attr('src').split('-');
-		const hash = split[split.length - 1].split('.')[0];
+    getCompletePath: function (view, isPortal) {
+		var split = $('#context').attr('src').split('-');
+		var hash = split[split.length - 1].split('.')[0];
 		var path = this.viewPath + view + '.html?hash=' + hash;
 		var folder = appPrefix;
 		if(appPrefix === '.' || !!isPortal){
@@ -38,7 +38,7 @@ var template = {
 	/**
 	 * Enable overriding template into portal directive 
 	 */
-	loadPortalTemplates(){
+	loadPortalTemplates: function (){
 		this.containers
 		this.containers['portal'] = {};
 		this.containers.portal['conversationUnread'] = this.getCompletePath('conversation-unread', true);
