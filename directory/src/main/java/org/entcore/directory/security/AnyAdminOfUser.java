@@ -52,6 +52,9 @@ public class AnyAdminOfUser implements ResourcesProvider {
                         res.size() == 2 && (((JsonObject) res.getJsonObject(0)).getBoolean("exists", false)
                         || ((JsonObject) res.getJsonObject(1)).getBoolean("exists", false))) {
                     handler.handle(true);
+                } else if ("ok".equals(r.body().getString("status")) && res.size() == 1 &&
+                        ((JsonObject) res.getJsonObject(0)).getBoolean("exists", false)) {
+                    handler.handle(true);
                 } else {
                     handler.handle(false);
                 }
