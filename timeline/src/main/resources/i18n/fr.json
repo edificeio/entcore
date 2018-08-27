@@ -116,7 +116,7 @@
     "missing.or.empty.required.field": "Champ requis non rempli ou vide",
     "endDate.lower.than.startDate": "Date de fin inférieure ou égale à la date de début",
     "missing.color": "Couleur du bandeau non choisie",
-    "missing profiles": "Aucun profil(s) attribué(s) pour le message",
+    "missing.profiles": "Aucun profil(s) attribué(s) pour le message",
     "timeline.flashmsg.duplicate.append.title": " - Copie",
     "timeline.mark.flashmsg": "Fermer le message",
     "timeline.action.discard": "Supprimer de mon fil",
