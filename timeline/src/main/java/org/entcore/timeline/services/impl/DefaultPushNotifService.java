@@ -9,7 +9,7 @@ import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelinePushNotifService;
-import org.entcore.timeline.ws.OssFcm;
+import org.entcore.common.notification.ws.OssFcm;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
