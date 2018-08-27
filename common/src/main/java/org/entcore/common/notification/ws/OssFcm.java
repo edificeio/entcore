@@ -1,4 +1,4 @@
-package org.entcore.timeline.ws;
+package org.entcore.common.notification.ws;
 
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import fr.wseduc.webutils.security.JWT;

@@ -39,7 +39,7 @@ import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.services.impl.FlashMsgRepositoryEventsSql;
-import org.entcore.timeline.ws.OssFcm;
+import org.entcore.common.notification.ws.OssFcm;
 import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
