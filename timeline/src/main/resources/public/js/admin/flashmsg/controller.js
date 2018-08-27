@@ -180,7 +180,7 @@ function AdminFlashMsgController($scope) {
                     return message.profiles &&
                         message.profiles.length > 0
                 },
-                message: "missing profiles"
+                message: "missing.profiles"
             },
             {
                 check: function() {
