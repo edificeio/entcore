@@ -93,6 +93,20 @@ public class Structure {
 				"WHERE s.checksum IS NULL OR s.checksum <> {checksum} " +
 				"SET " + Neo4jUtils.nodeSetPropertiesFromJson("s", struct, "id", "externalId", "created");
 		getTransaction().add(query, struct);
+
+		if (this.struct.getString("name") != null && !this.struct.getString("name").equals(struct.getString("name"))) {
+			String updateGroupsStructureName =
+					"MATCH (s:Structure { externalId : {externalId}})<-[:DEPENDS]-(g:Group) " +
+					"WHERE s.checksum = {checksum} and has(g.structureName) " +
+					"SET g.structureName = {name} ";
+			getTransaction().add(updateGroupsStructureName, struct);
+			String updateGroupsName =
+					"MATCH (s:Structure { externalId : {externalId}})<-[:DEPENDS]-(g:Group) " +
+					"WHERE s.checksum = {checksum} and last(split(g.name, '-')) IN " +
+					"['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'SCOLARITE'] " +
+					"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName} ";
+			getTransaction().add(updateGroupsName, struct.copy().put("sanitizeName", Validator.sanitize(struct.getString("name"))));
+		}
 		this.struct = struct;
 	}
 
