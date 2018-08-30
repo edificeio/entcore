@@ -443,7 +443,7 @@ public class Validator {
 						if (remove) {
 							for (Object key : logins.keySet()) {
 								if (!tmp.contains(key)) {
-									logins.remove(key, null);
+									logins.remove(key);
 								} else {
 									tmp.remove(key);
 								}
