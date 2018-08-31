@@ -93,7 +93,7 @@
 
 	<!-- Groups -->
 	<div ng-if="search.index === 1 && !display.loading && !currentGroup" 
-		ng-repeat="group in groups.match(search.text) | orderBy:'name' | limitTo:search.maxLength"
+		ng-repeat="group in groups.match(search.text) | limitTo:search.maxLength"
 		class="item group">
 		<div data-ng-include="template.containers.dominosGroup"></div>
 	</div>
@@ -153,7 +153,7 @@
 			</div>
 		</article>
 
-		<div ng-repeat="group in currentFavorite.groups | orderBy: 'name' | limitTo:search.maxLength" class="item group">
+		<div ng-repeat="group in currentFavorite.groups | limitTo:search.maxLength" class="item group">
 			<div data-ng-include="template.containers.dominosGroup"></div>
 		</div>
 

@@ -104,7 +104,9 @@ export const directory = {
 			this.users = _.map(response.data.users, function(item) {
 				return new directory.User(item);
 			});
-			this.groups = _.map(response.data.groups, function(item) {
+			this.groups = response.data.groups;
+			directory.directory.sortGroups(this.groups);
+			this.groups = _.map(this.groups, function(item) {
 				return new directory.Group(item);
 			});
 		}
@@ -301,6 +303,19 @@ export const directory = {
 		}
 	},
 	Directory: function(){
+		this.sortByDisplayName = function(a, b) {
+			return a.displayName > b.displayName;
+		};
+		this.sortByGroupType = function(a, b) {
+			return a.groupType > b.groupType;
+		};
+		this.sortByGroupName = function(a, b) {
+			return (a.sortName ? a.sortName : a.name) > (b.sortName ? b.sortName : b.name);
+		};
+		this.sortGroups = function(groups) {
+			groups = groups.sort(this.sortByGroupType);
+			groups = groups.sort(this.sortByGroupName);
+		};
 		this.collection(directory.User, {
 			match: function(){
 				return this.all;
@@ -333,11 +348,17 @@ export const directory = {
 					}
 					return user;
 				});
-				
-				this.load(all ? _.map(response.data.groups, function(group){
-					group.isGroup = true;
-					return group;
-				}).concat(users) : users);
+				users = users.sort(directory.directory.sortByDisplayName);
+				if (all) {
+					var groups = response.data.groups;
+					directory.directory.sortGroups(groups);
+					groups = _.map(groups, function(group){
+						group.isGroup = true;
+						return group;
+					});
+					users = groups.concat(users);
+				}
+				this.load(users);
 
 				if(typeof callback === 'function'){
 					callback();
@@ -374,7 +395,9 @@ export const directory = {
 				body["groupType"] = true;
 
 				var response = await http.post('/communication/visible', body);
-				this.load(response.data.groups);
+				var groups = response.data.groups;
+				directory.directory.sortGroups(groups);
+				this.load(groups);
 
 				if(typeof callback === 'function'){
 					callback();
