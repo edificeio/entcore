@@ -280,7 +280,12 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					if (!"ok".equals(event.body().getString("status"))) {
-						report.addError("error.persist.course");
+						if (event.body().getString("message") == null ||
+									!event.body().getString("message").contains("duplicate key error")) {
+							report.addError("error.persist.course");
+						} else {
+							log.warn("Duplicate courses keys.");
+						}
 					}
 					if (countMongoQueries.addAndGet(-countCoursesBuffer) == 0) {
 						end();
