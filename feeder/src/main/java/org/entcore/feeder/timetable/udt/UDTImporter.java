@@ -241,6 +241,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	void addProfesseur(JsonObject currentEntity) {
 		try {
+			if (isEmpty(currentEntity.getString("code_matppl"))) {
+				// Ignore prof without subject.
+				// Often this case corresponds to personnel.
+				return;
+			}
 			final String id = currentEntity.getString(CODE);
 			String externalId = currentEntity.getString("epj");
 			JsonObject p = persEducNat.applyMapping(currentEntity);
