@@ -159,7 +159,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				if (isNotEmpty(edtPath) && isNotEmpty(edtCron)) {
 					try {
 						new CronTrigger(vertx, edtCron).schedule(
-								new ImportsLauncher(vertx, edtPath, postImport, edtUtils));
+								new ImportsLauncher(vertx, edtPath, postImport, edtUtils, config.getBoolean("udt-user-creation", true)));
 					} catch (ParseException e) {
 						logger.error("Error in cron edt", e);
 					}
@@ -173,7 +173,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			if (isNotEmpty(udtPath) && isNotEmpty(udtCron)) {
 				try {
 					new CronTrigger(vertx, udtCron).schedule(
-							new ImportsLauncher(vertx, udtPath, postImport, edtUtils));
+							new ImportsLauncher(vertx, udtPath, postImport, edtUtils, config.getBoolean("udt-user-creation", true)));
 				} catch (ParseException e) {
 					logger.error("Error in cron udt", e);
 				}
@@ -308,7 +308,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				EDTImporter.launchImport(edtUtils, config.getString("mode", "prod"), message, postImport);
 				break;
 			case "manual-udt":
-				UDTImporter.launchImport(vertx, message, postImport);
+				UDTImporter.launchImport(vertx, message, postImport, config.getBoolean("udt-user-creation", true));
 				break;
 			case "reinit-logins" :
 				Validator.initLogin(neo4j, vertx);

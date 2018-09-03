@@ -87,10 +87,12 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, JsonObject> eleves = new HashMap<>();
 	private Map<String, String> codeGepDiv = new HashMap<>();
 	private Set<String> usedGroupInCourses = new HashSet<>();
+	private final boolean authorizeUserCreation;
 
-	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage) {
+	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(uai, path, acceptLanguage);
 		this.vertx = vertx;
+		this.authorizeUserCreation = authorizeUserCreation;
 	}
 
 	@Override
@@ -258,14 +260,16 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String[] teacherId = teachersMapping.get(externalId);
 			if (teacherId != null && isNotEmpty(teacherId[0])) {
 				teachers.put(id, teacherId[0]);
-				if (getSource().equals(teacherId[1])) {
+				if (getSource().equals(teacherId[1]) && authorizeUserCreation) {
 					updateUser(p);
 				}
 			} else {
 				final String userId = UUID.randomUUID().toString();
 				p.put("id", userId);
 				p.put("structures", new JsonArray().add(structureExternalId));
-				persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
+				if (authorizeUserCreation) {
+					persEducNat.createOrUpdatePersonnel(p, TEACHER_PROFILE_EXTERNAL_ID, structure, null, null, true, true);
+				}
 				teachers.put(id, userId);
 			}
 		} catch (Exception e) {
@@ -607,11 +611,11 @@ public class UDTImporter extends AbstractTimetableImporter {
 		}
 	}
 
-	public static void launchImport(Vertx vertx, final Message<JsonObject> message) {
-		launchImport(vertx, message, null);
+	public static void launchImport(Vertx vertx, final Message<JsonObject> message, boolean udtUserCreation) {
+		launchImport(vertx, message, null, udtUserCreation);
 	}
 
-	public static void launchImport(Vertx vertx, final Message<JsonObject> message, final PostImport postImport) {
+	public static void launchImport(Vertx vertx, final Message<JsonObject> message, final PostImport postImport, boolean udtUserCreation) {
 		final I18n i18n = I18n.getInstance();
 		final String uai = message.body().getString("UAI");
 		final String path = message.body().getString("path");
@@ -626,7 +630,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		try {
 			final String parentPath = FileUtils.getParentPath(path);
 			FileUtils.unzip(path, parentPath);
-			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage).launch(new Handler<AsyncResult<Report>>() {
+			new UDTImporter(vertx, uai, parentPath + File.separator, acceptLanguage, udtUserCreation).launch(new Handler<AsyncResult<Report>>() {
 				@Override
 				public void handle(AsyncResult<Report> event) {
 					if (event.succeeded()) {
