@@ -44,15 +44,17 @@ public class ImportsLauncher implements Handler<Long> {
 	private final String path;
 	private final PostImport postImport;
 	private EDTUtils edtUtils;
+	private final boolean udtUserCreation;
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport) {
+	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, boolean udtUserCreation) {
 		this.vertx = vertx;
 		this.path = path;
 		this.postImport = postImport;
+		this.udtUserCreation = udtUserCreation;
 	}
 
-	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, EDTUtils edtUtils) {
-		this(vertx, path, postImport);
+	public ImportsLauncher(Vertx vertx, String path, PostImport postImport, EDTUtils edtUtils, boolean udtUserCreation) {
+		this(vertx, path, postImport, udtUserCreation);
 		this.edtUtils = edtUtils;
 	}
 
@@ -95,7 +97,7 @@ public class ImportsLauncher implements Handler<Long> {
 									if (edtUtils != null) {
 										EDTImporter.launchImport(edtUtils, m);
 									} else {
-										UDTImporter.launchImport(vertx, m);
+										UDTImporter.launchImport(vertx, m, udtUserCreation);
 									}
 								} else {
 									log.error("UAI not found in filename : " + file);
