@@ -125,6 +125,7 @@
     "rbs.view": "Réservation de ressources : accéder au service",
     "support.ticket.create": "Aide et support : créer des demandes",
     "support.ticket.list": "Aide et support : lister les demandes",
+    "support.ticket.escalate": "Aide et support: Escalader un ticket",
     "support.view": "Aide et support : accéder au module",
     "tooltip.displayName": "Nom affiché dans l'écran des applications",
     "tooltip.icon": "Vous pouvez utiliser une image d'un site web (sous la forme http(s)://[lien-vers-image]).<br>Cette image peut provenir de votre espace documentaire si elle est dans \"document ajouté dans mes applis\".<br>Faire un clic droit puis \"copier l'adresse de l'image\".",
