@@ -32,6 +32,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.Report;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
+import org.entcore.feeder.utils.Validator;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -133,6 +134,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected Map<String, Slot> slots = new HashMap<>();
 	protected final Map<String, String> rooms = new HashMap<>();
 	protected final Map<String, String[]> teachersMapping = new HashMap<>();
+	protected final Map<String, String[]> teachersCleanNameMapping = new HashMap<>();
 	protected final Map<String, String> teachers = new HashMap<>();
 	protected final Map<String, String> subjectsMapping = new HashMap<>();
 	protected final Map<String, String> subjects = new HashMap<>();
@@ -163,7 +165,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		final String getUsersByProfile =
 				"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
 				"WHERE head(u.profiles) = {profile} AND NOT(u." + tma +  " IS NULL) " +
-				"RETURN DISTINCT u.id as id, u." + tma + " as tma, head(u.profiles) as profile, u.source as source";
+				"RETURN DISTINCT u.id as id, u." + tma + " as tma, head(u.profiles) as profile, u.source as source, " +
+				"u.lastName as lastName, u.firstName as firstName";
 		final String classesMappingQuery =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:MAPPING]-(cm:ClassesMapping) " +
 				"return cm.mapping as mapping ";
@@ -183,6 +186,9 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 							if (o instanceof JsonObject) {
 								final JsonObject j = (JsonObject) o;
 								teachersMapping.put(j.getString("tma"), new String[]{j.getString("id"), j.getString("source")});
+								teachersCleanNameMapping.put(Validator
+										.sanitize(j.getString("firstName")+j.getString("lastName")),
+										new String[]{j.getString("id"), j.getString("source")});
 							}
 						}
 						JsonArray a = res.getJsonArray(1);
