@@ -824,19 +824,21 @@ public class ManualFeeder extends BusModBase {
 			logger.error(error);
 			sendError(message, error);
 		} else {
-			String rename = "SET ";
+			String query;
+			JsonObject params = s.copy().put("structureId", structureId);
 			if (s.getString("name") != null) {
-				rename =
-						"WITH s, s.name as old " +
-						"OPTIONAL MATCH s<-[:DEPENDS]-(spg:ProfileGroup) " +
-						"OPTIONAL MATCH s<-[:DEPENDS]-(fg:FunctionGroup) " +
-						"SET spg.name = replace(spg.name, old, {name}), fg.name = replace(fg.name, old, {name}), ";
+				query = "MATCH (s:`Structure` { id : {structureId}})<-[:DEPENDS]-(g:Group) " +
+						"WHERE last(split(g.name, '-')) IN ['Student','Teacher','Personnel','Relative','Guest','AdminLocal','HeadTeacher', 'SCOLARITE'] " +
+						"SET g.name = {name} + '-' + last(split(g.name, '-')), g.displayNameSearchField = {sanitizeName}, ";
+				params.put("sanitizeName", Validator.sanitize(s.getString("name")));
+			}else{
+				query = "MATCH (s:`Structure` { id : {structureId}}) SET";
+
 			}
-			String query =
-					"MATCH (s:`Structure` { id : {structureId}}) " +
-					rename + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
+			query = query + Neo4jUtils.nodeSetPropertiesFromJson("s", s) +
 					"RETURN DISTINCT s.id as id ";
-			JsonObject params = s.put("structureId", structureId);
+
+
 			neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> m) {
