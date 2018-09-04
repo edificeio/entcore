@@ -250,6 +250,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			final String id = currentEntity.getString(CODE);
 			String externalId = currentEntity.getString("epj");
+			final String firstName = currentEntity.getString("prenom");
+			final String lastName = currentEntity.getString("nom");
 			JsonObject p = persEducNat.applyMapping(currentEntity);
 			p.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add("Teacher"));
 			if (isEmpty(externalId)) {
@@ -257,7 +259,10 @@ public class UDTImporter extends AbstractTimetableImporter {
 			}
 			p.put("externalId", externalId);
 			userImportedExternalId.add(externalId);
-			final String[] teacherId = teachersMapping.get(externalId);
+			String[] teacherId = teachersMapping.get(externalId);
+			if (teacherId == null) {
+				teacherId = teachersCleanNameMapping.get(Validator.sanitize(firstName + lastName));
+			}
 			if (teacherId != null && isNotEmpty(teacherId[0])) {
 				teachers.put(id, teacherId[0]);
 				if (getSource().equals(teacherId[1]) && authorizeUserCreation) {
