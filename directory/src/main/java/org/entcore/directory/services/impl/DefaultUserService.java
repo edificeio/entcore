@@ -24,6 +24,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.validation.StringValidation;
@@ -474,7 +475,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "list-duplicate")
 				.put("structures", structures)
 				.put("inherit", inherit);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validResultHandler(results)));
+		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(validResultHandler(results)));
 	}
 
 	@Override
