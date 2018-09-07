@@ -19,13 +19,22 @@
 
 package org.entcore.feeder.utils;
 
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.webutils.I18n;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -33,11 +42,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Report {
 
@@ -50,8 +54,11 @@ public class Report {
 	private long endTime;
 	private long startTime;
 	private String source;
-	private Set<Object> loadedFiles = new HashSet<>();
-	public enum State { NEW, UPDATED, DELETED }
+	private Set<String> loadedFiles = new HashSet<>();
+
+	public enum State {
+		NEW, UPDATED, DELETED
+	}
 
 	public Report(String acceptLanguage) {
 		this.acceptLanguage = acceptLanguage;
@@ -160,7 +167,8 @@ public class Report {
 			JsonArray a = result.getJsonObject("files").getJsonArray(f);
 			if (a != null) {
 				for (Object o : a) {
-					if (!(o instanceof JsonObject)) continue;
+					if (!(o instanceof JsonObject))
+						continue;
 					final String externalId = ((JsonObject) o).getString("externalId");
 					if (externalId != null) {
 						res.add(externalId);
@@ -180,7 +188,8 @@ public class Report {
 		MongoDb.getInstance().save("imports", this.getResult(), handler);
 	}
 
-	protected void cleanKeys() {}
+	protected void cleanKeys() {
+	}
 
 	public void setEndTime(long endTime) {
 		this.endTime = endTime;
@@ -198,44 +207,87 @@ public class Report {
 		loadedFiles.add(file);
 	}
 
-	public void countDiff(final Handler<Void> handler) {
+	private JsonObject cloneAndFilterResults(Optional<String> prefixAcademy) {
+		JsonObject results = this.result.copy();
+		if (prefixAcademy.isPresent()) {
+			// filter each ignored object by externalId starting with academy name
+			String prefix = prefixAcademy.get();
+			JsonObject ignored = results.getJsonObject("ignored");
+			Set<String> domains = ignored.fieldNames();
+			for (String domain : domains) {
+				JsonArray filtered = ignored.getJsonArray(domain, new JsonArray()).stream().filter(ig -> {
+					if (ig instanceof JsonObject && ((JsonObject) ig).containsKey("object")) {
+						JsonObject object = ((JsonObject) ig).getJsonObject("object");
+						String externalId = object.getString("externalId");
+						return StringUtils.startsWithIgnoreCase(externalId, prefix);
+					} else {
+						// keep in list because it is not a concerned object
+						return true;
+					}
+				}).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);//
+				ignored.put(domain, filtered);
+			}
+			// userExternalIds FIltered
+			JsonArray usersExternalIdsFiltered = results.getJsonArray("usersExternalIds", new JsonArray()).stream()
+					.filter(value -> {
+						return (value instanceof String && StringUtils.startsWithIgnoreCase((String) value, prefix));
+					}).collect(JsonArray::new, JsonArray::add, JsonArray::addAll);//
+			results.put("usersExternalIds", usersExternalIdsFiltered);
+		}
+		return results;
+	}
+
+	private JsonArray cloneAndFilterFiles(Optional<String> academyPrefix) {
+		List<String> filtered = null;
+		if (academyPrefix.isPresent()) {
+			String pattern = academyPrefix.get();
+			filtered = loadedFiles.stream().filter(file -> StringUtils.contains(file, "/" + pattern + "/")).sorted()
+					.collect(Collectors.toList());
+		} else {
+			filtered = loadedFiles.stream().sorted().collect(Collectors.toList());
+		}
+		return new fr.wseduc.webutils.collections.JsonArray(filtered);
+	}
+
+	private void countDiff(Optional<String> prefixAcademy, final Handler<JsonObject> handler) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
-			JsonObject params = new JsonObject()
-					.put("source", source)
-					.put("start", startTime).put("end", endTime)
+			JsonObject params = new JsonObject().put("source", source).put("start", startTime).put("end", endTime)
 					.put("startTime", new DateTime(startTime).toString())
 					.put("endTime", new DateTime(endTime).toString());
-			tx.add(
-					"MATCH (u:User {source:{source}}) " +
-					"WHERE HAS(u.created) AND u.created >= {startTime} AND u.created < {endTime} " +
-					"RETURN count(*) as createdCount", params);
-			tx.add(
-					"MATCH (u:User {source:{source}}) " +
-					"WHERE HAS(u.modified) AND u.modified >= {startTime} AND u.modified < {endTime} " +
-					"RETURN count(*) as modifiedCount", params);
-			tx.add(
-					"MATCH (u:User {source:{source}}) " +
-					"WHERE HAS(u.disappearanceDate) AND u.disappearanceDate >= {start} AND u.disappearanceDate < {end} " +
-					"RETURN count(*) as disappearanceCount", params);
+			if (prefixAcademy.isPresent()) {
+				params.put("prefixAcademy", prefixAcademy.get());
+			}
+			tx.add("MATCH (u:User {source:{source}}) "
+					+ "WHERE HAS(u.created) AND u.created >= {startTime} AND u.created < {endTime} "
+					+ (prefixAcademy.isPresent() ? " AND u.externalId STARTS WITH {prefixAcademy} " : "")//
+					+ "RETURN count(*) as createdCount", params);
+			tx.add("MATCH (u:User {source:{source}}) "
+					+ "WHERE HAS(u.modified) AND u.modified >= {startTime} AND u.modified < {endTime} "
+					+ (prefixAcademy.isPresent() ? " AND u.externalId STARTS WITH {prefixAcademy} " : "")//
+					+ "RETURN count(*) as modifiedCount", params);
+			tx.add("MATCH (u:User {source:{source}}) "
+					+ "WHERE HAS(u.disappearanceDate) AND u.disappearanceDate >= {start} AND u.disappearanceDate < {end} "
+					+ (prefixAcademy.isPresent() ? " AND u.externalId STARTS WITH {prefixAcademy} " : "")//
+					+ "RETURN count(*) as disappearanceCount", params);
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
 					JsonArray results = event.body().getJsonArray("results");
 					if ("ok".equals(event.body().getString("status")) && results != null && results.size() == 3) {
 						try {
+							final JsonObject result = cloneAndFilterResults(prefixAcademy);
 							int created = results.getJsonArray(0).getJsonObject(0).getInteger("createdCount");
 							int modified = results.getJsonArray(1).getJsonObject(0).getInteger("modifiedCount");
-							int disappearance = results.getJsonArray(2).getJsonObject(0).getInteger("disappearanceCount");
-							result.put("userCount", new JsonObject()
-									.put("created", created)
-									.put("modified", (modified - created))
-									.put("disappearance", disappearance)
-							);
+							int disappearance = results.getJsonArray(2).getJsonObject(0)
+									.getInteger("disappearanceCount");
+							result.put("userCount", new JsonObject().put("created", created)
+									.put("modified", (modified - created)).put("disappearance", disappearance));
 							result.put("source", source);
 							result.put("startTime", new DateTime(startTime).toString());
 							result.put("endTime", new DateTime(endTime).toString());
-							result.put("loadedFiles", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(loadedFiles)));
+							result.put("loadedFiles", cloneAndFilterFiles(prefixAcademy));
+							handler.handle(result);
 //							persist(new Handler<Message<JsonObject>>() {
 //								@Override
 //								public void handle(Message<JsonObject> event) {
@@ -246,11 +298,10 @@ public class Report {
 //							});
 						} catch (RuntimeException e) {
 							log.error("Error parsing count diff response.", e);
+							handler.handle(null);
 						}
 					} else {
 						log.error("Error in count diff transaction.");
-					}
-					if (handler != null) {
 						handler.handle(null);
 					}
 				}
@@ -263,33 +314,54 @@ public class Report {
 		}
 	}
 
-	public void emailReport(final Vertx vertx, final JsonObject config) {
-		final JsonObject sendReport = config.getJsonObject("sendReport");
-		if (sendReport == null || sendReport.getJsonArray("to") == null || sendReport.getJsonArray("to").size() == 0 ||
-				sendReport.getJsonArray("sources") == null || !sendReport.getJsonArray("sources").contains(source) ) {
-			return;
-		}
-
-		final JsonObject reqParams = new JsonObject()
-				.put("headers", new JsonObject().put("Accept-Language", acceptLanguage));
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
-		emailFactory.getSender().sendEmail(
-				new JsonHttpServerRequest(reqParams),
+	private void emailReport(final Vertx vertx, final EmailFactory emailFactory, final JsonObject sendReport,
+			final JsonObject result) {
+		final JsonObject reqParams = new JsonObject().put("headers",
+				new JsonObject().put("Accept-Language", acceptLanguage));
+		emailFactory.getSender().sendEmail(new JsonHttpServerRequest(reqParams),
 				sendReport.getJsonArray("to").getList(),
 				sendReport.getJsonArray("cc") != null ? sendReport.getJsonArray("cc").getList() : null,
 				sendReport.getJsonArray("bcc") != null ? sendReport.getJsonArray("bcc").getList() : null,
-				sendReport.getString("project", "") + i18n.translate("import.report", I18n.DEFAULT_DOMAIN, acceptLanguage) +
-						" - " + DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd")),
-				"email/report.html",
-				result,
-				false,
-				ar -> {
+				sendReport.getString("project", "")
+						+ i18n.translate("import.report", I18n.DEFAULT_DOMAIN, acceptLanguage) + " - "
+						+ DateTime.now().toString(DateTimeFormat.forPattern("yyyy-MM-dd")),
+				"email/report.html", result, false, ar -> {
 					if (ar.failed()) {
 						log.error("Error sending report email.", ar.cause());
 					}
-				}
-		);
+				});
 	}
 
+	public void sendEmails(final Vertx vertx, final JsonObject config) {
+		final JsonArray sendReport = config.getJsonArray("sendReport");
+		if (sendReport == null) {
+			return;
+		}
+		int count = sendReport.size();
+		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		for (Object o : sendReport) {
+			JsonObject currentSendReport = (JsonObject) o;
+			if (currentSendReport.getJsonArray("to") == null //
+					|| currentSendReport.getJsonArray("to").size() == 0 //
+					|| currentSendReport.getJsonArray("sources") == null//
+					|| !currentSendReport.getJsonArray("sources").contains(source)) {
+				break;
+			}
+			if (count == 1) {
+				this.countDiff(Optional.empty(), countEvent -> {
+					if (countEvent != null) {
+						this.emailReport(vertx, emailFactory, currentSendReport, countEvent);
+					}
+				});
+			} else {
+				String prefixAcademy = currentSendReport.getString("academyPrefix");
+				this.countDiff(Optional.ofNullable(prefixAcademy), countEvent -> {
+					if (countEvent != null) {
+						this.emailReport(vertx, emailFactory, currentSendReport, countEvent);
+					}
+				});
+			}
+		}
+	}
 
 }

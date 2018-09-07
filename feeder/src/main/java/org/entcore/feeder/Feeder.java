@@ -529,7 +529,6 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String acceptLanguage = getOrElse(message.body().getString("language"), "fr");
 
 
-		final String charset = getOrElse(message.body().getString("charset"), "UTF-8");
 		final String importPath = message.body().getString("path");
 		final boolean executePostImport = getOrElse(message.body().getBoolean("postImport"), true);
 
@@ -571,12 +570,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);
 								report.setStartTime(start);
-								report.countDiff(new Handler<Void>() {
-									@Override
-									public void handle(Void v) {
-										report.emailReport(vertx, config);
-									}
-								});
+								report.sendEmails(vertx, config);
 								logger.info("Elapsed time " + (endTime - start) + " ms.");
 								importer.clear();
 								checkEventQueue();
