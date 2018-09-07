@@ -500,7 +500,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			condition += "AND (("+ l +
 					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
 			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile)) {
-				union = new StringBuilder("MATCH p=(n:User)-[COMMUNIQUE_DIRECT]->m " +
+				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +
 						"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 			}
 		}
