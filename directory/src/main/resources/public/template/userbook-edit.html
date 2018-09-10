@@ -21,7 +21,11 @@
 	<article>
         <h1 translate key="userBook.profile.schools"></h1>
 		<div ng-repeat="school in account.schools | orderBy:'name'">
-			<h3>[[school.name]]</h3>
+			<div class="flex-row">
+				<h3 class="right-spacing">[[school.name]]</h3>
+				<i18n class="top-spacing-three indication italic-text" ng-if="school.admin">portal.admin.attached</i18n>
+				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="school.adml">portal.adml</i18n>
+			</div>
 			<strong ng-if="school.classes && school.classes.length"><i18n>userBook.profile.classes</i18n></strong>
 			<ul ng-if="school.classes && school.classes.length" class="list">
 				<li ng-repeat="class in school.classes track by $index">[[class]]</li>
