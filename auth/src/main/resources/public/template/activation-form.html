@@ -61,6 +61,7 @@
 				<p ng-if="cgu">
 					<input type="checkbox" ng-model="user.acceptCGU" value="true" tabindex="5" required>&nbsp;&nbsp;<a href="[[lang.translate('auth.charter')]]" target="_blank" translate content="label.accept.cgu" style="display: inline"></a>
 				</p>
+				<input type="text" name="username" id="username" ng-model="user.login" hidden readonly />
 				<input type="submit" translate attr="value" value="auth.activate" ng-disabled="activationForm.$invalid" tabindex="6"/>
 				<a href="/auth/login" target="_self" class="right cell" translate content="auth.cancel"></a>
 				<div class="clear"></div>
