@@ -256,7 +256,7 @@ public class UserBookController extends BaseController {
 								+ "OPTIONAL MATCH (n)-[:RELATED]-(n2) "
 								+ "WITH DISTINCT h1 as h, s, collect(distinct c.name) as c, n, v, u, n2, p "
 								+ personnalInfos
-								+ "WITH COLLECT(DISTINCT {name: s.name, classes: c}) as schools, "
+								+ "WITH COLLECT(DISTINCT {name: s.name, id: s.id, classes: c}) as schools, "
 								+ "n, u, n2, address, email, health, tel, mobile, birthdate, r,  COLLECT(p.name) as type, "
 								+ "COLLECT(DISTINCT {visibility: type(v), category: h.category, values: h.values}) as hobbies "
 								+ "RETURN DISTINCT "
