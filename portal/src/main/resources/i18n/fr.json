@@ -317,6 +317,8 @@
   "quickstart.see.later": "Voir plus tard",
   "quickstart.done": "Terminé",
   "imageeditor.scale": "L'image d'origine est [[scale()]]x plus grande que cet aperçu",
+  "portal.adml": "ADML",
+  "portal.admin.attached": "Rattachement administratif",
   "portal.all": "Tout",
   "portal.all.add": "Tout ajouter",
   "portal.all.remove": "Tout retirer",
