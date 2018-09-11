@@ -17,44 +17,6 @@
  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  ~
  -->
- <div class="row reduce-block-six" ng-if="account.schools.length">
-	<article>
-        <h1 translate key="userBook.profile.schools"></h1>
-		<div ng-repeat="school in account.schools | orderBy:'name'">
-			<div class="flex-row">
-				<h3 class="right-spacing">[[school.name]]</h3>
-				<i18n class="top-spacing-three indication italic-text" ng-if="school.admin">portal.admin.attached</i18n>
-				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="school.adml">portal.adml</i18n>
-			</div>
-			<strong ng-if="school.classes && school.classes.length"><i18n>userBook.profile.classes</i18n></strong>
-			<ul ng-if="school.classes && school.classes.length" class="list">
-				<li ng-repeat="class in school.classes track by $index">[[class]]</li>
-			</ul>
-		</div>
-	</article>
-</div>
-
-<div class="row reduce-block-six" ng-if="displayFamily(account)">
-	<article class="row">
-		<h1 translate content="userBook.profile.family"></h1>
-		<content-divider
-			ng-model="account.childrenStructure"
-			order="structureName">
-			<div>
-				<strong class="cell-ellipsis">[[content.structureName]]</strong>
-				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
-					<div class="cell round bg-white square-medium right-spacing">
-						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
-					</div>
-					<div>
-						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
-						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
-					</div>
-				</div>
-			</div>
-		</content-divider>
-	</article>
-</div>
 
 <div class="row rigid-grid" workflow="directory.showMoodMotto">
 	<div class="four cell twelve-mobile mood" style="height: 100px;">
@@ -89,6 +51,46 @@
 		</article>
 	</div>
 
+</div>
+
+<div class="row reduce-block-six" ng-if="displayFamily(account)">
+	<article class="row">
+		<h2 translate content="userBook.profile.family"></h2>
+		<content-divider
+			ng-model="account.childrenStructure"
+			order="structureName">
+			<div>
+				<h4 class="cell-ellipsis">[[content.structureName]]</h4>
+				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
+					<div class="cell round bg-white square-medium right-spacing">
+						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
+					</div>
+					<div>
+						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
+					</div>
+				</div>
+			</div>
+		</content-divider>
+	</article>
+</div>
+
+<div class="row reduce-block-six" ng-if="account.schools.length">
+	<article>
+		<h2 translate key="userBook.profile.schools"></h2>
+		<content-divider
+			ng-model="account.attachedStructures"
+			order="name">
+			<div class="width-medium-no-mobile-fat-mobile">
+				<h4 class="multiline-ellipsis-three" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</h4>
+				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
+				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="content.adml">portal.adml</i18n>
+				<ul ng-if="content.classes && content.classes.length" class="list no-padding overflow-vertical-height-list">
+					<li ng-repeat="class in content.classes track by $index">[[class]]</li>
+				</ul>
+			</div>
+		</content-divider>
+	</article>
 </div>
 
 <div class="row reduce-block-six twelve-mobile">
