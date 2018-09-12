@@ -63,6 +63,10 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 		return StudentImportProcessing1d.parseRelativeField1d(relative);
 	}
 
+	protected String[][] createGroups(JsonArray groups) {
+		return StudentImportProcessing1d.createGroups(groups, importer, getAcademyPrefix());
+	}
+
 	@Override
 	protected String[][] createClasses(JsonArray classes) {
 		String [][] linkStructureClasses = null;
