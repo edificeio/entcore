@@ -118,6 +118,7 @@ public class Auth extends BaseServer {
 		final OpenIdConnectController openIdConnectController;
 		if (openidFederate != null || openidConnect != null) {
 			openIdConnectController = new OpenIdConnectController();
+			addController(openIdConnectController);
 		} else {
 			openIdConnectController = null;
 		}
@@ -139,7 +140,6 @@ public class Auth extends BaseServer {
 			openIdConnectController.setOpenIdConnectServiceProviderFactory(
 					new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getJsonObject("domains")));
 			openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
-			addController(openIdConnectController);
 
 			final JsonArray authorizedHostsLogin = openidFederate.getJsonArray("authorizedHostsLogin");
 			if (authorizedHostsLogin != null && authorizedHostsLogin.size() > 0) {
