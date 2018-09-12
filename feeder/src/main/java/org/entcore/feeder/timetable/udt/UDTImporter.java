@@ -325,7 +325,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String groupId = currentEntity.getString("code_div") + codeGroup;
 			JsonObject group = groups.get(groupId);
 			if (group == null) {
-				report.addError("unknown.group.mapping");
+				log.warn("addGroup2 : unknown.group.mapping");
 				return;
 			}
 			JsonArray groups = group.getJsonArray("groups");
@@ -338,7 +338,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			final String classId = currentEntity.getString("code_div");
 			JsonObject classe = classes.get(classId);
 			if (classe == null) {
-				report.addError("unknown.class.mapping");
+				log.warn("addGroup2 : unknown.class.mapping");
 				return;
 			}
 			JsonArray groups = classe.getJsonArray("groups");
@@ -386,7 +386,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (isNotEmpty(codeGroup)) {
 			JsonObject group = this.groups.get(codeDiv + codeGroup);
 			if (group == null) {
-				report.addError("unknown.group.mapping");
+				log.warn("addEleve : unknown.group.mapping");
 				return;
 			}
 			final String name = group.getString("code_div") + " Gr " + group.getString(CODE);
@@ -405,7 +405,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		} else {
 			JsonObject classe = classes.get(codeDiv);
 			if (classe == null) {
-				report.addError("unknown.class.mapping");
+				log.warn("addEleve : unknown.class.mapping");
 				return;
 			}
 			groups = classe.getJsonArray("groups");
