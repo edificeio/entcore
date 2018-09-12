@@ -18,7 +18,6 @@
  ~ user-infos
  -->
 
-
  <div class="row reduce-block-six twelve-mobile user-infos">
 	<h2 class="flex-all-remains left-text" ng-if="(search.index == 0 && users.searched) || (search.index == 1 && groups.searched) || (search.index == 2)">
 		<a ng-click="currentSchool ? deselectUser('dominos') : back()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
@@ -32,7 +31,13 @@
 		</div>
 
 		<div class="sheet">
-			<h2 class="reduce-block-four ten cell">[[currentUser.displayName]]</h2>
+			<div>
+				<h2 class="no-margin">[[currentUser.displayName]]</h2>
+				<div class="flex-row">
+					<span class="cell circle square-mini top-spacing-small right-spacing-small" ng-class="currentUser.getProfile()"></span>
+					<span class="cell low-importance">[[ currentUser.getProfileName() ]]</span>
+				</div>
+			</div>
 
 			<div class="right-magnet">
 				<i class="[[currentUser.mood]] liquid text-flow"></i>
@@ -87,29 +92,59 @@
 
 <div class="row"></div>
 
-<div class="row reduce-block-six" ng-if="displayFamily(currentUser)">
-
+<div class="row reduce-block-six" ng-if="displayChildren(currentUser)">
 	<article class="row">
-        <h1 translate content="userBook.profile.family"></h1>
-		<div class="row" ng-repeat="relative in currentUser.relatives">
-			<a ng-click="selectUser(relative)" class="reduce-block-four twelve cell">[[relative.displayName]]</a>
-		</div>
-		<div class="row"></div>
+		<h2 translate content="userBook.profile.children"></h2>
+		<content-divider
+			ng-model="currentUser.childrenStructure"
+			order="structureName">
+			<div>
+				<h4 class="cell-ellipsis">[[content.structureName]]</h4>
+				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
+					<div class="cell round bg-white square-medium right-spacing">
+						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
+					</div>
+					<div>
+						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
+					</div>
+				</div>
+			</div>
+		</content-divider>
 	</article>
 </div>
-<div class="row"></div>
+
+<div class="row reduce-block-six" ng-if="displayRelatives(currentUser)">
+	<article class="row">
+		<h2 translate content="userBook.profile.relatives"></h2>
+		<div class="reduce-block-eight">
+			<div class="flex-row top-spacing-twice" ng-repeat="relative in currentUser.relatives | orderBy:'displayName'">
+				<div class="cell round bg-white square-medium right-spacing">
+					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100"/>
+				</div>
+				<div>
+					<span class="cell-ellipsis small-text block left-text">[[ relative.displayName ]]</span>
+				</div>
+			</div>
+		</div>
+	</article>
+</div>
 
 <div class="row reduce-block-six" ng-if="currentUser.schools.length">
-
 	<article>
-        <h1 translate key="userBook.profile.schools"></h1>
-		<div ng-repeat="school in currentUser.schools | orderBy:'name'">
-			<h3>[[school.name]]</h3>
-			<strong ng-if="school.classes && school.classes.length"><i18n>userBook.profile.classes</i18n></strong>
-			<ul ng-if="school.classes && school.classes.length" class="list">
-				<li ng-repeat="class in school.classes track by $index">[[class]]</li>
-			</ul>
-		</div>
+		<h2 translate key="userBook.profile.schools"></h2>
+		<content-divider
+			ng-model="currentUser.attachedStructures"
+			order="name">
+			<div class="width-medium-no-mobile-fat-mobile">
+				<h4 class="multiline-ellipsis-three" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</h4>
+				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
+				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="content.adml">portal.adml</i18n>
+				<ul ng-if="content.classes && content.classes.length" class="list no-padding overflow-vertical-height-list">
+					<li ng-repeat="class in content.classes track by $index">[[class]]</li>
+				</ul>
+			</div>
+		</content-divider>
 	</article>
 </div>
 

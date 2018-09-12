@@ -304,8 +304,12 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
 	}
 	
-	$scope.displayFamily = function(currentUser) {
-		return currentUser && currentUser.relatives.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	$scope.displayChildren = function(currentUser) {
+		return currentUser && currentUser.childrenStructure && currentUser.childrenStructure.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	};
+
+	$scope.displayRelatives = function(currentUser) {
+		return currentUser && currentUser.relatives.length && (model.me.type === 'ELEVE');
 	};
 
 	$scope.generateMergeKey = function() {
