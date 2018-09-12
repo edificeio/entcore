@@ -21,6 +21,7 @@ package org.entcore.feeder.aaf1d;
 
 import org.entcore.feeder.aaf.ImportProcessing;
 import org.entcore.feeder.aaf.StudentImportProcessing;
+import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Structure;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -57,6 +58,32 @@ public class StudentImportProcessing1d extends StudentImportProcessing {
 			}
 		}
 		return res;
+	}
+
+	protected String[][] createGroups(JsonArray groups) {
+		return createGroups(groups, importer, getAcademyPrefix());
+	}
+
+	static String[][] createGroups(JsonArray groups, Importer importer, String academyPrefix) {
+		String [][] linkStructureGroups = null;
+		if (groups != null && groups.size() > 0) {
+			linkStructureGroups = new String[groups.size()][2];
+			int i = 0;
+			for (Object o : groups) {
+				if (!(o instanceof String)) continue;
+				String [] g = ((String) o).split("\\$");
+				if (g.length == 5) {
+					Structure s = importer.getStructure(g[0]);
+					if (s != null) {
+						String groupExternalId = academyPrefix + g[3];
+						s.createFunctionalGroupIfAbsent(groupExternalId, g[4]);
+						linkStructureGroups[i][0] = s.getExternalId();
+						linkStructureGroups[i++][1] = groupExternalId;
+					}
+				}
+			}
+		}
+		return linkStructureGroups;
 	}
 
 	@Override
