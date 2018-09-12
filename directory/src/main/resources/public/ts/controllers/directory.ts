@@ -419,7 +419,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.close('details');
 	};
 
-	$scope.selectUser = function(user){
+	$scope.selectUser = async function(user){
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
@@ -429,8 +429,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 
 		user.open();
-		user.one('sync', function(){
+		user.one('sync', async function(){
 			$scope.currentUser = user;
+			if (model.me.type !== 'ELEVE') {
+				await $scope.currentUser.loadInfos();
+			}
+			if ((model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT') && $scope.currentUser.type[0] === 'Relative') {
+				await $scope.currentUser.loadChildren();
+			}
 			$scope.$apply('currentUser');
 		});
 
@@ -557,9 +563,14 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		return !structure.parents
 	};
 
-	$scope.displayFamily = function(currentUser) {
-		return currentUser && currentUser.relatives.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+	$scope.displayChildren = function(currentUser) {
+		return currentUser && currentUser.childrenStructure && currentUser.childrenStructure.length;
 	};
+
+	$scope.displayRelatives = function(currentUser) {
+		return currentUser && currentUser.relatives.length && (currentUser.type[0] === 'Student');
+	};
+
 
 	$scope.onCloseSearchModule = function() {
 		$scope.display.searchmobile = true;

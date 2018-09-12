@@ -53,9 +53,9 @@
 
 </div>
 
-<div class="row reduce-block-six" ng-if="displayFamily(account)">
+<div class="row reduce-block-six" ng-if="displayChildren(account)">
 	<article class="row">
-		<h2 translate content="userBook.profile.family"></h2>
+		<h2 translate content="userBook.profile.children"></h2>
 		<content-divider
 			ng-model="account.childrenStructure"
 			order="structureName">
@@ -75,7 +75,23 @@
 	</article>
 </div>
 
-<div class="row reduce-block-six" ng-if="account.schools.length">
+<div class="row reduce-block-six" ng-if="displayRelatives(account)">
+	<article class="row">
+		<h2 translate content="userBook.profile.relatives"></h2>
+		<div class="reduce-block-eight">
+			<div class="flex-row top-spacing-twice" ng-repeat="relative in account.relatives | orderBy:'displayName'">
+				<div class="cell round bg-white square-medium right-spacing">
+					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100"/>
+				</div>
+				<div>
+					<span class="cell-ellipsis small-text block left-text">[[ relative.displayName ]]</span>
+				</div>
+			</div>
+		</div>
+	</article>
+</div>
+
+<div class="row reduce-block-six" ng-if="account.attachedStructures.length">
 	<article>
 		<h2 translate key="userBook.profile.schools"></h2>
 		<content-divider
