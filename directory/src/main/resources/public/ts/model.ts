@@ -74,7 +74,12 @@ export const directory = {
 			return ui.profileColors.match(this.getProfileType());
 		};
 		this.getProfileType = function() {
-			return this.profile ? this.profile : this.profiles[0];
+			if (this.profile)
+				return this.profile;
+			else if (this.type)
+				return this.type;
+			else
+				this.profiles[0];
 		}
 	},
 	Group: function(data?){
