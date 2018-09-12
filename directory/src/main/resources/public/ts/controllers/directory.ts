@@ -81,10 +81,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	route({
 		viewUser: async function(params){
 			$scope.currentUser = new directory.User({ id: params.userId });
-			$scope.currentUser.open();
+			await $scope.selectUser($scope.currentUser);
 			$scope.users = directory.directory.users;
 			template.open('page', 'profile');
-			template.open('details', 'user-infos');
 			$scope.title = 'profile';
 			await $scope.createAllFavorites();
 		},
