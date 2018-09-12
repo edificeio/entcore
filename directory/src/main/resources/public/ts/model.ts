@@ -51,6 +51,7 @@ export const directory = {
 			data.result[0].relatives = _.filter(data.result[0].relatives, function(user){
 				return user.id !== '';
 			});
+			data.result[0].attachedStructures = data.result[0].schools;
 			if(!data.result[0]){
 				this.id = undefined;
 				return;
@@ -67,11 +68,14 @@ export const directory = {
 			this.trigger('sync');
 		};
 		this.getProfileName = function() {
-			return lang.translate("directory." + this.profiles[0]);
+			return lang.translate("directory." + this.getProfileType());
 		};
 		this.getProfile = function() {
-			return ui.profileColors.match(this.profiles[0]);
+			return ui.profileColors.match(this.getProfileType());
 		};
+		this.getProfileType = function() {
+			return this.profile ? this.profile : this.profiles[0];
+		}
 	},
 	Group: function(data?){
 		this.users = [];
@@ -530,7 +534,7 @@ directory.User.prototype.loadUserbook = function(){
 		}
 		data.mood = _.findWhere(directory.User.prototype.moods, { id: data.mood });
 
-		if(this.edit.visibility){
+		if(this.edit && this.edit.visibility){
 			this.loadVisibility();
 		}
 		this.updateData(data);
@@ -559,7 +563,7 @@ directory.User.prototype.loadInfos = function(){
 	oldHttp().get('/directory/user/' + this.id).done(function(data){
 		var adminStructure, adml;
 
-		if(this.edit.visibility && !this.edit.userbook){
+		if(this.edit && this.edit.visibility && !this.edit.userbook){
 			this.loadVisibility();
 		}
 		data.attachedStructures = [];
