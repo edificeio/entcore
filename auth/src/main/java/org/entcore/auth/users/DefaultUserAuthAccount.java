@@ -108,6 +108,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						&& res.body().getJsonObject("result").getJsonObject("0") != null) {
 					if(res.body().getJsonObject("result").getJsonObject("0").getBoolean("hasDuplicate")){
 						handler.handle(new Either.Left<String, String>("activation.error.duplicated"));
+						return;
 					}
 					JsonObject jo = new JsonObject()
 							.put("userId", res.body().getJsonObject("result").getJsonObject("0").getString("id"))
