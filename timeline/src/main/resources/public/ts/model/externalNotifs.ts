@@ -50,9 +50,7 @@ ExternalNotifs.Preference.prototype.getinfo = function(callback){
 
 ExternalNotifs.Preference.prototype.putinfo = function(){
     var json = this.preference
-    http.put('/userbook/preference/timeline', json).then(function(){
-        window.location.href = "/userbook/mon-compte";
-    })
+    http.put('/userbook/preference/timeline', json)
 }
 
 export const build = function(){

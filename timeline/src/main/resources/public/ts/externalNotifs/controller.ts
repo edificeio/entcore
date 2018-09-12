@@ -1,4 +1,6 @@
 import { ng, template, idiom as lang, skin } from 'entcore';
+import { notify } from 'entcore';
+
 
 export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', async ($rootScope, $scope, model) => {
 
@@ -66,6 +68,7 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 			})
 		})
 		model.preference.putinfo();
+		notify.info("preferences.saved")
 	}
 
 }]);
