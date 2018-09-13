@@ -507,7 +507,7 @@ public class DefaultSchoolService implements SchoolService {
 			"ORDER BY lastName, firstName " +
 			"UNION " +
 			"MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
-			"WHERE {structureId} IN b.structureIds " +
+			"WHERE {structureId} IN b.structureIds AND EXISTS(u.deleteDate)" +
 			"MATCH (s: Structure) " +
 			"WHERE s.id IN b.structureIds " +
 			"WITH u, b, s " +
