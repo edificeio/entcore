@@ -76,8 +76,9 @@ export const directory = {
 		this.getProfileType = function() {
 			if (this.profile)
 				return this.profile;
-			else if (this.type)
-				return this.type;
+			else if (this.type) {
+				return this.type[0];
+			}
 			else
 				this.profiles[0];
 		}
@@ -90,6 +91,11 @@ export const directory = {
 			this.users = _.map(response.data, function(item) {
 				return new directory.User(item);
 			});
+		}
+
+		this.getName = async function() {
+			const response = await http.get('/directory/group/' + this.id);
+			this.name = response.data.name;
 		}
 	},
 	Favorite: function(data?){

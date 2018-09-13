@@ -100,31 +100,7 @@
 
 	<!-- Group Users -->
 	<div ng-if="(search.index === 1 || search.index === 2) && !display.loading && currentGroup">
-		<div class="flex-row justify-between zero-mobile-fat-mobile">
-			<h2 class="flex-all-remains left-text">
-				<a ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
-			</h2>
-			<h2>[[currentGroup.name]]</h2>
-			<div class="flex-all-remains"></div>
-		</div>
-		<div class="mobile-fat-mobile">
-			<h2 class="flex-all-remains left-text">
-				<a ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
-			</h2>
-			<h2>[[currentGroup.name]]</h2>
-		</div>
-		
-		<div class="low-importance italic-text">
-			[[currentGroup.nbUsers]] <i18n>userBook.directory.group.members</i18n>
-		</div>
-
-		<article class="twelve cell actions-list left-text" ng-include="template.containers.groupActions">
-		</article>
-
-		<div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
-			class="item">
-			<div data-ng-include="template.containers.dominosUser"></div>
-		</div>
+		<div data-ng-include="template.containers.groupInfos"></div>
 	</div>
 
 	<!-- Favorites -->

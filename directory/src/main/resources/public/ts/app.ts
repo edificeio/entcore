@@ -37,6 +37,9 @@ routes.define(function($routeProvider){
             .when('/:userId', {
                 action: 'viewUser'
             })
+            .when('/group-view/:groupId', {
+                action: 'viewGroup'
+            })
             .otherwise({
                 redirectTo: '/myClass'
             });
