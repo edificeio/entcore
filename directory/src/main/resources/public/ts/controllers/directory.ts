@@ -504,6 +504,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.back = function() {
+		$scope.search.maxLength = 50;
 		$scope.currentUser = null;
 		template.close('details');
 	};
@@ -514,6 +515,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.loadingmobile = false;
 	};
 	$scope.backToGroups = function() {
+		$scope.search.maxLength = 50;
 		$scope.currentGroup = null;
 		if(!$scope.$$phase){		
 			$scope.$apply('currentGroup');
