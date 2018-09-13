@@ -18,10 +18,13 @@
  ~
  -->
 
-<div ng-if="currentUser.id">
+<div ng-if="currentUser && currentUser.id">
 	<div class="twelve cell" ng-include="template.containers.details"></div>
 </div>
-<div ng-if="!currentUser.id">
+<div ng-if="currentGroup && currentGroup.id && !currentUser">
+	<div class="twelve cell dominos centered-text" ng-include="template.containers.groupInfos"></div>
+</div>
+<div ng-if="(currentUser && !currentUser.id) || (currentGroup && !currentGroup.id)">
 	<h1><a data-reload><i class="oops"></i><i18n>oops</i18n></a></h1>
 	<article>
 		<div class="row">
