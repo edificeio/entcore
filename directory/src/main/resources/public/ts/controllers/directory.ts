@@ -87,6 +87,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.title = 'profile';
 			await $scope.createAllFavorites();
 		},
+		viewGroup: async function(params){
+			$scope.search.index = 1;
+			$scope.groups.searched = true;
+			$scope.currentGroup = new directory.Group({ id: params.groupId });
+			await $scope.currentGroup.getName();
+			await $scope.showGroupUsers($scope.currentGroup);
+			await $scope.createAllFavorites();
+			template.open('page', 'profile');
+			$scope.$apply();
+		},
 		directory: async function(){
 			$scope.classView = false;
 			$scope.display.loading = false;
@@ -531,6 +541,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.currentGroup = group;
 		template.open('dominosUser', 'dominos-user')
 		template.open('groupActions', 'group-actions');
+		template.open('groupInfos', 'group-infos');
 		$scope.display.loading = false;
 		$scope.display.loadingmobile = false;
 		$scope.$apply();
