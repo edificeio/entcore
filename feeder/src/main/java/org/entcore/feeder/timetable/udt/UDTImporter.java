@@ -70,7 +70,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			"SET fg.usedInCourses = true ";
 	public static final String UDT = "UDT";
 	public static final String CODE = "code";
-	private static final Pattern filenameWeekPatter = Pattern.compile("UDCal_[0-9]{2}_([0-9]{2})\\.xml$");
+	private final Pattern filenameWeekPatter;
 	public static final String DATE_FORMAT = "dd/MM/yyyy";
 	private int year;
 	private long endStudents;
@@ -88,11 +88,18 @@ public class UDTImporter extends AbstractTimetableImporter {
 	private Map<String, String> codeGepDiv = new HashMap<>();
 	private Set<String> usedGroupInCourses = new HashSet<>();
 	private final boolean authorizeUserCreation;
+	private final boolean udcalLowerCase;
 
 	public UDTImporter(Vertx vertx, String uai, String path, String acceptLanguage, boolean authorizeUserCreation) {
 		super(uai, path, acceptLanguage);
 		this.vertx = vertx;
 		this.authorizeUserCreation = authorizeUserCreation;
+		udcalLowerCase = vertx.fileSystem().existsBlocking(basePath + "udcal_24.xml");
+		if (udcalLowerCase) {
+			filenameWeekPatter = Pattern.compile("udcal_[0-9]{2}_([0-9]{2})\\.xml$");
+		} else {
+			filenameWeekPatter = Pattern.compile("UDCal_[0-9]{2}_([0-9]{2})\\.xml$");
+		}
 	}
 
 	@Override
@@ -121,7 +128,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_11.xml");
 					parse(basePath + "UDCal_12.xml");
 					generateCourses(startDateWeek1.getWeekOfWeekyear());
-					vertx.fileSystem().readDir(basePath, "UDCal_12_[0-9]+.xml", new Handler<AsyncResult<List<String>>>() {
+					final String UCal12Filter = udcalLowerCase ? "udcal_12_[0-9]+.xml" : "UDCal_12_[0-9]+.xml";
+					vertx.fileSystem().readDir(basePath, UCal12Filter, new Handler<AsyncResult<List<String>>>() {
 						@Override
 						public void handle(AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
@@ -154,6 +162,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 	}
 
 	private void parse(String filePath) throws Exception {
+		if (udcalLowerCase) {
+			filePath = filePath.toLowerCase();
+		}
 		InputSource in = new InputSource(new FileInputStream(filePath));
 		UDTHandler sh = new UDTHandler(this);
 		XMLReader xr = XMLReaderFactory.createXMLReader();
