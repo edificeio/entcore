@@ -830,16 +830,17 @@ public class Importer {
 				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Structure) " +
 				"WHERE has(u.deleteDate) AND NOT(HAS(u.disappearanceDate)) AND u.source = {source} " +
 				"REMOVE u.deleteDate ";
-//				"WITH u " +
-//				"MATCH (g:Group), u-[r:IN]->(:DeleteGroup), u-[r2:HAS_RELATIONSHIPS]->(b:Backup) " +
-//				"WHERE g.id IN b.IN_OUTGOING " +
-//				"DELETE r, r2, b";
 		transactionHelper.add(query, new JsonObject().put("source", currentSource));
 		String query2 =
 				"MATCH (u:User)-[r:IN]->(:DeleteGroup) " +
 				"WHERE not(has(u.deleteDate)) " +
 				"DELETE r ";
 		transactionHelper.add(query2, new JsonObject());
+		String query3 =
+				"MATCH (u1:User)-[r:DUPLICATE]->(u2:User) " +
+				"WHERE u1.source = {source} and u2.source = {source} AND NOT(HAS(u1.disappearanceDate)) and NOT(HAS(u2.disappearanceDate)) " +
+				"DELETE r";
+		transactionHelper.add(query3, new JsonObject().put("source", currentSource));
 	}
 
 	public void addStructureNameInGroups(String prefix) {
