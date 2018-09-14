@@ -1334,5 +1334,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 
     $scope.isMainStructure = function(user, structure){
         return _.findWhere(user.administrativeStructures, {id: structure.id})
-    }
+	}
+	
+	$scope.alreadyAttached = function(structure, potentialChild){
+		return potentialChild.children && potentialChild.children.some(function(child){ return child.id === structure.id })
+	}
 }

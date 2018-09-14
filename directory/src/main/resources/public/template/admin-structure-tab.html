@@ -117,6 +117,7 @@
                 <ul style="height: 320px; padding-top: 10; border-bottom: none; margin-bottom: 10px">
                     <li ng-repeat="potentialChild in structures.all | filter: filterExcludeCurrentStructure(filterStructures) | filter: filterExcludeDoubles(structure.children) | orderBy: 'name' track by potentialChild.id"
                         ng-click="potentialChild.attachParent(structure, refreshScope)"
+                        ng-show="!alreadyAttached(structure, potentialChild)"
                         style="padding-left: 0">
                         <span>[[potentialChild.name]]</span>
                     </li>
