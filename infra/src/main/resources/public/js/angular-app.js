@@ -1354,40 +1354,6 @@ module.directive('filesInputChange', function($compile) {
     }
 })
 
-module.directive('iconsSelect', function($compile) {
-    return {
-        restrict: 'E',
-        scope: {
-            options: '=',
-            class: '@',
-            current: '=',
-            change: '&'
-        },
-        link: function(scope, element, attributes) {
-            element.bind('change', function() {
-                scope.current.id = element.find('.current').data('selected');
-                scope.$eval(scope.change);
-                element.unbind('change');
-            })
-        },
-        template: '' +
-            '<div>' +
-            '<div class="current fixed cell twelve" data-selected="[[current.id]]">' +
-            '<i class="[[current.icon]]"></i>' +
-            '<span translate content="[[current.text]]"></span>' +
-            '</div>' +
-            '<div class="options-list icons-view">' +
-            '<div class="wrapper">' +
-            '<div class="cell three option" data-value="[[option.id]]" data-ng-repeat="option in options">' +
-            '<i class="[[option.icon]]"></i>' +
-            '<span translate content="[[option.text]]"></span>' +
-            '</div>' +
-            '</div>' +
-            '</div>' +
-            '</div>'
-    };
-});
-
 module.directive('preview', function($compile) {
     return {
         restrict: 'E',
