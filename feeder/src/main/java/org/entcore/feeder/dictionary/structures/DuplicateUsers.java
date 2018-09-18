@@ -575,6 +575,7 @@ public class DuplicateUsers {
 		String query =
 				"MATCH (u:User {id : {sId}}), (d:User {id : {dId}}) " +
 				"WHERE NOT({dId} IN coalesce(u.ignoreDuplicates, [])) AND NOT({sId} IN coalesce(d.ignoreDuplicates, [])) " +
+				"AND (has(u.activationCode) OR has(d.activationCode)) " +
 				"MERGE u-[:DUPLICATE {score:{score}}]-d ";
 		JsonObject params = new JsonObject().put("sId", searchUser.getString("id"));
 
