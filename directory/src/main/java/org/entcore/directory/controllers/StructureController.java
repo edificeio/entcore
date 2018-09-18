@@ -30,6 +30,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
@@ -423,7 +424,8 @@ public class StructureController extends BaseController {
 								.put("content", processedTemplate.getBytes())
 								.put("baseUrl", baseUrl);
 
-						eb.send(node + "entcore.pdf.generator", actionObject, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						eb.send(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
+								.setSendTimeout(600000l), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							public void handle(Message<JsonObject> reply) {
 								JsonObject pdfResponse = reply.body();
 								if(!"ok".equals(pdfResponse.getString("status"))){
