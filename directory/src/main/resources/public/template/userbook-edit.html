@@ -20,37 +20,45 @@
 
 <div class="row rigid-grid" workflow="directory.showMoodMotto">
 	<div class="four cell twelve-mobile mood" style="height: 100px;">
-
 		<div class="row horizontal-spacing-twice" style="z-index: 1">
 			<div class="twelve cell centered">
 				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
 				<button type="button" i18n-value="remove" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
 			</div>
 		</div>
-
-
 		<div class="cell twelve">
-			<div class="twelve cell reduce-block-six">
-				<icons-select class="icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
+			<div class="twelve cell">
+				<icons-select class="reduce-block-six icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
 					<div>[[mon-binding]]</div>
 				</icons-select>
 			</div>
 		</div>
-
 	</div>
 
-
 	<div class="margin-four reduce-block-six twelve-mobile" workflow="directory.showMoodMotto">
-		<article class="twelve cell" style="height: 103px; padding-top: 20px;margin:0">
+		<article class="twelve cell" style="padding-top: 20px;margin:0">
 			<div class="row">
 				<h2 translate content="userBook.profile.motto"></h2>
-				<input type="text" class="twelve cell monoline" maxlength="75"
-					   complete-change="saveUserbookProperty('motto')"
-					   ng-model="account.motto" />
+				<div class="flex-row twelve cell">
+					<div class="flex-all-remains">
+						<input class="twelve no-margin monoline top-spacing-twice" 
+							type="text" 
+							maxlength="75" 
+							ng-model="account.motto"
+							complete-change="updateMottoChanged()" />
+						<span class="twelve input-warnings" ng-if="!motto.published">
+							<label><i18n>userBook.motto.warning</i18n></label>
+						</span>
+					</div>
+					<button class="left-spacing-twice bottom-spacing-three block" 
+						ng-click="publishMotto()"
+						ng-disabled="!isMottoChanged()">
+						<i18n>portal.publish</i18n>
+					</button>
+				</div>
 			</div>
 		</article>
 	</div>
-
 </div>
 
 <div class="row reduce-block-six" ng-if="displayChildren(account)">
