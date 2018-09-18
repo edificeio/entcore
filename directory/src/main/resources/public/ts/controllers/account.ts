@@ -111,6 +111,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 		await directory.account.load();
 		$scope.account = directory.account;
+		$scope.currentMotto = directory.account.motto;
+		$scope.motto = {
+			published: true,
+			activated: false
+		}
 		loadThemeConf();
 	}
 
@@ -133,6 +138,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.availableMoods = _.reject($scope.moods, function(mood){
 		return mood.id === 'default';
 	});
+	$scope.availableMoods.unshift({ id: "default", icon: "none", text:"userBook.mood.default" });
 
 	$scope.resetPasswordPath = '/auth/reset/password';
 
@@ -226,6 +232,13 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	$scope.saveUserbookProperty = function(prop){
 		directory.account.saveUserbookProperty(prop);
+	};
+
+	$scope.publishMotto = function(prop){
+		$scope.currentMotto = directory.account.motto;
+		$scope.motto.published = true;
+		$scope.motto.activated = true;
+		$scope.saveUserbookProperty('motto');
 	};
 
 	$scope.changeVisibility = function(hobby){
@@ -322,6 +335,20 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			$scope.$apply();
 		});
 	};
+
+	$scope.isMottoChanged = function() {
+		return directory.account.motto !== $scope.currentMotto;
+	}
+
+	$scope.updateMottoChanged = function() {
+		setTimeout(function(){
+			if (!$scope.motto.activated) {
+				$scope.motto.published = !$scope.isMottoChanged();
+			}
+			$scope.motto.activated = false;
+			$scope.$apply();
+		}, 250);
+	}
 
 	http().get('/auth/context').done(function(data){
 		$scope.passwordRegex = data.passwordRegex;
