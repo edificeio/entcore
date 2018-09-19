@@ -234,7 +234,7 @@ public class CommunicationController extends BaseController {
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile" + nbUsers + groupTypes;
-				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, false, true, false,
+				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
 						preFilter, customReturn, params, user.getType(), visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
