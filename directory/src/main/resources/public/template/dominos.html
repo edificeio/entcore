@@ -106,9 +106,9 @@
 	<!-- Favorites -->
 	<div ng-if="search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
 		<article class="rigid-grid cell twelve small-text">
-			<div class="flex-row justify-between">
+			<div class="flex-row horizontal-spacing justify-between">
 				<div class="left-text">
-					<strong>[[ currentFavorite.name ]]</strong>
+					<h4>[[ currentFavorite.name ]]</h4>
 					<!-- <div class="top-spacing-twice left-text italic-text indication">Créée le...</div> -->
 					<div class="top-spacing-twice left-text italic-text indication">[[ currentFavorite.users.length ]] <i18n>portal.users</i18n> - [[ currentFavorite.groups.length ]] <i18n>portal.groups</i18n></div>
 					<div class="flex-row">
