@@ -1,24 +1,23 @@
-<div class="flex-row justify-between zero-mobile-fat-mobile">
-    <h2 class="flex-all-remains left-text">
-        <a ng-if="groups.all.length" ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
-    </h2>
-</div>
-
-<div class="low-importance italic-text">
-    [[currentGroup.nbUsers]] <i18n>userBook.directory.group.members</i18n>
-</div>
-
-<article class="rigid-grid cell twelve small-text">
-    <div class="flex-row horizontal-spacing justify-between">
-        <div class="left-text">
-            <h4>[[ currentGroup.name ]]</h4>
-            <div ng-include="template.containers.groupActions"></div>
-        </div>
+<div class="horizontal-spacing">
+    <div class="flex-row justify-between zero-mobile-fat-mobile">
+        <h2 class="flex-all-remains left-text">
+            <a ng-if="groups.all.length" ng-click="backToGroups()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
+        </h2>
     </div>
-</article>
-
-
-<div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
-    class="item">
-    <div data-ng-include="template.containers.dominosUser"></div>
+    <article class="rigid-grid cell twelve small-text">
+        <div class="flex-row horizontal-spacing justify-between">
+            <div class="left-text">
+                <h4>[[ currentGroup.name ]]</h4>
+                <div ng-include="template.containers.groupActions"></div>
+                <div class="top-spacing-twice left-text italic-text indication">[[currentGroup.nbUsers]] <i18n>portal.users</i18n></div>
+            </div>
+        </div>
+    </article>
+</div>
+<div class="clear"></div>
+<div class="flex-row justify-center align-center f-wrap">
+    <div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
+        class="item">
+        <div data-ng-include="template.containers.dominosUser"></div>
+    </div>
 </div>
