@@ -304,7 +304,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.close('dominosUser');
 		template.close('dominosGroup');
 		template.open('list', 'favorite-form');
-		$window.scrollTo(0, 0);
+		$scope.scroolTop();
 	}
 
 	$scope.preHideFavoriteForm = function() {
@@ -316,7 +316,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.editingFavorite = false;
 		template.close('list');
 		template.open('list', 'dominos');
-		$window.scrollTo(0, 0);
+		$scope.scroolTop();
 	}
 
 	$scope.selectFavorite = async function(favorite, noupdate) {
@@ -433,10 +433,6 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.$apply('search');
 		}
 
-		if($scope.currentUser !== undefined){
-			ui.scrollToTop();
-		}
-
 		user.open();
 		user.one('sync', async function(){
 			$scope.currentUser = user;
@@ -445,6 +441,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			}
 			if ((model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT') && $scope.currentUser.type[0] === 'Relative') {
 				await $scope.currentUser.loadChildren();
+			}
+			if($scope.currentUser !== undefined){
+				$scope.scroolTop();
 			}
 			$scope.$apply('currentUser');
 		});
@@ -650,5 +649,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.sortByName = function(a, b) {
 		return a.name > b.name;
+	};
+
+	$scope.scroolTop = function () {
+		$("[stick-to-top]")[0].style.top = "0";
+		ui.scrollToTop();
 	};
 }]);
