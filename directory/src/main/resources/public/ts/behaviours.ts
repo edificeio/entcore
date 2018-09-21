@@ -37,7 +37,7 @@ Behaviours.register('directory', {
 					}.bind(this));
 				},
 				viewUserInfos: function(userId){
-				    window.location.href = '/userbook/annuaire#/' + userId;
+					window.open('/userbook/annuaire#/' + userId, '_blank');
 				},
 				removeGroup: function(index, group){
 					this.source.groups.splice(index, 1);
@@ -63,7 +63,6 @@ Behaviours.register('directory', {
 							this.$apply('source');
 						}.bind(this));
 					}.bind(this))
-
 				},
 				applySource: function(){
 					this.setSnipletSource(this.source);
@@ -76,6 +75,11 @@ Behaviours.register('directory', {
 					return splittedName.length > 1 ?
 						lang.translate(groupName.substring(0, groupName.lastIndexOf('-'))) + '-' + lang.translate(groupName.split('-')[splittedName.length - 1]) :
 						groupName
+				},
+				getType: function(type){
+					if(type instanceof Array)
+						 return type[0]
+					return type
 				}
 			}
 		}
