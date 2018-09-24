@@ -588,7 +588,9 @@ directory.User.prototype.loadInfos = function(){
 				adml = _.findWhere(this.schools, {id: id});
 				if (adml) {
 					adml.adml = true;
-					data.attachedStructures.push(adml);
+					if (!adminStructure || (adminStructure && adminStructure.id !== adml.id)) {
+						data.attachedStructures.push(adml);
+					}
 				}
 			});
 		}
