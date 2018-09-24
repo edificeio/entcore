@@ -87,7 +87,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 				"WHERE not(has(v.deleteDate)) " +
 				"RETURN \"" + cleanId + "\" as id, HEAD(sb." + cleanId + ") as name, " +
 				"COLLECT(DISTINCT {id : v.id, name : v.name, displayName :  v.displayName, groupType : labels(v), " +
-				"groupProfile : v.filter, nbUsers : v.nbUsers, profile : HEAD(v.profiles) }) as members;";
+				"groupProfile : v.filter, nbUsers : v.nbUsers, profile : HEAD(v.profiles), activationCode : v.activationCode }) as members;";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
