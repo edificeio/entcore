@@ -45,7 +45,7 @@
 
 	</div>
 
-	<article class="twelve cell vertical-spacing mail">
+	<article class="twelve cell vertical-spacing mail" bottom-scroll="increaseMailLimit()">
 		<div class="row">
 			<em class="cell small-text right-magnet">
 				<span ng-if="mail.isToday()"><i18n>today</i18n> <i18n>at</i18n> [[mail.getHours()]]<i18n>hour.date</i18n>[[mail.getMinutes()]]</span>
@@ -111,7 +111,7 @@
 
 			<hr />
 			<div class="row horizontal-spacing">
-				<div class="twelve cell escape_cke" bind-html="mail.body"></div>
+				<div class="twelve cell escape_cke" bind-html="mail.body | limitTo: state.mailLimit"></div>
 			</div>
 		</div>
 

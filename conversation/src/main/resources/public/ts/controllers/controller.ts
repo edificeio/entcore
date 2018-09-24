@@ -13,8 +13,9 @@ export let conversationController = ng.controller('ConversationController', [
             dragFolder: undefined,
             emptyMessage: lang.translate('folder.empty'),
             searchFailed: false,
-            draftSaveDate: null
-    };
+            draftSaveDate: null,
+            mailLimit: 5000
+        };
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
 
@@ -77,6 +78,14 @@ export let conversationController = ng.controller('ConversationController', [
         template.open('toaster', 'folders-templates/toaster');
         $scope.formatFileType = Document.role;
         $scope.sending = false;
+
+        $scope.increaseMailLimit = () => {
+            $scope.state.mailLimit += 5000;
+        }
+
+        $scope.resetMailLimit = () => {
+            $scope.state.mailLimit = 5000;
+        }
 
         $scope.addUser = (user) => {
             if (!$scope.state.newItem.to) {
@@ -211,6 +220,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.viewMail = async function (mail) {
+            $scope.resetMailLimit();
             template.open('main', 'mail-actions/view-mail');
             window.scrollTo(0,0);
             setCurrentMail(mail);
@@ -231,6 +241,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.readMail = async (mail: Mail) => {
+            $scope.resetMailLimit();
             template.open('main', 'mail-actions/read-mail');
             window.scrollTo(0,0);
             setCurrentMail(mail, true);
