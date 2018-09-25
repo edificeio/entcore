@@ -322,10 +322,10 @@ export const directory = {
 			return a.displayName > b.displayName;
 		};
 		this.sortByGroupType = function(a, b) {
-			return a.groupType > b.groupType;
+			return (a.groupType > b.groupType) ? 1 : -1;
 		};
 		this.sortByGroupName = function(a, b) {
-			return (a.sortName ? a.sortName : a.name) > (b.sortName ? b.sortName : b.name);
+			return ((a.sortName ? a.sortName : a.name) > (b.sortName ? b.sortName : b.name)) ? 1 : -1;
 		};
 		this.sortGroups = function(groups) {
 			groups = groups.sort(this.sortByGroupType);
