@@ -82,20 +82,20 @@
 		<div class="flex-row justify-center align-center f-wrap">
 			<!-- Users -->
 			<div class="item user" 
-				ng-repeat="user in users.match(search.text) | orderBy: 'displayName' | limitTo:search.maxLength" 
+				ng-repeat="user in users.all | orderBy: 'displayName' | limitTo:search.maxLength" 
 				ng-if="search.index === 0 && !display.loading && !classView">
 				<div data-ng-include="template.containers.dominosUser"></div>
 			</div>
 	
 			<div class="item user" 
-				ng-repeat="user in users.match(search.text) | limitTo:search.maxLength" 
+				ng-repeat="user in users.all | limitTo:search.maxLength" 
 				ng-if="search.index === 0 && !display.loading && classView == true">
 				<div data-ng-include="template.containers.dominosUser"></div>
 			</div>
 
 			<!-- Groups -->
 			<div ng-if="search.index === 1 && !display.loading && !currentGroup" 
-				ng-repeat="group in groups.match(search.text) | limitTo:search.maxLength"
+				ng-repeat="group in groups.all | limitTo:search.maxLength"
 				class="item group">
 				<div data-ng-include="template.containers.dominosGroup"></div>
 			</div>
