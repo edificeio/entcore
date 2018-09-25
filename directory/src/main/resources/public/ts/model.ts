@@ -530,26 +530,29 @@ directory.User.prototype.saveAccount = function(cb){
 directory.User.prototype.thumbs = "thumbnail=290x290&thumbnail=82x82&thumbnail=48x48&thumbnail=100x100";
 directory.User.prototype.moods = ['default', 'happy','proud','dreamy','love','tired','angry','worried','sick','joker','sad'];
 
-directory.User.prototype.loadUserbook = function(){
+directory.User.prototype.loadUserbook = async function(){
 	this.pictureVersion = 0;
 
-	oldHttp().get('/directory/userbook/' + this.id).done(function(data){
-		if(this.type){
-			data.type = this.type;
-		}
-		if(!data.mood){
-			data.mood = 'default';
-		}
-		if(data.picture === 'no-avatar.jpg' || data.picture === 'no-avatar.svg'){
-			data.picture = '';
-		}
-		data.mood = _.findWhere(directory.User.prototype.moods, { id: data.mood });
-
-		if(this.edit && this.edit.visibility){
-			this.loadVisibility();
-		}
-		this.updateData(data);
-	}.bind(this));
+	var data = (await http.get('/directory/userbook/' + this.id)).data;
+	if(this.type){
+		data.type = this.type;
+	}
+	if(!data.mood){
+		data.mood = 'default';
+	}
+	if(data.picture === 'no-avatar.jpg' || data.picture === 'no-avatar.svg'){
+		data.picture = '';
+	}
+	var mood = _.findWhere(directory.User.prototype.moods, { id: data.mood });
+	data.mood = {
+		id: mood.id,
+		icon: mood.icon,
+		text: mood.text
+	}
+	if(this.edit && this.edit.visibility){
+		this.loadVisibility();
+	}
+	this.updateData(data);
 };
 
 directory.User.prototype.loadVisibility = function(){
@@ -570,45 +573,44 @@ directory.User.prototype.loadVisibility = function(){
 	}.bind(this));
 };
 
-directory.User.prototype.loadInfos = function(){
-	oldHttp().get('/directory/user/' + this.id).done(function(data){
-		var adminStructure, adml;
+directory.User.prototype.loadInfos = async function(){
+	var data = (await http.get('/directory/user/' + this.id)).data;
+	var adminStructure, adml;
 
-		if(this.edit && this.edit.visibility && !this.edit.userbook){
-			this.loadVisibility();
-		}
-		data.attachedStructures = [];
-		adminStructure = _.findWhere(this.schools, {id: data.administrativeStructures[0].id})
-		if (adminStructure) {
-			adminStructure.admin = true;
-			data.attachedStructures.push(adminStructure);
-		}
-		if (data.functions[0][1]) {
-			data.functions[0][1].forEach(id => {
-				adml = _.findWhere(this.schools, {id: id});
-				if (adml) {
-					adml.adml = true;
-					if (!adminStructure || (adminStructure && adminStructure.id !== adml.id)) {
-						data.attachedStructures.push(adml);
-					}
+	if(this.edit && this.edit.visibility && !this.edit.userbook){
+		this.loadVisibility();
+	}
+	data.attachedStructures = [];
+	adminStructure = _.findWhere(this.schools, {id: data.administrativeStructures[0].id})
+	if (adminStructure) {
+		adminStructure.admin = true;
+		data.attachedStructures.push(adminStructure);
+	}
+	if (data.functions[0][1]) {
+		data.functions[0][1].forEach(id => {
+			adml = _.findWhere(this.schools, {id: id});
+			if (adml) {
+				adml.adml = true;
+				if (!adminStructure || (adminStructure && adminStructure.id !== adml.id)) {
+					data.attachedStructures.push(adml);
 				}
-			});
-		}
-		this.schools.forEach(structure => {
-			if (!_.findWhere(data.attachedStructures, {id: structure.id})) {
-				data.attachedStructures.push(structure);
 			}
 		});
+	}
+	this.schools.forEach(structure => {
+		if (!_.findWhere(data.attachedStructures, {id: structure.id})) {
+			data.attachedStructures.push(structure);
+		}
+	});
 
-		this.updateData(data);
-		this.trigger('loadInfos');
-	}.bind(this));
+	this.updateData(data);
+	this.trigger('loadInfos');
 };
 
-directory.User.prototype.load = function(){
-	this.loadInfos();
+directory.User.prototype.load = async function(){
+	await this.loadInfos();
 	if(this.edit.userbook){
-		this.loadUserbook();
+		await this.loadUserbook();
 	}
 	if(model.me.federated){
 		directory.account.on('loadInfos', this.loadFederatedAddress);

@@ -104,12 +104,12 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	async function init(){
 		await directory.account.open();
 		await directory.account.loadChildren();
+		await directory.account.load();
 		$scope.me = model.me;
 		directory.account.on('change', function(){
 			$scope.$apply();
 		});
 
-		await directory.account.load();
 		$scope.account = directory.account;
 		$scope.currentMotto = directory.account.motto;
 		$scope.motto = {
@@ -134,12 +134,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	};
 
 	$scope.moods = directory.User.prototype.moods;
-
-	$scope.availableMoods = _.reject($scope.moods, function(mood){
-		return mood.id === 'default';
-	});
-	$scope.availableMoods.unshift({ id: "default", icon: "none", text:"userBook.mood.default" });
-
+		var moods = _.reject($scope.moods, function(mood){
+			return mood.id === 'default';
+		});
+		moods.unshift({ id: "default", icon: "none", text:"userBook.mood.default" });
+		$scope.availableMoods = moods;
 	$scope.resetPasswordPath = '/auth/reset/password';
 
 	$scope.birthDate = function(birthDate){
