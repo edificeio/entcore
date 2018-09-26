@@ -84,12 +84,12 @@ export class Users {
     }
 
     async findUser (search, include, exclude, restriction?: boolean): Promise<User[]> {
-        const startText = restriction ? search.substr(0, 3) : '';
+        const startText = restriction ? search.text.substr(0, 3) : '';
         if(!this.searchCachedMap[startText]){
             this.searchCachedMap[startText] = [];
             this.searchCachedMap[startText] = await this.sync(startText);
         }
-        var searchTerm = lang.removeAccents(search).toLowerCase();
+        var searchTerm = lang.removeAccents(search.text).toLowerCase();
         var found = _.filter(
             this.searchCachedMap[startText].filter(function (user) {
                 var includeUser = _.findWhere(include, { id: user.id });
