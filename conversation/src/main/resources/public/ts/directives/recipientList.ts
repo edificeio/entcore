@@ -30,7 +30,7 @@ export const recipientList = ng.directive('recipientList', () => {
                 </label>
                 <img skin-src="/img/illustrations/loading.gif" width="30px" heigh="30px" ng-if="loading"/>
                 <form class="input-help" ng-submit="update(true)">
-                    <input class="chip-input right-magnet" type="text" ng-model="searchText" ng-change="update()" autocomplete="off" ng-class="{ move: searchText.length > 0 }" 
+                    <input class="chip-input right-magnet" type="text" ng-model="search.text" ng-change="update()" autocomplete="off" ng-class="{ move: search.text.length > 0 }" 
                     i18n-placeholder="[[restriction ? 'share.search.help' : 'share.search.placeholder' ]]"
                     />    
                 </form>
@@ -55,7 +55,9 @@ export const recipientList = ng.directive('recipientList', () => {
             var minWidth = 0;
             scope.focused = false;
             scope.loading = false;
-            scope.searchText = '';
+            scope.search = {
+                text: ''
+            };
             scope.itemsFound = [];
             scope.currentReceiver = 'undefined';
             scope.addedFavorites = [];
@@ -80,7 +82,7 @@ export const recipientList = ng.directive('recipientList', () => {
             });
 
             element.find('input').on('keydown', function (e) {
-                if (e.keyCode === 8 && scope.searchText && scope.searchText.length === 0) { // BackSpace
+                if (e.keyCode === 8 && scope.search.text && scope.search.text.length === 0) { // BackSpace
                     var nb = scope.ngModel.length;
                     if (nb > 0)
                         scope.deleteItem(scope.ngModel[nb - 1]);
@@ -106,7 +108,7 @@ export const recipientList = ng.directive('recipientList', () => {
                     await scope.doSearch();
                 }
                 else {
-                    if(scope.restriction && scope.searchText.length < 3 || scope.searchText.length < 1) {
+                    if(scope.restriction && scope.search.text.length < 3 || scope.search.text.length < 1) {
                         scope.itemsFound.splice(0, scope.itemsFound.length);
                     }
                     else {
@@ -185,16 +187,20 @@ export const recipientList = ng.directive('recipientList', () => {
 
             scope.clearSearch = () => {
                 if (!scope.focused) {
-                    scope.searchText = '';
+                    scope.search.text = '';
                     scope.itemsFound = [];
                 }
             };
 
             scope.doSearch = async () => {
-                await scope.updateFoundItems({search:scope.searchText, model:scope.ngModel, founds:scope.itemsFound, restriction:scope.restriction});
-                scope.itemsFound = _.reject(scope.itemsFound, function (element) {
-                    return _.findWhere(scope.addedFavorites, { id: element.id });
-                });
+                var i, element;
+                await scope.updateFoundItems({search:scope.search, model:scope.ngModel, founds:scope.itemsFound, restriction:scope.restriction});
+                for (i = scope.itemsFound.length - 1; i >= 0; i--) {
+                    element = _.findWhere(scope.addedFavorites, { id: scope.itemsFound[i].id });
+                    if (element) {
+                        scope.itemsFound.splice(scope.itemsFound.indexOf(element), 1);
+                    }
+                }
                 scope.$apply('itemsFound');
             };
 
