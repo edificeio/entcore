@@ -108,7 +108,7 @@ public abstract class AbstractFederateController extends BaseController {
 					JsonObject error = new JsonObject()
 							.put("error", new JsonObject()
 									.put("message", I18n.getInstance()
-											.translate("activation.error", getHost(request), I18n.acceptLanguage(request))));
+											.translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
 					error.put("activationCode", activationCode);
 					renderJson(request, error);
 				}
