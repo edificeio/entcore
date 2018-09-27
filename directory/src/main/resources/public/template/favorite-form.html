@@ -85,7 +85,8 @@
                         ng-model="create.favorite.filters.functions"
                         options="create.favorite.options.functions"
                         title-all="[[lang.translate('directory.allFunctions')]]"
-                        title="[[lang.translate('directory.functions')]]">
+                        title="[[lang.translate('directory.functions')]]"
+                        ng-disabled="!testFunctionFilterAvailable(create.favorite.filters.profiles)">
                     </multi-comboboxes>
                 </div>
                 <div class="flex-row">
@@ -93,7 +94,8 @@
                         ng-model="create.favorite.filters.functions"
                         options="create.favorite.options.functions"
                         title-all="[[lang.translate('directory.allFunctions')]]"
-                        title="[[lang.translate('directory.functions')]]">
+                        title="[[lang.translate('directory.functions')]]"
+                        ng-disabled="!testFunctionFilterAvailable(create.favorite.filters.profiles)">
                     </multi-comboboxes>
                     <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
                         ng-model="create.favorite.filters.types"

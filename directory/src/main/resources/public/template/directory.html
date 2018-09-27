@@ -83,7 +83,8 @@
 									ng-model="filters.users.functions"
 									options="filtersOptions.users.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
-									title="[[lang.translate('directory.functions')]]">
+									title="[[lang.translate('directory.functions')]]"
+									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)">
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
 								<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
@@ -132,7 +133,8 @@
 									ng-model="filters.groups.functions"
 									options="filtersOptions.groups.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
-									title="[[lang.translate('directory.functions')]]">
+									title="[[lang.translate('directory.functions')]]"
+									ng-disabled="!testFunctionFilterAvailable(filters.groups.profiles)">
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.groups.types"
