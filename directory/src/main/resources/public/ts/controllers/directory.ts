@@ -608,6 +608,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 		$scope.currentGroup = null;
 		$scope.search.maxLength = 50;
+		$scope.scroolTop();
 		$scope.back();
 	};
 
