@@ -655,4 +655,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$("[stick-to-top]")[0].style.top = "0";
 		ui.scrollToTop();
 	};
+
+	$scope.testFunctionFilterAvailable = function(profiles) {
+		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
+	}
 }]);
