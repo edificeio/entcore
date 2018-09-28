@@ -54,6 +54,7 @@ public class Validator {
 		patterns.put("phone", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$")); // "^(0|\\+33)\\s*[0-9]([-. ]?[0-9]{2}){4}$"
 		patterns.put("mobile", Pattern.compile("^(00|\\+)?(?:[0-9] ?-?\\.?){6,15}$"));
 		patterns.put("notEmpty", Pattern.compile("^(?=\\s*\\S).*$"));
+		patterns.put("maxLength", Pattern.compile("^.{1,1000}$"));
 		patterns.put("birthDate", Pattern.compile("^((19|20)\\d\\d)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])$"));
 		patterns.put("BCrypt", Pattern.compile("^\\$2a\\$\\d{2}\\$([A-Za-z0-9+\\\\./]{22})"));
 		patterns.put("uai", Pattern.compile("^[0-9]{7}[A-Z]$"));
@@ -132,10 +133,15 @@ public class Validator {
 						err = i18n.translate("missing.type.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, type);
 				}
 				if (err != null) {
-					log.info(err);
-					object.remove(attr);
-					continue;
+					if (required.contains(attr)) {
+						return err;
+					} else {
+						log.info(err);
+						object.remove(attr);
+						continue;
+					}
 				}
+
 				if (value instanceof JsonArray) {
 					calcChecksum.append(((JsonArray) value).encode());
 				} else if (value instanceof JsonObject) {
