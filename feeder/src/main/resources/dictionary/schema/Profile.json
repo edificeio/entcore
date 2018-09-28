@@ -2,7 +2,7 @@
 	"validate" : {
 		"externalId" : {
 			"type": "string",
-			"validator" : "notEmpty"
+			"validator" : "maxLength"
 		},
 		"name" : {
 			"type": "string",
@@ -10,7 +10,7 @@
 		},
 		"displayName" : {
 			"type": "string",
-			"validator" : "notEmpty"
+			"validator" : "maxLength"
 		}
 	},
 	"generate" : {
