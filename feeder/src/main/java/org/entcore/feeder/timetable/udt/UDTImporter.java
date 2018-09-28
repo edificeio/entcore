@@ -497,12 +497,14 @@ public class UDTImporter extends AbstractTimetableImporter {
 				String start = null;
 				int current = 0;
 				JsonObject previous = null;
+				int count = 0;
 				for (JsonObject j : c) {
 					int val = Integer.parseInt(j.getString(CODE).substring(0, 3));
+					count++;
 					if (start == null) {
 						start = j.getString("fic");
 						current = val;
-					} else if ((++current) != val) {
+					} else if ((++current) != val || count == c.size()) {
 						persistCourse(generateCourse(start, previous.getString("fic"), previous, e.getKey(), e.getValue()));
 						start = j.getString("fic");
 						current = val;
