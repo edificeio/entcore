@@ -110,13 +110,13 @@
 	<!-- Favorites -->
 	<div class="favorite-infos" ng-if="search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
 		<div class="horizontal-spacing">
-			<article class="rigid-grid cell twelve small-text">
+			<article class="rigid-grid cell twelve">
 				<div class="flex-row horizontal-spacing justify-between">
 					<div class="left-text">
 						<h4>[[ currentFavorite.name ]]</h4>
 						<!-- <div class="top-spacing-twice left-text italic-text indication">Créée le...</div> -->
 						<div class="flex-row">
-							<div class="action-item">
+							<div class="action-item small-text">
 								<a ng-href="/conversation/conversation#/write-mail/[[currentFavorite.id]]/Favorite" class="twelve">
 									<i class="block cell no-margin icon-force-size send-mail"></i>
 									<span class="cell medium-block-container"><i18n>userBook.directory.favorite.write-message</i18n></span>
