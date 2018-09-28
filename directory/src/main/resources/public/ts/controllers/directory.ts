@@ -532,6 +532,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.showGroupUsers = async function(group) {
+		$scope.scroolTop();
 		$scope.display.loading = true;
 		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
 			$scope.display.loadingmobile = true;
