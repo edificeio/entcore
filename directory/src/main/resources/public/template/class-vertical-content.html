@@ -2,7 +2,7 @@
 <nav class="twelve cell horizontal-spacing-twice stamps vertical">
 	<div class="row" ng-if="users.match(search.text).length === 0" translate content="noresult"></div>
 	<div class="row height-four vertical-spacing-twice" ng-repeat="user in users.match(search.text) | limitTo:search.maxLength">
-		<div class="fixed twelve cell">
+		<div class="twelve cell">
 			<article class="twelve cell clip fluid" ng-class="{ selected: user === currentUser }" ng-click="selectUser(user)">
 				<div>
 					<img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100" class="fluid cell" />
