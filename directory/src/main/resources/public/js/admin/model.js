@@ -86,6 +86,17 @@ User.prototype.restore = function(hook){
     })
 }
 
+User.prototype.updateLoginAlias = function() {
+    var that = this;
+    http().putJson("user/" + that.id, {loginAlias: this.loginAlias}).done(function() {
+        notify.info(lang.translate("directory.notify.loginAlias"))
+    }).e400(function(err) {
+        if (err.responseText.includes('already exists') || err.responseText.includes('existe déjà')) {
+            notify.error(lang.translate('directory.notify.loginUpdate.error.alreadyExists'));
+        }
+    });
+}
+
 User.prototype.getQuota = function(hook){
     var that = this
     var req = http().get("/workspace/quota/user/" + that.id)

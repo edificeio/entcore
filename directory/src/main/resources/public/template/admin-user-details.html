@@ -32,6 +32,20 @@
 <div class="twelve cell" ng-if="targetUser.attachmentId"><strong class="four cell">[[lang.translate("attachmentId")]] :</strong> [[targetUser.attachmentId]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userType")]]</strong> [[lang.translate('directory.'+targetUser.type)]]</div>
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userLogin")]]:</strong> [[targetUser.login]]</div>
+
+<div class="twelve cell">
+    <form name="updateLoginAliasForm" ng-submit="updateLoginAlias(targetUser)" novalidate>
+        <strong class="four cell">[[lang.translate("directory.userLoginAlias")]]:</strong>
+        <input class="four cell" type="text" ng-model="targetUser.loginAlias"/>
+        <button type="submit" 
+            class="small cell" 
+            style="padding: 0px 5px; margin-left: 5%;" 
+            ng-disabled="!targetUser.loginAlias || updateLoginAliasForm.$pristine">
+            [[lang.translate("directory.save")]]
+        </button>
+    </form>
+</div>
+
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
 <div  class="twelve cell" ng-if="targetUser.mergeKey"><strong class="four cell">[[lang.translate("userBook.profile.mergeKey")]]:</strong> [[targetUser.mergeKey]]</div>
 <div class="twelve cell" ng-show="targetUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[targetUser.code]]</div>
