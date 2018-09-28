@@ -94,6 +94,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			await $scope.currentGroup.getName();
 			await $scope.showGroupUsers($scope.currentGroup);
 			await $scope.createAllFavorites();
+			$scope.title = 'profileGroup';
 			template.open('page', 'profile');
 			$scope.$apply();
 		},
@@ -654,7 +655,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.scroolTop = function () {
-		$("[stick-to-top]")[0].style.top = "0";
+		var stick = $("[stick-to-top]")[0];
+		if (stick) {
+			stick.style.top = "0";
+		}
 		ui.scrollToTop();
 	};
 
