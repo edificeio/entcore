@@ -54,4 +54,10 @@ public class DefaultServiceProviderFactory implements SamlServiceProviderFactory
 		return services.get(assertion.getSubject().getNameID().getNameQualifier());
 	}
 
+
+	@Override
+	public SamlServiceProvider serviceProvider(String providerId) {
+		return services.get(providerId);
+	}
+
 }

@@ -21,7 +21,11 @@ package org.entcore.auth.security;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.ZLib;
+import io.vertx.core.json.Json;
+import org.entcore.auth.services.SamlServiceProvider;
+import org.entcore.auth.services.SamlServiceProviderFactory;
 import org.entcore.auth.services.SamlVectorService;
+import org.entcore.auth.services.impl.DefaultServiceProviderFactory;
 import org.entcore.auth.services.impl.FrEduVecteurService;
 import org.entcore.common.neo4j.Neo4j;
 import org.joda.time.DateTime;
@@ -93,6 +97,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	private String issuer;
 	private SamlVectorService samlVectorService;
 	private Neo4j neo4j;
+	private SamlServiceProviderFactory spFactory;
+
 
 	private void debug (String message) {
 		if (logger.isDebugEnabled()) {
@@ -105,6 +111,9 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	public void start() {
 		final EventBus eb = getEventBus(vertx);
 		super.start();
+
+		spFactory = new DefaultServiceProviderFactory(
+				config.getJsonObject("saml-services-providers"));
 
 		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
 		if (neo4jConfig != null) {
@@ -225,7 +234,15 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		logger.info("start generating SAMLResponse");
 		logger.info("SP : " + serviceProvider);
 
-		final String entngIdpNameQualifier = config.getString("saml-entng-idp-nq");
+		final JsonObject idp = config.getJsonObject("saml-entng-idp-nq");
+    	String entngIdpNameQualifierTMP = null;
+		if(idp.containsKey(serviceProvider)){
+			entngIdpNameQualifierTMP = idp.getString(serviceProvider);
+		}
+		else if(idp.containsKey("default")){
+			entngIdpNameQualifierTMP = idp.getString(serviceProvider);
+		}
+		final String entngIdpNameQualifier = entngIdpNameQualifierTMP;
 		if(entngIdpNameQualifier == null) {
 			String error = "entngIdpNameQualifier can not be null. You must specify it in auth configuration (saml-entng-idp-nq properties)";
 			logger.error(error);
@@ -264,7 +281,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 
 					JsonArray vectors = event.right().getValue();
 					if(vectors == null || vectors.size() == 0) {
-						String error = "error bulding vectors for user " + userId;
+						String error = "error building vectors for user " + userId;
 						logger.error(error);
 						sendError(message, error);
 					}else {
@@ -512,53 +529,70 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 */
 	private void createVectors(String userId,final String host, final Handler<Either<String, JsonArray>> handler) {
 		debug("create user Vector(s)");
-		HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
-		final JsonArray jsonArrayResult = new fr.wseduc.webutils.collections.JsonArray();
 		// browse supported type vector required by the service provider
-		for (final AttributeConsumingService attributeConsumingService : spSSODescriptor.getAttributeConsumingServices()) {
-			for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
-				String vectorName = requestedAttribute.getName();
-				if(vectorName.equals("FrEduVecteur")) {
-					samlVectorService = new FrEduVecteurService(neo4j);
-					samlVectorService.getVectors(userId, new Handler<Either<String, JsonArray>>() {
-						@Override
-						public void handle(Either<String, JsonArray> stringJsonArrayEither) {
-							if(stringJsonArrayEither.isRight()){
-								JsonArray jsonArrayResultTemp = ((JsonArray)stringJsonArrayEither.right().getValue());
-								for (int i =0 ; i<jsonArrayResultTemp.size();i++){
-									jsonArrayResult.add(jsonArrayResultTemp.getValue(i));
-								}
-								// add FrEduUrlRetour vector
-								for(RequestedAttribute requestedAttribute: attributeConsumingService.getRequestAttributes()) {
-									String vectorName = requestedAttribute.getName();
-									if(vectorName.equals("FrEduUrlRetour")) {
-										JsonObject vectorRetour = new JsonObject().put("FrEduUrlRetour",host);
-										jsonArrayResult.add(vectorRetour);
+		logger.info("createVectors init ");
+
+		List<AttributeConsumingService> AttributesCS = spSSODescriptor.getAttributeConsumingServices();
+		if(AttributesCS.size() > 0){
+			HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
+			final JsonArray jsonArrayResult = new fr.wseduc.webutils.collections.JsonArray();
+
+			for (final AttributeConsumingService attributeConsumingService : AttributesCS) {
+				for (RequestedAttribute requestedAttribute : attributeConsumingService.getRequestAttributes()) {
+					String vectorName = requestedAttribute.getName();
+					if (vectorName.equals("FrEduVecteur")) {
+						samlVectorService = new FrEduVecteurService(neo4j);
+						samlVectorService.getVectors(userId, new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> stringJsonArrayEither) {
+								if (stringJsonArrayEither.isRight()) {
+									JsonArray jsonArrayResultTemp = ((JsonArray) stringJsonArrayEither.right().getValue());
+									for (int i = 0; i < jsonArrayResultTemp.size(); i++) {
+										jsonArrayResult.add(jsonArrayResultTemp.getValue(i));
 									}
+									// add FrEduUrlRetour vector
+									for (RequestedAttribute requestedAttribute : attributeConsumingService.getRequestAttributes()) {
+										String vectorName = requestedAttribute.getName();
+										if (vectorName.equals("FrEduUrlRetour")) {
+											JsonObject vectorRetour = new JsonObject().put("FrEduUrlRetour", host);
+											jsonArrayResult.add(vectorRetour);
+										}
+									}
+									handler.handle(new Either.Right<String, JsonArray>(jsonArrayResult));
 								}
-								handler.handle(new Either.Right<String, JsonArray>(jsonArrayResult));
+
 							}
+						});
 
-						}
-					});
-
-				} else if(requestedAttribute.isRequired() && vectorName.equals("FrEduUrlRetour")) {
-					String error = "vector "+vectorName+" not implemented yet";
-					logger.error(error);
-					handler.handle(new Either.Left<String, JsonArray>(error));
-				} else if(vectorName.equals("mail")) {
-					String error = "vector "+vectorName+" not implemented yet";
-					logger.error(error);
-					handler.handle(new Either.Left<String, JsonArray>(error));
-				} else {
-					if(requestedAttribute.isRequired()) {
-						String error = "vector " + vectorName + " not supported for user " + userId;
+					} else if (requestedAttribute.isRequired() && vectorName.equals("FrEduUrlRetour")) {
+						String error = "vector " + vectorName + " not implemented yet";
 						logger.error(error);
 						handler.handle(new Either.Left<String, JsonArray>(error));
-					}else{
-						logger.debug("vector " + vectorName + " don't have to be supported.");
+					} else if (vectorName.equals("mail")) {
+						String error = "vector " + vectorName + " not implemented yet";
+						logger.error(error);
+						handler.handle(new Either.Left<String, JsonArray>(error));
+					} else {
+						if (requestedAttribute.isRequired()) {
+							String error = "vector " + vectorName + " not supported for user " + userId;
+							logger.error(error);
+							handler.handle(new Either.Left<String, JsonArray>(error));
+						} else {
+							logger.debug("vector " + vectorName + " don't have to be supported.");
+						}
 					}
 				}
+			}
+		}
+		else {
+			String SPid = ((EntityDescriptor)spSSODescriptor.getParent()).getEntityID();
+			if(SPid.isEmpty() || SPid == null){
+				logger.error("Service Providor ID is null or empty");
+				handler.handle(new Either.Left<String, JsonArray>("Service Providor ID is null or empty"));
+			}
+			else {
+				SamlServiceProvider sp = spFactory.serviceProvider(SPid);
+				sp.generate(eb, userId, handler);
 			}
 		}
 	}

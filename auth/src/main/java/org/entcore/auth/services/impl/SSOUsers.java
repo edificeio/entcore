@@ -19,10 +19,10 @@
 
 package org.entcore.auth.services.impl;
 
-import fr.wseduc.webutils.Either;
-import org.opensaml.saml2.core.Assertion;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
+		import fr.wseduc.webutils.Either;
+		import org.opensaml.saml2.core.Assertion;
+		import io.vertx.core.Handler;
+		import io.vertx.core.json.JsonObject;
 
 public class SSOUsers extends AbstractSSOProvider {
 

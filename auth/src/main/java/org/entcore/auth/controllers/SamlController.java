@@ -26,7 +26,9 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
+import io.vertx.core.buffer.Buffer;
 import org.entcore.auth.security.SamlUtils;
 import org.entcore.auth.services.FederationService;
 import org.entcore.auth.services.SamlServiceProvider;
@@ -48,7 +50,17 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.bind.Element;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathFactory;
+import java.io.File;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -63,6 +75,7 @@ import java.util.regex.Pattern;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class SamlController extends AbstractFederateController {
 
@@ -204,49 +217,122 @@ public class SamlController extends AbstractFederateController {
 			@Override
 			public void handle(final UserInfos user) {
 				final String serviceProviderId = request.params().get("providerId");
-
-				if (serviceProviderId == null || serviceProviderId.trim().isEmpty()) {
-					forbidden(request, "invalid.provider");
-					return;
-				}
-
-				// Get connected user sessionId
-				final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
-
-				// Send to the bus to generate the SAMLResponse
-				JsonObject event = new JsonObject()
-						.put("action", "generate-saml-response")
-						.put("SP", serviceProviderId)
-						.put("userId", user.getUserId())
-						.put("nameid", sessionId)
-						.put("host", getScheme(request) + "://" + getHost(request));
-				vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> event) {
-
-						// Get base64 SAMLResponse generated
-						String samlResponse = event.body().getString("SAMLResponse64");
-						if (log.isDebugEnabled()) {
-							log.debug("base64 samlResponse get from controller : " + samlResponse);
-						}
-
-						// Assertion Consumer Service location
-						String destination = event.body().getString("destination");
-
-
-						// If generation succeed, an HTML auto-submit FORM is created
-						String error = event.body().getString("error");
-						if (isNotEmpty(samlResponse) && isNotEmpty(destination) && (error == null || error.isEmpty())) {
-							renderSamlResponse(user,samlResponse,serviceProviderId,destination,request);
-						} else {
-							// Else redirect to the login page
-							redirect(request, "");
-						}
-
-					}
-				}));
+				ssoGenerateSAML(user, serviceProviderId, request);
 			}
 		});
+	}
+
+	private void ssoGenerateSAML(UserInfos user, String serviceProviderId, HttpServerRequest request) {
+		if (serviceProviderId == null || serviceProviderId.trim().isEmpty()) {
+            forbidden(request, "invalid.provider");
+            return;
+        }
+
+		// Get connected user sessionId
+		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
+
+		// Send to the bus to generate the SAMLResponse
+		JsonObject event = new JsonObject()
+                .put("action", "generate-saml-response")
+                .put("SP", serviceProviderId)
+                .put("userId", user.getUserId())
+                .put("nameid", sessionId)
+                .put("host", getScheme(request) + "://" + getHost(request));
+		vertx.eventBus().send("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+
+                // Get base64 SAMLResponse generated
+                String samlResponse = event.body().getString("SAMLResponse64");
+                if (log.isDebugEnabled()) {
+                    log.debug("base64 samlResponse get from controller : " + samlResponse);
+                }
+
+                // Assertion Consumer Service location
+                String destination = event.body().getString("destination");
+                // If generation succeed, an HTML auto-submit FORM is created
+                String error = event.body().getString("error");
+                if (isNotEmpty(samlResponse) && isNotEmpty(destination) && (error == null || error.isEmpty())) {
+                    renderSamlResponse(user,samlResponse,serviceProviderId,destination,request);
+                } else {
+                    // Else redirect to the login page
+                    redirect(request, "");
+                }
+
+            }
+        }));
+	}
+
+	@Get("/saml/redirect/sso/")
+	public void ssoredirectGet ( final HttpServerRequest request){
+		log.info("ssoredirect GET called");
+		ssoRedirect(request.params().get("SAMLRequest"), request);
+	}
+
+	@Post("/saml/post/sso/")
+	public void ssoredirectPost(final HttpServerRequest request) {
+		log.info("ssoredirect POST called");
+		request.setExpectMultipart(true);
+		request.pause();
+		request.endHandler(new Handler<Void>() {
+			@Override
+			public void handle(Void v) {
+			ssoRedirect(request.formAttributes().get("SAMLRequest"), request);
+		}});
+		request.resume();
+
+	}
+
+	@Get("/saml/metadata/:idp")
+	public void idpGar(HttpServerRequest request) {
+		JsonObject idpConfig = config.getJsonObject("idp-metadata-mapping", new JsonObject());
+		String idpParam = request.getParam("idp");
+		if( !idpConfig.isEmpty() && idpConfig.containsKey(idpParam)) {
+			request.response().sendFile(idpConfig.getString(idpParam));
+		}
+		else {
+			request.response().setStatusCode(404).setStatusMessage("idp not found").end();
+		}
+	}
+
+
+	/**
+	 * Generate SAML response from saml Issuer
+	 * @param xmlStrBase64 (issuer name inside)
+	 * @param request
+	 */
+	private void ssoRedirect(String xmlStrBase64, HttpServerRequest request) {
+		String xmlStr = "";
+		try {
+			xmlStr = new String(Base64.getDecoder().decode(xmlStrBase64));
+		} catch (Exception e) {
+			log.error("ssoRedirect decode base64 xml FAILED ", e);
+			redirect(request, "");
+		}
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder;
+		try {
+			builder = factory.newDocumentBuilder();
+			Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+			XPathFactory xpf = XPathFactory.newInstance();
+			XPath path = xpf.newXPath();
+			String expression = "/AuthnRequest/Issuer";
+			final String serviceProviderId = (String) path.evaluate(expression, doc.getDocumentElement());
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				@Override
+				public void handle(final UserInfos user) {
+					ssoGenerateSAML(user, serviceProviderId, request);
+				}
+			});
+		} catch (Exception e) {
+
+			log.info("Provider not available");
+			log.info("XML Provider ------------------------------");
+			log.info(xmlStr);
+			log.info("END XML Provider ------------------------------");
+			redirect(request,"");
+			log.error("Can't generate SAML response from provider ", e);
+		}
 	}
 
 	/**
@@ -268,7 +354,7 @@ public class SamlController extends AbstractFederateController {
 		} else {
 			log.error("Error loading relay-state properties.");
 		}
-		paramsFED.put("Destination",destination);
+		paramsFED.put("Destination", destination);
 		renderView(request, paramsFED, "fed.html", null);
 	}
 
