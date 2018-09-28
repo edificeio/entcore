@@ -923,6 +923,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
         user.birthDate = new Date()
     }
 
+	$scope.updateLoginAlias = function(user) {
+		user.updateLoginAlias();
+	}
+
 	$scope.createUser = function(user){
 		user.create(function(){
 			$scope.resetUser(user)
