@@ -25,4 +25,6 @@ public interface SamlServiceProviderFactory {
 
 	SamlServiceProvider serviceProvider(Assertion assertion);
 
+	SamlServiceProvider serviceProvider(String providerId);
+
 }

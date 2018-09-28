@@ -74,14 +74,8 @@ public class Auth extends BaseServer {
 					if (event.succeeded() && event.result().size() > 0) {
 						try {
 							SamlController samlController = new SamlController();
-							JsonObject conf = new JsonObject()
-									.put("cwd", config.getString("cwd"))
-									.put("saml-metadata-folder", samlMetadataFolder)
-									.put("saml-private-key", config.getString("saml-private-key"))
-									.put("saml-public-key", config.getString("saml-public-key"))
-									.put("saml-issuer", config.getString("saml-issuer"))
-									.put("saml-entng-idp-nq", config.getString("saml-entng-idp-nq"))
-									.put("saml-slo-relayState", config.getString("saml-slo-relayState", "NULL"));
+							JsonObject conf = config;
+
 							vertx.deployVerticle(SamlValidator.class, new DeploymentOptions().setConfig(conf).setWorker(true));
 							samlController.setEventStore(eventStore);
 							samlController.setUserAuthAccount(userAuthAccount);

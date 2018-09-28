@@ -21,6 +21,7 @@ package org.entcore.auth.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
+import io.vertx.core.eventbus.EventBus;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -56,6 +57,10 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			return false;
 		}
 		return true;
+	}
+
+	public void generate(EventBus eb, String userId, Handler<Either<String, io.vertx.core.json.JsonArray>> handler) {
+		handler.handle(new Either.Left<String, io.vertx.core.json.JsonArray>("Override is required on generate function in AbstractSSOProvider"));
 	}
 
 	protected String getAttribute(Assertion assertion, String attr) {
