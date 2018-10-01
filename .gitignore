@@ -30,6 +30,7 @@ developer.id
 *.mod.json
 .jshintrc
 Thumbs.db
+copy.sh
 bower_components
 **/rev-manifest.json
 node_modules

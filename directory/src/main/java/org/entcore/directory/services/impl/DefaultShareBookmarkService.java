@@ -31,10 +31,9 @@ import org.entcore.directory.services.ShareBookmarkService;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.validation.StringValidation.cleanId;
+
 
 public class DefaultShareBookmarkService implements ShareBookmarkService {
 

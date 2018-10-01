@@ -18,6 +18,7 @@
 		{"name": "directory", "url": "/directory/admin"},
 		{"name": "history", "url": "/history/admin"},
 		{"name": "appRegistry", "url": "/appregistry/admin"},
-		{"name": "communication", "url": "/communication/admin"}
+		{"name": "communication", "url": "/communication/admin"},
+		{"name": "calendar", "url": "/directory/calendar"}
 	]
 }
