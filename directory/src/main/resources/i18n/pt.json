@@ -436,5 +436,12 @@
     "directory.params.tab": "Paramétrages",
     "directory.params.title" : "Bloquer la connexion",
     "directory.params.validate": "Valider",
+    "directory.slot.bad.request.invalid.hours": "L'heure de début ne peut pas être supérieure à l'heure de fin",
+    "directory.slot.bad.request.format.hours.invalid": "Invalid date format",
+    "directory.slot.bad.request.invalid.structure": "School id must be specified",
+    "directory.slotProfile": "Grille horaire",
+    "directory.slot.bad.request.profile.already.exists": "Profil with this name already exists for this structure",
+    "directory.slot.bad.request.slot.name.already.exists": "Une horaire de ce nom existe déjà pour ce profil",
+    "directory.slot.bad.request.slot.overlap": "Une horaire existe déjà sur cette plage horaire",
     "password.warning.federated" : "Le mot de passe que vous allez changer corrrespond à celui de l'ENT et non celui du portail académique. Vous avez besoin de votre ancien mot de passe ENT."
 }
