@@ -22,6 +22,8 @@ package org.entcore.directory;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.http.BasicFilter;
+import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
@@ -29,17 +31,7 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
-import org.entcore.directory.controllers.ClassController;
-import org.entcore.directory.controllers.DirectoryController;
-import org.entcore.directory.controllers.GroupController;
-import org.entcore.directory.controllers.ImportController;
-import org.entcore.directory.controllers.ProfileController;
-import org.entcore.directory.controllers.ShareBookmarkController;
-import org.entcore.directory.controllers.StructureController;
-import org.entcore.directory.controllers.TenantController;
-import org.entcore.directory.controllers.TimetableController;
-import org.entcore.directory.controllers.UserBookController;
-import org.entcore.directory.controllers.UserController;
+import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.ClassService;
@@ -47,17 +39,7 @@ import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
-import org.entcore.directory.services.impl.DefaultClassService;
-import org.entcore.directory.services.impl.DefaultGroupService;
-import org.entcore.directory.services.impl.DefaultImportService;
-import org.entcore.directory.services.impl.DefaultProfileService;
-import org.entcore.directory.services.impl.DefaultSchoolService;
-import org.entcore.directory.services.impl.DefaultShareBookmarkService;
-import org.entcore.directory.services.impl.DefaultTenantService;
-import org.entcore.directory.services.impl.DefaultTimetableService;
-import org.entcore.directory.services.impl.DefaultUserBookService;
-import org.entcore.directory.services.impl.DefaultUserService;
-import org.entcore.directory.services.impl.UserbookRepositoryEvents;
+import org.entcore.directory.services.impl.*;
 
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
@@ -67,6 +49,7 @@ import io.vertx.core.http.HttpServerRequest;
 public class Directory extends BaseServer {
 
 	public static final String FEEDER = "entcore.feeder";
+	public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
 	@Override
 	protected void initFilters() {
@@ -78,6 +61,7 @@ public class Directory extends BaseServer {
 	public void start() throws Exception {
 		final EventBus eb = getEventBus(vertx);
 		super.start();
+		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
 		rm.get("/userbook/i18n", new Handler<HttpServerRequest>() {
@@ -107,6 +91,7 @@ public class Directory extends BaseServer {
 		directoryController.setSchoolService(schoolService);
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
+		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
 		addController(directoryController);
 		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
 
@@ -156,12 +141,18 @@ public class Directory extends BaseServer {
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
 
-		ShareBookmarkController shareBookmarkController = new ShareBookmarkController();
-		shareBookmarkController.setShareBookmarkService(new DefaultShareBookmarkService());
-		addController(shareBookmarkController);
+        ShareBookmarkController shareBookmarkController = new ShareBookmarkController();
+        shareBookmarkController.setShareBookmarkService(new DefaultShareBookmarkService());
+        addController(shareBookmarkController);
 
-		vertx.eventBus().localConsumer("user.repository",
-				new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+        SlotProfileController slotProfileController = new SlotProfileController(SLOTPROFILE_COLLECTION);
+        slotProfileController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
+        addController(slotProfileController);
+
+        addController(new CalendarController());
+
+        vertx.eventBus().localConsumer("user.repository",
+                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
 	}
 
 }

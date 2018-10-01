@@ -1,0 +1,141 @@
+<!--
+    |||||||||||||||||||||||
+    |||  STRUCTURE OPS  |||
+    |||||||||||||||||||||||
+-->
+
+<!-- Structure selection menu -->
+<div ng-include="'structure-tree'"></div>
+
+
+<article class="side-tabs-content content-flex nine cell" ng-if="structure">
+    <nav class="vertical cell search-container-left">
+
+        <div class="horizontal-buttons-container">
+            <button ng-click="setShowWhat('showSlotProfileCreation')"
+                    tooltip="directory.tooltip.creationTooltip.slotProfile"
+                    class="glyph-button plus-icon">
+            </button>
+        </div>
+
+        <!-- SlotProfile list -->
+        <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="slotProfileFilteringInput" ng-change="scrollOpts.reset()"/>
+        <ul ng-if="!slotProfileFilteringInput" bottom-scroll-action="scrollOpts.increment()">
+            <li ng-class="userStyle(profile)" ng-repeat="profile in component.profilesList | orderBy: profile.name | limitTo: scrollOpts.scrollLimit"
+            ng-click="showProfilDetails(profile)" style="padding-left: 0">
+                <span>[[profile.name]]</span>
+            </li>
+        </ul>
+        <ul ng-if="slotProfileFilteringInput" bottom-scroll-action="scrollOpts.increment()">
+            <li ng-class="userStyle(profile)" ng-repeat="profileSearch in component.profilesList | filter: {name: slotProfileFilteringInput} | orderBy: 'name' "
+            ng-click="showProfilDetails(profileSearch)" style="padding-left: 0">
+                <span>[[profileSearch.name]]</span>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- slotProfile creation -->
+    <div class="search-container-view"  ng-if="showWhat === 'showSlotProfileCreation'">
+        <div class="row">
+            <h1 style="margin-bottom: 0; text-align:center;">[[createdSlotProfile.name ? createdSlotProfile.name : lang.translate("directory.slotProfile")]]</h1>
+        </div>
+        <hr class="separator cell">
+        <div style="text-align:center">
+            <button ng-click="saveSlotProfile()" ng-disabled="!createdSlotProfile.name">[[lang.translate("directory.admin.create")]]</button>
+        </div>
+        <hr class="separator cell">
+        <div class="twelve cell">
+            <strong class="four cell padding-top-5">[[lang.translate("slotProfil.title")]]</strong>
+            <input class="four cell padding-top-5" type="text" ng-model="createdSlotProfile.name" required/>
+        </div>
+    </div>
+
+    <!-- Profile details -->
+    <div class="search-container-view" ng-if="profileSelected">
+        <div class="row">
+          <h1 style="margin-bottom: 0; text-align:center;">[[structure.name]]</h1>
+        </div>
+        <hr class="separator cell">
+        <div style="text-align:center" ng-if="!profileUpdate" class="row">
+            <h1 style="margin-bottom: 0;">[[lang.translate("slotProfil.subtitle")]] [[profileSelected.name]] </h1>
+            <div class="padding-top-5">
+                <button ng-click="updateSlotProfile(profileSelected)" class="text-flow"> [[lang.translate("slotProfil.update")]] </button>
+            </div>
+        </div>
+        <div ng-if="profileUpdate" class="row">
+            <strong class="four cell padding-top-5">[[lang.translate("slotProfil.title")]]</strong>
+            <input class="four cell padding-top-5" type="text" ng-model="profileUpdate.name" required/>
+            <div style="text-align:center" class = "padding-top-5">
+                <button ng-click="updateSlotProfileSave(profileUpdate)" ng-disabled="!profileUpdate.name" class="text-flow"> [[lang.translate("slotProfil.save")]] </button>
+                <button ng-click="updateSlotProfileCancel()" class="text-flow"> [[lang.translate("slotProfil.cancel")]] </button>
+            </div>
+        </div>
+
+        <!-- Listing all slots -->
+        <div ng-repeat="slot in profileSelected.slots | orderBy: 'startHour'">
+            <hr class="separator cell">
+            <div style="text-align:center" ng-if= "selectedSlot.id !== slot.id">
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.name")]]</strong>
+                    <strong class="six cell">[[slot.name]]</strong>
+                </div>
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.startHour")]]</strong>
+                    <strong class="six cell">[[slot.startHour]]</strong>
+                </div>
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.endHour")]]</strong>
+                    <strong class="six cell">[[slot.endHour]]</strong>
+                </div>
+                <div class="padding-top-5">
+                    <button ng-click="updateSlot(slot)" class="text-flow"> [[lang.translate("slotProfil.update")]] </button>
+                    <button ng-click="deleteSlot(profileSelected._id, slot)" class="text-flow"> [[lang.translate("slotProfil.delete")]] </button>
+                </div>
+            </div>
+            <div ng-if= "selectedSlot.id === slot.id" style="text-align:center">
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.name")]]</strong>
+                    <input class="four cell" type="text" ng-model="selectedSlot.name" required/>
+                </div>
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.startHour")]]</strong>
+                    <time-picker-core class="one cell" type="text" ng-model="selectedSlot.startHour" ></time-picker-core >
+                </div>
+                <div class="twelve cell padding-top-5">
+                    <strong class="six cell">[[lang.translate("slotProfil.endHour")]]</strong>
+                    <time-picker-core  class="one cell" type="text" ng-model="selectedSlot.endHour"></time-picker-core >
+                </div>
+                <div class="twelve cell padding-top-5" style="text-align:center">
+                    <button ng-click="updateSlotSave(selectedSlot)" ng-disabled="!selectedSlot.name" class="text-flow"> [[lang.translate("slotProfil.save")]] </button>
+                    <button ng-click="updateSlotCancel()" class="text-flow"> [[lang.translate("slotProfil.cancel")]] </button>
+                </div>
+            </div>
+        </div>
+        <hr class="separator cell">
+
+        <div style="text-align:center">
+            <button ng-click="addSequenceSlotProfil()" ng-disabled="newSlot" class="text-flow">[[lang.translate("slotProfil.add")]]</button>
+        </div>
+
+        <!-- Form to create a slot-->
+        <div ng-if="newSlot" style="text-align:center">
+          <hr class="separator cell">
+          <div class="twelve cell padding-top-5">
+              <strong class="six cell">[[lang.translate("slotProfil.name")]]</strong>
+              <input class="four cell" type="text" ng-model="newSlot.name" required/>
+          </div>
+          <div class="twelve cell padding-top-5">
+              <strong class="six cell">[[lang.translate("slotProfil.startHour")]]</strong>
+              <time-picker-core class="one cell" type="text" ng-model="newSlot.startHour" ></time-picker-core >
+          </div>
+          <div class="twelve cell padding-top-5">
+              <strong class="six cell">[[lang.translate("slotProfil.endHour")]]</strong>
+              <time-picker-core  class="one cell" type="text" ng-model="newSlot.endHour"></time-picker-core >
+          </div>
+          <div class="twelve cell padding-top-5" style="text-align:center">
+              <button ng-click="saveSlot()" ng-disabled="!newSlot.name" class="text-flow">[[lang.translate("slotProfil.save")]]</button>
+              <button ng-click="cancelAddSlotProfil()" class="text-flow">[[lang.translate("slotProfil.cancel")]]</button>
+          </div>
+        </div>
+    </div>
+</article>
