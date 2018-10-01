@@ -35,10 +35,7 @@ import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
-import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.*;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -53,6 +50,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
+import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class DirectoryController extends BaseController {
@@ -64,6 +62,7 @@ public class DirectoryController extends BaseController {
 	private ClassService classService;
 	private UserService userService;
 	private GroupService groupService;
+	private SlotProfileService slotProfileService;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -507,6 +506,14 @@ public class DirectoryController extends BaseController {
 				String sId = message.body().getString("structureId");
 				userService.listAdml(sId, responseHandler(message));
 				break;
+			case "list-slotprofiles" :
+				String structId = message.body().getString("structureId");
+				slotProfileService.listSlotProfilesByStructure(structId, busArrayHandler(message));
+				break;
+			case "list-slots" :
+				String slotProfileId = message.body().getString("slotProfileId");
+				slotProfileService.listSlots(slotProfileId, busResponseHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.put("status", "error")
@@ -545,5 +552,9 @@ public class DirectoryController extends BaseController {
 
 	public void setGroupService(GroupService groupService) {
 		this.groupService = groupService;
+	}
+
+	public void setSlotProfileService (SlotProfileService slotProfileService) {
+		this.slotProfileService = slotProfileService;
 	}
 }

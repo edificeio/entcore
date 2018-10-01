@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>{{#i18n}}timetable.title{{/i18n}}</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script src="{{#infra}}js/loader.js{{/infra}}" type="text/javascript" id="context"></script>
+  <script src="{{#static}}js/calendar/model.js{{/static}}" type="text/javascript"></script>
+  <script src="{{#static}}js/calendar/controller.js{{/static}}" type="text/javascript"></script>
+  <!--<link rel="stylesheet" type="text/css" href="{{#static}}css/timetable.css{{/static}}">-->
+  <link rel="stylesheet" type="text/css" href="{{#static}}css/timepicker.css{{/static}}">
+  <script type="text/ng-template" id="empty"></script>
+</head>
+
+<body ng-controller="CalendarController">
+<admin-portal>
+    <article class="twelve cell list-view">
+
+        <div class="twelve leaf-menu-container">
+            <div ng-repeat="menuItem in leafMenu | filter: filterLeafMenuItems" class="leaf-menu" ng-class="{ selected: template.contains('body', menuItem.templateName) }">
+                <a ng-click="template.open('body', menuItem.templateName); menuItem.onClick();">[[menuItem.text]]</a>
+                <loading-icon
+                    ng-if="menuItem.requestName"
+                    request="[[menuItem.requestName]]" only-loading-icon
+                    class="inline-middle">
+                </loading-icon>
+            </div>
+        </div>
+
+        <script type="text/ng-template" id="structure-tree">
+            <nav class="three cell recursive-list">
+                <input type="text" placeholder="[[lang.translate('directory.search')]]" ng-model="structureFilteringInput" />
+                <ul ng-if="!structureFilteringInput">
+                    <li ng-repeat="struct in levelStructures = structures.all | filter: filterTopStructures | orderBy: 'name'"
+                        ng-click="getCurrentLeaf().onStructureClick(struct); setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
+                        ng-class="{ selected: struct.selected }">
+                        [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+                        <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+                    </li>
+                </ul>
+                <ul ng-if="structureFilteringInput">
+                    <li ng-repeat="struct in allStructures = structures.all | filter: {name: structureFilteringInput} | orderBy: 'name'"
+                        ng-click="getCurrentLeaf().onStructureClick(struct);  setShowWhat('showCurrentStructure'); selectOnly(struct, allStructures)"
+                        ng-class="{ selected: struct.selected }">
+                        [[struct.name]]
+                    </li>
+                </ul>
+            </nav>
+        </script>
+
+        <script type="text/ng-template" id="structure-tree-sub-levels">
+            <ul ng-if="struct.children">
+                <li ng-repeat="struct in levelStructures = filterChildren(struct) | orderBy: 'name'"
+                    ng-click="$event.stopPropagation(); getCurrentLeaf().onStructureClick(struct);  setShowWhat('showCurrentStructure'); selectOnly(struct, levelStructures)"
+                    ng-class="{ selected: struct.selected }">
+                    [[struct.name]] <i class="right-magnet folded-icon" ng-if="struct.children" ng-class="{ folded: !struct.selected }"></i>
+                    <span ng-include="struct.selected ? 'structure-tree-sub-levels' : null"></span>
+                </li>
+            </ul>
+        </script>
+
+        <div ng-include="template.containers.body" class="twelve"></div>
+
+    </article>
+</admin-portal>
+</body>
+
+</html>

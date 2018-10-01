@@ -122,7 +122,6 @@
       } else {
         if (this.hour <= this.minHour) {
           this.hour = this.maxHour;
-          this.minute = 0;
         } else {
           this.hour--;
         }
@@ -302,7 +301,7 @@
       case 'modal':
         template = '<div class="bootstrap-timepicker-widget modal hide fade in" data-backdrop="'+ (this.modalBackdrop ? 'true' : 'false') +'">'+
           '<div class="modal-header">'+
-            '<a href="#" class="close" data-dismiss="modal">×</a>'+
+            '<a href="#" class="close" data-dismiss="modal">ï¿½</a>'+
             '<h3>Pick a Time</h3>'+
           '</div>'+
           '<div class="modal-content">'+
@@ -517,21 +516,13 @@
         }
       }
       this.hour++;
-      if (this.hour === this.maxHour) {
-        this.minute = 0;
-      }
-      else if (this.hour > this.maxHour) {
+      if (this.hour > this.maxHour) {
         this.hour = this.minHour;
         return;
       }
     },
 
     incrementMinute: function(step) {
-      if (this.hour === this.maxHour && this.minute === 0) {
-        this.hour = this.minHour;
-        return;
-      }
-
       var newVal;
 
       if (step) {
@@ -540,7 +531,11 @@
         newVal = this.minute + this.minuteStep - (this.minute % this.minuteStep);
       }
 
-      if (newVal > 59) {
+      if (this.hour === this.maxHour && newVal > 59) {
+          this.hour = this.minHour;
+          this.minute =  newVal - 60;
+          return;
+      } else if (newVal > 59) {
         this.incrementHour();
         this.minute = newVal - 60;
       } else {
