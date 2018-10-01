@@ -68,6 +68,10 @@ public class DefaultUserBookService implements UserBookService {
 		if (StringUtils.isEmpty(picturePath)) {
 			return Optional.empty();
 		}
+		//it is not picture id but user id
+		if(picturePath.startsWith("/userbook/avatar/")) {
+			return Optional.empty();
+		}
 		String[] picturePaths = picturePath.split("/");
 		String pictureId = picturePaths[picturePaths.length - 1];
 		return Optional.ofNullable(pictureId);
@@ -84,68 +88,74 @@ public class DefaultUserBookService implements UserBookService {
 		for (String u : usersId) {
 			Future<Boolean> future = Future.future();
 			futures.add(future);
-			cleanAvatarCache(u, res -> future.complete(res));
+			futures.add(cleanAvatarCache(u));
 		}
 		CompositeFuture.all(futures).setHandler(finishRes -> handler.handle(finishRes.succeeded()));
 	}
 
-	private void cleanAvatarCache(String userId, final Handler<Boolean> handler) {
+	private Future<Boolean> cleanAvatarCache(String userId) {
+		Future<Boolean> future = Future.succeededFuture();
 		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
 			if (res.succeeded() && res.result().size() > 0) {
 				this.avatarStorage.removeFiles(res.result(), removeRes -> {
-					handler.handle(true);
+					future.complete(true);
 				});
 			} else {
-				handler.handle(false);
+				future.complete(false);
 			}
 		});
+		return future;
 	}
 
-	private void cacheAvatarFromUserBook(String userId, JsonObject userBook, final Handler<Boolean> handler) {
-		Optional<String> pictureId = getPictureIdForUserbook(userBook);
-		if (!pictureId.isPresent()) {
-			cleanAvatarCache(userId, res -> {
-				handler.handle(res);// no avatar
-			});
-			return;
-		}
-		this.wsHelper.getDocument(pictureId.get(), resDoc -> {
-			if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status"))) {
-				JsonObject document = resDoc.result().body().getJsonObject("result");
-				String fileId = document.getString("file");
-				// Extensions are not used by storage
-				String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
-				//
-				JsonObject thumbnails = document.getJsonObject("thumbnails");
-				Map<String, String> filenamesByIds = new HashMap<>();
-				filenamesByIds.put(fileId, defaultFilename);
-
-				for (String size : thumbnails.fieldNames()) {
-					filenamesByIds.put(thumbnails.getString(size), avatarFileNameFromUserId(userId, Optional.of(size)));
-				}
-				// TODO avoid buffer to improve performances and avoid cache every time
-				@SuppressWarnings("rawtypes")
-				List<Future> futures = new ArrayList<>();
-				for (Entry<String, String> entry : filenamesByIds.entrySet()) {
-					String cFileId = entry.getKey();
-					String cFilename = entry.getValue();
-					Future<JsonObject> future = Future.future();
-					futures.add(future);
-					this.wsHelper.readFile(cFileId, buffer -> {
-						if (buffer != null) {
-							this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "", cFilename,
-									wRes -> {
-										future.complete(wRes);
-									});
-						} else {
-							future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
-						}
-					});
-				}
-				//
-				CompositeFuture.all(futures).setHandler(finishRes -> handler.handle(finishRes.succeeded()));
+	private Future<Boolean> cacheAvatarFromUserBook(String userId, Optional<String> pictureId, Boolean remove) {
+		// clean avatar when changing or when removing
+		Future<Boolean> futureClean = (pictureId.isPresent() || remove) ? cleanAvatarCache(userId)
+				: Future.succeededFuture();
+		return futureClean.compose(res -> {
+			if (!pictureId.isPresent()) {
+				return Future.succeededFuture();
 			}
+			Future<Boolean> futureCopy = Future.future();
+			this.wsHelper.getDocument(pictureId.get(), resDoc -> {
+				if (resDoc.succeeded() && "ok".equals(resDoc.result().body().getString("status"))) {
+					JsonObject document = resDoc.result().body().getJsonObject("result");
+					String fileId = document.getString("file");
+					// Extensions are not used by storage
+					String defaultFilename = avatarFileNameFromUserId(userId, Optional.empty());
+					//
+					JsonObject thumbnails = document.getJsonObject("thumbnails", new JsonObject());
+					Map<String, String> filenamesByIds = new HashMap<>();
+					filenamesByIds.put(fileId, defaultFilename);
+
+					for (String size : thumbnails.fieldNames()) {
+						filenamesByIds.put(thumbnails.getString(size),
+								avatarFileNameFromUserId(userId, Optional.of(size)));
+					}
+					// TODO avoid buffer to improve performances and avoid cache every time
+					List<Future> futures = new ArrayList<>();
+					for (Entry<String, String> entry : filenamesByIds.entrySet()) {
+						String cFileId = entry.getKey();
+						String cFilename = entry.getValue();
+						Future<JsonObject> future = Future.future();
+						futures.add(future);
+						this.wsHelper.readFile(cFileId, buffer -> {
+							if (buffer != null) {
+								this.avatarStorage.writeBuffer(FileUtils.stripExtension(cFilename), buffer, "",
+										cFilename, wRes -> {
+											future.complete(wRes);
+										});
+							} else {
+								future.fail("Cannot read file from workspace storage. ID =: " + cFileId);
+							}
+						});
+					}
+					//
+					CompositeFuture.all(futures).setHandler(finishRes -> futureCopy.complete(finishRes.succeeded()));
+				}
+			});
+			return futureCopy;
 		});
+
 	}
 
 	@Override
@@ -161,9 +171,11 @@ public class DefaultUserBookService implements UserBookService {
 		}
 
 		StatementsBuilder b = new StatementsBuilder();
-		String query = "MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub:UserBook) " + "SET "
+		String query = "MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub:UserBook) WITH ub.picture as oldpic,ub,u SET "
 				+ nodeSetPropertiesFromJson("ub", u);
-		if (u.size() > 0) {
+		query += " RETURN oldpic,ub.picture as picture";
+		boolean updateUserBook = u.size() > 0;
+		if (updateUserBook) {
 			b.add(query, u.put("id", userId));
 		}
 		String q2 = "MATCH (u:`User` { id : {id}})-[:USERBOOK]->(ub:UserBook)"
@@ -181,14 +193,24 @@ public class DefaultUserBookService implements UserBookService {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				if ("ok".equals(r.body().getString("status"))) {
-					cacheAvatarFromUserBook(userId, userBook, res -> {
-						if (res) {
-							result.handle(new Either.Right<String, JsonObject>(new JsonObject()));
-						} else {
-							result.handle(
-									new Either.Left<String, JsonObject>(r.body().getString("message", "update.error")));
+					if (updateUserBook) {
+						JsonArray results = r.body().getJsonArray("results", new JsonArray());
+						JsonArray firstStatement = results.getJsonArray(0);
+						if (firstStatement != null && firstStatement.size() > 0) {
+							JsonObject object = firstStatement.getJsonObject(0);
+							String picture = object.getString("picture", "");
+							cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).setHandler(e -> {
+								if (e.succeeded()) {
+									result.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+								} else {
+									result.handle(new Either.Left<String, JsonObject>(
+											r.body().getString("message", "update.error")));
+								}
+							});
 						}
-					});
+					} else {
+						result.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+					}
 				} else {
 					result.handle(new Either.Left<String, JsonObject>(r.body().getString("message", "update.error")));
 				}

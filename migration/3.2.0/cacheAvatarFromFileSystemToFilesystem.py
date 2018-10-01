@@ -73,7 +73,7 @@ if len(sys.argv) >= 7:
     query = """MATCH (u:UserBook) WHERE u.picture =~ '/workspace/document/.*' 
                WITH u, u.picture as oldpic 
                LIMIT %s
-               SET u.picture='/userbook/avatar/' + u.userid 
+               SET u.picture='/userbook/avatar/' + u.userid , u.oldPicture=oldpic
                RETURN u.userid as userid, oldpic""" % (batchSize)
     res = gdb.query(query, {}, returns=(unicode, unicode, unicode))
     batchNum = 0
