@@ -110,7 +110,7 @@
 				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
 				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="content.adml">portal.adml</i18n>
 				<ul ng-if="content.classes && content.classes.length" class="list no-padding overflow-vertical-height-list">
-					<li ng-repeat="class in content.classes track by $index">[[class]]</li>
+					<li ng-repeat="class in content.classes | orderBy:'toString()'">[[class]]</li>
 				</ul>
 			</div>
 		</content-divider>
