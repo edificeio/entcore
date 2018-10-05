@@ -14,10 +14,12 @@ export class User implements Selectable {
 
     constructor(id?: string, displayName?: string, profile?: string, isGroup?: boolean){
         this.id = id;
-        this.displayName = displayName;
-        this.name = displayName;
         this.profile = profile;
         this.isGroup = typeof isGroup === 'undefined' ? this.isAGroup() : isGroup;
+        if (this.isGroup) {
+            this.name = displayName;
+        }
+        this.displayName = displayName;
     }
 
     toString() {
