@@ -2,23 +2,26 @@
 	<container template="lightbox"></container>
 </lightbox>
 
-<div class="flex-row">
-	<div class="action-item">
-		<a ng-href="/conversation/conversation#/write-mail/[[currentUser.id]]/User" class="twelve">
-			<i class="block cell no-margin centered-text icon-force-size send-mail"></i>
-			<span class="cell medium-block-container"><i18n>userBook.class.write-message</i18n></span>
-		</a>
-	</div>
-	<div></div>
-</div>
-<div class="flex-row">
-	<div class="action-item">
-		<a class="twelve" ng-click="tryAddFavorite()">
-			<i class="block cell no-margin centered-text icon-force-size add-favorite"></i>
-			<span class="cell medium-block-container"><i18n>userBook.directory.addToFavorite</i18n></span>
-		</a>
-	</div>
-	<div></div>
-</div>
 
-<div class="row"></div>
+<div class="small-text">
+	<div class="flex-row">
+		<div class="action-item">
+			<a ng-href="/conversation/conversation#/write-mail/[[currentUser.id]]/User" class="twelve">
+				<i class="block cell no-margin centered-text icon-force-size send-mail"></i>
+				<span class="cell medium-block-container"><i18n>userBook.class.write-message</i18n></span>
+			</a>
+		</div>
+		<div></div>
+	</div>
+	<div class="flex-row">
+		<div class="action-item">
+			<a class="twelve" ng-click="tryAddFavorite()">
+				<i class="block cell no-margin centered-text icon-force-size add-favorite"></i>
+				<span class="cell medium-block-container"><i18n>userBook.directory.addToFavorite</i18n></span>
+			</a>
+		</div>
+		<div></div>
+	</div>
+	
+	<div class="row"></div>
+</div>
