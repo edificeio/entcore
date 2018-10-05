@@ -574,7 +574,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 								final long endTime = System.currentTimeMillis();
 								report.setEndTime(endTime);
 								report.setStartTime(start);
-								report.sendEmails(vertx, config);
+								report.sendEmails(vertx, config,feed.getSource());
 								logger.info("Elapsed time " + (endTime - start) + " ms.");
 								importer.clear();
 								checkEventQueue();
