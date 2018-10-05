@@ -154,7 +154,7 @@ public class DefaultGroupService implements GroupService {
 	public void getInfos(String groupId, Handler<Either<String, JsonObject>> handler) {
 		final String query =
 				"MATCH (g:Group {id:{id}}) " +
-				"RETURN g.id as id, g.name as name ";
+				"RETURN g.id as id, g.name as name, g.nbUsers as nbUsers ";
 		final JsonObject params = new JsonObject().put("id", groupId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
