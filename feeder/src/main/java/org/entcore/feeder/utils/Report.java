@@ -53,7 +53,6 @@ public class Report {
 	public final String acceptLanguage;
 	private long endTime;
 	private long startTime;
-	private String source;
 	private Set<String> loadedFiles = new HashSet<>();
 
 	public enum State {
@@ -199,10 +198,6 @@ public class Report {
 		this.startTime = startTime;
 	}
 
-	public void setSource(String source) {
-		this.source = source;
-	}
-
 	public void loadedFile(String file) {
 		loadedFiles.add(file);
 	}
@@ -249,7 +244,7 @@ public class Report {
 		return new fr.wseduc.webutils.collections.JsonArray(filtered);
 	}
 
-	private void countDiff(Optional<String> prefixAcademy, final Handler<JsonObject> handler) {
+	private void countDiff(Optional<String> prefixAcademy, String source, final Handler<JsonObject> handler) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 			JsonObject params = new JsonObject().put("source", source).put("start", startTime).put("end", endTime)
@@ -332,9 +327,10 @@ public class Report {
 				});
 	}
 
-	public void sendEmails(final Vertx vertx, final JsonObject config) {
+	public void sendEmails(final Vertx vertx, final JsonObject config, String source) {
 		final JsonArray sendReport = config.getJsonArray("sendReport");
 		if (sendReport == null) {
+			log.error("Cannot send reports because of empty config: " + sendReport);
 			return;
 		}
 		int count = sendReport.size();
@@ -345,17 +341,18 @@ public class Report {
 					|| currentSendReport.getJsonArray("to").size() == 0 //
 					|| currentSendReport.getJsonArray("sources") == null//
 					|| !currentSendReport.getJsonArray("sources").contains(source)) {
-				break;
+				log.error("Cannot send report because of missing infos: " + currentSendReport);
+				continue;
 			}
 			if (count == 1) {
-				this.countDiff(Optional.empty(), countEvent -> {
+				this.countDiff(Optional.empty(), source, countEvent -> {
 					if (countEvent != null) {
 						this.emailReport(vertx, emailFactory, currentSendReport, countEvent);
 					}
 				});
 			} else {
 				String prefixAcademy = currentSendReport.getString("academyPrefix");
-				this.countDiff(Optional.ofNullable(prefixAcademy), countEvent -> {
+				this.countDiff(Optional.ofNullable(prefixAcademy), source, countEvent -> {
 					if (countEvent != null) {
 						this.emailReport(vertx, emailFactory, currentSendReport, countEvent);
 					}
