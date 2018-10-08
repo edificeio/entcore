@@ -68,7 +68,7 @@
 			ng-model="account.childrenStructure"
 			order="structureName">
 			<div>
-				<h4 class="cell-ellipsis">[[content.structureName]]</h4>
+				<strong class="cell-ellipsis">[[content.structureName]]</strong>
 				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
 					<div class="cell round bg-white square-medium right-spacing">
 						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
@@ -106,7 +106,7 @@
 			ng-model="account.attachedStructures"
 			order="name">
 			<div class="width-medium-no-mobile-fat-mobile">
-				<h4 class="multiline-ellipsis-three" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</h4>
+				<strong class="multiline-ellipsis-three block" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</strong>
 				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
 				<i18n class="top-spacing-three indication italic-text accent-color" ng-if="content.adml">portal.adml</i18n>
 				<ul ng-if="content.classes && content.classes.length" class="list no-padding overflow-vertical-height-list">
