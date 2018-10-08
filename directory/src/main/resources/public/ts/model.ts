@@ -472,7 +472,12 @@ directory.User.prototype.saveUserbookProperty = function(prop){
 	if(prop === 'mood'){
 		data.mood = data.mood.id;
 	}
-	oldHttp().putJson('/directory/userbook/' + this.id, data);
+	oldHttp().putJson('/directory/userbook/' + this.id, data)
+	.done(function(){
+		if (prop === 'motto') {
+			notify.success(lang.translate('userBook.motto.success'));
+		}
+	})
 };
 
 directory.User.prototype.saveInfos = function(){
