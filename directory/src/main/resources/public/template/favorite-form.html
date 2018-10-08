@@ -20,8 +20,7 @@
 
  <h3 whereami class="twelve centered-text"></h3>
 
- <div class="spacer-large only-large-desktop"></div>
- <article class="flex-row f-column justify-center horizontal-margin only-desktop" ng-class='{ "divide-opacity": display.loading }'>
+ <article class="favorite-infos flex-row f-column justify-center horizontal-margin only-desktop" ng-class='{ "divide-opacity": display.loading }'>
     <h3 ng-if="!display.editingFavorite"><i18n>directory.title.create.favorite</i18n></h3>
     <h3 ng-if="display.editingFavorite"><i18n>directory.title.edit.favorite</i18n></h3>
     <form class="reduce-block-eight horizontal-margin" ng-submit="saveFavorite()">
