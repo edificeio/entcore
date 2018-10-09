@@ -591,7 +591,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						final String q2 =
 								"MATCH (s:Structure {id: {structureId}}) " +
 								"WHERE NOT(HAS(s.timetable)) OR s.timetable <> {type} " +
-								"SET s.timetable = {type} " +
+								"SET s.timetable = {typeUpdate} " +
 								"WITH s " +
 								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup), s<-[:SUBJECT]-(sub:Subject) " +
 								"DETACH DELETE fg, sub ";
@@ -599,7 +599,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
 								"DETACH DELETE cm";
 						tx.add(q1, conf);
-						tx.add(q2, conf);
+						tx.add(q2, (isEmpty(conf.getString("type")) ?
+								conf.putNull("typeUpdate") : conf.put("typeUpdate", conf.getString("type"))));
 						tx.add(q3, conf);
 						tx.commit(new Handler<Message<JsonObject>>() {
 							@Override
