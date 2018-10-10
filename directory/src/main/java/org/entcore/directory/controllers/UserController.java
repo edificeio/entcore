@@ -218,7 +218,7 @@ public class UserController extends BaseController {
 						.put("username", user.getUsername())
 						.put("motto", motto)
 						.put("moodImg", mood);
-				if (mood != null && !mood.trim().isEmpty()) {
+				if (mood != null && !mood.trim().isEmpty() && !mood.equals("default")) {
 					notification.notifyTimeline(request, "userbook.userbook_mood", user, userIds,
 						user.getUserId() + System.currentTimeMillis() + "mood", params);
 				}
