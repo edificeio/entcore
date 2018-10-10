@@ -160,6 +160,7 @@
 						ng-if="account.type.indexOf('Student') !== -1"
 						ng-model="account.birthDate"
 						ng-change="saveChanges()"
+						readonly="true"
 						class="inline-editing seven">
 				</date-picker>
 				<em class="seven cell" ng-if="account.type.indexOf('Student') === -1">[[birthDate(account.birthDate)]]</em>
