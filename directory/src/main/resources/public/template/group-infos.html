@@ -16,8 +16,8 @@
 </div>
 <div class="clear"></div>
 <div class="flex-row justify-center align-center f-wrap">
-    <div ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength" 
-        class="item">
+    <div class="item user" 
+        ng-repeat="user in currentGroup.users | orderBy:'displayName' | limitTo:search.maxLength">
         <div data-ng-include="template.containers.dominosUser"></div>
     </div>
 </div>
