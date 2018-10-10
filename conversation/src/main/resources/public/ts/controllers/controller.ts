@@ -1,4 +1,4 @@
-import { ng, notify, idiom as lang, template, skin, moment, Document, $, _ } from 'entcore';
+import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui } from 'entcore';
 import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
@@ -14,7 +14,8 @@ export let conversationController = ng.controller('ConversationController', [
             emptyMessage: lang.translate('folder.empty'),
             searchFailed: false,
             draftSaveDate: null,
-            mailLimit: 5000
+            mailLimit: 5000,
+            recipientLimit: ui.breakpoints.checkMaxWidth("fatMobile") ? 5 : 10 
         };
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
