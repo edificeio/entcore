@@ -111,6 +111,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		});
 
 		$scope.account = directory.account;
+		$scope.previousMood = directory.account.mood.id;
 		$scope.currentMotto = directory.account.motto;
 		$scope.motto = {
 			published: true,
@@ -230,6 +231,12 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	};
 
 	$scope.saveUserbookProperty = function(prop){
+		if (prop === 'mood') {
+			if (directory.account[prop].id === $scope.previousMood) {
+				return;
+			}
+			$scope.previousMood = directory.account[prop].id;
+		}
 		directory.account.saveUserbookProperty(prop);
 	};
 
