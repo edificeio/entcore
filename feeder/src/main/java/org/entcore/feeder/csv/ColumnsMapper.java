@@ -33,6 +33,7 @@ import java.util.Map;
 public class ColumnsMapper {
 
 	private final Map<String, Object> namesMapping;
+	private final Map<String, Object> relativeMapping;
 
 	public ColumnsMapper(JsonObject additionnalsMappings) {
 		JsonObject mappings = new JsonObject()
@@ -78,7 +79,9 @@ public class ColumnsMapper {
 				.put("classeenfant", "childClasses")
 				.put("nomdusageenfant", "childUsername")
 				.put("nomdefamilleenfant", "childLastName")
+				.put("nomdefamilleeleve", "childLastName")
 				.put("classesenfants", "childClasses")
+				.put("classeseleves", "childClasses")
 				.put("presencedevanteleves", "teaches")
 				.put("fonction", "functions")
 				.put("funcion", "functions")
@@ -158,15 +161,19 @@ public class ColumnsMapper {
 				.put("deptnaissance", "ignore")
 				.put("paysnaissance", "ignore")
 				.put("etat", "ignore")
-				.put("intervenant", "ignore");
+				.put("intervenant", "ignore")
+				.put("regroupement(s)", "ignore")
+				.put("dispositif(s)", "ignore")
+				.put("", "ignore");
 
 		mappings.mergeIn(additionnalsMappings);
 		namesMapping = mappings.getMap();
+		relativeMapping = mappings.copy().put("prenomeleve", "childFirstName").put("nomdusageeleve", "childUsername").getMap();
 	}
 
-	void getColumsNames(String[] strings, List<String> columns, Handler<Message<JsonObject>> handler) {
+	void getColumsNames(String[] strings, List<String> columns, String profile, Handler<Message<JsonObject>> handler) {
 		for (int j = 0; j < strings.length; j++) {
-			String cm = columnsNameMapping(strings[j]);
+			String cm = columnsNameMapping(strings[j], profile);
 			if (namesMapping.containsValue(cm)) {
 				try {
 					columns.add(j, cm);
@@ -183,10 +190,10 @@ public class ColumnsMapper {
 		}
 	}
 
-	JsonArray getColumsNames(String[] strings, List<String> columns) {
+	JsonArray getColumsNames(String[] strings, List<String> columns, String profile) {
 		JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
 		for (int j = 0; j < strings.length; j++) {
-			String cm = columnsNameMapping(strings[j]);
+			String cm = columnsNameMapping(strings[j], profile);
 			if (namesMapping.containsValue(cm)) {
 				columns.add(j, cm);
 			} else {
@@ -197,10 +204,10 @@ public class ColumnsMapper {
 		return errors;
 	}
 
-	String columnsNameMapping(String columnName) {
+	String columnsNameMapping(String columnName, String profile) {
 		final String key = Validator.removeAccents(columnName.trim().toLowerCase())
 				.replaceAll("\\s+", "").replaceAll("\\*", "").replaceAll("'", "").replaceFirst(CSVUtil.UTF8_BOM, "");
-		final Object attr = namesMapping.get(key);
+		final Object attr = "Relative".equals(profile) ? relativeMapping.get(key) : namesMapping.get(key);
 		return attr != null ? attr.toString() : key;
 	}
 

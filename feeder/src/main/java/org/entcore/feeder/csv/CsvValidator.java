@@ -156,7 +156,7 @@ public class CsvValidator extends Report implements ImportValidator {
 			int i = 0;
 			while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns);
+					JsonArray invalidColumns = columnsMapper.getColumsNames(strings, columns, profile);
 					if (invalidColumns.size() > 0) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 					} else if (columns.contains("externalId")) {

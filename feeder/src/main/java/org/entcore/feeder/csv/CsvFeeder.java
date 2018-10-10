@@ -205,7 +205,7 @@ public class CsvFeeder implements Feed {
 						int i = 0;
 						while ((strings = csvReader.readNext()) != null) {
 							if (i == 0) {
-								columnsMapper.getColumsNames(strings, columns, handler);
+								columnsMapper.getColumsNames(strings, columns, "", handler);
 								if (columns.isEmpty()) {
 									handler.handle(new ResultMessage().error("invalid.columns"));
 									return;
@@ -288,7 +288,7 @@ public class CsvFeeder implements Feed {
 			int i = 0;
 			csvParserWhile : while ((strings = csvParser.readNext()) != null) {
 				if (i == 0) {
-					columnsMapper.getColumsNames(strings, columns, handler);
+					columnsMapper.getColumsNames(strings, columns, profile, handler);
 					nbColumns = columns.size();
 				} else if (!columns.isEmpty()) {
 					if (emptyLine(strings)) {
