@@ -47,7 +47,7 @@
 			</h5>
 			<hr />
 
-			<div class="flex-row align-center medium-importance medium-text">
+			<div class="flex-row medium-importance">
 
 				<div class="avatar">
 					<img ng-src="/userbook/avatar/[[mail.from]]?thumbnail=100x100" onerror="this.src=angular.element(this).scope().getAvatar()"/>
@@ -65,18 +65,15 @@
 					<div>
 						<strong><span translate key="to"></span>
 						<span> : </span></strong>
-
-						<span ng-repeat="receiver in receivers = (mail.to | filter: filterUsers(mail))">
-							<a ng-if="!receiver.isMe() && !receiver.isAGroup()" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
-							<span ng-if="receiver.isMe()"><i18n>me</i18n></span>
-							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
-							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
-						</span>
-						<span ng-if="mail.toName && mail.toName.length > 0 && mail.to.length > 0">,</span>
-						<span ng-repeat="receiver in mail.toName">
-							<span>[[receiver]]</span>
-							<span ng-if="$index !== mail.toName.length - 1">,</span>
-						</span>
+						<folding-list
+							ng-model="mail.to"
+							filter="[[filterUsers(mail)]]"
+							limit="state.recipientLimit">
+							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<span ng-if="content.isMe()"><i18n>me</i18n></span>
+							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
+							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>
+						</folding-list>
 					</div>
 
 					<!-- copies -->
@@ -84,17 +81,15 @@
 						<strong><span translate key="cc"></span>
 						<span> : </span></strong>
 
-						<span ng-repeat="receiver in receivers = (mail.cc | filter: filterUsers(mail))">
-							<a ng-if="!receiver.isMe() && !receiver.isAGroup()" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a>
-							<span ng-if="receiver.isMe()"><i18n>me</i18n></span>
-							<span ng-if="receiver.isAGroup()">[[receiver.displayName]]</span>
-							<span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
-						</span>
-						<span ng-if="mail.ccName && mail.ccName.length > 0 && mail.cc.length > 0">,</span>
-						<span ng-repeat="receiver in mail.ccName">
-							<span>[[receiver]]</span>
-							<span ng-if="$index !== mail.ccName.length - 1">,</span>
-						</span>
+						<folding-list
+							ng-model="mail.cc"
+							filter="[[filterUsers(mail)]]"
+							limit="state.recipientLimit">
+							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<span ng-if="content.isMe()"><i18n>me</i18n></span>
+							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
+							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>
+						</folding-list>
 					</div>
 
 				</div>
