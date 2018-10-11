@@ -344,7 +344,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	$scope.isMottoChanged = function() {
 		return directory.account.motto !== $scope.currentMotto;
-	}
+	};
 
 	$scope.updateMottoChanged = function() {
 		setTimeout(function(){

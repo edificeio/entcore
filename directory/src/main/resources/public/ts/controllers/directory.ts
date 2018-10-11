@@ -664,5 +664,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.testFunctionFilterAvailable = function(profiles) {
 		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
-	}
+	};
+
+	$scope.isMoodDefault = function(mood) {
+		return mood === "default";
+	};
 }]);

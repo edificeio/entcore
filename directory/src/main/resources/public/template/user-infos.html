@@ -32,22 +32,15 @@
 
 		<div class="sheet">
 			<div>
-				<div class="multiline-ellipsis-h2-user-three">
-					<h2 class="no-margin size-auto">[[currentUser.displayName]]</h2>
-				</div>
+				<h2 class="text-word-break no-margin size-auto">[[currentUser.displayName]]</h2>
 				<div class="flex-row">
 					<span class="cell circle square-mini top-spacing-small right-spacing-small" ng-class="currentUser.getProfile()"></span>
 					<span class="cell low-importance">[[ currentUser.getProfileName() ]]</span>
 				</div>
 			</div>
 
-			<div class="right-magnet">
+			<div ng-if="!isMoodDefault(currentUser.mood)" class="right-magnet">
 				<i class="[[currentUser.mood]] liquid text-flow"></i>
-			</div>
-
-			<div class="row" ng-if="currentUser.type && currentUser.type.length">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.type"></div>
-				<em class="eight cell reduce-block-four" translate content="[[ currentUser.type[0] ]]"></em>
 			</div>
 
 			<div class="row" ng-if="currentUser.email">
