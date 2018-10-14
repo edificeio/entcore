@@ -25,6 +25,7 @@ import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
@@ -99,6 +100,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final String importCron = config.getString("import-cron");
 		final JsonObject imports = config.getJsonObject("imports");
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
+		final TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		try {
 			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx));
 			if (preDelete != null) {
@@ -109,11 +111,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						if (profilePreDelete == null || profilePreDelete.getString("cron") == null ||
 								profilePreDelete.getLong("delay") == null) continue;
 						new CronTrigger(vertx, profilePreDelete.getString("cron"))
-								.schedule(new User.PreDeleteTask(profilePreDelete.getLong("delay"), profile));
+								.schedule(new User.PreDeleteTask(profilePreDelete.getLong("delay"), profile, timeline));
 					}
 				}
 			} else {
-				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay));
+				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay, timeline));
 			}
 			if (imports != null) {
 				if (feeds.keySet().containsAll(imports.fieldNames())) {
