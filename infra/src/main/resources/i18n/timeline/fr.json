@@ -2,5 +2,8 @@
   "system": "Système",
   "userbook.delete-email": "Suppression d'un email invalide (hard-bounce)",
   "timeline.delete.invalid.email" : "Votre email était invalide. Il a été supprimé.",
-  "timeline.delete.virus" : "Suppression d'un virus contenu dans votre fichier"
+  "timeline.delete.virus" : "Suppression d'un virus contenu dans votre fichier",
+  "timeline.predelete.delay" : "Votre compte n'est plus présent dans l'annuaire académique.",
+  "timeline.predelete.remaining" : "Il sera mis en pré-suppression dans",
+  "timeline.remaining.days" : "jours."
 }

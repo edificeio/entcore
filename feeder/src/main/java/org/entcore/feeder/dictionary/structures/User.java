@@ -21,6 +21,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.utils.TransactionHelper;
@@ -36,6 +37,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -133,15 +135,20 @@ public class User {
 		private final long delay;
 		private final String profile;
 		private static final int LIMIT = 5000;
-		private int page;
+		private final TimelineHelper timeline;
 
 		public PreDeleteTask(long delay) {
-			this(delay, null);
+			this(delay, null, null);
 		}
 
-		public PreDeleteTask(Long delay, String profile) {
+		public PreDeleteTask(long delay, TimelineHelper timeline) {
+			this(delay, null, timeline);
+		}
+
+		public PreDeleteTask(Long delay, String profile, TimelineHelper timeline) {
 			this.delay = delay;
 			this.profile = profile;
+			this.timeline = timeline;
 		}
 
 		@Override
@@ -169,6 +176,37 @@ public class User {
 					final JsonArray res = message.body().getJsonArray("result");
 					if ("ok".equals(message.body().getString("status")) && res != null && res.size() > 0) {
 						preDeleteUsers(res, null);
+					} else if (timeline != null && "ok".equals(message.body().getString("status"))) {
+						notifyRemainingDays();
+					}
+				}
+			});
+		}
+
+		private void notifyRemainingDays() {
+			JsonObject params = new JsonObject();
+			String filter = "";
+			if (profile != null) {
+				params.put("profile", profile);
+				filter = "AND head(u.profiles) = {profile} ";
+			}
+			String query =
+					"MATCH (u:User) " +
+					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) " +
+					filter +
+					"RETURN u.id as id, u.disappearanceDate as disappearanceDate ";
+			TransactionManager.getInstance().getNeo4j().execute(query, params, message -> {
+				final JsonArray res = message.body().getJsonArray("result");
+				if ("ok".equals(message.body().getString("status")) && res != null && res.size() > 0) {
+					final long now = System.currentTimeMillis();
+					for (Object o: res) {
+						if (!(o instanceof JsonObject)) continue;
+						JsonObject j = (JsonObject) o;
+						JsonObject p = new JsonObject().put("remainingDays",
+								Math.round((j.getLong("disappearanceDate") + delay - now) / 3600000.0 / 24));
+						final List<String> recipients = new ArrayList<>();
+						recipients.add(j.getString("id"));
+						timeline.notifyTimeline(null, "userbook.predelete-delay", null, recipients, null, p);
 					}
 				}
 			});
