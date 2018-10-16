@@ -94,6 +94,9 @@ User.prototype.updateLoginAlias = function() {
         if (err.responseText.includes('already exists') || err.responseText.includes('existe déjà')) {
             notify.error(lang.translate('directory.notify.loginUpdate.error.alreadyExists'));
         }
+        else if (err.responseText.includes('valeur invalide')) {
+            notify.error(lang.translate('directory.notify.loginUpdate.error.invalid'));
+        }
     });
 }
 

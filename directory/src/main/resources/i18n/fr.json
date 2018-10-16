@@ -256,6 +256,7 @@
     "directory.notify.userUpdate": "Utilisateur mis à jour",
     "directory.notify.loginAlias": "Identifiant personnalisé mis à jour",
     "directory.notify.loginUpdate.error.alreadyExists": "L'identifiant existe déjà.", 
+    "directory.notify.loginUpdate.error.invalid": "L'identifiant n'est pas valide.", 
     "directory.null": "",
     "directory.onlyActivatedUsers": "Utilisateurs activés",
     "directory.onlyInactiveUsers": "Utilisateurs non activés",
