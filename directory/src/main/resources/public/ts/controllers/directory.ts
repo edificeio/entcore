@@ -139,10 +139,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				}
 			};
 			$scope.filtersOptions = {
-				users: $scope.generateCriteriaOptions(),
-				groups: $scope.generateCriteriaOptions()
+				users: $scope.generateCriteriaOptions($scope.filters.users),
+				groups: $scope.generateCriteriaOptions($scope.filters.groups)
 			};
-			$scope.create.favorite.options = $scope.generateCriteriaOptions();
+			$scope.create.favorite.options = $scope.generateCriteriaOptions($scope.create.favorite.filters);
 
 			template.open('page', 'directory');
 			template.close('list');
@@ -203,7 +203,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.favorites.all = $scope.favorites.all.sort($scope.sortByName);
 	};
 
-	$scope.generateCriteriaOptions = function() {
+	$scope.generateCriteriaOptions = function(filters) {
+		var test;
 		return {
 			structures: $scope.criteria.structures.map((element) => {
 				return { label: element.name, type: element.id };
@@ -212,10 +213,35 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				return { label: element.name, type: element.id };
 			}),
 			profiles: $scope.criteria.profiles.map((element) => {
-				return { label: lang.translate("directory." + element), type: element };
+				test = null;
+				switch (element) {
+				case "Student":
+				case "Relative":
+				case "Guest":
+					test = $scope.testStudentRelativeGuestFilterAvailable(filters.functions);
+					break;
+				case "Teacher":
+					test = $scope.testTeacherFilterAvailable();
+					break;
+				case "Personnel":
+					test = $scope.testPersonnelFilterAvailable(filters.functions);
+					break;
+				}
+				return { label: lang.translate("directory." + element), type: element, available: test };
 			}),
 			functions: $scope.criteria.functions.map((element) => {
-				return { label: lang.translate(element), type: element };
+				test = null;
+				switch (element) {
+				case "HeadTeacher":
+					test = $scope.testHeadTeacherFilterAvailable(filters.profiles);
+					break;
+				/*
+				case "AdminLocal":
+					test = $scope.testADMLFilterAvailable(filters.profiles);
+					break;
+				*/
+				}
+				return { label: lang.translate(element), type: element, available: test };
 			}),
 			types: $scope.criteria.groupTypes.map((element) => {
 				return { label: lang.translate("directory." + element), type: element };
@@ -662,8 +688,50 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		ui.scrollToTop();
 	};
 
-	$scope.testFunctionFilterAvailable = function(profiles) {
-		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
+	$scope.testClassFilterAvailable = function(groups) {
+		return !groups.length;
+	};
+
+	$scope.testProfileFilterAvailable = function(groups) {
+		return !groups.length;
+	};
+
+	$scope.testFunctionFilterAvailable = function(profiles, groups) {
+		return (!groups || !groups.length) && (profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1);
+	};
+
+	$scope.testGroupTypeFilterAvailable = function(classes, profiles, functions) {
+		return !classes.length && !profiles.length && !functions.length;
+	};
+
+	$scope.testHeadTeacherFilterAvailable = function(profiles) {
+		return function() {
+			return !profiles.length || profiles.indexOf("Teacher") !== -1;
+		}
+	};
+
+	$scope.testADMLFilterAvailable = function(profiles) {
+		return function() {
+			return !profiles.length || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
+		}
+	};
+
+	$scope.testStudentRelativeGuestFilterAvailable = function(functions) {
+		return function() {
+			return !functions.length;
+		}
+	};
+
+	$scope.testTeacherFilterAvailable = function() {
+		return function() {
+			return true;
+		}
+	};
+
+	$scope.testPersonnelFilterAvailable = function(functions) {
+		return function() {
+			return functions.indexOf("HeadTeacher") === -1;
+		}
 	};
 
 	$scope.isMoodDefault = function(mood) {

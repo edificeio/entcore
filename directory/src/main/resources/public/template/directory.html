@@ -105,26 +105,29 @@
 									ng-model="filters.groups.classes"
 									options="filtersOptions.groups.classes"
 									title-all="[[lang.translate('directory.allClasses')]]"
-									title="[[lang.translate('directory.classes')]]">
+									title="[[lang.translate('directory.classes')]]"
+									ng-disabled="!testClassFilterAvailable(filters.groups.types)">
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.groups.profiles"
 									options="filtersOptions.groups.profiles"
 									title-all="[[lang.translate('directory.allProfiles')]]"
-									title="[[lang.translate('directory.profiles')]]">
+									title="[[lang.translate('directory.profiles')]]"
+									ng-disabled="!testProfileFilterAvailable(filters.groups.types)">
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.groups.functions"
 									options="filtersOptions.groups.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
 									title="[[lang.translate('directory.functions')]]"
-									ng-disabled="!testFunctionFilterAvailable(filters.groups.profiles)">
+									ng-disabled="!testFunctionFilterAvailable(filters.groups.profiles, filters.groups.types)">
 								</multi-comboboxes>
 								<multi-comboboxes 
 									ng-model="filters.groups.types"
 									options="filtersOptions.groups.types"
 									title-all="[[lang.translate('directory.allGroupsTypes')]]"
-									title="[[lang.translate('directory.groupsTypes')]]">
+									title="[[lang.translate('directory.groupsTypes')]]"
+									ng-disabled="!testGroupTypeFilterAvailable(filters.groups.classes, filters.groups.profiles, filters.groups.functions)">
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
 								<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
