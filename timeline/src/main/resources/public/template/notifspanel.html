@@ -35,22 +35,20 @@
     <div class="row">
         <div class="cell reduce-block-six"><i18n>xtnotifications.mail</i18n></div>
 
-        <form name="userForm" novalidate class="reduce-block-four">
-            <input type="email" name="mail" complete-change="userForm.$valid ? saveChanges(userinfos) : ''" ng-model="userinfos.email"/>
+        <form name="userForm" novalidate class="cell left-spacing-small reduce-block-four three twelve-mobile">
+            <input class="twelve" type="email" name="mail" complete-change="userForm.$valid ? saveChanges(userinfos) : ''" ng-model="userinfos.email"/>
             <span ng-if="userForm.mail.$invalid && userForm.mail.$dirty" class="input-errors" >
                 <span ng-repeat="(key, value) in userForm.mail.$error">
                     <label ng-if="value">[[lang.translate('form.invalid.'+key)]]</label>
                 </span>
             </span>
         </form>
+        <div class="cell right-magnet">
+            <a class="button high-index" href ng-click="savePreferences()">
+                <i18n>xtnotifications.validate</i18n>
+            </a>
+        </div>
     </div>
-
-    <div class="right-magnet">
-        <a class="button high-index" href ng-click="savePreferences()">
-            <i18n>xtnotifications.validate</i18n>
-        </a>
-    </div>
-    <div class="spacer-small"></div>
 
     <div class="responsive-table">
 
