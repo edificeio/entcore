@@ -50,7 +50,7 @@
 	<div class="row">
 
         <div class="row info hollow no-margin"><span>(shadow-element)<span></div>
-        <div class="row info fade-in no-margin absolute-w" ng-if="state.newItem.id && !state.draftError" >
+        <div class="row info fade-in no-margin" ng-if="state.newItem.id && !state.draftError" >
             <i class="check-circle"></i>
             <i18n>message.draft.saved</i18n>
             <span class="fade-in" ng-if = "state.draftSaveDate">
@@ -58,7 +58,7 @@
                 <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]][[secIsit()]]</span>
             </span>
         </div>
-        <div class="row warning fade-in no-margin absolute-w" ng-if="state.draftError"  >
+        <div class="row warning fade-in no-margin" ng-if="state.draftError"  >
             <i class="warning"></i>
             <i18n>message.save.fail</i18n>
             <i18n>at</i18n>
