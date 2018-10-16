@@ -5061,50 +5061,49 @@ module.directive('help', function() {
         scope: {},
         template: '<i class="help"></i>' +
             '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
-        link: function(scope, element) {
+        link: function(scope, element){
             scope.display = {};
             scope.helpPath = '/help/application/' + appPrefix + '/';
-            if (appPrefix === '.' && window.location.pathname !== '/adapter') {
+            if(appPrefix === '.' && window.location.pathname !== '/adapter') {
                 scope.helpPath = '/help/application/portal/';
-            } else if (window.location.pathname === '/adapter') {
+            }
+            else if(window.location.pathname === '/adapter'){
                 scope.helpPath = '/help/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
             }
 
             var helpContent;
 
-            var setHtml = function(content) {
+            var setHtml = function(content){
                 helpContent = $('<div>' + content + '</div>');
-				helpContent.find('img').each(function(index, item){
-					//Hack until imgs will be all in the 'assets' folder
-                    if ($(item).attr('src').includes("/assets/"))
-                        $(item).attr('src', scope.helpPath + "../.." + $(item).attr('src'));
-                    else
-                        $(item).attr('src', scope.helpPath + $(item).attr('src'));
-				});
-				helpContent.find('script').remove();
-				element.find('div.content').html(helpContent.html());
-				element.find('li a').on('click', function(e){
-					element.find('.sect1').slideUp();
-                    $('#' + $(e.target).attr('href').split('#')[1]).parent().slideDown();
-				});
-				element.find('div.paragraph a').on('click', function(e){
-					window.open($(e.target).closest('a').attr('href'), "_newtab" ); 
-				});
-				element.find('li a').first().click();
-				scope.display.read = true;
-				scope.$apply('display');
+                // Swap ToC and introduction paragraphs
+                helpContent.find('> p').prev().insertAfter(helpContent.find('> p'));
+                helpContent.find('img').each(function(index, item){
+                    $(item).attr('src', scope.helpPath + "../.." + $(item).attr('src'));
+                });
+                element.find('div.content > div[ng-transclude]').html(helpContent.html());
+                element.find('li a').on('click', function(e){
+                    element.find('.section').slideUp();
+                    $('div#' + $(e.target).attr('href').split('#')[1]).slideDown();
+                });
+                element.find('div.paragraph a').on('click', function(e){
+                    window.open($(e.target).closest('a').attr('href'), "_newtab" ); 
+                });
+                element.find('li a').first().click();
+                scope.display.read = true;
+                scope.$apply('display');
             };
 
-            element.children('i.help').on('click', function() {
+            element.children('i.help').on('click', function () {
                 if (helpText) {
                     setHtml(helpText);
-                } else {
+                }
+                else {
                     http().get(scope.helpPath)
-                        .done(function(content) {
+                        .done(function (content) {
                             helpText = content;
                             setHtml(helpText);
                         })
-                        .e404(function() {
+                        .e404(function () {
                             helpText = '<h2>' + lang.translate('help.notfound.title') + '</h2><p>' + lang.translate('help.notfound.text') + '</p>';
                             setHtml(helpText);
                         });
