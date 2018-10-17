@@ -61,6 +61,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	private String smsProvider;
 	private final String smsAddress;
+	private final JsonArray allowActivateDuplicateProfiles;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config) {
 		EventBus eb = Server.getEventBus(vertx);
@@ -78,6 +79,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		} else {
 			smsAddress = "entcore.sms";
 		}
+		this.allowActivateDuplicateProfiles = getOrElse(
+				config.getJsonArray("allow-activate-duplicate"), new JsonArray().add("Relative"));
 	}
 
 	@Override
@@ -99,6 +102,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
 				"OPTIONAL MATCH n-[r:DUPLICATE]-() " +
+				"WHERE NOT(head(n.profiles) IN {allowActivateDuplicate}) " +
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"WITH n, LENGTH(FILTER(x IN COLLECT(distinct r.score) WHERE x > 3)) as duplicates, p.blocked as blockedProfile " +
@@ -112,6 +116,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		params.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
 		params.put("email", email);
 		params.put("phone", phone);
+		params.put("allowActivateDuplicate", allowActivateDuplicateProfiles);
 		neo.send(query, params, new Handler<Message<JsonObject>>(){
 
 			@Override
