@@ -267,7 +267,7 @@ public class FileStorage implements Storage {
 			});
 		} catch (FileNotFoundException e) {
 			handler.handle(new DefaultAsyncResult<>(e));
-			log.warn(e.getMessage(), e);
+			//log.warn(e.getMessage(), e);
 		}
 	}
 
