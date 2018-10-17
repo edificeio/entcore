@@ -94,7 +94,7 @@ public class DefaultUserBookService implements UserBookService {
 	}
 
 	private Future<Boolean> cleanAvatarCache(String userId) {
-		Future<Boolean> future = Future.succeededFuture();
+		Future<Boolean> future = Future.future();
 		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
 			if (res.succeeded() && res.result().size() > 0) {
 				this.avatarStorage.removeFiles(res.result(), removeRes -> {
