@@ -688,17 +688,21 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		ui.scrollToTop();
 	};
 
-	$scope.testClassFilterAvailable = function(groups) {
-		return !groups.length;
+	$scope.testClassFilterAvailable = function(groups, functions) {
+		return !groups.length && (!functions || (functions && !functions.length));
 	};
 
-	$scope.testProfileFilterAvailable = function(groups) {
-		return !groups.length;
+	$scope.testProfileFilterAvailable = function(groups, functions) {
+		return !groups.length && (!functions || (functions && !functions.length));
 	};
 
-	$scope.testFunctionFilterAvailable = function(profiles, groups) {
-		return (!groups || !groups.length) && (profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1);
+	$scope.testFunctionFilterAvailable = function(profiles, groups, classes) {
+		return (!groups && $scope.checkProfileTeacherPersonnel(profiles)) || (groups && ((classes && !groups.length && !profiles.length && !classes.length) || (!classes && !groups.length && $scope.checkProfileTeacherPersonnel(profiles))));
 	};
+
+	$scope.checkProfileTeacherPersonnel = function(profiles) {
+		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
+	}
 
 	$scope.testGroupTypeFilterAvailable = function(classes, profiles, functions) {
 		return !classes.length && !profiles.length && !functions.length;
