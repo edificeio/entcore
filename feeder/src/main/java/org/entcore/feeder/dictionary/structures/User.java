@@ -498,8 +498,11 @@ public class User {
 	public static void addFunction(String userId, String functionCode, JsonArray s,
 			TransactionHelper transactionHelper) {
 		String query =
-				"MATCH (u:User { id : {userId}}), (f) " +
-				"WHERE (f:Function OR f:Functions) AND f.externalId = {functionCode} " +
+				"MATCH (u:User { id : {userId}}) " +
+				"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
+				"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
+				"WITH u, collect (f1) + collect(f2) as c " +
+				"UNWIND c as f " +
 				"MERGE u-[rf:HAS_FUNCTION]->f ";
 
 		JsonArray scope = null;
@@ -514,17 +517,18 @@ public class User {
 		transactionHelper.add(query, params);
 		if(scope != null){
 			String query2 =
-				"MATCH (n), (f) " +
-				"WHERE (n:Structure OR n:Class) AND n.id IN {scope} AND " +
-				"(f:Function OR f:Functions) AND f.externalId = {functionCode} " +
-				"WITH n, f " +
-				"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
-				"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) + lower(f.name), fg.filter = f.name " +
-				"CREATE UNIQUE n<-[:DEPENDS]-fg " +
-				"WITH fg " +
-				"MATCH (u:User { id : {userId}}) " +
-				"CREATE UNIQUE fg<-[:IN {source:'MANUAL'}]-u " +
-				"RETURN fg.id as groupId ";
+					"MATCH (u:User { id : {userId}}) " +
+					"OPTIONAL MATCH (n1:Structure) WHERE n1.id IN {scope} " +
+					"OPTIONAL MATCH (n2:Class) WHERE n2.id IN {scope} " +
+					"OPTIONAL MATCH (f1:Function { externalId : {functionCode}}) " +
+					"OPTIONAL MATCH (f2:Functions { externalId : {functionCode}}) " +
+					"WITH u, collect (n1) + collect(n2) as c1 , collect (f1) + collect(f2) as c2 " +
+					"UNWIND c1 as n " +
+					"UNWIND c2 as f " +
+					"MERGE (fg:Group:FunctionGroup { externalId : n.id + '-' + {functionCode}}) " +
+					"ON CREATE SET fg.id = id(fg) + '-' + timestamp(), fg.name = n.name + '-' + f.name, fg.displayNameSearchField = lower(n.name) + lower(f.name), fg.filter = f.name\n" +
+					"CREATE UNIQUE n<-[:DEPENDS]-fg<-[:IN {source:'MANUAL'}]-u " +
+					"RETURN fg.id as groupId ";
 			JsonObject p2 = new JsonObject()
 				.put("scope", scope)
 				.put("functionCode", functionCode)
