@@ -5061,14 +5061,15 @@ module.directive('help', function() {
         scope: {},
         template: '<i class="help"></i>' +
             '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
-        link: function(scope, element){
+        link: async function(scope, element){
+            let helpPath = await skin.getHelpPath();
             scope.display = {};
-            scope.helpPath = '/help/application/' + appPrefix + '/';
+            scope.helpPath = helpPath + '/application/' + appPrefix + '/';
             if(appPrefix === '.' && window.location.pathname !== '/adapter') {
-                scope.helpPath = '/help/application/portal/';
+                scope.helpPath = helpPath + '/application/portal/';
             }
             else if(window.location.pathname === '/adapter'){
-                scope.helpPath = '/help/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
+                scope.helpPath = helpPath + '/application/' + window.location.search.split('eliot=')[1].split('&')[0] + '/'
             }
 
             var helpContent;

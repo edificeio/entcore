@@ -1181,6 +1181,20 @@ var skin = (function(){
 					});
 				}
 			});
+		},
+		getHelpPath: function() {
+			var conf = { overriding:[] };
+			return new Promise((resolve, reject) => {
+				const xhr = new XMLHttpRequest();
+				xhr.open('get', '/assets/theme-conf.js');
+				xhr.onload = async () => {
+					eval(xhr.responseText.split('exports.')[1]);
+					this.conf = conf;
+					const override = this.conf.overriding.find(it => it.child === skin.skin);
+					resolve((override.help ? override.help : '/help')); 
+				};
+				xhr.send();
+			});
 		}
 	}
 }());
