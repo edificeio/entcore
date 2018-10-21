@@ -37,6 +37,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -46,15 +47,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.pojo.Users;
-import org.entcore.directory.security.AddFunctionFilter;
-import org.entcore.directory.security.AdmlOfStructures;
-import org.entcore.directory.security.AdmlOfStructuresByUAI;
-import org.entcore.directory.security.AdmlOfTwoUsers;
-import org.entcore.directory.security.AdmlOfUser;
-import org.entcore.directory.security.AnyAdminOfUser;
-import org.entcore.directory.security.RelativeStudentFilter;
-import org.entcore.directory.security.TeacherOfUser;
-import org.entcore.directory.security.UserAccess;
+import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.http.RouteMatcher;
@@ -156,12 +149,19 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/:userId")
-	@ResourceFilter(UserAccess.class)
+	@ResourceFilter(UserAccessOrVisible.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void get(final HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		boolean getManualGroups = Boolean.parseBoolean(request.params().get("manual-groups"));
-		userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
+		if ("true".equals(((SecureHttpServerRequest) request).getAttribute("visibleCheck"))) {
+			final JsonArray filter = new JsonArray()
+					.add("activationCode").add("firstName").add("lastName")
+					.add("lastLogin").add("created").add("modified").add("ine");
+			userService.get(userId, getManualGroups, filter, notEmptyResponseHandler(request));
+		} else {
+			userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
+		}
 	}
 
 	@Get("/userbook/:userId")

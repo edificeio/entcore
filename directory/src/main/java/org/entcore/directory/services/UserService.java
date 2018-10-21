@@ -41,6 +41,8 @@ public interface UserService {
 
 	void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result);
 
+	void get(String id, boolean getManualGroups, JsonArray filterAttributes, Handler<Either<String, JsonObject>> result);
+
 	void list(String structureId, String classId, JsonArray expectedProfiles, Handler<Either<String, JsonArray>> results);
 
 	void list(String profileGroupId, boolean itSelf, String userId, Handler<Either<String, JsonArray>> handler);

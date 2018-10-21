@@ -143,6 +143,11 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void get(String id, boolean getManualGroups, Handler<Either<String, JsonObject>> result) {
+		get(id, getManualGroups, new JsonArray(), result);
+	}
+
+	@Override
+	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, Handler<Either<String, JsonObject>> result) {
 		
 		String getMgroups = "";
 		String resultMgroups = "";
@@ -166,7 +171,18 @@ public class DefaultUserService implements UserService {
 				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
 				resultMgroups +
 				"u";
-		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", result, "structureNodes"));
+		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
+			if (event.isRight()) {
+				final JsonObject r = event.right().getValue();
+				filterAttributes.add("password").add("resetCode").add("lastNameSearchField").add("firstNameSearchField")
+						.add("displayNameSearchField").add("checksum");
+				for (Object o : filterAttributes) {
+					r.remove((String) o);
+				}
+			}
+			result.handle(event);
+		};
+		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
 
 	@Override
