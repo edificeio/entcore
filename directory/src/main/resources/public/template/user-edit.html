@@ -3,7 +3,7 @@
  -->
 
 <div class="row reduce-block-six twelve-mobile user-infos no-margin">
-	<lightbox show="display.login" on-close="display.login = false" workflow="directory.allowLoginUpdate" ng-if="account.id === me.userId">
+	<lightbox show="display.login" on-close="display.login = false" workflow="directory.allowLoginUpdate" ng-if="account.id === me.userId || account.type[0] === 'Student'">
 		<h1><i18n>directory.login.update.title</i18n></h1>
 		<form name="loginForm" novalidate>
 			<div class="row">
@@ -57,7 +57,7 @@
 				</div>
 				<em class="seven cell">
 					[[ (account.loginAlias && account.loginAlias != '') ? account.loginAlias : account.login ]] 
-					<a ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate">
+					<a ng-click="display.login = true; account.newLoginAlias = account.loginAlias;" workflow="directory.allowLoginUpdate" ng-if="account.id === me.userId || account.type[0] === 'Student'">
 						<i18n>directory.login.update.button</i18n>
 					</a>
 				</em>
