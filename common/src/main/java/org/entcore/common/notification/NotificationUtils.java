@@ -25,6 +25,7 @@ import org.entcore.common.neo4j.Neo4j;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.HtmlUtils;
 
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -114,5 +115,15 @@ public class NotificationUtils {
                 }
             }
         }));
+    }
+
+    public static JsonObject htmlContentToPreview(String htmlContent){
+        JsonObject preview =  new JsonObject();
+        String text = HtmlUtils.extractFormatText(htmlContent, 4, 150);
+        if(text.length() > 146)
+            text = text.substring(0, 146) + "...";
+        preview.put("text", text);
+        preview.put("images", HtmlUtils.getAllImagesSrc(htmlContent, 2));
+        return preview;
     }
 }
