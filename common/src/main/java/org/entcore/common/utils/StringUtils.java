@@ -266,4 +266,13 @@ public final class StringUtils {
         return String.format("%1$" + n + "s", s).replace(' ', c);
     }
 
+    public static int ordinalIndexOf(String str, String substr, int n) {
+        if (str == null || substr == null || n < 1) {
+            return -1;
+        }
+        int pos = str.indexOf(substr);
+        while (--n > 0 && pos != -1)
+            pos = str.indexOf(substr, pos + 1);
+        return pos;
+    }
 }
