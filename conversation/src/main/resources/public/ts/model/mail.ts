@@ -180,10 +180,10 @@ export class Mail implements Selectable {
 
         return new Promise((resolve, reject) => {
             this.body = '<div><br></div><div class="signature new-signature">' + signature + '</div>' +
-                format[mailType].content + '<blockquote>' + origin.body + '</blockquote>';
+                format[mailType].content + '<br><blockquote>' + origin.body + '</blockquote>';
             const tempElement = compile(format[mailType].content)($scope);
             setTimeout(function(){
-                this.body = $(document.createElement('div')).append(tempElement)[0].outerHTML + '<blockquote>' + this.body + '</blockquote>';
+                this.body = $(document.createElement('div')).append(tempElement)[0].outerHTML + '<br><blockquote>' + this.body + '</blockquote>';
                 tempElement.remove()
                 resolve();
             }, 0)
