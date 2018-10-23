@@ -127,7 +127,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					parse(basePath + "UDCal_23.xml");
 					parse(basePath + "UDCal_11.xml");
 					parse(basePath + "UDCal_12.xml");
-					generateCourses(startDateWeek1.getWeekOfWeekyear());
+					generateCourses(startDateWeek1.getWeekOfWeekyear(), true);
 					final String UCal12Filter = udcalLowerCase ? "udcal_12_[0-9]+.xml" : "UDCal_12_[0-9]+.xml";
 					vertx.fileSystem().readDir(basePath, UCal12Filter, new Handler<AsyncResult<List<String>>>() {
 						@Override
@@ -140,7 +140,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 											final int weekNumber = Integer.parseInt(m.group(1));
 											if (periods.containsKey(weekNumber)) {
 												parse(p);
-												generateCourses(weekNumber);
+												generateCourses(weekNumber, false);
 											} else {
 												log.warn("Ignore week : " + weekNumber);
 											}
@@ -489,7 +489,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 				entity.getString("rgpmt") + getOrElse(entity.getString("gpe"), "_", false);
 	}
 
-	private void generateCourses(int periodWeek) {
+	private void generateCourses(int periodWeek, boolean theoretical) {
 		for (Map.Entry<Integer, Integer> e : getNextHolidaysWeek(periodWeek).entrySet()) {
 			for (List<JsonObject> c : lfts.values()) {
 				Collections.sort(c, new LftComparator());
@@ -504,7 +504,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 						start = j.getString("fic");
 						current = val;
 					} else if ((++current) != val || count == c.size()) {
-						persistCourse(generateCourse(start, previous.getString("fic"), previous, e.getKey(), e.getValue()));
+						persistCourse(generateCourse(start, previous.getString("fic"), previous, e.getKey(), e.getValue(), theoretical));
 						start = j.getString("fic");
 						current = val;
 					}
@@ -537,7 +537,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		return p;
 	}
 
-	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, int endPeriodWeek) {
+	private JsonObject generateCourse(String start, String end, JsonObject entity, int periodWeek, int endPeriodWeek, boolean theoretical) {
 		JsonObject ficheTStart = fichesT.get(start);
 		JsonObject ficheTEnd = fichesT.get(end);
 		if (ficheTStart == null || ficheTEnd == null) {
@@ -586,7 +586,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("startDate", startDate.toString())
 				.put("endDate", endDate.toString())
 				.put("dayOfWeek", day)
-				.put("teacherIds", teacherIds);
+				.put("teacherIds", teacherIds)
+				.put("theoretical", theoretical);
 		final String sId = subjects.get(entity.getString("mat"));
 		if (isNotEmpty(sId)) {
 			c.put("subjectId", sId);
