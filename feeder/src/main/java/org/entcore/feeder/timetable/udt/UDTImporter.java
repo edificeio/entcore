@@ -305,8 +305,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		if (isNotEmpty(codeGep)) {
 			codeGepDiv.put(id, codeGep);
 		}
-		final String ocn = getOrElse(currentEntity.getString("libelle"), id, false);
-		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(ocn), ocn, false) : ocn;
+		final String className = (classesMapping != null) ? getOrElse(classesMapping.getString(id), id, false) : id;
 		currentEntity.put("className", className);
 		if (className != null) {
 			txXDT.add(UNKNOWN_CLASSES, new JsonObject().put("UAI", UAI).put("className", className));
