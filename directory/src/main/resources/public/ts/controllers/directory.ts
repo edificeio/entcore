@@ -466,7 +466,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if (model.me.type !== 'ELEVE') {
 				await $scope.currentUser.loadInfos();
 			}
-			if ((model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT') && $scope.currentUser.type[0] === 'Relative') {
+			if ((model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT') && $scope.currentUser.type[0] === 'Relative') {
 				await $scope.currentUser.loadChildren();
 			}
 			if($scope.currentUser !== undefined){
