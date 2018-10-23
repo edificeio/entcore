@@ -1182,19 +1182,24 @@ var skin = (function(){
 				}
 			});
 		},
-		getHelpPath: function() {
+		getHelpPath: function(resolve) {
 			var conf = { overriding:[] };
-			return new Promise((resolve, reject) => {
-				const xhr = new XMLHttpRequest();
-				xhr.open('get', '/assets/theme-conf.js');
-				xhr.onload = async () => {
-					eval(xhr.responseText.split('exports.')[1]);
-					this.conf = conf;
-					const override = this.conf.overriding.find(it => it.child === skin.skin);
-					resolve((override.help ? override.help : '/help')); 
-				};
-				xhr.send();
-			});
+			var that = this;
+			var xhr = new XMLHttpRequest();
+			xhr.open('get', '/assets/theme-conf.js');
+			xhr.onload = function () {
+				eval(xhr.responseText.split('exports.')[1]);
+				that.conf = conf;
+				var override = null;
+				for(var index=0; index < that.conf.overriding.length;index++){
+					var current = that.conf.overriding[index];
+					if(current.child===skin.skin){
+						override = current;
+					}
+				}
+				override && resolve((override.help ? override.help : '/help')); 
+			};
+			xhr.send();
 		}
 	}
 }());
