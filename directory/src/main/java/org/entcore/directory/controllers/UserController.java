@@ -396,7 +396,7 @@ public class UserController extends BaseController {
 	}
 
 	@Get("/user/:userId/children")
-	@ResourceFilter(UserAccess.class)
+	@ResourceFilter(UserAccessOrVisible.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void listChildren(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
