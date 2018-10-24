@@ -487,6 +487,11 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void trashThread(List<String> threadIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
+
+	}
+
+	@Override
 	public void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result)) return;
 
@@ -704,6 +709,11 @@ public class DefaultConversationService implements ConversationService {
 	@Override
 	public void toggleUnread(List<String> messagesId, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		// Deprecated
+	}
+
+	@Override
+	public void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
+
 	}
 
 	@Override

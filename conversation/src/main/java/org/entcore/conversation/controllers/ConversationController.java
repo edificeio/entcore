@@ -489,42 +489,7 @@ public class ConversationController extends BaseController {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.listThreads( user, page, new Handler<Either<String, JsonArray>>() {
-						@Override
-						public void handle(Either<String, JsonArray> r) {
-							if (r.isRight()) {
-								HashMap<String, JsonArray> test = new HashMap<String, JsonArray>();
-								JsonObject tmp;
-								String threadId;
-								JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
-								for (Object o : r.right().getValue()) {
-									if (!(o instanceof JsonObject)) {
-										continue;
-									}
-									tmp = (JsonObject) o;
-									translateGroupsNames(tmp, request);
-									threadId = tmp.getString("thread_id");
-									if(threadId != null){
-										if(test.containsKey(threadId))
-											test.get(threadId).add(tmp);
-										else
-											test.put(threadId, new fr.wseduc.webutils.collections.JsonArray().add(tmp));
-									}else{
-										result.add(new fr.wseduc.webutils.collections.JsonArray().add(tmp));
-									}
-								}
-
-								for(JsonArray array : test.values()){
-									result.add(array);
-								}
-								renderJson(request, result);
-							} else {
-								JsonObject error = new JsonObject()
-										.put("error", r.left().getValue());
-								renderJson(request, error, 400);
-							}
-						}
-					});
+					conversationService.listThreads( user, page, arrayResponseHandler(request));
 				} else {
 					unauthorized(request);
 				}
@@ -625,6 +590,61 @@ public class ConversationController extends BaseController {
 				} else {
 					unauthorized(request);
 				}
+			}
+		});
+	}
+
+	@Put("thread/trash")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MultipleMessageUserFilter.class)
+	public void trashThread(final HttpServerRequest request) {
+
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray threadIds = body.getJsonArray("id");
+				if (threadIds == null || threadIds.isEmpty()) {
+					badRequest(request);
+					return;
+				}
+
+				getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							conversationService.trashThread(threadIds.getList(), user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
+	@Post("thread/toggleUnread")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MultipleMessageUserFilter.class)
+	public void toggleUnreadThread(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				final JsonArray threadIds = body.getJsonArray("id");
+				final Boolean unread = body.getBoolean("unread");
+				if (threadIds == null || threadIds.isEmpty() || unread == null) {
+					badRequest(request);
+					return;
+				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(final UserInfos user) {
+						if (user != null) {
+							conversationService.toggleUnreadThread(threadIds.getList(), unread, user, defaultResponseHandler(request));
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
 			}
 		});
 	}
