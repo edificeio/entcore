@@ -607,7 +607,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.displayRelatives = function(currentUser) {
-		return currentUser && currentUser.relatives.length && (currentUser.type[0] === 'Student');
+		return currentUser && currentUser.relatives.length && (currentUser.type[0] === 'Student') && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};
 
 
