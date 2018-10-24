@@ -436,7 +436,7 @@ public class Validator {
 			return i18n.translate("invalid.value", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
 		}
 
-		if (logins.containsKey(value)) {
+		if (logins.putIfAbsent(value, "") != null) {
 			return i18n.translate("invalid.duplicate", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
 		}
 		return null;
