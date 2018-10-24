@@ -261,24 +261,20 @@ public class SqlConversationService implements ConversationService{
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
 		int nbThread =  10;
 		int skip = page * nbThread;
-		int maxMessageInThread = 5;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
+		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
 		values.add(user.getUserId());
 		String query = " WITH threads AS ( " +
-				" SELECT thread_id from (SELECT  DISTINCT ON (m.thread_id) m.thread_id, m.date FROM " + userMessageTable + " um " +
+				" SELECT * from (SELECT  DISTINCT ON (m.thread_id) thread_id AS "+messagesFields+ " FROM " + userMessageTable + " um " +
 				" JOIN "+messageTable+" m ON um.message_id = m.id " +
 				" WHERE um.user_id = ? AND m.state = 'SENT' AND um.trashed = false ORDER BY m.thread_id, m.date DESC) a "+
 				" ORDER BY date DESC LIMIT "+ nbThread +" OFFSET "+ skip + ") " +
 
-				"SELECT * FROM ( " +
-				"SELECT DISTINCT "+messagesFields+", um.unread as unread, row_number() OVER (PARTITION BY m.thread_id ORDER BY m.date DESC) as rownum " +
-				"FROM threads, " +userMessageTable + " um JOIN "+messageTable+" m ON um.message_id = m.id  " +
-				" WHERE um.user_id = ? and " +
-				" m.thread_id = threads.thread_id AND m.state = 'SENT' AND um.trashed = false " +
-
-				") b where rownum <= "+maxMessageInThread+" ORDER BY thread_id, date DESC";
+				"SELECT "+ messagesFields +", unread FROM threads JOIN (SELECT m.thread_id, SUM(CASE WHEN um.unread THEN 1 ELSE 0 END) AS unread " +
+				"FROM threads, conversation.usermessages um JOIN conversation.messages m ON um.message_id = m.id and um.user_id= ? " +
+				"WHERE  um.trashed = false AND m.thread_id=threads.id GROUP BY m.thread_id) c ON threads.id = c.thread_id " +
+				"ORDER BY date DESC";
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
 	}
@@ -356,6 +352,24 @@ public class SqlConversationService implements ConversationService{
 
 		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
 	}
+
+	@Override
+	public void trashThread(List<String> threadIds, UserInfos user, Handler<Either<String, JsonObject>> result){
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		StringBuilder query = new StringBuilder(
+				"UPDATE " + userMessageTable + " AS um  " +
+					"SET trashed = true " +
+					"FROM conversation.messages as m " +
+					"WHERE m.thread_id IN ");
+
+		query.append(generateInVars(threadIds, values));
+		query.append(" AND um.user_id = ? AND um.trashed = false AND um.message_id = m.id ");
+		values.add(user.getUserId());
+
+		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
+
+	}
+
 
 	@Override
 	public void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
@@ -561,6 +575,23 @@ public class SqlConversationService implements ConversationService{
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
+
+	@Override
+	public void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		StringBuilder query = new StringBuilder(
+				"UPDATE " + userMessageTable + " AS um  " +
+						"SET  unread = ? " +
+						"FROM conversation.messages as m " +
+						"WHERE m.thread_id IN ");
+		values.add(unread);
+		query.append(generateInVars(threadIds, values));
+		query.append(" AND um.user_id = ? AND um.message_id = m.id ");
+		values.add(user.getUserId());
+
+		sql.prepared(query.toString(), values, SqlResult.validUniqueResultHandler(result));
+	}
+
 
 	@Override
 	public void createFolder(final String folderName, final String parentFolderId, final UserInfos user,

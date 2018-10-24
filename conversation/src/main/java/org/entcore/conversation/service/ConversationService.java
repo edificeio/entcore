@@ -68,6 +68,8 @@ public interface ConversationService {
 
 	void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
+	void trashThread(List<String> threadIds, UserInfos user, Handler<Either<String, JsonObject>> result);
+
 	void restore(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result);
@@ -80,6 +82,8 @@ public interface ConversationService {
 		String acceptLanguage, String search, Handler<Either<String, JsonObject>> result);
 
 	void toggleUnread(List<String> messagesId, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
+
+	void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	//Folders
 	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);
