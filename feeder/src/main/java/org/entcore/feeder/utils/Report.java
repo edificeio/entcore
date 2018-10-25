@@ -330,7 +330,7 @@ public class Report {
 	public void sendEmails(final Vertx vertx, final JsonObject config, String source) {
 		final JsonArray sendReport = config.getJsonArray("sendReport");
 		if (sendReport == null) {
-			log.error("Cannot send reports because of empty config: " + sendReport);
+			//log.error("Cannot send reports because of empty config: " + sendReport);
 			return;
 		}
 		int count = sendReport.size();
@@ -341,7 +341,7 @@ public class Report {
 					|| currentSendReport.getJsonArray("to").size() == 0 //
 					|| currentSendReport.getJsonArray("sources") == null//
 					|| !currentSendReport.getJsonArray("sources").contains(source)) {
-				log.error("Cannot send report because of missing infos: " + currentSendReport);
+				// log.error("Cannot send report because of missing infos: " + currentSendReport);
 				continue;
 			}
 			if (count == 1) {
