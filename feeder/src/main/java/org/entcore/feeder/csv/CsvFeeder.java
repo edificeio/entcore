@@ -109,7 +109,7 @@ public class CsvFeeder implements Feed {
 						@Override
 						public void handle(final AsyncResult<List<String>> event) {
 							if (event.succeeded()) {
-								checkNotModifiableExternalId(event.result(), new Handler<Message<JsonObject>>() {
+								checkNotModifiableExternalId(event.result(), path, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> m) {
 										if ("ok".equals(m.body().getString("status"))) {
@@ -190,7 +190,7 @@ public class CsvFeeder implements Feed {
 		return "CSV";
 	}
 
-	private void checkNotModifiableExternalId(List<String> files, final Handler<Message<JsonObject>> handler) {
+	private void checkNotModifiableExternalId(List<String> files, final String path, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
 		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
@@ -205,7 +205,8 @@ public class CsvFeeder implements Feed {
 						int i = 0;
 						while ((strings = csvReader.readNext()) != null) {
 							if (i == 0) {
-								columnsMapper.getColumsNames(strings, columns, "", handler);
+								final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
+								columnsMapper.getColumsNames(strings, columns, profile, handler);
 								if (columns.isEmpty()) {
 									handler.handle(new ResultMessage().error("invalid.columns"));
 									return;
