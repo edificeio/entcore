@@ -10,7 +10,10 @@
             "type": "string"
         },
         "url": {
-            "type": "string"
+             "type": "array",
+                "items": {
+                    "type": "string"
+                }
         },
         "logo": {
             "type": "string"
