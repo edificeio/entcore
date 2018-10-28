@@ -24,6 +24,9 @@ function EmbedController($scope) {
 
     $scope.viewEmbed = function(embed) {
         $scope.embed = embed
+	    if($scope.embed.url.constructor === Array) {
+            $scope.embed.url = $scope.embed.url.join(" , ");
+        }
     }
 
     $scope.mergeEmbeds = function() {
@@ -65,6 +68,7 @@ function EmbedController($scope) {
     }
 
     $scope.save = function() {
+	    $scope.embed.url = $scope.embed.url.split(" , ");
         var fresh = !$scope.embed._id
         $scope.embed.save().done(function(data) {
             if(fresh) {
@@ -74,6 +78,8 @@ function EmbedController($scope) {
                 $scope.$apply()
                 notify.info('embed.creation.notify')
             } else {
+		        $scope.embed.url = $scope.embed.url.join(" , ")
+		        $scope.$apply()
                 notify.info('embed.modification.notify')
             }
         })
