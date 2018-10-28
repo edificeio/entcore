@@ -32,6 +32,8 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -269,6 +271,18 @@ public class DefaultSchoolService implements SchoolService {
 				condition += " AND COALESCE(u.email, \"\") = \"\" ";
 			}
 
+		}
+
+		//Date
+		if(filterObj.containsKey("dateFilter") && filterObj.containsKey("date")) {
+			String dateFilter = filterObj.getString("dateFilter", "error");
+			String date = filterObj.getString("date", "error");
+
+			if((dateFilter.equals("before") || (dateFilter.equals("after"))) && date.matches("\\d+")) {
+			    String formattedDate = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").format(new Date(Long.parseLong(date)));
+			    String operator = dateFilter.equals("before") ? "<=" : ">=";
+                condition += " AND u.created " + operator + " \"" + formattedDate + "\" ";
+            }
 		}
 
 		//Admin check

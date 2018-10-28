@@ -159,11 +159,22 @@
             </select>
 
             <!-- Email filter -->
-            <select class="six" ng-model="massmail.email">
+            <select class="six vertical-spacing-twice" ng-model="massmail.email">
                 <option value="" selected>[[lang.translate("directory.ignoreMail")]]</option>
                 <option value="true">[[lang.translate("directory.withMail")]]</option>
                 <option value="false">[[lang.translate("directory.withoutMail")]]</option>
             </select>
+
+            <!-- Date filter -->
+            <select class="six vertical-spacing-twice" ng-model="massmail.dateFilter">
+                <option value="" selected>[[lang.translate("directory.ignoreDate")]]</option>
+                <option value="before">[[lang.translate("directory.beforeDate")]]</option>
+                <option value="after">[[lang.translate("directory.afterDate")]]</option>
+            </select>
+
+            <div ng-hide="!massmail.dateFilter">
+                <date-picker class="four cell" style="margin-bottom: 7px;" ng-model="massmail.date"></date-picker>
+            </div>
 
         </div>
         <div class="six cell">

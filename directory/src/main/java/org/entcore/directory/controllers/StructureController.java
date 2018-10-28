@@ -252,6 +252,11 @@ public class StructureController extends BaseController {
 					filter.put("activated", request.params().get("a"));
 				}
 
+				if(request.params().contains("dateFilter") && request.params().contains("date")) {
+				    filter.put("dateFilter", request.params().get("dateFilter"));
+				    filter.put("date", request.params().get("date"));
+                }
+
 				structureService.massmailUsers(structureId, filter, true, true, filterMail, infos, arrayResponseHandler(request));
 			}
 		});
@@ -349,6 +354,11 @@ public class StructureController extends BaseController {
 		if(request.params().contains("a")){
 			filter.put("activated", request.params().get("a"));
 		}
+
+        if(request.params().contains("dateFilter") && request.params().contains("date")) {
+            filter.put("dateFilter", request.params().get("dateFilter"));
+            filter.put("date", request.params().get("date"));
+        }
 
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");

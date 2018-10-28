@@ -1149,6 +1149,9 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		activated: "false",
 		/* Email */
 		email: "",
+		/* BirthDate */
+		dateFilter: "",
+		date: new Date(),
 		/* Sort by */
 		sortmethods: [
 			{
@@ -1214,6 +1217,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			}
 			if(that.email)
 				params.mail = that.email
+			if(that.dateFilter) {
+				params.dateFilter = that.dateFilter
+				that.date.setHours(0,0,0,0)
+				params.date = that.date ? that.date.getTime() : 0
+			}
 			$http.get('/directory/structure/'+that.getStructure().id+'/massMail/users', {
 				params: params
 			}).success(function(data){
@@ -1281,6 +1289,11 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				c: joinClassesAndLevels,
 				//l: _.chain(that.levels).filter(function(l){ return !l.partial }).map(function(l){ return l.name }).value(),
 				filename: lang.translate("directory.massmail.filename")
+			}
+			if(that.dateFilter) {
+				params.dateFilter = that.dateFilter
+				that.date.setHours(0,0,0,0)
+				params.date = that.date ? that.date.getTime() : 0
 			}
 			if(type === 'pdf'){
 				params.s = sortArray
