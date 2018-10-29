@@ -156,8 +156,10 @@ public class UserController extends BaseController {
 		boolean getManualGroups = Boolean.parseBoolean(request.params().get("manual-groups"));
 		if ("true".equals(((SecureHttpServerRequest) request).getAttribute("visibleCheck"))) {
 			final JsonArray filter = new JsonArray()
-					.add("activationCode").add("firstName").add("lastName")
-					.add("lastLogin").add("created").add("modified").add("ine");
+					.add("activationCode").add("firstName").add("lastName").add("mobile").add("mobilePhone")
+					.add("lastLogin").add("created").add("modified").add("ine").add("email").add("emailAcademy")
+					.add("workPhone").add("homePhone").add("country").add("zipCode").add("address").add("postbox")
+					.add("city").add("otherNames").add("title");
 			userService.get(userId, getManualGroups, filter, notEmptyResponseHandler(request));
 		} else {
 			userService.get(userId, getManualGroups, notEmptyResponseHandler(request));
