@@ -6,13 +6,15 @@
 	<div class="four cell twelve-mobile mood" style="height: 100px;">
 		<div class="row horizontal-spacing-twice" style="z-index: 1">
 			<div class="twelve cell centered">
-				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar" file-format="'img'" class="cell"></media-select>
+				<media-select ng-model="account.picture" ng-change="saveChanges()" label="userBook.profile.changeavatar"
+				 file-format="'img'" class="cell"></media-select>
 				<button type="button" i18n-value="remove" ng-if="account.picture !== ''" ng-click="resetAvatar()" class="cell">[[translate('userBook.remove')]]</button>
 			</div>
 		</div>
 		<div class="cell twelve">
 			<div class="twelve cell">
-				<icons-select class="reduce-block-six icons-select cell twelve height-two" current="account.mood" options="availableMoods" change="saveUserbookProperty('mood')">
+				<icons-select class="reduce-block-six icons-select cell twelve height-two" current="account.mood" options="availableMoods"
+				 change="saveUserbookProperty('mood')">
 					<div>[[mon-binding]]</div>
 				</icons-select>
 			</div>
@@ -25,18 +27,15 @@
 				<h2 translate content="userBook.profile.motto"></h2>
 				<div class="flex-row twelve cell">
 					<div class="flex-all-remains">
-						<input class="twelve no-margin monoline top-spacing-twice" 
-							type="text" 
-							maxlength="75" 
-							ng-model="account.motto"
-							complete-change="updateMottoChanged()" />
+						<input class="twelve no-margin monoline top-spacing-twice" type="text" maxlength="75" ng-model="account.motto"
+						 complete-change="updateMottoChanged()" />
 						<span class="twelve input-warnings" ng-if="!motto.published">
-							<label><i18n>userBook.motto.warning</i18n></label>
+							<label>
+								<i18n>userBook.motto.warning</i18n>
+							</label>
 						</span>
 					</div>
-					<button class="left-spacing-twice bottom-spacing-three block" 
-						ng-click="publishMotto()"
-						ng-disabled="!isMottoChanged()">
+					<button class="left-spacing-twice bottom-spacing-three block" ng-click="publishMotto()" ng-disabled="!isMottoChanged()">
 						<i18n>portal.publish</i18n>
 					</button>
 				</div>
@@ -48,18 +47,17 @@
 <div class="row reduce-block-six" ng-if="displayChildren(account)">
 	<article class="row">
 		<h2 translate content="userBook.profile.children"></h2>
-		<content-divider
-			ng-model="account.childrenStructure"
-			order="structureName">
+		<content-divider ng-model="account.childrenStructure" order="structureName">
 			<div>
 				<strong class="cell-ellipsis">[[content.structureName]]</strong>
 				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
 					<div class="cell round bg-white square-medium right-spacing">
-						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
+						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100" />
 					</div>
 					<div>
 						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
-						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[
+							child.classesNames[0] ]]</span>
 					</div>
 				</div>
 			</div>
@@ -73,7 +71,7 @@
 		<div class="reduce-block-eight">
 			<div class="flex-row align-center top-spacing-twice" ng-repeat="relative in account.relatives | orderBy:'displayName'">
 				<div class="cell round bg-white square-medium right-spacing">
-					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100"/>
+					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100" />
 				</div>
 				<div>
 					<span class="cell-ellipsis small-text block left-text">[[ relative.displayName ]]</span>
@@ -86,9 +84,7 @@
 <div class="row reduce-block-six" ng-if="account.attachedStructures.length">
 	<article>
 		<h2 translate key="userBook.profile.schools"></h2>
-		<content-divider
-			ng-model="account.attachedStructures"
-			order="name">
+		<content-divider ng-model="account.attachedStructures" order="name">
 			<div class="width-medium-no-mobile-fat-mobile">
 				<strong class="multiline-ellipsis-three block" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</strong>
 				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
@@ -103,14 +99,17 @@
 
 <div class="row reduce-block-six twelve-mobile">
 	<article>
-		<h2><i18n>userBook.interests</i18n></h2>
+		<h2>
+			<i18n>userBook.interests</i18n>
+		</h2>
 
-		<div class="row line" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
+		<div class="row" data-ng-repeat="hobby in account.hobbies | orderBy:'category'">
 			<div class="two cell reduce-block-six"><span>[[translate('userBook.hobby.' + hobby.category)]]</span></div>
 			<div class="nine cell">
-				<textarea complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing"></textarea>
+				<input type="text" complete-change="saveChanges()" ng-model="hobby.values" class="twelve cell inline-editing" />
 			</div>
-			<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]" data-ng-click="changeVisibility(hobby)"></i></div>
+			<div class="one cell"><i class="[[hobby.visibility.toLowerCase()]] right-magnet" title="[[translate(hobby.visibility.toLowerCase())]]"
+				 data-ng-click="changeVisibility(hobby)"></i></div>
 			<div class="clear"></div>
 		</div>
 	</article>
@@ -126,6 +125,6 @@
 
 		<textarea data-ng-model="account.health" complete-change="saveChanges()"></textarea>
 	</article>
-	</div>
-	<div class="clear"></div>
+</div>
+<div class="clear"></div>
 </div>
