@@ -2,11 +2,13 @@
  user-infos
  -->
 
- <div class="row reduce-block-six twelve-mobile user-infos">
+<div class="row reduce-block-six twelve-mobile user-infos">
 	<h2 class="flex-all-remains left-text" ng-if="(search.index == 0 && users.searched) || (search.index == 1 && groups.searched) || (search.index == 2)">
-		<a ng-click="currentSchool ? deselectUser('dominos') : back()"><i class="back"></i> <i18n>userBook.directory.back</i18n></a>
+		<a ng-click="currentSchool ? deselectUser('dominos') : back()"><i class="back"></i>
+			<i18n>userBook.directory.back</i18n>
+		</a>
 	</h2>
- 	<article class="rigid-grid cell twelve small-text">
+	<article class="rigid-grid cell twelve small-text">
 
 		<div class="cell four height-four reduce-block-six avatar">
 			<div class="twelve cell fluid clip">
@@ -24,7 +26,7 @@
 			</div>
 
 			<div ng-if="!isMoodDefault(currentUser.mood)" class="right-magnet">
-				<i class="[[currentUser.mood]] liquid text-flow"></i>
+				<i class="[[currentUser.mood]] liquid text-flow" tooltip="userBook.mood.[[currentUser.mood]]"></i>
 			</div>
 
 			<div class="row" ng-if="currentUser.email">
@@ -74,18 +76,17 @@
 <div class="row reduce-block-six" ng-if="displayChildren(currentUser)">
 	<article class="row">
 		<h2 translate content="userBook.profile.children"></h2>
-		<content-divider
-			ng-model="currentUser.childrenStructure"
-			order="structureName">
+		<content-divider ng-model="currentUser.childrenStructure" order="structureName">
 			<div>
 				<strong class="cell-ellipsis">[[content.structureName]]</strong>
 				<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
 					<div class="cell round bg-white square-medium right-spacing">
-						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100"/>
+						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100" />
 					</div>
 					<div>
 						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
-						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[ child.classesNames[0] ]]</span>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[
+							child.classesNames[0] ]]</span>
 					</div>
 				</div>
 			</div>
@@ -99,7 +100,7 @@
 		<div class="reduce-block-eight">
 			<div class="flex-row align-center top-spacing-twice" ng-repeat="relative in currentUser.relatives | orderBy:'displayName'">
 				<div class="cell round bg-white square-medium right-spacing">
-					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100"/>
+					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100" />
 				</div>
 				<div>
 					<span class="cell-ellipsis small-text block left-text">[[ relative.displayName ]]</span>
@@ -112,9 +113,7 @@
 <div class="row reduce-block-six" ng-if="currentUser.schools.length">
 	<article>
 		<h2 translate key="userBook.profile.schools"></h2>
-		<content-divider
-			ng-model="currentUser.attachedStructures"
-			order="name">
+		<content-divider ng-model="currentUser.attachedStructures" order="name">
 			<div class="width-medium-no-mobile-fat-mobile">
 				<strong class="multiline-ellipsis-three block" tooltip="[[content.name]]" tooltip-check-content>[[content.name]]</strong>
 				<i18n class="top-spacing-three indication italic-text" ng-if="content.admin">portal.admin.attached</i18n>
@@ -129,9 +128,9 @@
 
 <div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
 	<article>
-        <h1 translate key="userBook.interests"></h1>
+		<h1 translate key="userBook.interests"></h1>
 
-        <div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
+		<div class="row medium-text line" ng-repeat="hobby in currentUser.hobbies | orderBy:'category'">
 			<div class="four-mobile three cell reduce-block-six" translate content="userBook.hobby.[[hobby.category]]"></div>
 			<em class="six-mobile nine cell reduce-block-six user-content horizontal-spacing">[[hobby.values]]</em>
 		</div>
@@ -142,11 +141,11 @@
 
 <div class="row reduce-block-six" ng-if="currentUser.health">
 	<article>
-        <h1 ng-if="currentUser.health">
-        	<i18n>userBook.profile.health</i18n>
-        </h1>
-        <div class="row medium-text">
-            [[currentUser.health]]
-        </div>
-    </article>
+		<h1 ng-if="currentUser.health">
+			<i18n>userBook.profile.health</i18n>
+		</h1>
+		<div class="row medium-text">
+			[[currentUser.health]]
+		</div>
+	</article>
 </div>
