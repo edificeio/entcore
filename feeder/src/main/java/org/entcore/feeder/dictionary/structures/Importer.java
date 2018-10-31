@@ -511,6 +511,11 @@ public class Importer {
 							.put("source", currentSource)
 							.put("structures", structures);
 					transactionHelper.add(qs, ps);
+					final String daa =
+							"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
+							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"DELETE r";
+					transactionHelper.add(daa, ps);
 				}
 				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
 				if (externalId != null && linkClasses != null) {
