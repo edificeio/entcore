@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class PersEducNat extends AbstractUser {
@@ -127,6 +128,11 @@ public class PersEducNat extends AbstractUser {
 							.put("source", currentSource)
 							.put("structures", structuresByFunctions);
 					transactionHelper.add(qs, ps);
+					final String daa =
+							"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
+							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"DELETE r";
+					transactionHelper.add(daa, ps.copy().put("structures", getOrElse(structures, new JsonArray())));
 				}
 				final JsonObject fosm = new JsonObject();
 				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
