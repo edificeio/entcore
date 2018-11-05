@@ -41,7 +41,7 @@ var template = {
 		}
 	},
     contains: function(name, view) {
-        return this.containers[name] === this.viewPath + view + '.html';
+        return this.containers[name] === undefined ? (view === undefined) : this.containers[name].startsWith(this.viewPath + view + '.html');
     },
     isEmpty: function(name) {
         return this.containers[name] === 'empty' || !this.containers[name];
