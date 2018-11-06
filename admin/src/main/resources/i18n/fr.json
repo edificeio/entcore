@@ -375,6 +375,9 @@
 
     "users.with.mail": "Utilisateur avec courriel",
     "users.without.mail": "Utilisateur sans courriel",
+    "users.before": "Utilisateurs créés avant le :",
+    "users.since": "Utilisateurs créés depuis le :",
+    "creation.date" : "Date de création",
     "mergeKey": "Clé de fusion",
     "generate" : "Générer",
     "groups.local": "Groupes locaux :",
