@@ -745,6 +745,9 @@ public class User {
 			type = groupType;
 			final String query0 = "MATCH (g:" + type + ") SET g.nbUsers = 0;";
 			tx.add(query0, params);
+		} else {
+			final String query0 = "MATCH (g:" + type + ") WHERE g.nbUsers > 0 AND NOT(g<-[:IN]-(:User)) SET g.nbUsers = 0;";
+			tx.add(query0, params);
 		}
 		final String query = "MATCH (g:" + type + filter + ")<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";
 		tx.add(query, params);
