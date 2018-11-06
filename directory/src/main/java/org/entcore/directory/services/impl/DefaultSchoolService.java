@@ -545,7 +545,7 @@ public class DefaultSchoolService implements SchoolService {
 				"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) " +
 				"OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) " +
 				"RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, " +
-				"COLLECT(DISTINCT { id: c.id, name: c.name}) as classes, " +
+				"FILTER(c IN COLLECT(DISTINCT { id: c.id, name: c.name}) WHERE NOT(c.id IS NULL)) as classes, " +
 				"CASE WHEN LENGTH(COLLECT(distinct htg)) = 0 THEN COLLECT(DISTINCT fg.filter) ELSE COLLECT(DISTINCT fg.filter) + 'HeadTeacher' END as functions, " +
 				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, " +
 				"['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes";
