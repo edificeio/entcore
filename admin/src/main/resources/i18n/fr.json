@@ -105,6 +105,7 @@
     "mobilePhone": "Téléphone portable",
     "city": "Ville",
     "toggle.account": "{{ 0 ? Débloquer le compte : Bloquer le compte }}",
+    "delete.image": "Supprimer la photo",
     "unblock": "Débloquer",
     "predelete.account": "Pré-supprimer le compte",
     "restore.account": "Restaurer le compte",
