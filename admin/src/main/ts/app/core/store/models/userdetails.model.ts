@@ -86,6 +86,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
         })
     }
 
+    deletePhoto() {
+        return this.http.put(`/directory/userbook/${this.id}`, {"picture":""});
+    }
+
     addHeadTeacherManual(structureExternalId: string, classe: any) {
         let relationToAdd = classe.externalId;
         return this.http.post(`/directory/user/headteacher/${this.id}`, {
