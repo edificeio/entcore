@@ -160,6 +160,24 @@ class MailFilter extends UserFilter<string> {
     }
 }
 
+class DateFilter extends UserFilter<{date: Date, comparison: string}> {
+    type = 'creationDate'
+    label = 'creation.date'
+    comboModel = [{date: undefined, comparison:'users.before'}, {date: undefined, comparison:'users.since'}]
+    display = 'comparison'
+    order = '+date'
+    filterProp = 'date'
+    datepicker = true
+
+    filter = (date: string) => {
+        let outputModel = this.outputModel
+        return outputModel.length === 0 ||
+        outputModel.some(o => (typeof o.date === "undefined") || isNaN(o.date.valueOf()) ||
+        (o.comparison === 'users.before' ? Date.parse(o.date.toISOString()) >= Date.parse(date)
+        : Date.parse(o.date.toISOString()) <= Date.parse(date)))
+    }
+}
+
 class AdmlFilter extends UserFilter<string> {
     type = 'functions';
     label = 'adml.multi.combo.title';
@@ -194,6 +212,7 @@ export class UserlistFiltersService {
     private duplicatesFilter = new DuplicatesFilter(this.updateSubject)
     private mailFilter = new MailFilter(this.updateSubject);
     private admlFilter = new AdmlFilter(this.updateSubject);
+    private dateFilter = new DateFilter(this.updateSubject);
 
     filters : UserFilterList<any> = [
         this.profileFilter,
@@ -205,7 +224,8 @@ export class UserlistFiltersService {
         this.sourcesFilter,
         this.duplicatesFilter,
         this.mailFilter,
-        this.admlFilter
+        this.admlFilter,
+        this.dateFilter
     ]
 
     resetFilters(){
@@ -248,6 +268,10 @@ export class UserlistFiltersService {
 
     setAdmlComboModel(combos: string[]) {
         this.admlFilter.comboModel = combos;
+    }
+
+    setDateComboModel(combos: {date: Date, comparison: string}[]) {
+        this.dateFilter.comboModel = combos;
     }
 
     getFormattedFilters() : Object {
