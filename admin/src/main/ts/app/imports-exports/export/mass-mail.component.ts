@@ -30,31 +30,37 @@ import { FilterPipe } from '../../shared/ux/pipes'
 
                     <div *ngFor="let filter of userlistFiltersService.filters">
                         <div *ngIf="filter.comboModel.length > 0">
-                            <multi-combo
-                                [comboModel]="filter.comboModel"
-                                [(outputModel)]="filter.outputModel"
-                                [title]="filter.label | translate"
-                                [display]="filter.display || translate"
-                                [orderBy]="filter.order || orderer">
-                            </multi-combo>
-                            
-                            <div class="multi-combo-companion">
-                                <div *ngFor="let item of filter.outputModel" (click)="deselect(filter, item)">
-                                    <span *ngIf="filter.display">{{ item[filter.display] }}</span>
-                                    <span *ngIf="!filter.display">{{ item | translate }}</span>
-                                    <i class="fa fa-trash is-size-5"></i>
+                            <div>
+                                <multi-combo
+                                    [comboModel]="filter.comboModel"
+                                    [(outputModel)]="filter.outputModel"
+                                    [title]="filter.label | translate"
+                                    [display]="filter.display || translate"
+                                    [max]="filter.datepicker ? 1 : filter.comboModel.length"
+                                    [orderBy]="filter.order || orderer"
+                                    (outputModelChange)="resetDate(filter)">
+                                </multi-combo>
+
+                                <div class="multi-combo-companion">
+                                    <div *ngFor="let item of filter.outputModel" (click)="deselect(filter, item)">
+                                        <span *ngIf="filter.display">{{ item[filter.display] | translate }}</span>
+                                        <span *ngIf="!filter.display">{{ item | translate }}</span>
+                                        <i class="fa fa-trash is-size-5"></i>
+                                    </div>
+                                    <div *ngIf="filter.datepicker&&filter.outputModel.length>0">
+                                        <date-picker [ngModel]="dateFilter" (ngModelChange)="updateDate($event,filter)"></date-picker>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
             <div class="has-vertical-padding is-pulled-right">
                 <a><s5l>process.massmail</s5l> : </a>
                 
-                <button class="cell" (click)="processMassMail('pdf')"><s5l>massmail.pdf</s5l></button>
-                <button class="cell" (click)="processMassMail('mail')"><s5l>massmail.mail</s5l></button>
+                <button class="cell" (click)="processMassMail('pdf')" [disabled]="getFilteredUsers().length == 0"><s5l>massmail.pdf</s5l></button>
+                <button class="cell" (click)="processMassMail('mail')" [disabled]="getFilteredUsers().length == 0"><s5l>massmail.mail</s5l></button>
             </div>
             
             <div class="has-vertical-padding is-clearfix">
@@ -77,6 +83,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                             <th (click)="setUserOrder('code')"><i class="fa fa-sort"></i><s5l>activation.code</s5l></th>
                             <th (click)="setUserOrder('email')"><i class="fa fa-sort"></i><s5l>email</s5l></th>
                             <th (click)="setUserOrder('classesStr')"><i class="fa fa-sort"></i><s5l>create.user.classe</s5l></th>
+                            <th (click)="setUserOrder('creationDate')"><i class="fa fa-sort"></i><s5l>creation.date</s5l></th>
                         </tr>
                         <tr>    
                             <th>
@@ -110,6 +117,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                             <td>{{user.code}}</td>
                             <td title="{{user.email}}">{{user.email}}</td>
                             <td>{{user.classesStr}}</td>
+                            <td>{{displayDate(user.creationDate)}}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -136,6 +144,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     structureId: string;
     show: boolean = false;
     private deselectItem: boolean = false;
+    dateFilter: string;
 
     dataSubscriber: Subscription
     routerSubscriber: Subscription
@@ -220,6 +229,10 @@ export class MassMailComponent implements OnInit, OnDestroy {
         if (outputModels['code'].length == 1) {
             params.a = outputModels['code'][0].indexOf('users.activated') >= 0;
         }
+        if (outputModels['creationDate'].length == 1) {
+            params.dateFilter = outputModels['creationDate'][0].comparison === 'users.before' ? 'before' : 'after';
+            params.date = outputModels['creationDate'][0].date.getTime();
+        }
 
         try {
             blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));
@@ -264,6 +277,25 @@ export class MassMailComponent implements OnInit, OnDestroy {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
         this.deselectItem = true;
+        this.resetDate(filter);
+    }
+
+    updateDate(newDate,filter): void {
+        this.dateFilter = newDate;
+        filter.outputModel[0].date = new Date(Date.parse(this.dateFilter));
+    }
+
+    displayDate(date: string) : string {
+        return new Date(date).toLocaleDateString()
+    }
+
+    resetDate(filter) {
+        if(filter.datepicker) {
+            this.dateFilter = "";
+        }
+        if(filter.outputModel.length > 0) {
+            filter.outputModel[0].date = undefined;
+        }
     }
 
     setUserOrder(order: string): void {

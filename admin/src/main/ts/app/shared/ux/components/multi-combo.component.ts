@@ -24,7 +24,7 @@ import { LabelsService } from '../services'
                     (click)="toggleItem(item)"
                     [ngClass]="{ selected: isSelected(item) }"
                     [attr.disabled]="isDisabled()">
-                    {{ displayItem(item) }}
+                    {{ displayItem(item) | translate }}
                 </li>
             </ul>
         </div>
