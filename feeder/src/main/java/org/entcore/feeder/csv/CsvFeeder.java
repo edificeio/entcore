@@ -303,6 +303,7 @@ public class CsvFeeder implements Feed {
 					user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
 					user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
+					List<String[]> groups = new ArrayList<>();
 
 					// Class Admin
 					if (isNotEmpty(structure.getOverrideClass())) {
@@ -339,7 +340,7 @@ public class CsvFeeder implements Feed {
 									a = new fr.wseduc.webutils.collections.JsonArray();
 									user.put(c, a);
 								}
-								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
+								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) || "groups".equals(c)) &&
 										!v.startsWith(structure.getExternalId() + "$")) {
 									a.add(structure.getExternalId() + "$" + v);
 								} else {
@@ -369,7 +370,7 @@ public class CsvFeeder implements Feed {
 									user.put(c, v2);
 								}
 						}
-						if ("classes".equals(c)) {
+						if ("classes".equals(c) || "groups".equals(c)) {
 							String[] cc = v.split("\\$");
 							if (cc.length == 2 && !cc[1].matches("[0-9]+")) {
 								final String fosEId = importer.getFieldOfStudy().get(cc[1]);
@@ -378,12 +379,17 @@ public class CsvFeeder implements Feed {
 								}
 							}
 							String eId = structure.getExternalId() + '$' + cc[0];
-							structure.createClassIfAbsent(eId, cc[0]);
 							final String[] classId = new String[3];
 							classId[0] = structure.getExternalId();
 							classId[1] = eId;
 							classId[2] = (cc.length == 2) ? cc[1] : "";
-							classes.add(classId);
+							if ("classes".equals(c)) {
+								structure.createClassIfAbsent(eId, cc[0]);
+								classes.add(classId);
+							} else {
+								structure.createFunctionalGroupIfAbsent(eId, cc[0]);
+								groups.add(classId);
+							}
 						}
 					}
 					String ca;
@@ -412,16 +418,16 @@ public class CsvFeeder implements Feed {
 						case "Teacher":
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
-									null, true, true);
+									groups.toArray(new String[classes.size()][3]), true, true);
 							break;
 						case "Personnel":
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
-									null, true, true);
+									groups.toArray(new String[classes.size()][3]), true, true);
 							break;
 						case "Student":
 							importer.createOrUpdateStudent(user, STUDENT_PROFILE_EXTERNAL_ID, null, null,
-									classes.toArray(new String[classes.size()][2]), null, null, true, true);
+									classes.toArray(new String[classes.size()][2]), groups.toArray(new String[classes.size()][3]), null, true, true);
 							break;
 						case "Relative":
 							if (("Intitulé".equals(strings[0]) && "Adresse Organisme".equals(strings[1])) ||

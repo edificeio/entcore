@@ -162,7 +162,7 @@ public class ColumnsMapper {
 				.put("paysnaissance", "ignore")
 				.put("etat", "ignore")
 				.put("intervenant", "ignore")
-				.put("regroupement(s)", "ignore")
+				.put("regroupement(s)", "groups")
 				.put("dispositif(s)", "ignore")
 				.put("", "ignore");
 

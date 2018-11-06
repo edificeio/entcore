@@ -321,7 +321,7 @@ public class CsvValidator extends Report implements ImportValidator {
 										a = new fr.wseduc.webutils.collections.JsonArray();
 										user.put(c, a);
 									}
-									if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c)) &&
+									if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) || "groups".equals(c)) &&
 											!v.startsWith(structure.getExternalId() + "$")) {
 										a.add(structure.getExternalId() + "$" + v);
 									} else {
