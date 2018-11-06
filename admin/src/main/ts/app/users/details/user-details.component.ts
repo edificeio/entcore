@@ -8,6 +8,7 @@ import { SpinnerService, NotifyService, UserListService } from '../../core/servi
 import { globalStore } from '../../core/store'
 import { UserModel, UserDetailsModel, StructureModel } from '../../core/store/models'
 import { UsersStore } from '../users.store'
+import http from 'axios'
 
 @Component({
     selector: 'user-detail',
@@ -72,7 +73,17 @@ import { UsersStore } from '../users.store'
 
         <div class="panel-header-content">
             <div class="left">
-                <img src="/userbook/avatar/{{user.id}}?thumbnail=100x100">
+                <div>
+                    <img [src]="imgSrc" (load)="imgLoad()">
+                </div>
+                <div>
+                    <button (click)="deleteImg()"
+                        [disabled]="spinner.isLoading('portal-content') || !imgSrc || !imgLoaded"
+                        class="relative">
+                        <s5l>delete.image</s5l>
+                        <i class="fa fa-times-circle"></i>
+                    </button>
+                </div>
                 <div>
                     <button (click)="toggleUserBlock()" 
                         [disabled]="spinner.isLoading('portal-content')" 
@@ -163,6 +174,8 @@ export class UserDetails implements OnInit, OnDestroy{
     forceDuplicates : boolean
     details : UserDetailsModel
     structure: StructureModel = this.usersStore.structure
+    imgSrc: string
+    imgLoaded: boolean = false;
     
     private _user : UserModel
     set user(user: UserModel) {
@@ -221,6 +234,8 @@ export class UserDetails implements OnInit, OnDestroy{
         if(!this.user.code && this.user.userDetails.activationCode) {
             this.user.code = this.user.userDetails.activationCode;
         }
+
+        this.imgSrc = "/userbook/avatar/" + this.user.id + "?thumbnail=100x100"
     }
 
     ngOnDestroy() {
@@ -379,6 +394,15 @@ export class UserDetails implements OnInit, OnDestroy{
                     },
                     err)
             })
+    }
+
+    deleteImg() {
+        this.details.deletePhoto();
+        this.imgSrc = "";
+    }
+
+    imgLoad() {
+        this.imgLoaded = true;
     }
 
     private updateDeletedInStructures() {
