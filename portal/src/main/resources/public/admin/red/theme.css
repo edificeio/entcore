@@ -1962,7 +1962,7 @@ multi-combo .multi-combo-root-panel.hidden {
 }
 multi-combo .multi-combo-root-panel div.multi-combo-panel-opts {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 20px;
   border-bottom: 1px solid #FF483E;
   border-left: 1px solid #FF483E;
   border-bottom-left-radius: 5px;
@@ -1999,7 +1999,6 @@ multi-combo .multi-combo-root-panel div.multi-combo-panel-opts > button.multi-co
   background-repeat: no-repeat;
 }
 multi-combo .multi-combo-root-panel div.multi-combo-search-bar {
-  margin: 10px 0px;
   width: 100%;
   position: relative;
 }
@@ -2033,6 +2032,7 @@ multi-combo .multi-combo-root-panel > ul {
   max-height: 300px;
   overflow-y: scroll;
   margin-bottom: 10px;
+  margin-top: 40px;
 }
 multi-combo .multi-combo-root-panel > ul > li {
   line-height: 25px;
