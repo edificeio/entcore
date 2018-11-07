@@ -196,7 +196,12 @@ public class Validator {
 						err = validBoolean(attr, value);
 						break;
 					case "login-alias" :
-						err = validLoginAlias(attr, value, validator);
+						if (value == null || (value instanceof String && ((String) value).isEmpty())) {
+							object.putNull(attr);
+							err = null;
+						} else {
+							err = validLoginAlias(attr, value, validator);
+						}
 						break;
 					default:
 						err = "Missing type validator: " + type;
