@@ -621,7 +621,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
 				"n.birthDate as birthDate, " +
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
-				"COLLECT(distinct [s.id, s.name]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
+				"COLLECT(distinct [s.id, s.name, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.UAI) as uai, " +
 				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions";
 		final String query2 =
@@ -770,17 +770,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					j.remove("classes");
 					final List<String> structureIds = new ArrayList<String>();
 					final List<String> structureNames = new ArrayList<String>() ;
+					boolean hasApp = false;
 					for (Object o : getOrElse(j.getJsonArray("structures"), new fr.wseduc.webutils.collections.JsonArray())) {
 						if (!(o instanceof JsonArray)) continue;
 						final JsonArray s = (JsonArray) o;
 						if (s.getString(0) != null) {
 							structureIds.add(s.getString(0));
 							structureNames.add(StringUtils.trimToBlank(s.getString(1)));
+							if(getOrElse(s.getBoolean(2), false) && !hasApp)
+								hasApp = true;
 						}
 					}
 					j.remove("structures");
 					j.put("structures", new fr.wseduc.webutils.collections.JsonArray(structureIds));
 					j.put("structureNames", new fr.wseduc.webutils.collections.JsonArray(structureNames));
+					j.put("hasApp", hasApp);
 					j.put("classes", new fr.wseduc.webutils.collections.JsonArray(classesIds));
 					j.put("realClassesNames", new fr.wseduc.webutils.collections.JsonArray(classesNames));
 					j.put("functions", functions);
