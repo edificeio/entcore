@@ -378,6 +378,21 @@ public class PortalController extends BaseController {
 		renderJson(request, themes);
 	}
 
+	@Get("/conf/smartBanner")
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void getSmartBannerConf(final HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				if (user != null) {
+					renderJson(request, config.getJsonObject("smartBanner", new JsonObject()));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 	/*
 	@Get("/admin")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
