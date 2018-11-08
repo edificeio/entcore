@@ -349,7 +349,7 @@ public class User {
 		transaction.add(mQuery, params);
 		String query =
 				"MATCH (u:User { id : {userId}}), (dg:DeleteGroup) " +
-				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE]-() " +
+				"OPTIONAL MATCH u-[r:IN|COMMUNIQUE|COMMUNIQUE_DIRECT|RELATED|DUPLICATE|TEACHES_FOS|TEACHES]-() " +
 				"SET u.deleteDate = timestamp(), u.IDPN = null " +
 				"DELETE r " +
 				"CREATE UNIQUE dg<-[:IN]-u";
