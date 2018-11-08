@@ -553,47 +553,4 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		});
 	}
 
-	@Override
-	public void getUserIdByLoginAlias(String username, String password, Handler<String> handler) {
-		if (username != null && password != null &&
-				!username.trim().isEmpty() && !password.trim().isEmpty()) {
-			String query =
-					"MATCH (n:User) " +
-					"WHERE n.loginAlias={loginAlias} AND NOT(n.password IS NULL) " +
-					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
-
-			query +=
-					"OPTIONAL MATCH (p:Profile) " +
-					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
-					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
-			Map<String, Object> params = new HashMap<>();
-			params.put("loginAlias", username);
-			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
-
-				@Override
-				public void handle(Message<JsonObject> res) {
-					JsonArray result = res.body().getJsonArray("result");
-					if ("ok".equals(res.body().getString("status")) &&
-							result != null && result.size() == 1) {
-						JsonObject r = result.getJsonObject(0);
-						String dbPassword;
-						if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
-							if (BCrypt.checkpw(password, dbPassword)) {
-								handler.handle(r.getString("userId"));
-							} else {
-								handler.handle(null);
-							}
-						} else {
-							handler.handle(null);
-						}
-					} else {
-						handler.handle(null);
-					}
-				}
-			});
-		} else {
-			handler.handle(null);
-		}
-	}
-
 }

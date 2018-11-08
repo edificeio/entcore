@@ -340,46 +340,36 @@ public class AuthController extends BaseController {
 						if (userId != null && !userId.trim().isEmpty()) {
 							handleGetUserId(login, userId, request, c);
 						} else {
-							// try with loginAlias
-							userAuthAccount.getUserIdByLoginAlias(login, password, new io.vertx.core.Handler<String>() {
+							// try activation with login
+							userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
 								@Override
-								public void handle(final String userId) {
-									if (userId != null && !userId.trim().isEmpty()) {
-										handleGetUserId(login, userId, request, c);
+								public void handle(Boolean passIsActivationCode) {
+									if(passIsActivationCode){
+										handleMatchActivationCode(login, password, request);
 									} else {
-										// try activation with login
-										userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
+										// try activation with loginAlias
+										userAuthAccount.matchActivationCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
 											@Override
 											public void handle(Boolean passIsActivationCode) {
-												if(passIsActivationCode){
+												if (passIsActivationCode) {
 													handleMatchActivationCode(login, password, request);
 												} else {
-													// try activation with loginAlias
-													userAuthAccount.matchActivationCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
+													// try reset with login
+													userAuthAccount.matchResetCode(login, password, new io.vertx.core.Handler<Boolean>() {
 														@Override
-														public void handle(Boolean passIsActivationCode) {
-															if (passIsActivationCode) {
-																handleMatchActivationCode(login, password, request);
+														public void handle(Boolean passIsResetCode) {
+															if (passIsResetCode) {
+																handleMatchResetCode(login, password, request);
 															} else {
-																// try reset with login
-																userAuthAccount.matchResetCode(login, password, new io.vertx.core.Handler<Boolean>() {
+																// try reset with loginAlias
+																userAuthAccount.matchResetCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
 																	@Override
-																	public void handle(Boolean passIsResetCode) {
+																	public void handle (Boolean passIsResetCode) {
 																		if (passIsResetCode) {
 																			handleMatchResetCode(login, password, request);
 																		} else {
-																			// try reset with loginAlias
-																			userAuthAccount.matchResetCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
-																				@Override
-																				public void handle (Boolean passIsResetCode) {
-																					if (passIsResetCode) {
-																						handleMatchResetCode(login, password, request);
-																					} else {
-																						trace.info("Erreur de connexion pour l'utilisateur " + login);
-																						loginResult(request, "auth.error.authenticationFailed", c);
-																					}
-																				}
-																			});
+																			trace.info("Erreur de connexion pour l'utilisateur " + login);
+																			loginResult(request, "auth.error.authenticationFailed", c);
 																		}
 																	}
 																});
