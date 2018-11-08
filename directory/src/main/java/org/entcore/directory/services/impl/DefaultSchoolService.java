@@ -384,6 +384,7 @@ public class DefaultSchoolService implements SchoolService {
 		returnStr += ", classes, classname, isInClass ";
 
 		withStr += ", CASE count(child) WHEN 0 THEN null ELSE {firstName: child.firstName, lastName: child.lastName } END as child ";
+		returnStr += ", child ";
 
 		String query = filter + condition + optional + withStr + returnStr ;
 
