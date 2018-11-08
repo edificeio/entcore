@@ -120,44 +120,48 @@ public class OAuthDataHandler extends DataHandler {
 					JsonArray result = res.body().getJsonArray("result");
 					if ("ok".equals(res.body().getString("status")) &&
 							result != null && result.size() == 1) {
-						JsonObject r = result.getJsonObject(0);
-						String dbPassword;
-						if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
-							boolean success = false;
-							String hash = null;
-							try {
-								switch (dbPassword.length()) {
-									case 32: // md5
-										hash = Md5.hash(password);
-										break;
-									case 64: // sha-256
-										hash = Sha256.hash(password);
-										break;
-									default: // BCrypt
-										success = BCrypt.checkpw(password, dbPassword);
-								}
-								if (!success && hash != null) {
-									success = !dbPassword.trim().isEmpty() && dbPassword.equalsIgnoreCase(hash);
-									if (success) {
-										upgradeOldPassword(username, password);
-									}
-								}
-							} catch (NoSuchAlgorithmException e) {
-								log.error(e.getMessage(), e);
-							}
-							if (success) {
-								handler.handle(r.getString("userId"));
-							} else {
-								handler.handle(null);
-							}
-						} else {
-							handler.handle(null);
-						}
+						checkPassword(result, password, username, handler);
 					} else {
-						handler.handle(null);
+						getUserIdByLoginAlias(username, password, handler);
 					}
 				}
 			});
+		} else {
+			handler.handle(null);
+		}
+	}
+
+	private void checkPassword(JsonArray result, String password, String username, Handler<String> handler) {
+		JsonObject r = result.getJsonObject(0);
+		String dbPassword;
+		if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
+			boolean success = false;
+			String hash = null;
+			try {
+				switch (dbPassword.length()) {
+					case 32: // md5
+						hash = Md5.hash(password);
+						break;
+					case 64: // sha-256
+						hash = Sha256.hash(password);
+						break;
+					default: // BCrypt
+						success = BCrypt.checkpw(password, dbPassword);
+				}
+				if (!success && hash != null) {
+					success = !dbPassword.trim().isEmpty() && dbPassword.equalsIgnoreCase(hash);
+					if (success) {
+						upgradeOldPassword(username, password);
+					}
+				}
+			} catch (NoSuchAlgorithmException e) {
+				log.error(e.getMessage(), e);
+			}
+			if (success) {
+				handler.handle(r.getString("userId"));
+			} else {
+				handler.handle(null);
+			}
 		} else {
 			handler.handle(null);
 		}
@@ -517,6 +521,29 @@ public class OAuthDataHandler extends DataHandler {
 		} else {
 			handler.handle(null);
 		}
+	}
+
+	private void getUserIdByLoginAlias(String username, String password, Handler<String> handler) {
+		String query =
+				"MATCH (n:User) " +
+						"WHERE n.loginAlias={loginAlias} AND NOT(n.password IS NULL) " +
+						"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
+
+		query +=
+				"OPTIONAL MATCH (p:Profile) " +
+						"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+						"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
+		Map<String, Object> params = new HashMap<>();
+		params.put("loginAlias", username);
+		neo.execute(query, params, res -> {
+			JsonArray result = res.body().getJsonArray("result");
+			if ("ok".equals(res.body().getString("status")) &&
+					result != null && result.size() == 1) {
+				checkPassword(result, password, username, handler);
+			} else {
+				handler.handle(null);
+			}
+		});
 	}
 
 }

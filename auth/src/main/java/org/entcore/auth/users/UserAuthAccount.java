@@ -77,5 +77,4 @@ public interface UserAuthAccount {
 
 	void storeDomain(String id, String domain, String scheme, Handler<Boolean> handler);
 
-	void getUserIdByLoginAlias(String username, String password, Handler<String> handler);
 }
