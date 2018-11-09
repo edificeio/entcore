@@ -262,7 +262,8 @@ public class FileStorage implements Storage {
 					handler.handle(new DefaultAsyncResult<>(json));
 				} else {
 					handler.handle(new DefaultAsyncResult<>(event.cause()));
-					log.error(event.cause().getMessage(), event.cause());
+					//dont need to log if dir does not exists => no file founded
+					//log.error(event.cause().getMessage(), event.cause());
 				}
 			});
 		} catch (FileNotFoundException e) {
