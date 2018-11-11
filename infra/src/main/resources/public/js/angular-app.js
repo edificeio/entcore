@@ -6439,6 +6439,7 @@ function Account($scope) {
     $scope.rand = Math.random();
     $scope.skin = skin;
     $scope.lang = lang;
+    $scope.currentLanguage = currentLanguage;
     $scope.refreshAvatar = function() {
         http().get('/userbook/api/person', {}, {
             requestName: "refreshAvatar"
