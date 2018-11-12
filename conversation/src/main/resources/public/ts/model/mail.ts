@@ -48,6 +48,7 @@ export class Mail implements Selectable {
     selected: boolean;
     allowReply: boolean;
     allowReplyAll: boolean;
+    bodyShown: string;
 
     constructor(id?: string) {
         this.id = id;
@@ -190,6 +191,23 @@ export class Mail implements Selectable {
         });
     }
 
+    addHideAndShow() {
+        let history = this.body.replace(new RegExp('<div.*?<hr class=\"ng-scope\">'),'');
+        let newBody = this.body
+        .replace('<p class=\"ng-scope\">&nbsp;</p><p class=\"row ng-scope\"></p><hr class=\"ng-scope\">','<hr class=\"ng-scope\">')
+        .replace(history,'') +
+        `<div class="row drop-down-block" ng-class="{slided: isSlided}">
+            <div class="drop-down-label" ng-click="showConversationHistory()">
+                <i class="arrow"></i>
+                <label><i18n>[[messageHistory]]</i18n></label>
+            </div>
+            <div class="drop-down-content" slide="isSlided">
+                ` + history + `
+            </div>
+        </div>`;
+        return newBody;
+    }
+
     getSubject(){
         return this.subject ? this.subject : lang.translate('nosubject');
     }
@@ -310,6 +328,12 @@ export class Mail implements Selectable {
         this.unread = false;
         let response = await http.get('/conversation/message/' + this.id)
         Mix.extend(this, response.data);
+        if(response.data.parent_id) {
+            this.bodyShown = this.addHideAndShow();
+        }
+        else {
+            this.bodyShown = this.body;
+        }
         this.to = _.map(this.to, user => {
             return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
         });
