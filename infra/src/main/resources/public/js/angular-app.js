@@ -5059,7 +5059,7 @@ module.directive('help', function() {
     return {
         restrict: 'E',
         scope: {},
-        template: '<i class="help"></i>' +
+        template: '<i class="navbar-help"></i>' +
             '<lightbox show="display.read" on-close="display.read = false"><div></div></lightbox>',
         link: function(scope, element){
             skin.getHelpPath(function(helpPath){
