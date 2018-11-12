@@ -76,6 +76,8 @@
     "me": "Moi",
     "message": "le message",
     "message.draft.saved": "Message enregistré en brouillon",
+    "message.history.show": "Afficher l'historique des messages",
+    "message.history.hide": "Masquer l'historique des messages",
     "message.save.fail": "Erreur : le message n'a pas pu être enregistré",
     "messages": "Messages",
     "ml.sent": "Message envoyé",

@@ -218,6 +218,8 @@ export let conversationController = ng.controller('ConversationController', [
             if (!doNotSelect)
                 $scope.state.current.selected = true;
             $scope.mail = mail;
+            $scope.isSlided = false;
+            $scope.messageHistory = lang.translate('message.history.show');
         }
 
         $scope.viewMail = async function (mail) {
@@ -739,5 +741,15 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.getAvatar = function () {
             return skin.theme + "../../" + $scope.defaultAvatar;
+        }
+
+        $scope.showConversationHistory = function () {
+            if($scope.isSlided) {
+                $scope.messageHistory = lang.translate('message.history.show');
+            }
+            else {
+                $scope.messageHistory = lang.translate('message.history.hide');
+            }
+            $scope.isSlided = !$scope.isSlided;
         }
     }]);
