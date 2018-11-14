@@ -5092,7 +5092,7 @@ module.directive('help', function() {
                     scope.display.read = true;
                     scope.$apply('display');
                 };
-                element.children('i.help').on('click', function () {
+                element.children('i.navbar-help').on('click', function () {
                     if (helpText) {
                         setHtml(helpText);
                     }
