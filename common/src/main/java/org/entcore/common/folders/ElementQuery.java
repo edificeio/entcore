@@ -29,8 +29,9 @@ public class ElementQuery {
 	private Boolean hierarchical;
 	private Collection<String> ids;
 	private Set<String> projection;
-	private Set<String> visibilities;
-	private Set<String> notVisibilities;
+	private Set<String> visibilitiesOr;
+	private Set<String> visibilitiesIn;
+	private Set<String> visibilitiesNotIn;
 	private List<String> fullTextSearch;
 	private Set<String> ownerIds;
 	private String actionNotExists;
@@ -41,12 +42,20 @@ public class ElementQuery {
 	private List<Map.Entry<String, ElementSort>> sort;
 	private Map<String, Object> params = new HashMap<String, Object>();
 
-	public Set<String> getNotVisibilities() {
-		return notVisibilities;
+	public Set<String> getVisibilitiesOr() {
+		return visibilitiesOr;
 	}
 
-	public void setNotVisibilities(Set<String> notVisibilities) {
-		this.notVisibilities = notVisibilities;
+	public void setVisibilitiesOr(Set<String> visibilitiesOr) {
+		this.visibilitiesOr = visibilitiesOr;
+	}
+
+	public Set<String> getVisibilitiesNotIn() {
+		return visibilitiesNotIn;
+	}
+
+	public void setVisibilitiesNotIn(Set<String> notVisibilities) {
+		this.visibilitiesNotIn = notVisibilities;
 	}
 
 	public Boolean getNoParent() {
@@ -201,12 +210,12 @@ public class ElementQuery {
 		this.projection = projection;
 	}
 
-	public Set<String> getVisibilities() {
-		return visibilities;
+	public Set<String> getVisibilitiesIn() {
+		return visibilitiesIn;
 	}
 
-	public void setVisibilities(Set<String> visibilities) {
-		this.visibilities = visibilities;
+	public void setVisibilitiesIn(Set<String> visibilities) {
+		this.visibilitiesIn = visibilities;
 	}
 
 	public String getApplication() {
