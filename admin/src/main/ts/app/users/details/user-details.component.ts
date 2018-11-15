@@ -326,13 +326,13 @@ export class UserDetails implements OnInit, OnDestroy{
                 
                 this.ns.success(
                     { 
-                        key: 'notify.user.remove.content',
+                        key: 'notify.user.predelete.content',
                         parameters: { 
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
                     },
                     { 
-                        key: 'notify.user.remove.title',
+                        key: 'notify.user.predelete.title',
                         parameters: { 
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
@@ -341,13 +341,13 @@ export class UserDetails implements OnInit, OnDestroy{
             .catch(err => {
                 this.ns.error(
                     { 
-                        key: 'notify.user.remove.error.content',
+                        key: 'notify.user.predelete.error.content',
                         parameters: { 
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
                     },
                     { 
-                        key: 'notify.user.remove.error.title',
+                        key: 'notify.user.predelete.error.title',
                         parameters: { 
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
