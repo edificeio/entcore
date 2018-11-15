@@ -243,10 +243,10 @@
     "notify.user.toggleblock.error.title": "Erreur lors du {{blocked ? blocage : déblocage}}",
     "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}.",
 
-    "notify.user.remove.title": "Suppression effectuée",
-    "notify.user.remove.content": "L'utilisateur {{user}} a bien été supprimé.",
-    "notify.user.remove.error.title": "Erreur lors de la suppression",
-    "notify.user.remove.error.content": "L'utilisateur {{user}} n'a pas pu être supprimé.",
+    "notify.user.predelete.title": "Pré-suppression effectuée",
+    "notify.user.predelete.content": "L'utilisateur {{user}} a bien été pré-supprimé.",
+    "notify.user.predelete.error.title": "Erreur lors de la pré-suppression",
+    "notify.user.predelete.error.content": "L'utilisateur {{user}} n'a pas pu être pré-supprimé.",
 
     "notify.user.restore.title": "Restauration effectuée",
     "notify.user.restore.content": "L'utilisateur {{user}} a bien été restauré.",
