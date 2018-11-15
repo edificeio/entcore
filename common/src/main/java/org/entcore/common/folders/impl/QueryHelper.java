@@ -65,10 +65,18 @@ class QueryHelper {
 			if (user.isPresent()) {
 				// filters that belongs to user and shares
 				// search by share or owner
-				if (query.getShared()) {
-					builder.filterByInheritShareAndOwner(user.get());
+				if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
+					if (query.getShared()) {
+						builder.filterByInheritShareAndOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
+					} else {
+						builder.filterByOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
+					}
 				} else {
-					builder.filterByOwner(user.get());
+					if (query.getShared()) {
+						builder.filterByInheritShareAndOwner(user.get());
+					} else {
+						builder.filterByOwner(user.get());
+					}
 				}
 				//
 				if (query.getHasBeenShared() != null) {
@@ -84,11 +92,11 @@ class QueryHelper {
 				}
 			}
 			//
-			if(query.getVisibilities()!=null) {
-				builder.withVisibilities(query.getVisibilities());
+			if (query.getVisibilitiesIn() != null) {
+				builder.withVisibilities(query.getVisibilitiesIn());
 			}
-			if(query.getNotVisibilities()!=null) {
-				builder.withNotVisibilities(query.getNotVisibilities());
+			if (query.getVisibilitiesNotIn() != null) {
+				builder.withNotVisibilities(query.getVisibilitiesNotIn());
 			}
 			//
 			if (query.getId() != null) {
@@ -205,7 +213,6 @@ class QueryHelper {
 			return this;
 		}
 
-
 		public DocumentQueryBuilder withNotVisibilities(Collection<String> visibilities) {
 			if (visibilities == null) {
 				return this;
@@ -246,6 +253,41 @@ class QueryHelper {
 			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
 			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
 					QueryBuilder.start("shared").elemMatch(subQuery).get());
+			return this;
+		}
+
+		public DocumentQueryBuilder filterByInheritShareAndOwnerOrVisibilities(UserInfos user,
+				Collection<String> visibilities) {
+			List<DBObject> ors = new ArrayList<>();
+			// owner
+			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			// shared
+			List<DBObject> groups = new ArrayList<>();
+			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+			}
+			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
+			ors.add(QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			//
+			for (String visibility : visibilities) {
+				ors.add(QueryBuilder.start(visibility).is(true).get());
+			}
+			//
+			builder.or(ors.toArray(new DBObject[ors.size()]));
+			return this;
+		}
+
+		public DocumentQueryBuilder filterByOwnerOrVisibilities(UserInfos user, Collection<String> visibilities) {
+			List<DBObject> ors = new ArrayList<>();
+			// owner
+			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			//
+			for (String visibility : visibilities) {
+				ors.add(QueryBuilder.start(visibility).is(true).get());
+			}
+			//
+			builder.or(ors.toArray(new DBObject[ors.size()]));
 			return this;
 		}
 
