@@ -4,13 +4,13 @@
 
  <div class="row media-library">
 	<div class="drop-zone import-files">
-		<article class="drop flex-row align-center">
+		<article class="drop flex-row align-center" ng-hide="display.dropFolderError">
 				<i class="two cloud-upload"></i>
 				<div class="ten help">
 					<em><i18n>medialibrary.drop.help2</i18n></em>
 				</div>
 		</article>
-		<article class="default flex-row align-center">
+		<article class="default flex-row align-center" ng-hide="display.dropFolderError">
 			<div class="three select-file">
 				<div class="hidden-content">
 					<input type="file" multiple files-input-change="importFiles()" ng-model="upload.files" />
@@ -21,6 +21,15 @@
 			<div class="seven help">
 				<em><i18n>medialibrary.drop.help</i18n></em>
 			</div>
+		</article>
+		<article class="drop flex-row align-center" ng-show="display.dropFolderError">
+			<i class="two close warning-color"></i>
+			<div class="seven help">
+				<em><i18n>workspace.import.warning</i18n><br/><i18n>workspace.import.solution</i18n></em>
+			</div>
+			<div class="three select-file">
+					<button class="file-button no-margin" ng-click="hideDropFolderError($event)"><i18n>workspace.import.action</i18n></button>
+				</div>	
 		</article>
 
 	</div>

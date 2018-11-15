@@ -19,101 +19,234 @@
 
 package org.entcore.common.share.impl;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.mongodb.QueryBuilder;
+
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
-import fr.wseduc.webutils.*;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.security.SecuredAction;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
-
 public class MongoDbShareService extends GenericShareService {
 
 	private final String collection;
 	private final MongoDb mongo;
 
-	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection,
-			Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions,
+			Map<String, List<String>> groupedActions) {
 		super(eb, securedActions, groupedActions);
 		this.mongo = mongo;
 		this.collection = collection;
 	}
 
-	@Override
-	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
-			final Handler<Either<String, JsonObject>> handler) {
+	private boolean checkParams(final String userId, String resourceId, Handler<Either<String, JsonObject>> handler) {
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid userId."));
-			return;
+			return false;
 		}
 		if (resourceId == null || resourceId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid resourceId."));
-			return;
+			return false;
 		}
-		final JsonArray actions = getResoureActions(securedActions);
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	private Future<Set<String>[]> findUserIdsAndGroups(String resourceId, final String currentUserId,
+			Optional<Set<String>> actions, String field) {
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
-		JsonObject keys = new JsonObject().put("shared", 1);
-		mongo.findOne(collection, MongoQueryBuilder.build(query), keys,
-			new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					if ("ok".equals(event.body().getString("status"))) {
-						JsonArray shared = event.body().getJsonObject("result", new JsonObject())
-								.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
-						JsonObject gs = new JsonObject();
-						JsonObject us = new JsonObject();
-						for (Object o : shared) {
-							if (!(o instanceof JsonObject)) continue;
-							JsonObject userShared = (JsonObject) o;
-							JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
-							for (String attrName : userShared.fieldNames()) {
-								if ("userId".equals(attrName) || "groupId".equals(attrName)) {
-									continue;
-								}
-								if (groupedActions != null && groupedActions.containsKey(attrName)) {
-									for (String action: groupedActions.get(attrName)) {
-										a.add(action.replaceAll("\\.", "-"));
-									}
-								} else {
-									a.add(attrName);
-								}
-							}
-							final String g = userShared.getString("groupId");
-							String u;
-							if (g != null) {
-								gs.put(g, a);
-							} else if ((u = userShared.getString("userId")) != null && !u.equals(userId)){
-								us.put(u, a);
-							}
+		JsonObject keys = new JsonObject().put(field, 1);
+		Future<Set<String>[]> future = Future.future();
+		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEvent -> {
+			if ("ok".equals(mongoEvent.body().getString("status"))) {
+				JsonObject body = mongoEvent.body().getJsonObject("result", new JsonObject());
+				JsonArray shared = body.getJsonArray(field, new JsonArray());
+				Set<String> userIds = new HashSet<>();
+				Set<String> groupIds = new HashSet<>();
+				for (Object jsonO : shared) {
+					if (!(jsonO instanceof JsonObject))
+						continue;
+					//
+					JsonObject json = (JsonObject) jsonO;
+					String groupId = json.getString("groupId");
+					String userId = json.getString("userId");
+					// filter by actions
+					boolean accept = true;
+					if (actions.isPresent() && actions.get().size() > 0) {
+						// if one action is absent...ignore
+						Optional<String> absentActions = actions.get().stream()
+								.filter(action -> !json.containsKey(action)).findFirst();
+						if (absentActions.isPresent()) {
+							accept = false;
 						}
-						getShareInfos(userId, actions, gs, us, acceptLanguage, search, new Handler<JsonObject>() {
-							@Override
-							public void handle(JsonObject event) {
-								if (event != null && event.size() == 3) {
-									handler.handle(new Either.Right<String, JsonObject>(event));
-								} else {
-									handler.handle(new Either.Left<String, JsonObject>(
-											"Error finding shared resource."));
-								}
-							}
-						});
-					} else {
-						handler.handle(new Either.Left<String, JsonObject>(
-								event.body().getString("error", "Error finding shared resource.")));
+					}
+					//
+					if (accept) {
+						if (userId != null) {
+							userIds.add(userId);
+						} else if (groupId != null) {
+							groupIds.add(groupId);
+						}
 					}
 				}
+				//
+				future.complete(new Set[] { userIds, groupIds });
+			} else {
+				future.fail("Error finding shared resource.");
+			}
 		});
+		return future;
+	}
+
+	@Override
+	public void findUserIdsForShare(String resourceId, final String userId, Optional<Set<String>> actions,
+			Handler<AsyncResult<Set<String>>> h) {
+		findUserIdsAndGroups(resourceId, userId, actions, "shared").compose(ids -> {
+			Set<String> userIds = ids[0];
+			Set<String> groupIds = ids[1];
+			return userIdsForGroupIds(groupIds, userId).map(uids -> {
+				Set<String> all = new HashSet<>();
+				all.addAll(userIds);
+				all.addAll(uids);
+				//ignore current user
+				all.remove(userId);
+				return all;
+			});
+		}).setHandler(h);
+	}
+
+	@Override
+	public void findUserIdsForInheritShare(String resourceId, String userId, Optional<Set<String>> actions,
+			Handler<AsyncResult<Set<String>>> h) {
+		findUserIdsAndGroups(resourceId, userId, actions, "inheritedShares").compose(ids -> {
+			Set<String> userIds = ids[0];
+			Set<String> groupIds = ids[1];
+			return userIdsForGroupIds(groupIds, userId).map(uids -> {
+				Set<String> all = new HashSet<>();
+				all.addAll(userIds);
+				all.addAll(uids);
+				//ignore current user
+				all.remove(userId);
+				return all;
+			});
+		}).setHandler(h);
+	}
+
+	private JsonObject getActionsByIds(String userId, JsonArray shared) {
+		JsonObject gs = new JsonObject();
+		JsonObject us = new JsonObject();
+		for (Object o : shared) {
+			if (!(o instanceof JsonObject))
+				continue;
+			JsonObject userShared = (JsonObject) o;
+			JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+			for (String attrName : userShared.fieldNames()) {
+				if ("userId".equals(attrName) || "groupId".equals(attrName)) {
+					continue;
+				}
+				if (groupedActions != null && groupedActions.containsKey(attrName)) {
+					for (String action : groupedActions.get(attrName)) {
+						a.add(action.replaceAll("\\.", "-"));
+					}
+				} else {
+					a.add(attrName);
+				}
+			}
+			final String g = userShared.getString("groupId");
+			String u;
+			if (g != null) {
+				gs.put(g, a);
+			} else if ((u = userShared.getString("userId")) != null && !u.equals(userId)) {
+				us.put(u, a);
+			}
+		}
+		JsonObject res = new JsonObject();
+		res.put("groups", gs);
+		res.put("users", us);
+		return res;
+	}
+
+	@Override
+	public void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
+			Handler<Either<String, JsonObject>> handler) {
+		if (!this.checkParams(userId, resourceId, handler)) {
+			return;
+		}
+		//
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		JsonObject keys = new JsonObject().put("shared", 1).put("inheritedShares", 1);
+		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEvent -> {
+			if ("ok".equals(mongoEvent.body().getString("status"))) {
+				JsonObject body = mongoEvent.body().getJsonObject("result", new JsonObject());
+				JsonArray inheritShared = body.getJsonArray("inheritedShares", new JsonArray());
+				JsonArray shared = body.getJsonArray("shared", new JsonArray());
+				final JsonArray actions = getResoureActions(securedActions);
+				JsonObject inheritActions = getActionsByIds(userId, inheritShared);
+				JsonObject notInheritActions = getActionsByIds(userId, shared);
+				//
+				getInheritShareInfos(userId, actions, //
+						inheritActions.getJsonObject("groups"), inheritActions.getJsonObject("users"), //
+						notInheritActions.getJsonObject("groups"), notInheritActions.getJsonObject("users"),
+						acceptLanguage, search, event -> {
+							if (event != null && event.size() == 3) {
+								handler.handle(new Either.Right<String, JsonObject>(event));
+							} else {
+								handler.handle(new Either.Left<String, JsonObject>("Error finding shared resource."));
+							}
+						});
+			} else {
+				handler.handle(new Either.Left<String, JsonObject>(
+						mongoEvent.body().getString("error", "Error finding shared resource.")));
+			}
+		});
+	}
+
+	@Override
+	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
+			final Handler<Either<String, JsonObject>> handler) {
+		if (!this.checkParams(userId, resourceId, handler)) {
+			return;
+		}
+		//
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+		JsonObject keys = new JsonObject().put("shared", 1);
+		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEVent -> {
+			if ("ok".equals(mongoEVent.body().getString("status"))) {
+				JsonArray shared = mongoEVent.body().getJsonObject("result", new JsonObject()).getJsonArray("shared",
+						new fr.wseduc.webutils.collections.JsonArray());
+				final JsonArray actions = getResoureActions(securedActions);
+				JsonObject res = getActionsByIds(userId, shared);
+				getShareInfos(userId, actions, res.getJsonObject("groups"), res.getJsonObject("users"), acceptLanguage,
+						search, event -> {
+							if (event != null && event.size() == 3) {
+								handler.handle(new Either.Right<String, JsonObject>(event));
+							} else {
+								handler.handle(new Either.Left<String, JsonObject>("Error finding shared resource."));
+							}
+						});
+			} else {
+				handler.handle(new Either.Left<String, JsonObject>(
+						mongoEVent.body().getString("error", "Error finding shared resource.")));
+			}
+		});
+
 	}
 
 	@Override
@@ -142,23 +275,19 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	private void inShare(String resourceId, String shareId, boolean group, final Handler<Boolean> handler) {
-		QueryBuilder query = QueryBuilder.start("_id").is(resourceId)
-				.put("shared").elemMatch(QueryBuilder.start(group ? "groupId" : "userId").is(shareId).get());
+		QueryBuilder query = QueryBuilder.start("_id").is(resourceId).put("shared")
+				.elemMatch(QueryBuilder.start(group ? "groupId" : "userId").is(shareId).get());
 		mongo.count(collection, MongoQueryBuilder.build(query), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				JsonObject res = event.body();
-				handler.handle(
-						res != null &&
-								"ok".equals(res.getString("status")) &&
-								1 == res.getInteger("count")
-				);
+				handler.handle(res != null && "ok".equals(res.getString("status")) && 1 == res.getInteger("count"));
 			}
 		});
 	}
 
-	private void share(String resourceId, final String groupShareId, final List<String> actions,
-			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
+	private void share(String resourceId, final String groupShareId, final List<String> actions, boolean isGroup,
+			final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
 		JsonObject keys = new JsonObject().put("shared", 1);
@@ -166,10 +295,9 @@ public class MongoDbShareService extends GenericShareService {
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) &&
-						event.body().getJsonObject("result") != null) {
-					JsonArray actual = event.body().getJsonObject("result")
-							.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
+				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
+					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
+							new fr.wseduc.webutils.collections.JsonArray());
 					boolean exist = false;
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
@@ -266,14 +394,17 @@ public class MongoDbShareService extends GenericShareService {
 		shareValidation(resourceId, userId, share, res -> {
 			if (res.isRight()) {
 				final JsonObject query = new JsonObject().put("_id", resourceId);
-				final JsonObject update = new JsonObject().put("$set", new JsonObject()
-						.put("shared", res.right().getValue().getJsonArray("shared")));
+				final JsonObject update = new JsonObject().put("$set",
+						new JsonObject().put("shared", res.right().getValue().getJsonArray("shared")));
 				final JsonObject keys = new JsonObject().put("shared", 1);
 				mongo.findAndModify(collection, query, update, null, keys, mongoRes -> {
 					if ("ok".equals(mongoRes.body().getString("status"))) {
-						JsonArray oldShared = getOrElse(mongoRes.body().getJsonObject("result"), new JsonObject()).getJsonArray("shared");
+						JsonArray oldShared = getOrElse(mongoRes.body().getJsonObject("result"), new JsonObject())
+								.getJsonArray("shared");
 						JsonArray members = res.right().getValue().getJsonArray("notify-members");
-						getNotifyMembers(handler, oldShared, members, (m -> getOrElse(((JsonObject) m).getString("groupId"), ((JsonObject) m).getString("userId"))));
+						getNotifyMembers(handler, oldShared, members,
+								(m -> getOrElse(((JsonObject) m).getString("groupId"),
+										((JsonObject) m).getString("userId"))));
 					} else {
 						handler.handle(new Either.Left<>(mongoRes.body().getString("message")));
 					}
@@ -284,8 +415,8 @@ public class MongoDbShareService extends GenericShareService {
 		});
 	}
 
-	private void removeShare(String resourceId, final String shareId, List<String> removeActions,
-			boolean isGroup, final Handler<Either<String, JsonObject>> handler) {
+	private void removeShare(String resourceId, final String shareId, List<String> removeActions, boolean isGroup,
+			final Handler<Either<String, JsonObject>> handler) {
 		final String shareIdAttr = isGroup ? "groupId" : "userId";
 		final List<String> actions = findRemoveActions(removeActions);
 		QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
@@ -294,17 +425,16 @@ public class MongoDbShareService extends GenericShareService {
 		mongo.findOne(collection, q, keys, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) &&
-						event.body().getJsonObject("result") != null) {
-					JsonArray actual = event.body().getJsonObject("result")
-							.getJsonArray("shared", new fr.wseduc.webutils.collections.JsonArray());
+				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
+					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
+							new fr.wseduc.webutils.collections.JsonArray());
 					JsonArray shared = new fr.wseduc.webutils.collections.JsonArray();
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);
 						if (shareId.equals(id)) {
 							if (actions != null) {
-								for (String action: actions) {
+								for (String action : actions) {
 									s.remove(action);
 								}
 								if (s.size() > 1) {
@@ -330,7 +460,8 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr, Set<String> actions) {
+	protected void prepareSharedArray(String resourceId, String type, JsonArray shared, String attr,
+			Set<String> actions) {
 		JsonObject el = new JsonObject().put(type, attr);
 		for (String action : actions) {
 			el.put(action, true);
