@@ -503,9 +503,9 @@ public class WorkspaceController extends BaseController {
 			break;
 		case "owner":
 			query.setHasBeenShared(false);
-			query.setNotVisibilities(new HashSet<>());
-			query.getNotVisibilities().add("protected");
-			query.getNotVisibilities().add("public");
+			query.setVisibilitiesNotIn(new HashSet<>());
+			query.getVisibilitiesNotIn().add("protected");
+			query.getVisibilitiesNotIn().add("public");
 			break;
 		case "shared":
 			query.setShared(true);
@@ -513,13 +513,13 @@ public class WorkspaceController extends BaseController {
 			break;
 		case "protected":
 			query.setApplication(null);
-			query.setVisibilities(new HashSet<>());
-			query.getVisibilities().add("protected");
+			query.setVisibilitiesIn(new HashSet<>());
+			query.getVisibilitiesIn().add("protected");
 			break;
 		case "public":
 			query.setApplication(null);
-			query.setVisibilities(new HashSet<>());
-			query.getVisibilities().add("public");
+			query.setVisibilitiesIn(new HashSet<>());
+			query.getVisibilitiesIn().add("public");
 			break;
 		case "trash":
 			query.setApplication(null);

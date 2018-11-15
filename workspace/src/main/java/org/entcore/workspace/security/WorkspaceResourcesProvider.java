@@ -21,6 +21,7 @@ package org.entcore.workspace.security;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 
+import java.util.HashSet;
 import java.util.Map;
 
 import org.entcore.common.folders.ElementQuery;
@@ -253,6 +254,9 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		String id = request.params().get("id");
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
+			query.setVisibilitiesOr(new HashSet<>());
+			query.getVisibilitiesOr().add("public");
+			query.getVisibilitiesOr().add("protected");
 			query.setId(id);
 			executeCountQuery(request, user, query, 1, handler);
 		} else {
