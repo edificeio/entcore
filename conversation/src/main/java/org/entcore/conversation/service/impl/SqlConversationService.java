@@ -175,17 +175,18 @@ public class SqlConversationService implements ConversationService{
 
 				JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
 				long totalQuota = event.right().getValue().getLong("totalquota");
-
+				String unread = "false";
 				final JsonArray ids = message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray());
-
+				if(ids.contains(user.getUserId()))
+					unread = "true";
 				SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
 				String updateMessage =
 						"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
 								"RETURNING id, subject, body";
 				String updateUnread = "UPDATE " + userMessageTable + " " +
-						"SET unread = true " +
-						"WHERE user_id = ? AND message_id = ? ";
+						"SET unread = " + unread +
+						" WHERE user_id = ? AND message_id = ? ";
 				builder.prepared(updateMessage, new fr.wseduc.webutils.collections.JsonArray().add("SENT").add(draftId));
 				builder.prepared(updateUnread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(draftId));
 
