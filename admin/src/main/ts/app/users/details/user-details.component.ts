@@ -8,156 +8,158 @@ import { SpinnerService, NotifyService, UserListService } from '../../core/servi
 import { globalStore } from '../../core/store'
 import { UserModel, UserDetailsModel, StructureModel } from '../../core/store/models'
 import { UsersStore } from '../users.store'
-import http from 'axios'
+import { Config } from './Config';
 
 @Component({
     selector: 'user-detail',
     template: `
-    <div class="panel-header">
-        <div>
+        <div class="panel-header">
+            <div>
             <span class="user-displayname">
                 {{ details.lastName | uppercase }} {{ details.firstName }}
             </span>
-            <span *ngIf="user.type === 'Student' && user.classes[0]" class="user-class">
+                <span *ngIf="user.type === 'Student' && user.classes[0]" class="user-class">
                 - {{ user.classes[0].name }}
             </span>
-        </div>
+            </div>
 
-        <div class="panel-header-sub">
+            <div class="panel-header-sub">
             <span *ngIf="isContextAdml()" class="user-admin">
                 <s5l>ADMIN_LOCAL</s5l> <i class="fa fa-cog"></i>
             </span>
-            <span class="user-inactive" 
-                *ngIf="details?.activationCode && details?.activationCode?.length > 0">
+                <span class="user-inactive"
+                      *ngIf="details?.activationCode && details?.activationCode?.length > 0">
                 <s5l>user.inactive</s5l> <i class='fa fa-lock'></i>
             </span>
-        </div>
+            </div>
 
-        <div class="panel-message" *ngIf="details?.blocked">
-            <i class="fa fa-ban"></i>
-            <s5l>user.blocked</s5l>
+            <div class="panel-message" *ngIf="details?.blocked">
+                <i class="fa fa-ban"></i>
+                <s5l>user.blocked</s5l>
 
-            <button class="action" (click)="toggleUserBlock()" 
-                [disabled]="spinner.isLoading('portal-content')">
-                <s5l>unblock</s5l>
-                <i class="fa fa-check"></i>
-            </button>
-        </div>
-
-        <div class="panel-message" *ngIf="hasDuplicates()">
-            <i class="fonticon duplicates"></i>
-            <s5l>user.has.duplicates</s5l>
-
-            <button class="action" anchor="user-duplicates-section" 
-                (click)="openDuplicates()">
-                <s5l>manage.duplicates</s5l>
-                <i class="fa fa-compress"></i>
-            </button>
-        </div>
-
-        <div class="panel-message" *ngIf="user?.deleteDate">
-            <i class="fa fa-times-circle"></i>
-            <s5l>user.predeleted</s5l>
-
-            <button class="action" (click)="restoreUser()" 
-                [disabled]="spinner.isLoading('portal-content')">
-                <s5l>restore</s5l>
-                <i class="fa fa-upload"></i>
-            </button>
-        </div>
-
-        <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
-            <i class="fonticon waiting-predelete"></i>
-            <s5l>user.predeleted.waiting</s5l>
-        </div>
-
-        <div class="panel-header-content">
-            <div class="left">
-                <div>
-                    <img [src]="imgSrc" (load)="imgLoad()">
-                </div>
-                <div>
-                    <button (click)="deleteImg()"
-                        [disabled]="spinner.isLoading('portal-content') || !imgSrc || !imgLoaded"
-                        class="relative">
-                        <s5l>delete.image</s5l>
-                        <i class="fa fa-times-circle"></i>
-                    </button>
-                </div>
-                <div>
-                    <button (click)="toggleUserBlock()" 
-                        [disabled]="spinner.isLoading('portal-content')" 
-                        class="relative"
-                        *ngIf="isUnblocked()">
-                        <s5l [s5l-params]="[details.blocked]">
-                            toggle.account
-                        </s5l>
-                        <i class="fa fa-ban"></i>
-                    </button>
-                </div>
-                <div *ngIf="isRemovable()">
-                    <button (click)="removeUser()" 
+                <button class="action" (click)="toggleUserBlock()"
                         [disabled]="spinner.isLoading('portal-content')">
-                        <s5l>predelete.account</s5l>
-                        <i class="fa fa-times-circle"></i>
+                    <s5l>unblock</s5l>
+                    <i class="fa fa-check"></i>
+                </button>
+            </div>
+
+            <div class="panel-message" *ngIf="hasDuplicates()">
+                <i class="fonticon duplicates"></i>
+                <s5l>user.has.duplicates</s5l>
+
+                <button class="action" anchor="user-duplicates-section"
+                        (click)="openDuplicates()">
+                    <s5l>manage.duplicates</s5l>
+                    <i class="fa fa-compress"></i>
+                </button>
+            </div>
+
+            <div class="panel-message" *ngIf="user?.deleteDate">
+                <i class="fa fa-times-circle"></i>
+                <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilEffectiveDeletion(user.deleteDate))}">user.predeleted</s5l>
+
+                <button class="action" (click)="restoreUser()"
+                        [disabled]="spinner.isLoading('portal-content')">
+                    <s5l>restore</s5l>
+                    <i class="fa fa-upload"></i>
+                </button>
+            </div>
+
+            <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
+                <i class="fonticon waiting-predelete"></i>
+                <s5l>user.predeleted.waiting</s5l>
+            </div>
+
+            <div class="panel-header-content">
+                <div class="left">
+                    <div>
+                        <img [src]="imgSrc" (load)="imgLoad()">
+                    </div>
+                    <div>
+                        <button (click)="deleteImg()"
+                                [disabled]="spinner.isLoading('portal-content') || !imgSrc || !imgLoaded"
+                                class="relative">
+                            <s5l>delete.image</s5l>
+                            <i class="fa fa-times-circle"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <button (click)="toggleUserBlock()"
+                                [disabled]="spinner.isLoading('portal-content')"
+                                class="relative"
+                                *ngIf="isUnblocked()">
+                            <s5l [s5l-params]="[details.blocked]">
+                                toggle.account
+                            </s5l>
+                            <i class="fa fa-ban"></i>
+                        </button>
+                    </div>
+                    <div *ngIf="isRemovable()">
+                        <button (click)="removeUser()"
+                                [disabled]="spinner.isLoading('portal-content')">
+                            <s5l>predelete.account</s5l>
+                            <i class="fa fa-times-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="right" *ngIf="!user.deleteDate">
+                    <button class="big" disabled title="En construction">
+                        <s5l>users.details.button.comm.rules</s5l>
+                        <i class="fa fa-podcast"></i>
+                    </button>
+
+                    <button class="big" disabled title="En construction">
+                        <s5l>users.details.button.app.rights</s5l>
+                        <i class="fa fa-th"></i>
                     </button>
                 </div>
             </div>
-
-            <div class="right" *ngIf="!user.deleteDate">
-                <button class="big" disabled title="En construction">
-                    <s5l>users.details.button.comm.rules</s5l>
-                    <i class="fa fa-podcast"></i>
-                </button>
-
-                <button class="big" disabled title="En construction">
-                    <s5l>users.details.button.app.rights</s5l>
-                    <i class="fa fa-th"></i>
-                </button>
-            </div>
         </div>
-    </div>
 
-    <div>
-        <user-info-section [user]="user" [structure]="structure">
-        </user-info-section>
+        <div>
+            <user-info-section [user]="user" [structure]="structure">
+            </user-info-section>
 
-        <user-administrative-section [user]="user" [structure]="structure">
-        </user-administrative-section>
-        
-        <user-duplicates-section [user]="user" [structure]="structure" 
-            [open]="forceDuplicates">
-        </user-duplicates-section>
-        
-        <user-relatives-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-relatives-section>
-        
-        <user-children-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-children-section>
-        
-        <panel-section section-title="users.details.section.functions" 
-            [folded]="true" *ngIf="!user.deleteDate">
-            <ul><li *ngFor="let f of user?.aafFunctions">{{ f }}</li></ul>
-        </panel-section>
+            <user-administrative-section [user]="user" [structure]="structure">
+            </user-administrative-section>
 
-        <user-structures-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-structures-section>
-        
-        <user-classes-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-classes-section>
+            <user-duplicates-section [user]="user" [structure]="structure"
+                                     [open]="forceDuplicates">
+            </user-duplicates-section>
 
-        <user-functionalgroups-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-functionalgroups-section>
+            <user-relatives-section [user]="user" [structure]="structure"
+                                    *ngIf="!user.deleteDate">
+            </user-relatives-section>
 
-        <user-manualgroups-section [user]="user" [structure]="structure" 
-            *ngIf="!user.deleteDate">
-        </user-manualgroups-section>
-    </div>`,
+            <user-children-section [user]="user" [structure]="structure"
+                                   *ngIf="!user.deleteDate">
+            </user-children-section>
+
+            <panel-section section-title="users.details.section.functions"
+                           [folded]="true" *ngIf="!user.deleteDate">
+                <ul>
+                    <li *ngFor="let f of user?.aafFunctions">{{ f }}</li>
+                </ul>
+            </panel-section>
+
+            <user-structures-section [user]="user" [structure]="structure"
+                                     *ngIf="!user.deleteDate">
+            </user-structures-section>
+
+            <user-classes-section [user]="user" [structure]="structure"
+                                  *ngIf="!user.deleteDate">
+            </user-classes-section>
+
+            <user-functionalgroups-section [user]="user" [structure]="structure"
+                                           *ngIf="!user.deleteDate">
+            </user-functionalgroups-section>
+
+            <user-manualgroups-section [user]="user" [structure]="structure"
+                                       *ngIf="!user.deleteDate">
+            </user-manualgroups-section>
+        </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserDetails implements OnInit, OnDestroy{
@@ -171,12 +173,17 @@ export class UserDetails implements OnInit, OnDestroy{
     private userSubscriber: Subscription
     private dataSubscriber: Subscription
 
+    private config: Config;
+
+    private SECONDS_IN_DAYS = 24 * 3600;
+    private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
+
     forceDuplicates : boolean
     details : UserDetailsModel
     structure: StructureModel = this.usersStore.structure
     imgSrc: string
     imgLoaded: boolean = false;
-    
+
     private _user : UserModel
     set user(user: UserModel) {
         this._user = user
@@ -220,7 +227,8 @@ export class UserDetails implements OnInit, OnDestroy{
             }
         })
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
-            this.usersStore.user = data['user']
+            this.usersStore.user = data['user'];
+            this.config = data['config'];
             this.cdRef.markForCheck()
         })
         //Scroll top in case of details switching, see comments on CAV2 #280
@@ -236,6 +244,18 @@ export class UserDetails implements OnInit, OnDestroy{
             this.user.code = this.user.userDetails.activationCode;
         }
 
+    }
+
+    millisecondToDays(millisecondTimestamp: number): number {
+        return Math.ceil(millisecondTimestamp / this.MILLISECONDS_IN_DAYS);
+    }
+
+    secondsToDays(timestamp: number): number {
+        return Math.ceil(timestamp / this.SECONDS_IN_DAYS);
+    }
+
+    millisecondsUntilEffectiveDeletion(timestamp: number): number {
+        return (timestamp + this.config["delete-user-delay"]) - (new Date()).getTime();
     }
 
     ngOnDestroy() {
@@ -316,42 +336,28 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     removeUser() {
-        this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId' : this.user.id}}))
+        const parameters = {
+            user: `${this.details.firstName} ${this.details.lastName}`,
+            numberOfDays: this.millisecondToDays(this.config["delete-user-delay"])
+        };
+
+        this.spinner.perform('portal-content', this.user.delete(null, {params: {'userId': this.user.id}}))
             .then(() => {
                 this.user.deleteDate = Date.now();
                 this.user.duplicates = [];
                 this.updateDeletedInStructures();
                 this.userListService.updateSubject.next();
                 this.cdRef.markForCheck();
-                
+
                 this.ns.success(
-                    { 
-                        key: 'notify.user.remove.content',
-                        parameters: { 
-                            user: this.details.firstName + ' ' + this.details.lastName
-                        }
-                    },
-                    { 
-                        key: 'notify.user.remove.title',
-                        parameters: { 
-                            user: this.details.firstName + ' ' + this.details.lastName
-                        }
-                    })
+                    {key: 'notify.user.predelete.content', parameters},
+                    {key: 'notify.user.predelete.title', parameters}
+                )
             })
             .catch(err => {
                 this.ns.error(
-                    { 
-                        key: 'notify.user.remove.error.content',
-                        parameters: { 
-                            user: this.details.firstName + ' ' + this.details.lastName
-                        }
-                    },
-                    { 
-                        key: 'notify.user.remove.error.title',
-                        parameters: { 
-                            user: this.details.firstName + ' ' + this.details.lastName
-                        }
-                    },
+                    {key: 'notify.user.predelete.error.content', parameters},
+                    {key: 'notify.user.predelete.error.title', parameters},
                     err)
             })
     }
