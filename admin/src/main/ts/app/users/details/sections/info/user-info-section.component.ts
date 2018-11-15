@@ -2,7 +2,7 @@ import { Component, Input, ViewChild, ChangeDetectorRef, OnInit, ChangeDetection
 import { NgModel, NgForm, AbstractControl } from '@angular/forms'
 
 import { AbstractSection } from '../abstract.section'
-import { SpinnerService, NotifyService, PlateformeInfoService } from '../../../../core/services'
+import { SpinnerService, NotifyService, PlatformInfoService } from '../../../../core/services'
 import { UserDetailsModel } from '../../../../core/store';
 
 import { UserInfoService } from './user-info.service'
@@ -178,7 +178,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     ngOnInit() {
         this.passwordResetMail = this.details.email;
         this.passwordResetMobile = this.details.mobile;
-        PlateformeInfoService.isSmsModule().then(res => {
+        PlatformInfoService.isSmsModule().then(res => {
             this.smsModule = res
             this.cdRef.markForCheck()
         });
