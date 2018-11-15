@@ -2,7 +2,7 @@
     <h2>
         <i18n>workspace.versions.list</i18n>
     </h2>
-	<resource-right resource="selectedItems()" name="postRevision">
+	<resource-right resource="selectedItems()" name="contrib">
 		<div class="select-file nomargin">
 			<div class="hidden-content">
 				<input type="file" files-input-change="createRevision(newFile)" ng-model="newFile" />
@@ -74,7 +74,7 @@
                     <i class="close"
                        ng-click="deleteRevision(revision)"
                        tooltip="workspace.delete.version"
-                       ng-if="(targetDocument.myRights.manageRevisions || revision.userId === me.userId && targetDocument.myRights.postRevision) && revision.file !== targetDocument.file"></i>
+                       ng-if="canDeleteRevision(revision)"></i>
                 </td>
             </tr>
         </tbody>

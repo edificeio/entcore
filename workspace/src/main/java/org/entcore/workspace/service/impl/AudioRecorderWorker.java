@@ -19,30 +19,12 @@
 
 package org.entcore.workspace.service.impl;
 
-import com.sun.jna.Platform;
-import fr.wseduc.webutils.collections.PersistantBuffer;
-import fr.wseduc.webutils.data.ZLib;
-import io.vertx.core.eventbus.MessageConsumer;
-import net.sf.lamejb.BladeCodecFactory;
-import net.sf.lamejb.LamejbCodec;
-import net.sf.lamejb.LamejbCodecFactory;
-import net.sf.lamejb.LamejbConfig;
-import net.sf.lamejb.impl.std.StreamEncoderWAVImpl;
-import net.sf.lamejb.std.LameConfig;
-import net.sf.lamejb.std.StreamEncoder;
-import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageFactory;
-import org.entcore.common.user.UserUtils;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.vertx.java.busmods.BusModBase;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
@@ -50,7 +32,29 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import org.entcore.common.bus.WorkspaceHelper;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.busmods.BusModBase;
+
+import com.sun.jna.Platform;
+
+import fr.wseduc.webutils.collections.PersistantBuffer;
+import fr.wseduc.webutils.data.ZLib;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.MessageConsumer;
+import io.vertx.core.json.JsonObject;
+import net.sf.lamejb.BladeCodecFactory;
+import net.sf.lamejb.LamejbCodec;
+import net.sf.lamejb.LamejbCodecFactory;
+import net.sf.lamejb.LamejbConfig;
+import net.sf.lamejb.impl.std.StreamEncoderWAVImpl;
+import net.sf.lamejb.std.LameConfig;
+import net.sf.lamejb.std.StreamEncoder;
 
 
 public class AudioRecorderWorker extends BusModBase implements Handler<Message<JsonObject>> {

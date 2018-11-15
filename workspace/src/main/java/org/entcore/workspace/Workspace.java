@@ -19,22 +19,32 @@
 
 package org.entcore.workspace;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.http.HttpServerOptions;
+import java.util.HashMap;
+
+import org.entcore.common.folders.FolderManager;
+import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.share.impl.GenericShareService;
+import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.QuotaController;
+import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
-import org.entcore.workspace.service.QuotaService;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.AudioRecorderWorker;
 import org.entcore.workspace.service.impl.DefaultQuotaService;
+import org.entcore.workspace.service.impl.DefaultWorkspaceService;
 import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageFactory;
 import org.entcore.workspace.service.impl.WorkspaceSearchingEvents;
+
+import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.http.HttpServerOptions;
 
 public class Workspace extends BaseServer {
 
@@ -42,26 +52,58 @@ public class Workspace extends BaseServer {
 
 	@Override
 	public void start() throws Exception {
-		setResourceProvider(new WorkspaceResourcesProvider());
+		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
+		setResourceProvider(resourceProvider);
 		super.start();
 
 		Storage storage = new StorageFactory(vertx, config,
 				new MongoDBApplicationStorage("documents", Workspace.class.getSimpleName())).getStorage();
-		WorkspaceService service = new WorkspaceService();
 
 		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
-		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin);
+		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
+				new TimelineHelper(vertx, vertx.eventBus(), config));
 
-		setRepositoryEvents(new WorkspaceRepositoryEvents(vertx, storage,
-						config.getBoolean("share-old-groups-to-users", false)));
+		/**
+		 * SHare Service
+		 */
+		GenericShareService shareService = new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(),
+				DocumentDao.DOCUMENTS_COLLECTION, securedActions, new HashMap<>());
+		final int threshold = config.getInteger("alertStorage", 80);
+		/**
+		 * Folder manager
+		 */
+		FolderManager folderManager = FolderManager.mongoManagerWithQuota(DocumentDao.DOCUMENTS_COLLECTION, storage,
+				vertx, shareService, quotaService, threshold);
+		resourceProvider.setFolderManager(folderManager);
+		/**
+		 * Repo events
+		 */
+		FolderManager folderManagerRevision = FolderManager.mongoManagerWithQuota(REVISIONS_COLLECTION, storage, vertx,
+				shareService, quotaService, threshold);
+		boolean shareOldGroups = config.getBoolean("share-old-groups-to-users", false);
+		setRepositoryEvents(
+				new WorkspaceRepositoryEvents(vertx, storage, shareOldGroups, folderManager, folderManagerRevision));
 
+		/**
+		 * SearchEvent
+		 */
 		if (config.getBoolean("searching-event", true)) {
-			setSearchingEvents(new WorkspaceSearchingEvents(DocumentDao.DOCUMENTS_COLLECTION));
+			setSearchingEvents(new WorkspaceSearchingEvents(folderManager));
 		}
+		/**
+		 * Controllers
+		 */
+		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		if (node == null) {
+			node = "";
+		}
+		String imageResizerAddress = node + config.getString("image-resizer-address", "wse.image.resizer");
+		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
+				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService);
 
-		service.setQuotaService(quotaService);
-		service.setStorage(storage);
-		addController(service);
+		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService);
+		addController(workspaceController);
+		//
 
 		QuotaController quotaController = new QuotaController();
 		quotaController.setQuotaService(quotaService);
@@ -70,8 +112,8 @@ public class Workspace extends BaseServer {
 		if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
 			HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1024 * 1024);
-			vertx.createHttpServer(options)
-					.websocketHandler(new AudioRecorderHandler(vertx)).listen(config.getInteger("wsPort"));
+			vertx.createHttpServer(options).websocketHandler(new AudioRecorderHandler(vertx))
+					.listen(config.getInteger("wsPort"));
 		}
 
 	}

@@ -1,0 +1,34 @@
+<div class="horizontal-spacing-twice">
+    <h2 translate content="workspace.folders.warning.title"></h2>
+    <div ng-if="isCopyStateNormal()">
+        <div class="row">
+            <span translate content="workspace.move.window.toown1"></span>
+            <hr />
+            <span translate content="workspace.move.window.toown2"></span>
+            <hr />
+        </div>
+        <div class="lightbox-buttons fluid">
+            <button class="right-magnet" ng-click="onMoveDoCopy()"><i18n>workspace.move.window.docopy</i18n></button>
+            <button class="cancel right-magnet" ng-click="onMoveDoMove()"><i18n>workspace.move.window.action</i18n></button>
+            <button class="cancel right-magnet" ng-click="onMoveDoCancel()"><i18n>cancel</i18n></button>
+        </div>
+    </div>
+    <div ng-if="isCopyStateProcessing()">
+        <div class="flex-row vertical-spacing-four">
+            <div class="centered vertical-spacing-four">
+                <div class="vertical-spacing-four primary-color">
+                    <h2 translate content="[[copyProps.i18.actionProcessing]]"></h2><i class="spinner left-spacing"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-if="isCopyStateFinished()">
+        <div class="flex-row vertical-spacing-four">
+            <div class="centered vertical-spacing-four">
+                <div class="vertical-spacing-four valid-color">
+                    <h2 translate content="[[copyProps.i18.actionFinished]]" class="valid-color"></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -351,5 +351,6 @@
   "sharepanel.close.title": "Annuler les modifications de partage",
   "sharepanel.close.explanation": "En fermant cette fenêtre, les modifications de partage que vous avez effectuées ne seront pas prises en compte.",
   "sharepanel.close.confirmation": "Etes vous sûr de vouloir annuler les modifications de partage ?",
-  "sharepanel.close.confirm": "Confirmer"
+  "sharepanel.close.confirm": "Confirmer",
+  "sharepanel.close.inherited": "Partage hérité"
 }

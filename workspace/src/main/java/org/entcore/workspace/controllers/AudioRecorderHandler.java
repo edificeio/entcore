@@ -18,47 +18,26 @@
 
 package org.entcore.workspace.controllers;
 
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.collections.PersistantBuffer;
-import fr.wseduc.webutils.data.ZLib;
-import fr.wseduc.webutils.request.CookieHelper;
-
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.filter.UserAuthFilter.SESSION_ID;
 
-import io.vertx.core.eventbus.DeliveryOptions;
-import net.sf.lamejb.*;
-import net.sf.lamejb.impl.std.StreamEncoderWAVImpl;
-import net.sf.lamejb.std.LameConfig;
-import net.sf.lamejb.std.StreamEncoder;
-import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserUtils;
 import org.entcore.workspace.service.impl.AudioRecorderWorker;
+
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.WebSocketFrame;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.sun.jna.Platform;
 
 public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 

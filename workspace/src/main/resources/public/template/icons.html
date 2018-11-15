@@ -10,30 +10,31 @@
 
 
 <article class="icons-view">
+	<dropzone-overlay on-import="onImportFiles($event)" ng-if="!lockDropzone" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<header>&nbsp;</header>
 	<div>
-		<div ng-repeat="folder in openedFolder.folder.children" class="element mini-block-container" ng-class="{ selected: folder.selected }">
+		<div ng-repeat="folder in openedFolder.folders" class="element mini-block-container" ng-class="{ selected: folder.selected}" dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 
-			<explorer ng-model="folder.selected" on-open="openFolder(folder)">
-				<a class="container" draggable="false">
-					<i class="folder-large" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)"></i>
+			<explorer  class="radius" ng-change="onSelectItem($event,folder)" ng-model="folder.selected" on-open="openFolderRoute(folder)"  ng-class="{'highlight-border-3s':isHighlighted(folder)}">
+				<a class="container">
+					<i class="folder-large"></i>
 				</a>
 
-				<i ng-if="folder.shared.length > 0 || openedFolder.folder.shared.length" class="shared inline"></i>
+				<i ng-if="folder.isShared" class="shared inline"></i>
 
 				<legend>
 					<a>
-						<span class="badge" ng-if="folder.comments.length > 0 && currentTree.name !== 'trash'" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
+						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span>[[folder.name]]</span>
 					</a>
 					<a class="author"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 
 				<div ng-if="folder.showComments">
-					<lightbox show="folder.showComments && selectedFolders()[0] === folder" on-close="folder.showComments = false;">
+					<lightbox show="canShowCommentLightbox(folder)" on-close="folder.showComments = false;">
 						<h2><i18n>comments</i18n></h2>
 
-						<div class="row" ng-if="folder.myRights.commentDocument">
+						<div class="row" ng-if="folder.myRights.comment">
 							<form class="twelve fluid cell" ng-submit="sendFolderComment(folder)">
 								<div class="row">
 									<textarea ng-model="folder.comment"></textarea>
@@ -50,7 +51,7 @@
 							<em>[[longDate(comment.posted)]]</em>
 							<a class="right-magnet"
 							   ng-click="removeComment(folder, comment)"
-							   ng-if="comment.id && ((comment.author === me.userId && folder.myRights.commentDocument) || folder.myRights.deleteComment)">
+							   ng-if="canDeleteComment(folder,comment)">
 								<i18n>workspace.delete</i18n>
 							</a>
 							<p>[[comment.comment]]</p>
@@ -60,8 +61,8 @@
 			</explorer>
 
 		</div>
-		<div ng-repeat="document in openedFolder.content | limitTo:display.nbFiles" class="element" ng-class="{ selected: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-			<explorer ng-model="document.selected" on-open="viewFile(document)">
+		<div ng-repeat="document in openedFolder.documents" class="element" ng-class="{ selected: document.selected}" dragend="dragEnd(document, $originalEvent)"  dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+			<explorer  class="radius" ng-model="document.selected" ng-change="onSelectItem($event,document)" on-open="viewFile(document)" ng-class="{'highlight-border-3s':isHighlighted(document)}">
 				<a class="[[document.metadata.role]] container cell">
 					<i class="[[document.metadata.role]]-large" ng-if="document.metadata.role !== 'img'">
 					</i>
@@ -72,21 +73,21 @@
 					</div>
 				</a>
 
-				<i ng-if="document.shared.length > 0" class="shared inline"></i>
+				<i ng-if="document.isShared" class="shared inline"></i>
 
 				<legend>
 					<a>
-						<span class="badge" ng-if="document.comments.length > 0 && currentTree.name !== 'trash'" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 						[[document.name]]
 					</a>
 					<a class="author"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 
 				<div ng-if="document.showComments">
-					<lightbox show="document.showComments && selectedDocuments()[0] === document" ng-click="$event.stopPropagation()" on-close="document.showComments = false;">
+					<lightbox show="canShowCommentLightbox(document)" ng-click="$event.stopPropagation()" on-close="document.showComments = false;">
 						<h2><i18n>comments</i18n></h2>
 
-						<div class="row" ng-if="document.myRights.commentDocument">
+						<div class="row" ng-if="document.myRights.comment">
 							<form class="twelve fluid cell" ng-submit="sendComment()">
 								<div class="row">
 									<textarea ng-model="document.comment"></textarea>
@@ -103,7 +104,7 @@
 							<em>[[longDate(comment.posted)]]</em>
 							<a class="right-magnet"
 							   ng-click="removeComment(document, comment)"
-							   ng-if="comment.id && ((comment.author === me.userId && document.myRights.commentDocument) || document.myRights.deleteComment)">
+							   ng-if="canDeleteComment(document,comment)">
 								<i18n>workspace.delete</i18n>
 							</a>
 							<p>[[comment.comment]]</p>

@@ -3,20 +3,32 @@ import { workspaceController } from './controller';
 import { importFiles } from './directives/import';
 import { fileViewer } from './directives/fileViewer';
 import { pdfViewer } from './directives/pdfViewer';
+import { cssTransitionEnd } from './directives/cssTransitions';
+import { dropzoneOverlay } from './directives/dropzoneOverlay';
+import { helpBox, helpBoxStep } from './directives/helpBox'; 
 
-routes.define(function($routeProvider) {
+routes.define(function ($routeProvider) {
 	$routeProvider
+		.when('/', {
+			action: 'openOwn'
+		})
 		.when('/folder/:folderId', {
 			action: 'viewFolder'
 		})
 		.when('/shared/folder/:folderId', {
-	  		action: 'viewSharedFolder'
+			action: 'viewSharedFolder'
 		})
 		.when('/shared', {
-		  	action: 'openShared'
+			action: 'openShared'
+		})
+		.when('/trash', {
+			action: 'openTrash'
+		})
+		.when('/apps', {
+			action: 'openApps'
 		})
 		.otherwise({
-		  	redirectTo: '/'
+			redirectTo: '/'
 		})
 });
 
@@ -24,3 +36,7 @@ ng.controllers.push(workspaceController);
 ng.directives.push(importFiles);
 ng.directives.push(fileViewer);
 ng.directives.push(pdfViewer);
+ng.directives.push(cssTransitionEnd);
+ng.directives.push(dropzoneOverlay)
+ng.directives.push(helpBoxStep);
+ng.directives.push(helpBox); 

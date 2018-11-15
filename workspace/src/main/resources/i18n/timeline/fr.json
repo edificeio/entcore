@@ -1,6 +1,7 @@
 {
     "push.notif.file.share": "Un fichier a été partagé avec vous",
     "push.notif.folder.share": "Un dossier a été partagé avec vous",
+    "push.notif.folder.contrib": "Un utilisateur a contribué dans vos dossiers",
     "workspace.share": "Partage d'un fichier",
     "workspace.share-folder": "Partage d'un dossier",
     "workspace.comment": "Ajout de commentaire sur un fichier",
@@ -11,5 +12,6 @@
     "timeline.workspace.shared.document": "a partagé avec vous le document",
     "timeline.workspace.shared.folder": "a partagé avec vous le dossier",
     "timeline.workspace.shared.scrapbook": "a partagé avec vous le cahier multimédia",
-    "timeline.workspace.storage.size.alert": "Votre espace de stockage est bientôt plein."
+    "timeline.workspace.storage.size.alert": "Votre espace de stockage est bientôt plein.",
+    "timeline.workspace.contrib.folder": "a contribué dans le dossier"
 }
