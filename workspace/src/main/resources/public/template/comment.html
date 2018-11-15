@@ -7,10 +7,10 @@
 		<form class="twelve fluid cell" ng-submit="sendComment()">
 			<h2><i18n>workspace.comment</i18n></h2>
 			<div class="row">
-				<textarea ng-model="targetDocument.comment"></textarea>
+				<textarea ng-model="targetElement.comment"></textarea>
 			</div>
 			<div class="lightbox-buttons fluid">
-             <button class="right-magnet" ng-disabled="!targetDocument.comment.length"><i18n>workspace.comment</i18n></button>
+             <button class="right-magnet" ng-disabled="!targetElement.comment.length"><i18n>workspace.comment</i18n></button>
              <button type="button" class="cancel right-magnet" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
 			</div>
 		</form>

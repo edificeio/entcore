@@ -1,0 +1,187 @@
+import { notify, template, idiom as lang } from "entcore";
+import { models, workspaceService } from "../../services";
+
+
+export interface CreateDelegateScope {
+    //share
+    newElementSharing: models.Element[];
+    newFolder: models.Element
+    onSubmitSharedNewFolder($event: any)
+    onCancelShareNewFolder();
+    onCancelShareNewFolderDelete();
+    onCancelShareNewFolderOwn();
+    showNewElementSharedInfo();
+    canCreateNewFolder(): boolean;
+    canCreateNewFolderShared(): boolean;
+    openNewFolderView(): void;
+    createFolder();
+    onImportFiles(files: FileList)
+    canDropOnFolder(): boolean
+    onCannotDropFile();
+    onCancelShareNewFiles()
+    onCancelShareNewFilesOwn();
+    onSubmitSharedNewFiles($event: any)
+    onCancelShareNewFilesDelete();
+    //from others
+    currentTree: models.Tree
+    openedFolder: models.FolderContext
+    setHighlighted(els: models.Element[])
+    setCurrentTree(tree: models.TREE_NAME);
+}
+
+export function ActionCreateDelegate($scope: CreateDelegateScope) {
+    $scope.newElementSharing = [];
+    $scope.onCannotDropFile = function () {
+        notify.error(lang.translate("workspace.contrib.cant"))
+    }
+    $scope.canDropOnFolder = function () {
+        const folder = $scope.openedFolder.folder;
+        const filter = (folder as models.Tree).filter;
+        //must return a boolean
+        if (filter) {
+            return !!(filter === "owner" || filter === "shared");
+        } else {
+            return !!(folder._id && folder.canWriteOnFolder);
+        }
+    }
+    /**
+     * Share
+     */
+    const needAtLeastOneShared = function () {
+        return $scope.currentTree.filter == "shared" && $scope.openedFolder.folder && !$scope.openedFolder.folder.isShared
+    }
+    $scope.onSubmitSharedNewFolder = function (event) {
+        const founded = $scope.newElementSharing.map(e => {
+            e._isShared = true;
+            //restart animation
+            let founded: models.Element = null;
+            workspaceService.findFolderInTreeByRefOrId($scope.currentTree, e, (f) => {
+                founded = f;
+            })
+            return founded;
+        });
+        $scope.setHighlighted(founded);
+        $scope.newElementSharing = [];
+    }
+    $scope.onCancelShareNewFolder = function () {
+        if (needAtLeastOneShared()) {
+            template.open('lightbox', 'create-folder/shared-cancel');
+        } else {
+            template.close("lightbox")
+        }
+    }
+    $scope.onCancelShareNewFolderDelete = async function () {
+        template.close("lightbox")
+        await workspaceService.deleteAll($scope.newElementSharing)
+        $scope.newElementSharing = [];
+    }
+    $scope.onCancelShareNewFolderOwn = async function () {
+        workspaceService.onChange.next({ action: "delete", treeDest: "shared", elements: $scope.newElementSharing })
+        $scope.setCurrentTree("owner")
+        workspaceService.onChange.next({ action: "add", treeDest: "owner", elements: $scope.newElementSharing })
+        template.close("lightbox")
+        $scope.newElementSharing = [];
+    }
+    $scope.showNewElementSharedInfo = function () {
+        return needAtLeastOneShared();
+    }
+    /**
+     * Create folder
+     */
+    $scope.canCreateNewFolder = function () {
+        //cannot create normal folder on trash/apps/shared
+        return $scope.currentTree.filter == "owner";
+    }
+    $scope.canCreateNewFolderShared = function () {
+        const isSharedTree = $scope.currentTree.filter == "shared";
+        //only on shared and only if i have contrib right
+        const current = $scope.openedFolder.folder;
+        if (current && current._id) {
+            return isSharedTree && current.canWriteOnFolder;
+        } else {
+            return isSharedTree;
+        }
+    }
+    $scope.createFolder = async function () {
+        const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)
+        const error = (res as any).error;
+        if (error) {
+            notify.error(error);
+        } else {
+            const newFolder: models.Element = res as any;
+            if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
+                $scope.newElementSharing = [newFolder];
+                template.open('lightbox', 'create-folder/shared-step2');
+            } else {
+                template.close('lightbox');
+            }
+            $scope.newFolder = models.emptySharedFolder()
+        }
+    };
+    $scope.openNewFolderView = function () {
+        $scope.newFolder = models.emptySharedFolder();
+        if ($scope.currentTree.filter == "shared") {
+            template.open('lightbox', 'create-folder/shared-step1');
+        } else {
+            template.open('lightbox', 'create-folder/simple');
+        }
+    };
+    /**
+     * Import file
+     */
+    const openNewFileView = function (els: models.Element[]) {
+        if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
+            $scope.newElementSharing = els;
+            template.open('lightbox', 'import-file/shared-step');
+        } else {
+            $scope.newElementSharing = [];
+        }
+    }
+    const notifyContrib = function (ev: models.Element[]) {
+        if ($scope.currentTree.filter == "shared") {
+            workspaceService.notifyContrib($scope.openedFolder.folder, ev)
+        }
+    }
+    workspaceService.onConfirmImport.subscribe(ev => {
+        setTimeout(() => {
+            $scope.setHighlighted(ev);
+        }, 300)
+        openNewFileView(ev);
+        notifyContrib(ev);
+    })
+    $scope.onImportFiles = function (files) {
+        workspaceService.onImportFiles.next(files);
+    }
+    $scope.onCancelShareNewFiles = function () {
+        if (needAtLeastOneShared()) {
+            template.open('lightbox', 'import-file/shared-cancel');
+        } else {
+            template.close("lightbox")
+        }
+    }
+    $scope.onCancelShareNewFilesOwn = async function () {
+        workspaceService.onChange.next({ action: "delete", treeDest: "shared", elements: $scope.newElementSharing })
+        $scope.setCurrentTree("owner")
+        workspaceService.onChange.next({ action: "add", treeDest: "owner", elements: $scope.newElementSharing })
+        template.close("lightbox")
+        $scope.newElementSharing = [];
+    }
+    $scope.onSubmitSharedNewFiles = function ($event: any) {
+        const founded = $scope.newElementSharing.map(e => {
+            e._isShared = true;
+            //restart animation
+            let founded: models.Element = null;
+            workspaceService.findElementInListByRefOrId($scope.openedFolder.documents, e, (f) => {
+                founded = f;
+            })
+            return founded;
+        });
+        $scope.setHighlighted(founded);
+        $scope.newElementSharing = [];
+    }
+    $scope.onCancelShareNewFilesDelete = async function () {
+        template.close("lightbox")
+        await workspaceService.deleteAll($scope.newElementSharing)
+        $scope.newElementSharing = [];
+    }
+}
