@@ -1,5 +1,2 @@
-<!--
-
- -->
-
-<share-panel resources="sharedDocuments"></share-panel>
+<share-panel resources="sharedElements" on-cancel="onCancelShareElements()" auto-close="'true'"
+on-submit="onSubmitSharedElements($shared)"  on-validate="onValidateShare($data,$resource,$actions)"></share-panel>

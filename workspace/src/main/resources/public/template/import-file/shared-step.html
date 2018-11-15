@@ -1,0 +1,13 @@
+<form>
+    <h2>
+        <i18n>workspace.import.shared.title</i18n>
+    </h2>
+    <div class="row " ng-show="showNewElementSharedInfo()">
+        <div class="cell seven">
+            <div class=" info">
+                <i18n>workspace.import.share.warning</i18n>&nbsp;<a ng-click="onCancelShareNewFilesOwn()"><i18n>workspace.import.share.warning2</i18n></a></div>
+        </div>
+    </div>
+    <share-panel resources="newElementSharing" class="workspace-share" on-cancel="onCancelShareNewFiles()" auto-close="'true'"
+        on-submit="onSubmitSharedNewFiles($shared)"  on-validate="onValidateShare($data,$resource,$actions)"></share-panel>
+</form>

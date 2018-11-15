@@ -21,6 +21,7 @@ package org.entcore.common.http.response;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -31,22 +32,22 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class DefaultResponseHandler {
 
-	private DefaultResponseHandler() {}
+	private DefaultResponseHandler() {
+	}
 
 	public static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request) {
 		return defaultResponseHandler(request, 200);
 	}
 
 	public static Handler<Either<String, JsonObject>> defaultResponseHandler(final HttpServerRequest request,
-																	   final int successCode) {
+			final int successCode) {
 		return new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if (event.isRight()) {
 					Renders.renderJson(request, event.right().getValue(), successCode);
 				} else {
-					JsonObject error = new JsonObject()
-							.put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -65,26 +66,24 @@ public class DefaultResponseHandler {
 				if (event.isRight()) {
 					Renders.ok(request);
 				} else {
-					JsonObject error = new JsonObject()
-							.put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
 		};
 	}
 
-	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
-			final HttpServerRequest request) {
+	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(final HttpServerRequest request) {
 		return notEmptyResponseHandler(request, 200);
 	}
 
-	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
-			final HttpServerRequest request, final int successCode) {
+	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(final HttpServerRequest request,
+			final int successCode) {
 		return notEmptyResponseHandler(request, successCode, 404);
 	}
 
-	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(
-			final HttpServerRequest request, final int successCode, final int emptyCode) {
+	public static Handler<Either<String, JsonObject>> notEmptyResponseHandler(final HttpServerRequest request,
+			final int successCode, final int emptyCode) {
 		return new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
@@ -95,8 +94,7 @@ public class DefaultResponseHandler {
 						request.response().setStatusCode(emptyCode).end();
 					}
 				} else {
-					JsonObject error = new JsonObject()
-							.put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
@@ -110,24 +108,22 @@ public class DefaultResponseHandler {
 				if (event.isRight()) {
 					Renders.renderJson(request, event.right().getValue());
 				} else {
-					JsonObject error = new JsonObject()
-							.put("error", event.left().getValue());
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 			}
 		};
 	}
 
-	public static Handler<Either<JsonObject, JsonObject>> reportResponseHandler(
-			final Vertx vertx, final String path, final HttpServerRequest request) {
+	public static Handler<Either<JsonObject, JsonObject>> reportResponseHandler(final Vertx vertx, final String path,
+			final HttpServerRequest request) {
 		return new Handler<Either<JsonObject, JsonObject>>() {
 			@Override
 			public void handle(Either<JsonObject, JsonObject> event) {
 				if (event.isRight()) {
 					Renders.renderJson(request, event.right().getValue(), 200);
 				} else {
-					JsonObject error = new JsonObject()
-							.put("errors", event.left().getValue());
+					JsonObject error = new JsonObject().put("errors", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
 				deleteImportPath(vertx, path);
@@ -141,6 +137,74 @@ public class DefaultResponseHandler {
 		} else {
 			request.response().setStatusCode(400).end();
 		}
+	}
+
+	public static Handler<AsyncResult<JsonObject>> asyncDefaultResponseHandler(final HttpServerRequest request) {
+		return asyncDefaultResponseHandler(request, 200);
+	}
+
+	public static Handler<AsyncResult<JsonObject>> asyncDefaultResponseHandler(final HttpServerRequest request,
+			final int successCode) {
+		return event -> {
+			if (event.succeeded()) {
+				Renders.renderJson(request, event.result(), successCode);
+			} else {
+				JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+				Renders.renderJson(request, error, 400);
+			}
+		};
+	}
+
+	public static Handler<AsyncResult<Void>> asyncVoidResponseHandler(final HttpServerRequest request) {
+		return asyncVoidResponseHandler(request, 200);
+	}
+
+	public static Handler<AsyncResult<Void>> asyncVoidResponseHandler(final HttpServerRequest request,
+			final int successCode) {
+		return event -> {
+			if (event.succeeded()) {
+				Renders.ok(request);
+			} else {
+				JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+				Renders.renderJson(request, error, 400);
+			}
+		};
+	}
+
+	public static Handler<AsyncResult<JsonObject>> asyncNotEmptyResponseHandler(final HttpServerRequest request) {
+		return asyncNotEmptyResponseHandler(request, 200);
+	}
+
+	public static Handler<AsyncResult<JsonObject>> asyncNotEmptyResponseHandler(final HttpServerRequest request,
+			final int successCode) {
+		return asyncNotEmptyResponseHandler(request, successCode, 404);
+	}
+
+	public static Handler<AsyncResult<JsonObject>> asyncNotEmptyResponseHandler(final HttpServerRequest request,
+			final int successCode, final int emptyCode) {
+		return event -> {
+			if (event.succeeded()) {
+				if (event.result() != null && event.result().size() > 0) {
+					Renders.renderJson(request, event.result(), successCode);
+				} else {
+					request.response().setStatusCode(emptyCode).end();
+				}
+			} else {
+				JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+				Renders.renderJson(request, error, 400);
+			}
+		};
+	}
+
+	public static Handler<AsyncResult<JsonArray>> asyncArrayResponseHandler(final HttpServerRequest request) {
+		return event -> {
+			if (event.succeeded()) {
+				Renders.renderJson(request, event.result());
+			} else {
+				JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+				Renders.renderJson(request, error, 400);
+			}
+		};
 	}
 
 }
