@@ -28,22 +28,32 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
-public class PlateformeInfoController extends BaseController {
+public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
-	
-	@Get("api/plateforme/module/sms")
+	private static final long NINETY_DAYS = 90 * 24 * 3600 * 1000L;
+
+	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	public void moduleSms(HttpServerRequest request) {
 		renderJson(request, new JsonObject().put("activated", this.smsActivated), 200);
 	}
-	
+
 	public boolean isSmsModule() {
 		return smsActivated;
 	}
 
 	public void setSmsModule(boolean smsModule) {
 		this.smsActivated = smsModule;
+	}
+
+	@Get("api/platform/config")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminFilter.class)
+	public void readConfig(HttpServerRequest request) {
+		renderJson(request, new JsonObject()
+				.put("delete-user-delay", config.getLong("delete-user-delay", NINETY_DAYS))
+		);
 	}
 }
