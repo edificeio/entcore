@@ -2,126 +2,153 @@
 
  -->
 
-<article class="list-view" drop-files="newFile.files" on-drop="setFilesName(); addLoadingFiles();">
-	<table class="list-view">
+<article class="list-view" drop-files="newFile.files" on-drop="setFilesName();">
+	<table class="list-view sticky-header darkgrey primary-hover">
 		<thead>
-		<tr>
-			<th scope="col" class="icon">
-				<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
-			</th>
-			<th scope="col" class="icon zero-mobile">
+			<tr>
+				<th scope="col" class="icon">
+					<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
+				</th>
+				<th scope="col" class="icon zero-mobile">
 
-			</th>
-			<th scope="col" class="content" ng-click="orderByField('name')">
-				<span translate content="name"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'name' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'name' && order.desc"></i>
-			</th>
-			<th scope="col" class="user" ng-click="orderByField('ownerName')">
-				<span translate content="owner"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
-			</th>
-			<th ng-if="currentTree.name !== 'trash'">
-				<span translate content="comments"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'ownerName' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'ownerName' && order.desc"></i>
-			</th>
-			<th scope="col" class="date zero-mobile" ng-click="orderByField('created')">
-				<span translate content="modified"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'created' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'created' && order.desc"></i>
-			</th>
-			<th scope="col" class="size zero-mobile" ng-click="orderByField('metadata.size')">
-				<span translate content="size"></span>
-				<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
-				<i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
-			</th>
-		</tr>
+				</th>
+				<th scope="col" class="content" ng-click="orderByField('name')">
+					<span class="sortable">
+						<span class="icons right-spacing-twice">
+							<i class="arrow" ng-class="{'icon-off':!isOrderedAsc('name')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('name')}"></i>
+						</span>
+						<span translate content="name"></span>
+					</span>
+				</th>
+				<th scope="col" class="user" ng-click="orderByField('ownerName')">
+					<span class="sortable">
+						<span class="icons right-spacing-twice">
+							<i class="arrow" ng-class="{'icon-off':!isOrderedAsc('ownerName')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('ownerName')}"></i>
+						</span>
+						<span translate content="owner"></span>
+					</span>
+				</th>
+				<th scope="col" class="zero-mobile" ng-click="orderByField('modified')">
+					<span class="sortable">
+						<span class="icons right-spacing-twice">
+							<i class="arrow " ng-class="{'icon-off':!isOrderedAsc('modified')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('modified')}"></i>
+						</span>
+						<span translate content="modified"></span>
+					</span>
+				</th>
+				<th scope="col" class="size zero-mobile" ng-click="orderByField('metadata.size')">
+						<span translate content="size"></span>
+						<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
+						<i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
+					</th>
+				<th scope="col" class="zero-mobile" ng-if="!isTrashTree()">
+				</th>
+			</tr>
 		</thead>
 		<tbody>
-		<tr data-ng-repeat-start="folder in openedFolder.folder.children | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
-			<td class="icon"><input type="checkbox" data-ng-model="folder.selected" ng-change="setAll()" /></td>
-			<td class="icon zero-mobile">
-				<div class="twelve cell">
-					<i class="folder"></i>
-					<i ng-if="folder.shared.length > 0" class="shared"></i>
-				</div>
-			</td>
-			<td class="content">
-				<strong>
-					<a data-ng-click="openFolder(folder)" ng-if="currentTree.name !== 'trash'">[[folder.name]]</a>
-					<a ng-if="currentTree.name === 'trash'">[[folder.name]]</a>
-				</strong>
-			</td>
-			<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
-			<td ng-if="currentTree.name !== 'trash'">
-				<span class="badge" ng-if="folder.comments.length > 0" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
-			</td>
-			<td class="date small-font zero-mobile">[[shortDate(folder.created)]]</td>
-			<td class="zero-mobile"></td>
-		</tr>
-		<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="folder === selectedFolders()[0] && folder.showComments">
-			<td colspan="7" class="container-cell">
-				<section class="row reduce-block-eight" ng-if="folder === selectedFolders()[0] && folder.showComments">
-					<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in folder.comments">
-						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-						<em>[[longDate(comment.posted)]]</em>
-						<a 	class="right-magnet"
-					   		ng-click="removeComment(folder, comment)"
-							ng-if="comment.id && ((comment.author === me.userId && folder.myRights.commentFolder) || folder.myRights.deleteComment)">
-							<i18n>workspace.delete</i18n>
-						</a>
-						<p>[[comment.comment]]</p>
-					</article>
-				</section>
-			</td>
-		</tr>
-		<tr ng-repeat="file in loadingFiles | filter:{loading:true}">
-			<td class="icon"></td>
-			<td class="icon zero-mobile">
-				<div class="twelve cell">
-					<loading-icon default="loading"></loading-icon>
-				</div>
-			</td>
-			<td class="content"><a>[[file.file.name]]</a></td>
-			<td class="user"><a>[[me.username]]</a></td>
-			<td></td>
-			<td class="date" zero-mobile></td>
-			<td class="size zero-mobile"></td>
-		</tr>
-		<tr data-ng-repeat-start="document in openedFolder.content | orderBy:order.order:order.desc | limitTo:display.nbFiles" ng-class="{ overline: true, checked: document.selected }" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-			<td class="icon"><input type="checkbox" data-ng-model="document.selected"  ng-change="setAll()" /></td>
-			<td class="icon zero-mobile">
-				<div class="twelve cell">
-					<i class="[[document.metadata.role]]"></i>
-					<i ng-if="document.shared.length > 0" class="shared"></i>
-				</div>
-			</td>
-			<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
-			<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
-			<td ng-if="currentTree.name !== 'trash'"><span class="badge" ng-if="document.comments.length > 0" translate-attr="title" title="comments" ng-click="showComments(document)">[[document.comments.length]]</span></td>
-			<td class="date small-font zero-mobile">[[shortDate(document.modified)]]</td>
-			<td class="size small-font zero-mobile">
-				[[formatDocumentSize(document.metadata.size)]]
-			</td>
-		</tr>
-		<tr data-ng-repeat-end ng-class="{ underline: true }" ng-show="document === selectedDocuments()[0] && document.showComments">
-			<td colspan="7" class="container-cell">
-				<section class="row reduce-block-eight" ng-if="document === selectedDocuments()[0] && document.showComments">
-					<article class="twelve cell comment reduce-block-eight" data-ng-repeat="comment in document.comments">
-						<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
-						<em>[[longDate(comment.posted)]]</em>
-						<a class="right-magnet"
-					   	   ng-click="removeComment(document, comment)"
-						   ng-if="comment.id && ((comment.author === me.userId && document.myRights.commentDocument) || document.myRights.deleteComment)">
-							<i18n>workspace.delete</i18n>
-						</a>
-						<p>[[comment.comment]]</p>
-					</article>
-				</section>
-			</td>
-		</tr>
+			<tr data-ng-repeat="folder in openedFolder.folders | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }"
+			 dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)"
+			 dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
+				<td class="icon"><input type="checkbox" data-ng-model="folder.selected" ng-change="setAll()" /></td>
+				<td class="icon zero-mobile">
+					<div class="twelve cell">
+						<i class="folder"></i>
+						<i ng-if="folder.isShared" class="shared"></i>
+					</div>
+				</td>
+				<td class="content">
+					<strong>
+						<a data-ng-click="openFolderRoute(folder)">[[folder.name]]</a>
+					</strong>
+				</td>
+				<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
+				<td class="small-font zero-mobile">[[shortDate(folder.modified)]]</td>
+				<td class="zero-mobile"></td>
+				<td class="zero-mobile" ng-if="!isTrashTree()">
+					<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
+				</td>
+			</tr>
+			<tr data-ng-repeat="document in openedFolder.documents | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }"
+			 dragend="dragEnd(document, $originalEvent)" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+				<td class="icon"><input type="checkbox" data-ng-model="document.selected" ng-change="setAll()" /></td>
+				<td class="icon zero-mobile">
+					<div class="twelve cell">
+						<i class="[[document.metadata.role]]"></i>
+						<i ng-if="document.isShared" class="shared"></i>
+					</div>
+				</td>
+				<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
+				<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
+				<td class="small-font zero-mobile">[[shortDate(document.modified)]]</td>
+				<td class="size small-font zero-mobile">
+						[[formatDocumentSize(document.metadata.size)]]
+					</td>
+				<td ng-if="!isTrashTree()"><span class="badge" ng-if="canShowBadgeComments(document)" translate-attr="title" title="comments"
+					 ng-click="showComments(document)">[[document.comments.length]]</span>
+
+				</td>
+			</tr>
 		</tbody>
 	</table>
+
+	<!--COMMENTS-->
+	<div ng-if="folder.showComments" data-ng-repeat="folder in openedFolder.folders">
+		<lightbox show="canShowCommentLightbox(folder)" on-close="folder.showComments = false;">
+			<h2>
+				<i18n>comments</i18n>
+			</h2>
+
+			<div class="row" ng-if="folder.myRights.comment">
+				<form class="twelve fluid cell" ng-submit="sendFolderComment(folder)">
+					<div class="row">
+						<textarea ng-model="folder.comment"></textarea>
+					</div>
+					<div class="lightbox-buttons fluid">
+						<button class="right-magnet" ng-disabled="!folder.comment.length"><i18n>workspace.comment</i18n></button>
+						<button class="cancel right-magnet" type="button" ng-click="folder.showComments = false;"><i18n>cancel</i18n></button>
+					</div>
+				</form>
+			</div>
+
+			<article class="twelve cell comment" ng-repeat="comment in folder.comments">
+				<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+				<em>[[longDate(comment.posted)]]</em>
+				<a class="right-magnet" ng-click="removeComment(folder, comment)" ng-if="canDeleteComment(folder,comment)">
+					<i18n>workspace.delete</i18n>
+				</a>
+				<p>[[comment.comment]]</p>
+			</article>
+		</lightbox>
+	</div>
+	<div ng-if="document.showComments" data-ng-repeat="document in openedFolder.documents">
+		<lightbox show="canShowCommentLightbox(document)" ng-click="$event.stopPropagation()" on-close="document.showComments = false;">
+			<h2>
+				<i18n>comments</i18n>
+			</h2>
+
+			<div class="row" ng-if="document.myRights.comment">
+				<form class="twelve fluid cell" ng-submit="sendComment()">
+					<div class="row">
+						<textarea ng-model="document.comment"></textarea>
+					</div>
+					<div class="lightbox-buttons fluid">
+						<button class="right-magnet" ng-disabled="!document.comment.length"><i18n>workspace.comment</i18n></button>
+						<button class="cancel right-magnet" type="button" ng-click="document.showComments = false;"><i18n>cancel</i18n></button>
+					</div>
+				</form>
+			</div>
+
+			<article class="twelve cell comment" ng-repeat="comment in document.comments">
+				<a ng-href="/userbook/annuaire#[[comment.author]]">[[comment.authorName]]</a>
+				<em>[[longDate(comment.posted)]]</em>
+				<a class="right-magnet" ng-click="removeComment(document, comment)" ng-if="canDeleteComment(document,comment)">
+					<i18n>workspace.delete</i18n>
+				</a>
+				<p>[[comment.comment]]</p>
+			</article>
+		</lightbox>
+	</div>
 </article>
