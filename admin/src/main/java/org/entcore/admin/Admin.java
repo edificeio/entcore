@@ -19,7 +19,7 @@
 package org.entcore.admin;
 
 import org.entcore.admin.controllers.AdminController;
-import org.entcore.admin.controllers.PlateformeInfoController;
+import org.entcore.admin.controllers.PlatformInfoController;
 import org.entcore.common.http.BaseServer;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -27,8 +27,6 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.eventbus.DeliveryOptions;
-
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class Admin extends BaseServer {
 
@@ -38,7 +36,7 @@ public class Admin extends BaseServer {
 		 
 		 addController(new AdminController());
 		 
-		 final PlateformeInfoController plateformeInfoController = new PlateformeInfoController();
+		 final PlatformInfoController platformInfoController = new PlatformInfoController();
 		 
 		 // check if sms module activated
 		 String smsAddress = "";
@@ -62,10 +60,10 @@ public class Admin extends BaseServer {
 					 public void handle(AsyncResult<Message<JsonObject>> res) {
 						 if (res != null && res.succeeded()) {
 							 if ("ok".equals(res.result().body().getString("status"))) {
-								 plateformeInfoController.setSmsModule(true);
+								 platformInfoController.setSmsModule(true);
 							 }
 						 }
-						 addController(plateformeInfoController);
+						 addController(platformInfoController);
 					 }
 				 }
 		 );
