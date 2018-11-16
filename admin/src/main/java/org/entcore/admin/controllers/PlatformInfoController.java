@@ -31,6 +31,7 @@ import fr.wseduc.webutils.http.BaseController;
 public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
+	private static final long NINETY_DAYS = 90 * 24 * 3600 * 1000L;
 
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
@@ -45,5 +46,14 @@ public class PlatformInfoController extends BaseController {
 
 	public void setSmsModule(boolean smsModule) {
 		this.smsActivated = smsModule;
+	}
+
+	@Get("api/platform/config")
+	@SecuredAction(type = ActionType.RESOURCE, value = "")
+	@ResourceFilter(AdminFilter.class)
+	public void readConfig(HttpServerRequest request) {
+		renderJson(request, new JsonObject()
+				.put("delete-user-delay", config.getLong("delete-user-delay", NINETY_DAYS))
+		);
 	}
 }
