@@ -28,17 +28,17 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 
-public class PlateformeInfoController extends BaseController {
+public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
-	
-	@Get("api/plateforme/module/sms")
+
+	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	public void moduleSms(HttpServerRequest request) {
 		renderJson(request, new JsonObject().put("activated", this.smsActivated), 200);
 	}
-	
+
 	public boolean isSmsModule() {
 		return smsActivated;
 	}
