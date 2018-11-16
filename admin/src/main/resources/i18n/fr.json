@@ -112,7 +112,7 @@
     "restore.account": "Restaurer le compte",
     "restore": "Restaurer",
     "user.blocked": "Utilisateur bloqué",
-    "user.predeleted": "Utilisateur pré-supprimé",
+    "user.predeleted": "Utilisateur pré-supprimé. Suppression effective dans {{numberOfDays}} jour(s).",
     "user.predeleted.waiting": "Utilisateur en attente de pré-suppression",
     "save": "Enregistrer",
     "save.modifications": "Enregistrer les modifications",
@@ -244,7 +244,7 @@
     "notify.user.toggleblock.error.content": "L'utilisateur {{user}} n'a pas pu être {{blocked ? bloqué(e) : débloqué(e)}}.",
 
     "notify.user.predelete.title": "Pré-suppression effectuée",
-    "notify.user.predelete.content": "L'utilisateur {{user}} a bien été pré-supprimé.",
+    "notify.user.predelete.content": "L'utilisateur {{user}} a bien été pré-supprimé. Suppression effective dans {{numberOfDays}} jour(s).",
     "notify.user.predelete.error.title": "Erreur lors de la pré-suppression",
     "notify.user.predelete.error.content": "L'utilisateur {{user}} n'a pas pu être pré-supprimé.",
 
