@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { Behaviours, http, workspace, notify } from 'entcore';
+import { Behaviours, http, workspace, notify, Document } from 'entcore';
 import { _ } from 'entcore';
 /**
  * JS apps dont have es6 modules
@@ -23,21 +23,28 @@ import { _ } from 'entcore';
 function getWorkspaceService() {
 	let service = workspace.v2.service;
 	if (!service) {
-		service = (window as any).workspace.v2.service;
+		service = (window as any).entcore.workspace.v2.service;
 	}
 	return service;
 }
 function getElementClass() {
 	let models = workspace.v2.models;
 	if (!models) {
-		models = (window as any).workspace.v2.models;
+		models = (window as any).entcore.workspace.v2.models;
 	}
 	return models.Element;
+}
+function getDocumentClazz() {
+	let clazz =Document;
+	if (!clazz || !clazz.prototype.saveChanges) {
+		clazz = (window as any).entcore.workspace.v2.models;
+	}
+	return clazz;
 }
 function getNotify() {
 	let temp = notify;
 	if (!temp) {
-		temp = (<any>window).notify
+		temp = (<any>window).entcore.notify
 	}
 	return temp;
 }
@@ -103,7 +110,7 @@ Behaviours.register('workspace', {
 		if (file.title !== file.file[0].name) {
 			file.title += ('.' + ext);
 		}
-		let clazz = getElementClass()
+		let clazz = getDocumentClazz()
 		let doc = new clazz
 		doc.name = file.title;
 		file.loading = true;
