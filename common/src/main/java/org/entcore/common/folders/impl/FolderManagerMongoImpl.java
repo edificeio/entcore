@@ -1,7 +1,6 @@
 package org.entcore.common.folders.impl;
 
 import static org.entcore.common.folders.impl.QueryHelper.isOk;
-import static org.entcore.common.folders.impl.QueryHelper.toErrorStr;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,8 +35,12 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class FolderManagerMongoImpl implements FolderManager {
+	private static final Logger log = LoggerFactory.getLogger(FolderManagerMongoImpl.class);
+
 	private static void notModified(HttpServerRequest request, String fileId) {
 		if (fileId != null && !fileId.trim().isEmpty()) {
 			request.response().headers().add("ETag", fileId);
@@ -127,6 +130,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 					copy.remove("eParent");
 				}
 				copy.remove("eParentOld");
+				copy.remove("protected");
+				copy.remove("public");
 				//
 				if (userOpt.isPresent()) {
 					UserInfos user = userOpt.get();
@@ -292,7 +297,18 @@ public class FolderManagerMongoImpl implements FolderManager {
 				if (isOk(resDelete)) {
 					future.complete(files);
 				} else {
-					future.fail(toErrorStr(resDelete));
+					// dont throw error
+					// future.fail(toErrorStr(resDelete));
+					JsonArray errors = resDelete.getJsonArray("errors", new JsonArray());
+					for (Object o : errors) {
+						if (o instanceof JsonObject) {
+							String docId = ((JsonObject) o).getString("id");
+							String message = ((JsonObject) o).getString("message");
+							log.error("Failed to remove file with id: " + docId + "/" + message);
+						}
+					}
+					// delete document even if file does not exists
+					future.complete(files);
 				}
 			});
 			return future;

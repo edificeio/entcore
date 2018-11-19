@@ -126,7 +126,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
 	}, {
-		name: lang.translate('shared'),
+		name: lang.translate('shared_tree'),
 		filter: 'shared',
 		hierarchical: true,
 		buttons: [],
