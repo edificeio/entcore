@@ -1,6 +1,6 @@
 import { ng, quota, template } from 'entcore';
 import http from 'axios';
-import { models, workspaceService } from "../services";
+import { models, workspaceService, Document } from "../services";
 
 
 interface ImportScope {
@@ -86,7 +86,7 @@ export const importFiles = ng.directive('importFiles', () => {
 				template.open('import', 'directives/import/loading');
 				for (let i = 0; i < files.length; i++) {
 					let file = files[i];
-					let doc = new models.Element();
+					let doc = new Document();
 					//set parent
 					workspaceService.createDocument(file, doc, scope.openedFolder.folder).then(() => {
 						quota.refresh();
