@@ -57,7 +57,7 @@ public class Workspace extends BaseServer {
 		super.start();
 
 		Storage storage = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage("documents", Workspace.class.getSimpleName())).getStorage();
+				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();
 
 		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
