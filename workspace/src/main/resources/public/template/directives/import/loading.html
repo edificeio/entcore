@@ -9,15 +9,15 @@
                 <li ng-repeat="doc in upload.documents"
                     ng-click="openCompression(doc)"
                     ng-class="{
-                        'image-file': doc.isEditableImage && doc.status === 'loaded',
-                        'loading': doc.status === 'loading',
+                        'image-file': doc.isEditableImage && doc.uploadStatus === 'loaded',
+                        'loading': doc.uploadStatus === 'loading',
                         selected: doc === display.editedDocument
                     }"                   
                 >
                     <div class="icon">
                         <i class="[[doc.role()]]"></i>
-                        <i tooltip-check="doc.isEditableImage && doc.status === 'loaded'"
-                        tooltip="medialibrary.editImage.tooltip" class="edit" ng-if="doc.isEditableImage && doc.status === 'loaded'"></i>
+                        <i tooltip-check="doc.isEditableImage && doc.uploadStatus === 'loaded'"
+                        tooltip="medialibrary.editImage.tooltip" class="edit" ng-if="doc.isEditableImage && doc.uploadStatus === 'loaded'"></i>
                     </div>
                     <div class="title">[[doc.name || doc.title]]</div>
                     <div class="status-infos">
@@ -25,9 +25,9 @@
                             [[doc.size]]
                         </span>
                         <i ng-class="{
-                            loading: doc.status === 'loading',
-                            loaded: doc.status === 'loaded',
-                            failed: doc.status === 'failed'
+                            loading: doc.uploadStatus === 'loading',
+                            loaded: doc.uploadStatus === 'loaded',
+                            failed: doc.uploadStatus === 'failed'
                         }"></i>
                     </div>
                     <i class="close" ng-click="abortOrDelete(doc)"></i>
