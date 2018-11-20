@@ -489,7 +489,24 @@ public class ConversationController extends BaseController {
 					try {
 						page = Integer.parseInt(p);
 					} catch (NumberFormatException e) { page = 0; }
-					conversationService.listThreads( user, page, arrayResponseHandler(request));
+					conversationService.listThreads( user, page, new Handler<Either<String, JsonArray>>() {
+						@Override
+						public void handle(Either<String, JsonArray> r) {
+							if (r.isRight()) {
+								for (Object o : r.right().getValue()) {
+									if (!(o instanceof JsonObject)) {
+										continue;
+									}
+									translateGroupsNames((JsonObject) o, request);
+								}
+								renderJson(request, r.right().getValue());
+							} else {
+								JsonObject error = new JsonObject()
+										.put("error", r.left().getValue());
+								renderJson(request, error, 400);
+							}
+						}
+					});
 				} else {
 					unauthorized(request);
 				}
