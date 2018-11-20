@@ -691,6 +691,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			show: function(){
 				return $scope.exportData.params.profile === 'Relative'
 			}
+		},
+		{
+			key: "Transition",
+			label: 'directory.admin.export.type.transition',
+			format: 'csv',
+			profiles: ['Teacher','Personnel','Relative','Student','Guest'],
 		}
 	]
 	$scope.initExportData = function(){
