@@ -69,6 +69,7 @@ import { Config } from './Config';
             <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
                 <i class="fonticon waiting-predelete"></i>
                 <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilPreDeletion(user.disappearanceDate))}">user.predeleted.waiting</s5l>
+                <message-sticker [type]="'info'" [messages]="['user.predeleted.waiting.help']"></message-sticker>
             </div>
 
             <div class="panel-header-content">
