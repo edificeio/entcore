@@ -71,6 +71,7 @@
     "directory.admin.export.type.gepi": "Export Gepi",
     "directory.admin.export.type.proeps.student": "Export ProEPS élève",
     "directory.admin.export.type.proeps.relative": "Export ProEPS parent",
+    "directory.admin.export.type.transition": "Export Transition d'année",
     "directory.admin.exportTitle": "Export",
     "directory.admin.exports": "Exporter les données d'authentification",
     "directory.admin.firstname": "Prénom",

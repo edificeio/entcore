@@ -425,7 +425,7 @@ public class DefaultSchoolService implements SchoolService {
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as type, " +
 						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code ";
+						"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, u.created as creationDate ";
 
 		withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		returnStr += ", classes, classname, isInClass ";
