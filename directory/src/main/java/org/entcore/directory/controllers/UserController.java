@@ -282,6 +282,7 @@ public class UserController extends BaseController {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
 					JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
+					final String profile = (types != null && types.size() > 0) ? types.getString(0) : "All";
 					final String filterActive = request.params().get("filterActive");
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
 					final String format = request.params().get("format");
@@ -293,7 +294,7 @@ public class UserController extends BaseController {
 							@Override
 							public void handle(Either<String, JsonArray> r) {
 								if (r.isRight()) {
-									processTemplate(request, new JsonObject().put("list", r.right().getValue()),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
+									processTemplate(request, new JsonObject().put("list", r.right().getValue()).put(profile,true),  "text/export" + exportType + ".id.txt", false, new Handler<String>() {
 											@Override
 											public void handle(final String export) {
 												if (export != null) {

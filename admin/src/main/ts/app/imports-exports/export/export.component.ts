@@ -11,6 +11,18 @@ import { StructureModel } from '../../core/store'
             <h2><s5l>export.configuration</s5l></h2>
 
             <form class="has-vertical-padding">
+
+                <form-field label="export.type">
+                    <select [(ngModel)]="type" name="type">
+                        <option value="">
+                            <s5l>export.type.default</s5l>
+                        </option>
+                        <option value="Transition">
+                            <s5l>export.type.transition</s5l>
+                        </option>
+                    </select>
+                </form-field>
+
                 <form-field label="export.classe">
                     <select [(ngModel)]="classe" name="classe">
                         <option value="">
@@ -24,7 +36,7 @@ import { StructureModel } from '../../core/store'
 
                 <form-field label="profile">
                     <select class="three cell row-item" [(ngModel)]="profile" name="profile">
-                        <option value="">
+                        <option value="" *ngIf="type.length == 0">
                             <s5l>export.all.profiles</s5l>
                         </option>
                         <option value="Teacher">
@@ -63,6 +75,7 @@ import { StructureModel } from '../../core/store'
 export class ExportComponent implements OnInit{
     
     structure: StructureModel;
+    type = "";
     classe = "";
     profile = "";
     filter="";
@@ -102,6 +115,11 @@ export class ExportComponent implements OnInit{
             link = `${link}&profile=${this.profile}`;
         }
 
+        if(this.type.length > 0) {
+            link = `${link}&type=${this.type}`;
+        }
+
         window.open(link, '_blank');
     }
+
 }

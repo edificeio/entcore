@@ -145,6 +145,9 @@
     "export.classe": "Classe",
     "export.configuration": "Configuration de l'export",
     "export.all.profiles": "Tous",
+    "export.type": "Type d'export",
+    "export.type.default": "Export classique",
+    "export.type.transition": "Export Transition d'année",
     "link": "Lien",
     "import.users": "Importer des utilisateurs",
 

@@ -316,12 +316,14 @@ public class DefaultUserService implements UserService {
 				"u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
 				"u.birthDate as birthDate, u.blocked as blocked, " +
+				"u.email as email, u.zipCode as zipCode, u.address as address, " +
+				"u.city as city, u.country as country, " +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
 				"collect(distinct {id: s.id, name: s.name}) as structures, " +
 				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
 				"collect(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
-				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName, attachmentId : child.attachmentId }) END as children, " +
+				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName, attachmentId : child.attachmentId, childExternalId : child.externalId, displayName : child.displayName }) END as children, " +
 				"HEAD(COLLECT(distinct parent.externalId)) as parent1ExternalId, " + // Hack for GEPI export
 				"HEAD(TAIL(COLLECT(distinct parent.externalId))) as parent2ExternalId, " + // Hack for GEPI export
 				"COUNT(distinct class.id) > 0 as hasClass " + // Hack for Esidoc export
