@@ -14,7 +14,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
                 <s5l>create.user</s5l>
                 <i class="fa fa-user-plus"></i>
             </button>
-            <button disabled title="En construction">
+            <button routerLink="groups/manual/create">
                 <s5l>create.group</s5l>
                 <i class="fa fa-users"></i>
             </button>
