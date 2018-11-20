@@ -27,6 +27,8 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
+import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 
 public class PlatformInfoController extends BaseController {
 
@@ -53,7 +55,8 @@ public class PlatformInfoController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void readConfig(HttpServerRequest request) {
 		renderJson(request, new JsonObject()
-				.put("delete-user-delay", config.getLong("delete-user-delay", NINETY_DAYS))
+				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
+				.put("pre-delete-user-delay", config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay))
 		);
 	}
 }

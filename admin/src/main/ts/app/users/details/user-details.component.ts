@@ -68,7 +68,7 @@ import { Config } from './Config';
 
             <div class="panel-message yellow" *ngIf="!user?.deleteDate && user?.disappearanceDate">
                 <i class="fonticon waiting-predelete"></i>
-                <s5l>user.predeleted.waiting</s5l>
+                <s5l [s5l-params]="{numberOfDays: millisecondToDays(millisecondsUntilPreDeletion(user.disappearanceDate))}">user.predeleted.waiting</s5l>
             </div>
 
             <div class="panel-header-content">
@@ -256,6 +256,10 @@ export class UserDetails implements OnInit, OnDestroy{
 
     millisecondsUntilEffectiveDeletion(timestamp: number): number {
         return (timestamp + this.config["delete-user-delay"]) - (new Date()).getTime();
+    }
+
+    millisecondsUntilPreDeletion(timestamp: number): number {
+        return (timestamp + this.config["pre-delete-user-delay"]) - (new Date()).getTime();
     }
 
     ngOnDestroy() {
