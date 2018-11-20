@@ -54,6 +54,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
+import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
@@ -93,8 +95,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
 		feeds.put("CSV", new CsvFeeder(vertx, config.getJsonObject("csvMappings", new JsonObject())));
-		final long deleteUserDelay = config.getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
-		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
+		final long deleteUserDelay = config.getLong("delete-user-delay", defaultDeleteUserDelay);
+		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay);
 		final String deleteCron = config.getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = config.getString("pre-delete-cron", "0 0 3 * * ? *");
 		final String importCron = config.getString("import-cron");
