@@ -11,6 +11,8 @@
         "skipLibCheck": true
     },
     "exclude": [
+        "test.ts",
+        "**/*.spec.ts",
         "main.aot.ts"
     ],
     "compileOnSave": false
