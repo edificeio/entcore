@@ -13,5 +13,9 @@
     "angularCompilerOptions": {
         "genDir": "./aot",
         "skipMetadataEmit" : true
-    }
+    },
+    "exclude": [
+        "test.ts",
+        "**/*.spec.ts"
+    ]
 }
