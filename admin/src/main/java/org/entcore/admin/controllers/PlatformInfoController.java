@@ -18,19 +18,21 @@
 
 package org.entcore.admin.controllers;
 
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
+import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
+import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 
 public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
-	private static final long NINETY_DAYS = 90 * 24 * 3600 * 1000L;
 
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
@@ -52,8 +54,9 @@ public class PlatformInfoController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void readConfig(HttpServerRequest request) {
 		renderJson(request, new JsonObject()
-				.put("delete-user-delay", config.getLong("delete-user-delay", NINETY_DAYS))
-				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
+                .put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
+                .put("pre-delete-user-delay", config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay))
+                .put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 		);
 	}
 }

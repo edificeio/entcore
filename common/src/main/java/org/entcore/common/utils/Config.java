@@ -22,6 +22,9 @@ package org.entcore.common.utils;
 import io.vertx.core.json.JsonObject;
 
 public class Config {
+	private static final long NINETY_DAYS = 90 * 24 * 3600 * 1000L;
+	public static final long defaultDeleteUserDelay = NINETY_DAYS;
+	public static final long defaultPreDeleteUserDelay = NINETY_DAYS;
 
 	private JsonObject config;
 

@@ -113,7 +113,7 @@
     "restore": "Restaurer",
     "user.blocked": "Utilisateur bloqué",
     "user.predeleted": "Utilisateur pré-supprimé. Suppression effective dans {{numberOfDays}} jour(s).",
-    "user.predeleted.waiting": "Utilisateur en attente de pré-suppression",
+    "user.predeleted.waiting": "Utilisateur en attente de pré-suppression. Il sera pré-supprimé dans {{numberOfDays}} jour(s).",
     "save": "Enregistrer",
     "save.modifications": "Enregistrer les modifications",
     "send.reset.password": "Réinitialisation de mot de passe",
