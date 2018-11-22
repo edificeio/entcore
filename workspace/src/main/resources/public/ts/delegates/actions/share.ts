@@ -82,6 +82,9 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         closeShareView()
     }
     $scope.onSubmitSharedElements = function () {
+        $scope.sharedElements && $scope.sharedElements.forEach(el => {
+            el._isShared = true;
+        })
         workspaceService.onChange.next({ action: "tree-change", treeSource: $scope.currentTree.filter, treeDest: "shared", elements: $scope.sharedElements });
         //DONT NEED
         //$scope.setCurrentTree("shared")
