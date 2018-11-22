@@ -37,6 +37,7 @@ class InheritShareComputer {
 		if (!DocumentHelper.isFolder(parentFolder)) {
 			throw new IllegalArgumentException("The parent is not a folder :" + parentFolder.getString("_id"));
 		} else {
+			JsonArray parentAncestors = parentFolder.getJsonArray("ancestors", new JsonArray());
 			JsonArray parentShared = parentFolder.getJsonArray("inheritedShares", new JsonArray());
 			JsonArray currentShared = current.getJsonArray("shared", new JsonArray());
 			//
@@ -44,6 +45,11 @@ class InheritShareComputer {
 			inherit.addAll(currentShared);
 			inherit.addAll(parentShared);
 			//
+			JsonArray ancestors = new JsonArray();
+			ancestors.addAll(parentAncestors);
+			ancestors.add(DocumentHelper.getId(parentFolder));
+			//
+			current.put("ancestors", ancestors);
 			current.put("inheritedShares", inherit);
 			current.put("isShared", inherit.size() > 0);
 		}
@@ -57,6 +63,7 @@ class InheritShareComputer {
 			current.put("shared", shared);
 			current.put("inheritedShares", shared);
 			current.put("isShared", shared.size() > 0);
+			current.put("ancestors", new JsonArray());
 		}
 	}
 

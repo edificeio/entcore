@@ -118,7 +118,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		hierarchical: true,
 		children: [],
 		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create' }
+			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() { return false } }
 		],
 		contextualButtons: [
 			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager" },
@@ -129,7 +129,12 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		name: lang.translate('shared_tree'),
 		filter: 'shared',
 		hierarchical: true,
-		buttons: [],
+		buttons: [
+			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create',disabled(){
+				let isFolder = ($scope.openedFolder.folder instanceof models.Element);
+				return isFolder && !$scope.openedFolder.folder.canWriteOnFolder
+			} }
+		],
 		children: [],
 		helpbox: "workspace.help.2",
 		contextualButtons: [

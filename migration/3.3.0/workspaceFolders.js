@@ -1,8 +1,44 @@
-var COLLECTION_NAME = "documents.recette";
+var COLLECTION_NAME = "documents";
 var OLD_RIGHT = "org-entcore-workspace-service-WorkspaceService";
 var NEW_RIGHT = "org-entcore-workspace-controllers-WorkspaceController";
+var INDEX_NAME = "idx_documents_migration";
 var foldersByOwner = {}
+var countFolderNotFound = 0;
 
+var startTime, endTime;
+function startMeasure(name) {
+    print("event;start measuring;" + name);
+    startTime = new Date();
+}
+function endMeasure(name) {
+    endTime = new Date();
+    var timeDiffMs = endTime - startTime; //in ms
+    var timeDiffSeconds = (timeDiffMs / 1000);
+    var timeDiffMinutes = timeDiffSeconds / 60;
+    var seconds = Math.round(timeDiffSeconds);
+    var minutes = Math.round(timeDiffMinutes);
+    print("event;end measuring:" + minutes + " minutes (" + seconds + "seconds);" + name);
+}
+function createIndexIfNotExists() {
+    var founded = false;
+    var indexes = db[COLLECTION_NAME].getIndexes();
+    if (indexes) {
+        for (var i = 0; i < indexes.length; i++) {
+            var index = indexes[i];
+            if (index.name == INDEX_NAME) {
+                founded = true;
+            }
+        }
+    }
+    if (!founded) {
+        print("event;Creating index: " + INDEX_NAME)
+        db[COLLECTION_NAME].createIndex({ file: 1, folder: 1 }, { name: INDEX_NAME })
+    }
+}
+function dropIndex() {
+    print("event;Dropping index: " + INDEX_NAME)
+    db[COLLECTION_NAME].dropIndex(INDEX_NAME);
+}
 function replaceShared(doc) {
     if (!doc.shared) {
         return;
@@ -30,6 +66,7 @@ function findParentFor(doc, parentPath) {
     var folders = foldersByOwner[doc.owner] || {};
     var founded = folders[parentPath] || null;
     if (founded == null) {
+        countFolderNotFound++;
         print("error;could not found folder for document: " + doc._id + "/" + parentPath)
     }
     return founded;
@@ -55,7 +92,7 @@ function getLastPath(doc) {
     }
 }
 function getAllButLastPath(doc) {
-    if (doc.folder.indexOf("_")) {
+    if (doc.folder && doc.folder.indexOf("_")) {
         var splits = doc.folder.split("_");
         splits.pop()
         return splits.join("_");
@@ -79,7 +116,12 @@ countBefore.files.shared = db[COLLECTION_NAME].count({ file: { $exists: true }, 
 countBefore.files.deleted = db[COLLECTION_NAME].count({ file: { $exists: true }, "folder": { $regex: /Trash.*/ } })
 //count ignore
 var countIgnore = { folders: { deleted: 0, shared: 0, owner: 0 }, files: { deleted: 0, shared: 0, owner: 0 } };
+//CREATE INDEX
+startMeasure("createindex")
+createIndexIfNotExists()
+endMeasure("createindex")
 //
+startMeasure("documents")
 db[COLLECTION_NAME].find({}).sort({ file: 1, folder: 1 }).forEach(function (doc) {
     var notSaved = !doc.eType;
     //eType
@@ -120,6 +162,7 @@ db[COLLECTION_NAME].find({}).sort({ file: 1, folder: 1 }).forEach(function (doc)
         //folder root
     }
     //eParentOld
+    doc.ancestors = [];
     if (parent) {
         if (doc.deleted && !parent.deleted) {
             doc.eParentOld = parent._id;
@@ -127,12 +170,15 @@ db[COLLECTION_NAME].find({}).sort({ file: 1, folder: 1 }).forEach(function (doc)
         } else {
             doc.eParent = parent._id;
         }
+        var parentAncestors = parent.ancestors || [];
+        doc.ancestors = doc.ancestors.concat(parentAncestors).concat([parent._id]);
     } else {
         doc.eParent = null
     }
     //set
     var update = { '$set': {} }
     update["$set"]["eType"] = doc.eType;
+    update["$set"]["ancestors"] = doc.ancestors;
     update["$set"]["shared"] = doc.shared;
     update["$set"]["inheritedShares"] = doc.inheritedShares;
     update["$set"]["isShared"] = doc.isShared;
@@ -158,6 +204,12 @@ db[COLLECTION_NAME].find({}).sort({ file: 1, folder: 1 }).forEach(function (doc)
         }
     }
 })
+endMeasure("documents")
+//DROP INDEX
+startMeasure("dropindex")
+dropIndex()
+endMeasure("dropindex")
+//
 var countAfter = { folders: {}, files: {} };
 countAfter.folders.owner = db[COLLECTION_NAME].count({ eType: "folder", "deleted": false, 'isShared': false })
 countAfter.folders.shared = db[COLLECTION_NAME].count({ eType: "folder", "deleted": false, 'isShared': true })
@@ -169,8 +221,8 @@ countAfter.files.deleted = db[COLLECTION_NAME].count({ eType: "file", "deleted":
 print("report;owner;shared;deleted")
 print("folder-before;" + countBefore.folders.owner + ";" + countBefore.folders.shared + ";" + countBefore.folders.deleted)
 print("folder-after;" + countAfter.folders.owner + ";" + countAfter.folders.shared + ";" + countAfter.folders.deleted)
+print("folder-ignored;" + countIgnore.folders.owner + ";" + countIgnore.folders.shared + ";" + countIgnore.folders.deleted)
 print("file-before;" + countBefore.files.owner + ";" + countBefore.files.shared + ";" + countBefore.files.deleted)
 print("file-after;" + countAfter.files.owner + ";" + countAfter.files.shared + ";" + countAfter.files.deleted)
-print("folder-ignored;" + countIgnore.folders.owner + ";" + countIgnore.folders.shared + ";" + countIgnore.folders.deleted)
 print("file-ignored;" + countIgnore.files.owner + ";" + countIgnore.files.shared + ";" + countIgnore.files.deleted)
-
+print("errors;" + countFolderNotFound)

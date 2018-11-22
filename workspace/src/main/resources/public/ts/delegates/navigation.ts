@@ -3,12 +3,14 @@ import { models, workspaceService, WorkspacePreferenceView } from "../services";
 
 export interface NavigationDelegateScope {
     //
+    infotipVisible: boolean
     display: { viewFile?: models.Element, nbFiles: number, editedImage?: models.Element, editImage?: boolean, quickStart?: boolean }
     boxes: { selectAll: boolean }
     openedFolder: models.FolderContext
     selectedFolder: { folder: models.Element, name: string }
     onQuickstartFinished()
     //list view
+    onInfotipChange(visible: boolean)
     isTrashTree(): boolean
     isOrderedAsc(field: string): boolean
     isOrderedDesc(field: string): boolean
@@ -102,6 +104,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         workspaceService.savePreference({ quickstart: "viewed" })
     }
     //list
+    $scope.onInfotipChange = function (visible) {
+        $scope.infotipVisible = visible;
+    }
     $scope.isTrashTree = function () {
         return $scope.currentTree.filter == 'trash';
     }

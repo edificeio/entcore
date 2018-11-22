@@ -100,9 +100,9 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                         <h3 class="centered-text">
                             <span class="no-style">[[getTitle()]]</span>
                         </h3>
-                        <h4 class="eleven justified-text">
+                        <p class="eleven justified-text">
                             <span class="no-style">[[getContent()]]</span>
-                        </h4>
+                        </p>
                     </div>
                     <div class="flex-row align-center">
                         <nav class="dots flex-all-remains align-center">
@@ -306,7 +306,8 @@ export const helpBoxStep = ng.directive('helpBoxStep', ['$timeout', ($timeout) =
                                 'top': rect.top,
                                 'left': rect.left,
                                 'width': rect.width,
-                                'height': rect.height
+                                'height': rect.height,
+                                'margin':0
                             })
                             cb();
                         }, 300)

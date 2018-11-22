@@ -136,18 +136,12 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         } else {
             $scope.newElementSharing = [];
         }
-    }
-    const notifyContrib = function (ev: models.Element[]) {
-        if ($scope.currentTree.filter == "shared") {
-            workspaceService.notifyContrib($scope.openedFolder.folder, ev)
-        }
-    }
+    } 
     workspaceService.onConfirmImport.subscribe(ev => {
         setTimeout(() => {
             $scope.setHighlighted(ev);
         }, 300)
         openNewFileView(ev);
-        notifyContrib(ev);
     })
     $scope.onImportFiles = function (files) {
         workspaceService.onImportFiles.next(files);
