@@ -645,8 +645,11 @@ class QueryHelper {
 		String id = file.getString("_id");
 		String now = MongoDb.formatDate(new Date());
 		JsonArray inheritShared = file.getJsonArray("inheritedShares");
+		JsonArray ancestors = file.getJsonArray("ancestors");
 		JsonObject set = new MongoUpdateBuilder().set("inheritedShares", inheritShared)
-				.set("isShared", inheritShared != null && inheritShared.size() > 0).set("modified", now).build();
+				.set("isShared", inheritShared != null && inheritShared.size() > 0)//
+				.set("ancestors", ancestors)//
+				.set("modified", now).build();
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
@@ -729,6 +732,7 @@ class QueryHelper {
 			JsonObject set = new MongoUpdateBuilder()//
 					.set("modified", now)//
 					.set("isShared", row.getJsonArray("inheritedShares", new JsonArray()).size() > 0)//
+					.set("ancestors", row.getJsonArray("ancestors", new JsonArray()))//
 					.set("inheritedShares", row.getJsonArray("inheritedShares", new JsonArray()))//
 					.set("shared", row.getJsonArray("shared", new JsonArray())).build();
 			operations.add(new JsonObject().put("operation", "update")//
