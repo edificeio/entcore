@@ -120,10 +120,6 @@
 			border-bottom-right-radius: 20px;
 		}
 
-		article.icons-view {
-			height: calc(100vh - 300px);
-		}
-
 		article.icons-view>div {
 			height: 100%;
 			overflow-y: scroll;
@@ -184,21 +180,32 @@
 		table.primary-hover tbody tr:hover * {
 			color: #FF8500;
 		}
-
+		.height-minus200 {
+			height: calc(100vh - 200px);
+			overflow-y: scroll;
+		}
 		.height-minus300 {
 			height: calc(100vh - 300px);
 			overflow-y: scroll;
+		}
+		.height-minus200.no-overflow{
+			overflow: hidden;
+		}
+		.height-minus300.no-overflow{
+			overflow: hidden;
 		}
 		.maxheight-minus450 {
 			max-height: calc(100vh - 450px);
 			overflow-y: scroll;
 		}
-
 		.maxheight-minus400 {
 			max-height: calc(100vh - 400px);
 			overflow-y: scroll;
 		}
-
+		.maxheight-minus350 {
+			max-height: calc(100vh - 350px);
+			overflow-y: scroll;
+		}
 		.maxheight-half-vh {
 			max-height: 50vh;
 			overflow-y: scroll;
@@ -276,9 +283,21 @@
 		nav.vertical .highlight-title-3s {
 			animation: hightlight-title 3s ease-in-out 0ms 1;
 		}
-
+		.centered-bloc-text{
+			display: block;
+			text-align: center;
+		}
 		.cursor-notallowed{
 			cursor: not-allowed;
+		}
+		.no-padding-bottom{
+			padding-bottom: 0px;
+		}
+		.workspace-app .material .main{
+			padding-bottom: 0;
+		}
+		.workspace-app .toggle-buttons-spacer{
+			margin-bottom: 0px;
 		}
 	</style>
 </head>
@@ -296,17 +315,16 @@
 			<section class="four twelve-mobile cell">
 				<!--IMPORT DESKTOP-->
 				<div class="row zero-mobile" ng-repeat="button in currentTree.buttons">
-					<button ng-click="button.action()" workflow="[[button.workflow]]">
+					<button ng-click="button.action()" ng-disabled="button.disabled()" workflow="[[button.workflow]]">
 						<i class="add" ng-if="button.icon"></i> [[button.text]]
 					</button>
 				</div>
 				<nav class="vertical mobile-navigation top-spacing-twice" side-nav>
-					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus450 overflowx-hd"></div>
-					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link"><i18n>folder.new</i18n></a>
-					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link"><i18n>folder.new.shared</i18n></a>
-					<a ng-click="emptyTrash()" ng-if="canEmptyTrash()" class="classic-link"><i18n>workspace.empty.trash</i18n></a>
+					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus400-1d overflowx-hd"></div>
+					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
+					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
+					<a ng-click="emptyTrash()" ng-if="canEmptyTrash()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
 					<div class="row">
-						<hr class="row" />
 						<h2>
 							<i18n>quota.title</i18n>
 						</h2>
@@ -328,7 +346,7 @@
 							</button>
 						</div>
 						<!--SEARCH DESKTOP-->
-						<div class="cell four search-pagination zero-mobile">
+						<div class="cell four six-1d search-pagination zero-mobile">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
