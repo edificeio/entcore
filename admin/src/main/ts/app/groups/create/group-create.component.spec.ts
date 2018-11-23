@@ -7,7 +7,7 @@ import { UxModule } from '../../shared/ux/ux.module';
 import { GroupsStore } from '../groups.store';
 import { NotifyService, SpinnerService } from '../../core/services';
 import { SijilModule } from 'sijil';
-import { GroupModel, StructureModel } from "../../core/store/models";
+import { GroupModel, StructureModel } from '../../core/store/models';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 describe('GroupCreate', () => {
@@ -62,30 +62,36 @@ describe('GroupCreate', () => {
     }));
 
     describe('createNewGroup', () => {
-        it('should create a new group when the backend respond a group id', () => {
+        it('should create a new group and set group internal rule to both way when the backend respond a group id', () => {
             component.newGroup.name = 'groupName';
             mockGroupsStore.structure.id = 'structureId';
 
             component.createNewGroup();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
-            const catched = httpController.expectOne('/directory/group');
-            expect(catched.request.method).toBe('POST');
-            expect(catched.request.body).toEqual({
+            const creationGroupRequest = httpController.expectOne('/directory/group');
+            expect(creationGroupRequest.request.method).toBe('POST');
+            expect(creationGroupRequest.request.body).toEqual({
                 name: 'groupName',
                 structureId: 'structureId'
             });
-            catched.flush({id: 'groupId'});
+            creationGroupRequest.flush({id: 'groupId'});
+
+            const communicationGroupRequest = httpController.expectOne('/communication/group/groupId');
+            expect(communicationGroupRequest.request.method).toBe('POST');
+            expect(communicationGroupRequest.request.body).toEqual({
+                direction: 'BOTH'
+            });
+            communicationGroupRequest.flush({number: 1});
+
             const pushedGroupModel: GroupModel = groupsDataPushSpy.calls.mostRecent().args[0];
             expect(pushedGroupModel.name).toBe('groupName');
             expect(pushedGroupModel.structureId).toBe('structureId');
             expect(pushedGroupModel.id).toBe('groupId');
 
-            expect(mockNotifyService.success).toHaveBeenCalled()
+            expect(mockNotifyService.success).toHaveBeenCalled();
         });
-    });
 
-    describe('createNewGroup', () => {
-        it('should display an error message when the backend respond an error', () => {
+        it('should display an error message when the backend respond an error to group creation request', () => {
             component.newGroup.name = 'groupName';
             mockGroupsStore.structure.id = 'structureId';
 
@@ -93,7 +99,22 @@ describe('GroupCreate', () => {
             httpController.expectOne('/directory/group')
                 .flush({}, {status: 500, statusText: 'Internal server error'});
             expect(groupsDataPushSpy).not.toHaveBeenCalled();
-            expect(mockNotifyService.error).toHaveBeenCalled()
+            expect(mockNotifyService.error).toHaveBeenCalled();
+        });
+
+        it('should display an error message when the backend respond an error to group communication request', () => {
+            component.newGroup.name = 'groupName';
+            mockGroupsStore.structure.id = 'structureId';
+
+            component.createNewGroup();
+            httpController.expectOne('/directory/group').flush({id: 'groupId'});
+            httpController.expectOne('/communication/group/groupId').flush({}, {
+                status: 500,
+                statusText: 'Internal server error'
+            });
+
+            expect(groupsDataPushSpy).not.toHaveBeenCalled();
+            expect(mockNotifyService.error).toHaveBeenCalled();
         });
     });
 
