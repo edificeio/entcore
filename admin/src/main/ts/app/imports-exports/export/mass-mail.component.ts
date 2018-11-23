@@ -286,15 +286,15 @@ export class MassMailComponent implements OnInit, OnDestroy {
     }
 
     displayDate(date: string) : string {
-        return new Date(date).toLocaleDateString()
+        return new Date(date).toLocaleDateString(this.bundles.currentLanguage)
     }
 
     resetDate(filter) {
         if(filter.datepicker) {
             this.dateFilter = "";
-        }
-        if(filter.outputModel.length > 0) {
-            filter.outputModel[0].date = undefined;
+            if(filter.outputModel.length > 0) {
+                filter.outputModel[0].date = undefined;
+            }
         }
     }
 

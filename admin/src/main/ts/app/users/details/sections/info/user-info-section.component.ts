@@ -7,6 +7,7 @@ import { UserDetailsModel } from '../../../../core/store';
 
 import { UserInfoService } from './user-info.service'
 import { Subscription } from 'rxjs';
+import { BundlesService } from 'sijil'
 
 @Component({
     selector: 'user-info-section',
@@ -50,6 +51,9 @@ import { Subscription } from 'rxjs';
                 </form-field>
                 <form-field label="source">
                     <span>{{ details.source | translate }}</span>
+                </form-field>
+                <form-field label="creation">
+                    <span>{{ displayDate(details.created) }}</span>
                 </form-field>
                 <form-field label="mergeKey" *ngIf="user.type === 'Relative'">
                     <div>
@@ -163,6 +167,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     @ViewChild('loginAliasInput') loginAliasInput: AbstractControl;
 
     constructor(
+        private bundles: BundlesService,
         private ns: NotifyService,
         public spinner: SpinnerService,
         private cdRef: ChangeDetectorRef,
@@ -359,5 +364,9 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                 this.loginAliasInput.setErrors({'incorrect': true});
             })
         );
+    }
+
+    displayDate(date: string) : string {
+        return new Date(date).toLocaleDateString(this.bundles.currentLanguage)
     }
 }

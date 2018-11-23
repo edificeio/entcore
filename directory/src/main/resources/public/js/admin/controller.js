@@ -224,6 +224,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		return date ? moment(date).format('DD/MM/YYYY') : "";
 	}
 
+	$scope.displayDate = function(date) {
+		return new Date(date).toLocaleDateString(currentLanguage)
+	}
+
 	$scope.formatUserFunctions = function(user){
 		if(!user.functions || user.functions.length === 0 || user.functions[0][0] === null)
 			return
@@ -511,10 +515,28 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		showFeedModeAuto: true,
 		showLocalAdmin: false,
 		showBlockedUsers: true,
-		showUnblockedUsers: true
+		showUnblockedUsers: true,
+		showCreatedBefore: false,
+		showCreatedSince: false,
+		showCreatedAll: true
 	}
+
+	$scope.dateFilter = {
+		createdBefore: new Date(),
+		createdSince: new Date()
+	}
+
 	$scope.toggleFilter = function(filterName){
-		$scope.userFilters[filterName] = !$scope.userFilters[filterName]
+		if((filterName === 'showCreatedBefore' || filterName === 'showCreatedSince' || filterName === 'showCreatedAll')
+			&& !$scope.userFilters[filterName]) {
+			$scope.userFilters['showCreatedBefore'] = false
+			$scope.userFilters['showCreatedSince'] = false
+			$scope.userFilters['showCreatedAll'] = false
+			$scope.userFilters[filterName] = true
+		}
+		else {
+			$scope.userFilters[filterName] = !$scope.userFilters[filterName]
+		}
 	}
 
     $scope.structureUserFilteringFunction = function(user){
@@ -532,12 +554,16 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		var filterLocalAdmin = $scope.userFilters.showLocalAdmin ? _.chain(user.functions).map(function(f){ return f[0]}).uniq().value().indexOf("ADMIN_LOCAL") >= 0 : true
 		var filterBlocked	 = $scope.userFilters.showBlockedUsers && user.blocked
 		var filterUnblocked	 = $scope.userFilters.showUnblockedUsers && !user.blocked
+		var filterCreatedAll = $scope.userFilters.showCreatedAll
+		var filterCreatedBefore = $scope.userFilters.showCreatedBefore ? $scope.dateFilter.createdBefore ? new Date(user.creationDate).setHours(0,0,0,0) < $scope.dateFilter.createdBefore.setHours(0,0,0,0) : false : false
+		var filterCreatedSince = $scope.userFilters.showCreatedSince ? $scope.dateFilter.createdSince ? new Date(user.creationDate).setHours(0,0,0,0) > $scope.dateFilter.createdSince.setHours(0,0,0,0) : false : false
 
         return filterByInput && (filterByClass || filterIsolated) &&
 			filterInactive && filterTeachers && filterPersonnel &&
 			filterRelative && filterStudents && filterGuests &&
 			filterFeedAuto && filterFeedManual && filterLocalAdmin &&
-			(filterBlocked || filterUnblocked)
+			(filterBlocked || filterUnblocked) && (filterCreatedAll ||
+			filterCreatedBefore || filterCreatedSince)
 	}
 	$scope.isolatedUserFilteringFunction = function(input){
 		return function(user){
@@ -1235,6 +1261,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				that.userList = data
 				_.forEach(that.userList, function(user){
 					user.translatedProfile = lang.translate(user.profile)
+					user.translatedCreationDate = $scope.displayDate(user.creationDate)
 					user.classesStr = user.classes.join(" ")
 				})
 				that.resetUserLimit()
@@ -1251,7 +1278,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			lastName: '',
 			firstName: '',
 			translatedProfile: '',
-			classesStr: ''
+			classesStr: '',
+			translatedCreationDate: ''
 		},
         userToString: function(u){
             return u["lastName"] +";"+ u["firstName"] +";"+lang.translate(u["profile"])+";"+u["login"]+";"+u["activationCode"]+";"+(u["email"] === null ? "" : u["email"])+ ";" + u["classes"].join(',');

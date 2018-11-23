@@ -108,6 +108,18 @@
             <li ng-class="{selected : userFilters.showInactive}" ng-click="toggleFilter('showInactive')">
                 [[lang.translate("directory.admin.showInactive")]]
             </li>
+            <h3><i18n>directory.creationDate</i18n></h3>
+            <li ng-class="{selected : userFilters.showCreatedAll}" ng-click="toggleFilter('showCreatedAll')">
+                [[lang.translate("directory.admin.showCreatedAll")]]
+            </li>
+            <li ng-class="{selected : userFilters.showCreatedBefore}" ng-click="toggleFilter('showCreatedBefore')">
+                <span>[[lang.translate("directory.admin.showCreatedBefore")]]</span>
+                <date-picker ng-model="dateFilter.createdBefore" ng-click="$event.stopPropagation()"></date-picker>
+            </li>
+            <li ng-class="{selected : userFilters.showCreatedSince}" ng-click="toggleFilter('showCreatedSince')">
+                <span>[[lang.translate("directory.admin.showCreatedSince")]]</span>
+                <date-picker ng-model="dateFilter.createdSince" ng-click="$event.stopPropagation()"></date-picker>
+            </li>
         </ul>
     </div>
 

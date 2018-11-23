@@ -315,7 +315,7 @@ public class DefaultUserService implements UserService {
 				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " + 
 				"u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
-				"u.birthDate as birthDate, u.blocked as blocked, " +
+				"u.birthDate as birthDate, u.blocked as blocked, u.created as creationDate, " +
 				"u.email as email, u.zipCode as zipCode, u.address as address, " +
 				"u.city as city, u.country as country, " +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +

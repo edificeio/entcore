@@ -47,6 +47,7 @@
 </div>
 
 <div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userSource")]]:</strong> [[lang.translate(targetUser.source)]]</div>
+<div class="twelve cell"><strong class="four cell">[[lang.translate("directory.userCreated")]]:</strong> [[displayDate(targetUser.created)]]</div>
 <div  class="twelve cell" ng-if="targetUser.mergeKey"><strong class="four cell">[[lang.translate("userBook.profile.mergeKey")]]:</strong> [[targetUser.mergeKey]]</div>
 <div class="twelve cell" ng-show="targetUser.code"><strong class="four cell">[[lang.translate("directory.userCode")]]:</strong> [[targetUser.code]]</div>
 <div class="twelve cell" ng-show="targetUser.functions && targetUser.functions[0][0]">
