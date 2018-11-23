@@ -16,6 +16,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     lastName?: string
     displayName?: string
     externalId?: string
+    created?: string
     source?: string
     email?: string
     birthDate?: string

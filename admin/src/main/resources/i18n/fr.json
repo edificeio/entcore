@@ -60,6 +60,7 @@
     "id": "Identifiant",
     "externalId": "Identifiant externe",
     "source": "Source",
+    "creation": "Date de création",
     "MANUAL": "Manuel",
     "CLASS_PARAM" : "Paramétrage de la classe",
     "change.activation.code": "Changer le code d'activation",

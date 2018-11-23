@@ -21,19 +21,24 @@ import { UsersStore } from '../users.store';
                         [(outputModel)]="filter.outputModel"
                         [title]="filter.label | translate"
                         [display]="filter.display || translate"
+                        [max]="filter.datepicker ? 1 : filter.comboModel.length"
                         [orderBy]="filter.order || orderer"
                         [filter]="filter.filterProp"
+                        (outputModelChange)="resetDate(filter)"
                     ></multi-combo>
                     <div class="multi-combo-companion">
                         <div *ngFor="let item of filter.outputModel" 
                             (click)="deselect(filter, item)">
                             <span *ngIf="filter.display">
-                                {{ item[filter.display] }}
+                                {{ item[filter.display] | translate }}
                             </span>
                             <span *ngIf="!filter.display">
                                 {{ item | translate }}
                             </span>
                             <i class="fa fa-trash is-size-5"></i>
+                        </div>
+                        <div *ngIf="filter.datepicker&&filter.outputModel.length>0">
+                            <date-picker [ngModel]="dateFilter" (ngModelChange)="updateDate($event,filter)"></date-picker>
                         </div>
                     </div>
                 </div>
@@ -45,6 +50,7 @@ import { UsersStore } from '../users.store';
 export class UserFilters implements OnInit, OnDestroy {
 
     private structureSubscriber : Subscription;
+    dateFilter: string
 
     constructor(
         private bundles: BundlesService,
@@ -75,6 +81,27 @@ export class UserFilters implements OnInit, OnDestroy {
     private deselect(filter, item) {
         filter.outputModel.splice(filter.outputModel.indexOf(item), 1)
         filter.observable.next()
+    }
+
+    updateDate(newDate,filter): void {
+        if(newDate || this.dateFilter) {
+            this.dateFilter = newDate;
+            filter.outputModel[0].date = new Date(Date.parse(this.dateFilter));
+        }
+        else {
+            this.dateFilter = filter.outputModel[0].date.getFullYear() + '/' +
+            (filter.outputModel[0].date.getMonth()+1) + '/' +
+            filter.outputModel[0].date.getDate()
+        }
+    }
+
+    resetDate(filter) {
+        if(filter.datepicker) {
+            this.dateFilter = "";
+            if(filter.outputModel.length > 0) {
+                filter.outputModel[0].date = undefined;
+            }
+        }
     }
 
 }
