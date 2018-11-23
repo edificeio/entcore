@@ -8,6 +8,8 @@ import { GroupModel } from '../../core/store/models';
 import { NotifyService, SpinnerService } from '../../core/services';
 
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/toPromise';
 
@@ -60,7 +62,11 @@ export class GroupCreate {
         this.spinner.perform('portal-content', this.http.post<{ id: string }>('/directory/group', {
                 name: this.newGroup.name,
                 structureId: this.newGroup.structureId
-            }).do(groupIdHolder => {
+            }).flatMap(groupIdHolder =>
+                this.http.post<{ number: number }>(`/communication/group/${groupIdHolder.id}`, {
+                    direction: 'BOTH'
+                }).map(() => groupIdHolder)
+            ).do(groupIdHolder => {
                 this.newGroup.id = groupIdHolder.id;
                 this.newGroup.type = 'ManualGroup';
                 this.groupsStore.structure.groups.data.push(this.newGroup);

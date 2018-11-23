@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
-import { SijilModule } from "sijil";
+import { SijilModule } from 'sijil';
 
 import { CoreModule } from './core/core.module';
 import { AppComponent } from './app.component';
