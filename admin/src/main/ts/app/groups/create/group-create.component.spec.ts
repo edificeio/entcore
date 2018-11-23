@@ -7,6 +7,8 @@ import { UxModule } from '../../shared/ux/ux.module';
 import { GroupsStore } from '../groups.store';
 import { NotifyService, SpinnerService } from '../../core/services';
 import { SijilModule } from 'sijil';
+import { GroupModel, StructureModel } from "../../core/store/models";
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 
 describe('GroupCreate', () => {
     let component: GroupCreate;
@@ -17,9 +19,13 @@ describe('GroupCreate', () => {
     let mockSpinnerService: SpinnerService;
     let mockRouter: Router;
     let mockLocation: Location;
+    let httpController: HttpTestingController;
+    let groupsDataPushSpy: jasmine.Spy;
 
     beforeEach(() => {
         mockGroupsStore = jasmine.createSpyObj('GroupsStore', ['onchange']);
+        mockGroupsStore.structure = new StructureModel();
+        groupsDataPushSpy = spyOn(mockGroupsStore.structure.groups.data, 'push');
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockSpinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -40,6 +46,7 @@ describe('GroupCreate', () => {
                 {provide: Location, useValue: mockLocation}
             ],
             imports: [
+                HttpClientTestingModule,
                 SijilModule.forRoot(),
                 UxModule.forRoot(null),
                 FormsModule
@@ -47,16 +54,59 @@ describe('GroupCreate', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(GroupCreate);
         component = fixture.debugElement.componentInstance;
+        httpController = TestBed.get(HttpTestingController);
     }));
 
     it('should create the GroupCreate component', async(() => {
         expect(component).toBeTruthy();
     }));
 
+    describe('createNewGroup', () => {
+        it('should create a new group when the backend respond a group id', () => {
+            component.newGroup.name = 'groupName';
+            mockGroupsStore.structure.id = 'structureId';
+
+            component.createNewGroup();
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            const catched = httpController.expectOne('/directory/group');
+            expect(catched.request.method).toBe('POST');
+            expect(catched.request.body).toEqual({
+                name: 'groupName',
+                structureId: 'structureId'
+            });
+            catched.flush({id: 'groupId'});
+            const pushedGroupModel: GroupModel = groupsDataPushSpy.calls.mostRecent().args[0];
+            expect(pushedGroupModel.name).toBe('groupName');
+            expect(pushedGroupModel.structureId).toBe('structureId');
+            expect(pushedGroupModel.id).toBe('groupId');
+
+            expect(mockNotifyService.success).toHaveBeenCalled()
+        });
+    });
+
+    describe('createNewGroup', () => {
+        it('should display an error message when the backend respond an error', () => {
+            component.newGroup.name = 'groupName';
+            mockGroupsStore.structure.id = 'structureId';
+
+            component.createNewGroup();
+            httpController.expectOne('/directory/group')
+                .flush({}, {status: 500, statusText: 'Internal server error'});
+            expect(groupsDataPushSpy).not.toHaveBeenCalled();
+            expect(mockNotifyService.error).toHaveBeenCalled()
+        });
+    });
+
     describe('cancel', () => {
         it('should call navigation.back', () => {
             component.cancel();
             expect(mockLocation.back).toHaveBeenCalled();
+        });
+    });
+
+    describe('trim', () => {
+        it(`should trim 'test '`, () => {
+            expect(component.trim('test ')).toBe('test');
         });
     });
 });
