@@ -272,6 +272,7 @@
                         <th ng-click="massmail.setUserOrder('activationCode')"><i18n>directory.userCode</i18n></th>
                         <th ng-click="massmail.setUserOrder('email')"><i18n>directory.admin.email</i18n></th>
                         <th ng-click="massmail.setUserOrder('classesStr')"><i18n>directory.classes</i18n></th>
+                        <th ng-click="massmail.setUserOrder('creationDate')"><i18n>directory.userCreated</i18n></th>
                         <th rowspan="2" width="40px"><i18n>link</i18n></th>
                     </tr>
                     <tr>
@@ -289,6 +290,9 @@
                         <th>
                             <input type="text" ng-model="massmail.sortObject.classesStr" placeholder="[[lang.translate('search')]]"/>
                         </th>
+                        <th>
+                            <input type="text" ng-model="massmail.sortObject.translatedCreationDate" placeholder="[[lang.translate('search')]]"/>
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
@@ -304,6 +308,7 @@
                                 [[class]]&nbsp
                             </span-->
                         </td>
+                        <td>[[user.translatedCreationDate]]
                         <td>
                             <a  ng-href="/directory/admin-console#/structureUser/[[massmail.getStructure().id]]/[[user.id]]"
                                 target="_blank"

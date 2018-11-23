@@ -320,7 +320,7 @@ public class DefaultSchoolService implements SchoolService {
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as profile, " +
 				"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-				"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as activationCode ";
+				"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as activationCode, u.created as creationDate ";
 
 		if(groupClasses){
 			withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
@@ -510,7 +510,7 @@ public class DefaultSchoolService implements SchoolService {
 			"RETURN DISTINCT " +
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
-			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked," +
+			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
 			"EXTRACT(function IN u.functions | last(split(function, \"$\"))) as aafFunctions," +
 			"CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes," +
 			"CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
@@ -527,7 +527,7 @@ public class DefaultSchoolService implements SchoolService {
 			"WHERE s.id IN b.structureIds " +
 			"WITH u, b, s " +
 			"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, " +
-			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, " +
+			"u.lastName as lastName, u.displayName as displayName,u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
 			"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
 			"COLLECT(distinct {id: s.id, name: s.name}) as structures " +
 			"ORDER BY lastName, firstName ";
