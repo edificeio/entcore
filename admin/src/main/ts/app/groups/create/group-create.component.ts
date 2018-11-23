@@ -1,10 +1,15 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core'
-import { Location } from '@angular/common'
-import { ActivatedRoute, Router } from '@angular/router'
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-import { GroupsStore } from '../groups.store'
-import { GroupModel } from '../../core/store/models'
-import { SpinnerService, NotifyService } from '../../core/services'
+import { GroupsStore } from '../groups.store';
+import { GroupModel } from '../../core/store/models';
+import { NotifyService, SpinnerService } from '../../core/services';
+
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/toPromise';
 
 @Component({
     selector: 'group-create',
@@ -17,8 +22,8 @@ import { SpinnerService, NotifyService } from '../../core/services'
             <form #createForm="ngForm" (ngSubmit)="createNewGroup()">
                 <form-field label="create.group.name">
                     <input type="text" [(ngModel)]="newGroup.name" name="name"
-                        required pattern=".*\\S+.*" #nameInput="ngModel"
-                        (blur)="newGroup.name = trim(newGroup.name)">
+                           required pattern=".*\\S+.*" #nameInput="ngModel"
+                           (blur)="newGroup.name = trim(newGroup.name)">
                     <form-errors [control]="nameInput"></form-errors>
                 </form-field>
 
@@ -26,8 +31,8 @@ import { SpinnerService, NotifyService } from '../../core/services'
                     <button type="button" class="cancel" (click)="cancel()">
                         <s5l>create.group.cancel</s5l>
                     </button>
-                    <button class="create" 
-                        [disabled]="createForm.pristine || createForm.invalid">
+                    <button class="create"
+                            [disabled]="createForm.pristine || createForm.invalid">
                         <s5l>create.group.submit</s5l>
                     </button>
                 </div>
@@ -38,37 +43,42 @@ import { SpinnerService, NotifyService } from '../../core/services'
 })
 export class GroupCreate {
 
-    newGroup: GroupModel = new GroupModel()
+    newGroup: GroupModel = new GroupModel();
 
-    constructor(private groupsStore: GroupsStore,
-        private ns: NotifyService,
-        private spinner: SpinnerService,
-        private router: Router,
-        private route: ActivatedRoute,
-        private location: Location) {}
+    constructor(private http: HttpClient,
+                private groupsStore: GroupsStore,
+                private ns: NotifyService,
+                private spinner: SpinnerService,
+                private router: Router,
+                private route: ActivatedRoute,
+                private location: Location) {
+    }
 
     createNewGroup() {
-        this.newGroup.structureId = this.groupsStore.structure.id
+        this.newGroup.structureId = this.groupsStore.structure.id;
 
-        this.spinner.perform('portal-content', this.newGroup.create()
-            .then(res => {
-                this.newGroup.id = res.data.id
-                this.newGroup.type = 'ManualGroup'
-                this.groupsStore.structure.groups.data.push(this.newGroup)
+        this.spinner.perform('portal-content', this.http.post<{ id: string }>('/directory/group', {
+                name: this.newGroup.name,
+                structureId: this.newGroup.structureId
+            }).do(groupIdHolder => {
+                this.newGroup.id = groupIdHolder.id;
+                this.newGroup.type = 'ManualGroup';
+                this.groupsStore.structure.groups.data.push(this.newGroup);
 
                 this.ns.success({
-                        key: 'notify.group.create.content',
-                        parameters: { group: this.newGroup.name }
-                    } , 'notify.group.create.title')
+                    key: 'notify.group.create.content',
+                    parameters: {group: this.newGroup.name}
+                }, 'notify.group.create.title');
 
-                this.router.navigate(['..', res.data.id], 
-                    {relativeTo: this.route, replaceUrl: false})
+                this.router.navigate(['..', groupIdHolder.id],
+                    {relativeTo: this.route, replaceUrl: false});
             }).catch(err => {
                 this.ns.error({
-                        key: 'notify.group.create.error.content',
-                        parameters: { group: this.newGroup.name }
-                    }, 'notify.group.create.error.title', err)
-            })
+                    key: 'notify.group.create.error.content',
+                    parameters: {group: this.newGroup.name}
+                }, 'notify.group.create.error.title', err);
+                throw err;
+            }).toPromise()
         )
     }
 
@@ -76,10 +86,10 @@ export class GroupCreate {
         this.location.back();
     }
 
-    trim(input:string) {
+    trim(input: string) {
         if (input && input.length > 0) {
-            return input.trim()
+            return input.trim();
         }
-        return input
+        return input;
     }
 }
