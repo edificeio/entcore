@@ -59,8 +59,8 @@ import { FilterPipe } from '../../shared/ux/pipes'
             <div class="has-vertical-padding is-pulled-right">
                 <a><s5l>process.massmail</s5l> : </a>
                 
-                <button class="cell" (click)="processMassMail('pdf')" [disabled]="getFilteredUsers().length == 0"><s5l>massmail.pdf</s5l></button>
-                <button class="cell" (click)="processMassMail('mail')" [disabled]="getFilteredUsers().length == 0"><s5l>massmail.mail</s5l></button>
+                <button class="cell" (click)="processMassMail('pdf')" [disabled]="countUsers == 0"><s5l>massmail.pdf</s5l></button>
+                <button class="cell" (click)="processMassMail('mail')" [disabled]="countUsers == 0"><s5l>massmail.mail</s5l></button>
             </div>
             
             <div class="has-vertical-padding is-clearfix">
@@ -145,6 +145,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     show: boolean = false;
     private deselectItem: boolean = false;
     dateFilter: string;
+    dateFormat: Intl.DateTimeFormat
 
     dataSubscriber: Subscription
     routerSubscriber: Subscription
@@ -172,6 +173,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
                     .then((data) => {
                         this.users = data;
                         this.structureId = structure._id;
+                        this.dateFormat = Intl.DateTimeFormat(this.bundles.currentLanguage);
                         this.initFilters(structure)
                         this.filters = this.userlistFiltersService.getFormattedFilters();
                         this.cdRef.detectChanges();
@@ -210,7 +212,6 @@ export class MassMailComponent implements OnInit, OnDestroy {
                 this.countUsersWithoutMail++;
         })
         return users;
-
     }
 
     async processMassMail(type: String): Promise<void> {
@@ -286,7 +287,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
     }
 
     displayDate(date: string) : string {
-        return new Date(date).toLocaleDateString(this.bundles.currentLanguage)
+        return this.dateFormat.format(new Date(date))
     }
 
     resetDate(filter) {
