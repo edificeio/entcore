@@ -9,20 +9,28 @@
 </infotip>
 
 
-<article class="icons-view no-overflow no-padding-bottom" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus300-1d':!infotipVisible}">
+<article class="icons-view no-overflow no-padding-bottom no-margin-bottom" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}">
 	<dropzone-overlay on-import="onImportFiles($event)" ng-if="!lockDropzone" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<header>&nbsp;</header>
 	<div>
 		<div ng-repeat="folder in openedFolder.folders" class="element mini-block-container" ng-class="{ selected: folder.selected}" dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 
-			<explorer  class="radius" ng-change="onSelectItem($event,folder)" ng-model="folder.selected" on-open="openFolderRoute(folder)"  ng-class="{'highlight-border-3s':isHighlighted(folder)}">
-				<a class="container">
+			<explorer  class="radius explorer-hover" ng-change="onSelectItem($event,folder)" ng-model="folder.selected" on-open="openFolderRoute(folder)" ng-class="{'explorer-droppable':canDropOnElement(folder)}">
+				<span class="explorer-badge-drop">[[countDragItems()]]</span>
+				<!--LEGEND MUST BE BEFORE container-->
+				<legend class="no-1d">
+					<a>
+						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
+						<span>[[folder.name]]</span>
+					</a>
+					<a class="author"><strong>[[folder.ownerName]]</strong></a>
+				</legend>
+				<a class="container" ng-class="{'highlight-border-3s':isHighlighted(folder)}">
 					<i class="folder-large"></i>
 				</a>
 
 				<i ng-if="folder.isShared" class="shared inline"></i>
-
-				<legend>
+				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span>[[folder.name]]</span>
@@ -62,8 +70,16 @@
 
 		</div>
 		<div ng-repeat="document in openedFolder.documents" class="element" ng-class="{ selected: document.selected}" dragend="dragEnd(document, $originalEvent)"  dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-			<explorer  class="radius" ng-model="document.selected" ng-change="onSelectItem($event,document)" on-open="viewFile(document)" ng-class="{'highlight-border-3s':isHighlighted(document)}">
-				<a class="[[document.metadata.role]] container cell">
+			<explorer  class="radius explorer-hover" ng-model="document.selected" ng-change="onSelectItem($event,document)" on-open="viewFile(document)">
+				<legend class="no-1d">
+					<a>
+						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
+						[[document.name]]
+					</a>
+					<a class="author"><strong>[[document.ownerName]]</strong></a>
+				</legend>
+				<!--LEGEND MUST BE BEFORE container-->
+				<a class="[[document.metadata.role]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
 					<i class="[[document.metadata.role]]-large" ng-if="document.metadata.role !== 'img'">
 					</i>
 					<div ng-if="document.metadata.role === 'img'" class="twelve cell">
@@ -74,14 +90,14 @@
 				</a>
 
 				<i ng-if="document.isShared" class="shared inline"></i>
-
-				<legend>
+				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 						[[document.name]]
 					</a>
 					<a class="author"><strong>[[document.ownerName]]</strong></a>
 				</legend>
+				
 
 				<div ng-if="document.showComments">
 					<lightbox show="canShowCommentLightbox(document)" ng-click="$event.stopPropagation()" on-close="document.showComments = false;">

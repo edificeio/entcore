@@ -145,6 +145,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	}, {
 		name: lang.translate('appDocuments'),
 		filter: 'protected',
+		buttons: [
+			{ text: lang.translate('workspace.add.document'), action: () => {}, icon: true, workflow: 'workspace.create', disabled() { return true } }
+		],
 		hierarchical: true,
 		children: [],
 		contextualButtons: [
@@ -153,9 +156,11 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		]
 	}, {
 		name: lang.translate('trash'),
+		buttons: [
+			{ text: lang.translate('workspace.add.document'), action: () => {}, icon: true, workflow: 'workspace.create', disabled() { return true } }
+		],
 		filter: 'trash',
-		hierarchical: true,
-		buttons: [],
+		hierarchical: true, 
 		children: [],
 		contextualButtons: [
 			{ text: lang.translate('workspace.trash.restore'), action: $scope.restore, right: "manager" },
