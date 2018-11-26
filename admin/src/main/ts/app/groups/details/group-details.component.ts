@@ -38,7 +38,7 @@ export class GroupDetails implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.groupSubscriber = this.route.params.subscribe(params => {
-            if (params["groupId"]) {
+            if (params['groupId']) {
                 this.groupsStore.group = this.groupsStore.structure.groups.data
                     .find(g => g.id === params['groupId']);
                 this.cdRef.markForCheck();
