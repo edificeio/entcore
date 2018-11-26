@@ -265,55 +265,64 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void findByLogin(final String login, final String resetCode,boolean checkFederatedLogin, final Handler<Either<String,JsonObject>> handler) {
 		boolean setResetCode = resetCode != null && !resetCode.trim().isEmpty();
 
-		String basicQuery =
-			"MATCH (n:User) " +
-			"WHERE (n.login={login} OR n.loginAlias={login}) " +
-			"AND n.activationCode IS NULL " +
-			(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
-			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
-			"RETURN n.email as email, n.mobile as mobile";
-
-		final String teacherQuery =
-			"MATCH (n:User)-[:IN]->(sg:ProfileGroup)-[:DEPENDS]->(m:Class)" +
-			"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
-			"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
-			"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
-			"WHERE (n.login={login} OR n.loginAlias={login}) AND NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
-			"(NOT(HAS(n.federated)) OR n.federated = false) " +
-			(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
-			"RETURN p.email as email";
+		final String baseQuery =
+				"WHERE n.activationCode IS NULL " +
+				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
+				(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
+				"RETURN n.email as email, n.mobile as mobile";
+		final String basicQuery = "MATCH (n:User {login:{login}}) " + baseQuery;
 
 		final JsonObject params = new JsonObject().put("login", login);
 		if(setResetCode)
 			params.put("resetCode", resetCode)
 				.put("today", new Date().getTime());
 
-		neo.execute(basicQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> result) {
-				if(result.isLeft()){
-					handler.handle(result);
-					return;
-				}
-
-				final String mail = result.right().getValue().getString("email");
-				final String mobile = result.right().getValue().getString("mobile");
-
-				if(mail != null && config.getBoolean("teacherForgotPasswordEmail", false)){
-					neo.execute(teacherQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-						public void handle(Either<String, JsonObject> resultTeacher) {
-							if(resultTeacher.isLeft()){
-								handler.handle(resultTeacher);
-								return;
-							}
-
-							resultTeacher.right().getValue().put("mobile", mobile);
-							handler.handle(resultTeacher);
-						}
-					}));
-				}
+		neo.execute(basicQuery, params, Neo4jResult.validUniqueResultHandler(result -> {
+			if(result.isLeft()){
 				handler.handle(result);
+			} else if (result.right().getValue().size() == 0) {
+				final String basicAliasQuery = "MATCH (n:User {loginAlias:{login}}) " + baseQuery;
+				neo.execute(basicAliasQuery, params, Neo4jResult.validUniqueResultHandler(result2 -> {
+					if(result2.isLeft()){
+						handler.handle(result2);
+					} else {
+						teacherForgotPassword(handler, setResetCode, params, result2, "Alias");
+					}
+				}));
+			} else {
+				teacherForgotPassword(handler, setResetCode, params, result, "");
 			}
 		}));
+	}
+
+	private void teacherForgotPassword(Handler<Either<String, JsonObject>> handler, boolean setResetCode, JsonObject params, Either<String, JsonObject> result, String alias) {
+		final String mail = result.right().getValue().getString("email");
+		final String mobile = result.right().getValue().getString("mobile");
+
+		if(mail != null && config.getBoolean("teacherForgotPasswordEmail", false)){
+			final String teacherQuery =
+					"MATCH (n:User {login" + alias + ":{login}})-[:IN]->(sg:ProfileGroup)-[:DEPENDS]->(m:Class)" +
+					"<-[:DEPENDS]-(tg:ProfileGroup)<-[:IN]-(p:User), " +
+					"sg-[:DEPENDS]->(psg:ProfileGroup)-[:HAS_PROFILE]->(sp:Profile {name:'Student'}), " +
+					"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
+					"WHERE NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
+					"(NOT(HAS(n.federated)) OR n.federated = false) " +
+					(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
+					"RETURN p.email as email";
+			neo.execute(teacherQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
+				public void handle(Either<String, JsonObject> resultTeacher) {
+					if(resultTeacher.isLeft()){
+						handler.handle(resultTeacher);
+						return;
+					}
+
+					resultTeacher.right().getValue().put("mobile", mobile);
+					handler.handle(resultTeacher);
+				}
+			}));
+		} else {
+			handler.handle(result);
+		}
 	}
 
 	@Override
