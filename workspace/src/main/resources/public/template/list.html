@@ -40,10 +40,14 @@
 					</span>
 				</th>
 				<th scope="col" class="size zero-mobile" ng-click="orderByField('metadata.size')">
+					<span class="sortable">
+						<span class="icons right-spacing-twice">
+							<i class="arrow " ng-class="{'icon-off':!isOrderedAsc('metadata.size')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!isOrderedDesc('metadata.size')}"></i>
+						</span>
 						<span translate content="size"></span>
-						<i class="arrow-bottom" ng-if="order.field === 'metadata.size' && !order.desc"></i>
-						<i class="arrow-top" ng-if="order.field === 'metadata.size' && order.desc"></i>
-					</th>
+					</span>
+				</span>
 				<th scope="col" class="zero-mobile" ng-if="!isTrashTree()">
 				</th>
 			</tr>
