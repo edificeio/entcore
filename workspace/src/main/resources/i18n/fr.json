@@ -205,7 +205,7 @@
     "workspace.create.share.warning2": " creez le dans votre espace personnel",
     "workspace.import.shared.title": "Partager vos fichiers importés",
     "workspace.import.share.warning": "Attention ! Vous devez obligatoirement partager vos fichiers importés, sinon",
-    "workspace.import.share.warning2": "importez les dans votre espace personnel",
+    "workspace.import.share.warning2": "importez les dans votre espace personnel.",
     "workspace.import.cancel.content": "Si vous ne partagez pas ces fichiers, <b>vous ne pouvez pas les laisser à la racine des documents partagés.</b> Voulez-vous les importer dans vos documents personnels ?",
     "workspace.import.cancel.delete": "Annuler l'import",
     "workspace.import.cancel.own": "Importer dans mes documents personnels",
