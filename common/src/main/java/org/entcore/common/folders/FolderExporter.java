@@ -1,37 +1,55 @@
-package org.entcore.common.folders.impl;
+package org.entcore.common.folders;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.zip.Deflater;
 
+import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.utils.Zip;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
-class ZipHelper {
-	static class ZipContext {
-		String basePath;
-		String baseName;
-		String zipFullPath;
-		String zipName;
-		Map<String, String> namesByIds = new HashMap<>();
-		Map<String, List<JsonObject>> docByFolders = new HashMap<>();
-		Set<String> folders = new HashSet<>();
+public class FolderExporter {
+	private static final Logger log = LoggerFactory.getLogger(FolderExporter.class);
+
+	public static class FolderExporterContext {
+		public final String basePath;
+		public Map<String, String> namesByIds = new HashMap<>();
+		public Map<String, List<JsonObject>> docByFolders = new HashMap<>();
+		public Set<String> folders = new HashSet<>();
+
+		public FolderExporterContext(String basePath) {
+			super();
+			this.basePath = basePath;
+		}
+
+	}
+
+	protected final FileSystem fs;
+	protected final Storage storage;
+	protected final boolean throwErrors;
+
+	public FolderExporter(Storage storage, FileSystem fs) {
+		this(storage, fs, true);
+	}
+
+	public FolderExporter(Storage storage, FileSystem fs, boolean throwErrors) {
+		this.fs = fs;
+		this.storage = storage;
+		this.throwErrors = throwErrors;
 	}
 
 	private void buildPath(List<JsonObject> rows, JsonObject current, List<String> paths) {
@@ -47,7 +65,7 @@ class ZipHelper {
 		}
 	}
 
-	private void buildMapping(List<JsonObject> rows, ZipContext context) {
+	private void buildMapping(List<JsonObject> rows, FolderExporterContext context) {
 		for (JsonObject row : rows) {
 			context.namesByIds.put(row.getString("_id"), row.getString("name", "undefined"));
 		}
@@ -67,7 +85,7 @@ class ZipHelper {
 		}
 	}
 
-	private CompositeFuture mkdirs(ZipContext context) {
+	private CompositeFuture mkdirs(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
 		{
@@ -83,7 +101,7 @@ class ZipHelper {
 		return CompositeFuture.all(futures);
 	}
 
-	private CompositeFuture copyFiles(ZipContext context) {
+	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
 		for (String folderPath : context.docByFolders.keySet()) {
@@ -112,71 +130,23 @@ class ZipHelper {
 			storage.writeToFileSystem(ids, folderPath, nameByFileId, res -> {
 				if ("ok".equals(res.getString("status"))) {
 					future.complete(res);
-				} else {
+				} else if (throwErrors) {
 					future.fail(res.getString("error"));
+				} else {
+					future.complete(new JsonObject());
+					log.error("Failed to export file : "
+							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
+							+ res.encode());
 				}
 			});
 		}
 		return CompositeFuture.all(futures);
 	}
 
-	private Future<JsonObject> createZip(ZipContext context) {
-		Future<JsonObject> future = Future.future();
-		Zip.getInstance().zipFolder(context.basePath, context.zipFullPath, true, Deflater.NO_COMPRESSION, res -> {
-			if ("ok".equals(res.body().getString("status"))) {
-				future.complete(res.body());
-			} else {
-				future.fail(res.body().getString("message"));
-			}
-		});
-		return future;
-	}
-
-	private final FileSystem fs;
-	private final Storage storage;
-
-	public ZipHelper(Storage storage, FileSystem fs) {
-		this.fs = fs;
-		this.storage = storage;
-	}
-
-	public Future<ZipContext> build(Optional<JsonObject> root, List<JsonObject> rows) {
-		ZipContext context = new ZipContext();
-		UUID uuid = UUID.randomUUID();
-		context.baseName = root.isPresent() ? root.get().getString("name", "archive") : "archive";
-		context.basePath = Paths.get(System.getProperty("java.io.tmpdir"), uuid.toString(), context.baseName)
-				.normalize().toString();
-		context.zipName = context.baseName + ".zip";
-		context.zipFullPath = Paths.get(System.getProperty("java.io.tmpdir"), uuid.toString(), context.zipName)
-				.normalize().toString();
+	public Future<FolderExporterContext> export(FolderExporterContext context, List<JsonObject> rows) {
 		this.buildMapping(rows, context);
 		return this.mkdirs(context).compose(res -> {
 			return this.copyFiles(context);
-		}).compose(res -> {
-			return this.createZip(context);
-		}).map(res -> context);
-	}
-
-	public Future<Void> send(HttpServerRequest req, ZipContext context) {
-		Future<Void> future = Future.future();
-		final HttpServerResponse resp = req.response();
-		resp.putHeader("Content-Disposition", "attachment; filename=\"" + context.zipName + "\"");
-		resp.putHeader("Content-Type", "application/octet-stream");
-		resp.putHeader("Content-Description", "File Transfer");
-		resp.putHeader("Content-Transfer-Encoding", "binary");
-		resp.sendFile(context.zipFullPath, future.completer());
-		return future;
-	}
-
-	public Future<Void> buildAndSend(JsonObject root, List<JsonObject> rows, HttpServerRequest req) {
-		return this.build(Optional.ofNullable(root), rows).compose(res -> {
-			return this.send(req, res);
-		});
-	}
-
-	public Future<Void> buildAndSend(List<JsonObject> rows, HttpServerRequest req) {
-		return this.build(Optional.empty(), rows).compose(res -> {
-			return this.send(req, res);
-		});
+		}).map(context);
 	}
 }
