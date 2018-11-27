@@ -5,7 +5,9 @@
     <div class="row " ng-show="showNewElementSharedInfo()">
         <div class="cell seven">
             <div class=" info">
-                <i18n>workspace.import.share.warning</i18n>&nbsp;<a ng-click="onCancelShareNewFilesOwn()"><i18n>workspace.import.share.warning2</i18n></a></div>
+                <i18n>workspace.import.share.warning</i18n>
+                <a ng-click="onCancelShareNewFilesOwn()"><u><i18n>workspace.import.share.warning2</i18n></u></a>
+            </div>
         </div>
     </div>
     <share-panel resources="newElementSharing" class="workspace-share" on-cancel="onCancelShareNewFiles()" auto-close="'true'"
