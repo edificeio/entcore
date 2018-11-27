@@ -46,6 +46,7 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         const removed = $scope.selectedItems()
         await workspaceService.trashAll(removed);
         notify.info('workspace.removed.message');
+        template.close('lightbox');
     };
 
     $scope.restore = async function () {
