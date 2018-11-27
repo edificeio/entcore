@@ -20,30 +20,30 @@
 package org.entcore.workspace.service.impl;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.entcore.common.folders.ElementQuery;
+import org.entcore.common.folders.FolderExporter;
+import org.entcore.common.folders.FolderExporter.FolderExporterContext;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.user.UserInfos;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 
-import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.I18n;
-import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -56,134 +56,50 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(WorkspaceRepositoryEvents.class);
 	private final MongoDb mongo = MongoDb.getInstance();
-	private final Storage storage;
 	private final FolderManager folderManager;
 	private final FolderManager folderManagerRevision;
-	private final Vertx vertx;
 	private final boolean shareOldGroupsToUsers;
+	private final FolderExporter exporter;
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers,
 			FolderManager folderManager, FolderManager folderManagerRevision) {
 		this.shareOldGroupsToUsers = shareOldGroupsToUsers;
-		this.storage = storage;
-		this.vertx = vertx;
 		this.folderManager = folderManager;
 		this.folderManagerRevision = folderManagerRevision;
+		this.exporter = new FolderExporter(storage, vertx.fileSystem(), false);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void exportResources(final String exportId, final String userId, JsonArray g, final String exportPath,
+	public void exportResources(final String exportId, final String userId, JsonArray groupIds, final String exportPath,
 			final String locale, String host, final Handler<Boolean> handler) {
 		log.debug("Workspace export resources.");
-		List<DBObject> groups = new ArrayList<>();
-		groups.add(QueryBuilder.start("userId").is(userId).get());
-		for (Object o : g) {
-			if (!(o instanceof String))
-				continue;
-			String gpId = (String) o;
-			groups.add(QueryBuilder.start("groupId").is(gpId).get());
-		}
-		QueryBuilder b = new QueryBuilder().or(QueryBuilder.start("owner").is(userId).get(),
-				QueryBuilder.start("shared")
-						.elemMatch(new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get(),
-				QueryBuilder.start("old_shared")
-						.elemMatch(new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get())
-				.put("file").exists(true);
-		final JsonObject keys = new JsonObject().put("file", 1).put("name", 1);
-		final JsonObject query = MongoQueryBuilder.build(b);
-		mongo.find(DocumentDao.DOCUMENTS_COLLECTION, query, null, keys, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final AtomicBoolean exported = new AtomicBoolean(false);
-				final JsonArray documents = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && documents != null) {
-					final Set<String> usedFileName = new HashSet<>();
-					final JsonObject alias = new JsonObject();
-					final String[] ids = new String[documents.size()];
-					for (int i = 0; i < documents.size(); i++) {
-						JsonObject j = documents.getJsonObject(i);
-						ids[i] = j.getString("file");
-						String fileName = j.getString("name");
-						if (fileName != null && fileName.contains("/")) {
-							fileName = fileName.replaceAll("/", "-");
-						}
-						if (usedFileName.add(fileName)) {
-							alias.put(ids[i], fileName);
-						} else {
-							alias.put(ids[i], ids[i] + "_" + fileName);
-						}
-					}
-					exportFiles(alias, ids, exportPath, locale, exported, handler);
-				} else {
-					log.error("Documents " + query.encode() + " - " + event.body().getString("message"));
-					handler.handle(exported.get());
-				}
-			}
-		});
-	}
-
-	private void exportFiles(final JsonObject alias, final String[] ids, String exportPath, String locale,
-			final AtomicBoolean exported, final Handler<Boolean> handler) {
-		createExportDirectory(exportPath, locale, new Handler<String>() {
-			@Override
-			public void handle(String path) {
-				if (path != null) {
-					if (ids.length == 0) {
+		// find by inheritshared and owner
+		ElementQuery query = new ElementQuery(true);
+		UserInfos user = new UserInfos();
+		user.setUserId(userId);
+		user.setGroupsIds(groupIds.getList());
+		Future<JsonArray> futureQuery = Future.future();
+		folderManager.findByQuery(query, user, futureQuery.completer());
+		//
+		futureQuery.setHandler(foundedEv -> {
+			if (foundedEv.succeeded()) {
+				List<JsonObject> rows = foundedEv.result().stream().map(obj -> (JsonObject) obj)
+						.collect(Collectors.toList());
+				final String realBasePath = exportPath + File.separator
+						+ I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
+				exporter.export(new FolderExporterContext(realBasePath), rows).setHandler(res -> {
+					if (res.succeeded()) {
+						log.debug("Workspace exported successfully");
 						handler.handle(true);
-						return;
+					} else {
+						log.error("Failed to export workspace: ", res.cause());
+						handler.handle(false);
 					}
-					storage.writeToFileSystem(ids, path, alias, new Handler<JsonObject>() {
-						@Override
-						public void handle(JsonObject event) {
-							if ("ok".equals(event.getString("status"))) {
-								exported.set(true);
-								handler.handle(exported.get());
-							} else {
-								JsonArray errors = event.getJsonArray("errors",
-										new fr.wseduc.webutils.collections.JsonArray());
-								boolean ignoreErrors = errors.size() > 0;
-								for (Object o : errors) {
-									if (!(o instanceof JsonObject))
-										continue;
-									if (((JsonObject) o).getString("message") == null
-											|| (!((JsonObject) o).getString("message").contains("NoSuchFileException")
-													&& !((JsonObject) o).getString("message")
-															.contains("FileAlreadyExistsException"))) {
-										ignoreErrors = false;
-										break;
-									}
-								}
-								if (ignoreErrors) {
-									exported.set(true);
-									handler.handle(exported.get());
-								} else {
-									log.error("Write to fs : "
-											+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode()
-											+ " - " + event.encode());
-									handler.handle(exported.get());
-								}
-							}
-						}
-					});
-				} else {
-					log.error("Create export directory error.");
-					handler.handle(exported.get());
-				}
-			}
-		});
-	}
-
-	private void createExportDirectory(String exportPath, String locale, final Handler<String> handler) {
-		final String path = exportPath + File.separator
-				+ I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
-		vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					handler.handle(path);
-				} else {
-					handler.handle(null);
-				}
+				});
+			} else {
+				log.error("Failed to load documents from db: ", foundedEv.cause());
+				handler.handle(false);
 			}
 		});
 	}
