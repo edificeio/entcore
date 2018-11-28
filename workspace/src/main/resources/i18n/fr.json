@@ -178,7 +178,7 @@
     "tuto.text.open": "pour ouvrir un dossier ou un fichier.",
     "blocked.extension": "Erreur l'extension du fichier est interdite.",
     "workspace.restored.message": "La restauration est terminée",
-    "workspace.search.placeholder": "Renseignez votre recherche puis tapez sur entrée",
+    "workspace.search.placeholder": "Renseignez votre recherche",
     "workspace.search.results.infolder": "Résultats de la recherche dans",
     "workspace.search.results.inworkspace": "Résultats de la recherche dans l'espace documentaire",
     "workspace.search.inprogress": "Rechercher en cours...",
