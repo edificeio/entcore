@@ -4,7 +4,8 @@
     </h2>
     <div class="row " ng-show="showNewElementSharedInfo()">
         <div class="cell seven">
-            <div class=" info"><i18n>workspace.create.share.warning</i18n>&nbsp;<a ng-click="onCancelShareNewFolderOwn()"><i18n>workspace.create.share.warning2</i18n></a></div>
+            <div class=" info"><i18n>workspace.create.share.warning</i18n>
+                <a ng-click="onCancelShareNewFolderOwn()"><u><i18n>workspace.create.share.warning2</i18n></u></a></div>
         </div>
     </div>
     <share-panel resources="newElementSharing" class="workspace-share" on-cancel="onCancelShareNewFolder()" auto-close="'true'" on-validate="onValidateShare($data,$resource,$actions)" on-submit="onSubmitSharedNewFolder($shared)"></share-panel>
