@@ -18,15 +18,14 @@
 
 package org.entcore.admin.controllers;
 
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 
 public class PlatformInfoController extends BaseController {
 
@@ -54,6 +53,7 @@ public class PlatformInfoController extends BaseController {
 	public void readConfig(HttpServerRequest request) {
 		renderJson(request, new JsonObject()
 				.put("delete-user-delay", config.getLong("delete-user-delay", NINETY_DAYS))
+				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 		);
 	}
 }
