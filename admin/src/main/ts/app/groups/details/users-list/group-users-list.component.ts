@@ -14,8 +14,8 @@ import { UserListService } from '../../../core/services';
               (inputChange)="userLS.inputFilter = $event"
               (onSelect)="selectUser($event)"
               noResultsLabel="list.results.no.users">
-            <div toolbar>
-                <i class="fa" aria-hidden="true"
+            <div class="tools" toolbar>
+                <i class="tools__tool fa" aria-hidden="true"
                    [ngClass]="{
                     'fa-sort-alpha-asc': userLS.sortsMap.alphabetical.sort === '+',
                     'fa-sort-alpha-desc': userLS.sortsMap.alphabetical.sort === '-',
@@ -23,7 +23,7 @@ import { UserListService } from '../../../core/services';
                 }"
                    [tooltip]="'sort.alphabetical' | translate" position="top"
                    (click)="userLS.changeSorts('alphabetical')"></i>
-                <i class="fa" aria-hidden="true"
+                <i class="tools__tool fa" aria-hidden="true"
                    [ngClass]="{
                         'fa-sort-amount-asc': userLS.sortsMap.profile.sort === '+',
                         'fa-sort-amount-desc': userLS.sortsMap.profile.sort === '-',
@@ -31,10 +31,11 @@ import { UserListService } from '../../../core/services';
                     }"
                    [tooltip]="'sort.profile' | translate" position="top"
                    (click)="userLS.changeSorts('profile')"></i>
-                <strong class="badge">
+                <strong class="tools__tool badge">
                     {{ users.length }}
                     {{ 'members' | translate:{count: users.length} | lowercase }}
                 </strong>
+                <span class="tools__tool tools__tool--injected"><ng-content></ng-content></span>
             </div>
 
             <ng-template let-item>
@@ -49,6 +50,7 @@ import { UserListService } from '../../../core/services';
             </ng-template>
         </list>
     `,
+    styles: ['.tools {display: flex;}', '.tools__tool {flex-grow: 0; flex-shrink: 0; padding: 0 5px;}', '.tools__tool--injected {text-align: right; flex-grow: 1;}'],
     providers: [UserListService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
