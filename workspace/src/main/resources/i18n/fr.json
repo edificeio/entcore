@@ -181,7 +181,7 @@
     "workspace.search.placeholder": "Renseignez votre recherche",
     "workspace.search.results.infolder": "Résultats de la recherche dans",
     "workspace.search.results.inworkspace": "Résultats de la recherche dans l'espace documentaire",
-    "workspace.search.inprogress": "Rechercher en cours...",
+    "workspace.search.inprogress": "Recherche en cours...",
     "workspace.search.inworkspace": "Rechercher dans tout l'espace documentaire",
     "workspace.open.location": "Voir l'emplacement du fichier",
     "dropzone.overlay.label": "Déposez les fichiers",
