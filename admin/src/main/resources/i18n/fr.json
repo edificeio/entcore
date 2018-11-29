@@ -208,6 +208,8 @@
     "minor.duplicate.tooltip": "Le doublon est sans conséquence",
 
     "group.details.add.users": "Gérer les utilisateurs du groupe",
+    "group.details.members.can.communicate": "Les membres du groupe <b>peuvent</b> communiquer entre eux",
+    "group.details.members.cannot.communicate": "Les membres du groupe <b>ne peuvent pas</b> communiquer entre eux",
     "group.manage.users": "Ajouter/Retirer des utilisateurs",
     "group.manage.users.search": "Rechercher des utilisateurs",
     "group.manage.users.added": "Utilisateur(s) du groupe",
