@@ -473,23 +473,35 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		updatePassword(handler, query, password, params);
 	}
 
+	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, String>> handler) {
+		final String code = StringValidation.generateRandomCode(8);
+
+		String query =
+				"MATCH (n:User) " +
+						"WHERE n.login={login} AND n.activationCode IS NULL " +
+						(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
+						"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
+						"RETURN count(n) as nb";
+		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime());
+		neo.execute(query, params, event -> {
+			if ("ok".equals(event.body().getString("status")) &&
+					event.body().getJsonArray("result") != null && event.body().getJsonArray("result").size() == 1 &&
+					1 == ((JsonObject) event.body().getJsonArray("result").getJsonObject(0)).getInteger("nb")) {
+				handler.handle(new Either.Right<>(code));
+			} else {
+				handler.handle(new Either.Left<>("failed to set reset code"));
+			}
+		});
+	}
+
 	@Override
 	public void sendResetCode(final HttpServerRequest request, final String login, final SendPasswordDestination dest,boolean checkFederatedLogin ,
 			final Handler<Boolean> handler) {
-		String query =
-				"MATCH (n:User) " +
-				"WHERE n.login={login} AND n.activationCode IS NULL " +
-				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
-				"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
-				"RETURN count(n) as nb";
-		final String code = StringValidation.generateRandomCode(8);
-		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime());
-		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+		setResetCode(login, checkFederatedLogin, new Handler<Either<String, String>>() {
 			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status")) &&
-						event.body().getJsonArray("result") != null && event.body().getJsonArray("result").size() == 1 &&
-						1 == ((JsonObject) event.body().getJsonArray("result").getJsonObject(0)).getInteger("nb")) {
+			public void handle(Either<String, String> either) {
+				if (either.isRight()) {
+					final String code = either.right().getValue();
 					if ("email".equals(dest.getType())) {
 						sendResetPasswordMail(request, dest.getValue(), code, new Handler<Either<String, JsonObject>>() {
 							public void handle(Either<String, JsonObject> event) {
@@ -510,6 +522,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				}
 			}
 		});
+	}
+
+	@Override
+	public void generateResetCode(String login, boolean checkFederatedLogin, Handler<Either<String, String>> handler) {
+		setResetCode(login, checkFederatedLogin, handler);
 	}
 
 	@Override

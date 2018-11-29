@@ -37,7 +37,7 @@ public class Admin extends BaseServer {
 		 addController(new AdminController());
 		 
 		 final PlatformInfoController platformInfoController = new PlatformInfoController();
-		 
+
 		 // check if sms module activated
 		 String smsAddress = "";
 		 String smsProvider = "";
@@ -49,11 +49,11 @@ public class Admin extends BaseServer {
 		 } else {
 			 smsAddress = "entcore.sms";
 		 }
-		 
+
 		 JsonObject pingAction = new JsonObject()
 				 .put("provider", smsProvider)
 				 .put("action", "ping");
-		 
+
 		 vertx.eventBus().send(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
 				 new Handler<AsyncResult<Message<JsonObject>>>() {
 					 @Override

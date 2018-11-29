@@ -1,13 +1,12 @@
-import { Component, Input, Output, ViewChild, ChangeDetectorRef, 
-    ChangeDetectionStrategy, OnDestroy, OnInit } from '@angular/core'
-import { AbstractControl, NgForm } from '@angular/forms'
-import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
-import { Subscription } from 'rxjs/Subscription'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AbstractControl, NgForm } from '@angular/forms';
+import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
 
-import { SpinnerService, NotifyService, UserListService } from '../../core/services'
-import { globalStore } from '../../core/store'
-import { UserModel, UserDetailsModel, StructureModel } from '../../core/store/models'
-import { UsersStore } from '../users.store'
+import { NotifyService, SpinnerService, UserListService } from '../../core/services';
+import { globalStore } from '../../core/store';
+import { StructureModel, UserDetailsModel, UserModel } from '../../core/store/models';
+import { UsersStore } from '../users.store';
 import { Config } from './Config';
 
 @Component({
@@ -119,7 +118,7 @@ import { Config } from './Config';
         </div>
 
         <div>
-            <user-info-section [user]="user" [structure]="structure">
+            <user-info-section [user]="user" [structure]="structure" [config]="config">
             </user-info-section>
 
             <user-administrative-section [user]="user" [structure]="structure">
@@ -162,39 +161,42 @@ import { Config } from './Config';
         </div>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class UserDetails implements OnInit, OnDestroy{
+export class UserDetails implements OnInit, OnDestroy {
 
     @ViewChild("codeInput")
-    codeInput : AbstractControl
-    
-    @ViewChild("administrativeForm")
-    administrativeForm : NgForm
-    
-    private userSubscriber: Subscription
-    private dataSubscriber: Subscription
+    codeInput: AbstractControl;
 
-    private config: Config;
+    @ViewChild("administrativeForm")
+    administrativeForm: NgForm;
+
+    public config: Config;
 
     private SECONDS_IN_DAYS = 24 * 3600;
     private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
 
-    forceDuplicates : boolean
-    details : UserDetailsModel
-    structure: StructureModel = this.usersStore.structure
-    imgSrc: string
-    imgLoaded: boolean = false;
+    private userSubscriber: Subscription;
+    private dataSubscriber: Subscription;
 
-    private _user : UserModel
+    forceDuplicates: boolean;
+    details: UserDetailsModel;
+    structure: StructureModel = this.usersStore.structure;
+    imgSrc: string;
+    imgLoaded = false;
+
+    private _user: UserModel;
     set user(user: UserModel) {
-        this._user = user
-        this.details = user.userDetails
-        if(this.codeInput)
-            this.codeInput.reset()
-        if(this.administrativeForm)
-            this.administrativeForm.reset()
+        this._user = user;
+        this.details = user.userDetails;
+        if (this.codeInput)
+            this.codeInput.reset();
+        if (this.administrativeForm)
+            this.administrativeForm.reset();
         this.imgSrc = "/userbook/avatar/" + user.id + "?thumbnail=100x100";
     }
-    get user(){ return this._user }
+
+    get user() {
+        return this._user;
+    }
 
     constructor(
         public spinner: SpinnerService,
@@ -204,43 +206,43 @@ export class UserDetails implements OnInit, OnDestroy{
         private route: ActivatedRoute,
         private router: Router,
         private userListService: UserListService
-    ){}
+    ) {
+    }
 
     ngOnInit() {
         this.dataSubscriber = this.usersStore.onchange.subscribe(field => {
-            if(field === 'user') {
-                if(this.usersStore.user &&
-                        !this.usersStore.user.structures.find(
-                            s => this.usersStore.structure.id === s.id)) {
+            if (field === 'user') {
+                if (this.usersStore.user &&
+                    !this.usersStore.user.structures.find(
+                        s => this.usersStore.structure.id === s.id)) {
                     setTimeout(() => {
-                        this.router.navigate(['..'], 
-                        {relativeTo: this.route, replaceUrl: true})
-                    }, 0)
-                } else if(this.user !== this.usersStore.user || this.structure !== this.usersStore.structure) {
-                    this.structure = this.usersStore.structure
-                    this.user = this.usersStore.user
+                        this.router.navigate(['..'],
+                            {relativeTo: this.route, replaceUrl: true});
+                    }, 0);
+                } else if (this.user !== this.usersStore.user || this.structure !== this.usersStore.structure) {
+                    this.structure = this.usersStore.structure;
+                    this.user = this.usersStore.user;
                 }
-            }
-            else if (field == 'structure') {
+            } else if (field == 'structure') {
                 this.structure = this.usersStore.structure;
                 this.cdRef.markForCheck();
             }
-        })
+        });
         this.userSubscriber = this.route.data.subscribe((data: Data) => {
             this.usersStore.user = data['user'];
             this.config = data['config'];
-            this.cdRef.markForCheck()
-        })
+            this.cdRef.markForCheck();
+        });
         //Scroll top in case of details switching, see comments on CAV2 #280
-        this.router.events.subscribe((evt) => {
+        this.router.events.subscribe(evt => {
             if (!(evt instanceof NavigationEnd)) {
                 return;
             }
-            window.scrollTo(0, 0)
+            window.scrollTo(0, 0);
         });
 
         // Fix userlist inactive information after user creation
-        if(!this.user.code && this.user.userDetails.activationCode) {
+        if (!this.user.code && this.user.userDetails.activationCode) {
             this.user.code = this.user.userDetails.activationCode;
         }
 
@@ -259,8 +261,8 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     ngOnDestroy() {
-        this.userSubscriber.unsubscribe()
-        this.dataSubscriber.unsubscribe()
+        this.userSubscriber.unsubscribe();
+        this.dataSubscriber.unsubscribe();
     }
 
     isContextAdml() {
@@ -272,16 +274,16 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     hasDuplicates() {
-        return this.user.duplicates && this.user.duplicates.length > 0
+        return this.user.duplicates && this.user.duplicates.length > 0;
     }
 
     openDuplicates() {
-        this.forceDuplicates = null
+        this.forceDuplicates = null;
         setTimeout(() => {
-            this.forceDuplicates = true
-            this.cdRef.markForCheck()
-            this.cdRef.detectChanges()
-        }, 0)
+            this.forceDuplicates = true;
+            this.cdRef.markForCheck();
+            this.cdRef.detectChanges();
+        }, 0);
     }
 
     toggleUserBlock() {
@@ -294,45 +296,45 @@ export class UserDetails implements OnInit, OnDestroy{
 
                 this.ns.success(
                     {
-                        key: 'notify.user.toggleblock.content', 
-                        parameters: { 
-                            user: this.user.firstName + ' ' + this.user.lastName, 
-                            blocked: this.user.blocked 
+                        key: 'notify.user.toggleblock.content',
+                        parameters: {
+                            user: this.user.firstName + ' ' + this.user.lastName,
+                            blocked: this.user.blocked
                         }
                     },
-                    { 
-                        key: 'notify.user.toggleblock.title', 
-                        parameters: { 
-                            blocked: this.user.blocked 
+                    {
+                        key: 'notify.user.toggleblock.title',
+                        parameters: {
+                            blocked: this.user.blocked
                         }
-                    })
+                    });
             }).catch(err => {
-                 this.ns.error(
-                    { 
-                        key: 'notify.user.toggleblock.error.content',
-                        parameters: { 
-                            user: this.details.firstName + ' ' + this.user.lastName, 
-                            blocked: !this.user.blocked 
-                        }
-                    },
-                    { 
-                        key: 'notify.user.toggleblock.error.title',
-                        parameters: { 
-                            blocked: !this.user.blocked 
-                        }
-                    }, 
-                    err)
-            })
+            this.ns.error(
+                {
+                    key: 'notify.user.toggleblock.error.content',
+                    parameters: {
+                        user: this.details.firstName + ' ' + this.user.lastName,
+                        blocked: !this.user.blocked
+                    }
+                },
+                {
+                    key: 'notify.user.toggleblock.error.title',
+                    parameters: {
+                        blocked: !this.user.blocked
+                    }
+                },
+                err);
+        });
     }
 
     isUnblocked() {
-        return !this.details.blocked
+        return !this.details.blocked;
     }
 
     isRemovable() {
-        return ((this.user.disappearanceDate 
+        return ((this.user.disappearanceDate
             || (this.user.source !== 'AAF' && this.user.source !== "AAF1D"))
-            && !this.user.deleteDate)
+            && !this.user.deleteDate);
     }
 
     removeUser() {
@@ -371,35 +373,35 @@ export class UserDetails implements OnInit, OnDestroy{
                 this.cdRef.markForCheck();
 
                 this.ns.success(
-                    { 
+                    {
                         key: 'notify.user.restore.content',
-                        parameters: { 
+                        parameters: {
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
                     },
-                    { 
+                    {
                         key: 'notify.user.restore.title',
-                        parameters: { 
+                        parameters: {
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
-                    })
+                    });
             })
             .catch(err => {
                 this.ns.error(
-                    { 
+                    {
                         key: 'notify.user.restore.error.content',
-                        parameters: { 
+                        parameters: {
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
                     },
-                    { 
+                    {
                         key: 'notify.user.restore.error.title',
-                        parameters: { 
+                        parameters: {
                             user: this.details.firstName + ' ' + this.details.lastName
                         }
                     },
-                    err)
-            })
+                    err);
+            });
     }
 
     deleteImg() {
@@ -439,30 +441,30 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     private updateDeletedInStructures() {
-        this.user.structures.forEach(us => {
-            if (us.id !== this.usersStore.structure.id) {
-                let s = globalStore.structures.data.find(gs => gs.id === us.id)
-                if (s.users && s.users.data && s.users.data.length > 0) {
-                    let u = s.users.data.find(u => u.id === this.user.id)
-                    if (u) {
-                        u.deleteDate = this.user.deleteDate
+        this.user.structures.forEach(userStructure => {
+            if (userStructure.id !== this.usersStore.structure.id) {
+                let structure = globalStore.structures.data.find(gs => gs.id === userStructure.id);
+                if (structure.users && structure.users.data && structure.users.data.length > 0) {
+                    let user = structure.users.data.find(u => u.id === this.user.id);
+                    if (user) {
+                        user.deleteDate = this.user.deleteDate;
                     }
                 }
             }
-        })
+        });
     }
 
     private updateBlockedInStructures() {
-        this.user.structures.forEach(us => {
-            if (us.id !== this.usersStore.structure.id) {
-                let s = globalStore.structures.data.find(gs => gs.id === us.id)
-                if (s.users && s.users.data && s.users.data.length > 0) {
-                    let u = s.users.data.find(u => u.id === this.user.id)
-                    if (u) {
-                        u.blocked = this.user.blocked
+        this.user.structures.forEach(userStructure => {
+            if (userStructure.id !== this.usersStore.structure.id) {
+                let structure = globalStore.structures.data.find(gs => gs.id === userStructure.id);
+                if (structure.users && structure.users.data && structure.users.data.length > 0) {
+                    let user = structure.users.data.find(u => u.id === this.user.id);
+                    if (user) {
+                        user.blocked = this.user.blocked;
                     }
                 }
             }
-        })
+        });
     }
 }

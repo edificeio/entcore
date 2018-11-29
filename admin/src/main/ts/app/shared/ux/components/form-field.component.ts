@@ -10,8 +10,8 @@ import { Component, Input } from '@angular/core'
     `,
     styles: [`
         div.form-field { display: flex; align-items: center; }
-        div.form-field >>> > * { flex: 1; }
-        div.form-field > *:first-child { flex: 0 0 150px; }
+        div.form-field >>> > * { flex: 1; margin-left: 5px; }
+        div.form-field > *:first-child { flex: 0 0 200px; margin-left: 0; }
     `]
 })
 export class FormFieldComponent {
