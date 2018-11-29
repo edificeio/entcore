@@ -19,7 +19,7 @@ export interface SearchDelegateScope {
     //from others
     openedFolder: models.FolderContext
     openFolderById(id: string)
-    setCurrentTree(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME);
     selectedDocuments(): models.Element[]
     safeApply()
     onInit(cab: () => void);
@@ -49,7 +49,8 @@ export function SearchDelegate($scope: SearchDelegateScope) {
                     criteria = criteria.toLowerCase();
                     const filter = c => {
                         const name = c.name ? c.name.toLowerCase() : "";
-                        return name.startsWith(criteria);
+                        const ownerName = c.ownerName ? c.ownerName.toLowerCase() : "";
+                        return name.startsWith(criteria) || ownerName.startsWith(criteria);
                     };
                     $scope.openedFolder.applyFilter(filter);
                 } else {
@@ -89,13 +90,13 @@ export function SearchDelegate($scope: SearchDelegateScope) {
         if (first.eParent) {
             $scope.openFolderById(first.eParent);
         } else if (first.isShared) {
-            $scope.setCurrentTree("shared")
+            $scope.setCurrentTreeRoute("shared")
         } else if (first.deleted) {
-            $scope.setCurrentTree("trash")
+            $scope.setCurrentTreeRoute("trash")
         } else if (first.application != models.MEDIALIB_APPNAME) {
-            $scope.setCurrentTree("protected")
+            $scope.setCurrentTreeRoute("protected")
         } else {
-            $scope.setCurrentTree("owner")
+            $scope.setCurrentTreeRoute("owner")
         }
     }
     $scope.searchKeyUp = function (keyEvent) {
