@@ -310,6 +310,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.$apply();
 	};
 
+	$scope.updateSearch = function() {
+		$scope.users.all = $scope.allUsers.all.filter(user => user.displayName.toLowerCase().indexOf($scope.search.text.toLowerCase()) !== -1)
+	}
+
 	$scope.createFavorite = async function() {
 		$scope.showFavoriteForm();
 		$scope.currentFavorite = new directory.Favorite();
@@ -580,6 +584,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.users = { loading: true };
 		classroom.one('users.sync', function(){
 			$scope.users = classroom.users;
+			$scope.allUsers = Object.assign([], $scope.users);
 			$scope.$apply('users');
 		});
 	};
