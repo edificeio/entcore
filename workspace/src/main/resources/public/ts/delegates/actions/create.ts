@@ -7,9 +7,10 @@ export interface CreateDelegateScope {
     newElementSharing: models.Element[];
     newFolder: models.Element
     onSubmitSharedNewFolder($event: any)
-    onCancelShareNewFolder();
+    onCloseShareNewFolder($canceled, $close);
     onCancelShareNewFolderDelete();
     onCancelShareNewFolderOwn();
+    //
     showNewElementSharedInfo();
     canCreateNewFolder(): boolean;
     canCreateNewFolderShared(): boolean;
@@ -18,7 +19,7 @@ export interface CreateDelegateScope {
     onImportFiles(files: FileList)
     canDropOnFolder(): boolean
     onCannotDropFile();
-    onCancelShareNewFiles()
+    onCloseShareNewFiles($canceled, $close)
     onCancelShareNewFilesOwn();
     onSubmitSharedNewFiles($event: any)
     onCancelShareNewFilesDelete();
@@ -26,7 +27,7 @@ export interface CreateDelegateScope {
     currentTree: models.Tree
     openedFolder: models.FolderContext
     setHighlighted(els: models.Element[])
-    setCurrentTree(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME);
 }
 
 export function ActionCreateDelegate($scope: CreateDelegateScope) {
@@ -63,11 +64,15 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         $scope.setHighlighted(founded);
         $scope.newElementSharing = [];
     }
-    $scope.onCancelShareNewFolder = function () {
-        if (needAtLeastOneShared()) {
-            template.open('lightbox', 'create-folder/shared-cancel');
+    $scope.onCloseShareNewFolder = function ($canceled, $close) {
+        if ($canceled) {
+            if (needAtLeastOneShared()) {
+                template.open('lightbox', 'create-folder/shared-cancel');
+            } else {
+                template.close("lightbox")
+            }
         } else {
-            template.close("lightbox")
+            $close();
         }
     }
     $scope.onCancelShareNewFolderDelete = async function () {
@@ -77,10 +82,15 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     }
     $scope.onCancelShareNewFolderOwn = async function () {
         workspaceService.onChange.next({ action: "delete", treeDest: "shared", elements: $scope.newElementSharing })
-        $scope.setCurrentTree("owner")
-        workspaceService.onChange.next({ action: "add", treeDest: "owner", elements: $scope.newElementSharing })
+        $scope.setCurrentTreeRoute("owner")
         template.close("lightbox")
+        const elements = $scope.newElementSharing;
         $scope.newElementSharing = [];
+        //hightlight
+        setTimeout(() => {
+            workspaceService.onChange.next({ action: "add", treeDest: "owner", elements })
+            $scope.setHighlighted(elements);
+        }, 300)
     }
     $scope.showNewElementSharedInfo = function () {
         return needAtLeastOneShared();
@@ -136,7 +146,7 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         } else {
             $scope.newElementSharing = [];
         }
-    } 
+    }
     workspaceService.onConfirmImport.subscribe(ev => {
         setTimeout(() => {
             $scope.setHighlighted(ev);
@@ -146,19 +156,28 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     $scope.onImportFiles = function (files) {
         workspaceService.onImportFiles.next(files);
     }
-    $scope.onCancelShareNewFiles = function () {
-        if (needAtLeastOneShared()) {
-            template.open('lightbox', 'import-file/shared-cancel');
+    $scope.onCloseShareNewFiles = function ($canceled, $close) {
+        if ($canceled) {
+            if (needAtLeastOneShared()) {
+                template.open('lightbox', 'import-file/shared-cancel');
+            } else {
+                template.close("lightbox")
+            }
         } else {
-            template.close("lightbox")
+            $close()
         }
     }
     $scope.onCancelShareNewFilesOwn = async function () {
         workspaceService.onChange.next({ action: "delete", treeDest: "shared", elements: $scope.newElementSharing })
-        $scope.setCurrentTree("owner")
-        workspaceService.onChange.next({ action: "add", treeDest: "owner", elements: $scope.newElementSharing })
+        $scope.setCurrentTreeRoute("owner")
         template.close("lightbox")
+        const elements = $scope.newElementSharing;
         $scope.newElementSharing = [];
+        //hightlight
+        setTimeout(() => {
+            workspaceService.onChange.next({ action: "add", treeDest: "owner", elements })
+            $scope.setHighlighted(elements);
+        }, 300)
     }
     $scope.onSubmitSharedNewFiles = function ($event: any) {
         const founded = $scope.newElementSharing.map(e => {
