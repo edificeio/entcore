@@ -23,7 +23,7 @@ class MockGroupManageUsers {
 
 @Component({
     selector: 'group-users-list',
-    template: ''
+    template: '<ng-content></ng-content>'
 })
 class MockGroupUsersList {
     @Input() users;

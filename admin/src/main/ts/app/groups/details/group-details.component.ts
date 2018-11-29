@@ -33,21 +33,20 @@ import {
                 <group-manage-users (close)="closeLightBox()"></group-manage-users>
             </lightbox>
 
-            <span class="lct-communication-rule"
-                  *ngIf="internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'"
-                  (click)="toggleCommunicationRuleClicked.next({groupId: groupsStore.group.id, internalCommunicationRule: internalCommunicationRule})">
-                <span class="lct-communication-rule__can-communicate"
-                      *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
-                    <s5l>group.details.members.can.communicate</s5l> <i class="fa fa-toggle-on"></i>
-                </span>
-                <ng-template #cannotCommunicateTogether>
-                    <span class="lct-communication-rule__cannot-communicate">
-                        <s5l>group.details.members.cannot.communicate</s5l> <i class="fa fa-toggle-off"></i>
-                    </span>
-                </ng-template>
-            </span>
-
             <group-users-list [users]="groupsStore.group?.users">
+                <span class="lct-communication-rule"
+                      *ngIf="internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'"
+                      (click)="toggleCommunicationRuleClicked.next({groupId: groupsStore.group.id, internalCommunicationRule: internalCommunicationRule})">
+                    <span class="lct-communication-rule__can-communicate"
+                          *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
+                        <s5l>group.details.members.can.communicate</s5l> <i class="fa fa-toggle-on"></i>
+                    </span>
+                    <ng-template #cannotCommunicateTogether>
+                        <span class="lct-communication-rule__cannot-communicate">
+                            <s5l>group.details.members.cannot.communicate</s5l> <i class="fa fa-toggle-off"></i>
+                        </span>
+                    </ng-template>
+                </span>
             </group-users-list>
         </div>
     `,
@@ -75,7 +74,7 @@ export class GroupDetails implements OnInit, OnDestroy {
         const rulesChangesObserver = Observable.merge(
             this.route.data
                 .do(() => console.log('resolver emitted'))
-                .map((data: {rule: GroupIdAndInternalCommunicationRule}) => data.rule),
+                .map((data: { rule: GroupIdAndInternalCommunicationRule }) => data.rule),
             this.toggleCommunicationRuleClicked
                 .switchMap(data => this.toggleCommunicationBetweenMembers(data.groupId, data.internalCommunicationRule))
                 .do(() => console.log('toggleCommunicationRuleClicked start'))
