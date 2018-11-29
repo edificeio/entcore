@@ -16,6 +16,7 @@ export interface ActionTrashScope {
     canEmptyTrash(): boolean;
     //from others
     currentTree: models.Tree
+    setCurrentTreeRoute(tree: models.TREE_NAME);
     safeApply()
     selectedItems(): models.Element[]
 }
@@ -63,6 +64,8 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
     }
 
     $scope.emptyTrash = function () {
+        //dont be in a folder when deleting
+        $scope.setCurrentTreeRoute("trash")
         workspaceService.emptyTrash();
     };
 

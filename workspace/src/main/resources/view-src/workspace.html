@@ -54,7 +54,7 @@
 					</button>
 				</div>
 				<nav class="vertical nav-droppable mobile-navigation top-spacing-twice" side-nav>
-					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd"></div>
+					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100"></div>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
 					<a ng-click="emptyTrash()" ng-if="canEmptyTrash()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
@@ -80,7 +80,7 @@
 							</button>
 						</div>
 						<!--SEARCH DESKTOP-->
-						<div class="cell four seven search-pagination zero-mobile">
+						<div class="cell four seven-1d search-pagination zero-mobile">
 							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
 							<input ng-class="{'eleven twelve-1d':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">

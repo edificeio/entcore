@@ -32,6 +32,7 @@ export interface NavigationDelegateScope {
     selectedDocuments(): models.Element[];
     selectedFolders(): models.Element[];
     reloadFolderContent();
+    closeViewFile()
     viewFile(document: models.Element)
     setFolder(key: string, folder: models.Element)
     setAll();
@@ -134,11 +135,12 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         viewMode = mode;
         workspaceService.savePreference({ view: mode })
     }
-
+    let timeout = null;
     $scope.setHighlighted = function (els) {
         highlighted = els ? [...els] : [];
         highlighted = highlighted.filter(h => !!h);
-        setTimeout(() => {
+        timeout && clearTimeout(timeout)
+        timeout = setTimeout(() => {
             $scope.removeHighlight(els)
         }, 3100)
         $scope.safeApply();
@@ -213,7 +215,11 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         });
         $scope.boxes.selectAll = all;
     };
-
+    $scope.closeViewFile = function () {
+        if (template.contains('documents', 'viewer')) {
+            template.open("documents", viewMode);
+        }
+    }
     $scope.viewFile = function (document) {
         if ($scope.openedFolder) {
             if ($scope.openedFolder.documents)

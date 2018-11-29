@@ -18,7 +18,7 @@ export interface ShareDelegateScope {
     display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
     selectedItems(): models.Element[]
     setHighlighted(els: models.Element[])
-    setCurrentTree(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME);
 }
 
 export function ActionShareDelegate($scope: ShareDelegateScope) {
@@ -87,7 +87,7 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         })
         workspaceService.onChange.next({ action: "tree-change", treeSource: $scope.currentTree.filter, treeDest: "shared", elements: $scope.sharedElements });
         //DONT NEED
-        //$scope.setCurrentTree("shared")
+        //$scope.setCurrentTreeRoute("shared")
         closeShareView()
         setTimeout(() => {
             // hightlight by ids?

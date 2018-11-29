@@ -10,6 +10,7 @@ export interface TreeDelegateScope {
     selectedFolders(): models.Element[];
     openedFolder: models.FolderContext
     safeApply(a?)
+    closeViewFile()
     //
     wrapperTrees: models.Node[]
     trees: models.Tree[]
@@ -25,6 +26,7 @@ export interface TreeDelegateScope {
     isOpenedFolder(folder: models.Node): boolean
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME);
     getTreeByFilter(filter: models.TREE_NAME): models.Tree;
     removeHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[])
     setHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[]);
@@ -89,6 +91,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                                 if (founded) {
                                     founded.children.push(el);
                                 }
+                            } else if (event.treeDest) {
+                                const tree = $scope.trees.find(tree => tree.filter == event.treeDest);
+                                tree.children.push(el);
                             } else {
                                 //add to current tree
                                 $scope.currentTree.children.push(el);
@@ -127,7 +132,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             }
             quota.refresh();
             //Highlight new shared
-            if (event.treeDest == "shared" && event.treeSource != "shared" && event.elements) {
+            if ((event.action == "add" || event.action == "tree-change") && event.treeDest == "shared" && event.treeSource != "shared" && event.elements) {
                 $scope.setHighlightTree([{ folder: "shared", count: event.elements.length }])
             }
             //
@@ -140,6 +145,10 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             throw "could not found tree with name: " + filter;
         }
         return tree;
+    }
+    $scope.setCurrentTreeRoute = function (name) {
+        const tree = $scope.getTreeByFilter(name);
+        $scope.openFolderRoute(tree);
     }
     $scope.setCurrentTree = function (name) {
         $scope.currentTree = $scope.getTreeByFilter(name);
@@ -186,11 +195,8 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     $scope.openFolder = async function (folder) {
         //if any refresh wait it finished
         await refreshPromise;
-        //
-        if (template.contains('documents', 'viewer')) {
-            template.open('documents', 'icons');
-        }
-
+        //if needed
+        $scope.closeViewFile();
         setTimeout(function () {
             $('body').trigger('whereami.update');
         }, 100)
