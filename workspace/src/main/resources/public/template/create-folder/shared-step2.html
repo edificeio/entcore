@@ -8,5 +8,5 @@
                 <a ng-click="onCancelShareNewFolderOwn()"><u><i18n>workspace.create.share.warning2</i18n></u></a></div>
         </div>
     </div>
-    <share-panel resources="newElementSharing" class="workspace-share" on-cancel="onCancelShareNewFolder()" auto-close="'true'" on-validate="onValidateShare($data,$resource,$actions)" on-submit="onSubmitSharedNewFolder($shared)"></share-panel>
+    <share-panel resources="newElementSharing" class="workspace-share" close-delegate="onCloseShareNewFolder($canceled,$close)" auto-close="'true'" on-validate="onValidateShare($data,$resource,$actions)" on-submit="onSubmitSharedNewFolder($shared)"></share-panel>
 </form>

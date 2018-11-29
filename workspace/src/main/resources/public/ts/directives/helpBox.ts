@@ -93,7 +93,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
         },
         template: ` 
         <section class="helpbox-highlight-message" ng-if="visible()">
-            <div class="content no-margin message-box block-container four" ng-style="currentPosition()">
+            <div class="content no-margin message-box block-container four minwidth-400" ng-style="currentPosition()">
                 <div class="twelve cell">
                 <div class="reduce-block-eight">
                     <div class="block-container flex-row center-component ">
