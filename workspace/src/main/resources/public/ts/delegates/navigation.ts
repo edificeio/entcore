@@ -1,5 +1,6 @@
-import { template } from "entcore";
+import { template, moment, idiom as lang } from "entcore";
 import { models, workspaceService, WorkspacePreferenceView } from "../services";
+import { Subject, Observable } from "rxjs";
 
 export interface NavigationDelegateScope {
     //
@@ -9,6 +10,9 @@ export interface NavigationDelegateScope {
     openedFolder: models.FolderContext
     selectedFolder: { folder: models.Element, name: string }
     onQuickstartFinished()
+    //order
+    order: { field: string, desc: boolean, order?: (item: models.Element) => any }
+    orderByField(fieldName: string, desc?: boolean, save?: boolean)
     //list view
     onInfotipChange(visible: boolean)
     isTrashTree(): boolean
@@ -46,7 +50,6 @@ export interface NavigationDelegateScope {
     safeApply(a?)
     $watch(a: any, f: Function)
     onInit(cab: () => void);
-    order: { field: string, desc: boolean, order?: (item: models.Element) => any }
 }
 export function NavigationDelegate($scope: NavigationDelegateScope) {
     let highlighted: models.Element[] = [];
@@ -60,6 +63,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         workspaceService.getPreference().then(pref => {
             $scope.changeViewMode(pref.view)
             $scope.display.quickStart = pref.quickstart == "notviewed";
+            if (pref.sortField) {
+                $scope.orderByField(pref.sortField, pref.sortDesc, false);
+            }
             $scope.safeApply()
         })
         workspaceService.onChange.subscribe(event => {
@@ -101,9 +107,47 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
             $scope.safeApply()
         })
     });
+    //
     $scope.onQuickstartFinished = function () {
         workspaceService.savePreference({ quickstart: "viewed" })
     }
+    //order
+    $scope.order = {
+        field: 'name',
+        desc: false,
+        order(item) {
+            if (item[$scope.order.field] && ["created", "date", "modified"].indexOf($scope.order.field) > -1) {
+                return moment(item[$scope.order.field]);
+            }
+            if ($scope.order.field === 'name') {
+                return lang.removeAccents(item[$scope.order.field]);
+            }
+            if ($scope.order.field.indexOf('.') >= 0) {
+                const splitted_field = $scope.order.field.split('.')
+                let sortValue = item
+                for (let i = 0; i < splitted_field.length; i++) {
+                    sortValue = typeof sortValue === 'undefined' ? undefined : sortValue[splitted_field[i]]
+                }
+                return sortValue
+            } else
+                return item[$scope.order.field];
+        }
+    }
+    $scope.orderByField = function (fieldName, desc = null, save = true) {
+        if (fieldName === $scope.order.field) {
+            $scope.order.desc = !$scope.order.desc;
+        }
+        else {
+            $scope.order.desc = false;
+            $scope.order.field = fieldName;
+        }
+        if (desc != null && desc != undefined) {
+            $scope.order.desc = desc;
+        }
+        if (save) {
+            workspaceService.savePreference({ sortDesc: $scope.order.desc, sortField: $scope.order.field })
+        }
+    };
     //list
     $scope.onInfotipChange = function (visible) {
         $scope.infotipVisible = visible;
@@ -141,7 +185,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         highlighted = highlighted.filter(h => !!h);
         timeout && clearTimeout(timeout)
         timeout = setTimeout(() => {
-            $scope.removeHighlight(els)
+            $scope.removeHighlight(highlighted)
         }, 3100)
         $scope.safeApply();
     }
@@ -164,7 +208,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
             $scope.reloadFolderContent();
         }
     }
-    $scope.reloadFolderContent = async function () {
+    /**aply a debounce time to avoid reloading content every time (sync bugs + optimize perf)**/
+    let reloadSubject = new Subject();
+    (reloadSubject as Observable<any>).debounceTime(500).subscribe(async e => {
         //on refresh folder content => reset search
         $scope.resetSearch();
         //fetch only documents in contents
@@ -177,6 +223,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         }
         $scope.openedFolder.setDocuments(content);
         $scope.safeApply();
+    })
+    $scope.reloadFolderContent = function () {
+        reloadSubject.next();
     }
 
     $scope.isSelectedFolder = function (folder) {

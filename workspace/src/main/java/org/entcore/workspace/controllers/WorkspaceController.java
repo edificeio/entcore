@@ -541,6 +541,7 @@ public class WorkspaceController extends BaseController {
 				query.setProjection(ElementQuery.defaultProjection());
 				query.getProjection().add("comments");
 				query.getProjection().add("application");
+				query.getProjection().add("trasher");
 				workspaceService.findByQuery(query, userInfos, asyncArrayResponseHandler(request));
 			} else {
 				unauthorized(request);
@@ -691,6 +692,7 @@ public class WorkspaceController extends BaseController {
 				query.setProjection(ElementQuery.defaultProjection());
 				query.getProjection().add("comments");
 				query.getProjection().add("application");
+				query.getProjection().add("trasher");
 				final String includeall = request.params().get("includeall");
 				if (includeall != null && "true".equals(includeall)) {
 					query.setType(null);

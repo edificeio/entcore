@@ -12,6 +12,7 @@ export interface ShareDelegateScope {
     onShareAndNotCopy()
     onCancelShareElements()
     onSubmitSharedElements();
+    canEditShareItem(args: { id: string, type: string })
     onValidateShare(data: SharePayload, resource: models.Element, actions: ShareAction[]): Promise<any>
     //from others
     currentTree: models.Tree;
@@ -28,6 +29,18 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         $scope.sharedElements = $scope.selectedItems();
         copiedFolders = [];
         $scope.display.share = true;
+        $scope.canEditShareItem = function (args) {
+            if (args.type == "user") {
+                const uniqOwnerIds = $scope.sharedElements.map(sha => sha.owner.userId).filter((elem, pos, arr) => {
+                    return arr.indexOf(elem) == pos;
+                });
+                //can edit only if the user is not the owner
+                if (uniqOwnerIds.length == 1) {
+                    return uniqOwnerIds[0] != args.id;
+                }
+            }
+            return true;
+        }
         if ($scope.currentTree.filter != "shared") {
             const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
             if (founded) {

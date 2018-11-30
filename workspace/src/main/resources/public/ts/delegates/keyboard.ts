@@ -5,7 +5,7 @@ export interface KeyboardDelegateScope {
     onSelectItem(e: Event, el: models.Element)
     onKeydown(event: KeyboardEvent)
     //from others
-
+    selectedItems(): models.Element[];
     openCopyView()
     openMoveView()
     safeApply(a?);
@@ -59,9 +59,13 @@ export function KeyboardDelegate($scope: KeyboardDelegateScope) {
                 e.preventDefault()
                 $scope.safeApply()
             } else if ((e.key == "c" || e.key == "C")) {
-                $scope.openCopyView();
+                if ($scope.selectedItems().length) {
+                    $scope.openCopyView();
+                }
             } else if ((e.key == "x" || e.key == "X")) {
-                $scope.openMoveView();
+                if ($scope.selectedItems().length) {
+                    $scope.openMoveView();
+                }
             }
         }
     }
