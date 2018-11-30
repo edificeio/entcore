@@ -71,7 +71,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 
 	@Override
 	public void get(final UserInfos user, List<String> types, int offset, int limit, JsonObject restrictionFilter,
-			boolean mine, final Handler<JsonObject> result) {
+			boolean mine, String version, final Handler<JsonObject> result) {
 		final String recipient = user.getUserId();
 		final String externalId = user.getExternalId();
 		if (recipient != null && !recipient.trim().isEmpty()) {
@@ -127,6 +127,9 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				keys.put("reporters", new JsonObject()
 						.put("$elemMatch", new JsonObject()
 							.put("userId", user.getUserId())));
+			}
+			if ("2.0".equals(version)) {
+				keys.put("preview", 1);
 			}
 
 			mongo.find(TIMELINE_COLLECTION, query, sort, keys,
