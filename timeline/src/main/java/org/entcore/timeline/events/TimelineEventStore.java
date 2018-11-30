@@ -46,7 +46,7 @@ public interface TimelineEventStore {
 	void delete(String resource, Handler<JsonObject> result);
 
 	void get(UserInfos recipient, List<String> types, int offset, int limit,
-			JsonObject restrictionFilter, boolean mine, Handler<JsonObject> result);
+			JsonObject restrictionFilter, boolean mine, String version, Handler<JsonObject> result);
 
 	void deleteSubResource(String resource, Handler<JsonObject> result);
 
