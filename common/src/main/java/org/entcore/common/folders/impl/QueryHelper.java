@@ -529,7 +529,7 @@ class QueryHelper {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(body.getJsonObject("result", new JsonObject()).getJsonObject("cursor", new JsonObject())
-						.getJsonArray("firstBatch"));
+						.getJsonArray("firstBatch",new JsonArray()));
 			} else {
 				future.fail(toErrorStr(body));
 			}
