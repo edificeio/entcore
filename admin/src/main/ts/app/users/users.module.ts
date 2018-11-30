@@ -28,6 +28,7 @@ UserStructuresSection
 } from './details/sections';
 import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
     imports: [
@@ -37,6 +38,7 @@ import { UserInfoService } from './details/sections/info/user-info.service';
         RouterModule.forChild(routes),
         SijilModule.forChild(),
         UxModule,
+        HttpClientModule
     ],
     declarations: [
         UsersComponent,

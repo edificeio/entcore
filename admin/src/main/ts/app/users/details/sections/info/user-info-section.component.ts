@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { AbstractControl, NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
 import { BundlesService } from 'sijil';
 
 import { AbstractSection } from '../abstract.section';
 import { NotifyService, PlateformeInfoService, SpinnerService } from '../../../../core/services';
 import { UserInfoService } from './user-info.service';
+import { StructureModel, UserModel } from '../../../../core/store/models';
 
 @Component({
     selector: 'user-info-section',
@@ -129,6 +132,16 @@ import { UserInfoService } from './user-info.service';
                         </div>
                     </form-field>
 
+                    <form-field label="password.renewal.code">
+                        <div>
+                            <button (click)="clickOnGenerateRenewalCode()">
+                                <span><s5l>generate.password.renewal.code</s5l></span>
+                            </button>
+                            <span *ngIf="renewalCode"> <s5l>generated.password.renewal.code</s5l>
+                                {{renewalCode}}</span>
+                        </div>
+                    </form-field>
+
                     <form-field label="massmail">
                         <div>
                             <button (click)="sendIndividualMassMail('pdf')">
@@ -155,16 +168,19 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     downloadAnchor = null;
     downloadObjectUrl = null;
 
+    renewalCode: string | undefined = undefined;
+
     userInfoSubscriber: Subscription;
     loginAliasPattern = /^[0-9a-z\-\.]+$/;
 
-    @Input() structure;
-    @Input() user;
+    @Input() structure: StructureModel;
+    @Input() user: UserModel;
 
     @ViewChild('infoForm') infoForm: NgForm;
     @ViewChild('loginAliasInput') loginAliasInput: AbstractControl;
 
     constructor(
+        private http: HttpClient,
         private bundles: BundlesService,
         private ns: NotifyService,
         public spinner: SpinnerService,
@@ -361,6 +377,21 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                 this.loginAliasInput.setErrors({'incorrect': true});
             })
         );
+    }
+
+    clickOnGenerateRenewalCode() {
+        this.generateRenewalCode(this.user.login)
+            .subscribe(data => {
+                this.renewalCode = data.renewalCode;
+                this.cdRef.markForCheck();
+            });
+    }
+
+    generateRenewalCode(login: string): Observable<{ renewalCode: string }> {
+        return this.http.post<{ renewalCode: string }>('/auth/generatePasswordRenewalCode',
+            new HttpParams().set('login', login).toString(), {
+                headers: new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded')
+            });
     }
 
     displayDate(date: string): string {
