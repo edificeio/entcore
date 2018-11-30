@@ -31,26 +31,6 @@
 				<li data-ng-repeat="folder in folder.children" data-ng-include="'folder-content'" class="highlight-title-wrapper"></li>
 			</ul>
 		</script>
-	<!--TODO move to infrafront cssutils, pictos.scss ....-->
-	<style>
-		.helpbox-highlight-message{
-			z-index: 100002 !important;
-		}
-		.helpbox-highlight {
-			z-index: 100003 !important;
-			position: fixed !important;
-			background: #fff !important;
-			margin: 0 !important;
-		}
-		.workspace-app article.list-view,.workspace-app article.icons-view > div{
-			padding-bottom: 50px;
-		}
-		@media screen and (max-width: 800px){
-		.helpbox-highlight {
-			display: none !important;
-		}
-		}
-	</style>
 </head>
 
 <body data-ng-controller="Workspace" bottom-scroll="incrementVisibleFiles()" class="workspace-app">
