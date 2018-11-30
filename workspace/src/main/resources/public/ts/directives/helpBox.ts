@@ -2,7 +2,121 @@ import { idiom as lang, ng } from 'entcore';
 import { Subject, Observable } from 'rxjs';
 import { startWith } from 'rxjs/operator/startWith';
 //TODO move to infrafront? with i18n and css
+/**
+ * HELPERS
+ */
 
+declare var jQuery;
+const lockScroll = function (onMouseWheel) {
+    const $window = jQuery(window);
+    $window.on("mousewheel DOMMouseScroll", onMouseWheel);
+}
+function unlockScroll(onMouseWheel) {
+    const $window = jQuery(window);
+    $window.off("mousewheel DOMMouseScroll", onMouseWheel);
+}
+function computePosition(direction: "left" | "right" | "top" | "bottom", rect, height: number) {
+    let left: number = null, top: number = null, right: number = null, bottom: number = null;
+    const offset = 25;
+    switch (direction) {
+        case "left":
+            right = (rect.left - offset);
+            top = rect.top;
+            break;
+        case "right":
+            left = (rect.right + offset);
+            top = rect.top;
+            break;
+        case "top":
+            left = rect.left;
+            bottom = (rect.top - offset);
+            break;
+        case "bottom":
+            left = rect.left;
+            top = (rect.bottom + offset);
+            break;
+    }
+    const toString = function (val) {
+        return val != null && (val + "px")
+    }
+    top = ensureIsInViewReport(top, height)
+    return {
+        position: "fixed", top: toString(top), left: toString(left), bottom: toString(bottom), right: toString(right)
+    };
+}
+
+function ensureIsInViewReport(top: number, height: number) {
+    //ensure top
+    if (top < 0) {
+        return 0;
+    }
+    //ensure bottom
+    const windowHeight = jQuery(window).height()
+    const diff = (windowHeight - (top + height))
+    if (diff < 0) {
+        return top + diff
+    }
+    return top;
+}
+
+function needVerticalScroll(el: HTMLElement, parent: HTMLElement) {
+    const rect = el.getBoundingClientRect();
+    const parentRect = parent.getBoundingClientRect()
+    //
+    const relativePos = {} as any;
+    relativePos.bottom = rect.bottom - parentRect.bottom;
+    if (rect.top < parentRect.top) {
+        return rect.top - parentRect.top;//delta negatif (up)
+    }
+    if (rect.bottom > parentRect.bottom) {
+        return rect.bottom - parentRect.bottom;//delta positif (down)
+    }
+    return 0;
+}
+function synchronizeCssStyles(src: HTMLElement, destination: HTMLElement, recursively: boolean) {
+    const style = window.getComputedStyle ? window.getComputedStyle(src) : {};
+    jQuery(destination).css({ ...style })
+    if (recursively) {
+        const vSrcElements = jQuery(src).find("*");
+        const vDstElements = jQuery(destination).find("*");
+
+        for (let i = vSrcElements.length; i--;) {
+            const vSrcElement = vSrcElements[i];
+            const vDstElement = vDstElements[i];
+            const vStyle = window.getComputedStyle ? window.getComputedStyle(vSrcElement) : {};
+            jQuery(vDstElement).removeClass();
+            jQuery(vDstElement).css({ ...vStyle })
+        }
+    }
+}
+function hasScrollBar(element: HTMLElement, direction: "vertical" | "horizontal") {
+    const jElement = jQuery(element);
+    if (direction == 'vertical') {
+        return element.scrollHeight > jElement.innerHeight();
+    }
+    else if (direction == 'horizontal') {
+        return element.scrollWidth > jElement.innerWidth();
+    }
+    return false;
+}
+function makeVisible(element: HTMLElement) {
+    const jElement = jQuery(element);
+    const parents = jElement.parents();
+    for (let i = 0; i < parents.length; i++) {
+        const parent = parents[i];
+        if (hasScrollBar(parent, "vertical")) {
+            const delta = needVerticalScroll(element, parent)
+            if (delta != 0) {
+                const jParent = jQuery(parent);
+                const top = jParent.scrollTop() + delta;
+                jParent.animate({ scrollTop: top }, { duration: 'medium', easing: 'swing' });
+            }
+        }
+    }
+}
+/**
+ * 
+ */
 interface Step {
     title: string
     content: string
@@ -59,8 +173,6 @@ const stepsManager = {
         }
     }
 };
-declare var jQuery;
-type Position = { position: string, left: string, top: string, right: string, bottom: string }
 export interface HelpBoxScope {
     steps: Step[]
     title: string
@@ -69,7 +181,6 @@ export interface HelpBoxScope {
     direction: "left" | "right" | "top" | "bottom"
     getTitle(): string
     getContent(): string
-    currentPosition(): Position
     isCurrentStep(step: Step)
     onFinished?: () => void
     goTo(step: Step)
@@ -93,7 +204,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
         },
         template: ` 
         <section class="helpbox-highlight-message" ng-if="visible()">
-            <div class="content no-margin message-box block-container four minwidth-400" ng-style="currentPosition()">
+            <div style="display:none" class="content no-margin message-box block-container four minwidth-400">
                 <div class="twelve cell">
                 <div class="reduce-block-eight">
                     <div class="block-container flex-row center-component ">
@@ -121,7 +232,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                     </div>
                 </div>
             </div>
-            <div class="close-lightbox" ng-if="canClose" ng-click="close()"><i class="close-2x"></i></div></div>
+            <div class="close-lightbox" ng-if="!hasNextStep()" ng-click="close()"><i class="close-2x"></i></div></div>
         </section>
         `,
         compile: function (element, attributes) {
@@ -132,14 +243,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                     function onMouseWheel(e) {
                         e.preventDefault();
                     }
-                    const lockScroll = function () {
-                        const $window = jQuery(window);
-                        $window.on("mousewheel DOMMouseScroll", onMouseWheel);
-                    }
-                    const unlockScroll = function () {
-                        const $window = jQuery(window);
-                        $window.off("mousewheel DOMMouseScroll", onMouseWheel);
-                    }
+
                     //
                     const isDisplay = () => {
                         return (scope.display === true || scope.display as any === "true");
@@ -150,7 +254,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                         }
                         //must be before got
                         started = true;
-                        lockScroll()
+                        //lockScroll(onMouseWheel)
                         scope.goTo(stepsManager.steps[0])
                     }
                     scope.close = () => {
@@ -159,41 +263,26 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                         stepsManager.hightlight(() => {
 
                         })
-                        unlockScroll()
+                        //unlockScroll(onMouseWheel)
                         scope.onFinished && scope.onFinished()
                         started = false
                     }
+                    //
+                    let firstTime = true;
                     scope.goTo = (step: Step) => {
                         stepsManager.setCurrentStep(step);
                         stepsManager.hightlight(() => {
-                            $timeout(() => {
-                                const el = stepsManager.getCurrentStep().getHtml();
-                                const rect = el.getBoundingClientRect();
-                                const direction = scope.direction || "right";
-                                let left = "", top = "", right = "", bottom = "";
-                                let margin = 25;
-                                switch (direction) {
-                                    case "left":
-                                        right = (rect.left - margin) + "px";
-                                        top = rect.top + "px";
-                                        break;
-                                    case "right":
-                                        left = (rect.right + margin) + "px";
-                                        top = rect.top + "px";
-                                        break;
-                                    case "top":
-                                        left = rect.left + "px";
-                                        bottom = (rect.top - margin) + "px";
-                                        break;
-                                    case "bottom":
-                                        left = rect.left + "px";
-                                        top = (rect.bottom + margin) + "px";
-                                        break;
-                                }
-                                position = setCachePos({
-                                    position: "fixed", top, left, bottom, right
-                                })
-                            }, 300)
+                            const el = stepsManager.getCurrentStep().getHtml();
+                            const rect = el.getBoundingClientRect();
+                            const direction = scope.direction || "right";
+                            const content = element.find(".content");
+                            const height = content.height()
+                            const position = computePosition(direction, rect, height)
+                            content.css(position)
+                            if (firstTime) {
+                                content.css({ display: "block" })
+                                firstTime = false
+                            }
                         })
                         if (stepsManager.hasCurrentStep()) {
                             stepsManager.getCurrentStep().title = stepsManager.getCurrentStep().title || lang.translate(scope.title);
@@ -210,28 +299,11 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                         stepsManager.onAdd.next()
                     })
                     //
-                    let cachePos: Position = null;
-                    const setCachePos = function (pos: Position) {
-                        if (!cachePos
-                            || cachePos.bottom != pos.bottom
-                            || cachePos.left != pos.left
-                            || cachePos.position != pos.position
-                            || cachePos.right != pos.right
-                            || cachePos.top != pos.top
-                        ) {
-                            cachePos = pos;
-                        }
-                        return cachePos;
-                    }
                     scope.getTitle = function () {
                         return stepsManager.hasCurrentStep() && stepsManager.getCurrentStep().title;
                     }
                     scope.getContent = function () {
                         return stepsManager.hasCurrentStep() && stepsManager.getCurrentStep().content;
-                    }
-                    let position = null;
-                    scope.currentPosition = function () {
-                        return position;
                     }
                     //
                     scope.hasNextStep = () => {
@@ -262,15 +334,6 @@ export interface HelpBoxStepScope {
     helpBoxStepPriority?: number
 }
 
-function isElementInViewport(el: HTMLElement) {
-    const rect = el.getBoundingClientRect();
-    return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
-    );
-}
 export const helpBoxStep = ng.directive('helpBoxStep', ['$timeout', ($timeout) => {
     return {
         restrict: 'A',
@@ -293,27 +356,35 @@ export const helpBoxStep = ng.directive('helpBoxStep', ['$timeout', ($timeout) =
                     highlight(cb: () => void) {
                         clone && jQuery(clone).remove();
                         const el = (element[0] as HTMLElement);
-                        if (!isElementInViewport(el)) {
-                            el.scrollIntoView()
-                        }
+                        makeVisible(el)
                         setTimeout(() => {
                             clone = jQuery(el).clone();
                             jQuery("body").append(clone);
+                            clone.removeClass();
                             clone.addClass("helpbox-highlight")
-                            const rect = el.getBoundingClientRect();
-                            clone.css({
-                                'position': 'fixed',
-                                'top': rect.top,
-                                'left': rect.left,
-                                'width': rect.width,
-                                'height': rect.height,
-                                'margin':0
-                            })
-                            cb();
+                            synchronizeCssStyles(el, clone[0], true);
+                            const reposition = function () {
+                                const rect = el.getBoundingClientRect();
+                                clone.css({
+                                    'position': 'fixed',
+                                    'top': rect.top,
+                                    'left': rect.left,
+                                    'width': rect.width,
+                                    'height': rect.height,
+                                    'margin': 0
+                                })
+                                cb();
+                            }
+                            this["reposition"] = reposition;
+                            jQuery(window).scroll(this["reposition"]);
+                            jQuery(window).on('resize', this["reposition"]);
+                            reposition();
                         }, 300)
                     },
                     unhighlight() {
                         clone && jQuery(clone).remove();
+                        jQuery(window).off('scroll', this["reposition"]);
+                        jQuery(window).off('resize', this["reposition"]);
                     }
                 });
             }
