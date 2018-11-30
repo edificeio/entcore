@@ -33,6 +33,23 @@
 		</script>
 	<!--TODO move to infrafront cssutils, pictos.scss ....-->
 	<style>
+		.helpbox-highlight-message{
+			z-index: 100002 !important;
+		}
+		.helpbox-highlight {
+			z-index: 100003 !important;
+			position: fixed !important;
+			background: #fff !important;
+			margin: 0 !important;
+		}
+		.workspace-app article.list-view,.workspace-app article.icons-view > div{
+			padding-bottom: 50px;
+		}
+		@media screen and (max-width: 800px){
+		.helpbox-highlight {
+			display: none !important;
+		}
+		}
 	</style>
 </head>
 
@@ -132,7 +149,7 @@
 	</portal>
 	<container template="lightboxes"></container>
 	<container template="toaster"></container>
-	<help-box can-close="false" direction="right" title="workspace.help.title" display="[[display.quickStart]]" on-finished="onQuickstartFinished()"></help-box>
+	<help-box can-close="false" direction="right" data-title="workspace.help.title" display="[[display.quickStart]]" on-finished="onQuickstartFinished()"></help-box>
 </body>
 
 </html>
