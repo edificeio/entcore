@@ -43,6 +43,8 @@ public interface UserAuthAccount {
 
 	void sendResetCode(HttpServerRequest request, String login, SendPasswordDestination dest,boolean checkFederatedLogin , Handler<Boolean> handler);
 
+	void generateResetCode(HttpServerRequest request, String login, boolean checkFederatedLogin , Handler<Either<String, String>> handler);
+
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 
 	void matchActivationCode(String login, String potentialActivationCode,

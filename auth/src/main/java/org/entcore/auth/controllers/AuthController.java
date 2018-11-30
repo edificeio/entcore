@@ -949,6 +949,26 @@ public class AuthController extends BaseController {
       });
 	}
 
+    @Post("/generatePasswordRenewalCode")
+	@SecuredAction( value = "", type = ActionType.RESOURCE)
+    public void generatePasswordRenewalCode(final HttpServerRequest request) {
+        String login = request.formAttributes().get("login");
+
+        if (login == null || login.trim().isEmpty()) {
+            badRequest(request, "login required");
+            return;
+        }
+
+        userAuthAccount.generateResetCode(request, login, checkFederatedLogin,
+                (Either<String, String> either) -> {
+                    if (either.isRight()) {
+                        renderJson(request, new JsonObject().put("renewalCode", either.right().getValue()));
+                    } else {
+                        renderError(request);
+                    }
+                });
+    }
+
 	@Put("/block/:userId")
 	@SecuredAction( value = "", type = ActionType.RESOURCE)
 	public void blockUser(final HttpServerRequest request) {
