@@ -56,7 +56,7 @@
                     [[formatDocumentSize(revisionInProgress.file.size)]]
                 </td>
             </tr>
-            <tr ng-repeat="revision in targetDocument.revisions | orderBy: order.order:order.desc">
+            <tr ng-repeat="revision in targetDocument.revisions | orderBy:'date.$date':true">
                 <td></td>
                 <td>
                     <a ng-href="document/[[targetDocument._id]]/revision/[[revision._id]]">[[revision.name]]</a>
