@@ -83,6 +83,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			$scope.currentUser = new directory.User({ id: params.userId });
 			await $scope.selectUser($scope.currentUser);
 			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
 			template.open('page', 'profile');
 			$scope.title = 'profile';
 			await $scope.createAllFavorites();
@@ -110,6 +111,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			directory.favoriteForm.users.all = [];
 			directory.network.schools.all = [];
 			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
 			$scope.groups = directory.directory.groups;
 			await $scope.createAllFavorites();
 			$scope.favoriteFormUsersGroups = [];
@@ -169,6 +171,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 				$scope.currentSchool.one('sync', function(){
 					$scope.users = $scope.currentSchool.users;
+					$scope.allUsers = Object.assign([], $scope.users);
 
 					template.open('page', 'class');
 
@@ -256,6 +259,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 		school.one('sync', function(){
 			$scope.users = school.users;
+			$scope.allUsers = Object.assign([], $scope.users);
 			$scope.classrooms = school.classrooms;
 			$scope.deselectUser('dominos');
 			$scope.$apply('users');
@@ -289,6 +293,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		if ($scope.search.index === 0) {
 			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
 			$scope.users = directory.directory.users;
+			$scope.allUsers = Object.assign([], $scope.users);
 			template.open('dominosUser', 'dominos-user');
 		}
 		else {
