@@ -1,5 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { FormsModule } from '@angular/forms';
 import { SijilModule } from 'sijil';
 import { UxModule } from '../../../../shared/ux/ux.module';
@@ -15,6 +16,7 @@ describe('UserInfoSection', () => {
     let mockNotifyService: NotifyService;
     let mockSpinnerService: SpinnerService;
     let mockUserInfoService: UserInfoService;
+    let httpController: HttpTestingController;
 
     beforeEach(() => {
         mockChangeDetectorRef = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
@@ -35,6 +37,7 @@ describe('UserInfoSection', () => {
                 {provide: UserInfoService, useValue: mockUserInfoService}
             ],
             imports: [
+                HttpClientTestingModule,
                 SijilModule.forRoot(),
                 UxModule.forRoot(null),
                 FormsModule
@@ -43,9 +46,19 @@ describe('UserInfoSection', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(UserInfoSection);
         component = fixture.debugElement.componentInstance;
+        httpController = TestBed.get(HttpTestingController);
     }));
 
     it('should create the UserInfoSection component', async(() => {
         expect(component).toBeTruthy();
     }));
+
+    describe('generateRenewalCode', () => {
+        it('should call the backend /auth/generatePasswordRenewalCode with given user login', () => {
+            component.generateRenewalCode('myUserLogin').subscribe();
+            const requestController = httpController.expectOne('/auth/generatePasswordRenewalCode');
+            expect(requestController.request.method).toBe('POST');
+            expect(requestController.request.body).toEqual('login=myUserLogin');
+        });
+    });
 });
