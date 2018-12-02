@@ -134,7 +134,7 @@ public class WorkspaceController extends BaseController {
 		}
 		workspaceService.addAfterUpload(uploaded, doc, name, application, thumbs, ownerId, ownerName, m -> {
 			if (m.succeeded()) {
-				message.reply(m.result());
+				message.reply(m.result().put("status", "ok"));
 			} else {
 				message.reply(new JsonObject().put("status", "error").put("message", m.cause().getMessage()));
 			}

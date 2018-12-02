@@ -1878,13 +1878,13 @@ var recorder = (function(){
 					that.status = 'stop';
                     notifyFollowers(that.status);
                     closeWs();
-                    notify.info(event.data);
+                    notify.error(event.data);
 				}
                 ws.onmessage = function (event) {
                 	if (event.data && event.data.indexOf("error") !== -1) {
                 		console.log(event.data);
 						closeWs();
-						notify.info(event.data);
+						notify.error(event.data);
                 	} else if (event.data && event.data === "ok") {
                 		closeWs();
                 		notify.info("recorder.saved");

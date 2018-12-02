@@ -352,5 +352,9 @@
   "sharepanel.close.explanation": "En fermant cette fenêtre, les modifications de partage que vous avez effectuées ne seront pas prises en compte.",
   "sharepanel.close.confirmation": "Etes vous sûr de vouloir annuler les modifications de partage ?",
   "sharepanel.close.confirm": "Confirmer",
-  "sharepanel.close.inherited": "Partage hérité"
+  "sharepanel.close.inherited": "Partage hérité",
+  "workspace.add.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
+  "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
+  "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
+  "missing.buffer.error": "Votre enregistrement audio n'a pas pu être sauvegardé"
 }
