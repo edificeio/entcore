@@ -144,7 +144,11 @@ public abstract class GenericShareService implements ShareService {
 									.getJsonObject("checkedInherited");
 							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
 							for (String cUserId : fieldNames) {
-								if (!userCheckedActions.containsKey(cUserId)) {
+								if (userCheckedActions.containsKey(cUserId)) {
+									// if it is in both inherit and not inhertid keep both
+									checkedInherited.put(cUserId, inheritUserCheckedActions.getJsonArray(cUserId));
+									checked.put(cUserId, userCheckedActions.getJsonArray(cUserId));
+								} else {
 									checkedInherited.put(cUserId, checked.getValue(cUserId));
 									checked.remove(cUserId);
 								}
@@ -158,7 +162,12 @@ public abstract class GenericShareService implements ShareService {
 									.getJsonObject("checkedInherited");
 							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
 							for (String cGroupId : fieldNames) {
-								if (!groupCheckedActions.containsKey(cGroupId)) {
+								// if it is in both inherit and not inhertid keep both
+								if (groupCheckedActions.containsKey(cGroupId)) {
+									// if it is in both inherit and not inhertid keep both
+									checkedInherited.put(cGroupId, inheritGroupCheckedActions.getJsonArray(cGroupId));
+									checked.put(cGroupId, groupCheckedActions.getJsonArray(cGroupId));
+								} else {
 									checkedInherited.put(cGroupId, checked.getValue(cGroupId));
 									checked.remove(cGroupId);
 								}
