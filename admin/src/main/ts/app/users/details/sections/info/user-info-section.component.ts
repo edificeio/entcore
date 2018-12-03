@@ -6,9 +6,10 @@ import { Observable } from 'rxjs/Observable';
 import { BundlesService } from 'sijil';
 
 import { AbstractSection } from '../abstract.section';
-import { NotifyService, PlateformeInfoService, SpinnerService } from '../../../../core/services';
+import { NotifyService, PlatformInfoService, SpinnerService } from '../../../../core/services';
 import { UserInfoService } from './user-info.service';
 import { StructureModel, UserModel } from '../../../../core/store/models';
+import { Config } from '../../Config';
 
 @Component({
     selector: 'user-info-section',
@@ -137,8 +138,10 @@ import { StructureModel, UserModel } from '../../../../core/store/models';
                             <button (click)="clickOnGenerateRenewalCode()">
                                 <span><s5l>generate.password.renewal.code</s5l></span>
                             </button>
-                            <span *ngIf="renewalCode"> <s5l>generated.password.renewal.code</s5l>
-                                {{renewalCode}}</span>
+                            <span *ngIf="renewalCode">
+                                <s5l *ngIf="config['reset-code-delay'] && config['reset-code-delay'] > 0" [s5l-params]="{numberOfDays: millisecondToDays(config['reset-code-delay'])}">generated.password.renewal.code.with.lifespan</s5l>
+                                <s5l *ngIf="config['reset-code-delay'] == 0">generated.password.renewal.code</s5l>
+                                 : {{renewalCode}}</span>
                         </div>
                     </form-field>
 
@@ -167,17 +170,26 @@ export class UserInfoSection extends AbstractSection implements OnInit {
     showConfirmation = false;
     downloadAnchor = null;
     downloadObjectUrl = null;
-
     renewalCode: string | undefined = undefined;
 
     userInfoSubscriber: Subscription;
+
     loginAliasPattern = /^[0-9a-z\-\.]+$/;
 
     @Input() structure: StructureModel;
     @Input() user: UserModel;
+    @Input() config: Config;
 
     @ViewChild('infoForm') infoForm: NgForm;
+
     @ViewChild('loginAliasInput') loginAliasInput: AbstractControl;
+
+    private SECONDS_IN_DAYS = 24 * 3600;
+    private MILLISECONDS_IN_DAYS = this.SECONDS_IN_DAYS * 1000;
+
+    millisecondToDays(millisecondTimestamp: number): number {
+        return Math.ceil(millisecondTimestamp / this.MILLISECONDS_IN_DAYS);
+    }
 
     constructor(
         private http: HttpClient,
@@ -298,14 +310,14 @@ export class UserInfoSection extends AbstractSection implements OnInit {
                 this.ns.success({
                     key: infoKey,
                     parameters: {}
-                }, 'massmail')
+                }, 'massmail');
             })
             .catch(err => {
                 this.ns.error({
                     key: 'massmail.error',
                     parameters: {}
-                }, 'massmail', err)
-            })
+                }, 'massmail', err);
+            });
     }
 
     private createDownloadAnchor() {
