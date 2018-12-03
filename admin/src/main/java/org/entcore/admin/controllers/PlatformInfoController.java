@@ -57,6 +57,7 @@ public class PlatformInfoController extends BaseController {
 		renderJson(request, new JsonObject()
 				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
 				.put("pre-delete-user-delay", config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay))
+                .put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 		);
 	}
 }
