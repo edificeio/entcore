@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 import { ActivatedRouteSnapshot, Resolve } from '@angular/router';
-import { Config } from "./Config";
-import { Http } from "@angular/http";
-import { Observable } from "rxjs";
-import "rxjs/add/operator/map";
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs/Observable';
+
+import { Config } from './Config';
 
 @Injectable()
-export class ConfigResolver implements Resolve<Config | Error> {
-    constructor(private http: Http) {
+export class ConfigResolver implements Resolve<Config> {
+    constructor(private http: HttpClient) {
     }
 
     resolve(route: ActivatedRouteSnapshot): Observable<Config> {
-        return this.http.get('/admin/api/platform/config')
-            .map(response => response.json());
+        return this.http.get<Config>('/admin/api/platform/config');
     }
 }

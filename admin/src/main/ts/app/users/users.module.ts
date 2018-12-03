@@ -60,6 +60,7 @@ import { HttpClientModule } from '@angular/common/http';
         ConfigResolver,
         UserDetailsResolver,
         UsersResolver,
+        ConfigResolver,
         UserlistFiltersService,
         UserInfoService
     ],
