@@ -117,7 +117,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         desc: false,
         order(item) {
             if (item[$scope.order.field] && ["created", "date", "modified"].indexOf($scope.order.field) > -1) {
-                return moment(item[$scope.order.field]);
+                return moment(item[$scope.order.field],"YYYY-MM-DD HH:mm:ss.SSS").toDate().getTime();
             }
             if ($scope.order.field === 'name') {
                 return lang.removeAccents(item[$scope.order.field]);
@@ -177,7 +177,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         }
         template.open('documents', mode);
         viewMode = mode;
-        workspaceService.savePreference({ view: mode })
+        if(mode!="carousel"){
+            workspaceService.savePreference({ view: mode })
+        }
     }
     let timeout = null;
     $scope.setHighlighted = function (els) {

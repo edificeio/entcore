@@ -129,6 +129,14 @@ public abstract class GenericShareService implements ShareService {
 		return this.resourceActions;
 	}
 
+	protected boolean hasOverridenActions(JsonArray inheritActions, JsonArray actions) {
+		Set<String> inheritActionSet = inheritActions.stream().filter(act -> act instanceof String)
+				.map(act -> (String) act).collect(Collectors.toSet());
+		Set<String> actionSet = actions.stream().filter(act -> act instanceof String).map(act -> (String) act)
+				.collect(Collectors.toSet());
+		return !inheritActionSet.containsAll(actionSet) || !actionSet.containsAll(inheritActionSet);
+	}
+
 	protected void getInheritShareInfos(final String userId, final JsonArray actions,
 			final JsonObject inheritGroupCheckedActions, final JsonObject inheritUserCheckedActions,
 			final JsonObject groupCheckedActions, final JsonObject userCheckedActions, final String acceptLanguage,
@@ -145,9 +153,13 @@ public abstract class GenericShareService implements ShareService {
 							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
 							for (String cUserId : fieldNames) {
 								if (userCheckedActions.containsKey(cUserId)) {
-									// if it is in both inherit and not inhertid keep both
-									checkedInherited.put(cUserId, inheritUserCheckedActions.getJsonArray(cUserId));
-									checked.put(cUserId, userCheckedActions.getJsonArray(cUserId));
+									// if it is in both inherit and not inhertid keep both and has not same actions
+									JsonArray inheritUserActions = inheritUserCheckedActions.getJsonArray(cUserId);
+									JsonArray userActions = userCheckedActions.getJsonArray(cUserId);
+									if (hasOverridenActions(inheritUserActions, userActions)) {
+										checkedInherited.put(cUserId, inheritUserActions);
+										checked.put(cUserId, userActions);
+									}
 								} else {
 									checkedInherited.put(cUserId, checked.getValue(cUserId));
 									checked.remove(cUserId);
@@ -164,9 +176,13 @@ public abstract class GenericShareService implements ShareService {
 							for (String cGroupId : fieldNames) {
 								// if it is in both inherit and not inhertid keep both
 								if (groupCheckedActions.containsKey(cGroupId)) {
-									// if it is in both inherit and not inhertid keep both
-									checkedInherited.put(cGroupId, inheritGroupCheckedActions.getJsonArray(cGroupId));
-									checked.put(cGroupId, groupCheckedActions.getJsonArray(cGroupId));
+									// if it is in both inherit and not inhertid keep both and has not same actions
+									JsonArray inheritGroupActions = inheritGroupCheckedActions.getJsonArray(cGroupId);
+									JsonArray groupActions = groupCheckedActions.getJsonArray(cGroupId);
+									if (hasOverridenActions(inheritGroupActions, groupActions)) {
+										checkedInherited.put(cGroupId, inheritGroupActions);
+										checked.put(cGroupId, groupActions);
+									}
 								} else {
 									checkedInherited.put(cGroupId, checked.getValue(cGroupId));
 									checked.remove(cGroupId);
