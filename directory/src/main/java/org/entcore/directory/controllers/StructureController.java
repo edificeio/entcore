@@ -355,6 +355,10 @@ public class StructureController extends BaseController {
 			filter.put("activated", request.params().get("a"));
 		}
 
+        if(request.params().contains("adml")){
+            filter.put("adml", request.params().get("adml"));
+        }
+
         if(request.params().contains("dateFilter") && request.params().contains("date")) {
             filter.put("dateFilter", request.params().get("dateFilter"));
             filter.put("date", request.params().get("date"));

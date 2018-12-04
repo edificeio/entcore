@@ -263,6 +263,17 @@ public class DefaultSchoolService implements SchoolService {
 			params.put("classesArray", filterObj.getJsonArray("classes"));
 		}
 
+        //Adml
+        if(filterObj.containsKey("adml")){
+            String adml = filterObj.getString("adml", "false");
+            if("false".equals(adml.toLowerCase())) {
+                condition += " AND NOT (u)-[:HAS_FUNCTION]->({ externalId: 'ADMIN_LOCAL' }) ";
+            }
+            else if("true".equals(adml.toLowerCase())){
+                condition += " AND (u)-[:HAS_FUNCTION]->({ externalId: 'ADMIN_LOCAL' }) ";
+            }
+        }
+
 		//Email
 		if(hasMail != null) {
 			if(hasMail){
@@ -399,7 +410,8 @@ public class DefaultSchoolService implements SchoolService {
 		String condition = "";
 		String optional =
 				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
-						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
+						"OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
+						"OPTIONAL MATCH (u:User)-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) ";
 
 		JsonObject params = new JsonObject().put("structureId", structureId);
 
@@ -419,13 +431,14 @@ public class DefaultSchoolService implements SchoolService {
 
 		//With clause
 		String withStr =
-				"WITH u, p ";
+				"WITH u, p, rf, f ";
 
 		//Return clause
 		String returnStr =
-				"RETURN distinct collect(p.name)[0] as type, " +
-						"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-						"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, u.created as creationDate ";
+                "RETURN distinct collect(p.name)[0] as type, " +
+                        "u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+                        "u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, u.created as creationDate, " +
+                        "COLLECT(distinct [f.externalId, rf.scope]) as functions ";
 
 		withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
 		returnStr += ", classes, classname, isInClass ";
