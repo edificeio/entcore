@@ -208,7 +208,7 @@ export const helpBox = ng.directive('helpBox', ['$timeout', ($timeout) => {
                 <div class="twelve cell">
                 <div class="reduce-block-eight">
                     <div class="block-container flex-row center-component ">
-                        <h3 class="centered-text">
+                        <h3 class="left-text">
                             <span class="no-style">[[getTitle()]]</span>
                         </h3>
                         <p class="eleven justified-text">
