@@ -234,6 +234,9 @@ export class MassMailComponent implements OnInit, OnDestroy {
             params.dateFilter = outputModels['creationDate'][0].comparison === 'users.before' ? 'before' : 'after';
             params.date = outputModels['creationDate'][0].date.getTime();
         }
+        if (outputModels['functions'].length == 1) {
+            params.adml = outputModels['functions'][0].indexOf('users.adml') >= 0;
+        }
 
         try {
             blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));
