@@ -21,6 +21,7 @@ import org.entcore.common.folders.impl.QueryHelper.RestoreParentDirection;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
@@ -86,6 +87,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 			doc.put("modified", now);
 			doc.put("owner", ower);
 			doc.put("ownerName", ownerName);
+			String name = DocumentHelper.getName(doc);
+			doc.put("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
 			//
 			return queryHelper.insert(doc);
 		}).setHandler(handler);
@@ -230,6 +233,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 			folder.put("modified", now);
 			folder.put("owner", user.getUserId());
 			folder.put("ownerName", user.getUsername());
+			String name = DocumentHelper.getName(folder);
+			folder.put("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
 			return queryHelper.insert(folder);
 		}).setHandler(handler);
 	}
@@ -570,9 +575,11 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void rename(String id, String newName, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
 		this.info(id, user, msg -> {
 			if (msg.succeeded()) {
+				String nameSearch = newName != null ? StringUtils.stripAccentsToLowerCase(newName) : "";
 				JsonObject doc = msg.result();
 				doc.put("name", newName);// need for result
-				MongoUpdateBuilder set = new MongoUpdateBuilder().set("name", newName);
+				doc.put("nameSearch", nameSearch);
+				MongoUpdateBuilder set = new MongoUpdateBuilder().set("name", newName).set("nameSearch", nameSearch);
 				queryHelper.update(id, set).map(doc).setHandler(handler);
 			} else {
 				handler.handle(toError(msg.cause()));

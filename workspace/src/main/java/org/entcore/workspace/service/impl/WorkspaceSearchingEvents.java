@@ -203,8 +203,16 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					return formatted;
 				});
 
+			}).setHandler(res -> {
+				if (res.succeeded()) {
+					JsonArray result = res.result().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
+					handler.handle(new Either.Right<String, JsonArray>(result));
+				} else {
+					handler.handle(new Either.Left<String, JsonArray>(res.cause().getMessage()));
+				}
 			});
-
+		} else {
+			handler.handle(new Either.Right<String, JsonArray>(new fr.wseduc.webutils.collections.JsonArray()));
 		}
 	}
 }
