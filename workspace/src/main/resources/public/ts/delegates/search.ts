@@ -17,6 +17,7 @@ export interface SearchDelegateScope {
     showOpenLocation(): boolean
     openLocation();
     //from others
+    currentTree: models.Tree
     openedFolder: models.FolderContext
     openFolderById(id: string)
     setCurrentTreeRoute(tree: models.TREE_NAME);
@@ -43,6 +44,15 @@ export function SearchDelegate($scope: SearchDelegateScope) {
                 let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true })
                 $scope.openedFolder.setFilter(all);
             } else {
+                //use a backend search on current directory 
+                if ($scope.openedFolder && $scope.openedFolder.folder && $scope.openedFolder.folder._id) {
+                    let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true, ancestorId: $scope.openedFolder.folder._id })
+                    $scope.openedFolder.setFilter(all);
+                } else {
+                    let all = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: true, search: $scope.search.criteria, includeall: true })
+                    $scope.openedFolder.setFilter(all);
+                }
+                /**
                 let criteria = $scope.search.criteria;
                 //
                 if (criteria) {
@@ -55,7 +65,7 @@ export function SearchDelegate($scope: SearchDelegateScope) {
                     $scope.openedFolder.applyFilter(filter);
                 } else {
                     $scope.openedFolder.restore();
-                }
+                }*/
             }
         } finally {
             $scope.search.state = "finished";
