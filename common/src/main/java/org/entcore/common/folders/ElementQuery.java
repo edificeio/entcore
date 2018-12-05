@@ -24,6 +24,7 @@ public class ElementQuery {
 	private Boolean trash;
 	private boolean favorites;
 	private String parentId;
+	private String ancestorId;
 	private String application;
 	private String searchByName;
 	private Boolean hierarchical;
@@ -264,6 +265,14 @@ public class ElementQuery {
 
 	public String getId() {
 		return id;
+	}
+
+	public String getAncestorId() {
+		return ancestorId;
+	}
+
+	public void setAncestorId(String ancestorId) {
+		this.ancestorId = ancestorId;
 	}
 
 	public String getParentId() {

@@ -18,6 +18,7 @@ import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.QueryBuilder;
 
@@ -151,6 +152,10 @@ class QueryHelper {
 			if (query.getTrasherId() != null) {
 				builder.withTrasherId(query.getTrasherId());
 			}
+			//
+			if(!StringUtils.isEmpty(query.getAncestorId())) {
+				builder.withAncestorContains(query.getAncestorId());
+			}
 			// filter without parent
 			if (query.getHierarchical() == null || !query.getHierarchical()) {
 				if (query.getNoParent() != null && query.getNoParent()) {
@@ -158,6 +163,13 @@ class QueryHelper {
 				}
 			}
 			return builder;
+		}
+
+		public DocumentQueryBuilder withAncestorContains(String ancestorId) {
+			DBObject sub = new BasicDBObject();
+			sub.put("$eq", ancestorId);
+			builder.and(QueryBuilder.start("ancestors").elemMatch(sub).get());
+			return this;
 		}
 
 		public DocumentQueryBuilder withHavingParent(boolean haveParent) {
@@ -529,7 +541,7 @@ class QueryHelper {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(body.getJsonObject("result", new JsonObject()).getJsonObject("cursor", new JsonObject())
-						.getJsonArray("firstBatch",new JsonArray()));
+						.getJsonArray("firstBatch", new JsonArray()));
 			} else {
 				future.fail(toErrorStr(body));
 			}

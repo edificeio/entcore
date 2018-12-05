@@ -4,11 +4,13 @@ import { models, workspaceService } from "../services";
 export interface DragDelegateScope {
     //from others
     currentTree: models.Tree
+    isDraggingElement: boolean
     openedFolder: models.FolderContext
     onInit(cab: () => void);
     safeApply()
-    isDraggingElement: boolean
     selectedItems(): models.Element[];
+    setMovingElements(elts: models.Element[])
+    moveSubmit(dest: models.Element, elts?: models.Element[])
     //
     //drag and drop
     countDragItems(): number
@@ -125,8 +127,9 @@ export function DragDelegate($scope: DragDelegateScope) {
 
         if ((targetItem as models.Tree).filter === 'trash')
             $scope.dropTrash(draggingItems);
-        else
-            $scope.dropMove(draggingItems, targetItem);
+        else {
+            $scope.moveSubmit(targetItem as models.Element,draggingItems)
+        }
         draggingItems = [];
     };
 
