@@ -100,7 +100,10 @@ public class FolderExporter {
 		}
 		return CompositeFuture.all(futures);
 	}
-
+	private String cleanName(JsonObject doc) {
+		String name = DocumentHelper.getName(doc, "undefined");
+		return name.replace(File.separatorChar, ' ');
+	}
 	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
@@ -113,7 +116,7 @@ public class FolderExporter {
 			Map<String, Integer> nameCount = new HashMap<>();
 			for (JsonObject doc : docs) {
 				String fileId = DocumentHelper.getFileId(doc);
-				String name = DocumentHelper.getName(doc, "undefined");
+				String name = cleanName(doc);
 				Integer count = nameCount.merge(name, 1, Integer::sum) - 1;
 				// if name already exists ... add suffix
 				if (count > 0) {

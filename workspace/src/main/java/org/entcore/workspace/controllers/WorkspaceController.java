@@ -473,6 +473,7 @@ public class WorkspaceController extends BaseController {
 
 	private ElementQuery queryFromRequest(HttpServerRequest request, UserInfos user) {
 		final String parentId = getOrElse(request.params().get("parentId"), request.params().get("folder"), false);
+		final String ancestorId = request.params().get("ancestorId");
 		final String hierarchical = request.params().get("hierarchical");
 		final String filter = getOrElse(request.params().get("filter"), "owner", false);
 		final String application = getOrElse(request.params().get("application"), null, false);
@@ -484,14 +485,17 @@ public class WorkspaceController extends BaseController {
 		query.setTrash(false);
 		// search
 		if (!StringUtils.isEmpty(search)) {
-			query.setFullTextSearch(new ArrayList<>());
-			query.getFullTextSearch().add(search);
+			final List<String> searchs = StringUtils.split(search, "\\s+");
+			query.setFullTextSearch(searchs);
 			query.addSort("modified", ElementSort.Desc);
 		}
 		// parent
 		query.setParentId(parentId);
 		if (StringUtils.isEmpty(parentId)) {
 			query.setNoParent(true);
+		}
+		if (!StringUtils.isEmpty(ancestorId)) {
+			query.setAncestorId(ancestorId);
 		}
 		//
 		switch (filter) {

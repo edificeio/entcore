@@ -356,5 +356,6 @@
   "workspace.add.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
-  "missing.buffer.error": "Votre enregistrement audio n'a pas pu être sauvegardé"
+  "missing.buffer.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
+  "folderpicker.folder.edit": "Créer un nouveau dossier"
 }

@@ -125,7 +125,7 @@ public class MongoDbShareService extends GenericShareService {
 				Set<String> all = new HashSet<>();
 				all.addAll(userIds);
 				all.addAll(uids);
-				//ignore current user
+				// ignore current user
 				all.remove(userId);
 				return all;
 			});
@@ -142,7 +142,7 @@ public class MongoDbShareService extends GenericShareService {
 				Set<String> all = new HashSet<>();
 				all.addAll(userIds);
 				all.addAll(uids);
-				//ignore current user
+				// ignore current user
 				all.remove(userId);
 				return all;
 			});
@@ -172,8 +172,16 @@ public class MongoDbShareService extends GenericShareService {
 			final String g = userShared.getString("groupId");
 			String u;
 			if (g != null) {
+				if (gs.containsKey(g)) {
+					JsonArray previous = gs.getJsonArray(g);
+					a.addAll(previous);
+				}
 				gs.put(g, a);
 			} else if ((u = userShared.getString("userId")) != null && !u.equals(userId)) {
+				if (us.containsKey(u)) {
+					JsonArray previous = us.getJsonArray(u);
+					a.addAll(previous);
+				}
 				us.put(u, a);
 			}
 		}
