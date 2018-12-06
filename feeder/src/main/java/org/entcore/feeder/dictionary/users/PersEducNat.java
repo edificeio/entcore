@@ -228,6 +228,11 @@ public class PersEducNat extends AbstractUser {
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
 					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fosm.fieldNames()))));
+					final String removeOldFoslg =
+							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
+							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.groups = null ";
+					transactionHelper.add(removeOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fgm.fieldNames()))));
 					for (String fos: fgm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
@@ -264,7 +269,7 @@ public class PersEducNat extends AbstractUser {
 				"MERGE u-[r1:TEACHES]->sub " +
 				"SET r1.classes = FILTER(cId IN coalesce(r.classes, []) WHERE cId starts with sExternalId), " +
 				"r1.groups = FILTER(gId IN coalesce(r.groups, []) WHERE gId starts with sExternalId), " +
-				"r1.lastUpdated = {now}, r.source = {source} ";
+				"r1.lastUpdated = {now}, r1.source = {source} ";
 		transactionHelper.add(query, params);
 		final String deleteOldSubjects =
 				"MATCH " + filter2 + "(sub:Subject {source : {source}}) WHERE sub.lastUpdated <> {now} detach delete sub";
