@@ -105,6 +105,13 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             template.open('lightbox', 'copy/move-toshare');
         } else if (res == "toown") {
             template.open('lightbox', 'copy/move-toown');
+        } else {
+            //move without feedback
+            if ($scope.currentTree.filter == "shared") {
+                workspaceService.moveAllForShared(getMovingElements(), dest)
+            } else {
+                workspaceService.moveAll(getMovingElements(), dest)
+            }
         }
     }
     $scope.openMoveView = function () {
