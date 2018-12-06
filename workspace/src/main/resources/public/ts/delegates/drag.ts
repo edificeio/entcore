@@ -37,10 +37,13 @@ export function DragDelegate($scope: DragDelegateScope) {
         return draggingItems.length;
     }
     $scope.dragEnd = function (el, event: Event) {
-        //reset
-        $scope.lockDropzone = false;
-        $scope.isDraggingElement = false;
-        $scope.safeApply()
+        //wait until drop event finished
+        setTimeout(() => {
+            //reset
+            $scope.lockDropzone = false;
+            $scope.isDraggingElement = false;
+            $scope.safeApply()
+        }, 300)
     }
     $scope.dropMove = async function (origin, target) {
         template.close('lightbox');
@@ -72,6 +75,7 @@ export function DragDelegate($scope: DragDelegateScope) {
         }
         //
         $scope.isDraggingElement = true;
+        $scope.safeApply()
     };
 
     $scope.dragCondition = function (item) {
@@ -128,7 +132,7 @@ export function DragDelegate($scope: DragDelegateScope) {
         if ((targetItem as models.Tree).filter === 'trash')
             $scope.dropTrash(draggingItems);
         else {
-            $scope.moveSubmit(targetItem as models.Element,draggingItems)
+            $scope.moveSubmit(targetItem as models.Element, draggingItems)
         }
         draggingItems = [];
     };
