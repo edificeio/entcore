@@ -137,7 +137,7 @@ public class FolderExporter {
 					future.fail(res.getString("error"));
 				} else {
 					future.complete(new JsonObject());
-					log.error("Failed to export file : "
+					log.error("Failed to export file : "+folderPath+" - "+ nameByFileId + "- "
 							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
 							+ res.encode());
 				}

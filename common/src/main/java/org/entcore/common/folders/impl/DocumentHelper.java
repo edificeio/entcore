@@ -71,6 +71,10 @@ public class DocumentHelper {
 		return doc.getString("eParentOld");
 	}
 
+	public static boolean isShared(JsonObject doc) {
+		return doc.getBoolean("isShared", false);
+	}
+
 	public static boolean hasParent(JsonObject doc) {
 		return !StringUtils.isEmpty(getParent(doc));
 	}

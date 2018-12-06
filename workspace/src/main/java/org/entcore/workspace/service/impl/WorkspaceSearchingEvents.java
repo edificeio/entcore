@@ -82,6 +82,8 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 			queryFiles.addProjection("owner");
 			queryFiles.addProjection("ownerName");
 			queryFiles.addProjection("comments");
+			queryFiles.addProjection("isShared");
+			queryFiles.addProjection("eParent");
 			//
 			final int skip = (0 == page) ? -1 : page * limit;
 			queryFiles.setLimit(limit);
@@ -92,28 +94,8 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 			//
 			Future<JsonArray> futureQuery = Future.future();
 			folderManager.findByQuery(queryFiles, user, futureQuery.completer());
-			futureQuery.compose(files -> {
-				//
-				// find all folders for files (only wich i have rights -> inheritsharedandowner)
-				//
-				Future<JsonArray> future = Future.future();
-				Set<String> ids = files.stream().map(result -> {
-					return DocumentHelper.getParent((JsonObject) result);
-				}).filter(id -> !StringUtils.isEmpty(id)).collect(Collectors.toSet());
-				//
-				if (ids.isEmpty()) {
-					return Future.succeededFuture(new JsonArray[] { files, new JsonArray() });
-				} else {
-					ElementQuery queryFolder = new ElementQuery(true);
-					queryFolder.setIds(ids);
-					queryFolder.setType(FolderManager.FOLDER_TYPE);
-					folderManager.findByQuery(queryFolder, user, future.completer());
-					return future.map(folders -> new JsonArray[] { files, folders });
-				}
-			}).map(filesAndFolders -> {
+			futureQuery.map(files -> {
 				final List<String> aHeader = columnsHeader.getList();
-				JsonArray files = filesAndFolders[0];
-				JsonArray folders = filesAndFolders[1];
 				return files.stream().map(o -> (JsonObject) o).map(file -> {
 					//
 					// format results
@@ -124,19 +106,16 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					String resourceURI = "/workspace/workspace";
 					// RESOURCE URI
 					String parent = DocumentHelper.getParent(file);
-					Optional<JsonObject> visibleFolder = folders.stream().map(o -> (JsonObject) o)
-							.filter(folder -> parent != null && DocumentHelper.getId(folder).equals(parent))
-							.findFirst();
 					// if parent folder is visible display it
-					if (visibleFolder.isPresent()) {
-						if (userId.equals(DocumentHelper.getOwner(visibleFolder.get()))) {
-							// i am the owner
-							resourceURI += "#/folder/" + parent;
-						} else {
+					if (DocumentHelper.hasParent(file)) {
+						if (DocumentHelper.isShared(file)) {
 							// i can see the folder but i am not the owner so it is a folder shared
 							resourceURI += "#/shared/folder/" + parent;
+						} else {
+							// i am the owner
+							resourceURI += "#/folder/" + parent;
 						}
-					} else if (!userId.equals(DocumentHelper.getOwner(visibleFolder.get()))) {
+					} else if (DocumentHelper.isShared(file)) {
 						// only the file is shared
 						resourceURI += "#/shared";
 					}
@@ -145,7 +124,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					//
 					final Set<String> unaccentWords = ((List<String>) searchWords.getList()).stream()
 							.map(word -> StringUtils.stripAccentsToLowerCase(word)).collect(Collectors.toSet());
-					JsonArray comments = file.getJsonArray("comments");
+					JsonArray comments = file.getJsonArray("comments", new JsonArray());
 					// get the last modified comment that match with searched words to create the
 					// description
 					List<JsonObject> commentsMatching = comments.stream().map(comment -> (JsonObject) comment)
@@ -160,7 +139,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 								// return modified dates and comments
 								try {
 									Date m = DateUtils.parse(comment.getString("posted"), PATTERN);
-									comment.put("modifiedDate", m);
+									comment.put("modifiedDate", m.getTime());
 									return comment;
 								} catch (ParseException e) {
 									log.error("Can't parse date from posted", e);
@@ -172,7 +151,8 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					Date modifiedDate = modified.orElse(null);
 					String description = null;
 					for (JsonObject comment : commentsMatching) {
-						Date d1 = (Date) comment.getValue("modifiedDate");
+						Long modifiedLong = comment.getLong("modifiedDate");
+						Date d1 = modifiedLong == null ? null : new Date(modifiedLong);
 						String text = comment.getString("comment", "");
 						// set description at least with first comment
 						description = description == null ? text : description;
@@ -194,8 +174,8 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 					//
 					formatted.put(aHeader.get(0), DocumentHelper.getName(file));
 					formatted.put(aHeader.get(1), description == null ? "" : description);
-					formatted.put(aHeader.get(2),
-							new JsonObject().put("$date", modifiedDate == null ? new Date() : modifiedDate));
+					Date modifiedNotNull = modifiedDate == null ? new Date() : modifiedDate;
+					formatted.put(aHeader.get(2), new JsonObject().put("$date", modifiedNotNull.getTime()));
 					formatted.put(aHeader.get(3), DocumentHelper.getOwnerName(file));
 					formatted.put(aHeader.get(4), DocumentHelper.getOwner(file));
 					formatted.put(aHeader.get(5), resourceURI);

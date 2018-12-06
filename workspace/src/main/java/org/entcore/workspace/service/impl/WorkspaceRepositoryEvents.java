@@ -90,10 +90,10 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						+ I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
 				exporter.export(new FolderExporterContext(realBasePath), rows).setHandler(res -> {
 					if (res.succeeded()) {
-						log.debug("Workspace exported successfully");
+						log.info("Workspace exported successfully to : " + exportPath);
 						handler.handle(true);
 					} else {
-						log.error("Failed to export workspace: ", res.cause());
+						log.error("Failed to export workspace: " + exportPath, res.cause());
 						handler.handle(false);
 					}
 				});
