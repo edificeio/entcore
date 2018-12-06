@@ -3,6 +3,7 @@ import { models, workspaceService } from "../services";
 
 export interface DragDelegateScope {
     //from others
+    trees: models.Tree[]
     currentTree: models.Tree
     isDraggingElement: boolean
     openedFolder: models.FolderContext
@@ -96,7 +97,7 @@ export function DragDelegate($scope: DragDelegateScope) {
                 return false
             //get real folder
             if (!isTree) {
-                targetItem = $scope.openedFolder.folders.find(folder => folder._id == targetItem._id);
+                targetItem = workspaceService.findFolderInTrees($scope.trees, targetItem._id);
             }
             //check after search
             if (!targetItem) {
