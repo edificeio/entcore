@@ -671,8 +671,25 @@ public class FolderManagerMongoImpl implements FolderManager {
 					return futureShared;
 				}).compose(ev -> {
 					// recompute from id (to refresh shared array)
-					return this.inheritShareComputer.compute(id, true).compose(res -> queryHelper.bulkUpdateShares(res))
-							.map(ev);
+					return this.inheritShareComputer.compute(id, true)
+							.compose(res -> queryHelper.bulkUpdateShares(res).map(res))
+							// break parent link if needed
+							.compose(res -> {
+								Future<Void> future = Future.future();
+								if (res.parentRoot.isPresent()) {
+									JsonObject parentRoot = res.parentRoot.get();
+									Boolean isShared = DocumentHelper.isShared(res.root);
+									Boolean parentIsShared = DocumentHelper.isShared(parentRoot);
+									//if my parent is shared and i m not (vice versa)...break the link
+									if (!isShared.equals(parentIsShared)) {
+										Set<String> ids = new HashSet<String>();
+										ids.add(DocumentHelper.getId(res.root));
+										return queryHelper.breakParentLink(ids);
+									}
+								}
+								future.complete(null);
+								return future;
+							}).map(ev);
 				}).setHandler(hh);
 	}
 
