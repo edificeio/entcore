@@ -102,7 +102,7 @@ public class FolderExporter {
 	}
 	private String cleanName(JsonObject doc) {
 		String name = DocumentHelper.getName(doc, "undefined");
-		return name.replace(File.separatorChar, ' ');
+		return name.replace(File.separatorChar, ' ').replace('\\', ' ');
 	}
 	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
