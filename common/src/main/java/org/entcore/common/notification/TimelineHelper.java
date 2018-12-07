@@ -82,8 +82,12 @@ public class TimelineHelper {
 							   UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params) {
 		notifyTimeline(request, notificationName, sender, recipients, resource, subResource, params, false);
 	}
+	public void notifyTimeline(final HttpServerRequest req, final String notificationName, UserInfos sender,
+			final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
+		notifyTimeline(req, notificationName, sender, recipients, resource, subResource, params, disableAntiFlood, null);
+	}
 	public void notifyTimeline(final HttpServerRequest req, final String notificationName,
-			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
+			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood, JsonObject preview){
 		notificationsLoader.getNotification(notificationName, notification -> {
 			JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 			for (String userId: recipients) {
@@ -106,6 +110,9 @@ public class TimelineHelper {
 			}
 			if (disableAntiFlood || params.getBoolean("disableAntiFlood", false)) {
 				event.put("disableAntiFlood", true);
+			}
+			if (preview != null) {
+				event.put("preview", preview);
 			}
 			Long date = params.getLong("timeline-publish-date");
 			if (date != null) {
