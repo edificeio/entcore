@@ -75,3 +75,4 @@ timeline/src/main/resources/view/*
 workspace/src/main/resources/view/*
 tests/.cache-main
 tests/.cache-tests
+package-lock.json
