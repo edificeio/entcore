@@ -110,6 +110,9 @@ public class TimelineHelper {
 			}
 			if (disableAntiFlood || params.getBoolean("disableAntiFlood", false)) {
 				event.put("disableAntiFlood", true);
+				if (params.containsKey("disableAntiFlood")) {
+					params.remove("disableAntiFlood");
+				}
 			}
 			if (preview != null) {
 				event.put("preview", preview);
