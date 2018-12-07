@@ -47,7 +47,7 @@ export function KeyboardDelegate($scope: KeyboardDelegateScope) {
         if (!template.isEmpty("lightbox")) {
             return;
         }
-        if (e.ctrlKey) {
+        if (e.ctrlKey || e.metaKey) {
             if ((e.key == "a" || e.key == "A")) {
                 const all = $scope.openedFolder.all;
                 const selected = all.filter(a => a.selected);
