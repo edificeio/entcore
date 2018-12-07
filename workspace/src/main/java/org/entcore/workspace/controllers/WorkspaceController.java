@@ -290,7 +290,7 @@ public class WorkspaceController extends BaseController {
 		String fileId = message.body().getString("documentId");
 		workspaceService.copyUnsafe(fileId, Optional.empty(), userId, res -> {
 			if (res.succeeded())
-				message.reply(res.result());
+				message.reply(res.result().getJsonObject(0));
 			else
 				message.fail(500, res.cause().getMessage());
 		});

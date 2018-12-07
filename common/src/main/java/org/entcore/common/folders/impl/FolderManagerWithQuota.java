@@ -55,33 +55,32 @@ public class FolderManagerWithQuota implements FolderManager {
 
 	public Future<Long> computFreeSpace(final UserInfos userInfos) {
 		Future<Long> future = Future.future();
-		try {
-			long quota = Long.valueOf(userInfos.getAttribute("quota").toString());
-			long storage = Long.valueOf(userInfos.getAttribute("storage").toString());
-			future.complete(quota - storage);
-		} catch (Exception e) {
-			quotaService.quotaAndUsage(userInfos.getUserId(), new Handler<Either<String, JsonObject>>() {
-				@Override
-				public void handle(Either<String, JsonObject> r) {
-					if (r.isRight()) {
-						JsonObject j = r.right().getValue();
-						if (j != null) {
-							long quota = j.getLong("quota", 0l);
-							long storage = j.getLong("storage", 0l);
-							for (String attr : j.fieldNames()) {
-								UserUtils.addSessionAttribute(eventBus, userInfos.getUserId(), attr, j.getLong(attr),
-										null);
-							}
-							future.complete(quota - storage);
-						} else {
-							future.fail("not.found");
+//		try {
+//			long quota = Long.valueOf(userInfos.getAttribute("quota").toString());
+//			long storage = Long.valueOf(userInfos.getAttribute("storage").toString());
+//			future.complete(quota - storage);
+//		} catch (Exception e) {
+		quotaService.quotaAndUsage(userInfos.getUserId(), new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(Either<String, JsonObject> r) {
+				if (r.isRight()) {
+					JsonObject j = r.right().getValue();
+					if (j != null) {
+						long quota = j.getLong("quota", 0l);
+						long storage = j.getLong("storage", 0l);
+						for (String attr : j.fieldNames()) {
+							UserUtils.addSessionAttribute(eventBus, userInfos.getUserId(), attr, j.getLong(attr), null);
 						}
+						future.complete(quota - storage);
 					} else {
-						future.fail(r.left().getValue());
+						future.fail("not.found");
 					}
+				} else {
+					future.fail(r.left().getValue());
 				}
-			});
-		}
+			}
+		});
+		// }
 		return future;
 	}
 
@@ -236,7 +235,7 @@ public class FolderManagerWithQuota implements FolderManager {
 			return incrementFreeSpace(user, size).map(deleted);
 		}).setHandler(handler);
 	}
-	
+
 	@Override
 	public void deleteAll(Set<String> ids, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
 		Future<JsonArray> future = Future.future();

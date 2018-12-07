@@ -1,4 +1,4 @@
-import { template, FolderPickerProps, FolderPickerSourceFile } from "entcore";
+import { idiom as lang, template, FolderPickerProps, FolderPickerSourceFile, notify } from "entcore";
 import { models, workspaceService } from "../../services";
 
 
@@ -49,6 +49,9 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         },
         onCancel() {
             closeCopyView(null)
+        },
+        onError(e) {
+            closeCopyView(null);
         },
         treeProvider() {
             return Promise.resolve($scope.trees)
