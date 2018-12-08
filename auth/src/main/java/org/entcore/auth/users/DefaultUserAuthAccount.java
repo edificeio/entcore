@@ -550,14 +550,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
 		params.put("password", pw);
-		neo.send(query, params, new Handler<Message<JsonObject>>(){
-
-			@Override
-			public void handle(Message<JsonObject> res) {
-				JsonObject r = res.body().getJsonObject("result");
-				handler.handle("ok".equals(res.body().getString("status"))
-						&& r.getJsonObject("0") != null
-						&& pw.equals(r.getJsonObject("0").getString("pw")));
+		neo.send(query, params, res -> {
+			JsonObject r = res.body().getJsonObject("result");
+			boolean updated = "ok".equals(res.body().getString("status"))
+					&& r.getJsonObject("0") != null
+					&& pw.equals(r.getJsonObject("0").getString("pw"));
+			if (updated) {
+				handler.handle(true);
+			} else {
+				neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
+					JsonObject r2 = event.body().getJsonObject("result");
+					handler.handle("ok".equals(event.body().getString("status"))
+							&& r2.getJsonObject("0") != null
+							&& pw.equals(r2.getJsonObject("0").getString("pw")));
+				});
 			}
 		});
 	}
