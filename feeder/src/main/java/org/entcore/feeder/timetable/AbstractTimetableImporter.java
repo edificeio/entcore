@@ -140,6 +140,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final Map<String, String> subjects = new HashMap<>();
 	protected final Map<String, JsonObject> classes = new HashMap<>();
 	protected final Map<String, JsonObject> groups = new HashMap<>();
+	protected final Map<String, String> classNameExternalId = new HashMap<>();
 
 	protected PersEducNat persEducNat;
 	protected TransactionHelper txXDT;
@@ -171,16 +172,19 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				"MATCH (s:Structure {UAI : {UAI}})<-[:MAPPING]-(cm:ClassesMapping) " +
 				"return cm.mapping as mapping ";
 		final String subjectsMappingQuery = "MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject) return sub.code as code, sub.id as id";
+		final String classesNameExternalIdQuery =
+				"MATCH (:Structure {UAI : {UAI}})<-[:BELONGS]-(c:Class) RETURN c.externalId as externalId, c.name as name";
 		final TransactionHelper tx = TransactionManager.getTransaction();
 		tx.add(getUsersByProfile, new JsonObject().put("UAI", UAI).put("profile", "Teacher"));
 		tx.add(externalIdFromUAI, new JsonObject().put("UAI", UAI));
 		tx.add(classesMappingQuery, new JsonObject().put("UAI", UAI));
 		tx.add(subjectsMappingQuery, new JsonObject().put("UAI", UAI));
+		tx.add(classesNameExternalIdQuery, new JsonObject().put("UAI", UAI));
 		tx.commit(new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				final JsonArray res = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 4) {
+				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 5) {
 					try {
 						for (Object o : res.getJsonArray(0)) {
 							if (o instanceof JsonObject) {
@@ -226,6 +230,15 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								if (o instanceof JsonObject) {
 									final  JsonObject s = (JsonObject) o;
 									subjectsMapping.put(s.getString("code"), s.getString("id"));
+								}
+							}
+						}
+						JsonArray classNameExternalIds = res.getJsonArray(4);
+						if (classNameExternalIds != null && classNameExternalIds.size() > 0) {
+							for (Object o : classNameExternalIds) {
+								if (o instanceof JsonObject) {
+									final  JsonObject cnei = (JsonObject) o;
+									classNameExternalId.put(cnei.getString("name"), cnei.getString("externalId"));
 								}
 							}
 						}
@@ -339,11 +352,36 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			final JsonObject params = new JsonObject()
 					.put("subjectId", subjectId)
 					.put("teacherIds", teacherIds)
-					.put("classes", object.getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray()))
-					.put("groups", object.getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray()))
+					.put("classes", getExternalIdClasses(object.getJsonArray("classes")))
+					.put("groups", getExternalIdGroups(object.getJsonArray("groups")))
 					.put("source", getSource()).put("now", importTimestamp);
 			txXDT.add(LINK_SUBJECT, params);
 		}
+	}
+
+	private JsonArray getExternalIdClasses(JsonArray classes) {
+		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		if (classes != null && classes.size() > 0) {
+			for (Object c: classes) {
+				if (!(c instanceof String)) continue;
+				String cEId = classNameExternalId.get(c);
+				if (isNotEmpty(cEId)) {
+					a.add(cEId);
+				}
+			}
+		}
+		return a;
+	}
+
+	private JsonArray getExternalIdGroups(JsonArray groups) {
+		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		if (groups != null && groups.size() > 0) {
+			for (Object g: groups) {
+				if (!(g instanceof String)) continue;
+				a.add(structureExternalId + "$" + g);
+			}
+		}
+		return a;
 	}
 
 	private void persEducNatToGroups(JsonObject object) {
