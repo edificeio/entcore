@@ -25,6 +25,7 @@ interface ImportScope {
 	previousImage()
 	openCompression(el: models.Element)
 	cancelUpload()
+	canConfirmImport(): boolean
 	confirmImport()
 	editImage()
 	onImportFiles(files: FileList)
@@ -189,6 +190,9 @@ export const importFiles = ng.directive('importFiles', () => {
 				await workspaceService.deleteAll(toDel);
 				//on deleteAll content auto refresh 
 				scope.upload.documents = [];
+			}
+			scope.canConfirmImport = function () {
+				return scope.upload.documents.map(d => d.uploadStatus == "loaded").reduce((a1, a2) => a1 && a2, true);
 			}
 			scope.confirmImport = async () => {
 				template.open('import', 'directives/import/upload');

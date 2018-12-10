@@ -141,6 +141,7 @@
     "workspace.select.all": "Tous",
     "workspace.send.rack": "Déposer dans un casier",
     "workspace.share": "Partager",
+    "workspace.share.removeall": "L'élément a été déplacé dans le dossier personnel du propriétaire.",
     "move": "Déplacer",
     "workspace.shared.message": "L'attribution des droits a bien été prise en compte",
     "workspace.show.versions": "Voir les versions archivées",

@@ -34,6 +34,8 @@ export interface TreeDelegateScope {
 }
 export function TreeDelegate($scope: TreeDelegateScope, $location) {
     let refreshPromise: Promise<models.Tree[]> = null;
+    const currentTreeVoid = {};
+    $scope.currentTree = currentTreeVoid as any;
     const refreshAll = function () {
         refreshPromise = workspaceService.fetchTrees({
             filter: "all",
@@ -67,13 +69,15 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }]
         $scope.quota = quota;
         quota.refresh();
-        //if already init (from routes)
-        if (!$scope.currentTree) {
-            $scope.setCurrentTree("owner")
-        }
         //load trees
         refreshAll().then(e => {
+            //
             callbackInits.forEach(cb => cb())
+            //if already init (from routes) => wait tree is loaded
+            if (!$scope.currentTree || $scope.currentTree === currentTreeVoid) {
+                $scope.setCurrentTree("owner")
+            }
+            
         });
         //
         workspaceService.onChange.subscribe(event => {
