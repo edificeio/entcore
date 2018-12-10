@@ -58,11 +58,30 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         copiedFolders = []
         $scope.sharedElements = []
     }
+    const countShared = function (shared: SharePayload, excludedOwner: string = null) {
+        let count = 0;
+        if (!shared) {
+            return count;
+        }
+        count += shared.users ? Object.keys(shared.users).length : 0;
+        count += shared.groups ? Object.keys(shared.groups).length : 0;
+        if (excludedOwner && shared.users && shared.users[excludedOwner]) {
+            count--;
+        }
+        return count;
+    }
     $scope.onValidateShare = async function (data, resource, actions) {
         //owner is always manager of his folder
         if (workspaceService.isFolder(resource)) {
-            //sometimes owner is a string?
+            //sometimes owner is a string? 
             const userId: any = resource.owner.userId || resource.owner;
+            const count = countShared(data, userId);
+            if(count<=0){
+                //if no shared => remove owner from shared
+                delete data.users[userId];
+                return true;
+            }
+            //if there are some shared=> add owner as managaer
             const actionsNames = actions.map(a => a.name).reduce((prev, current) => prev.concat(current), [])
             if (!actionsNames.length) {
                 throw "could not found actions"
@@ -95,11 +114,8 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         closeShareView()
     }
     $scope.onSubmitSharedElements = function (shared) {
-        let count = 0;
-        count += shared.users ? Object.keys(shared.users).length : 0;
-        count += shared.groups ? Object.keys(shared.groups).length : 0;
-        //
-        if(count==0){
+        const count = countShared(shared);
+        if (count <= 0) {
             notify.success(idiom.translate("workspace.share.removeall"))
         }
         //
