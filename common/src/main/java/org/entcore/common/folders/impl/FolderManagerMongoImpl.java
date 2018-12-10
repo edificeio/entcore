@@ -120,7 +120,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 	private Future<JsonArray> copyFile(Optional<UserInfos> userOpt, Collection<JsonObject> originals,
 			Optional<JsonObject> parent) {
-		return StorageHelper.copyFileInStorage(storage, originals).compose(oldFileIdForNewFileId -> {
+		return StorageHelper.copyFileInStorage(storage, originals,false).compose(oldFileIdForNewFileId -> {
 			// set newFileIds and parent
 			List<JsonObject> copies = originals.stream().map(o -> {
 				JsonObject copy = o.copy();
