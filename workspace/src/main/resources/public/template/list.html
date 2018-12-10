@@ -60,7 +60,7 @@
 				<td class="icon zero-mobile">
 					<div class="twelve cell">
 						<i class="folder"></i>
-						<i ng-if="folder.isShared" class="shared"></i>
+						<i ng-if="folder.isShared && isSearching()" class="shared"></i>
 					</div>
 				</td>
 				<td class="content">
@@ -81,7 +81,7 @@
 				<td class="icon zero-mobile">
 					<div class="twelve cell">
 						<i class="[[document.metadata.role]]"></i>
-						<i ng-if="document.isShared" class="shared"></i>
+						<i ng-if="document.isShared && isSearching()" class="shared"></i>
 					</div>
 				</td>
 				<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
