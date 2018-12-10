@@ -192,9 +192,9 @@ export class Mail implements Selectable {
     }
 
     addHideAndShow() {
-        let history = this.body.replace(new RegExp('<div.*?<hr class=\"ng-scope\">'),'');
+        let history = this.body.slice(this.body.search('<p class="medium-text'));
         let newBody = this.body
-        .replace('<p class=\"ng-scope\">&nbsp;</p><p class=\"row ng-scope\"></p><hr class=\"ng-scope\">','<hr class=\"ng-scope\">')
+        .replace(/<p.*?p>.*?p>/,'')
         .replace(history,'') +
         `<div class="row drop-down-block" ng-class="{slided: isSlided}">
             <div class="drop-down-label" ng-click="showConversationHistory()">
