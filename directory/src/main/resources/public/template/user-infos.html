@@ -84,7 +84,7 @@
 						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100" />
 					</div>
 					<div>
-						<span class="cell-ellipsis small-text block left-text">[[ child.displayName ]]</span>
+						<a class="cell-ellipsis small-text block left-text" href="/userbook/annuaire#/[[child.id]]">[[ child.displayName ]]</a>
 						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[
 							child.classesNames[0] ]]</span>
 					</div>
@@ -103,7 +103,7 @@
 					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100" />
 				</div>
 				<div>
-					<span class="cell-ellipsis small-text block left-text">[[ relative.displayName ]]</span>
+					<a class="cell-ellipsis small-text block left-text" href="/userbook/annuaire#/[[relative.id]]">[[ relative.displayName ]]</a>
 				</div>
 			</div>
 		</div>
