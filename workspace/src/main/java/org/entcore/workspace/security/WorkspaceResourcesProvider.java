@@ -118,7 +118,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				break;
 			case "renameDocument":
 			case "renameFolder":
-				authorizeOwner(request, user, binding.getServiceMethod(), handler);
+				authorizeDocument(request, user, binding.getServiceMethod(), handler);
 				break;
 			default:
 				handler.handle(false);
@@ -272,18 +272,6 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			query.setId(id);
 			executeCountQuery(request, user, query, 1, handler);
 
-		} else {
-			handler.handle(false);
-		}
-	}
-
-	private void authorizeOwner(HttpServerRequest request, UserInfos user, String serviceMethod,
-			Handler<Boolean> handler) {
-		String id = request.params().get("id");
-		if (id != null && !id.trim().isEmpty()) {
-			ElementQuery query = new ElementQuery(false);
-			query.setId(id);
-			executeCountQuery(request, user, query, 1, handler);
 		} else {
 			handler.handle(false);
 		}
