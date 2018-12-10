@@ -50,7 +50,7 @@
     </div>
     <div class="row">
         <em class="six cell small-text"><i18n>medialibrary.images.editable.formats</i18n></em>
-        <button class="right-magnet" ng-click="confirmImport()"><i18n>import</i18n></button>
+        <button class="right-magnet" ng-click="confirmImport()" ng-disabled="!canConfirmImport()"><i18n>import</i18n></button>
         <button class="right-magnet cancel" ng-click="cancelUpload()"><i18n>cancel</i18n></button>
     </div>
 </div>

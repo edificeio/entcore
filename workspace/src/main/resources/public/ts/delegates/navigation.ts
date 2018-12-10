@@ -212,7 +212,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
     }
     /**aply a debounce time to avoid reloading content every time (sync bugs + optimize perf)**/
     let reloadSubject = new Subject();
-    (reloadSubject as Observable<any>).debounceTime(500).subscribe(async e => {
+    (reloadSubject as Observable<any>).debounceTime(350).subscribe(async e => {
         //on refresh folder content => reset search
         $scope.resetSearch();
         //fetch only documents in contents
