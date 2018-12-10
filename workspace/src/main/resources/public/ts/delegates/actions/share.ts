@@ -1,4 +1,4 @@
-import { template, SharePayload, ShareAction, Shareable } from "entcore";
+import { template, SharePayload, ShareAction, Shareable, notify, idiom } from "entcore";
 import { models, workspaceService } from "../../services";
 
 
@@ -11,7 +11,7 @@ export interface ShareDelegateScope {
     onShareAndCopy()
     onShareAndNotCopy()
     onCancelShareElements()
-    onSubmitSharedElements();
+    onSubmitSharedElements(shared: SharePayload);
     canEditShareItem(args: { id: string, type: string })
     onValidateShare(data: SharePayload, resource: models.Element, actions: ShareAction[]): Promise<any>
     //from others
@@ -94,7 +94,15 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         }
         closeShareView()
     }
-    $scope.onSubmitSharedElements = function () {
+    $scope.onSubmitSharedElements = function (shared) {
+        let count = 0;
+        count += shared.users ? Object.keys(shared.users).length : 0;
+        count += shared.groups ? Object.keys(shared.groups).length : 0;
+        //
+        if(count==0){
+            notify.success(idiom.translate("workspace.share.removeall"))
+        }
+        //
         $scope.sharedElements && $scope.sharedElements.forEach(el => {
             el._isShared = true;
         })
