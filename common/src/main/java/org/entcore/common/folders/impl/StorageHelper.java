@@ -62,7 +62,7 @@ class StorageHelper {
 	}
 
 	static void replaceThumbnailFileId(JsonObject jsonDocument, String fileId, String newFileId) {
-		JsonObject meta = jsonDocument.getJsonObject("thumbnails",new JsonObject());
+		JsonObject meta = jsonDocument.getJsonObject("thumbnails", new JsonObject());
 		for (String key : meta.fieldNames()) {
 			String value = meta.getString(key);
 			if (value != null && newFileId != null && value.equals(fileId)) {
@@ -84,10 +84,11 @@ class StorageHelper {
 		return listOfFilesIds;
 	}
 
-	static Future<Map<String, String>> copyFileInStorage(Storage storage, Collection<JsonObject> originals) {
+	static Future<Map<String, String>> copyFileInStorage(Storage storage, Collection<JsonObject> originals,
+			boolean throwErrors) {
 		// only files are duplicated in storage
 		Set<JsonObject> files = originals.stream().filter(o -> DocumentHelper.isFile(o)).collect(Collectors.toSet());
-		if(files.isEmpty()) {
+		if (files.isEmpty()) {
 			return Future.succeededFuture(new HashMap<>());
 		}
 		@SuppressWarnings("rawtypes")
@@ -99,8 +100,17 @@ class StorageHelper {
 				if (isOk(res)) {
 					future.complete(new AbstractMap.SimpleEntry<String, String>(fId, res.getString("_id")));
 				} else {
-					//TODO should i fail if file not exists?
-					future.fail(toErrorStr(res));
+					if (throwErrors) {
+						future.fail(toErrorStr(res));
+					} else {
+						// if file not exists=> no errors
+						String message = res.getString("message", "");
+						if (message.contains("java.nio.file.NoSuchFileException")) {
+							future.complete(new AbstractMap.SimpleEntry<String, String>(fId, fId));
+						} else {
+							future.fail(toErrorStr(res));
+						}
+					}
 				}
 			});
 			copyFutures.add(future);
