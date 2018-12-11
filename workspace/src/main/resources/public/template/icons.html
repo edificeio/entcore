@@ -84,7 +84,7 @@
 					</i>
 					<div ng-if="document.metadata.role === 'img'" class="twelve cell">
 						<div class="clip">
-							<img ng-src="[[document.icon]]?thumbnail=120x120&v=[[document.version]]" alt="thumbnail" />
+							<img lazy-load-img="getImageUrl(document)" alt="thumbnail" />
 						</div>
 					</div>
 				</a>

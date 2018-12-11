@@ -26,6 +26,7 @@ export interface NavigationDelegateScope {
     isHighlighted(el: models.Element)
     removeHighlight(el: models.Element[]);
     //
+    getImageUrl(doc:models.Element)
     //
     canOpenFolder(): boolean
     canOpenFile(): boolean
@@ -110,6 +111,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
     //
     $scope.onQuickstartFinished = function () {
         workspaceService.savePreference({ quickstart: "viewed" })
+    }
+    $scope.getImageUrl=function(document){
+        return `${document.icon}?thumbnail=120x120&v=${document.version}`
     }
     //order
     $scope.order = {

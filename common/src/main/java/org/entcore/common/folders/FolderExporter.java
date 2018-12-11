@@ -101,11 +101,11 @@ public class FolderExporter {
 		return CompositeFuture.all(futures);
 	}
 
-	private String cleanName(JsonObject doc) {
+	private static String cleanName(JsonObject doc) {
 		String name = DocumentHelper.getName(doc, "undefined");
-		return name.replaceAll("/", "_").replaceAll("\\", "_").trim();
-	}
-
+		return name.replaceAll("/", "_").replaceAll("\\\\", "_").trim();
+	} 
+	
 	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();

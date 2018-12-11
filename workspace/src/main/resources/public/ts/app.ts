@@ -6,6 +6,7 @@ import { pdfViewer } from './directives/pdfViewer';
 import { cssTransitionEnd } from './directives/cssTransitions';
 import { dropzoneOverlay } from './directives/dropzoneOverlay';
 import { helpBox, helpBoxStep } from './directives/helpBox'; 
+import { lazyLoadImg } from './directives/lazyLoad';
 
 routes.define(function ($routeProvider) {
 	$routeProvider
@@ -40,3 +41,4 @@ ng.directives.push(cssTransitionEnd);
 ng.directives.push(dropzoneOverlay)
 ng.directives.push(helpBoxStep);
 ng.directives.push(helpBox); 
+ng.directives.push(lazyLoadImg)
