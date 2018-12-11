@@ -1,4 +1,4 @@
-import { template, SharePayload, ShareAction, Shareable, notify, idiom } from "entcore";
+import { template, SharePayload, ShareAction, model, notify, idiom } from "entcore";
 import { models, workspaceService } from "../../services";
 
 
@@ -14,6 +14,7 @@ export interface ShareDelegateScope {
     onSubmitSharedElements(shared: SharePayload);
     canEditShareItem(args: { id: string, type: string })
     onValidateShare(data: SharePayload, resource: models.Element, actions: ShareAction[]): Promise<any>
+    onShareFeed(data: any, resource: models.Element, actions: ShareAction[])
     //from others
     currentTree: models.Tree;
     display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
@@ -70,13 +71,39 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         }
         return count;
     }
+    $scope.onShareFeed = function (data, resource, actions) {
+        //sometimes owner is a string? 
+        const userId: any = resource.owner.userId || resource.owner;
+        //if owner is current user => skip
+        if (userId == model.me.userId) {
+            return;
+        }
+        //if owner is  in shared or inherithshared=>skip
+        if (data.users["checked"][userId] || data.users["checkedInherited"][userId]) {
+            return;
+        }
+        //get ownername
+        const userName: any = resource.owner.displayName || resource.ownerName;
+        //add owner as managaer => collect all actions
+        const actionsNames = actions.map(a => a.name).reduce((prev, current) => prev.concat(current), [])
+        if (!actionsNames.length) {
+            throw "could not found actions"
+        }
+        //add owner as managaer=>push user visible and checked
+        data.users["checked"][userId] = actionsNames;
+        data.users["visibles"].push({
+            id: userId,
+            username: userName,
+            type: "user"
+        })
+    }
     $scope.onValidateShare = async function (data, resource, actions) {
         //owner is always manager of his folder
         if (workspaceService.isFolder(resource)) {
             //sometimes owner is a string? 
             const userId: any = resource.owner.userId || resource.owner;
             const count = countShared(data, userId);
-            if(count<=0){
+            if (count <= 0) {
                 //if no shared => remove owner from shared
                 delete data.users[userId];
                 return true;
