@@ -13,6 +13,7 @@ export interface SearchDelegateScope {
     searchInWorkspace();
     searchSubmit();
     searchKeyUp(event);
+    isSearchResult();
     isSearching();
     showOpenLocation(): boolean
     openLocation();
@@ -33,6 +34,9 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     });
     $scope.isSearching = function () {
         return $scope.search.state == "searching";
+    }
+    $scope.isSearchResult = function () {
+        return $scope.search.state == "finished";
     }
     $scope.searchSubmit = async function () {
         if ($scope.search.state == "searching" || !$scope.search.criteria || !$scope.search.criteria.length) {

@@ -29,7 +29,7 @@
 					<i class="folder-large"></i>
 				</a>
 
-				<i ng-if="folder.isShared && isSearching()" class="shared inline"></i>
+				<i ng-if="folder.isShared && isSearchResult()" class="shared inline"></i>
 				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
@@ -89,7 +89,7 @@
 					</div>
 				</a>
 
-				<i ng-if="document.isShared && isSearching()" class="shared inline"></i>
+				<i ng-if="document.isShared && isSearchResult()" class="shared inline"></i>
 				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
