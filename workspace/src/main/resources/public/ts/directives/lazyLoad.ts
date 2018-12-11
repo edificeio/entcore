@@ -17,6 +17,9 @@ function lazyLoadImgFunc() {
                     console.warn("lazy load is disabled")
                 }
                 logged = true;
+                //set src on img
+                const img = angular.element(element)[0];
+                img.src = scope.lazyLoadImg;
             } else {
                 if (!logged){
                     console.info("lazy load is enabled")
