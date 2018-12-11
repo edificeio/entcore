@@ -52,7 +52,7 @@ export interface NavigationDelegateScope {
     $watch(a: any, f: Function)
     onInit(cab: () => void);
 }
-export function NavigationDelegate($scope: NavigationDelegateScope) {
+export function NavigationDelegate($scope: NavigationDelegateScope, $location, $anchorScroll, $timeout) {
     let highlighted: models.Element[] = [];
     let viewMode: WorkspacePreferenceView = null;
     $scope.onInit(function () {
@@ -151,6 +151,14 @@ export function NavigationDelegate($scope: NavigationDelegateScope) {
         if (save) {
             workspaceService.savePreference({ sortDesc: $scope.order.desc, sortField: $scope.order.field })
         }
+        $timeout(function() {
+            if($location.hash() !== 'start') {
+                $location.hash('start');
+            }
+            else {
+                $anchorScroll();
+            }
+        })
     };
     //list
     $scope.onInfotipChange = function (visible) {
