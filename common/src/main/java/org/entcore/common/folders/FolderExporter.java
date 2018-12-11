@@ -58,7 +58,7 @@ public class FolderExporter {
 			Optional<JsonObject> founded = rows.stream().filter(r -> parent.equals(DocumentHelper.getId(r)))
 					.findFirst();
 			if (founded.isPresent()) {
-				String name = DocumentHelper.getName(founded.get(), "undefined");
+				String name = cleanName(founded.get());
 				buildPath(rows, founded.get(), paths);
 				paths.add(name);
 			}
@@ -67,7 +67,7 @@ public class FolderExporter {
 
 	private void buildMapping(List<JsonObject> rows, FolderExporterContext context) {
 		for (JsonObject row : rows) {
-			context.namesByIds.put(row.getString("_id"), row.getString("name", "undefined"));
+			context.namesByIds.put(row.getString("_id"), cleanName(row));
 		}
 
 		for (JsonObject row : rows) {
@@ -100,10 +100,12 @@ public class FolderExporter {
 		}
 		return CompositeFuture.all(futures);
 	}
+
 	private String cleanName(JsonObject doc) {
 		String name = DocumentHelper.getName(doc, "undefined");
-		return name.replace(File.separatorChar, ' ').replace('\\', ' ');
+		return name.replaceAll("/", "_").replaceAll("\\", "_").trim();
 	}
+
 	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
@@ -137,7 +139,7 @@ public class FolderExporter {
 					future.fail(res.getString("error"));
 				} else {
 					future.complete(new JsonObject());
-					log.error("Failed to export file : "+folderPath+" - "+ nameByFileId + "- "
+					log.error("Failed to export file : " + folderPath + " - " + nameByFileId + "- "
 							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
 							+ res.encode());
 				}
