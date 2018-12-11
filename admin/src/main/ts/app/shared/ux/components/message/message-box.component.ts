@@ -54,11 +54,11 @@ export class MessageBoxComponent implements OnInit {
     @Input() set messages(value:(string | [string,Object])[]) {
         this._messages = [];
 
-        for (let m of value) {
-            if (typeof m == "string")
-                this._messages.push([m,{}]);
-            else if (typeof m == "object") {
-                this._messages.push(m);
+        for (let message of value) {
+            if (typeof message == "string")
+                this._messages.push([message,{}]);
+            else if (typeof message == "object") {
+                this._messages.push(message);
             }
         }
     };
@@ -90,7 +90,7 @@ export class MessageBoxComponent implements OnInit {
         this.eltRef.nativeElement.style.position = this._position;
         if (this._position == 'absolute') {
             this.eltRef.nativeElement.style.width = '450px';
-            // Maybe use a static counter to push on top the last open MessageBox ?
+            // TODO: Maybe use a static counter to push on top the last open MessageBox ?
             this.eltRef.nativeElement.style.zIndex = '10';
         }
     }
