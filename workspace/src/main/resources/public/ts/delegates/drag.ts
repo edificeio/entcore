@@ -16,6 +16,7 @@ export interface DragDelegateScope {
     //drag and drop
     countDragItems(): number
     lockDropzone: boolean
+    isDropzoneEnabled(): boolean
     canDropOnElement(el: models.Element): boolean
     dropMove(origin: models.Element[], target: models.Element)
     drag(item: models.Element, event?: any)
@@ -34,6 +35,14 @@ export function DragDelegate($scope: DragDelegateScope) {
         $scope.isDraggingElement = false;
     });
     $scope.lockDropzone = false;
+    $scope.isDropzoneEnabled = function () {
+        //display drop zone only owner and shared tree
+        if ($scope.currentTree.filter == "owner" || $scope.currentTree.filter == "shared") {
+            return !$scope.lockDropzone;
+        } else {//lock
+            return false;
+        }
+    }
     $scope.countDragItems = function () {
         return draggingItems.length;
     }
@@ -80,7 +89,7 @@ export function DragDelegate($scope: DragDelegateScope) {
     };
 
     $scope.dragCondition = function (item) {
-        return $scope.currentTree.filter == "owner" || ($scope.currentTree.filter == "shared" && item.canMove);
+        return $scope.currentTree.filter == "owner" || $scope.currentTree.filter == "protected" || ($scope.currentTree.filter == "shared" && item.canMove);
     }
 
     $scope.dropCondition = function (targetItem) {
@@ -129,11 +138,17 @@ export function DragDelegate($scope: DragDelegateScope) {
         const can = $scope.dropCondition(targetItem)($originalEvent);
         if (!can)
             return;
-
-        if ((targetItem as models.Tree).filter === 'trash')
+        //if drop on trash => trash
+        if ((targetItem as models.Tree).filter === 'trash') {
             $scope.dropTrash(draggingItems);
-        else {
-            $scope.moveSubmit(targetItem as models.Element, draggingItems)
+        } else {
+            //if drop from apps=> copy
+            if ($scope.currentTree.filter === 'protected') {
+                workspaceService.copyAll(draggingItems, targetItem)
+            } else {
+                //else use classic workflow
+                $scope.moveSubmit(targetItem as models.Element, draggingItems)
+            }
         }
         draggingItems = [];
     };
