@@ -49,7 +49,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	isUploadedImage(): boolean
 	//selection
 }
-export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', 'route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, route) => {
+export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route) => {
 	/**
 	 * Routes
 	 */
@@ -101,7 +101,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	/**
 	 * Delegates
 	 */
-	NavigationDelegate($scope);
+	NavigationDelegate($scope, $location, $anchorScroll, $timeout);
 	TreeDelegate($scope, $location);
 	ActionDelegate($scope);
 	CommentDelegate($scope);
