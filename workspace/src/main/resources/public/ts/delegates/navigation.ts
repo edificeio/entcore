@@ -26,7 +26,7 @@ export interface NavigationDelegateScope {
     isHighlighted(el: models.Element)
     removeHighlight(el: models.Element[]);
     //
-    getImageUrl(doc:models.Element)
+    getImageUrl(doc: models.Element)
     //
     canOpenFolder(): boolean
     canOpenFile(): boolean
@@ -44,10 +44,10 @@ export interface NavigationDelegateScope {
     selectedItems(): models.Element[];
     isSelectedFolder(folder: models.Element): boolean
     setCurrentFolder(folder: models.Element, reload?: boolean)
+    setDelegateReloadContent(delegate: () => boolean)
     // from others 
     currentTree: models.Tree;
     trees: models.Tree[]
-    resetSearch();
     safeApply(a?)
     $watch(a: any, f: Function)
     onInit(cab: () => void);
@@ -112,7 +112,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     $scope.onQuickstartFinished = function () {
         workspaceService.savePreference({ quickstart: "viewed" })
     }
-    $scope.getImageUrl=function(document){
+    $scope.getImageUrl = function (document) {
         return `${document.icon}?thumbnail=120x120&v=${document.version}`
     }
     //order
@@ -121,7 +121,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         desc: false,
         order(item) {
             if (item[$scope.order.field] && ["created", "date", "modified"].indexOf($scope.order.field) > -1) {
-                return moment(item[$scope.order.field],"YYYY-MM-DD HH:mm:ss.SSS").toDate().getTime();
+                return moment(item[$scope.order.field], "YYYY-MM-DD HH:mm:ss.SSS").toDate().getTime();
             }
             if ($scope.order.field === 'name') {
                 return lang.removeAccents(item[$scope.order.field]);
@@ -151,8 +151,8 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         if (save) {
             workspaceService.savePreference({ sortDesc: $scope.order.desc, sortField: $scope.order.field })
         }
-        $timeout(function() {
-            if($location.hash() !== 'start') {
+        $timeout(function () {
+            if ($location.hash() !== 'start') {
                 $location.hash('start');
             }
             else {
@@ -189,7 +189,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         }
         template.open('documents', mode);
         viewMode = mode;
-        if(mode!="carousel"){
+        if (mode != "carousel") {
             workspaceService.savePreference({ view: mode })
         }
     }
@@ -222,11 +222,22 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
             $scope.reloadFolderContent();
         }
     }
+    //
+    let delegateReload: () => boolean = null;
+    $scope.setDelegateReloadContent = function (delegate: () => boolean) {
+        delegateReload = delegate;
+        if(delegate==null){
+            $scope.reloadFolderContent();
+        }
+    }
     /**aply a debounce time to avoid reloading content every time (sync bugs + optimize perf)**/
     let reloadSubject = new Subject();
     (reloadSubject as Observable<any>).debounceTime(350).subscribe(async e => {
         //on refresh folder content => reset search
-        $scope.resetSearch();
+        if (delegateReload && delegateReload()) {
+            $scope.safeApply();
+            return;
+        }
         //fetch only documents in contents
         let content: models.Element[] = null;
         if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
