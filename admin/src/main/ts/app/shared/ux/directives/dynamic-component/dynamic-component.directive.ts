@@ -9,8 +9,8 @@ import { ComponentDescriptor } from './component-descriptor.model'
 })
 export class DynamicComponentDirective {
     constructor(
-        private vcr: ViewContainerRef,
-        private cfr: ComponentFactoryResolver
+        private viewContainerRef: ViewContainerRef,
+        private componentFactoryResolver: ComponentFactoryResolver
     ) {}
 
     private componentRef:ComponentRef<any>;
@@ -20,9 +20,9 @@ export class DynamicComponentDirective {
 
     load(data?:any):void {
         if (this.isLoaded()) return;
-        let componentFactory = this.cfr.resolveComponentFactory(this.componentDesc.type);
-        this.vcr.clear();
-        this.componentRef = this.vcr.createComponent(componentFactory);
+        let componentFactory = this.componentFactoryResolver.resolveComponentFactory(this.componentDesc.type);
+        this.viewContainerRef.clear();
+        this.componentRef = this.viewContainerRef.createComponent(componentFactory);
         
         if (data != undefined) {
             this.componentDesc.assignData(data);
@@ -46,9 +46,9 @@ export class DynamicComponentDirective {
     destroy():void {
         if (this.componentRef.instance.hideEvent != undefined)
             this.componentRef.instance.hideEvent.unsubscribe()
-        // this.componentRef.destroy(); => This one usually should work, better to use but do nothing...
+        // FIXME: this.componentRef.destroy(); => This one usually should work, better to use but do nothing...
         delete this.componentRef;
-        this.vcr.clear();
+        this.viewContainerRef.clear();
     }
 }
 

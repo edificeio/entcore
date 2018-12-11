@@ -2020,7 +2020,7 @@ i.fa {
 .message {
   border: 1px solid black;
   font-weight: bold;
-  box-shadow: 1px 1px 2px 1px #CCC;
+  box-shadow: 1px 1px 2px 1px #CCC; // TODO: use a color variable
 
   p { margin : 0px ;}
   .message-header {
