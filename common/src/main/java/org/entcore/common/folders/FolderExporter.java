@@ -85,27 +85,44 @@ public class FolderExporter {
 		}
 	}
 
-	private CompositeFuture mkdirs(FolderExporterContext context) {
-		@SuppressWarnings("rawtypes")
-		List<Future> futures = new ArrayList<>();
-		{
-			Future<Void> future = Future.future();
-			fs.mkdirs(context.basePath, future.completer());
-			futures.add(future);
+	private Future<Void> mkdirs(FolderExporterContext context) {
+		Set<String> uniqFolders = new HashSet<String>();
+		for (String f1 : context.folders) {
+			boolean ignore = false;
+			for (String f2 : context.folders) {
+				//if one folder f2 include this one => ignore f1
+				if (!f1.equals(f2) && f2.contains(f1)) {
+					ignore = true;
+				}
+			}
+			if (!ignore) {
+				uniqFolders.add(f1);
+			}
 		}
-		for (String path : context.folders) {
-			Future<Void> future = Future.future();
-			futures.add(future);
-			fs.mkdirs(path, future.completer());
-		}
-		return CompositeFuture.all(futures);
+		//
+		Future<Void> futureRoot = Future.future();
+		fs.mkdirs(context.basePath, futureRoot.completer());
+		return futureRoot.compose(resRoot -> {
+			log.info("Folder Root creation succeed: " + "/" + context.basePath);
+			@SuppressWarnings("rawtypes")
+			List<Future> futures = new ArrayList<>();
+			for (String path : uniqFolders) {
+				Future<Void> future = Future.future();
+				futures.add(future);
+				fs.mkdirs(path, future.completer());
+				future.setHandler(res -> {
+					log.info("Folder creation result: " + res.succeeded() + "/" + path);
+				});
+			}
+			return CompositeFuture.all(futures).map(res -> null);
+		});
 	}
 
 	private static String cleanName(JsonObject doc) {
 		String name = DocumentHelper.getName(doc, "undefined");
 		return name.replaceAll("/", "_").replaceAll("\\\\", "_").trim();
-	} 
-	
+	}
+
 	private CompositeFuture copyFiles(FolderExporterContext context) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
