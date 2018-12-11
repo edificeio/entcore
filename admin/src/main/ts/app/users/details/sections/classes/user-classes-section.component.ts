@@ -5,6 +5,7 @@ import { NotifyService, SpinnerService } from '../../../../core/services'
 import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
 import { isGroupManageable } from '../isGroupManageable';
 import { Classe } from '../../../../core/store/models';
+import { GlobalStore } from '../../../../core/store';
 
 @Component({
     selector: 'user-classes-section',
@@ -80,7 +81,8 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
     constructor(
         public spinner: SpinnerService,
         private ns: NotifyService,
-        private cdRef: ChangeDetectorRef) {
+        private cdRef: ChangeDetectorRef,
+        private globalStore: GlobalStore) {
         super();
     }
 
@@ -105,16 +107,16 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
         );
     }
 
-    filterByInput(classe: { id: string, name: string }): boolean {
+    filterByInput = (classe: { id: string, name: string }): boolean => {
         if (!this.inputFilter) {
             return true;
         }
         return `${classe.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0;
-    }
+    };
 
-    filterClasses(classe: { id: string, name: string }): boolean {
+    filterClasses = (classe: { id: string, name: string }): boolean => {
         return !this.user.classes.find(userClasse => classe.id === userClasse.id);
-    }
+    };
 
 
     /**
@@ -155,11 +157,11 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
         })
     }
 
-    disableClass(classe) {
+    disableClass = (classe) => {
         return this.spinner.isLoading(classe.id)
-    }
+    };
 
-    addClass(event) {
+    addClass = (event) => {
         this.spinner.perform('portal-content', this.user.addClass(event))
             .then(() => {
                 this.ns.success(
@@ -182,9 +184,9 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
                         }
                     }, 'notify.user.add.class.error.title', err);
             });
-    }
+    };
 
-    removeClass(classe) {
+    removeClass = (classe) => {
         this.spinner.perform('portal-content', this.user.removeClass(classe.id, classe.externalId))
             .then(() => {
                 this.ns.success(
@@ -207,7 +209,7 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
                         }
                     }, 'notify.user.remove.class.error.title', err);
             });
-    }
+    };
 
     protected onUserChange() {
     }

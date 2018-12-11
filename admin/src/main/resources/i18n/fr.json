@@ -124,7 +124,7 @@
     "password.renewal.code": "Code de renouvellement de mot de passe",
     "generate.password.renewal.code": "Générer un code de renouvellement de mot de passe",
     "generated.password.renewal.code": "Code généré :",
-    "generated.password.renewal.code.with.lifespan": "Code généré (durée de vie : {{numberOfDays > 1?$numberOfDays jours:$numberOfDays jour}}) :",
+    "generated.password.renewal.code.with.lifespan": "Code généré (durée de vie : {{numberOfDays}} jour(s)) :",
     "administration": "Administration",
     "functions": "Fonctions",
     "ADMIN_LOCAL": "Administrateur local",

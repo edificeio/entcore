@@ -10,22 +10,21 @@ import { routes } from './users.routing';
 import { UserDetailsResolver } from './details/user-details.resolver';
 import { ConfigResolver } from './details/config.resolver';
 import { UsersResolver } from './users.resolver';
-import { ConfigResolver } from './details/config.resolver';
 import { UsersComponent } from './users.component';
 import { UserCreate } from './create/user-create.component';
 import { UserDetails } from './details/user-details.component';
 import { UserFilters } from './filters/user-filters.component';
 import { UserList } from './list/user-list.component';
 import {
-UserAdministrativeSection,
-UserChildrenSection,
-UserClassesSection,
-UserDuplicatesSection,
-UserFunctionalGroupsSection,
-UserInfoSection,
-UserManualGroupsSection,
-UserRelativesSection,
-UserStructuresSection
+    UserAdministrativeSection,
+    UserChildrenSection,
+    UserClassesSection,
+    UserDuplicatesSection,
+    UserFunctionalGroupsSection,
+    UserInfoSection,
+    UserManualGroupsSection,
+    UserRelativesSection,
+    UserStructuresSection
 } from './details/sections';
 import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';

@@ -95,18 +95,18 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit, 
                 && !this.details.manualGroups.find(manualGroup => manualGroup.id == group.id));
     }
 
-    filterByInput(manualGroup: { id: string, name: string }): boolean {
+    filterByInput = (manualGroup: { id: string, name: string }): boolean => {
         if (!this.inputFilter) {
             return true;
         }
         return `${manualGroup.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0;
-    }
+    };
 
-    disableGroup(manualGroup) {
+    disableGroup = (manualGroup) => {
         return this.spinner.isLoading(manualGroup.id);
-    }
+    };
 
-    addGroup(group) {
+    addGroup =(group) => {
         return this.spinner.perform('portal-content', this.user.addManualGroup(group)
             .then(() => {
                 this.notifyService.success(
@@ -130,9 +130,9 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit, 
                     }, 'notify.user.add.group.error.title', err);
             })
         );
-    }
+    };
 
-    removeGroup(group) {
+    removeGroup =(group) => {
         return this.spinner.perform('portal-content', this.user.removeManualGroup(group)
             .then(() => {
                 this.notifyService.success(
@@ -156,7 +156,7 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit, 
                     }, 'notify.user.remove.group.error.title', err);
             })
         );
-    }
+    };
 
     protected onUserChange() {
     }

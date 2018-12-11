@@ -97,18 +97,18 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
             );
     }
 
-    filterByInput(group: { id: string, name: string }) {
+    filterByInput = (group: { id: string, name: string }) => {
         if (!this.inputFilter) {
             return true
         }
         return `${group.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0;
-    }
+    };
 
-    disableGroup(group) {
+    disableGroup = (group) => {
         return this.spinner.isLoading(group.id);
-    }
+    };
 
-    addGroup(group) {
+    addGroup = (group) => {
         this.spinner.perform('portal-content', this.user.addFunctionalGroup(group)
             .then(() => {
                 this.notifyService.success(
@@ -132,9 +132,9 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
                     }, 'notify.user.add.group.error.title', err);
             })
         );
-    }
+    };
 
-    removeGroup(group) {
+    removeGroup = (group) => {
         this.spinner.perform('portal-content', this.user.removeFunctionalGroup(group)
             .then(() => {
                 this.notifyService.success(
@@ -158,7 +158,7 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
                     }, 'notify.user.remove.group.error.title', err);
             })
         );
-    }
+    };
 
     protected onUserChange() {
     }

@@ -33,7 +33,6 @@ import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
-	private static final long NINETY_DAYS = 90 * 24 * 3600 * 1000L;
 
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
