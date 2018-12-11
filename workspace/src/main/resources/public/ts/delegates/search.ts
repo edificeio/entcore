@@ -25,6 +25,7 @@ export interface SearchDelegateScope {
     selectedDocuments(): models.Element[]
     safeApply()
     onInit(cab: () => void);
+    setDelegateReloadContent(delegate: () => boolean)
 }
 
 export function SearchDelegate($scope: SearchDelegateScope) {
@@ -43,6 +44,14 @@ export function SearchDelegate($scope: SearchDelegateScope) {
             return;
         }
         try {
+            $scope.setDelegateReloadContent(() => {
+                if ($scope.search.state == "initial") {
+                    return false;
+                }
+                $scope.search.everywhere = false;
+                $scope.searchSubmit();
+                return true;
+            })
             $scope.search.state = "searching";
             if ($scope.search.everywhere) {
                 let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true })
@@ -82,6 +91,7 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     $scope.resetSearch = function () {
         $scope.search = { criteria: "", everywhere: false, state: "initial" }
         $scope.openedFolder.restore();
+        $scope.setDelegateReloadContent(null)
     }
     $scope.showSearchResultForFolder = function () {
         return $scope.search.state == "finished" && !$scope.search.everywhere;
