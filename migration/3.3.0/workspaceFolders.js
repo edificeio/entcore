@@ -52,7 +52,7 @@ function replaceShared(doc) {
                 item[replaced] = item[j];
                 delete item[j]
                 //ADD NEW RIGHT
-                if (j.indexOf("deleteDocument")) {//if manager
+                if (j.indexOf("deleteDocument")>-1) {//if manager
                     item[NEW_RIGHT + "|bulkDelete"] = true;
                 }
             }
