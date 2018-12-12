@@ -87,7 +87,7 @@
 				<em class="seven cell">[[account.lastName]]</em>
 			</div>
 
-			<div class="row">
+			<div class="row" ng-if="account.type.indexOf('Relative') === -1">
 				<label translate content="userBook.profile.displayName" class="four cell"></label>
 				<input class="seven cell inline-editing" type="text" ng-model="account.displayName" complete-change="saveChanges()" />
 			</div>
