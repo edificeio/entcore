@@ -44,7 +44,7 @@ export interface NavigationDelegateScope {
     selectedItems(): models.Element[];
     isSelectedFolder(folder: models.Element): boolean
     setCurrentFolder(folder: models.Element, reload?: boolean)
-    setDelegateReloadContent(delegate: () => boolean)
+    onReloadContent:Subject<() => void>
     // from others 
     currentTree: models.Tree;
     trees: models.Tree[]
@@ -55,6 +55,7 @@ export interface NavigationDelegateScope {
 export function NavigationDelegate($scope: NavigationDelegateScope, $location, $anchorScroll, $timeout) {
     let highlighted: models.Element[] = [];
     let viewMode: WorkspacePreferenceView = null;
+    $scope.onReloadContent = new Subject;
     $scope.onInit(function () {
         //INIT 
         $scope.openedFolder = new models.FolderContext;
@@ -223,21 +224,11 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         }
     }
     //
-    let delegateReload: () => boolean = null;
-    $scope.setDelegateReloadContent = function (delegate: () => boolean) {
-        delegateReload = delegate;
-        if(delegate==null){
-            $scope.reloadFolderContent();
-        }
-    }
     /**aply a debounce time to avoid reloading content every time (sync bugs + optimize perf)**/
     let reloadSubject = new Subject();
     (reloadSubject as Observable<any>).debounceTime(350).subscribe(async e => {
         //on refresh folder content => reset search
-        if (delegateReload && delegateReload()) {
-            $scope.safeApply();
-            return;
-        }
+        $scope.onReloadContent.next();
         //fetch only documents in contents
         let content: models.Element[] = null;
         if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
