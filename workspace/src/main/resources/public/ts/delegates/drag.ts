@@ -23,7 +23,7 @@ export interface DragDelegateScope {
     dragEnd(item: models.Element, event?: any)
     dragCondition(item: models.Element)
     dropTrash(item: models.Element[])
-    dropCondition(item: models.Element): (event) => boolean
+    dropCondition(item: models.Element, notifyError?: boolean): (event) => boolean
     dropTo(item: models.Element, event?: any)
     //
 }
@@ -92,7 +92,7 @@ export function DragDelegate($scope: DragDelegateScope) {
         return $scope.currentTree.filter == "owner" || $scope.currentTree.filter == "protected" || ($scope.currentTree.filter == "shared" && item.canMove);
     }
 
-    $scope.dropCondition = function (targetItem) {
+    $scope.dropCondition = function (targetItem, notifyError = false) {
         return function (event): boolean {
             if (!targetItem) {
                 return false;
@@ -124,6 +124,7 @@ export function DragDelegate($scope: DragDelegateScope) {
             //can drop on shared
             const fileIds = draggingItems.map(item => item._id);
             if (!isTree && targetItem.isShared && !targetItem.canCopyFileIdsInto(fileIds)) {
+                notifyError &&  notify.error("workspace.contrib.cant")
                 return false;
             }
             //else accept
@@ -135,7 +136,7 @@ export function DragDelegate($scope: DragDelegateScope) {
     }
 
     $scope.dropTo = function (targetItem, $originalEvent) {
-        const can = $scope.dropCondition(targetItem)($originalEvent);
+        const can = $scope.dropCondition(targetItem, true)($originalEvent);
         if (!can)
             return;
         //if drop on trash => trash

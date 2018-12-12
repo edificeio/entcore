@@ -224,6 +224,7 @@
     "workspace.move.window.docopy":"Effectuer une copie",
     "workspace.move.window.toown1":"En déplaçant votre(s) fichier(s) et/ou dossier(s) dans un espace non-partagé, vous allez <b>enlever</b> des droits de partage sur un ou plusieurs objet(s) : les utilisateurs qui voient ces fichiers ou dossiers <b>ne les verront plus dans leur espace documentaire.</b>",
     "workspace.move.window.toown2":"Vous pouvez créer une copie de(s) fichier(s) et/ou dossier(s) au lieu de le(s) déplacer.",
+    "workspace.move.window.fromtoshare":"Vous aller déplacer votre(s) fichier(s) et/ou dossier(s) dans un autre espace partagé, ils ne seront plus visibles dans leur emplacement d'origine. <br/>Vous pouvez créer une copie du fichier ou dossier au lieu de le déplacer.",
     "workspace.delete.confirm.title":"Attention!",
     "workspace.delete.confirm.action":"Confirmer la suppression",
     "workspace.delete.confirm.content":"En supprimant ce(s) fichier(s) et/ou dossier(s) <b>vous le(s) supprimerez également pour les utilisateurs qui voient ces fichiers ou dossiers ou qui en sont propriétaires.</b>",

@@ -65,6 +65,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             return "toshare";
         } else if (!destIsShared && containsShared) {
             return "toown";
+        }  else if (destIsShared && containsShared) {
+            return "fromtoshare";
         } else {
             return "nope"
         }
@@ -108,6 +110,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             template.open('lightbox', 'copy/move-toshare');
         } else if (res == "toown") {
             template.open('lightbox', 'copy/move-toown');
+        } else if (res == "fromtoshare") {
+            template.open('lightbox', 'copy/move-fromtoshare');
         } else {
             //move without feedback
             if ($scope.currentTree.filter == "shared") {
@@ -136,6 +140,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             if (res == "toshare") {
                 return true;
             } else if (res == "toown") {
+                return true;
+            }  else if (res == "fromtoshare") {
                 return true;
             } else {
                 return false;
