@@ -100,7 +100,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 		queryHelper.findAllAsList(
 				queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(sourceId))
 				.compose(docs -> {
-					return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId);
+					return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, false);
 				}).setHandler(handler);
 	}
 
@@ -114,13 +114,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 		queryHelper.findAllAsList(
 				queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(sourceIds))
 				.compose(docs -> {
-					return copyRecursivelyFromParentId(Optional.of(user), docs, destinationFolderId);
+					return copyRecursivelyFromParentId(Optional.of(user), docs, destinationFolderId, false);
 				}).setHandler(handler);
 	}
 
 	private Future<JsonArray> copyFile(Optional<UserInfos> userOpt, Collection<JsonObject> originals,
-			Optional<JsonObject> parent) {
-		return StorageHelper.copyFileInStorage(storage, originals,false).compose(oldFileIdForNewFileId -> {
+			Optional<JsonObject> parent,boolean keepVisibility) {
+		return StorageHelper.copyFileInStorage(storage, originals, false).compose(oldFileIdForNewFileId -> {
 			// set newFileIds and parent
 			List<JsonObject> copies = originals.stream().map(o -> {
 				JsonObject copy = o.copy();
@@ -133,8 +133,10 @@ public class FolderManagerMongoImpl implements FolderManager {
 					copy.remove("eParent");
 				}
 				copy.remove("eParentOld");
-				copy.remove("protected");
-				copy.remove("public");
+				if(!keepVisibility) {
+					copy.remove("protected");
+					copy.remove("public");
+				}
 				//
 				if (userOpt.isPresent()) {
 					UserInfos user = userOpt.get();
@@ -162,19 +164,19 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	private Future<JsonArray> copyRecursivelyFromParentId(Optional<UserInfos> userOpt, Collection<JsonObject> docs,
-			Optional<String> newParentIdOpt) {
+			Optional<String> newParentIdOpt, boolean keepVisibility) {
 		if (newParentIdOpt.isPresent()) {
-			return queryHelper.findById(newParentIdOpt.get())
-					.compose(newParent -> copyRecursivelyFromParent(userOpt, docs, Optional.ofNullable(newParent)));
+			return queryHelper.findById(newParentIdOpt.get()).compose(
+					newParent -> copyRecursivelyFromParent(userOpt, docs, Optional.ofNullable(newParent), keepVisibility));
 		} else {
-			return copyRecursivelyFromParent(userOpt, docs, Optional.empty());
+			return copyRecursivelyFromParent(userOpt, docs, Optional.empty(), keepVisibility);
 		}
 	}
 
 	private Future<JsonArray> copyRecursivelyFromParent(Optional<UserInfos> userOpt, Collection<JsonObject> docs,
-			Optional<JsonObject> newParentOpt) {
+			Optional<JsonObject> newParentOpt, boolean keepVisibility) {
 		JsonArray allCopies = new JsonArray();
-		return this.copyFile(userOpt, docs, newParentOpt).compose(copies -> {
+		return this.copyFile(userOpt, docs, newParentOpt, keepVisibility).compose(copies -> {
 			allCopies.addAll(copies);
 			List<String> folderIds = docs.stream().filter(doc -> DocumentHelper.isFolder(doc))
 					.map(doc -> DocumentHelper.getId(doc)).collect(Collectors.toList());
@@ -197,7 +199,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 				// find the new parent (copy of the old)
 				Optional<JsonObject> nextParentRecursion = allCopies.stream().map(o -> (JsonObject) o)
 						.filter(o -> o.getString("copyFromId", "").equals(oldParent)).findFirst();
-				futures.add(copyRecursivelyFromParent(userOpt, childrenByParents.get(oldParent), nextParentRecursion));
+				futures.add(copyRecursivelyFromParent(userOpt, childrenByParents.get(oldParent), nextParentRecursion,
+						keepVisibility));
 			}
 			return CompositeFuture.all(futures);
 		}).map(results -> {
@@ -213,7 +216,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 	public void copyUnsafe(String sourceId, Optional<String> destFolderId, String userId,
 			Handler<AsyncResult<JsonArray>> handler) {
 		queryHelper.findAllAsList(queryHelper.queryBuilder().withId(sourceId).withExcludeDeleted()).compose(docs -> {
-			return copyRecursivelyFromParentId(Optional.empty(), docs, destFolderId);
+			return copyRecursivelyFromParentId(Optional.empty(), docs, destFolderId, true);
 		}).setHandler(handler);
 	}
 
@@ -680,7 +683,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 									JsonObject parentRoot = res.parentRoot.get();
 									Boolean isShared = DocumentHelper.isShared(res.root);
 									Boolean parentIsShared = DocumentHelper.isShared(parentRoot);
-									//if my parent is shared and i m not (vice versa)...break the link
+									// if my parent is shared and i m not (vice versa)...break the link
 									if (!isShared.equals(parentIsShared)) {
 										Set<String> ids = new HashSet<String>();
 										ids.add(DocumentHelper.getId(res.root));
