@@ -23,7 +23,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span>[[folder.name]]</span>
 					</a>
-					<a class="author"><strong>[[folder.ownerName]]</strong></a>
+					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 				<a class="container" ng-class="{'highlight-border-3s':isHighlighted(folder)}">
 					<i class="folder-large"></i>
@@ -35,7 +35,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span>[[folder.name]]</span>
 					</a>
-					<a class="author"><strong>[[folder.ownerName]]</strong></a>
+					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 
 				<div ng-if="folder.showComments">
@@ -74,9 +74,9 @@
 				<legend class="no-1d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-						[[document.name]]
+						<span>[[document.name]]</span>
 					</a>
-					<a class="author"><strong>[[document.ownerName]]</strong></a>
+					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				<!--LEGEND MUST BE BEFORE container-->
 				<a class="[[document.metadata.role]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
@@ -93,9 +93,9 @@
 				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-						[[document.name]]
+						<span>[[document.name]]</span>
 					</a>
-					<a class="author"><strong>[[document.ownerName]]</strong></a>
+					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				
 
