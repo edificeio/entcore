@@ -65,7 +65,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             return "toshare";
         } else if (!destIsShared && containsShared) {
             return "toown";
-        }  else if (destIsShared && containsShared) {
+        } else if (destIsShared && containsShared) {
             return "fromtoshare";
         } else {
             return "nope"
@@ -141,7 +141,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
                 return true;
             } else if (res == "toown") {
                 return true;
-            }  else if (res == "fromtoshare") {
+            } else if (res == "fromtoshare") {
                 return true;
             } else {
                 return false;
@@ -167,28 +167,36 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         $scope.copyProps.i18.actionFinished = "workspace.copy.window.finished"
         setState("processing")
         const toCopy = [...getMovingElements()]
-        await workspaceService.copyAll(toCopy, targetFolder)
-        setState("finished")
-        setTimeout(() => {
-            closeCopyView(targetFolder, toCopy);
-            $scope.safeApply()
-        }, 1000)
+        try {
+            await workspaceService.copyAll(toCopy, targetFolder)
+            setState("finished")
+            setTimeout(() => {
+                closeCopyView(targetFolder, toCopy);
+                $scope.safeApply()
+            }, 1000)
+        } catch (e) {
+            closeCopyView(null)
+        }
     }
     $scope.onMoveDoMove = async function () {
         $scope.copyProps.i18.actionProcessing = "workspace.move.window.processing"
         $scope.copyProps.i18.actionFinished = "workspace.move.window.finished"
         setState("processing")
         const toMove = [...getMovingElements()]
-        if ($scope.currentTree.filter == "shared") {
-            await workspaceService.moveAllForShared(toMove, targetFolder)
-        } else {
-            await workspaceService.moveAll(toMove, targetFolder)
+        try {
+            if ($scope.currentTree.filter == "shared") {
+                await workspaceService.moveAllForShared(toMove, targetFolder)
+            } else {
+                await workspaceService.moveAll(toMove, targetFolder)
+            }
+            setState("finished")
+            setTimeout(() => {
+                closeCopyView(targetFolder, toMove);
+                $scope.safeApply()
+            }, 1000)
+        } catch (e) {
+            closeCopyView(null)
         }
-        setState("finished")
-        setTimeout(() => {
-            closeCopyView(targetFolder, toMove);
-            $scope.safeApply()
-        }, 1000)
     }
     $scope.onMoveDoCancel = function () {
         closeCopyView(null)
