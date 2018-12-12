@@ -1,4 +1,5 @@
 import { models, workspaceService } from "../services";
+import { Observable,Subject } from "rxjs";
 
 
 
@@ -20,12 +21,12 @@ export interface SearchDelegateScope {
     //from others
     currentTree: models.Tree
     openedFolder: models.FolderContext
+    onReloadContent:Subject<() => void>
     openFolderById(id: string)
     setCurrentTreeRoute(tree: models.TREE_NAME);
     selectedDocuments(): models.Element[]
     safeApply()
     onInit(cab: () => void);
-    setDelegateReloadContent(delegate: () => boolean)
 }
 
 export function SearchDelegate($scope: SearchDelegateScope) {
@@ -39,19 +40,14 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     $scope.isSearchResult = function () {
         return $scope.search.state == "finished";
     }
+    $scope.onReloadContent.subscribe(()=>{
+        $scope.resetSearch()
+    })
     $scope.searchSubmit = async function () {
         if ($scope.search.state == "searching" || !$scope.search.criteria || !$scope.search.criteria.length) {
             return;
         }
         try {
-            $scope.setDelegateReloadContent(() => {
-                if ($scope.search.state == "initial") {
-                    return false;
-                }
-                $scope.search.everywhere = false;
-                $scope.searchSubmit();
-                return true;
-            })
             $scope.search.state = "searching";
             if ($scope.search.everywhere) {
                 let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true })
@@ -91,7 +87,6 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     $scope.resetSearch = function () {
         $scope.search = { criteria: "", everywhere: false, state: "initial" }
         $scope.openedFolder.restore();
-        $scope.setDelegateReloadContent(null)
     }
     $scope.showSearchResultForFolder = function () {
         return $scope.search.state == "finished" && !$scope.search.everywhere;
