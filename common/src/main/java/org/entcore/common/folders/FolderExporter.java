@@ -90,7 +90,7 @@ public class FolderExporter {
 		for (String f1 : context.folders) {
 			boolean ignore = false;
 			for (String f2 : context.folders) {
-				//if one folder f2 include this one => ignore f1
+				// if one folder f2 include this one => ignore f1
 				if (!f1.equals(f2) && f2.contains(f1)) {
 					ignore = true;
 				}
@@ -108,11 +108,11 @@ public class FolderExporter {
 			List<Future> futures = new ArrayList<>();
 			for (String path : uniqFolders) {
 				Future<Void> future = Future.future();
-				futures.add(future);
-				fs.mkdirs(path, future.completer());
-				future.setHandler(res -> {
-					log.info("Folder creation result: " + res.succeeded() + "/" + path);
+				fs.mkdirs(path, res -> {
+					log.info("Folder creation result: " + "/" + res.succeeded() + "/" + path);
+					future.completer().handle(res);
 				});
+				futures.add(future);
 			}
 			return CompositeFuture.all(futures).map(res -> null);
 		});
