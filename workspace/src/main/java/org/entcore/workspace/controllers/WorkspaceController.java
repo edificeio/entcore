@@ -285,7 +285,7 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
-	private void copyDocument(final Message<JsonObject> message) {
+	private void copyDocumentFromBus(final Message<JsonObject> message) {
 		String userId = message.body().getJsonObject("user").getString("userId");
 		String fileId = message.body().getString("documentId");
 		workspaceService.copyUnsafe(fileId, Optional.empty(), userId, res -> {
@@ -1177,7 +1177,7 @@ public class WorkspaceController extends BaseController {
 			getDocument(message);
 			break;
 		case "copyDocument":
-			copyDocument(message);
+			copyDocumentFromBus(message);
 			break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
