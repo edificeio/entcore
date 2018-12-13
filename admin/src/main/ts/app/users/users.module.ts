@@ -29,6 +29,7 @@ UserStructuresSection
 import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';
 import { HttpClientModule } from '@angular/common/http';
+import { globalStoreProvider } from '../core/store';
 
 @NgModule({
     imports: [
@@ -60,9 +61,9 @@ import { HttpClientModule } from '@angular/common/http';
         ConfigResolver,
         UserDetailsResolver,
         UsersResolver,
-        ConfigResolver,
         UserlistFiltersService,
-        UserInfoService
+        UserInfoService,
+        globalStoreProvider
     ],
     exports: [
         RouterModule
