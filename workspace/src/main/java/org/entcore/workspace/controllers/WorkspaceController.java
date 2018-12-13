@@ -742,6 +742,7 @@ public class WorkspaceController extends BaseController {
 							JsonObject v = (JsonObject) value;
 							folders.add(v.getString("name"));
 						}
+						renderJson(request, new JsonArray(new ArrayList<>(folders)));
 					} else {
 						renderError(request, new JsonObject().put("errors", event.cause().getMessage()));
 					}
