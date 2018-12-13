@@ -1,9 +1,10 @@
-import { idiom as lang, template, FolderPickerProps, FolderPickerSourceFile, notify } from "entcore";
+import { model, template, FolderPickerProps, FolderPickerSourceFile, notify } from "entcore";
 import { models, workspaceService } from "../../services";
 
 
 export interface ActionCopyDelegateScope {
     copyProps: FolderPickerProps
+    isMovingElementsMine(): boolean
     openCopyView()
     openMoveView()
     moveSubmit(dest: models.Element, elts?: models.Element[])
@@ -121,6 +122,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             }
         }
     }
+
     $scope.openMoveView = function () {
         movingItems = null;//get moving elements from selection
         const cnnotMove = getMovingElements().filter(f => !f.canMove);
@@ -213,6 +215,12 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     }
     $scope.isCopyStateFinished = function () {
         return processing == "finished"
+    }
+    $scope.isMovingElementsMine = function () {
+        return getMovingElements().filter(m => {
+            const userId: any = m.owner.userId || m.owner
+            return userId != model.me.userId;
+        }).length == 0;
     }
 
 }
