@@ -1,28 +1,34 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from '@angular/core'
 
 import { AbstractSection } from '../abstract.section'
-import {NotifyService, SpinnerService} from '../../../../core/services'
+import { NotifyService, SpinnerService } from '../../../../core/services'
 import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
+import { isGroupManageable } from '../isGroupManageable';
+import { Classe } from '../../../../core/store/models';
+import { GlobalStore } from "../../../../core/store";
 
 @Component({
     selector: 'user-classes-section',
     template: `
         <panel-section section-title="users.details.section.classes" [folded]="true">
             <button (click)="showClassesLightbox = true">
-                <s5l>add.class</s5l><i class="fa fa-plus-circle"></i>
+                <s5l>add.class</s5l>
+                <i class="fa fa-plus-circle"></i>
             </button>
-            <lightbox class="inner-list" [show]="showClassesLightbox" 
-                (onClose)="showClassesLightbox = false">
+            <lightbox class="inner-list" [show]="showClassesLightbox"
+                      (onClose)="showClassesLightbox = false">
                 <div class="padded">
-                    <h3><s5l>add.class</s5l></h3>
+                    <h3>
+                        <s5l>add.class</s5l>
+                    </h3>
                     <list class="inner-list"
-                        [model]="lightboxClasses"
-                        [inputFilter]="filterByInput"
-                        searchPlaceholder="search.class"
-                        sort="name"
-                        (inputChange)="inputFilter = $event"
-                        [isDisabled]="disableClass"
-                        (onSelect)="addClass($event)">
+                          [model]="lightboxClasses"
+                          [inputFilter]="filterByInput"
+                          searchPlaceholder="search.class"
+                          sort="name"
+                          (inputChange)="inputFilter = $event"
+                          [isDisabled]="disableClass"
+                          (onSelect)="addClass($event)">
                         <ng-template let-item>
                             <span class="display-name">
                                 {{ item?.name }}
@@ -31,27 +37,30 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
                     </list>
                 </div>
             </lightbox>
-            
+
             <ul class="actions-list">
-                <li *ngFor="let c of user?.classes">
-                    <span>{{ c.name }}</span>
-                    <i class="fa fa-times action" 
-                        (click)="removeClass(c)"
-                        [tooltip]="'delete.this.class' | translate"
-                        [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
+                <li *ngFor="let classe of filteredClasses">
+                    <span>{{ classe.name }}</span>
+                    <i class="fa fa-times action"
+                       (click)="removeClass(classe)"
+                       [tooltip]="'delete.this.class' | translate"
+                       [ngClass]="{ disabled: spinner.isLoading('portal-content')}">
                     </i>
-                    <span class="headteacher-buttons" *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, c)">
-                        <button class= "noflex"
-                                *ngIf="!details.isHeadTeacherManual(this.structure.externalId, c)"
-                                (click)="addHeadTeacherManual(this.structure.externalId, c)">
+                    <span class="headteacher-buttons"
+                          *ngIf="!details.isNotTeacherOrHeadTeacher(this.structure.externalId, classe)">
+                        <button class="noflex"
+                                *ngIf="!details.isHeadTeacherManual(this.structure.externalId, classe)"
+                                (click)="addHeadTeacherManual(this.structure.externalId, classe)">
                             <s5l>headTeacherManual.add</s5l>
                         </button>
-                        <button *ngIf="details.isHeadTeacherManual(this.structure.externalId, c)"
-                                (click)="updateHeadTeacherManual(this.structure.externalId, c)">
+                        <button *ngIf="details.isHeadTeacherManual(this.structure.externalId, classe)"
+                                (click)="updateHeadTeacherManual(this.structure.externalId, classe)">
                             <s5l>headTeacherManual.remove</s5l>
                         </button>
                     </span>
-                    <span class="headteacher-buttons" *ngIf="details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, c)" [tooltip]="'headTeacher.aaf.detail' | translate">
+                    <span class="headteacher-buttons"
+                          *ngIf="details.isTeacherAndHeadTeacherFromAAF(this.structure.externalId, classe)"
+                          [tooltip]="'headTeacher.aaf.detail' | translate">
                          <button disabled>
                             <s5l>headTeacherManual.remove</s5l>
                         </button>
@@ -64,31 +73,32 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserClassesSection extends AbstractSection implements OnInit, OnChanges {
-    lightboxClasses: {id: string, name: string}[] = [];
-    
-    showClassesLightbox: boolean = false
-
-   private _inputFilter = ""
-    set inputFilter(filter: string) {
-        this._inputFilter = filter
-    }
-    get inputFilter() {
-        return this._inputFilter
-    }
+    public lightboxClasses: { id: string, name: string }[] = [];
+    public showClassesLightbox = false;
+    public inputFilter = "";
+    public filteredClasses: Classe[] = [];
 
     constructor(
         public spinner: SpinnerService,
         private ns: NotifyService,
-        private cdRef: ChangeDetectorRef) {
-        super()
+        private cdRef: ChangeDetectorRef,
+        private globalStore: GlobalStore) {
+        super();
     }
 
     ngOnInit() {
         this.updateLightboxClasses();
+        this.filterManageableGroups();
     }
 
     ngOnChanges() {
         this.updateLightboxClasses();
+        this.filterManageableGroups();
+    }
+
+    private filterManageableGroups() {
+        this.filteredClasses = this.user ?
+            this.user.classes.filter(group => isGroupManageable(group, this.globalStore)) : [];
     }
 
     private updateLightboxClasses() {
@@ -97,22 +107,24 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
         );
     }
 
-    filterByInput = (c: {id: string, name: string}) => {
-        if (!this.inputFilter) return true
-        return `${c.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0
-    }
+    filterByInput = (classe: { id: string, name: string }): boolean => {
+        if (!this.inputFilter) {
+            return true;
+        }
+        return `${classe.name}`.toLowerCase().indexOf(this.inputFilter.toLowerCase()) >= 0;
+    };
 
-    filterClasses = (c: {id: string, name: string}) => {
-        return !this.user.classes.find(classe => c.id === classe.id)
-    }
+    filterClasses = (classe: { id: string, name: string }): boolean => {
+        return !this.user.classes.find(userClasse => classe.id === userClasse.id);
+    };
 
 
     /**
      * Ajout du droit de professeur principal
      */
     addHeadTeacherManual(externalId: string, classe: any) {
-        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(externalId,classe))
-            .then(res => {
+        this.spinner.perform('portal-content', this.details.addHeadTeacherManual(externalId, classe))
+            .then(() => {
                 this.ns.success({
                     key: 'notify.user.add.head.teacher.content',
                     parameters: {user: this.user.firstName + ' ' + this.user.lastName}
@@ -130,8 +142,8 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
      * Suppression du droit de professeur principal
      */
     updateHeadTeacherManual(externalId: string, classe: any) {
-        this.spinner.perform('portal-content', this.details.updateHeadTeacherManual(externalId,classe))
-            .then(res => {
+        this.spinner.perform('portal-content', this.details.updateHeadTeacherManual(externalId, classe))
+            .then(() => {
                 this.ns.success({
                     key: 'notify.user.remove.head.teacher.content',
                     parameters: {user: this.user.firstName + ' ' + this.user.lastName}
@@ -144,10 +156,10 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
             }, 'notify.user.remove.head.teacher.error.title', err)
         })
     }
-    
-    disableClass = (c) => {
-        return this.spinner.isLoading(c.id)
-    }
+
+    disableClass = (classe) => {
+        return this.spinner.isLoading(classe.id)
+    };
 
     addClass = (event) => {
         this.spinner.perform('portal-content', this.user.addClass(event))
@@ -156,7 +168,7 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
                     {
                         key: 'notify.user.add.class.content',
                         parameters: {
-                            classe:  event.name
+                            classe: event.name
                         }
                     }, 'notify.user.add.class.title');
 
@@ -168,20 +180,20 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
                     {
                         key: 'notify.user.add.class.error.content',
                         parameters: {
-                            classe:  event.name
+                            classe: event.name
                         }
                     }, 'notify.user.add.class.error.title', err);
             });
-    }
+    };
 
     removeClass = (classe) => {
-        this.spinner.perform('portal-content', this.user.removeClass(classe.id,classe.externalId))
+        this.spinner.perform('portal-content', this.user.removeClass(classe.id, classe.externalId))
             .then(() => {
                 this.ns.success(
                     {
                         key: 'notify.user.remove.class.content',
                         parameters: {
-                            classe:  classe.name
+                            classe: classe.name
                         }
                     }, 'notify.user.remove.class.title');
 
@@ -193,11 +205,12 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
                     {
                         key: 'notify.user.remove.class.error.content',
                         parameters: {
-                            classe:  classe.name
+                            classe: classe.name
                         }
                     }, 'notify.user.remove.class.error.title', err);
             });
-    }
+    };
 
-    protected onUserChange() {}
+    protected onUserChange() {
+    }
 }
