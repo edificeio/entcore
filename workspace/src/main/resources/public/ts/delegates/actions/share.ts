@@ -3,7 +3,7 @@ import { models, workspaceService } from "../../services";
 
 
 export interface ShareDelegateScope {
-
+    copyingForShare: boolean;
     sharedElements: models.Element[]
     openShareView();
     canShareElements(): boolean
@@ -27,6 +27,7 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
     let copiedFolders: models.Element[] = []
     $scope.sharedElements = [];
     $scope.openShareView = function () {
+        $scope.copyingForShare = false;
         $scope.sharedElements = $scope.selectedItems();
         copiedFolders = [];
         $scope.display.share = true;
@@ -127,9 +128,14 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
     }
     $scope.onShareAndCopy = async function () {
         const folders = $scope.sharedElements.filter(a => workspaceService.isFolder(a));
-        const res = await workspaceService.copyAll(folders, $scope.currentTree as models.Element)
-        copiedFolders = res.copies;
-        template.open('share', 'share/share');
+        try {
+            $scope.copyingForShare = true;
+            const res = await workspaceService.copyAll(folders, $scope.currentTree as models.Element)
+            copiedFolders = res.copies;
+            template.open('share', 'share/share');
+        } finally {
+            $scope.copyingForShare = false;
+        }
     }
     $scope.onShareAndNotCopy = function () {
         template.open('share', 'share/share');
