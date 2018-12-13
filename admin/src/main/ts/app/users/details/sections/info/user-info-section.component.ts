@@ -133,7 +133,7 @@ import { Config } from '../../Config';
                         </div>
                     </form-field>
 
-                    <form-field label="password.renewal.code">
+                    <form-field label="password.renewal.code" *ngIf="!details.activationCode">
                         <div>
                             <button (click)="clickOnGenerateRenewalCode()">
                                 <span><s5l>generate.password.renewal.code</s5l></span>
