@@ -18,6 +18,7 @@ export interface ShareDelegateScope {
     //from others
     currentTree: models.Tree;
     display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
+    isSearchResult(): boolean;
     selectedItems(): models.Element[]
     setHighlighted(els: models.Element[])
     setCurrentTreeRoute(tree: models.TREE_NAME);
@@ -26,6 +27,21 @@ export interface ShareDelegateScope {
 export function ActionShareDelegate($scope: ShareDelegateScope) {
     let copiedFolders: models.Element[] = []
     $scope.sharedElements = [];
+    const needShareWarning = function () {
+        if ($scope.isSearchResult()) {
+            const foundedShareFolder = $scope.sharedElements.find(a => workspaceService.isFolder(a) && a.isShared);
+            return !!foundedShareFolder;
+        } else if ($scope.currentTree.filter != "shared") {
+            const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
+            if (founded) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
     $scope.openShareView = function () {
         $scope.copyingForShare = false;
         $scope.sharedElements = $scope.selectedItems();
@@ -43,13 +59,8 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             }
             return true;
         }
-        if ($scope.currentTree.filter != "shared") {
-            const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
-            if (founded) {
-                template.open('share', 'share/share-folders-warning');
-            } else {
-                template.open('share', 'share/share');
-            }
+        if (needShareWarning()) {
+            template.open('share', 'share/share-folders-warning');
         } else {
             template.open('share', 'share/share');
         }
