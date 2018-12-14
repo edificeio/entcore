@@ -27,7 +27,7 @@ export interface CreateDelegateScope {
     currentTree: models.Tree
     openedFolder: models.FolderContext
     setHighlighted(els: models.Element[])
-    setCurrentTreeRoute(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     setLightboxDelegateClose(f: () => boolean)
 }
 
