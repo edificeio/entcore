@@ -315,7 +315,9 @@ export class MassMailComponent implements OnInit, OnDestroy {
             && event.target != this.filtersToggleRef.nativeElement
             && !this.filtersToggleRef.nativeElement.contains(event.target)
             && !this.filtersDivRef.nativeElement.contains(event.target)
-            && !this.deselectItem) {
+            && !this.deselectItem
+            && !event.target.className.toString().startsWith('flatpickr')
+            && !event.target.parentElement.className.toString().startsWith('flatpickr')) {
             this.toggleVisibility();
         }
         this.deselectItem = false
