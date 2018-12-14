@@ -29,8 +29,12 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
     $scope.sharedElements = [];
     const needShareWarning = function () {
         if ($scope.isSearchResult()) {
-            const foundedShareFolder = $scope.sharedElements.find(a => workspaceService.isFolder(a) && a.isShared);
-            return !foundedShareFolder;
+            const hasFolder = !!$scope.sharedElements.find(a => workspaceService.isFolder(a));
+            if(hasFolder){
+                const isFolderShared = !!$scope.sharedElements.find(a => workspaceService.isFolder(a) && a.isShared);
+                return !isFolderShared;
+            }
+            return false;
         } else if ($scope.currentTree.filter != "shared") {
             const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
             if (founded) {
