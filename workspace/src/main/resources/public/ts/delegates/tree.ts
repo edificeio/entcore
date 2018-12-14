@@ -19,14 +19,14 @@ export interface TreeDelegateScope {
     onTreeInit(cb: () => void);
     isHighlightTree(folder: models.Element): boolean
     getHighlightCount(folder: models.Element): number
-    openFolderRoute(el: models.Node)
+    openFolderRoute(el: models.Node, forceReload?: boolean)
     openFolder(el: models.Node);
     openFolderById(id: string)
     isInSelectedFolder(folder: models.Element)
     isOpenedFolder(folder: models.Node): boolean
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
-    setCurrentTreeRoute(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     getTreeByFilter(filter: models.TREE_NAME): models.Tree;
     removeHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[])
     setHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[]);
@@ -77,7 +77,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             if (!$scope.currentTree || $scope.currentTree === currentTreeVoid) {
                 $scope.setCurrentTree("owner")
             }
-            
+
         });
         //
         workspaceService.onChange.subscribe(event => {
@@ -150,9 +150,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }
         return tree;
     }
-    $scope.setCurrentTreeRoute = function (name) {
+    $scope.setCurrentTreeRoute = function (name, forceReload = false) {
         const tree = $scope.getTreeByFilter(name);
-        $scope.openFolderRoute(tree);
+        $scope.openFolderRoute(tree, forceReload);
     }
     $scope.setCurrentTree = function (name) {
         $scope.currentTree = $scope.getTreeByFilter(name);
@@ -171,22 +171,33 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     $scope.isInSelectedFolder = function (folder) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
-    $scope.openFolderRoute = function (folder) {
+    $scope.openFolderRoute = function (folder, forceReload = false) {
+        const doLocation=function(path){
+            if(forceReload){
+                if($location.path()==path){
+                    window.location.reload()
+                }else{
+                    $location.path(path)
+                }
+            }else{
+                $location.path(path)
+            }
+        }
         if (folder._id) {
-            $location.path("/folder/" + folder._id);
+            doLocation("/folder/" + folder._id);
         } else if ((folder as models.Tree).filter) {
             switch ((folder as models.Tree).filter) {
                 case "protected":
-                    $location.path("/apps");
+                    doLocation("/apps");
                     break;
                 case "owner":
-                    $location.path("/");
+                    doLocation("/");
                     break;
                 case "shared":
-                    $location.path("/shared");
+                    doLocation("/shared");
                     break;
                 case "trash":
-                    $location.path("/trash");
+                    doLocation("/trash");
                     break;
                 default:
                     $scope.openFolder(folder);

@@ -21,7 +21,7 @@ export interface ShareDelegateScope {
     isSearchResult(): boolean;
     selectedItems(): models.Element[]
     setHighlighted(els: models.Element[])
-    setCurrentTreeRoute(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
 }
 
 export function ActionShareDelegate($scope: ShareDelegateScope) {

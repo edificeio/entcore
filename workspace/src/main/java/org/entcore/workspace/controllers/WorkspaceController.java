@@ -697,6 +697,7 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("comments");
 				query.getProjection().add("application");
 				query.getProjection().add("trasher");
+				query.getProjection().add("protected");
 				final String includeall = request.params().get("includeall");
 				if (includeall != null && "true".equals(includeall)) {
 					query.setType(null);

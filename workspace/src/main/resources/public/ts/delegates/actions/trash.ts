@@ -16,7 +16,7 @@ export interface ActionTrashScope {
     canEmptyTrash(): boolean;
     //from others
     currentTree: models.Tree
-    setCurrentTreeRoute(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     safeApply()
     selectedItems(): models.Element[]
 }
