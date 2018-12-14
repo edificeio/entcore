@@ -124,7 +124,7 @@ export function DragDelegate($scope: DragDelegateScope) {
             //can drop on shared
             const fileIds = draggingItems.map(item => item._id);
             if (!isTree && targetItem.isShared && !targetItem.canCopyFileIdsInto(fileIds)) {
-                notifyError &&  notify.error("workspace.contrib.cant")
+                notifyError && notify.error("workspace.contrib.cant")
                 return false;
             }
             //else accept
@@ -135,7 +135,7 @@ export function DragDelegate($scope: DragDelegateScope) {
         return $scope.isDraggingElement && $scope.dropCondition(el)(null);
     }
 
-    $scope.dropTo = function (targetItem, $originalEvent) {
+    $scope.dropTo = async function (targetItem, $originalEvent) {
         const can = $scope.dropCondition(targetItem, true)($originalEvent);
         if (!can)
             return;
@@ -145,7 +145,8 @@ export function DragDelegate($scope: DragDelegateScope) {
         } else {
             //if drop from apps=> copy
             if ($scope.currentTree.filter === 'protected') {
-                workspaceService.copyAll(draggingItems, targetItem)
+                await workspaceService.copyAll(draggingItems, targetItem)
+                notify.info("workspace.copied.toowner");
             } else {
                 //else use classic workflow
                 $scope.moveSubmit(targetItem as models.Element, draggingItems)
