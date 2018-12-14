@@ -30,7 +30,7 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
     const needShareWarning = function () {
         if ($scope.isSearchResult()) {
             const foundedShareFolder = $scope.sharedElements.find(a => workspaceService.isFolder(a) && a.isShared);
-            return !!foundedShareFolder;
+            return !foundedShareFolder;
         } else if ($scope.currentTree.filter != "shared") {
             const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
             if (founded) {

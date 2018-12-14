@@ -33,6 +33,7 @@ import { models, workspaceService } from "./services";
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope {
 
 	//new
+	lightboxDelegateClose: () => boolean
 	newFile: { chosenFiles: any[] }
 	//
 	display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
@@ -40,6 +41,9 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	safeApply(a?);
 	//help
 	getHelpForFolder(folder: models.Element): string
+	//
+	setLightboxDelegateClose(f: () => boolean)
+	resetLightboxDelegateClose()
 	//
 	formatDocumentSize(size: number): string
 	shortDate(el: string | number): string
@@ -50,6 +54,14 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	//selection
 }
 export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route) => {
+	$scope.lightboxDelegateClose = () => false;
+	$scope.setLightboxDelegateClose = function (f) {
+		$scope.lightboxDelegateClose = f;
+	}
+	$scope.resetLightboxDelegateClose = function () {
+		$scope.lightboxDelegateClose = () => false;
+
+	}
 	/**
 	 * Routes
 	 */
@@ -130,10 +142,12 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		filter: 'shared',
 		hierarchical: true,
 		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create',disabled(){
-				let isFolder = ($scope.openedFolder.folder instanceof models.Element);
-				return isFolder && !$scope.openedFolder.folder.canWriteOnFolder
-			} }
+			{
+				text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() {
+					let isFolder = ($scope.openedFolder.folder instanceof models.Element);
+					return isFolder && !$scope.openedFolder.folder.canWriteOnFolder
+				}
+			}
 		],
 		children: [],
 		helpbox: "workspace.help.2",
@@ -146,7 +160,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		name: lang.translate('appDocuments'),
 		filter: 'protected',
 		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => {}, icon: true, workflow: 'workspace.create', disabled() { return true } }
+			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
 		],
 		hierarchical: true,
 		children: [],
@@ -157,10 +171,10 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	}, {
 		name: lang.translate('trash'),
 		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => {}, icon: true, workflow: 'workspace.create', disabled() { return true } }
+			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
 		],
 		filter: 'trash',
-		hierarchical: true, 
+		hierarchical: true,
 		children: [],
 		contextualButtons: [
 			{ text: lang.translate('workspace.trash.restore'), action: $scope.restore, right: "manager" },

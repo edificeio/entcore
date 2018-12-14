@@ -14,7 +14,7 @@ export interface SearchDelegateScope {
     searchInWorkspace();
     searchSubmit();
     searchKeyUp(event);
-    isSearchResult();
+    isSearchResult():boolean;
     isSearching();
     showOpenLocation(): boolean
     openLocation();

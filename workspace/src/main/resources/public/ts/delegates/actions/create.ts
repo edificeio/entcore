@@ -28,10 +28,10 @@ export interface CreateDelegateScope {
     openedFolder: models.FolderContext
     setHighlighted(els: models.Element[])
     setCurrentTreeRoute(tree: models.TREE_NAME);
+    setLightboxDelegateClose(f: () => boolean)
 }
 
 export function ActionCreateDelegate($scope: CreateDelegateScope) {
-    let nbCancelShare = 0;
     $scope.newElementSharing = [];
     $scope.onCannotDropFile = function () {
         notify.error(lang.translate("workspace.contrib.cant"))
@@ -67,16 +67,13 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     }
     $scope.onCloseShareNewFolder = function ($canceled, $close) {
         if ($canceled) {
-            //apply delete action when cancelling window
-            if (nbCancelShare > 0) {
-                $scope.onCancelShareNewFolderDelete()
-                nbCancelShare = 0;
-                return;
-            }
-            nbCancelShare++;
-            //
             if (needAtLeastOneShared()) {
                 template.open('lightbox', 'create-folder/shared-cancel');
+                //apply delete action when cancelling window
+                $scope.setLightboxDelegateClose(() => {
+                    $scope.onCancelShareNewFolderDelete()
+                    return false;
+                })
             } else {
                 template.close("lightbox")
             }
@@ -130,7 +127,6 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
             const newFolder: models.Element = res as any;
             if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
                 $scope.newElementSharing = [newFolder];
-                nbCancelShare = 0;
                 template.open('lightbox', 'create-folder/shared-step2');
             } else {
                 template.close('lightbox');
@@ -152,7 +148,6 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     const openNewFileView = function (els: models.Element[]) {
         if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
             $scope.newElementSharing = els;
-            nbCancelShare = 0;
             template.open('lightbox', 'import-file/shared-step');
         } else {
             $scope.newElementSharing = [];
@@ -169,16 +164,13 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     }
     $scope.onCloseShareNewFiles = function ($canceled, $close) {
         if ($canceled) {
-            //apply delete action when cancelling window
-            if (nbCancelShare > 0) {
-                $scope.onCancelShareNewFilesDelete();
-                nbCancelShare = 0;
-                return;
-            }
-            nbCancelShare++;
-            //
             if (needAtLeastOneShared()) {
                 template.open('lightbox', 'import-file/shared-cancel');
+                //apply delete action when cancelling window
+                $scope.setLightboxDelegateClose(() => {
+                    $scope.onCancelShareNewFilesDelete();
+                    return false;
+                })
             } else {
                 template.close("lightbox")
             }
