@@ -1,4 +1,4 @@
-<lightbox show="!template.isEmpty('lightbox')" on-close="template.close('lightbox')">
+<lightbox show="!template.isEmpty('lightbox')" on-close="template.close('lightbox')" delegate-close="lightboxDelegateClose()" on-show="resetLightboxDelegateClose()">
     <container template="lightbox"></container>
 </lightbox>
 <lightbox show="display.share">
