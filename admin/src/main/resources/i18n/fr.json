@@ -256,6 +256,11 @@
     "notify.user.create.error.title" : "Erreur lors de la création",
     "notify.user.create.error.content" : "L'utilisateur {{user}} n'a pas pu être créé.",
 
+    "notify.user.remove.photo.title": "Suppression de la photo en cours",
+    "notify.user.remove.photo.content": "La photo de l'utilisateur {{user}} sera supprimée d'ici peu.",
+    "notify.user.remove.photo.error.title": "Erreur lors de la suppression de la photo",
+    "notify.user.remove.photo.error.content": "La photo de l'utilisateur {{user}} n'a pas pu être supprimée.",
+
     "notify.user.add.adml.title": "Rôle d'Administrateur local attribué",
     "notify.user.add.adml.content": "Le rôle d'Administrateur local a bien été attribué à l'utilisateur {{user}}.",
     "notify.user.add.adml.error.title": "Erreur lors de l'attribution de rôle Administrateur local",
