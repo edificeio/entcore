@@ -185,6 +185,7 @@ export class UserDetails implements OnInit, OnDestroy{
             this.codeInput.reset()
         if(this.administrativeForm)
             this.administrativeForm.reset()
+        this.imgSrc = "/userbook/avatar/" + user.id + "?thumbnail=100x100";
     }
     get user(){ return this._user }
 
@@ -235,7 +236,6 @@ export class UserDetails implements OnInit, OnDestroy{
             this.user.code = this.user.userDetails.activationCode;
         }
 
-        this.imgSrc = "/userbook/avatar/" + this.user.id + "?thumbnail=100x100"
     }
 
     ngOnDestroy() {
@@ -398,7 +398,7 @@ export class UserDetails implements OnInit, OnDestroy{
 
     deleteImg() {
         this.details.deletePhoto();
-        this.imgSrc = "";
+        this.imgSrc = this.imgSrc + "&" + new Date().getTime();
     }
 
     imgLoad() {
