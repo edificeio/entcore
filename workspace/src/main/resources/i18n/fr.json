@@ -229,5 +229,6 @@
     "workspace.delete.confirm.title":"Attention!",
     "workspace.delete.confirm.action":"Confirmer la suppression",
     "workspace.delete.confirm.content":"En supprimant ce(s) fichier(s) et/ou dossier(s) <b>vous le(s) supprimerez également pour les utilisateurs qui voient ces fichiers ou dossiers ou qui en sont propriétaires.</b>",
-    "workspace.contrib.cant":"Vous n'avez pas les droits de contributions dans ce dossier"
+    "workspace.contrib.cant":"Vous n'avez pas les droits de contributions dans ce dossier",
+    "workspace.copied.toowner":"Document(s) copié(s) dans vos documents personnels"
 }
