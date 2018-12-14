@@ -397,8 +397,35 @@ export class UserDetails implements OnInit, OnDestroy{
     }
 
     deleteImg() {
-        this.details.deletePhoto();
-        this.imgSrc = this.imgSrc + "&" + new Date().getTime();
+        this.details.deletePhoto().then(() => {
+            this.ns.success(
+                {
+                    key: 'notify.user.remove.photo.content',
+                    parameters: {
+                        user: this.details.firstName + ' ' + this.details.lastName
+                    }
+                },
+                {
+                    key: 'notify.user.remove.photo.title',
+                    parameters: {
+                        user: this.details.firstName + ' ' + this.details.lastName
+                    }
+                })
+        }).catch(() => {
+            this.ns.error(
+                {
+                    key: 'notify.user.remove.photo.error.content',
+                    parameters: {
+                        user: this.details.firstName + ' ' + this.details.lastName
+                    }
+                },
+                {
+                    key: 'notify.user.remove.photo.error.title',
+                    parameters: {
+                        user: this.details.firstName + ' ' + this.details.lastName
+                    }
+                })
+        });
     }
 
     imgLoad() {
