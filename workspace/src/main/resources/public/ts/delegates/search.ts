@@ -1,5 +1,5 @@
 import { models, workspaceService } from "../services";
-import { Observable,Subject } from "rxjs";
+import { Observable, Subject } from "rxjs";
 
 
 
@@ -14,16 +14,16 @@ export interface SearchDelegateScope {
     searchInWorkspace();
     searchSubmit();
     searchKeyUp(event);
-    isSearchResult():boolean;
+    isSearchResult(): boolean;
     isSearching();
     showOpenLocation(): boolean
     openLocation();
     //from others
     currentTree: models.Tree
     openedFolder: models.FolderContext
-    onReloadContent:Subject<() => void>
+    onReloadContent: Subject<() => void>
     openFolderById(id: string)
-    setCurrentTreeRoute(tree: models.TREE_NAME);
+    setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     selectedDocuments(): models.Element[]
     safeApply()
     onInit(cab: () => void);
@@ -40,7 +40,7 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     $scope.isSearchResult = function () {
         return $scope.search.state == "finished";
     }
-    $scope.onReloadContent.subscribe(()=>{
+    $scope.onReloadContent.subscribe(() => {
         $scope.resetSearch()
     })
     $scope.searchSubmit = async function () {
@@ -109,13 +109,13 @@ export function SearchDelegate($scope: SearchDelegateScope) {
         if (first.eParent) {
             $scope.openFolderById(first.eParent);
         } else if (first.isShared) {
-            $scope.setCurrentTreeRoute("shared")
+            $scope.setCurrentTreeRoute("shared", true)
         } else if (first.deleted) {
-            $scope.setCurrentTreeRoute("trash")
-        } else if (first.application != models.MEDIALIB_APPNAME) {
-            $scope.setCurrentTreeRoute("protected")
+            $scope.setCurrentTreeRoute("trash", true)
+        } else if (first.protected) {
+            $scope.setCurrentTreeRoute("protected", true)
         } else {
-            $scope.setCurrentTreeRoute("owner")
+            $scope.setCurrentTreeRoute("owner", true)
         }
     }
     $scope.searchKeyUp = function (keyEvent) {
