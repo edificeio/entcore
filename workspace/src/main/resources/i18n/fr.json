@@ -134,7 +134,7 @@
     "workspace.rack.name": "Nom du document",
     "workspace.rack.to": "Destinataire",
     "workspace.read": "Consulter",
-    "workspace.removed.message": "L'élément a été déplacé dans la corbeille de son propriétaire.",
+    "workspace.removed.message": "L'élément a été déplacé dans la corbeille.",
     "workspace.deleted.message": "L'élément a été supprimé définitivement.",
     "workspace.rename": "Renommer",
     "workspace.return": "Retour",
