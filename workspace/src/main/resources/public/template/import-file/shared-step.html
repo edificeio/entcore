@@ -10,6 +10,6 @@
             </div>
         </div>
     </div>
-    <share-panel resources="newElementSharing" class="workspace-share"  close-delegate="onCloseShareNewFiles($canceled,$close)" auto-close="'true'"
+    <share-panel resources="newElementSharing" class="workspace-share"  close-delegate="onCloseShareNewFiles($canceled,$close)"  confirmation-close-delegate="onCloseShareNewFiles($canceled,$close)" auto-close="'true'"
         on-submit="onSubmitSharedNewFiles($shared)"  on-validate="onValidateShare($data,$resource,$actions)"></share-panel>
 </div>
