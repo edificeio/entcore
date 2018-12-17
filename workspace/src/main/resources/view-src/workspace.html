@@ -16,18 +16,18 @@
 			<span ng-class="{'highlight-title-3s':isHighlightTree(folder)}" class="highlight-title">
 				<span class="count-badge">[[getHighlightCount(folder)]]</span>
 			</span>
-			<a ng-class="{ selected: isSelectedFolder(folder), opened: isOpenedFolder(folder) }" ng-click="openFolderRoute(folder)" ng-if="folder.name !== undefined"
+			<a ng-class="{ selected: isSelectedFolder(folder), opened: isRolledFolder(folder) }" ng-click="openFolderRoute(folder)" ng-if="folder.name !== undefined"
 			   class="folder-list-item"
 			   dragdrop="dropTo(folder, $originalEvent)"
 			   dropcondition="dropCondition(folder)"
 			   help-box-step="[[folder.helpbox]]">
-				<i class="arrow" ng-if="canExpendTree(folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> [[folder.name]]
+			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> [[folder.name]]
 			</a>
 			<!--MUST BE AFTER a.droptarget-->
 			<span ng-show="canDropOnElement(folder)" class="highlight-title highlight-title-border">
 				<span class="count-badge">[[countDragItems()]]</span>
 			</span>
-			<ul data-ng-class="{ selected: isOpenedFolder(folder), closed: !isOpenedFolder(folder) }" ng-if="isOpenedFolder(folder)">
+			<ul data-ng-class="{ selected: isOpenedFolder(folder), closed: !isRolledFolder(folder) }" ng-if="isOpenedFolder(folder) || isRolledFolder(folder)">
 				<li data-ng-repeat="folder in folder.children" data-ng-include="'folder-content'" class="highlight-title-wrapper"></li>
 			</ul>
 		</script>
