@@ -8,6 +8,7 @@ export interface ActionCopyDelegateScope {
     openCopyView()
     openMoveView()
     moveSubmit(dest: models.Element, elts?: models.Element[])
+    copySubmit(dest: models.Element, elts?: models.Element[]):Promise<any>
     //
     onMoveDoCopy()
     onMoveDoMove()
@@ -164,6 +165,28 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         }
     }
     //
+    $scope.copySubmit=async function(dest, elements=null){
+        if (elements) {
+            //not passing through copy view
+            movingItems = elements;
+            $scope.copyProps.i18 = i18Copy;
+            template.open('lightbox', 'copy/move-toown');
+            setState("processing")
+            $scope.safeApply()
+        }
+        setState("processing")
+        const toCopy = [...getMovingElements()]
+        try {
+            await workspaceService.copyAll(toCopy, dest)
+            setState("finished")
+            setTimeout(() => {
+                closeCopyView(dest, toCopy);
+                $scope.safeApply()
+            }, 1000)
+        } catch (e) {
+            closeCopyView(null)
+        }
+    }
     $scope.onMoveDoCopy = async function () {
         $scope.copyProps.i18.actionProcessing = "workspace.copy.window.processing"
         $scope.copyProps.i18.actionFinished = "workspace.copy.window.finished"
