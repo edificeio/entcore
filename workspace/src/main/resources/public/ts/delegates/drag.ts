@@ -12,6 +12,7 @@ export interface DragDelegateScope {
     selectedItems(): models.Element[];
     setMovingElements(elts: models.Element[])
     moveSubmit(dest: models.Element, elts?: models.Element[])
+    copySubmit(dest: models.Element, elts?: models.Element[]):Promise<any>
     //
     //drag and drop
     countDragItems(): number
@@ -145,8 +146,8 @@ export function DragDelegate($scope: DragDelegateScope) {
         } else {
             //if drop from apps=> copy
             if ($scope.currentTree.filter === 'protected') {
-                await workspaceService.copyAll(draggingItems, targetItem)
-                notify.info("workspace.copied.toowner");
+                $scope.copySubmit(targetItem, draggingItems)
+                //notify.info("workspace.copied.toowner");
             } else {
                 //else use classic workflow
                 $scope.moveSubmit(targetItem as models.Element, draggingItems)
