@@ -44,10 +44,13 @@ export const importFiles = ng.directive('importFiles', () => {
 				<div class="row media-library" ng-if="!display.editDocument">
 					<h2><i18n>medialibrary.title</i18n></h2>
                     <container template="import"></container>
+                    <container template="import-cache" style="display:none"></container>
                 </div>
             <lightbox>
         `,
 		link: (scope: ImportScope, element, attributes) => {
+			//preload template to avoid lock screen
+			template.open('import-cache', 'directives/import/loading');
 			template.open('import', 'directives/import/upload');
 
 			if (!(window as any).toBlobPolyfillLoaded) {
