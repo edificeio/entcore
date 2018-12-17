@@ -72,9 +72,9 @@ public class Workspace extends BaseServer {
 		/**
 		 * Folder manager
 		 */
-		FolderManager folderManager = FolderManager.mongoManagerWithQuota(DocumentDao.DOCUMENTS_COLLECTION, storage,
+		FolderManager folderManagerWithQuota = FolderManager.mongoManagerWithQuota(DocumentDao.DOCUMENTS_COLLECTION, storage,
 				vertx, shareService, quotaService, threshold);
-		resourceProvider.setFolderManager(folderManager);
+		resourceProvider.setFolderManager(folderManagerWithQuota);
 		/**
 		 * Repo events
 		 */
@@ -82,13 +82,13 @@ public class Workspace extends BaseServer {
 				shareService, quotaService, threshold);
 		boolean shareOldGroups = config.getBoolean("share-old-groups-to-users", false);
 		setRepositoryEvents(
-				new WorkspaceRepositoryEvents(vertx, storage, shareOldGroups, folderManager, folderManagerRevision));
+				new WorkspaceRepositoryEvents(vertx, storage, shareOldGroups, folderManagerWithQuota, folderManagerRevision));
 
 		/**
 		 * SearchEvent
 		 */
 		if (config.getBoolean("searching-event", true)) {
-			setSearchingEvents(new WorkspaceSearchingEvents(folderManager));
+			setSearchingEvents(new WorkspaceSearchingEvents(folderManagerWithQuota));
 		}
 		/**
 		 * Controllers
@@ -97,6 +97,7 @@ public class Workspace extends BaseServer {
 		if (node == null) {
 			node = "";
 		}
+		FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage, vertx, shareService);
 		String imageResizerAddress = node + config.getString("image-resizer-address", "wse.image.resizer");
 		WorkspaceService workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold,
 				imageResizerAddress, quotaService, folderManager, vertx.eventBus(), shareService);
