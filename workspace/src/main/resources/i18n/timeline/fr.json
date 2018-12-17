@@ -7,6 +7,7 @@
     "workspace.comment": "Ajout de commentaire sur un fichier",
     "workspace.comment-folder": "Ajout de commentaire sur un dossier",
     "workspace.storage": "Espace de stockage bientôt plein",
+    "workspace.contrib-folder": "Contribution dans un dossier",
     "timeline.workspace.comment.document": "a commenté le document",
     "timeline.workspace.comment.folder": "a commenté le dossier",
     "timeline.workspace.shared.document": "a partagé avec vous le document",
