@@ -16,6 +16,7 @@ export interface CreateDelegateScope {
     canCreateNewFolderShared(): boolean;
     openNewFolderView(): void;
     createFolder();
+    isSharedTree(): boolean;
     onImportFiles(files: FileList)
     canDropOnFolder(): boolean
     onCannotDropFile();
@@ -117,6 +118,9 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         } else {
             return isSharedTree;
         }
+    }
+    $scope.isSharedTree = function (): boolean {
+        return $scope.currentTree.filter === "shared";
     }
     $scope.createFolder = async function () {
         const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)
