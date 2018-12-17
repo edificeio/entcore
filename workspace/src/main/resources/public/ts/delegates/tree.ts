@@ -9,6 +9,7 @@ export interface TreeDelegateScope {
     setCurrentFolder(folder: models.Element, reload?: boolean)
     selectedFolders(): models.Element[];
     openedFolder: models.FolderContext
+    rolledFolders: models.Node[];
     safeApply(a?)
     closeViewFile()
     //
@@ -24,6 +25,8 @@ export interface TreeDelegateScope {
     openFolderById(id: string)
     isInSelectedFolder(folder: models.Element)
     isOpenedFolder(folder: models.Node): boolean
+    openOrCloseFolder(event: Event, folder: models.Node) : void
+    isRolledFolder(folder: models.Node): boolean
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
@@ -68,6 +71,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             children: $scope.trees
         }]
         $scope.quota = quota;
+        $scope.rolledFolders = []
         quota.refresh();
         //load trees
         refreshAll().then(e => {
@@ -167,7 +171,19 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }
         return workspaceService.findFolderInTreeByRefOrId(folder, $scope.openedFolder.folder);
     }
-
+    $scope.openOrCloseFolder = function (event, folder) {
+        event.stopPropagation();
+        const index = $scope.rolledFolders.indexOf(folder, 0);
+        if (index > -1) {
+            $scope.rolledFolders.splice(index, 1);
+        }
+        else {
+            $scope.rolledFolders.push(folder);
+        }
+    }
+    $scope.isRolledFolder = function (folder) {
+        return $scope.rolledFolders.indexOf(folder) > -1;
+    }
     $scope.isInSelectedFolder = function (folder) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
@@ -182,6 +198,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             }else{
                 $location.path(path)
             }
+        }
+        if(!$scope.isRolledFolder(folder)) {
+            $scope.rolledFolders.push(folder);
         }
         if (folder._id) {
             doLocation("/folder/" + folder._id);
