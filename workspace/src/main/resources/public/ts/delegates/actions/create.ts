@@ -120,7 +120,7 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         }
     }
     $scope.isSharedTree = function (): boolean {
-        return $scope.currentTree.filter == "shared";
+        return $scope.currentTree.filter === "shared";
     }
     $scope.createFolder = async function () {
         const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)
