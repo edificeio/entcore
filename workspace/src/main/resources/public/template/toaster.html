@@ -1,4 +1,4 @@
-<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 }">
+<section class="toggle-buttons" ng-class="{ hide: selectedDocuments().length + selectedFolders().length === 0 || isShowingComments()}">
 	<div class="toggle">
 		<div class="row">
 			<button ng-if="canOpenFile()" ng-click="viewFile(selectedDocuments()[0])" class="cell zero-mobile">
