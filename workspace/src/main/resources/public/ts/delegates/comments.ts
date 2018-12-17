@@ -28,6 +28,7 @@ export interface CommentDelegateScope {
     commentCount(): number;
     showComments(el: models.Element, event?: any)
     showFolderComments(el: models.Element, event?: any)
+    isShowingComments(): boolean;
 }
 export function CommentDelegate($scope: CommentDelegateScope) {
     $scope.onInit(function () {
@@ -107,6 +108,10 @@ export function CommentDelegate($scope: CommentDelegateScope) {
     $scope.commentCount = function () {
         let doc = $scope.selectedItems()[0]
         return doc && doc.comments ? doc.comments.length : 0;
+    }
+
+    $scope.isShowingComments = function () {
+        return $scope.selectedItems().findIndex(item => item.showComments) > (-1);
     }
 }
 
