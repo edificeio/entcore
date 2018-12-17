@@ -16,7 +16,7 @@ export interface CreateDelegateScope {
     canCreateNewFolderShared(): boolean;
     openNewFolderView(): void;
     createFolder();
-    isSharedTree();
+    isSharedTree(): boolean;
     onImportFiles(files: FileList)
     canDropOnFolder(): boolean
     onCannotDropFile();
