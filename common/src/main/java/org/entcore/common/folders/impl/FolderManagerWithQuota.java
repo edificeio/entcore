@@ -2,7 +2,9 @@ package org.entcore.common.folders.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -226,13 +228,30 @@ public class FolderManagerWithQuota implements FolderManager {
 		return future;
 	}
 
+	private Future<JsonArray> updateQuotaForDelete(Optional<String> currentUserId, JsonArray deleted) {
+		Map<String, Long> sizeByOwner = new HashMap<>();
+		for (Object d : deleted) {
+			if (d instanceof JsonObject) {
+				JsonObject dJson = (JsonObject) d;
+				String owner = DocumentHelper.getOwner(dJson);
+				long size = DocumentHelper.getFileSize(dJson);
+				size += sizeByOwner.getOrDefault(owner, 0l);
+				sizeByOwner.put(owner, size);
+			}
+		}
+		//
+		@SuppressWarnings("rawtypes")
+		List<Future> futures = sizeByOwner.entrySet().stream()
+				.map(entry -> incrementFreeSpace(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+		return CompositeFuture.all(futures).map(e -> deleted);
+	}
+
 	@Override
 	public void delete(String id, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
 		Future<JsonArray> future = Future.future();
 		this.folderManager.delete(id, user, future.completer());
-		future.compose(deleted -> {
-			final long size = DocumentHelper.getFileSize(deleted);
-			return incrementFreeSpace(user, size).map(deleted);
+		future.compose(deleted -> { 
+			return updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted);
 		}).setHandler(handler);
 	}
 
@@ -241,8 +260,7 @@ public class FolderManagerWithQuota implements FolderManager {
 		Future<JsonArray> future = Future.future();
 		this.folderManager.deleteAll(ids, user, future.completer());
 		future.compose(deleted -> {
-			final long size = DocumentHelper.getFileSize(deleted);
-			return incrementFreeSpace(user, size).map(deleted);
+			return updateQuotaForDelete(Optional.ofNullable(user.getUserId()), deleted);
 		}).setHandler(handler);
 	}
 
@@ -251,11 +269,7 @@ public class FolderManagerWithQuota implements FolderManager {
 		Future<JsonArray> future = Future.future();
 		this.folderManager.deleteByQuery(query, user, future.completer());
 		future.compose(deleted -> {
-			if (user.isPresent()) {
-				final long size = DocumentHelper.getFileSize(deleted);
-				return incrementFreeSpace(user.get(), size).map(deleted);
-			}
-			return Future.succeededFuture();
+			return updateQuotaForDelete(user.map(u->u.getUserId()), deleted);
 		}).setHandler(handler);
 	}
 
@@ -276,17 +290,17 @@ public class FolderManagerWithQuota implements FolderManager {
 		this.folderManager.findByQuery(query, user, handler);
 	}
 
-	private Future<Void> incrementFreeSpace(UserInfos user, final long amount) {
+	private Future<Void> incrementFreeSpace(String userId, final long amount) {
 		if (amount == 0) {
 			return Future.succeededFuture();
 		}
 		Future<Void> future = Future.future();
-		quotaService.decrementStorage(user.getUserId(), amount, this.quotaThreshold, ev -> {
+		quotaService.decrementStorage(userId, amount, this.quotaThreshold, ev -> {
 			if (ev.isRight()) {
 				JsonObject j = ev.right().getValue();
-				UserUtils.addSessionAttribute(eventBus, user.getUserId(), "storage", j.getLong("storage"), null);
+				UserUtils.addSessionAttribute(eventBus, userId, "storage", j.getLong("storage"), null);
 				if (j.getBoolean("notify", false)) {
-					quotaService.notifySmallAmountOfFreeSpace(user.getUserId());
+					quotaService.notifySmallAmountOfFreeSpace(userId);
 				}
 				future.complete(null);
 			} else {
