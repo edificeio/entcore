@@ -252,31 +252,39 @@ public class WorkspaceController extends BaseController {
 				actions.add(SHARED_ACTION);
 				shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.of(actions), evRecipients -> {
 					if (evRecipients.succeeded()) {
-						workspaceService.findById(id, new JsonObject().put("name", 1).put("eType", 1), event -> {
-							if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
-								String resourceName = event.getJsonObject("result").getString("name", "");
-								boolean isFolder = DocumentHelper.isFolder(event.getJsonObject("result"));
-								if (isFolder) {
-									final JsonObject params = new JsonObject()
-											.put("userUri",
-													"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-											.put("userName", user.getUsername())
-											.put("appPrefix", pathPrefix + "/workspace");
-									params.put("resourceUri", pathPrefix + "/workspace#/folder/" + id);
-									final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
-											+ ".contrib-folder";
-									params.put("resourceName", resourceName);
-									notification.notifyTimeline(request, notificationName, user,
-											new ArrayList<>(evRecipients.result()), id, params);
-									created(request);
+						List<String> recipientId = new ArrayList<>(evRecipients.result());
+						// remove current user
+						recipientId.remove(user.getUserId());
+						//
+						if (recipientId.isEmpty()) {
+							created(request);
+						} else {
+							workspaceService.findById(id, new JsonObject().put("name", 1).put("eType", 1), event -> {
+								if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
+									String resourceName = event.getJsonObject("result").getString("name", "");
+									boolean isFolder = DocumentHelper.isFolder(event.getJsonObject("result"));
+									if (isFolder) {
+										final JsonObject params = new JsonObject()
+												.put("userUri",
+														"/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+												.put("userName", user.getUsername())
+												.put("appPrefix", pathPrefix + "/workspace");
+										params.put("resourceUri", pathPrefix + "/workspace#/folder/" + id);
+										final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
+												+ ".contrib-folder";
+										params.put("resourceName", resourceName);
+										notification.notifyTimeline(request, notificationName, user, recipientId, id,
+												params);
+										created(request);
+									} else {
+										badRequest(request, "id is not a folder" + id);
+									}
 								} else {
-									badRequest(request, "id is not a folder" + id);
+									log.error("Unable to send timeline notification : missing name on resource " + id);
+									badRequest(request, "missing name or resource" + id);
 								}
-							} else {
-								log.error("Unable to send timeline notification : missing name on resource " + id);
-								badRequest(request, "missing name or resource" + id);
-							}
-						});
+							});
+						}
 					}
 				});
 			} else {
