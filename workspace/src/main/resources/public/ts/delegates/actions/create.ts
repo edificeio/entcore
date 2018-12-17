@@ -119,7 +119,7 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
             return isSharedTree;
         }
     }
-    $scope.isSharedTree = function () {
+    $scope.isSharedTree = function (): boolean {
         return $scope.currentTree.filter == "shared";
     }
     $scope.createFolder = async function () {
