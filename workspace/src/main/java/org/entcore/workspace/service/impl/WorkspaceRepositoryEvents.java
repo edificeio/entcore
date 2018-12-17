@@ -47,6 +47,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -60,6 +61,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	private final FolderManager folderManagerRevision;
 	private final boolean shareOldGroupsToUsers;
 	private final FolderExporter exporter;
+	private final FileSystem fs;
 
 	public WorkspaceRepositoryEvents(Vertx vertx, Storage storage, boolean shareOldGroupsToUsers,
 			FolderManager folderManager, FolderManager folderManagerRevision) {
@@ -67,11 +69,12 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		this.folderManager = folderManager;
 		this.folderManagerRevision = folderManagerRevision;
 		this.exporter = new FolderExporter(storage, vertx.fileSystem(), false);
+		this.fs = vertx.fileSystem();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void exportResources(final String exportId, final String userId, JsonArray groupIds, final String exportPath,
+	public void exportResources(final String exportId, final String userId, JsonArray groupIds, final String exportPathOrig,
 			final String locale, String host, final Handler<Boolean> handler) {
 		log.debug("Workspace export resources.");
 		// find by inheritshared and owner
@@ -86,14 +89,24 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			if (foundedEv.succeeded()) {
 				List<JsonObject> rows = foundedEv.result().stream().map(obj -> (JsonObject) obj)
 						.collect(Collectors.toList());
-				final String realBasePath = exportPath + File.separator
+				String exportPathTmp = exportPathOrig+"_tmp";
+				final String realBasePathTmp = exportPathTmp + File.separator
 						+ I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
-				exporter.export(new FolderExporterContext(realBasePath), rows).setHandler(res -> {
+				final String realBasePathOrig = exportPathOrig + File.separator
+						+ I18n.getInstance().translate("workspace.title", I18n.DEFAULT_DOMAIN, locale);
+				exporter.export(new FolderExporterContext(realBasePathTmp), rows).setHandler(res -> {
 					if (res.succeeded()) {
-						log.info("Workspace exported successfully to : " + exportPath);
-						handler.handle(true);
+						fs.move(realBasePathTmp, realBasePathOrig, resMove->{
+							if(resMove.succeeded()) {
+								log.info("Workspace exported successfully to : " + exportPathOrig);
+								handler.handle(true);
+							}else {
+								log.error("Failed to export workspace (move tmp to orig): " + exportPathTmp, res.cause());
+								handler.handle(false);
+							}
+						});
 					} else {
-						log.error("Failed to export workspace: " + exportPath, res.cause());
+						log.error("Failed to export workspace: " + exportPathTmp, res.cause());
 						handler.handle(false);
 					}
 				});
