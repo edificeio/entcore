@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.folders.FolderManager;
+import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -29,6 +30,7 @@ import org.entcore.workspace.dao.DocumentDao;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -453,6 +455,41 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		} else if (callback != null) {
 			callback.handle(null);
 		}
+	}
+
+	@Override
+	public void copy(String sourceId, Optional<String> destinationFolderId, UserInfos user,
+			Handler<AsyncResult<JsonArray>> handler) {
+		super.copy(sourceId, destinationFolderId, user, afterCopy(user.getUserId(), user.getUsername(), handler));
+	}
+
+	@Override
+	public void copyAll(Collection<String> sourceIds, Optional<String> destinationFolderId, UserInfos user,
+			Handler<AsyncResult<JsonArray>> handler) {
+		super.copyAll(sourceIds, destinationFolderId, user, afterCopy(user.getUserId(), user.getUsername(), handler));
+	}
+
+	@Override
+	public void copyUnsafe(String sourceId, Optional<String> destinationFolderId, String userId,
+			Handler<AsyncResult<JsonArray>> handler) {
+		super.copyUnsafe(sourceId, destinationFolderId, userId, afterCopy(userId, "", handler));
+	}
+
+	private Handler<AsyncResult<JsonArray>> afterCopy(String userId, String userName,
+			Handler<AsyncResult<JsonArray>> handler) {
+		return (res) -> {
+			if (res.succeeded()) {
+				List<JsonObject> copied = res.result().stream()
+						.filter(c -> c instanceof JsonObject && DocumentHelper.isFile((JsonObject) c))
+						.map(c -> (JsonObject) c).collect(Collectors.toList());
+				for (JsonObject c : copied) {
+					createRevision(DocumentHelper.getId(c), DocumentHelper.getFileId(c), DocumentHelper.getName(c),
+							DocumentHelper.getOwner(c), DocumentHelper.getOwner(c), DocumentHelper.getOwnerName(c),
+							c.getJsonObject("metadata", new JsonObject()));
+				}
+			}
+			handler.handle(res);
+		};
 	}
 
 	public void emptySize(final String userId, final Handler<Long> emptySizeHandler) {
