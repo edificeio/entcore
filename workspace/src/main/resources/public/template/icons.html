@@ -13,7 +13,7 @@
 	<dropzone-overlay on-import="onImportFiles($event)" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<header>&nbsp;</header>
 	<div>
-		<div ng-repeat="folder in openedFolder.folders | orderBy:order.order" class="element mini-block-container" ng-class="{ selected: folder.selected}" dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
+		<div ng-repeat="folder in openedFolder.folders" class="element mini-block-container" ng-class="{ selected: folder.selected}" dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)" dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
 
 			<explorer  class="radius explorer-hover" ng-change="onSelectItem($event,folder)" ng-model="folder.selected" on-open="openFolderRoute(folder)" ng-class="{'explorer-droppable':canDropOnElement(folder)}">
 				<span class="explorer-badge-drop">[[countDragItems()]]</span>
@@ -69,7 +69,7 @@
 			</explorer>
 
 		</div>
-		<div ng-repeat="document in openedFolder.documents | orderBy:order.order" class="element" ng-class="{ selected: document.selected}" dragend="dragEnd(document, $originalEvent)"  dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
+		<div ng-repeat="document in openedFolder.documents" class="element" ng-class="{ selected: document.selected}" dragend="dragEnd(document, $originalEvent)"  dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
 			<explorer  class="radius explorer-hover" ng-model="document.selected" ng-change="onSelectItem($event,document)" on-open="viewFile(document)">
 				<legend class="no-1d">
 					<a>
