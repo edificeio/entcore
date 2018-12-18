@@ -132,6 +132,7 @@ public class WorkspaceController extends BaseController {
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
 		}
+		//TODO workspaceService.addDocument?
 		workspaceService.addAfterUpload(uploaded, doc, name, application, thumbs, ownerId, ownerName, m -> {
 			if (m.succeeded()) {
 				message.reply(m.result().put("status", "ok"));
