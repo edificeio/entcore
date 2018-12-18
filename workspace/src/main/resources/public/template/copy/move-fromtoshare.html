@@ -6,8 +6,8 @@
             <hr />
         </div>
         <div class="lightbox-buttons fluid">
-            <button class="right-magnet" ng-click="onMoveDoCopy()"><i18n>workspace.move.window.docopy</i18n></button>
-            <button class="cancel right-magnet" ng-click="onMoveDoMove()"><i18n>workspace.move.window.action</i18n></button>
+            <button class="right-magnet" ng-click="onMoveDoMove()"><i18n>workspace.move.window.action</i18n></button>
+            <button class="cancel right-magnet" ng-click="onMoveDoCopy()"><i18n>workspace.move.window.docopy</i18n></button>
             <button class="cancel right-magnet" ng-click="onMoveDoCancel()"><i18n>cancel</i18n></button>
         </div>
     </div>
@@ -15,7 +15,7 @@
         <div class="flex-row vertical-spacing-four">
             <div class="centered vertical-spacing-four">
                 <div class="vertical-spacing-four primary-color">
-                    <h2 translate content="[[copyProps.i18.actionProcessing]]"></h2><i class="spinner left-spacing"></i>
+                    <h2 translate content="[[copyProps.i18.actionProcessing]]"></h2><i ng-class="{loadingCopy: isCopying, loadingMove: !isCopying}" class="loading"></i>
                 </div>
             </div>
         </div>
