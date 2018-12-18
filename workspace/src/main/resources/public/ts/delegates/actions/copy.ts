@@ -17,6 +17,7 @@ export interface ActionCopyDelegateScope {
     isCopyStateNormal(): boolean
     isCopyStateProcessing(): boolean
     isCopyStateFinished(): boolean
+    isCopying: boolean
     //from others
     currentTree: models.Tree;
     trees: models.Tree[]
@@ -174,6 +175,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             setState("processing")
             $scope.safeApply()
         }
+        $scope.isCopying = true;
         setState("processing")
         const toCopy = [...getMovingElements()]
         try {
@@ -190,6 +192,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     $scope.onMoveDoCopy = async function () {
         $scope.copyProps.i18.actionProcessing = "workspace.copy.window.processing"
         $scope.copyProps.i18.actionFinished = "workspace.copy.window.finished"
+        $scope.isCopying = true;
         setState("processing")
         const toCopy = [...getMovingElements()]
         try {
@@ -206,6 +209,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     $scope.onMoveDoMove = async function () {
         $scope.copyProps.i18.actionProcessing = "workspace.move.window.processing"
         $scope.copyProps.i18.actionFinished = "workspace.move.window.finished"
+        $scope.isCopying = false;
         setState("processing")
         const toMove = [...getMovingElements()]
         try {
@@ -239,6 +243,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     $scope.isCopyStateFinished = function () {
         return processing == "finished"
     }
+    $scope.isCopying = false;
     $scope.isMovingElementsMine = function () {
         return getMovingElements().filter(m => {
             const userId: any = m.owner.userId || m.owner
