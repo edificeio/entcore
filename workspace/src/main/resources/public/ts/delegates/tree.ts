@@ -32,8 +32,9 @@ export interface TreeDelegateScope {
     setCurrentTree(tree: models.TREE_NAME);
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     getTreeByFilter(filter: models.TREE_NAME): models.Tree;
-    removeHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[])
-    setHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[]);
+    removeHighlightTree(els: { folder: models.Node, count: number }[])
+    setHighlightTree(els: { folder: models.Node, count: number }[]);
+    firstVisibleAscendant(folder: models.Node) : models.Node;
 
 }
 export function TreeDelegate($scope: TreeDelegateScope, $location) {
@@ -142,7 +143,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             quota.refresh();
             //Highlight new shared
             if ((event.action == "add" || event.action == "tree-change") && event.treeDest == "shared" && event.treeSource != "shared" && event.elements) {
-                $scope.setHighlightTree([{ folder: "shared", count: event.elements.length }])
+                $scope.setHighlightTree([{ folder: event.dest, count: event.elements.length }])
             }
             //
             $scope.safeApply()
@@ -264,7 +265,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             }
             for(let child of tree.children) {
                 if(rec(child)) {
-                    $scope.rolledFolders.push(tree);
+                    if(!$scope.isRolledFolder(tree)) {
+                        $scope.rolledFolders.push(tree);
+                    }
                     return true;
                 }
             }
@@ -272,7 +275,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }
         for(let tree of $scope.trees) {
             if(rec(tree)) {
-                $scope.rolledFolders.push(tree);
+                if(!$scope.isRolledFolder(tree)) {
+                    $scope.rolledFolders.push(tree);
+                }
                 break;
             }
         }
@@ -280,8 +285,11 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     /**
      * Highlight
      */
-    let highlighted: { folder: models.Node | models.TREE_NAME, count: number }[] = []
-    $scope.setHighlightTree = function (els: { folder: models.Element | models.TREE_NAME, count: number }[]) {
+    let highlighted: { folder: models.Node, count: number }[] = []
+    $scope.setHighlightTree = function (els: { folder: models.Node, count: number }[]) {
+        if(els) {
+            els.map(el => el.folder = $scope.firstVisibleAscendant(el.folder))
+        }
         highlighted = els ? [...els] : [];
         highlighted = highlighted.filter(h => !!h);
         $scope.safeApply();
@@ -312,7 +320,29 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         let t = findHighlight(folder)
         return t && t.length ? t[0].count : null;
     }
-
+    $scope.firstVisibleAscendant = function(folder: models.Node) : models.Node {
+        let ret;
+        let rec = function(tree : models.Tree) {
+            if(folder === tree) {
+                return true;
+            }
+            for(let child of tree.children) {
+                if($scope.isRolledFolder(tree)) {
+                    ret = child;
+                }
+                if(rec(child)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        for(let tree of $scope.trees) {
+            ret = tree;
+            if(rec(tree)) {
+                return ret;
+            }
+        }
+    }
 
 }
 

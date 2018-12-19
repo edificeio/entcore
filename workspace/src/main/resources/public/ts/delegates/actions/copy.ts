@@ -23,7 +23,7 @@ export interface ActionCopyDelegateScope {
     trees: models.Tree[]
     selectedItems(): models.Element[]
     safeApply(a?)
-    setHighlightTree(els: { folder: models.Element | models.TREE_NAME, count: number }[]);
+    setHighlightTree(els: { folder: models.Node, count: number }[]);
 
 }
 
@@ -162,7 +162,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         $scope.copyProps.sources = [];
         //
         if (elts && checkDest(dest, elts) == "toshare") {
-            $scope.setHighlightTree([{ folder: "shared", count: elts.length }])
+            $scope.setHighlightTree([{ folder: dest, count: elts.length }])
         }
     }
     //
