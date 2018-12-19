@@ -23,6 +23,7 @@ export interface TreeDelegateScope {
     openFolderRoute(el: models.Node, forceReload?: boolean)
     openFolder(el: models.Node);
     openFolderById(id: string)
+    rollFoldersRecursively();
     isInSelectedFolder(folder: models.Element)
     isOpenedFolder(folder: models.Node): boolean
     openOrCloseFolder(event: Event, folder: models.Node) : void
@@ -245,6 +246,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             $scope.currentTree = founded;
         }
         $scope.setCurrentFolder(folder as models.Element, true);
+        $scope.rollFoldersRecursively();
     };
 
     $scope.openFolderById = async function (folderId) {
@@ -253,6 +255,26 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         const founded = workspaceService.findFolderInTrees($scope.trees, folderId);
         if (founded) {
             $scope.openFolder(founded)
+        }
+    }
+    $scope.rollFoldersRecursively = function() {
+        let rec = function(tree : models.Tree) {
+            if($scope.openedFolder.folder === tree) {
+                return true;
+            }
+            for(let child of tree.children) {
+                if(rec(child)) {
+                    $scope.rolledFolders.push(tree);
+                    return true;
+                }
+            }
+            return false;
+        }
+        for(let tree of $scope.trees) {
+            if(rec(tree)) {
+                $scope.rolledFolders.push(tree);
+                break;
+            }
         }
     }
     /**
