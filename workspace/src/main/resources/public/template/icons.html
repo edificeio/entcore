@@ -21,19 +21,18 @@
 				<legend class="no-1d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
-						<span>[[folder.name]]</span>
+						<span tooltip-on-ellipsis="[[folder.name]]">[[folder.name]]</span>
 					</a>
 					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 				<a class="container" ng-class="{'highlight-border-3s':isHighlighted(folder)}">
 					<i class="folder-large"></i>
 				</a>
-
 				<i ng-if="folder.isShared && isSearchResult()" class="shared inline"></i>
 				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
-						<span>[[folder.name]]</span>
+						<span tooltip-on-ellipsis="[[folder.name]]">[[folder.name]]</span>
 					</a>
 					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
@@ -74,7 +73,7 @@
 				<legend class="no-1d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-						<span>[[document.name]]</span>
+						<span tooltip-on-ellipsis="[[document.name]]">[[document.name]]</span>
 					</a>
 					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
@@ -93,7 +92,7 @@
 				<legend class="no-2d">
 					<a>
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
-						<span>[[document.name]]</span>
+						<span tooltip-on-ellipsis="[[document.name]]">[[document.name]]</span>
 					</a>
 					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
