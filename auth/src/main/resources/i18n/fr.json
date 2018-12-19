@@ -1,5 +1,6 @@
 {
     "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
+    "wayf.label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
     "activation.error": "Erreur lors de l'activation, veuillez vérifier votre identifiant et votre code d'activation.",
     "activation.error.duplicated": "Votre compte a été identifié comme doublon d'un autre compte ce qui empêche son activation. Veuillez contacter l'administrateur de votre espace.",
     "auth.activate": "Activer",
