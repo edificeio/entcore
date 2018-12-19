@@ -1,5 +1,33 @@
 import { $, appPrefix, ng } from 'entcore';
 //TODO move to infrafront? with i18n
+function StickyDelegate(scope, element, attributes) {
+    let original = null;
+    let initialOffset = null;
+    const dropZone = element.find(".dropzone-overlay");
+    const parent = element.parent();
+    const move = function () {
+        if (original == null) {
+            const position = dropZone.position()
+            original = position.top;
+            initialOffset = parent.scrollTop();
+        }
+        if (attributes.stickyBloc == "top") {
+            const offset = parent.scrollTop();
+            const newTop = original + offset - initialOffset;
+            dropZone.css({ top: newTop + "px","transition": "all 300ms ease-in-out" })
+        }
+    }
+    const bind = function () {
+        parent.scroll(move)
+    }
+    const unbind = function () {
+        parent.off("scroll", move)
+    }
+    //
+    bind();
+    scope.$on("destroy", unbind)
+}
+//
 
 export interface DropzoneOverlayScope {
     visible: boolean
@@ -44,6 +72,7 @@ export const dropzoneOverlay = ng.directive('dropzoneOverlay', ['$timeout', ($ti
             </div>
         `,
         link: (scope: DropzoneOverlayScope, element, attributes) => {
+            StickyDelegate(scope, element, attributes)
             const parent = element.parent();
             scope.$watch("canDrop", function () {
                 if (scope.canDrop === true) {
