@@ -376,16 +376,7 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
-	private void afterDelete(JsonArray res) {
-		// Delete revisions for each sub-document
-		for (Object obj : res) {
-			JsonObject item = (JsonObject) obj;
-			if (DocumentHelper.isFile(item) && !StringUtils.isEmpty(DocumentHelper.getFileId(item))) {
-				workspaceService.deleteAllRevisions(DocumentHelper.getId(item),
-						new fr.wseduc.webutils.collections.JsonArray().add(DocumentHelper.getFileId(item)));
-			}
-		}
-	}
+	
 
 	@Delete("/document/:id")
 	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
@@ -399,8 +390,6 @@ public class WorkspaceController extends BaseController {
 			if (userInfos != null) {
 				workspaceService.delete(id, userInfos, event -> {
 					if (event.succeeded()) {
-						afterDelete(event.result());
-						//
 						renderJson(request, event.result());
 					} else {
 						badRequest(request, event.cause().getMessage());
@@ -428,7 +417,6 @@ public class WorkspaceController extends BaseController {
 							.collect(Collectors.toSet());
 					workspaceService.deleteAll(ids, user, event -> {
 						if (event.succeeded()) {
-							this.afterDelete(event.result());
 							renderJson(request, new JsonObject().put("number", event.result().size()));
 						} else {
 							badRequest(request, event.cause().getMessage());
