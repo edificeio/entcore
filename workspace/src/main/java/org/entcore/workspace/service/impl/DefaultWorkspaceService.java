@@ -12,6 +12,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
@@ -23,6 +25,7 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
@@ -288,7 +291,40 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				MongoDbResult.validResultHandler(handler));
 	}
 
-	public void deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
+	@Override
+	public void delete(String id, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
+		super.delete(id, user, afterDelete(handler));
+	}
+
+	@Override
+	public void deleteAll(Set<String> ids, UserInfos user, Handler<AsyncResult<JsonArray>> handler) {
+		super.deleteAll(ids, user, afterDelete(handler));
+	}
+
+	@Override
+	public void deleteByQuery(ElementQuery query, Optional<UserInfos> user, Handler<AsyncResult<JsonArray>> handler) {
+		super.deleteByQuery(query, user, afterDelete(handler));
+	}
+
+	private Handler<AsyncResult<JsonArray>> afterDelete(final Handler<AsyncResult<JsonArray>> resOrig) {
+		return (res) -> {
+			if (res.succeeded()) {
+				JsonArray results = res.result();
+				// Delete revisions for each sub-document
+				for (Object obj : results) {
+					JsonObject item = (JsonObject) obj;
+					if (DocumentHelper.isFile(item) && !StringUtils.isEmpty(DocumentHelper.getFileId(item))) {
+						deleteAllRevisions(DocumentHelper.getId(item),
+								new fr.wseduc.webutils.collections.JsonArray().add(DocumentHelper.getFileId(item)));
+					}
+				}
+			}
+			//
+			resOrig.handle(res);
+		};
+	}
+
+	private void deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
 		JsonObject keys = new JsonObject();
 
