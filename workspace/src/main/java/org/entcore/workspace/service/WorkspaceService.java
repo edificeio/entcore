@@ -64,8 +64,6 @@ public interface WorkspaceService extends FolderManager {
 	public void getRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public void deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted);
-
 	public void deleteRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler);
 

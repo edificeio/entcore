@@ -63,10 +63,15 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         return $scope.currentTree.filter === 'trash';
     }
 
-    $scope.emptyTrash = function () {
+    $scope.emptyTrash = async function () {
         //dont be in a folder when deleting
         $scope.setCurrentTreeRoute("trash")
-        workspaceService.emptyTrash();
+        await workspaceService.emptyTrash();
+        //wait revision to be deleted
+        setTimeout(async () => {
+            await quota.refresh();
+            $scope.safeApply();
+        }, 300)
     };
 
     $scope.deleteSelection = async function () {
@@ -84,6 +89,11 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
             await workspaceService.deleteAll(all);
             notify.info('workspace.deleted.message');
             template.close('lightbox');
+            //wait revision to be deleted
+            setTimeout(async () => {
+                await quota.refresh();
+                $scope.safeApply();
+            }, 300)
         };
     };
 }
