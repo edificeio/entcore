@@ -12,6 +12,7 @@ export interface TreeDelegateScope {
     rolledFolders: models.Node[];
     safeApply(a?)
     closeViewFile()
+    isSearchResult(): boolean;
     //
     wrapperTrees: models.Node[]
     trees: models.Tree[]
@@ -199,6 +200,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                 }
             }else{
                 $location.path(path)
+                if($scope.isSearchResult()) {
+                    window.location.reload();
+                }
             }
         }
         if(!$scope.isRolledFolder(folder)) {
