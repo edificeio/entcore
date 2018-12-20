@@ -1697,14 +1697,14 @@ calendar.Calendar.prototype.addScheduleItems = function(items) {
 	var schedule = this;
 	items
 		.filter(function(item) {
-		    return moment(item.end).isSame(schedule.firstDay, schedule.increment=='week' ? 'isoWeek' : schedule.increment);
+		    return moment(item.end.format('MM-DD-YYYY'),'MM-DD-YYYY').isSame(schedule.firstDay, schedule.increment=='week' ? 'isoWeek' : schedule.increment);
 		})
 		.forEach(function(item) {
 			var startDay = moment(item.beginning);
 			var endDay = moment(item.end);
 
 			var refDay = moment(schedule.firstDay);
-			schedule.days.forEach(function(day) {
+			schedule.days.all.forEach(function(day) {
 				if (
 					startDay.isBefore(refDay.clone().endOf('day')) &&
 					endDay.isAfter(refDay.clone().startOf('day'))
