@@ -24,12 +24,14 @@ export interface CreateDelegateScope {
     onCancelShareNewFilesOwn();
     onSubmitSharedNewFiles($event: any)
     onCancelShareNewFilesDelete();
+    canShowOwner(): boolean;
     //from others
     currentTree: models.Tree
     openedFolder: models.FolderContext
     setHighlighted(els: models.Element[])
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     setLightboxDelegateClose(f: () => boolean)
+    isSearchResult(): boolean;
 }
 
 export function ActionCreateDelegate($scope: CreateDelegateScope) {
@@ -121,6 +123,9 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
     }
     $scope.isSharedTree = function (): boolean {
         return $scope.currentTree.filter === "shared";
+    }
+    $scope.canShowOwner = function (): boolean {
+        return $scope.currentTree.filter === "shared" || $scope.currentTree.filter === "trash" || $scope.isSearchResult();
     }
     $scope.createFolder = async function () {
         const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)

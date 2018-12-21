@@ -23,7 +23,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span tooltip-on-ellipsis="[[folder.name]]">[[folder.name]]</span>
 					</a>
-					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
+					<a class="author" ng-if="canShowOwner()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 				<a class="container" ng-class="{'highlight-border-3s':isHighlighted(folder)}">
 					<i class="folder-large"></i>
@@ -34,7 +34,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder, $event)">[[folder.comments.length]]</span>
 						<span tooltip-on-ellipsis="[[folder.name]]">[[folder.name]]</span>
 					</a>
-					<a class="author" ng-if="isSharedTree()"><strong>[[folder.ownerName]]</strong></a>
+					<a class="author" ng-if="canShowOwner()"><strong>[[folder.ownerName]]</strong></a>
 				</legend>
 
 				<div ng-if="folder.showComments">
@@ -75,7 +75,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 						<span tooltip-on-ellipsis="[[document.name]]">[[document.name]]</span>
 					</a>
-					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
+					<a class="author" ng-if="canShowOwner()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				<!--LEGEND MUST BE BEFORE container-->
 				<a class="[[document.metadata.role]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
@@ -94,7 +94,7 @@
 						<span class="badge" ng-if="canShowBadgeComments(document)" translate  attr="title" title="comments" ng-click="showComments(document, $event)">[[document.comments.length]]</span>
 						<span tooltip-on-ellipsis="[[document.name]]">[[document.name]]</span>
 					</a>
-					<a class="author" ng-if="isSharedTree()"><strong>[[document.ownerName]]</strong></a>
+					<a class="author" ng-if="canShowOwner()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				
 
