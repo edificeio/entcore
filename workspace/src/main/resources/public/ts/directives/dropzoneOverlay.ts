@@ -1,6 +1,10 @@
 import { $, appPrefix, ng } from 'entcore';
+import { Subject } from 'rxjs';
 //TODO move to infrafront? with i18n
 function StickyDelegate(scope, element, attributes) {
+    if (!attributes.stickyBloc) {
+        return;
+    }
     let original = null;
     let initialOffset = null;
     const dropZone = element.find(".dropzone-overlay");
@@ -14,7 +18,7 @@ function StickyDelegate(scope, element, attributes) {
         if (attributes.stickyBloc == "top") {
             const offset = parent.scrollTop();
             const newTop = original + offset - initialOffset;
-            dropZone.css({ top: newTop + "px","transition": "all 300ms ease-in-out" })
+            dropZone.css({ top: newTop + "px", "transition": "all 300ms ease-in-out" })
         }
     }
     const bind = function () {
@@ -27,12 +31,35 @@ function StickyDelegate(scope, element, attributes) {
     bind();
     scope.$on("destroy", unbind)
 }
+
+function ResetScrollDelegate(scope: DropzoneOverlayScope, element, attributes) {
+    if (!attributes.resetScroll) {
+        return;
+    }
+    const parent = element.parent();
+    let original = null;
+    scope.onbeforeshow.subscribe(() => {
+        if (original == null) {
+            original = parent.css("overflow");
+        }
+        parent.css({ "overflow": "hidden" })
+        parent.scrollTop(0);
+    })
+    scope.onhide.subscribe(() => {
+        if (original != null) {
+            parent.css({ "overflow": original })
+        }
+    })
+}
 //
 
 export interface DropzoneOverlayScope {
     visible: boolean
     error: boolean
     canDrop: boolean
+    onbeforeshow: Subject<any>
+    onshow: Subject<any>
+    onhide: Subject<any>
     displayError()
     showInfo(): boolean
     showWarning(): boolean
@@ -72,8 +99,14 @@ export const dropzoneOverlay = ng.directive('dropzoneOverlay', ['$timeout', ($ti
             </div>
         `,
         link: (scope: DropzoneOverlayScope, element, attributes) => {
+            scope.onshow = new Subject;
+            scope.onhide = new Subject;
+            scope.onbeforeshow = new Subject
+            //
             StickyDelegate(scope, element, attributes)
+            ResetScrollDelegate(scope, element, attributes);
             const parent = element.parent();
+            //
             scope.$watch("canDrop", function () {
                 if (scope.canDrop === true) {
                     element.removeClass("cursor-notallowed")
@@ -86,12 +119,15 @@ export const dropzoneOverlay = ng.directive('dropzoneOverlay', ['$timeout', ($ti
                     scope.visible = false;
                     scope.error = false;
                     parent.removeClass('dropzone-overlay-wrapper');
+                    scope.onhide.next()
                 })
             }
             scope.show = function () {
+                scope.onbeforeshow.next()
                 $timeout(() => {
                     scope.visible = true;
                     parent.addClass('dropzone-overlay-wrapper');
+                    scope.onshow.next()
                 })
             }
             scope.showInfo = function () {
@@ -170,6 +206,8 @@ export const dropzoneOverlay = ng.directive('dropzoneOverlay', ['$timeout', ($ti
             //
             scope.$on('$destroy', function () {
                 parent.off()
+                scope.onhide.unsubscribe()
+                scope.onshow.unsubscribe()
             });
         }
     }
