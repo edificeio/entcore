@@ -31,6 +31,7 @@
 				<li data-ng-repeat="folder in folder.children" data-ng-include="'folder-content'" class="highlight-title-wrapper"></li>
 			</ul>
 		</script>
+		<!--TODO move to cssutils?-->
 		<style>
 		[draggable=false],[draggable=false] *{
 			user-drag: none; 
@@ -39,6 +40,9 @@
 			-webkit-user-drag: none;
 			-webkit-user-select: none;
 			-ms-user-select: none;
+		}
+		[draggable=false] img{
+			pointer-events: none;
 		}
 		</style>
 </head>
