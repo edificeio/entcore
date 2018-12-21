@@ -233,5 +233,7 @@
     "workspace.delete.confirm.action":"Confirmer la suppression",
     "workspace.delete.confirm.content":"En supprimant ce(s) fichier(s) et/ou dossier(s) <b>vous le(s) supprimerez également pour les utilisateurs qui voient ces fichiers ou dossiers ou qui en sont propriétaires.</b>",
     "workspace.contrib.cant":"Vous n'avez pas les droits de contributions dans ce dossier",
-    "workspace.copied.toowner":"Document(s) copié(s) dans vos documents personnels"
+    "workspace.copied.toowner":"Document(s) copié(s) dans vos documents personnels",
+    "workspace.copy.title":"Copier des fichiers et/ou dossier",
+    "workspace.move.title":"Déplacements des fichiers et/ou dossier"
 }
