@@ -360,7 +360,7 @@ public class DefaultUserService implements UserService {
 			if (ar.succeeded()) {
 				JsonArray res = ((JsonObject) ar.result().body()).getJsonArray("results");
 				JsonObject json = new JsonObject();
-				if (res.size() == 2) {
+				if (res.size() == 4) {
 					JsonArray r = res.getJsonArray(1);
 					if (r.size() == 1) {
 						json = r.getJsonObject(0);
