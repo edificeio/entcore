@@ -12,7 +12,6 @@ export interface TreeDelegateScope {
     rolledFolders: models.Node[];
     safeApply(a?)
     closeViewFile()
-    isSearchResult(): boolean;
     //
     wrapperTrees: models.Node[]
     trees: models.Tree[]
@@ -24,6 +23,7 @@ export interface TreeDelegateScope {
     openFolderRoute(el: models.Node, forceReload?: boolean)
     openFolder(el: models.Node);
     openFolderById(id: string)
+    openFolderRouteById(id: string)
     rollFoldersRecursively();
     isInSelectedFolder(folder: models.Element)
     isOpenedFolder(folder: models.Node): boolean
@@ -200,9 +200,6 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                 }
             }else{
                 $location.path(path)
-                if($scope.isSearchResult()) {
-                    window.location.reload();
-                }
             }
         }
         if(!$scope.isRolledFolder(folder)) {
@@ -261,6 +258,15 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         if (founded) {
             $scope.openFolder(founded)
         }
+    }
+    $scope.openFolderRouteById = async function (folderId) {
+        //if any refresh wait it finished
+        await refreshPromise;
+        const founded = workspaceService.findFolderInTrees($scope.trees, folderId);
+        if (founded) {
+            $scope.openFolderRoute(founded)
+        }
+        $scope.safeApply();
     }
     $scope.rollFoldersRecursively = function() {
         let rec = function(tree : models.Tree) {

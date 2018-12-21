@@ -23,10 +23,12 @@ export interface SearchDelegateScope {
     openedFolder: models.FolderContext
     onReloadContent: Subject<() => void>
     openFolderById(id: string)
+    openFolderRouteById(id: string)
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     selectedDocuments(): models.Element[]
     safeApply()
     onInit(cab: () => void);
+
 }
 
 export function SearchDelegate($scope: SearchDelegateScope) {
@@ -107,7 +109,7 @@ export function SearchDelegate($scope: SearchDelegateScope) {
     $scope.openLocation = function () {
         const first = $scope.selectedDocuments()[0];
         if (first.eParent) {
-            $scope.openFolderById(first.eParent);
+            $scope.openFolderRouteById(first.eParent);
         } else if (first.isShared) {
             $scope.setCurrentTreeRoute("shared", true)
         } else if (first.deleted) {
