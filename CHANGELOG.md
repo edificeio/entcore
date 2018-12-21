@@ -1,5 +1,79 @@
-ENT Core : Notes de versions
-=======================
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security 
+
+## [3.3.0] - 2019-01-04
+
+### Added
+
+* **workspace:** Enable folder sharing
+* **workspace:** Ability to roll/unroll left menu
+* **workspace:** Scroll up the list view if user change sort option
+* **mobile:** Display (if configured) a smart banner to encourage user to dodowload mobile app
+* **timeline:** Add a rich notification API (At first design to feed enriched timeline in mobile app)
+* **admin:** Local Administrator can remove user's avatar from administration console
+* **admin:** Add a new CSV export type compatible with import
+* **admin:** Display creation date on user record and filter user record and massmailing by creation date
+* **admin:** Display Function/Discipline on user record
+* **admin:** Add generate renewal code button
+* **directory:** Link children and parents on user profile
+* **feeder:** Create functional group from CSV import
+* **feeder:** Set externalId of classes and groups in TEACHES relationships with EDT or UDT import (=> enable to know which filed of teaching is gieved in a class)
+* **Common:** Prevent persist useless disableAntiFlood param in timeline notification document
+
+### Changed
+
+* **infra:** Support multi-pattern for embedded-code module in editor. (only available with  [infra-front](https://github.com/entcore/infra-front))
+* **package**: remove package-lock.json
+* **conversation:** Extend thread APIs to improve mobile application integration
+* **conversation:** Make conversation thread tailed in message's body colapsable/expandable
+* **admin:** Replace tooltip by native title attribute
+* **admin:** Update angular to 4.4.7
+* **admin**: Use HttpClientModule to adds a group
+* **admin:** Hide users's classes and groups in user record if they don't belong to the current structure  
+* **admin:** Improve user predeletion feedback
+* **admin:** Manuual groups are created with communications rules to be immediately visible by users in
+* **admin:**  Activate 'create group' quick action on home page
+
+### Fixed
+
+* **workspace:** Hide toaster if comment lightbox is open
+* **workspace:** Sort alphabetically icon view
+* **workspace:** Increase search input size
+* **workspace:** Display carousel's icon on the right
+* **workspace:** Added arrows icon on sort by size control
+* **directory:** Prevent relative from update displayName 
+* **directory:** Set (miising) *allUsers* parameter in class view search bar 
+* **infra:** Ignore URL parameters in *Template.contains()* function 
+* **infra:** Rename general help icon css classname to avoid overiding help icon in share panel 
+* **admin:** Add an Local Administrator filter on massmailing
+*  **directory:** Break email's address if to long on user's card   
+*  **directory:** Add a tooltip on mood 
+*  **directory:** Replace textarea by input text to enter interests center
+* **feeder:** Remove loginAlias when save empty login
+* **feeder:** Set nbUsers at zero when group becomes empty
+
+### Deprecated
+
+### Removed
+
+### Security
+
+
+
+ENT Core : Notes de versions (Archive 2013 / 2016)
+==================================================
 
 # v1.15.1 (25/02/2016)
 
