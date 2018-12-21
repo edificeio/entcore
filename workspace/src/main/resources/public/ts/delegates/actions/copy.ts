@@ -171,7 +171,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             //not passing through copy view
             movingItems = elements;
             $scope.copyProps.i18 = i18Copy;
-            template.open('lightbox', 'copy/move-toown');
+            template.open('lightbox', 'copy/copy-spinner');
             setState("processing")
             $scope.safeApply()
         }
