@@ -1,6 +1,6 @@
 {
     "add.attachment": "Ajouter une pièce jointe",
-    "add.signature" : "Ajouter une signature",
+    "add.signature": "Ajouter une signature",
     "at": "à",
     "attachments": "Pièces jointes",
     "attachments.loading": "En cours de chargement",
@@ -140,5 +140,14 @@
     "forward.failed.quota": "Le transfert des pièces jointes du message à échoué car vous n'avez pas assez d'espace libre sur votre quota.",
     "wait.attachments.completion": "Une pièce jointe est en cours de chargement, le message pourra être envoyé après complétion.",
     "yesterday": "Hier",
-    "you.answered": "Vous avez répondu à ce message"
+    "you.answered": "Vous avez répondu à ce message",
+    "conversation.copy.toworkspace": "Copier la pièce jointe dans l'espace documentaire",
+    "conversation.copy.all.toworkspace": "Copier toutes les pièces jointes dans l'espace documentaire",
+    "conversation.notify.copyToWorkspace": "Le document a été copié dans l'espace documentaire",
+    "conversation.notify.copyToWorkspace.plural": "Les documents ont été copiés dans l'espace documentaire",
+    "conversation.copy.title": "Copier de(s) fichier(s) et/ou dossier(s)",
+    "conversation.copy.info": "Rechercher et/ou sélectionner le dossier où vous voulez copier",
+    "conversation.copy.action": "Copier",
+    "conversation.copy.processing": "Copie en cours...",
+    "conversation.copy.finished": "Copie effectuée avec succès!"
 }

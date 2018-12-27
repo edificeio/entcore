@@ -1,5 +1,5 @@
 import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui } from 'entcore';
-import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder } from '../model';
+import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -79,7 +79,44 @@ export let conversationController = ng.controller('ConversationController', [
         template.open('toaster', 'folders-templates/toaster');
         $scope.formatFileType = Document.role;
         $scope.sending = false;
+        /**
+         * WORKSPACE
+         */
 
+        $scope.copyProps = {
+            i18: {
+                title: "conversation.copy.title",
+                actionTitle: "conversation.copy.action",
+                actionProcessing: "conversation.copy.processing",
+                actionFinished: "conversation.copy.finished",
+                info: "conversation.copy.info"
+            },
+            sources: [],
+            onCancel() {
+                $scope.copyLightbox.show = false;
+            },
+            onSubmitSuccess(dest, count: number) {
+                if (count > 1) {
+                    notify.info('conversation.notify.copyToWorkspace.plural');
+                } else {
+                    notify.info('conversation.notify.copyToWorkspace');
+                }
+                $scope.copyLightbox.show = false;
+            }
+        }
+        $scope.copyToWorkspace = async function (attachment: Attachment | Attachment[]) {
+            let attachments: Attachment[];
+            if (attachment instanceof Array) {
+                attachments = attachment;
+            } else {
+                attachments = [attachment];
+            }
+            const sources = await ($scope.mail as Mail).toFolderPickerSources(attachments);
+            $scope.copyLightbox.show = true;
+            $scope.copyProps.sources = sources;
+            $scope.$apply();
+        }
+        //
         $scope.increaseMailLimit = () => {
             $scope.state.mailLimit += 5000;
         }
@@ -236,7 +273,8 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.state.mailLimit = mail.bodyShown.length;
                     }
                 }, 0);
-            } catch (e) {
+            } 
+            catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
@@ -262,7 +300,8 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.state.mailLimit = mail.bodyShown.length;
                     }
                 }, 0);
-            } catch (e) {
+            } 
+            catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
@@ -509,6 +548,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.template = template
         $scope.lightbox = {}
+        $scope.copyLightbox={};
 
         $scope.rootFolderTemplate = { template: 'folder-root-template' }
         $scope.refreshFolders = async () => {
