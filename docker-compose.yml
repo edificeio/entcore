@@ -14,7 +14,3 @@ node:
     - ~/.npm:/.npm
     - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     - ../infra-front:/home/node/infra-front 
-    - ~/config/.gitconfig:/home/node/.gitconfig
-    - ~/config/.npmrc:/home/node/.npmrc
-    - ~/config/.bowerrc:/home/node/.bowerrc
-    - ~/.gradle:/home/node/.gradle
