@@ -1,5 +1,5 @@
 import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui } from 'entcore';
-import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder } from '../model';
+import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment } from '../model';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -37,7 +37,7 @@ export let conversationController = ng.controller('ConversationController', [
                 template.open('main', 'mail-actions/write-mail');
                 $scope.constructNewItem();
 
-                if(_.isString(params.id)){
+                if (_.isString(params.id)) {
                     if (!params.type || params.type === 'User') {
                         let user = new User(params.id);
                         await user.findData();
@@ -51,8 +51,8 @@ export let conversationController = ng.controller('ConversationController', [
                     else if (params.type === 'Favorite') {
                         await $scope.state.newItem.addFavorite(params.id);
                     }
-                }else if(params.id !== undefined) {
-                    for(let i = 0; i < params.id.length; i++){
+                } else if (params.id !== undefined) {
+                    for (let i = 0; i < params.id.length; i++) {
                         let user = new User(params.id[i]);
                         await user.findData();
                         $scope.addUser(user);
@@ -79,7 +79,44 @@ export let conversationController = ng.controller('ConversationController', [
         template.open('toaster', 'folders-templates/toaster');
         $scope.formatFileType = Document.role;
         $scope.sending = false;
+        /**
+         * WORKSPACE
+         */
 
+        $scope.copyProps = {
+            i18: {
+                title: "conversation.copy.title",
+                actionTitle: "conversation.copy.action",
+                actionProcessing: "conversation.copy.processing",
+                actionFinished: "conversation.copy.finished",
+                info: "conversation.copy.info"
+            },
+            sources: [],
+            onCancel() {
+                $scope.copyLightbox.show = false;
+            },
+            onSubmitSuccess(dest, count: number) {
+                if (count > 1) {
+                    notify.info('conversation.notify.copyToWorkspace.plural');
+                } else {
+                    notify.info('conversation.notify.copyToWorkspace');
+                }
+                $scope.copyLightbox.show = false;
+            }
+        }
+        $scope.copyToWorkspace = async function (attachment: Attachment | Attachment[]) {
+            let attachments: Attachment[];
+            if (attachment instanceof Array) {
+                attachments = attachment;
+            } else {
+                attachments = [attachment];
+            }
+            const sources = await ($scope.mail as Mail).toFolderPickerSources(attachments);
+            $scope.copyLightbox.show = true;
+            $scope.copyProps.sources = sources;
+            $scope.$apply();
+        }
+        //
         $scope.increaseMailLimit = () => {
             $scope.state.mailLimit += 5000;
         }
@@ -100,7 +137,7 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.openInbox();
         };
 
-        $scope.resetState = function() {
+        $scope.resetState = function () {
             $scope.state.selectAll = false;
             $scope.state.filterUnread = false;
             $scope.state.searching = false;
@@ -111,14 +148,14 @@ export let conversationController = ng.controller('ConversationController', [
 
         };
 
-        $scope.constructNewItem = function(){
+        $scope.constructNewItem = function () {
             $scope.state.newItem = new Mail();
             $scope.state.newItem.setMailSignature($scope.getSignature());
         }
 
         $scope.getSignature = () => {
-            if(Conversation.instance.preference.useSignature)
-                return Conversation.instance.preference.signature.replace(new RegExp('\n', 'g'),'<br>');
+            if (Conversation.instance.preference.useSignature)
+                return Conversation.instance.preference.signature.replace(new RegExp('\n', 'g'), '<br>');
             return '';
         }
 
@@ -142,7 +179,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.openUserFolderOnDragover = async (folder: UserFolder, obj) => {
-            if((Conversation.instance.currentFolder as UserFolder).id != folder.id)
+            if ((Conversation.instance.currentFolder as UserFolder).id != folder.id)
                 await $scope.openUserFolder(folder, obj);
         }
 
@@ -182,7 +219,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.removeFromUserFolder = async (event, mail) => {
-            if(Conversation.instance.currentFolder instanceof UserFolder){
+            if (Conversation.instance.currentFolder instanceof UserFolder) {
                 await Conversation.instance.currentFolder.removeMailsFromFolder();
                 await Conversation.instance.folders.inbox.countUnread();
                 await Conversation.instance.folders.draft.countTotal();
@@ -192,7 +229,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.nextPage = async () => {
-            if(template.containers.main.indexOf('mail-actions') < 0) {
+            if (template.containers.main.indexOf('mail-actions') < 0) {
                 await Conversation.instance.currentFolder.nextPage($scope.state.selectAll);
                 $scope.$apply();
             }
@@ -208,7 +245,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.refreshSelectionState = function (mail) {
-            if(!mail.selected)
+            if (!mail.selected)
                 $scope.state.selectAll = false
         };
 
@@ -225,9 +262,9 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.viewMail = async function (mail) {
             $scope.resetMailLimit();
             template.open('main', 'mail-actions/view-mail');
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
             setCurrentMail(mail);
-            try{
+            try {
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
                 $timeout(function () {
@@ -236,7 +273,8 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.state.mailLimit = mail.bodyShown.length;
                     }
                 }, 0);
-            } catch (e) {
+            } 
+            catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
@@ -251,9 +289,9 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.readMail = async (mail: Mail) => {
             $scope.resetMailLimit();
             template.open('main', 'mail-actions/read-mail');
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
             setCurrentMail(mail, true);
-            try{
+            try {
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
                 $timeout(function () {
@@ -262,21 +300,22 @@ export let conversationController = ng.controller('ConversationController', [
                         $scope.state.mailLimit = mail.bodyShown.length;
                     }
                 }, 0);
-            } catch (e) {
+            } 
+            catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
 
         $scope.search = async (text: string) => {
-            if(text.trim().length > 2) {
+            if (text.trim().length > 2) {
                 $scope.state.searchFailed = false;
                 $scope.state.searching = true;
                 $scope.state.emptyMessage = lang.translate('no.result');
-                setTimeout(async function() {
+                setTimeout(async function () {
                     await Conversation.instance.currentFolder.search(text);
                     $scope.$apply();
                 }, 1);
-            }else{
+            } else {
                 $scope.state.searchFailed = true;
             }
         }
@@ -284,14 +323,14 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.cancelSearch = async () => {
             $scope.state.searching = false;
             $scope.state.searchFailed = false;
-            setTimeout(async function() {
+            setTimeout(async function () {
                 await Conversation.instance.currentFolder.search("");
                 $scope.$apply();
             }, 1);
         }
 
         $scope.filterUnread = async () => {
-            setTimeout(async function() {
+            setTimeout(async function () {
                 await Conversation.instance.currentFolder.filterUnread($scope.state.filterUnread);
                 $scope.$apply();
             }, 1);
@@ -303,20 +342,20 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.nextMail = async (trash?: boolean) => {
             var mails = Conversation.instance.currentFolder.mails.all;
-            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
+            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id });
             var nextMail = null;
-            if(idx > -1 && idx < mails.length-1)
-                nextMail =mails[idx+1];
-            if(nextMail){
-                if(trash){
+            if (idx > -1 && idx < mails.length - 1)
+                nextMail = mails[idx + 1];
+            if (nextMail) {
+                if (trash) {
                     setCurrentMail(nextMail, true);
                     await nextMail.open();
                     $scope.$apply();
-                }else{
+                } else {
                     $scope.variableMailAction(nextMail);
                 }
             }
-            if(idx === mails.length-2 && nextMail.count > mails.length){
+            if (idx === mails.length - 2 && nextMail.count > mails.length) {
                 await Conversation.instance.currentFolder.nextPage($scope.state.selectAll);
                 $scope.$apply();
             }
@@ -324,16 +363,16 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.previousMail = async (trash?: boolean) => {
             var mails = Conversation.instance.currentFolder.mails.all;
-            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id});
+            var idx = mails.findIndex((mail) => { return mail.id === $scope.state.current.id });
             var previousMail = null;
-            if(idx > -1 && idx > 0)
-                previousMail =mails[idx-1];
-            if(previousMail){
-                if(trash){
+            if (idx > -1 && idx > 0)
+                previousMail = mails[idx - 1];
+            if (previousMail) {
+                if (trash) {
                     setCurrentMail(previousMail, true);
                     await previousMail.open();
                     $scope.$apply();
-                }else{
+                } else {
                     $scope.variableMailAction(previousMail);
                 }
             }
@@ -353,7 +392,7 @@ export let conversationController = ng.controller('ConversationController', [
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
             await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, $scope.getSignature());
-            if(outbox)
+            if (outbox)
                 mail.to = $scope.mail.to;
             else
                 $scope.addUser($scope.mail.sender());
@@ -365,10 +404,10 @@ export let conversationController = ng.controller('ConversationController', [
             template.open('main', 'mail-actions/write-mail');
             const mail = $scope.state.newItem as Mail;
             mail.parentConversation = $scope.mail;
-            await mail.setMailContent($scope.mail,'reply', $compile, $sanitize, $scope, $scope.getSignature(), true);
+            await mail.setMailContent($scope.mail, 'reply', $compile, $sanitize, $scope, $scope.getSignature(), true);
             if ($scope.mail.sender().id !== model.me.userId)
                 mail.to = _.filter($scope.state.newItem.to, function (user) { return user.id !== model.me.userId })
-            if (!_.findWhere($scope.state.newItem.to, { id: $scope.mail.sender().id })){
+            if (!_.findWhere($scope.state.newItem.to, { id: $scope.mail.sender().id })) {
                 $scope.addUser($scope.mail.sender());
             }
             $scope.$apply();
@@ -376,7 +415,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.editDraft = async (draft: Mail) => {
             template.open('main', 'mail-actions/write-mail');
-            window.scrollTo(0,0);
+            window.scrollTo(0, 0);
             $scope.state.newItem = draft;
             await draft.open();
             $scope.$apply();
@@ -396,34 +435,34 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.state.draftError = false;
                 $scope.state.draftSaveDate = moment();
             }
-            catch(e) {
+            catch (e) {
                 $scope.state.draftError = true;
             }
         };
 
         $scope.saveDraftAuto = async () => {
-            if(!$scope.draftSavingFlag) {
+            if (!$scope.draftSavingFlag) {
                 $scope.draftSavingFlag = true;
                 var temp = $scope.state.newItem;
                 setTimeout(async function () {
                     if (!$scope.sending && temp.state != "SENT") {
                         $scope.saveDraft(temp);
                     }
-                    $scope.draftSavingFlag=false;
+                    $scope.draftSavingFlag = false;
                 }, 5000)
             }
         };
 
-        $scope.refreshSignature = async(use: boolean) => {
+        $scope.refreshSignature = async (use: boolean) => {
             Conversation.instance.putPreference();
             var body = $($scope.state.newItem.body);
             var signature = $scope.getSignature();
-            if(body.filter('.new-signature').length > 0){
+            if (body.filter('.new-signature').length > 0) {
                 body.filter('.new-signature').text('');
                 if (use)
                     body.filter('.new-signature').append(signature);
-                $scope.state.newItem.body = _.map(body, function(el){ return el.outerHTML; }).join('');
-            }else{
+                $scope.state.newItem.body = _.map(body, function (el) { return el.outerHTML; }).join('');
+            } else {
                 $scope.state.newItem.setMailSignature(signature);
             }
         }
@@ -465,13 +504,13 @@ export let conversationController = ng.controller('ConversationController', [
         };
 
         $scope.canMarkUnread = () => {
-          return  Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
-            Conversation.instance.currentFolder.mails.selection.selected.find(e => !e.unread)
+            return Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
+                Conversation.instance.currentFolder.mails.selection.selected.find(e => !e.unread)
         }
 
         $scope.canMarkRead = () => {
-          return  Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
-            Conversation.instance.currentFolder.mails.selection.selected.find(e => e.unread)
+            return Conversation.instance.currentFolder.mails.selection.selected.find(e => e.getSystemFolder() !== 'INBOX') == undefined &&
+                Conversation.instance.currentFolder.mails.selection.selected.find(e => e.unread)
         }
 
         $scope.allReceivers = function (mail) {
@@ -509,6 +548,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.template = template
         $scope.lightbox = {}
+        $scope.copyLightbox={};
 
         $scope.rootFolderTemplate = { template: 'folder-root-template' }
         $scope.refreshFolders = async () => {
@@ -524,7 +564,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.refreshFolder = async () => {
             await Conversation.instance.currentFolder.sync();
             $scope.state.selectAll = false;
-            if(Conversation.instance.currentFolder instanceof UserFolder){
+            if (Conversation.instance.currentFolder instanceof UserFolder) {
                 $scope.openUserFolder(Conversation.instance.currentFolder, {});
             }
             else
@@ -631,7 +671,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.drag = function (item, $originalEvent) {
             var selected = [];
             $scope.state.dragFolder = Conversation.instance.currentFolder;
-            if(Conversation.instance.currentFolder.mails.selection.selected.indexOf(item) > -1)
+            if (Conversation.instance.currentFolder.mails.selection.selected.indexOf(item) > -1)
                 selected = Conversation.instance.currentFolder.mails.selection.selected;
             else
                 selected.push(item);
@@ -726,7 +766,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.quota = quota;
 
         $scope.countDraft = async (folderSource, folderTarget) => {
-            var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
+            var draft = (folderSource.getName() === 'DRAFT' || folderTarget.getName() === 'DRAFT');
             if (draft)
                 await Conversation.instance.folders.draft.countTotal();
             return draft;
@@ -751,8 +791,8 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.isLocalAdmin = () => {
-           return model.me.functions &&
-            model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope
+            return model.me.functions &&
+                model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope
         };
 
         $scope.getAvatar = function () {
@@ -760,7 +800,7 @@ export let conversationController = ng.controller('ConversationController', [
         }
 
         $scope.showConversationHistory = function () {
-            if($scope.isSlided) {
+            if ($scope.isSlided) {
                 $scope.messageHistory = lang.translate('message.history.show');
             }
             else {
