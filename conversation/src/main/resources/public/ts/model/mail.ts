@@ -57,7 +57,34 @@ export class Mail implements Selectable {
         this.allowReply = true;
         this.allowReplyAll = true;
     }
-
+    async getBlob(attachment: Attachment): Promise<Blob> {
+        const url = `message/${this.id}/attachment/${attachment.id}`;
+        return new Promise<Blob>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'blob';
+            xhr.onload = function (e) {
+                if (xhr.status == 200) {
+                    resolve(xhr.response);
+                } else {
+                    reject("Failed with status code: " + xhr.status);
+                }
+            }
+            xhr.send();
+        })
+    }
+    async toFolderPickerSources(attachments: Attachment[]): Promise<{ action: string, title: string, content: Blob }[]> {
+        const contents = attachments.map(async a => {
+            const content = await this.getBlob(a);
+            return {
+                action: "create-from-blob",
+                title: a.filename,
+                content
+            }
+        });
+        const res = await Promise.all(contents);
+        return res;
+    }
     isUserAuthor(): boolean {
         return this.from === model.me.userId;
     }
@@ -77,7 +104,7 @@ export class Mail implements Selectable {
         if (systemFolder === "INBOX")
             return this.getInSystemIcon();
         if (systemFolder === "OUTBOX")
-        return this.getOutSystemIcon();
+            return this.getOutSystemIcon();
         if (systemFolder === "DRAFT")
             return 'draft';
         return '';
@@ -141,14 +168,14 @@ export class Mail implements Selectable {
     };
 
     isMeInsideGroup(list) {
-        if(!list)
+        if (!list)
             return false;
-        if(list[0] instanceof User){
+        if (list[0] instanceof User) {
             for (let user of list) {
                 if (model.me.groupsIds.indexOf(user.id) !== -1 || user.id === model.me.userId)
                     return true;
             }
-        }else {
+        } else {
             if (list.indexOf(model.me.userId) !== -1)
                 return true;
 
@@ -160,9 +187,9 @@ export class Mail implements Selectable {
         return false;
     }
 
-    setMailSignature(signature: string){
-        if(!this.body)
-            this.body='';
+    setMailSignature(signature: string) {
+        if (!this.body)
+            this.body = '';
         this.body = this.body + '<div><br></div><div class="signature new-signature">' + signature + '</div>'
     }
 
@@ -183,7 +210,7 @@ export class Mail implements Selectable {
             this.body = '<div><br></div><div class="signature new-signature">' + signature + '</div>' +
                 format[mailType].content + '<br><blockquote>' + origin.body + '</blockquote>';
             const tempElement = compile(format[mailType].content)($scope);
-            setTimeout(function(){
+            setTimeout(function () {
                 this.body = $(document.createElement('div')).append(tempElement)[0].outerHTML + '<br><blockquote>' + this.body + '</blockquote>';
                 tempElement.remove()
                 resolve();
@@ -194,9 +221,9 @@ export class Mail implements Selectable {
     addHideAndShow() {
         let history = this.body.slice(this.body.search('<p class="medium-text'));
         let newBody = this.body
-        .replace(/<p.*?p>.*?p>/,'')
-        .replace(history,'') +
-        `<div class="row drop-down-block" ng-class="{slided: isSlided}">
+            .replace(/<p.*?p>.*?p>/, '')
+            .replace(history, '') +
+            `<div class="row drop-down-block" ng-class="{slided: isSlided}">
             <div class="drop-down-label" ng-click="showConversationHistory()">
                 <i class="arrow"></i>
                 <label><i18n>[[messageHistory]]</i18n></label>
@@ -208,7 +235,7 @@ export class Mail implements Selectable {
         return newBody;
     }
 
-    getSubject(){
+    getSubject() {
         return this.subject ? this.subject : lang.translate('nosubject');
     }
 
@@ -250,7 +277,7 @@ export class Mail implements Selectable {
     };
 
     map(id) {
-        if (id instanceof User || id.deleted ) {
+        if (id instanceof User || id.deleted) {
             return id;
         }
         return User.prototype.mapUser(this.displayNames, id);
@@ -262,23 +289,23 @@ export class Mail implements Selectable {
     };
 
     async saveAsDraft(): Promise<any> {
-            var that = this;
-            var data: any = { subject: this.subject, body: this.body };
-            data.to = _.pluck(this.to, 'id');
-            data.cc = _.pluck(this.cc, 'id');
+        var that = this;
+        var data: any = { subject: this.subject, body: this.body };
+        data.to = _.pluck(this.to, 'id');
+        data.cc = _.pluck(this.cc, 'id');
 
-            var path = '/conversation/draft';
-            if (this.id) {
-                const response = await http.put(path + '/' + this.id, data);
-                Mix.extend(this, response.data);
+        var path = '/conversation/draft';
+        if (this.id) {
+            const response = await http.put(path + '/' + this.id, data);
+            Mix.extend(this, response.data);
+        }
+        else {
+            if (this.parentConversation) {
+                path += '?In-Reply-To=' + this.parentConversation.id;
             }
-            else {
-                if (this.parentConversation) {
-                    path += '?In-Reply-To=' + this.parentConversation.id;
-                }
-                let response = await http.post(path, data)
-                Mix.extend(this, response.data);
-            }
+            let response = await http.post(path, data)
+            Mix.extend(this, response.data);
+        }
     };
 
     async send() {
@@ -302,7 +329,7 @@ export class Mail implements Selectable {
             path += 'In-Reply-To=' + this.parentConversation.id;
         }
 
-        try{
+        try {
             const response = await http.post(path, data);
             const result = response.data;
             Conversation.instance.folders['outbox'].mails.refresh();
@@ -313,22 +340,22 @@ export class Mail implements Selectable {
                 notify.info('mail.sent');
             }
 
-            return {inactive : result.inactive, undelivered : result.undelivered};
+            return { inactive: result.inactive, undelivered: result.undelivered };
         }
-        catch(e){
+        catch (e) {
             notify.error(e.response.data.error);
             return {};
         }
     };
 
-    async open(forPrint? : boolean) {
-        if(this.unread && this.state !== "DRAFT"){
-            Conversation.instance.currentFolder.nbUnread --;
+    async open(forPrint?: boolean) {
+        if (this.unread && this.state !== "DRAFT") {
+            Conversation.instance.currentFolder.nbUnread--;
         }
         this.unread = false;
         let response = await http.get('/conversation/message/' + this.id)
         Mix.extend(this, response.data);
-        if(response.data.parent_id) {
+        if (response.data.parent_id) {
             this.bodyShown = this.addHideAndShow();
         }
         else {
@@ -337,28 +364,28 @@ export class Mail implements Selectable {
         this.to = _.map(this.to, user => {
             return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
         });
-        if(!this.cc)
+        if (!this.cc)
             this.cc = [];
         else
             this.cc = _.map(this.cc, user => {
                 return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
             });
-        if(!forPrint) {
+        if (!forPrint) {
             await Conversation.instance.folders['inbox'].countUnread();
             await this.updateAllowReply();
         }
     };
 
     async remove() {
-        if(!this.id)
+        if (!this.id)
             return;
         if ((Conversation.instance.currentFolder as SystemFolder).folderName !== 'trash') {
-            await http.put('/conversation/trash', {id:[ this.id]});
+            await http.put('/conversation/trash', { id: [this.id] });
             Conversation.instance.currentFolder.mails.refresh();
             Conversation.instance.folders['trash'].mails.refresh();
         }
         else {
-            await http.put('/conversation/delete', {id:[ this.id]});
+            await http.put('/conversation/delete', { id: [this.id] });
             Conversation.instance.folders['trash'].mails.refresh();
         }
     };
@@ -368,25 +395,25 @@ export class Mail implements Selectable {
     }
 
     async restore() {
-        await http.put('/conversation/restore', {id:[ this.id]});
+        await http.put('/conversation/restore', { id: [this.id] });
         Conversation.instance.folders['trash'].mails.refresh();
     }
 
     async move(destinationFolder) {
-        await http.put('move/userfolder/' + destinationFolder.id , {id:[ this.id]});
+        await http.put('move/userfolder/' + destinationFolder.id, { id: [this.id] });
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
     }
 
     async trash() {
-        await http.put('/conversation/trash', {id:[ this.id]});
+        await http.put('/conversation/trash', { id: [this.id] });
         await Conversation.instance.currentFolder.mails.refresh();
         await Conversation.instance.folders.draft.mails.refresh();
     }
 
     postAttachments($scope) {
         const promises: Promise<any>[] = [];
-        for(let i = 0; i < this.newAttachments.length; i++){
+        for (let i = 0; i < this.newAttachments.length; i++) {
             const targetAttachment = this.newAttachments[i];
             const attachmentObj = new Attachment(targetAttachment);
             this.loadingAttachments.push(attachmentObj)
@@ -403,20 +430,20 @@ export class Mail implements Selectable {
                     }
                 }
             })
-            .then(response => {
-                this.loadingAttachments.splice(this.loadingAttachments.indexOf(attachmentObj), 1);
-                attachmentObj.id = response.data.id;
-                attachmentObj.filename = attachmentObj.file.name;
-                attachmentObj.size = attachmentObj.file.size;
-                attachmentObj.contentType = attachmentObj.file.type;
-                this.attachments.push(attachmentObj);
-                quota.refresh();
-                $scope.$apply();
-            })
-            .catch(e => {
-                this.loadingAttachments.splice(this.loadingAttachments.indexOf(attachmentObj), 1);
-                notify.error(e.response.data.error);
-            });
+                .then(response => {
+                    this.loadingAttachments.splice(this.loadingAttachments.indexOf(attachmentObj), 1);
+                    attachmentObj.id = response.data.id;
+                    attachmentObj.filename = attachmentObj.file.name;
+                    attachmentObj.size = attachmentObj.file.size;
+                    attachmentObj.contentType = attachmentObj.file.type;
+                    this.attachments.push(attachmentObj);
+                    quota.refresh();
+                    $scope.$apply();
+                })
+                .catch(e => {
+                    this.loadingAttachments.splice(this.loadingAttachments.indexOf(attachmentObj), 1);
+                    notify.error(e.response.data.error);
+                });
 
             promises.push(promise)
         }
@@ -456,31 +483,31 @@ export class Mails {
     userFolder: UserFolder;
     loading: boolean;
 
-    push(item: Mail){
+    push(item: Mail) {
         this.all.push(item);
     }
 
-    get all(): Mail[]{
+    get all(): Mail[] {
         return this.selection.all;
     }
 
     constructor(api: { get: string, put: string, post: string, delete: string } | UserFolder) {
-        if(api instanceof UserFolder){
+        if (api instanceof UserFolder) {
             this.userFolder = api;
         }
-        else{
+        else {
             this.api = api;
         }
         this.loading = false;
         this.selection = new Selection<Mail>([]);
     }
 
-    async removeFromFolder(){
+    async removeFromFolder() {
         await http.put('move/root?' + toFormData({ id: _.pluck(this.selection.selected, 'id') }))
     }
 
-    addRange(arr: Mail[], selectAll: boolean){
-        if(!(arr[0] instanceof Mail)){
+    addRange(arr: Mail[], selectAll: boolean) {
+        if (!(arr[0] instanceof Mail)) {
             arr.forEach(d => {
                 var m = Mix.castAs(Mail, d);
                 if (selectAll)
@@ -488,7 +515,7 @@ export class Mails {
                 this.all.push(m);
             });
         }
-        else{
+        else {
             arr.forEach(m => {
                 if (selectAll)
                     m.selected = true;
@@ -497,27 +524,27 @@ export class Mails {
         }
     }
 
-    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
+    async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }) {
         this.loading = !data || !data.pageNumber || data.pageNumber == 0 || data.searchText != undefined && data.pageNumber == 0;
-        if(this.userFolder){
+        if (this.userFolder) {
             await this.userFolderSync(data);
         }
-        else{
+        else {
             await this.apiSync(data);
         }
         this.loading = false;
     }
 
-    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
-        if(!data){
+    async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }) {
+        if (!data) {
             data = {};
         }
         if (!data.pageNumber) {
             data.pageNumber = 0;
         }
-        if(!data.searchText){
+        if (!data.searchText) {
             data.searchText = "";
-        }else {
+        } else {
             data.searchText += "&search=" + data.searchText;
         }
         if (!data.filterUnread) {
@@ -527,7 +554,7 @@ export class Mails {
             data.selectAll = false;
         }
         const response = await http.get('/conversation/list/' + this.userFolder.id + '?restrain=&page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
-        if(data.emptyList !== false){
+        if (data.emptyList !== false) {
             this.all.splice(0, this.all.length);
         }
         response.data.forEach(m => {
@@ -540,16 +567,16 @@ export class Mails {
         }
     }
 
-    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }): Promise<void>{
+    async apiSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }): Promise<void> {
         if (!data) {
             data = {};
         }
         if (!data.pageNumber) {
             data.pageNumber = 0;
         }
-        if(!data.searchText){
+        if (!data.searchText) {
             data.searchText = "";
-        }else {
+        } else {
             data.searchText = "&search=" + data.searchText;
         }
         if (!data.filterUnread) {
@@ -559,7 +586,7 @@ export class Mails {
             data.selectAll = false;
         }
         let response = await http.get(this.api.get + '?page=' + data.pageNumber + "&unread=" + data.filterUnread + data.searchText);
-        if(data.emptyList !== false){
+        if (data.emptyList !== false) {
             this.all.splice(0, this.all.length);
         }
 
@@ -581,15 +608,15 @@ export class Mails {
         await quota.refresh();
     }
 
-    removeSelection(){
+    removeSelection() {
         this.selection.removeSelection();
     }
 
-    async refreshSegment(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }){
+    async refreshSegment(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }) {
         var head = this.all.findIndex(mail => mail.selected)
-        data.pageNumber = Math.floor(head/25);
+        data.pageNumber = Math.floor(head / 25);
         this.full = false;
-        this.all.splice(25*data.pageNumber, this.all.length);
+        this.all.splice(25 * data.pageNumber, this.all.length);
         this.selection.removeSelection();
         await this.sync(data);
         return data.pageNumber;
@@ -613,12 +640,12 @@ export class Mails {
         if (selected.length === 0)
             return;
 
-        try{
+        try {
             await http.post('/conversation/toggleUnread', { id: _.pluck(this.selection.selected, 'id'), unread: unread });
             quota.refresh();
             selected.forEach(mail => mail.unread = unread);
         }
-        catch(e){
+        catch (e) {
             notify.error(e.response.data.error);
         }
 

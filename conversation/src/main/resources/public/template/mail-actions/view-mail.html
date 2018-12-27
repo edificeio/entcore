@@ -117,6 +117,11 @@
 			<h2 class="no-margin">
 				<i18n>attachments</i18n>
 				<a data-ng-if="mail.attachments.length > 1"
+						ng-click="copyToWorkspace(mail.attachments)" class="right-magnet fade-in-hover large-text"
+					tooltip="conversation.copy.all.toworkspace">
+					<i class="folder info-color horizontal-spacing"></i>
+				</a>
+				<a data-ng-if="mail.attachments.length > 1"
 					class="right-magnet fade-in-hover"
 					ng-href="[['message/'+mail.id+'/allAttachments']]"
 					tooltip="download.all.attachment">
@@ -140,6 +145,9 @@
 						</div>
 						<a ng-href="[['message/'+mail.id+'/attachment/'+attachment.id]]" class="fade-in-hover large-text">
 							<i class="download-disk valid-color" tooltip="download"></i>
+						</a>
+						<a ng-click="copyToWorkspace(attachment)" class="left-spacing fade-in-hover large-text">
+							<i class="folder info-color" tooltip="conversation.copy.toworkspace"></i>
 						</a>
 					</li>
 				</ul>
