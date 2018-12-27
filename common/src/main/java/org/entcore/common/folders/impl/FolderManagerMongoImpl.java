@@ -428,7 +428,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					});
 					return;
 				case FILE_TYPE:
-					downloadOneFile(bodyRoot, request);
+					downloadOneFile(bodyRoot, request, false);
 					return;
 				default:
 					request.response().setStatusCode(400)
@@ -452,7 +452,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 				List<JsonObject> all = msg.result();
 				if (all.size() == 1 //
 						&& DocumentHelper.isFile(all.get(0))) {
-					downloadOneFile(all.get(0), request);
+					downloadOneFile(all.get(0), request,false);
 					return;
 				}
 				// download multiple files
@@ -470,11 +470,10 @@ public class FolderManagerMongoImpl implements FolderManager {
 		});
 	}
 
-	private void downloadOneFile(JsonObject bodyRoot, HttpServerRequest request) {
+	private void downloadOneFile(JsonObject bodyRoot, HttpServerRequest request, boolean inline) {
 		String name = bodyRoot.getString("name");
 		String file = bodyRoot.getString("file");
 		JsonObject metadata = bodyRoot.getJsonObject("metadata");
-		boolean inline = inlineDocumentResponse(bodyRoot, request.params().get("application"));
 		if (inline && ETag.check(request, file)) {
 			notModified(request, file);
 		} else {
@@ -500,18 +499,6 @@ public class FolderManagerMongoImpl implements FolderManager {
 		Future<JsonObject> future = queryHelper
 				.findOne(queryHelper.queryBuilder().withId(id).filterByInheritShareAndOwner(user).withExcludeDeleted());
 		future.setHandler(handler);
-	}
-
-	private boolean inlineDocumentResponse(JsonObject doc, String application) {
-		JsonObject metadata = doc.getJsonObject("metadata");
-		String storeApplication = doc.getString("application");
-		return metadata != null && !"WORKSPACE".equals(storeApplication) && ("image/jpeg"
-				.equals(metadata.getString("content-type")) || "image/gif".equals(metadata.getString("content-type"))
-				|| "image/png".equals(metadata.getString("content-type"))
-				|| "image/tiff".equals(metadata.getString("content-type"))
-				|| "image/vnd.microsoft.icon".equals(metadata.getString("content-type"))
-				|| "image/svg+xml".equals(metadata.getString("content-type"))
-				|| ("application/octet-stream".equals(metadata.getString("content-type")) && application != null));
 	}
 
 	@Override
