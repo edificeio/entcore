@@ -1,4 +1,4 @@
-import { template, quota, $,notify, model } from "entcore";
+import { template, quota, $, notify, model } from "entcore";
 import { models, workspaceService } from "../services";
 
 export interface RevisionDelegateScope {
@@ -64,10 +64,12 @@ export function RevisionDelegate($scope: RevisionDelegateScope) {
         $('.tooltip').remove()
         $scope.openHistory($scope.targetDocument)
         await quota.refresh();
+        workspaceService.onChange.next({ action: "document-change", elements: [$scope.targetDocument] });
         $scope.safeApply();
     }
     $scope.canDeleteRevision = function (revision) {
-        return ($scope.targetDocument.myRights["manager"] || revision["userId"] === model.me.userId && $scope.targetDocument.myRights["contrib"]) && revision["file"] !== $scope.targetDocument.file
+        const hasRights = ($scope.targetDocument.myRights["manager"]) || (revision["userId"] === model.me.userId && $scope.targetDocument.myRights["contrib"]);
+        return hasRights && $scope.targetDocument.revisions.length > 1;
     }
 }
 

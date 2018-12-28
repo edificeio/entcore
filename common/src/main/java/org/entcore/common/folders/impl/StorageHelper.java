@@ -22,8 +22,8 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
-class StorageHelper {
-	static Set<String> getThumbnailsFilesIds(JsonObject jsonDocument) {
+public class StorageHelper {
+	public static Set<String> getThumbnailsFilesIds(JsonObject jsonDocument) {
 		Set<String> thumbIds = Stream.of(jsonDocument.getJsonObject("thumbnails", null))
 				.filter(thumbs -> thumbs != null)//
 				.flatMap(thumbs -> thumbs.stream()
@@ -72,13 +72,13 @@ class StorageHelper {
 		jsonDocument.put("thumbnails", meta);
 	}
 
-	static List<String> getListOfFileIds(JsonObject jsonDocument) {
+	public static List<String> getListOfFileIds(JsonObject jsonDocument) {
 		List<String> listOfFilesIds = new ArrayList<>(getFileId(jsonDocument));
 		listOfFilesIds.addAll(getThumbnailsFilesIds(jsonDocument));
 		return listOfFilesIds;
 	}
 
-	static List<String> getListOfFileIds(Collection<JsonObject> files) {
+	public static List<String> getListOfFileIds(Collection<JsonObject> files) {
 		List<String> listOfFilesIds = files.stream().flatMap(f -> getListOfFileIds(f).stream())
 				.collect(Collectors.toList());
 		return listOfFilesIds;

@@ -5,6 +5,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -17,6 +18,7 @@ import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
+import org.entcore.common.folders.impl.StorageHelper;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mongodb.MongoDbResult;
@@ -29,6 +31,7 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
+import org.entcore.workspace.dao.RevisionDao;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -42,7 +45,6 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 
 	private final Storage storage;
 	private ShareService shareService;
-	public static final String DOCUMENT_REVISION_COLLECTION = "documentsRevisions";
 	private static final JsonObject PROPERTIES_KEYS = new JsonObject().put("name", 1).put("alt", 1).put("legend", 1);
 	private static final Logger log = LoggerFactory.getLogger(DefaultWorkspaceService.class);
 	private int threshold;
@@ -51,6 +53,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	private TimelineHelper notification;
 	private DocumentDao dao;
 	private MongoDb mongo;
+	private final RevisionDao revisionDao;
+	private final DocumentDao documentDao;
 
 	public DefaultWorkspaceService(Storage storage, MongoDb mongo, int threshold, String imageResizerAddress,
 			QuotaService quotaService, FolderManager folderManager, EventBus eb, ShareService share) {
@@ -62,6 +66,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.shareService = share;
 		this.imageResizerAddress = imageResizerAddress;
 		this.eb = eb;
+		this.revisionDao = new RevisionDao(mongo);
+		this.documentDao = new DocumentDao(mongo);
 	}
 
 	@Override
@@ -187,17 +193,17 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		addFile(Optional.ofNullable(doc.getString("eParent")), doc, ownerId, ownerName, res -> {
 			if (res.succeeded()) {
 				incrementStorage(doc);
-				createRevision(res.result().getString("_id"), uploaded.getString("_id"), doc.getString("name"),
-						doc.getString("owner"), doc.getString("owner"), doc.getString("ownerName"),
-						doc.getJsonObject("metadata"));
+
 				createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, uploaded, res.result().getString("_id"), null,
-						thumbs, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event) {
-								if (handler != null) {
-									handler.handle(res);
-								}
+						thumbs).map(resThumb -> {
+							if (handler != null) {
+								handler.handle(res);
 							}
+							JsonObject thumbnails = resThumb != null ? resThumb : new JsonObject();
+							revisionDao.create(res.result().getString("_id"), uploaded.getString("_id"),
+									doc.getString("name"), doc.getString("owner"), doc.getString("owner"),
+									doc.getString("ownerName"), doc.getJsonObject("metadata"), thumbnails);
+							return resThumb;
 						});
 			} else if (handler != null) {
 				handler.handle(res);
@@ -237,16 +243,16 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 												: result.getString("ownerName");
 										doc.put("owner", result.getString("owner"));
 										incrementStorage(doc);
-										createRevision(id, doc.getString("file"), doc.getString("name"),
-												result.getString("owner"), userId, userName, metadata);
 										createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, uploaded, id, thumbs,
-												t, new Handler<Message<JsonObject>>() {
-													@Override
-													public void handle(Message<JsonObject> event) {
-														if (handler != null) {
-															handler.handle(res);
-														}
+												t).map(resThumb -> {
+													JsonObject thumbs = resThumb != null ? resThumb : new JsonObject();
+													revisionDao.create(id, doc.getString("file"), doc.getString("name"),
+															result.getString("owner"), userId, userName, metadata,
+															thumbs);
+													if (handler != null) {
+														handler.handle(res);
 													}
+													return resThumb;
 												});
 
 									} else if (handler != null) {
@@ -261,33 +267,16 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		});
 	}
 
-	private void createRevision(final String id, final String file, final String name, String ownerId, String userId,
-			String userName, JsonObject metadata) {
-		JsonObject document = new JsonObject();
-		document.put("documentId", id).put("file", file).put("name", name).put("owner", ownerId).put("userId", userId)
-				.put("userName", userName).put("date", MongoDb.now()).put("metadata", metadata);
-
-		mongo.save(DOCUMENT_REVISION_COLLECTION, document,
-				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
-					public void handle(Either<String, JsonObject> event) {
-						if (event.isLeft()) {
-							log.error("[Workspace] Error creating revision " + id + "/" + file + " - "
-									+ event.left().getValue());
-						}
-					}
-				}));
-	}
-
 	public void listRevisions(final String id, final Handler<Either<String, JsonArray>> handler) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(id);
-		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
+		mongo.find(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(handler));
 	}
 
 	public void getRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler) {
 		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
-		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
+		mongo.findOne(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(handler));
 	}
 
@@ -324,133 +313,83 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		};
 	}
 
-	private void deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
-		JsonObject keys = new JsonObject();
+	private Future<JsonArray> deleteRevisionsOnDisk(JsonArray revisions, JsonArray alreadyDeleted) {
+		@SuppressWarnings("unchecked")
+		List<JsonObject> revisionsList = revisions.getList();
+		Set<String> fileIds = new HashSet<String>(StorageHelper.getListOfFileIds(revisionsList));
+		Future<JsonArray> future = Future.future();
+		JsonArray fileIdsJson = new JsonArray(new ArrayList<String>(fileIds));
+		storage.removeFiles(fileIdsJson, event -> {
+			future.complete(revisions);
+		});
+		return future;
+	}
 
-		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), new JsonObject(), keys,
-				MongoDbResult.validResultsHandler(new Handler<Either<String, JsonArray>>() {
-					public void handle(Either<String, JsonArray> event) {
-						if (event.isRight()) {
-							final JsonArray results = event.right().getValue();
-							final JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
-							for (Object obj : results) {
-								JsonObject json = (JsonObject) obj;
-								String id = json.getString("file");
-								if (id != null && !alreadyDeleted.contains(id)) {
-									ids.add(id);
-								}
-							}
-							storage.removeFiles(ids, new Handler<JsonObject>() {
-								public void handle(JsonObject event) {
-									if (event != null && "ok".equals(event.getString("status"))) {
-										// Delete revisions
-										mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
-												MongoDbResult
-														.validResultHandler(new Handler<Either<String, JsonObject>>() {
-															public void handle(Either<String, JsonObject> event) {
-																if (event.isLeft()) {
-																	log.error(
-																			"[Workspace] Error deleting revisions for document "
-																					+ documentId + " - "
-																					+ event.left().getValue());
-																} else {
-																	for (Object obj : results) {
-																		JsonObject result = (JsonObject) obj;
-																		if (!alreadyDeleted
-																				.contains(result.getString("file")))
-																			decrementStorage(result);
-																	}
-																}
-															}
-														}));
-									} else {
-										log.error("[Workspace] Error deleting revision storage files for document "
-												+ documentId + " " + ids + " - " + event.getString("message"));
-									}
-								}
-							});
-						} else {
-							log.error("[Workspace] Error finding revision for document " + documentId + " - "
-									+ event.left().getValue());
-						}
-					}
-				}));
+	private Future<JsonArray> deleteAllRevisions(final String documentId, final JsonArray alreadyDeleted) {
+		return revisionDao.findByDoc(documentId).compose(revisions -> {
+			Future<JsonArray> f = deleteRevisionsOnDisk(revisions, alreadyDeleted).map(revisions);
+			return f;
+		}).compose(revisions -> {
+			return this.revisionDao.deleteByDoc(documentId).map(revisions);
+		}).compose(revisions -> {
+			for (Object obj : revisions) {
+				JsonObject result = (JsonObject) obj;
+				if (!alreadyDeleted.contains(result.getString("file")))
+					decrementStorage(result);
+			}
+			Future<JsonArray> a = Future.succeededFuture(revisions);
+			return a;
+		});
 	}
 
 	public void deleteRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler) {
-		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
-
-		// Find revision
-		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
-				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
-					@Override
-					public void handle(Either<String, JsonObject> event) {
-						if (event.isRight()) {
-							final JsonObject result = event.right().getValue();
-							final String file = result.getString("file");
-							// Delete file in storage
-							storage.removeFile(file, new Handler<JsonObject>() {
-								public void handle(JsonObject event) {
-									if (event != null && "ok".equals(event.getString("status"))) {
-										// Delete revision
-										mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
-												MongoDbResult
-														.validResultHandler(new Handler<Either<String, JsonObject>>() {
-															public void handle(Either<String, JsonObject> event) {
-																if (event.isLeft()) {
-																	log.error("[Workspace] Error deleting revision "
-																			+ revisionId + " - "
-																			+ event.left().getValue());
-																	handler.handle(event);
-																} else {
-																	decrementStorage(result);
-																	handler.handle(event);
-																}
-															}
-														}));
-									} else {
-										log.error("[Workspace] Error deleting revision storage file " + revisionId
-												+ " [" + file + "] - " + event.getString("message"));
-										handler.handle(new Either.Left<>(event.getString("message")));
-									}
-								}
-							});
-						} else {
-							log.error("[Workspace] Error finding revision storage file " + revisionId + " - "
-									+ event.left().getValue());
-							handler.handle(event);
-						}
-					}
-				}));
+		final Future<JsonArray> lastTwoFuture = revisionDao.getLastRevision(documentId, 2);
+		final Future<Boolean> isLastFuture = lastTwoFuture
+				.map(arr -> arr.size() > 0 && arr.getJsonObject(0).getString("_id", "").equals(revisionId));
+		isLastFuture.compose(last -> {
+			if (lastTwoFuture.result().size() <= 1) {
+				return Future.failedFuture("Cannot delete the only 1 revision");
+			}
+			return revisionDao.findByDocAndId(documentId, revisionId).compose(revision -> {
+				Future<JsonArray> future = deleteRevisionsOnDisk(new JsonArray().add(revision), new JsonArray());
+				return future.map(revision);
+			});
+		}).compose(revision -> {
+			return revisionDao.deleteByDocAndId(documentId, revisionId).map(revision);
+		}).compose(revision -> {
+			decrementStorage(revision);
+			// restore document it was last
+			if (isLastFuture.result()) {
+				JsonObject previous = lastTwoFuture.result().getJsonObject(1);
+				return documentDao.restaureFromRevision(documentId, previous).map(revision);
+			} else {
+				return Future.succeededFuture(revision);
+			}
+		}).setHandler(revision -> {
+			if (revision.succeeded()) {
+				handler.handle(new Either.Right<String, JsonObject>(revision.result()));
+			} else {
+				handler.handle(new Either.Left<String, JsonObject>(revision.cause().getMessage()));
+			}
+		});
 	}
 
-	private void createThumbnailIfNeeded(final String collection, final JsonObject srcFile, final String documentId,
-			final JsonObject oldThumbnail, final List<String> thumbs, final Handler<Message<JsonObject>> callback) {
+	private Future<JsonObject> createThumbnailIfNeeded(final String collection, final JsonObject srcFile,
+			final String documentId, final JsonObject oldThumbnail, final List<String> thumbs) {
+		Future<JsonObject> future = null;
 		if (documentId != null && thumbs != null && !documentId.trim().isEmpty() && !thumbs.isEmpty() && srcFile != null
 				&& isImage(srcFile) && srcFile.getString("_id") != null) {
-			createThumbnails(thumbs, srcFile, collection, documentId, callback);
+			future = createThumbnails(thumbs, srcFile, collection, documentId);
 		} else {
-			callback.handle(null);
+			future = Future.succeededFuture(null);
 		}
-		if (oldThumbnail != null) {
-			for (final String attr : oldThumbnail.fieldNames()) {
-				storage.removeFile(oldThumbnail.getString(attr), new Handler<JsonObject>() {
-					@Override
-					public void handle(JsonObject event) {
-						if (!"ok".equals(event.getString("status"))) {
-							log.error("Error removing thumbnail " + oldThumbnail.getString(attr) + " : "
-									+ event.getString("message"));
-						}
-					}
-				});
-			}
-		}
+		return future;
 	}
 
-	private void createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection,
-			final String documentId, final Handler<Message<JsonObject>> callback) {
+	private Future<JsonObject> createThumbnails(List<String> thumbs, JsonObject srcFile, final String collection,
+			final String documentId) {
+		Future<JsonObject> future = Future.future();
 		Pattern size = Pattern.compile("([0-9]+)x([0-9]+)");
 		JsonArray outputs = new fr.wseduc.webutils.collections.JsonArray();
 		for (String thumb : thumbs) {
@@ -484,13 +423,21 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					JsonObject thumbnails = event.body().getJsonObject("outputs");
 					if ("ok".equals(event.body().getString("status")) && thumbnails != null) {
 						mongo.update(collection, new JsonObject().put("_id", documentId),
-								new JsonObject().put("$set", new JsonObject().put("thumbnails", thumbnails)), callback);
+								new JsonObject().put("$set", new JsonObject().put("thumbnails", thumbnails)),
+								MongoDbResult.validActionResultHandler(res -> {
+									if (res.isLeft()) {
+										future.fail(res.left().getValue());
+									} else {
+										future.complete(thumbnails);
+									}
+								}));
 					}
 				}
 			}));
-		} else if (callback != null) {
-			callback.handle(null);
+		} else {
+			future.complete(null);
 		}
+		return future;
 	}
 
 	@Override
@@ -519,9 +466,10 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 						.filter(c -> c instanceof JsonObject && DocumentHelper.isFile((JsonObject) c))
 						.map(c -> (JsonObject) c).collect(Collectors.toList());
 				for (JsonObject c : copied) {
-					createRevision(DocumentHelper.getId(c), DocumentHelper.getFileId(c), DocumentHelper.getName(c),
-							DocumentHelper.getOwner(c), DocumentHelper.getOwner(c), DocumentHelper.getOwnerName(c),
-							c.getJsonObject("metadata", new JsonObject()));
+					revisionDao.create(DocumentHelper.getId(c), DocumentHelper.getFileId(c), DocumentHelper.getName(c),
+							DocumentHelper.getOwner(c), DocumentHelper.getOwner(c), //
+							DocumentHelper.getOwnerName(c), c.getJsonObject("metadata", new JsonObject()), //
+							c.getJsonObject("thumbnails", new JsonObject()));
 				}
 			}
 			handler.handle(res);
