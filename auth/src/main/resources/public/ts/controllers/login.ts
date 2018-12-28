@@ -91,7 +91,9 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
 		if(window.location.href.split('callback=').length > 1){
-			$scope.callBack = window.location.href.split('callback=')[1].split('&')[0];
+			let details = window.location.href.split('callback=')[1].split('&')[0].split('#');
+			$scope.callBack = details[0];
+			$scope.details = details.length > 0 ? details[1] : "";
 		}
 	}
 
@@ -110,8 +112,9 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 			email: $('#email').val(),
 			password: $('#password').val(),
 			rememberMe: $scope.user.rememberMe,
-			secureLocation: $scope.user.secureLocation,
-			callBack: $scope.callBack
+            secureLocation: $scope.user.secureLocation,
+			callBack: $scope.callBack,
+			details: $scope.details
 		}))
 			.done(function(data){
 				if(typeof data !== 'object'){
