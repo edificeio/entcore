@@ -324,6 +324,9 @@ public class AuthController extends BaseController {
 				final StringBuilder callBack = new StringBuilder();
 				if (c != null && !c.trim().isEmpty()) {
 					try {
+						if (request.formAttributes().get("details") != null && !request.formAttributes().get("details").isEmpty()) {
+							c += "#" + request.formAttributes().get("details");
+						}
 						callBack.append(URLDecoder.decode(c, "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						log.error(ex.getMessage(), ex);
