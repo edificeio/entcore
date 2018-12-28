@@ -19,7 +19,18 @@
 
 package org.entcore.workspace.dao;
 
+import java.util.Date;
+
+import org.entcore.common.mongodb.MongoDbResult;
+import org.entcore.common.utils.StringUtils;
+
+import com.mongodb.QueryBuilder;
+
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
+import fr.wseduc.mongodb.MongoUpdateBuilder;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 
 public class DocumentDao extends GenericDao {
 
@@ -29,4 +40,51 @@ public class DocumentDao extends GenericDao {
 		super(mongo, DOCUMENTS_COLLECTION);
 	}
 
+	static JsonObject toJson(QueryBuilder queryBuilder) {
+		return MongoQueryBuilder.build(queryBuilder);
+	}
+
+	static boolean isOk(JsonObject body) {
+		return "ok".equals(body.getString("status"));
+	}
+
+	static String toErrorStr(JsonObject body) {
+		return body.getString("error", body.getString("message", "documentdao error"));
+	}
+
+	public Future<JsonObject> findById(String id) {
+		final QueryBuilder builder = QueryBuilder.start("_id").is(id);
+		Future<JsonObject> future = Future.future();
+		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
+			if (res.isLeft()) {
+				future.fail(res.left().getValue());
+			} else {
+				future.complete(res.right().getValue());
+			}
+		}));
+		return future;
+	}
+
+	public Future<Void> restaureFromRevision(String docId, JsonObject revision) {
+		Future<Void> future = Future.future();
+		String now = MongoDb.formatDate(new Date());
+		String name = revision.getString("name", "");
+		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", now)//
+				.set("name", name)//
+				.set("owner", revision.getString("userId"))//
+				.set("ownerName", revision.getString("userName"))//
+				.set("file", revision.getString("file"))//
+				.set("thumbnails", revision.getJsonObject("thumbnails"))//
+				.set("metadata", revision.getJsonObject("metadata"))//
+				.set("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
+		mongo.update(collection, toJson(QueryBuilder.start("_id").is(docId)), set.build(), message -> {
+			JsonObject body = message.body();
+			if (isOk(body)) {
+				future.complete(null);
+			} else {
+				future.fail(toErrorStr(body));
+			}
+		});
+		return future;
+	}
 }
