@@ -8,7 +8,7 @@ export interface ActionCopyDelegateScope {
     openCopyView()
     openMoveView()
     moveSubmit(dest: models.Element, elts?: models.Element[])
-    copySubmit(dest: models.Element, elts?: models.Element[]):Promise<any>
+    copySubmit(dest: models.Element, elts?: models.Element[]): Promise<any>
     //
     onMoveDoCopy()
     onMoveDoMove()
@@ -117,11 +117,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             template.open('lightbox', 'copy/move-fromtoshare');
         } else {
             //move without feedback
-            if ($scope.currentTree.filter == "shared") {
-                workspaceService.moveAllForShared(getMovingElements(), dest)
-            } else {
-                workspaceService.moveAll(getMovingElements(), dest)
-            }
+            _moveElements(getMovingElements(), dest);
         }
     }
 
@@ -166,7 +162,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         }
     }
     //
-    $scope.copySubmit=async function(dest, elements=null){
+    $scope.copySubmit = async function (dest, elements = null) {
         if (elements) {
             //not passing through copy view
             movingItems = elements;
@@ -206,6 +202,21 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
             closeCopyView(null)
         }
     }
+    const _moveElements = async function (toMove: models.Element[], targetFolder: models.Element) {
+        if ($scope.currentTree.filter == "shared") {
+            const direction = checkDest(targetFolder, toMove);
+            switch (direction) {
+                case "toown":
+                    await workspaceService.moveAllForShared(toMove, targetFolder);
+                    break;
+                default:
+                    await workspaceService.moveAll(toMove, targetFolder)
+                    break;
+            }
+        } else {
+            await workspaceService.moveAll(toMove, targetFolder)
+        }
+    }
     $scope.onMoveDoMove = async function () {
         $scope.copyProps.i18.actionProcessing = "workspace.move.window.processing"
         $scope.copyProps.i18.actionFinished = "workspace.move.window.finished"
@@ -213,11 +224,7 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         setState("processing")
         const toMove = [...getMovingElements()]
         try {
-            if ($scope.currentTree.filter == "shared") {
-                await workspaceService.moveAllForShared(toMove, targetFolder)
-            } else {
-                await workspaceService.moveAll(toMove, targetFolder)
-            }
+            _moveElements(toMove, targetFolder);
             setState("finished")
             setTimeout(() => {
                 closeCopyView(targetFolder, toMove);
