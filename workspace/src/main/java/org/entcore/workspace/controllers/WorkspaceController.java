@@ -48,6 +48,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -132,7 +133,7 @@ public class WorkspaceController extends BaseController {
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
 		}
-		//TODO workspaceService.addDocument?
+		// TODO workspaceService.addDocument?
 		workspaceService.addAfterUpload(uploaded, doc, name, application, thumbs, ownerId, ownerName, m -> {
 			if (m.succeeded()) {
 				message.reply(m.result().put("status", "ok"));
@@ -375,8 +376,6 @@ public class WorkspaceController extends BaseController {
 			}
 		});
 	}
-
-	
 
 	@Delete("/document/:id")
 	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
@@ -977,34 +976,76 @@ public class WorkspaceController extends BaseController {
 		final JsonObject params = new JsonObject()
 				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.put("username", user.getUsername()).put("appPrefix", pathPrefix + "/workspace").put("doc", "share");
-
-		workspaceService.findById(resource, new JsonObject().put("name", 1).put("eType", 1), event -> {
+		JsonObject keys = new JsonObject().put("name", 1).put("eType", 1).put("eParent", 1).put("isShared", 1);
+		Future<JsonObject> futureFindById = Future.future();
+		workspaceService.findById(resource, keys, event -> {
 			if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
-				String resourceName = event.getJsonObject("result").getString("name", "");
-				boolean isFolder = DocumentHelper.isFolder(event.getJsonObject("result"));
+				futureFindById.complete(event.getJsonObject("result"));
+			} else {
+				log.error("Unable to send timeline notification : missing name on resource " + resource);
+				futureFindById.fail("Unable to send timeline notification : missing name on resource " + resource);
+			}
+		});
+		futureFindById.compose(result -> {
+			boolean isFolder = DocumentHelper.isFolder(result);
+			String parentId = DocumentHelper.getParent(result);
+			if (isFolder) {
+				return Future.succeededFuture(new JsonObject());
+			} else if (parentId == null) {
+				return Future.succeededFuture(new JsonObject());
+			} else {
+				Future<JsonObject> futureParent = Future.future();
+				workspaceService.findById(parentId, keys, event -> {
+					if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
+						futureParent.complete(event.getJsonObject("result"));
+					} else {
+						log.error("Unable to send timeline notification : missing name on resource " + resource);
+						futureParent.complete(new JsonObject());
+					}
+				});
+				return futureParent;
+			}
+		}).setHandler(evtParent -> {
+			if (evtParent.succeeded()) {
+				JsonObject parent = evtParent.result();
+				JsonObject result = futureFindById.result();
+				String resourceName = result.getString("name", "");
+				boolean isFolder = DocumentHelper.isFolder(result);
 				final JsonObject pushNotif = new JsonObject();
 				final String i18nPushNotifBody;
-
+				final String notificationName;
 				if (isFolder) {
+					notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase() + ".share-folder";
 					params.put("resourceUri", pathPrefix + "/workspace#/shared/folder/" + resource);
 					pushNotif.put("title", "push.notif.folder.share");
 					i18nPushNotifBody = user.getUsername() + " " + I18n.getInstance().translate(
 							"workspace.shared.folder", getHost(request), I18n.acceptLanguage(request)) + " : ";
 				} else {
+					notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase() + ".share";
+					String parentId = DocumentHelper.getParent(result);
+					boolean isShared = DocumentHelper.isShared(result);
+					if (parentId != null) {
+						params.put("resourceFolderUri", pathPrefix + "/workspace#/folder/" + parentId);
+						params.put("resourceFolderName", DocumentHelper.getName(parent));
+					} else if (isShared) {
+						params.put("resourceFolderUri", pathPrefix + "/workspace#shared");
+						params.put("resourceFolderName", I18n.getInstance().translate("shared_tree", getHost(request),
+								I18n.acceptLanguage(request)));
+					} else {
+						params.put("resourceFolderUri", pathPrefix + "/workspace");
+						params.put("resourceFolderName", I18n.getInstance().translate("documents", getHost(request),
+								I18n.acceptLanguage(request)));
+					}
 					params.put("resourceUri", pathPrefix + "/document/" + resource);
 					pushNotif.put("title", "push.notif.file.share");
 					i18nPushNotifBody = user.getUsername() + " " + I18n.getInstance().translate(
 							"workspace.shared.document", getHost(request), I18n.acceptLanguage(request)) + " : ";
 				}
-
-				final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase() + "."
-						+ (isFolder ? "share-folder" : "share");
+				//
 				params.put("resourceName", resourceName);
 				params.put("pushNotif", pushNotif.put("body", i18nPushNotifBody + resourceName));
 				notification.notifyTimeline(request, notificationName, user, new ArrayList<>(recipients), resource,
 						params);
-			} else {
-				log.error("Unable to send timeline notification : missing name on resource " + resource);
 			}
 		});
 	}
