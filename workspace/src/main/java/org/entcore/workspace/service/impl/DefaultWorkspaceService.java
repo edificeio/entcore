@@ -211,6 +211,19 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		});
 	}
 
+	@Override
+	public Future<JsonObject> getRevision(String revisionId) {
+		Future<JsonObject> future = Future.future();
+		revisionDao.findById(revisionId, ev -> {
+			if ("ok".equals(ev.getString("status"))) {
+				future.complete(ev.getJsonObject("result", new JsonObject()));
+			} else {
+				future.fail("COuld not found revision : " + revisionId);
+			}
+		});
+		return future;
+	}
+
 	public void updateAfterUpload(final String id, final String name, final JsonObject uploaded, final List<String> t,
 			final UserInfos user, final Handler<Message<JsonObject>> handler) {
 		findById(id, new Handler<JsonObject>() {
@@ -625,4 +638,36 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.notification = notification;
 	}
 
+	public Future<Set<String>> getNotifyContributorDest(String id, UserInfos user, Set<String> docIds) {
+		Set<String> actions = new HashSet<>();
+		actions.add(WorkspaceController.SHARED_ACTION);
+		final Set<String> recipientId = new HashSet<>();
+		Future<Void> futureSHared = Future.future();
+		shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.of(actions), ev -> {
+			// get list of managers
+			if (ev.succeeded()) {
+				recipientId.addAll(ev.result());
+				futureSHared.complete();
+			} else {
+				futureSHared.fail(ev.cause());
+			}
+		});
+		return futureSHared.compose(resShared -> {
+			// get list of historic owner
+			return revisionDao.findByDocs(docIds).compose(versions -> {
+				for (Object version : versions) {
+					JsonObject vJson = (JsonObject) version;
+					String userId = vJson.getString("userId");
+					if (userId != null) {
+						recipientId.add(userId);
+					}
+				}
+				return Future.succeededFuture(null);
+			});
+		}).map(ev -> {
+			// remove current user
+			recipientId.remove(user.getUserId());
+			return recipientId;
+		});
+	}
 }

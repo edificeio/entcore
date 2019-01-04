@@ -20,12 +20,14 @@
 package org.entcore.workspace.service;
 
 import java.util.List;
+import java.util.Set;
 
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -64,6 +66,8 @@ public interface WorkspaceService extends FolderManager {
 	public void getRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler);
 
+	public Future<JsonObject> getRevision(final String revisionId);
+
 	public void deleteRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler);
 
@@ -99,5 +103,7 @@ public interface WorkspaceService extends FolderManager {
 
 	public void getShareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
 			final Handler<Either<String, JsonObject>> handler);
+
+	public Future<Set<String>> getNotifyContributorDest(String id, UserInfos user, Set<String> docIds);
 
 }
