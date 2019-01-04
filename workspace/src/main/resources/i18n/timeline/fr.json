@@ -8,6 +8,7 @@
     "workspace.comment-folder": "Ajout de commentaire sur un dossier",
     "workspace.storage": "Espace de stockage bientôt plein",
     "workspace.contrib-folder": "Contribution dans un dossier",
+    "workspace.contrib-version": "Ajout d'une version à un document",
     "timeline.workspace.comment.document": "a commenté le document",
     "timeline.workspace.comment.folder": "a commenté le dossier",
     "timeline.workspace.shared.document": "a partagé avec vous le document",
@@ -15,5 +16,6 @@
     "timeline.workspace.shared.folder": "a partagé avec vous le dossier",
     "timeline.workspace.shared.scrapbook": "a partagé avec vous le cahier multimédia",
     "timeline.workspace.storage.size.alert": "Votre espace de stockage est bientôt plein.",
-    "timeline.workspace.contrib.folder": "a contribué dans le dossier"
+    "timeline.workspace.contrib.folder": "a contribué dans le dossier",
+    "timeline.workspace.contrib.version": "a ajouté une version au document "
 }
