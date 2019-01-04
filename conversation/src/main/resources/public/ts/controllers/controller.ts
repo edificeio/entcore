@@ -230,6 +230,11 @@ export let conversationController = ng.controller('ConversationController', [
             try {
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
+                if(document.querySelector('.lct-mail-reader').textContent.length < 2000) {
+                    $scope.$apply(() => {
+                        $scope.state.mailLimit = mail.bodyShown.length;
+                    });
+                }
             } catch (e) {
                 template.open('page', 'errors/e404');
             }
@@ -250,6 +255,11 @@ export let conversationController = ng.controller('ConversationController', [
             try {
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
+                if(document.querySelector('.lct-mail-reader').textContent.length < 2000) {
+                    $scope.$apply(() => {
+                        $scope.state.mailLimit = mail.bodyShown.length;
+                    });
+                }
             } catch (e) {
                 template.open('page', 'errors/e404');
             }
