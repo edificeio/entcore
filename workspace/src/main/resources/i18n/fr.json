@@ -126,6 +126,7 @@
     "workspace.forbidden.move.folder.in.itself": "Interdit de déplacer un dossier dans lui-même.",
     "workspace.header": "Espace documentaire",
     "workspace.headers": "Espace documentaire",
+    "workspace.headers.short":"Documents",
     "workspace.invalid.folder.name": "Nom de dossier invalide",
     "workspace.invalid.user": "Utilisateur invalide",
     "workspace.leave.comment": "Laisser un commentaire",
