@@ -52,7 +52,8 @@
 		<div class="row">
 			<app-title class="twelve">
 				<h1 class="cell right-spacing-twice" data-reload help-box-step="workspace.help.1" help-box-step-priority="-1">
-					<i class="storage"></i><i18n>workspace.headers</i18n>
+					<i class="storage"></i><i18n class="storage zero-mobile">workspace.headers</i18n>
+					<i class="storage"></i><i18n class="storage zero-desktop">workspace.headers.short</i18n>
 				</h1>
 			</app-title>
 		</div>
@@ -81,7 +82,7 @@
 
 			</section>
 			<section class="margin-four">
-				<h3 whereami></h3>
+				<h3 class="zero-desktop twelve-mobile">[[currentFolderName()]]</h3>
 				<nav class="twelve cell">
 					<div class="row">
 						<!--IMPORT MOBILE-->

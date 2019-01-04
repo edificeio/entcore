@@ -17,6 +17,7 @@ export interface TreeDelegateScope {
     trees: models.Tree[]
     quota: Quota
     currentTree: models.Tree
+    currentFolderName():string;
     onTreeInit(cb: () => void);
     isHighlightTree(folder: models.Element): boolean
     getHighlightCount(folder: models.Element): number
@@ -27,7 +28,7 @@ export interface TreeDelegateScope {
     rollFoldersRecursively();
     isInSelectedFolder(folder: models.Element)
     isOpenedFolder(folder: models.Node): boolean
-    openOrCloseFolder(event: Event, folder: models.Node) : void
+    openOrCloseFolder(event: Event, folder: models.Node): void
     isRolledFolder(folder: models.Node): boolean
     canExpendTree(folder: models.Node): boolean
     setCurrentTree(tree: models.TREE_NAME);
@@ -35,7 +36,7 @@ export interface TreeDelegateScope {
     getTreeByFilter(filter: models.TREE_NAME): models.Tree;
     removeHighlightTree(els: { folder: models.Node, count: number }[])
     setHighlightTree(els: { folder: models.Node, count: number }[]);
-    firstVisibleAscendant(folder: models.Node) : models.Node;
+    firstVisibleAscendant(folder: models.Node): models.Node;
 
 }
 export function TreeDelegate($scope: TreeDelegateScope, $location) {
@@ -191,18 +192,18 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
     $scope.openFolderRoute = function (folder, forceReload = false) {
-        const doLocation=function(path){
-            if(forceReload){
-                if($location.path()==path){
+        const doLocation = function (path) {
+            if (forceReload) {
+                if ($location.path() == path) {
                     window.location.reload()
-                }else{
+                } else {
                     $location.path(path)
                 }
-            }else{
+            } else {
                 $location.path(path)
             }
         }
-        if(!$scope.isRolledFolder(folder)) {
+        if (!$scope.isRolledFolder(folder)) {
             $scope.rolledFolders.push(folder);
         }
         if (folder._id) {
@@ -229,14 +230,16 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             $scope.openFolder(folder);
         }
     }
+
+    $scope.currentFolderName = function () {
+        const folder = $scope.openedFolder.folder;
+        return folder ? folder.name : "";
+    }
     $scope.openFolder = async function (folder) {
         //if any refresh wait it finished
         await refreshPromise;
         //if needed
         $scope.closeViewFile();
-        setTimeout(function () {
-            $('body').trigger('whereami.update');
-        }, 100)
 
         const founded = $scope.trees.find(tree => {
             return workspaceService.findFolderInTreeByRefOrId(tree, folder, (founded) => {
@@ -268,14 +271,14 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         }
         $scope.safeApply();
     }
-    $scope.rollFoldersRecursively = function() {
-        let rec = function(tree : models.Tree) {
-            if($scope.openedFolder.folder === tree) {
+    $scope.rollFoldersRecursively = function () {
+        let rec = function (tree: models.Tree) {
+            if ($scope.openedFolder.folder === tree) {
                 return true;
             }
-            for(let child of tree.children) {
-                if(rec(child)) {
-                    if(!$scope.isRolledFolder(tree)) {
+            for (let child of tree.children) {
+                if (rec(child)) {
+                    if (!$scope.isRolledFolder(tree)) {
                         $scope.rolledFolders.push(tree);
                     }
                     return true;
@@ -283,9 +286,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             }
             return false;
         }
-        for(let tree of $scope.trees) {
-            if(rec(tree)) {
-                if(!$scope.isRolledFolder(tree)) {
+        for (let tree of $scope.trees) {
+            if (rec(tree)) {
+                if (!$scope.isRolledFolder(tree)) {
                     $scope.rolledFolders.push(tree);
                 }
                 break;
@@ -297,7 +300,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
      */
     let highlighted: { folder: models.Node, count: number }[] = []
     $scope.setHighlightTree = function (els: { folder: models.Node, count: number }[]) {
-        if(els) {
+        if (els) {
             els.map(el => el.folder = $scope.firstVisibleAscendant(el.folder))
         }
         highlighted = els ? [...els] : [];
@@ -330,25 +333,25 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         let t = findHighlight(folder)
         return t && t.length ? t[0].count : null;
     }
-    $scope.firstVisibleAscendant = function(folder: models.Node) : models.Node {
+    $scope.firstVisibleAscendant = function (folder: models.Node): models.Node {
         let ret;
-        let rec = function(tree : models.Tree) {
-            if(folder === tree) {
+        let rec = function (tree: models.Tree) {
+            if (folder === tree) {
                 return true;
             }
-            for(let child of tree.children) {
-                if($scope.isRolledFolder(tree)) {
+            for (let child of tree.children) {
+                if ($scope.isRolledFolder(tree)) {
                     ret = child;
                 }
-                if(rec(child)) {
+                if (rec(child)) {
                     return true;
                 }
             }
             return false;
         }
-        for(let tree of $scope.trees) {
+        for (let tree of $scope.trees) {
             ret = tree;
-            if(rec(tree)) {
+            if (rec(tree)) {
                 return ret;
             }
         }
