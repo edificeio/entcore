@@ -123,15 +123,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.display = {};
 	$scope.lang = lang;
 
-	$scope.viewsContainers = {};
-	$scope.openView = function(view, name){
-		var viewsPath = '/directory/public/template/';
-		$scope.viewsContainers[name] = viewsPath + view + '.html';
+	$scope.openView = function (view, name) {
+		template.open(name, view);
 	};
-
-	$scope.containsView = function(name, view){
-		var viewsPath = '/directory/public/template/';
-		return $scope.viewsContainers[name] === viewsPath + view + '.html';
+	$scope.containsView = function (name, view) {
+		return template.contains(name, view);
 	};
 
 	$scope.moods = directory.User.prototype.moods;
