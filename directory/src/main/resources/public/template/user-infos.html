@@ -30,34 +30,44 @@
 			</div>
 
 			<div class="row" ng-if="currentUser.email">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.email"></div>
-				<em class="eight cell reduce-block-four text-word-break">
+				<div class="cell" translate content="userBook.profile.email"></div>
+			</div>
+			<div class="row" ng-if="currentUser.email">
+				<em class="cell text-word-break">
 					[[currentUser.email]]
 				</em>
 			</div>
 
 			<div class="row" ng-if="currentUser.tel">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.telephone"></div>
-				<em class="eight cell reduce-block-four">
+				<div class="cell" translate content="userBook.profile.telephone"></div>
+			</div>
+			<div class="row" ng-if="currentUser.tel">
+				<em class="cell">
 					[[currentUser.tel]]
 				</em>
 			</div>
 
 			<div class="row" ng-if="currentUser.mobile">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.mobilePhone"></div>
-				<em class="eight cell reduce-block-four">
+				<div class="cell" translate content="userBook.profile.mobilePhone"></div>
+			</div>
+			<div class="row" ng-if="currentUser.mobile">
+				<em class="cell">
 					[[currentUser.mobile]]
 				</em>
 			</div>
 			<div class="row" ng-if="currentUser.birthdate">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.birthdate"></div>
-				<em class="eight cell reduce-block-four">
+				<div class="cell" translate content="userBook.profile.birthdate"></div>
+			</div>
+			<div class="row" ng-if="currentUser.birthdate">
+				<em class="cell">
 					[[longDate(currentUser.birthdate)]]
 				</em>
 			</div>
 			<div class="row" ng-if="currentUser.motto">
-				<div class="four cell reduce-block-four" translate content="userBook.profile.motto"></div>
-				<em class="eight cell reduce-block-four">
+				<div class="cell" translate content="userBook.profile.motto"></div>
+			</div>
+			<div class="row" ng-if="currentUser.motto">
+				<em class="cell">
 					[[currentUser.motto]]
 				</em>
 			</div>
@@ -84,9 +94,11 @@
 						<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100" />
 					</div>
 					<div>
-						<a class="cell-ellipsis small-text block left-text" href="/userbook/annuaire#/[[child.id]]">[[ child.displayName ]]</a>
-						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[
-							child.classesNames[0] ]]</span>
+						<a class="cell-ellipsis small-text block left-text" 
+ 						   ng-href="/userbook/annuaire#/[[child.id]]">[[child.displayName]]</a>
+						<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">
+							[[ child.classesNames[0] ]]
+						</span>
 					</div>
 				</div>
 			</div>
@@ -103,7 +115,8 @@
 					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100" />
 				</div>
 				<div>
-					<a class="cell-ellipsis small-text block left-text" href="/userbook/annuaire#/[[relative.id]]">[[ relative.displayName ]]</a>
+					<a class="cell-ellipsis small-text block left-text" 
+					   ng-href="/userbook/annuaire#/[[relative.id]]">[[relative.displayName]]</a>
 				</div>
 			</div>
 		</div>
