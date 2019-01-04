@@ -230,8 +230,13 @@ export let conversationController = ng.controller('ConversationController', [
             try{
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
-            }
-            catch(e){
+                $timeout(function () {
+                    const mailReader = document.querySelector('.lct-mail-reader');
+                    if (mailReader && mailReader.textContent.length < 2000) {
+                        $scope.state.mailLimit = mail.bodyShown.length;
+                    }
+                }, 0);
+            } catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
@@ -251,8 +256,13 @@ export let conversationController = ng.controller('ConversationController', [
             try{
                 await mail.open();
                 $scope.$root.$emit('refreshMails');
-            }
-            catch(e){
+                $timeout(function () {
+                    const mailReader = document.querySelector('.lct-mail-reader');
+                    if (mailReader && mailReader.textContent.length < 2000) {
+                        $scope.state.mailLimit = mail.bodyShown.length;
+                    }
+                }, 0);
+            } catch (e) {
                 template.open('page', 'errors/e404');
             }
         };
