@@ -20,6 +20,7 @@
 package org.entcore.workspace.dao;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.entcore.common.mongodb.MongoDbResult;
 
@@ -140,6 +141,22 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonArray> findByDoc(String documentId) {
 		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		Future<JsonArray> future = Future.future();
+		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
+				MongoDbResult.validResultsHandler(res -> {
+					if (res.isLeft()) {
+						log.error("[Workspace] Error finding revision for doc " + documentId + " - "
+								+ res.left().getValue());
+						future.fail(res.left().getValue());
+					} else {
+						future.complete(res.right().getValue());
+					}
+				}));
+		return future;
+	}
+
+	public Future<JsonArray> findByDocs(Set<String> documentId) {
+		final QueryBuilder builder = QueryBuilder.start("documentId").in(documentId);
 		Future<JsonArray> future = Future.future();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
