@@ -202,12 +202,12 @@ public interface FolderManager {
 	 * @param sourceId            of the file or the folder
 	 * @param destinationFolderId the id of the destination folder or empty if the
 	 *                            destination is root
-	 * @param userId              id of the user copying
+	 * @param user                the user doing the copy
 	 * @param handler             emit the list of copied files/folders or an error
 	 *                            if the destination or the source does not exists
 	 *                            or an error occurs
 	 */
-	void copyUnsafe(String sourceId, Optional<String> destinationFolderId, String userId,
+	void copyUnsafe(String sourceId, Optional<String> destinationFolderId, UserInfos user,
 			final Handler<AsyncResult<JsonArray>> handler);
 
 	/**

@@ -506,9 +506,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	@Override
-	public void copyUnsafe(String sourceId, Optional<String> destinationFolderId, String userId,
+	public void copyUnsafe(String sourceId, Optional<String> destinationFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
-		super.copyUnsafe(sourceId, destinationFolderId, userId, afterCopy(userId, "", handler));
+		super.copyUnsafe(sourceId, destinationFolderId, user, afterCopy(user.getUserId(), user.getUsername(), handler));
 	}
 
 	private Handler<AsyncResult<JsonArray>> afterCopy(String userId, String userName,

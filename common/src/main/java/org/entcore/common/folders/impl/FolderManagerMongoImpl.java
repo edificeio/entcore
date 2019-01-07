@@ -213,10 +213,10 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
-	public void copyUnsafe(String sourceId, Optional<String> destFolderId, String userId,
+	public void copyUnsafe(String sourceId, Optional<String> destFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
 		queryHelper.findAllAsList(queryHelper.queryBuilder().withId(sourceId).withExcludeDeleted()).compose(docs -> {
-			return copyRecursivelyFromParentId(Optional.empty(), docs, destFolderId, true);
+			return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, true);
 		}).setHandler(handler);
 	}
 

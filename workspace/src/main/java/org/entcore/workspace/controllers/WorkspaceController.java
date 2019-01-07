@@ -297,11 +297,13 @@ public class WorkspaceController extends BaseController {
 	private void copyDocumentFromBus(final Message<JsonObject> message) {
 		String userId = message.body().getJsonObject("user").getString("userId");
 		String fileId = message.body().getString("documentId");
-		workspaceService.copyUnsafe(fileId, Optional.empty(), userId, res -> {
-			if (res.succeeded())
-				message.reply(res.result().getJsonObject(0));
-			else
-				message.fail(500, res.cause().getMessage());
+		UserUtils.getSessionByUserId(eb, userId, session -> {
+			workspaceService.copyUnsafe(fileId, Optional.empty(), UserUtils.sessionToUserInfos(session), res -> {
+				if (res.succeeded())
+					message.reply(res.result().getJsonObject(0));
+				else
+					message.fail(500, res.cause().getMessage());
+			});
 		});
 	}
 
