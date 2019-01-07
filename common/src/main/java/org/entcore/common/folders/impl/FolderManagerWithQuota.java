@@ -178,7 +178,7 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
-	public void copyUnsafe(String sourceId, Optional<String> destinationFolderId, String userId,
+	public void copyUnsafe(String sourceId, Optional<String> destinationFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
 		// fetch only if i have right on it (inherit share and owner)
 		Future<List<JsonObject>> filesAndFolders = queryHelper.findOne(queryHelper.queryBuilder().withId(sourceId))
@@ -189,14 +189,14 @@ public class FolderManagerWithQuota implements FolderManager {
 				});
 		List<String> ids = new ArrayList<>();
 		ids.add(sourceId);
-		this.canCopy(ids, new Either.Left<String, UserInfos>(userId), filesAndFolders).compose(e -> {
+		this.canCopy(ids, new Either.Right<String, UserInfos>(user), filesAndFolders).compose(e -> {
 			Future<JsonArray> innerFuture = Future.future();
-			this.folderManager.copyUnsafe(sourceId, destinationFolderId, userId, innerFuture.completer());
+			this.folderManager.copyUnsafe(sourceId, destinationFolderId, user, innerFuture.completer());
 			return innerFuture;
 		}).compose(copies -> {
 			// update quota before return
 			final long size = DocumentHelper.getFileSize(copies);
-			return decrementFreeSpace(userId, size).map(copies);
+			return decrementFreeSpace(user.getUserId(), size).map(copies);
 		}).setHandler(handler);
 	}
 
