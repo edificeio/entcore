@@ -53,10 +53,8 @@ Behaviours.register('workspace', {
 		viewRights: ["org-entcore-workspace-controllers-WorkspaceController|copyDocuments", "org-entcore-workspace-controllers-WorkspaceController|getDocument"]
 	},
 	loadResources: function (callback) {
-		http().get('/workspace/documents').done(function (documents) {
-			http().get('/workspace/documents?filter=protected').done(function (protectedDocuments) {
-				http().get('/workspace/documents?filter=public').done(function (publicDocuments) {
-					this.resources = documents.concat(protectedDocuments).concat(publicDocuments).map(function (doc) {
+		http().get('/workspace/documents?filter=all&hierarchical=true').done(function (documents) {
+					this.resources = documents.filter(function(doc){return !doc.deleted}).map(function (doc) {
 						if (doc.metadata['content-type'].indexOf('image') !== -1) {
 							doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
 						}
@@ -79,8 +77,6 @@ Behaviours.register('workspace', {
 					if (typeof callback === 'function') {
 						callback(this.resources);
 					}
-				}.bind(this));
-			}.bind(this));
 		}.bind(this));
 	},
 	create: function(file, callback){
