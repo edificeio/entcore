@@ -2,7 +2,7 @@
 <script type="text/ng-template" id="folder-content">
 	<a ng-click="openUserFolder(folder, obj)"
 	   ng-init="obj = { template: '' }"
-	   ng-class="{ selected: conversation.currentFolder.id === folder.id, opened: conversation.currentFolder.id === folder.id || isParentOf(folder, conversation.currentFolder) }"
+	   ng-class="{ selected: conversation.currentFolder.id === folder.id, opened: isOpenedFolder(folder) }"
 	   dragdrop="dropTo(folder, $originalEvent)"
 	   dropcondition="dropCondition(folder)"
        on-dragover   ="openUserFolderOnDragover(folder, obj)"
@@ -12,8 +12,8 @@
 		<i class="trash" tooltip="put.trash" ng-click="trashFolder(folder)"></i>
 		<i class="edit" tooltip="rename" ng-click="openRenameFolderView(folder, $event)"></i>
 	</a>
-	<ul ng-class="{ selected: conversation.currentFolder.id === folder.id, closed: !selected }"
-		ng-if="conversation.currentFolder.id === folder.id || isParentOf(folder, conversation.currentFolder)">
+	<ul ng-class="{ selected: conversation.currentFolder.id === folder.id, closed: isClosedFolder(folder) }"
+		ng-if="isOpenedFolder(folder)">
 		<li data-ng-repeat="folder in folder.userFolders.all | orderBy : 'name'"
 			data-ng-include="obj.template">
 		</li>
