@@ -5,8 +5,8 @@ import { ServicesComponent } from './services.component';
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
 import { ApplicationDetailsComponent } from './applications/details/application-details.component';
 
-import { ConnectorsListComponent } from './connectors/list/connectors-list.component'
-import { ConnectorDetailsComponent } from './connectors/details/connector-details.component'
+import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
+import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
 
 import { ApplicationsResolver } from './applications/applications.resolver';
 import { ConnectorsResolver } from './connectors/connectors.resolver';
@@ -14,37 +14,37 @@ import { ApplicationRolesResolver } from './applications/details/roles.resolver'
 import { ConnectorRolesResolver } from './connectors/details/roles.resolver';
 
 export let routes: Routes = [
-    { 
-        path: '', component: ServicesComponent, 
+    {
+        path: '', component: ServicesComponent,
         children: [
-            { 
-                path: '', 
+            {
+                path: '',
                 redirectTo: 'applications',
                 pathMatch: 'full'
             },
-            { 
-                path: 'applications', 
-                component: ApplicationsListComponent, 
-                resolve: { apps: ApplicationsResolver },
+            {
+                path: 'applications',
+                component: ApplicationsListComponent,
+                resolve: {apps: ApplicationsResolver},
                 children: [
                     {
-                        path: ':appId', 
+                        path: ':appId',
                         component: ApplicationDetailsComponent,
-                        resolve: { 
+                        resolve: {
                             roles: ApplicationRolesResolver
                         }
                     }
                 ]
             },
-            { 
-                path: 'connectors', 
-                component: ConnectorsListComponent, 
-                resolve: { connectors: ConnectorsResolver },
+            {
+                path: 'connectors',
+                component: ConnectorsListComponent,
+                resolve: {connectors: ConnectorsResolver},
                 children: [
                     {
-                        path: ':connectorId', 
+                        path: ':connectorId',
                         component: ConnectorDetailsComponent,
-                        resolve: { 
+                        resolve: {
                             roles: ConnectorRolesResolver
                         }
                     }
@@ -52,4 +52,4 @@ export let routes: Routes = [
             }
         ]
     }
-]
+];
