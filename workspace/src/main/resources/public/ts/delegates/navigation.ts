@@ -13,6 +13,7 @@ export interface NavigationDelegateScope {
     //order
     order: { field: string, desc: boolean, order?: (item: models.Element) => any }
     orderByField(fieldName: string, desc?: boolean, save?: boolean)
+    applySort();
     //list view
     onInfotipChange(visible: boolean)
     isTrashTree(): boolean
@@ -152,6 +153,9 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         if (save) {
             workspaceService.savePreference({ sortDesc: $scope.order.desc, sortField: $scope.order.field })
         }
+
+        $scope.applySort();
+
         $timeout(function () {
             if ($location.hash() !== 'start') {
                 $location.hash('start');
@@ -159,8 +163,11 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
             else {
                 $anchorScroll();
             }
-        })
+        });
     };
+    $scope.applySort = function () {
+        $scope.openedFolder.applySort((item1,item2) => $scope.order.order(item1) < $scope.order.order(item2) != $scope.order.desc ? -1 : 1);
+    }
     //list
     $scope.onInfotipChange = function (visible) {
         $scope.infotipVisible = visible;
@@ -220,6 +227,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
     $scope.setCurrentFolder = function (folder, reload = false) {
         if (folder !== $scope.openedFolder.folder || reload) {
             $scope.openedFolder = new models.FolderContext(folder);
+            $scope.applySort();
             $scope.reloadFolderContent();
         }
     }
@@ -272,13 +280,19 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
 
     $scope.setAll = function () {
         let all = true;
+        let one = false;
         $scope.openedFolder.documents.forEach(function (document) {
             all = all && document.selected;
+            one = one || document.selected;
         });
         $scope.openedFolder.folders.forEach(function (folder) {
             all = all && folder.selected;
+            one = one || folder.selected;
         });
         $scope.boxes.selectAll = all;
+        one = one && !all;
+        // Not the Angular way, but would be overcomplicated to access indeterminate property of parent checkbox.
+        (<HTMLInputElement> document.getElementById("parent-checkbox")).indeterminate = one;
     };
     $scope.closeViewFile = function () {
         if (template.contains('documents', 'viewer')) {
