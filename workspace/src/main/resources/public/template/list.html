@@ -8,7 +8,7 @@
 		<thead>
 			<tr id='start'>
 				<th scope="col" class="icon">
-					<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" />
+					<input type="checkbox" ng-model="boxes.selectAll" ng-click="switchSelectAll()" id="parent-checkbox"/>
 				</th>
 				<th scope="col" class="icon zero-mobile">
 
@@ -54,10 +54,10 @@
 			</tr>
 		</thead>
 		<tbody>
-			<tr data-ng-repeat="folder in openedFolder.folders | orderBy:order.order:order.desc" ng-class="{ checked: folder.selected }"
+			<tr data-ng-repeat="folder in openedFolder.sortedFolders" ng-class="{ checked: folder.selected }"
 			 dragend="dragEnd(folder, $originalEvent)" dragstart="drag(folder, $originalEvent)" dragcondition="dragCondition(folder)"
 			 dragdrop="dropTo(folder, $originalEvent)" dropcondition="dropCondition(folder)">
-				<td class="icon"><input type="checkbox" data-ng-model="folder.selected" ng-change="setAll()" /></td>
+				<td class="icon"><input type="checkbox" data-ng-model="folder.selected" ng-change="setAll()" ng-click="onSelectItem($event,folder)" /></td>
 				<td class="icon zero-mobile">
 					<div class="twelve cell">
 						<i class="folder"></i>
@@ -76,9 +76,9 @@
 					<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 				</td>
 			</tr>
-			<tr data-ng-repeat="document in openedFolder.documents | orderBy:order.order:order.desc" ng-class="{ overline: true, checked: document.selected }"
+			<tr data-ng-repeat="document in openedFolder.sortedDocuments" ng-class="{ overline: true, checked: document.selected }"
 			 dragend="dragEnd(document, $originalEvent)" dragstart="drag(document, $originalEvent)" dragcondition="dragCondition(document)">
-				<td class="icon"><input type="checkbox" data-ng-model="document.selected" ng-change="setAll()" /></td>
+				<td class="icon"><input type="checkbox" data-ng-model="document.selected" ng-change="setAll()" ng-click="onSelectItem($event,document)" /></td>
 				<td class="icon zero-mobile">
 					<div class="twelve cell">
 						<i class="[[document.metadata.role]]"></i>
