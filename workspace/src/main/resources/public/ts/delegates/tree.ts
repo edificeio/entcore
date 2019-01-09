@@ -142,11 +142,7 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                     break;
             }
             quota.refresh();
-            //Highlight new shared
-            if ((event.action == "add" || event.action == "tree-change") && event.treeDest == "shared" && event.treeSource != "shared" && event.elements) {
-                $scope.setHighlightTree([{ folder: event.dest, count: event.elements.length }])
-            }
-            //
+            $scope.setHighlightTree([{ folder: event.dest, count: event.elements.length }]);
             $scope.safeApply()
         })
     });
