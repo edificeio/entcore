@@ -7,6 +7,14 @@ import { Subscription } from 'rxjs/Subscription';
 import { ServicesStore } from '../services.store';
 import { SessionModel } from '../../core/store';
 
+interface ServiceInfo {
+    collection: any[],
+    model: any,
+    routeData: string,
+    searchPlaceholder: string,
+    noResultsLabel: string
+}
+
 @Component({
     selector: 'services-list-with-companion',
     template: `
@@ -23,8 +31,8 @@ import { SessionModel } from '../../core/store';
                         (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})">
                     <ng-template let-item>
                         <div class="service-icon">
-                            <img src="{{ item.icon }}" *ngIf="isIconWorkspaceImg(item.icon)" />
-                            <i class="{{ item.icon }}" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
+                            <img [src]="item.icon" *ngIf="isIconWorkspaceImg(item.icon)"/>
+                            <i ngClass="item.icon" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
                         </div>
                         <div class="service-name">
                             {{ item.name }}
@@ -81,22 +89,7 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     // TODO extract from router 
     @Input() serviceName: 'applications' | 'connectors' | 'widgets';
 
-    collectionRef = {
-        applications: {
-            collection: this.servicesStore.structure.applications.data,
-            model: this.servicesStore.application,
-            routeData: 'apps',
-            searchPlaceholder: 'services.application.search',
-            noResultsLabel: 'services.application.list.empty'
-        },
-        connectors: {
-            collection: this.servicesStore.structure.connectors.data,
-            model: this.servicesStore.connector,
-            routeData: 'connectors',
-            searchPlaceholder: 'services.connector.search',
-            noResultsLabel: 'services.connector.list.empty'
-        }
-    };
+    collectionRef: { [serviceName: string]: ServiceInfo };
 
     @Input() selectedItem;
 
@@ -124,6 +117,23 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
                 }
             })
         });
+
+        this.collectionRef = {
+            applications: {
+                collection: this.servicesStore.structure.applications.data,
+                model: this.servicesStore.application,
+                routeData: 'apps',
+                searchPlaceholder: 'services.application.search',
+                noResultsLabel: 'services.application.list.empty'
+            },
+            connectors: {
+                collection: this.servicesStore.structure.connectors.data,
+                model: this.servicesStore.connector,
+                routeData: 'connectors',
+                searchPlaceholder: 'services.connector.search',
+                noResultsLabel: 'services.connector.list.empty'
+            }
+        };
     }
 
     ngOnDestroy(): void {
