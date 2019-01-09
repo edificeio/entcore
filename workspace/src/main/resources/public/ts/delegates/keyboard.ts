@@ -1,5 +1,5 @@
 import { angular, template } from "entcore";
-import { models, workspaceService } from "../services";
+import { models, workspaceService, WorkspacePreferenceView } from "../services";
 
 export interface KeyboardDelegateScope {
     onSelectItem(e: Event, el: models.Element)
@@ -10,6 +10,7 @@ export interface KeyboardDelegateScope {
     openMoveView()
     safeApply(a?);
     openedFolder: models.FolderContext
+    isViewMode(mode: WorkspacePreferenceView): boolean
 }
 
 export function KeyboardDelegate($scope: KeyboardDelegateScope) {
@@ -17,7 +18,7 @@ export function KeyboardDelegate($scope: KeyboardDelegateScope) {
     let previous = null;
     $scope.onSelectItem = function (e: MouseEvent, el) {
         if (e && e.shiftKey && previous) {
-            const all = $scope.openedFolder.all;
+            const all = $scope.isViewMode("list") ? $scope.openedFolder.sortedAll : $scope.openedFolder.all;
             let begin = all.findIndex(f => workspaceService.elementEqualsByRefOrId(f, previous));
             let end = all.findIndex(f => workspaceService.elementEqualsByRefOrId(f, el));
             //swap
@@ -25,10 +26,6 @@ export function KeyboardDelegate($scope: KeyboardDelegateScope) {
                 let temp = begin;
                 begin = end;
                 end = temp;
-            }
-            //reset
-            for (let a of all) {
-                a.selected = false;
             }
             //
             if (0 <= begin && end < all.length) {
