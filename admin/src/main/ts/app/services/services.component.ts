@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy,
-     OnInit } from '@angular/core';
-import { ActivatedRoute, Router, Data, NavigationEnd } from '@angular/router';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
 
 import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from './services.store';
-import { SpinnerService, routing } from '../core/services';
+import { routing, SpinnerService } from '../core/services';
 
 @Component({
     selector: 'services-root',
@@ -13,9 +12,9 @@ import { SpinnerService, routing } from '../core/services';
         <h1><i class="fa fa-th"></i> {{ 'services' | translate }}</h1>
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
-                [disabled]="tab.disabled"
-                [routerLink]="tab.view"
-                routerLinkActive="active">
+                    [disabled]="tab.disabled"
+                    [routerLink]="tab.view"
+                    routerLinkActive="active">
                 {{ tab.label | translate }}
             </button>
         </div>
@@ -25,14 +24,13 @@ import { SpinnerService, routing } from '../core/services';
 })
 export class ServicesComponent implements OnInit, OnDestroy {
 
-    // Subscriberts
     private structureSubscriber: Subscription;
     private routerSubscriber: Subscription;
-    
-    tabs = [
-        { label: "Applications", view: "applications" },
-        { label: "Connecteurs", view: "connectors" },
-        { label: "Widgets", view: "widgets", disabled: true }
+
+    tabs: Array<{ label: string, view: string, disabled: boolean }> = [
+        {label: 'Applications', view: 'applications', disabled: false},
+        {label: 'Connecteurs', view: 'connectors', disabled: false},
+        {label: 'Widgets', view: 'widgets', disabled: true}
     ];
 
     constructor(
@@ -40,19 +38,21 @@ export class ServicesComponent implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private ls: SpinnerService,
-        private servicesStore: ServicesStore) { }
+        private servicesStore: ServicesStore) {
+    }
 
     ngOnInit(): void {
-        this.structureSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
-            if(data['structure']) {
+        this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
+            if (data['structure']) {
                 this.servicesStore.structure = data['structure'];
                 this.cdRef.markForCheck();
             }
         });
 
-        this.routerSubscriber = this.router.events.subscribe(e => {
-            if(e instanceof NavigationEnd)
+        this.routerSubscriber = this.router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
                 this.cdRef.markForCheck();
+            }
         });
     }
 
