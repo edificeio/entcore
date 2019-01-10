@@ -29,21 +29,9 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
     $scope.sharedElements = [];
     const needShareWarning = function () {
         if ($scope.isSearchResult()) {
-            const hasFolder = !!$scope.sharedElements.find(a => workspaceService.isFolder(a));
-            if(hasFolder){
-                const isFolderShared = !!$scope.sharedElements.find(a => workspaceService.isFolder(a) && a.isShared);
-                return !isFolderShared;
-            }
-            return false;
-        } else if ($scope.currentTree.filter != "shared") {
-            const founded = $scope.sharedElements.find(a => workspaceService.isFolder(a));
-            if (founded) {
-                return true;
-            } else {
-                return false;
-            }
+            return !$scope.sharedElements.find(a => a.isShared);
         } else {
-            return false;
+            return $scope.currentTree.filter !== "shared";
         }
     }
     $scope.openShareView = function () {
@@ -63,9 +51,14 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             }
             return true;
         }
-        if (needShareWarning()) {
-            template.open('share', 'share/share-folders-warning');
-        } else {
+        if(needShareWarning()) {
+            if(!!$scope.sharedElements.find(a => workspaceService.isFolder(a))) {
+                template.open('share', 'share/share-folders-warning');
+            } else {
+                template.open('share', 'share/share-files-warning');
+            }
+        }
+        else {
             template.open('share', 'share/share');
         }
     };
@@ -142,10 +135,9 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         closeShareView()
     }
     $scope.onShareAndCopy = async function () {
-        const folders = $scope.sharedElements.filter(a => workspaceService.isFolder(a));
         try {
             $scope.copyingForShare = true;
-            const res = await workspaceService.copyAll(folders, $scope.currentTree as models.Element)
+            const res = await workspaceService.copyAll($scope.sharedElements, $scope.currentTree as models.Element)
             copiedFolders = res.copies;
             template.open('share', 'share/share');
         } finally {
