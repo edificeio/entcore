@@ -61,6 +61,7 @@ import {
             overflow: scroll;
             background-color: white;
             z-index: 2;
+            position: relative;
         }
     `],
     host: {
