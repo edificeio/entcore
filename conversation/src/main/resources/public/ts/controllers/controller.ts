@@ -15,7 +15,7 @@ export let conversationController = ng.controller('ConversationController', [
             searchFailed: false,
             draftSaveDate: null,
             mailLimit: 5000,
-            recipientLimit: ui.breakpoints.checkMaxWidth("fatMobile") ? 5 : 10 
+            recipientLimit: ui.breakpoints.checkMaxWidth("fatMobile") ? 5 : 10
         };
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
