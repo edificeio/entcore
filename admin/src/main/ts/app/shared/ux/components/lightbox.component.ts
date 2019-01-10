@@ -1,6 +1,13 @@
-import { ChangeDetectorRef } from '@angular/core';
-import { Component, ViewChild, ElementRef,
-    EventEmitter, Renderer, Input, Output } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    ElementRef,
+    EventEmitter,
+    Input,
+    Output,
+    Renderer,
+    ViewChild
+} from '@angular/core';
 
 @Component({
     selector: 'lightbox',
@@ -27,12 +34,15 @@ import { Component, ViewChild, ElementRef,
             opacity: 0;
             transition: opacity 0.35s;
         }
+
         section[hidden] {
             display: none !important;
         }
+
         :host.shown > section {
             opacity: 1;
         }
+
         div[overlay] {
             position: absolute;
             top: 0;
@@ -42,6 +52,7 @@ import { Component, ViewChild, ElementRef,
             height: 100%;
             background-color: black;
         }
+
         div[content] {
             flex: 0 0 auto;
             min-width: 25%;
@@ -62,57 +73,56 @@ export class LightBoxComponent {
     constructor(
         private cdRef: ChangeDetectorRef,
         private renderer: Renderer,
-        private host: ElementRef) { }
-
-    /* Inputs */
+        private host: ElementRef) {
+    }
 
     @Input()
     set show(s: boolean) {
-        if(this.timer)
-            clearTimeout(this.timer)
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
         if (s) {
-            this._show = true
+            this._show = true;
             this.timer = window.setTimeout(() => {
-                this.renderer.setElementClass(this.host.nativeElement, 'shown', true)
-                this.timer = null
-                this.cdRef.markForCheck()
-            }, 100)
+                this.renderer.setElementClass(this.host.nativeElement, 'shown', true);
+                this.timer = null;
+                this.cdRef.markForCheck();
+            }, 100);
         } else {
             let wait = parseFloat(this.section &&
-                window.getComputedStyle(this.section.nativeElement)['transition-duration'])
-            this.renderer.setElementClass(this.host.nativeElement, 'shown', false)
+                window.getComputedStyle(this.section.nativeElement)['transition-duration']);
+            this.renderer.setElementClass(this.host.nativeElement, 'shown', false);
             this.timer = window.setTimeout(() => {
-                this._show = false
-                this.timer = null
-                this.cdRef.markForCheck()
-            }, wait*1000)
+                this._show = false;
+                this.timer = null;
+                this.cdRef.markForCheck();
+            }, wait * 1000);
         }
     }
-    get show(): boolean { 
-        return this._show
+
+    get show(): boolean {
+        return this._show;
     }
-    _show: boolean = false
 
-    @Input() showCloseButton: boolean = true;
+    _show: boolean = false;
 
-    /* Outputs */
-    @Output() onClose = new EventEmitter<any>()
+    @Input() showCloseButton = true;
 
-    /* View */
-    @ViewChild("section") section : ElementRef
-    @ViewChild("overlay") overlay : ElementRef
+    @Output() onClose = new EventEmitter<any>();
 
-    /* Internal logic */
-    private timer : number
+    @ViewChild('section') section: ElementRef;
+    @ViewChild('overlay') overlay: ElementRef;
+
+    private timer: number;
 
     onClick(event: MouseEvent) {
         if (this.overlay.nativeElement.contains(event.target)) {
-            this.close()
+            this.close();
         }
     }
 
     private close() {
-        this.show = false
-        this.onClose.emit()
+        this.show = false;
+        this.onClose.emit();
     }
 }
