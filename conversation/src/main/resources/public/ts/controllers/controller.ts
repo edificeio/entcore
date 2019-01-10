@@ -220,6 +220,8 @@ export let conversationController = ng.controller('ConversationController', [
                 $scope.state.current.selected = true;
             }
             $scope.mail = mail;
+            $scope.isSlided = false;
+            $scope.messageHistory = lang.translate('message.history.show');
         }
 
         $scope.viewMail = async function (mail) {
@@ -782,4 +784,14 @@ export let conversationController = ng.controller('ConversationController', [
             model.me.functions.ADMIN_LOCAL && model.me.functions.ADMIN_LOCAL.scope;
 
         $scope.getAvatar = () => `${skin.theme}../../${$scope.defaultAvatar}`;
+
+        $scope.showConversationHistory = function () {
+            if($scope.isSlided) {
+                $scope.messageHistory = lang.translate('message.history.show');
+            }
+            else {
+                $scope.messageHistory = lang.translate('message.history.hide');
+            }
+            $scope.isSlided = !$scope.isSlided;
+        }
     }]);
