@@ -47,8 +47,8 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
     $scope.copyProps = {
         i18: null,
         sources: [],
-        onSubmitSuccess(dest, _) {
-            closeCopyView(dest);
+        onSubmitSuccess(dest, count) {
+            closeCopyView(dest, null, count);
         },
         onCancel() {
             closeCopyView(null)
@@ -157,12 +157,12 @@ export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {
         template.open('lightbox', 'copy/index');
         setState("normal")
     };
-    const closeCopyView = function (dest: models.Element, elts?: models.Element[]) {
+    const closeCopyView = function (dest: models.Element, elts?: models.Element[], count?: number) {
         template.close("lightbox")
         $scope.copyProps.sources = [];
         //
-        if (elts && checkDest(dest, elts) == "toshare") {
-            $scope.setHighlightTree([{ folder: dest, count: elts.length }])
+        if (elts || count) {
+            $scope.setHighlightTree([{ folder: dest, count: elts ? elts.length : count }])
         }
     }
     //
