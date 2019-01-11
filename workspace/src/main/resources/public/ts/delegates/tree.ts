@@ -142,7 +142,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                     break;
             }
             quota.refresh();
-            $scope.setHighlightTree([{ folder: event.dest, count: event.elements.length }]);
+            if (event.dest || event.treeDest) {
+                $scope.setHighlightTree([{ folder: event.dest ? event.dest : $scope.getTreeByFilter(event.treeDest), count: event.elements.length }]);
+            }
             $scope.safeApply()
         })
     });
