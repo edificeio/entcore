@@ -58,7 +58,8 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void removeLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (g1:Group {id : {startGroupId}})-[r:COMMUNIQUE]->(g2:Group {id : {endGroupId}}) " +
-				"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> {endGroupId}) " +
+				"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> {endGroupId}), " +
+						"g2.communiqueWith = coalesce(g2.communiqueWith, []) " +
 				"DELETE r " +
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
