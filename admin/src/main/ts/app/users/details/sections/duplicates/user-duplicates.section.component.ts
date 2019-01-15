@@ -24,30 +24,30 @@ import { UsersStore } from '../../../users.store'
                     <span *ngIf="!findVisibleStruct(duplicate.structures)">
                         {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ (formatStructures(duplicate.structures)) }}
                     </span>
-                    <span class="badge alert" *ngIf="duplicate.score > 3" 
+                    <span class="badge alert" *ngIf="duplicate.score > 3"
                         [title]="'blocking.duplicate.tooltip' | translate">
                         <s5l>blocking.duplicate</s5l>
                     </span>
-                    <span class="badge info" *ngIf="duplicate.score < 4" 
+                    <span class="badge info" *ngIf="duplicate.score < 4"
                         [title]="'minor.duplicate.tooltip' | translate">
                         <s5l>minor.duplicate</s5l>
                     </span>
-                    <div>
-                        <button (click)="separate(duplicate.id)" 
-                            [disabled]="spinner.isLoading(duplicate.id)">
-                            <spinner-cube class="button-spinner" waitingFor="duplicate.id">
-                            </spinner-cube>
-                            <s5l>separate</s5l>
-                        </button>
-                    </div>
-                    <div>
-                        <button (click)="merge(duplicate.id)" 
-                            *ngIf="canMerge(duplicate)" [disabled]="spinner.isLoading(duplicate.id)">
-                            <spinner-cube class="button-spinner" 
-                                waitingFor="duplicate.id"></spinner-cube>
-                            <s5l>merge</s5l>
-                        </button>
-                    </div>
+                    <button class="actions-list__button" (click)="separate(duplicate.id)"
+                        [disabled]="spinner.isLoading(duplicate.id)">
+                        <spinner-cube class="button-spinner" waitingFor="duplicate.id">
+                        </spinner-cube>
+                        <s5l>separate</s5l>
+                        <i class="fa fa-arrow-left"></i>
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                    <button class="actions-list__button" (click)="merge(duplicate.id)"
+                        *ngIf="canMerge(duplicate)" [disabled]="spinner.isLoading(duplicate.id)">
+                        <spinner-cube class="button-spinner"
+                            waitingFor="duplicate.id"></spinner-cube>
+                        <s5l>merge</s5l>
+                        <i class="fa fa-arrow-right"></i>
+                        <i class="fa fa-arrow-left"></i>
+                    </button>
                 </li>
             </ul>
         </panel-section>
@@ -57,6 +57,17 @@ import { UsersStore } from '../../../users.store'
     styles: [`
         ul.actions-list {
             margin: 0px;
+        }
+        .actions-list .badge.alert {
+          margin-right: 10px;
+        }
+        .actions-list__button {
+          margin: 0 5px;
+        }
+        .actions-list__button i {
+          font-size: 11px;
+          float: none;
+          padding-left: 5px;
         }
     `]
 })
