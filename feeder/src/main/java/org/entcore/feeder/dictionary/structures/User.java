@@ -94,7 +94,7 @@ public class User {
 														.put("action", "delete-users")
 														.put("old-users", r));
 												eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
-														(UserInfos) null, new JsonObject().put("old-users", r));
+														(UserInfos) null, new JsonObject().put("old-users", cleanDeleteEvent(r)));
 												if (r.size() == LIMIT) {
 													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
 														@Override
@@ -125,6 +125,16 @@ public class User {
 				log.error("Delete task error");
 				log.error(e.getMessage(), e);
 			}
+		}
+
+		private JsonArray cleanDeleteEvent(JsonArray r) {
+			final JsonArray result = r.copy();
+			for (Object o : result) {
+				if (o instanceof JsonObject) {
+					((JsonObject) o).remove("birthDate");
+				}
+			}
+			return result;
 		}
 
 	}
