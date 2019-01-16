@@ -57,6 +57,9 @@ import { Config } from '../../Config';
                     <form-field *ngIf="details.created" label="creation">
                         <span>{{ displayDate(details.created) }}</span>
                     </form-field>
+                    <form-field *ngIf="details.modified" label="modification.date">
+                        <span>{{ displayDate(details.modified) }}</span>
+                    </form-field>
                     <form-field label="mergeKey" *ngIf="user.type === 'Relative'">
                         <div>
                             <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
