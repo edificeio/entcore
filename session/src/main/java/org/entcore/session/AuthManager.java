@@ -48,6 +48,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	private static final String SESSIONS_COLLECTION = "sessions";
 
 	private long sessionTimeout;
+	private long prolongedSessionTimeout;
 	private MongoDb mongo;
 	private Neo4j neo4j;
 
@@ -75,7 +76,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			ClusterManager cm = ((VertxInternal) vertx).getClusterManager();
 			sessions = cm.getSyncMap("sessions");
 			logins = cm.getSyncMap("logins");
-			if (getOrElse(config.getBoolean("inactivy"), false)) {
+			if (getOrElse(config.getBoolean("inactivity"), false)) {
 				inactivity = cm.getSyncMap("inactivity");
 				logger.info("inactivity ha map : "  + inactivity.getClass().getName());
 			}
@@ -83,7 +84,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		} else {
 			sessions = new HashMap<>();
 			logins = new HashMap<>();
-			if (getOrElse(config.getBoolean("inactivy"), false)) {
+			if (getOrElse(config.getBoolean("inactivity"), false)) {
 				inactivity = new HashMap<>();
 			}
 			logger.info("Initialize session hash maps.");
@@ -98,6 +99,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			}
 		} else {
 			this.sessionTimeout = DEFAULT_SESSION_TIMEOUT;
+		}
+		Object prolongedTimeout = config.getValue("prolonged_session_timeout");
+		if (prolongedTimeout != null) {
+			if (prolongedTimeout instanceof Long) {
+				this.prolongedSessionTimeout = (Long)prolongedTimeout;
+			} else if (prolongedTimeout instanceof Integer) {
+				this.prolongedSessionTimeout = (Integer)prolongedTimeout;
+			}
+		} else {
+			this.prolongedSessionTimeout = 20 * DEFAULT_SESSION_TIMEOUT;
 		}
 
 		eb.localConsumer(address, this);
@@ -264,18 +275,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		if (session == null) {
 			final JsonObject query = new JsonObject().put("_id", sessionId);
-			mongo.findOne(SESSIONS_COLLECTION, query, new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					JsonObject res = event.body().getJsonObject("result");
-					String userId;
-					if ("ok".equals(event.body().getString("status")) && res != null &&
-							(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
-						final String uId = userId;
-						createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"),
-								new Handler<String>() {
-							@Override
-							public void handle(String sId) {
+			mongo.findOne(SESSIONS_COLLECTION, query, event -> {
+				JsonObject res = event.body().getJsonObject("result");
+				String userId;
+				if ("ok".equals(event.body().getString("status")) && res != null &&
+						(userId = res.getString("userId")) != null && !userId.trim().isEmpty()) {
+					final String uId = userId;
+					final boolean secureLocation = getOrElse(res.getBoolean("secureLocation"), false);
+					createSession(userId, sessionId, res.getString("SessionIndex"), res.getString("NameID"), secureLocation,
+							sId -> {
 								if (sId != null) {
 									try {
 										JsonObject s = unmarshal(sessions.get(sId));
@@ -288,28 +296,22 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 										}
 									} catch (Exception e) {
 										logger.warn("Error in deserializing new hazelcast session " + sId);
-										generateSessionInfos(uId, new Handler<JsonObject>() {
-
-											@Override
-											public void handle(JsonObject event) {
-												if (event != null) {
-													logger.info("Session with hazelcast problem : " + event.encode());
-													sendOK(message, new JsonObject().put("status", "ok")
-															.put("session", event));
-												} else {
-													sendError(message, "Session not found. 2");
-												}
+										generateSessionInfos(uId, event1 -> {
+											if (event1 != null) {
+												logger.info("Session with hazelcast problem : " + event1.encode());
+												sendOK(message, new JsonObject().put("status", "ok")
+														.put("session", event1));
+											} else {
+												sendError(message, "Session not found. 2");
 											}
 										});
 									}
 								} else {
 									sendError(message, "Session not found. 3");
 								}
-							}
-						});
-					} else {
-						sendError(message, "Session not found. 4");
-					}
+							});
+				} else {
+					sendError(message, "Session not found. 4");
 				}
 			});
 		} else {
@@ -328,33 +330,32 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		final String userId = message.body().getString("userId");
 		final String sessionIndex = message.body().getString("SessionIndex");
 		final String nameID = message.body().getString("NameID");
+		final boolean secureLocation = getOrElse(message.body().getBoolean("secureLocation"), false);
 		if (userId == null || userId.trim().isEmpty()) {
 			sendError(message, "[doCreate] Invalid userId : " + message.body().encode());
 			return;
 		}
 
-		createSession(userId, null, sessionIndex, nameID, new Handler<String>() {
-			@Override
-			public void handle(String sessionId) {
-				if (sessionId != null) {
-					sendOK(message, new JsonObject()
-							.put("status", "ok")
-							.put("sessionId", sessionId));
-				} else {
-					sendError(message, "Invalid userId : " + userId);
-				}
+		createSession(userId, null, sessionIndex, nameID, secureLocation, sessionId -> {
+			if (sessionId != null) {
+				sendOK(message, new JsonObject()
+						.put("status", "ok")
+						.put("sessionId", sessionId));
+			} else {
+				sendError(message, "Invalid userId : " + userId);
 			}
 		});
 	}
 
-	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId, final Handler<String> handler) {
+	private void createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
+			final boolean secureLocation, final Handler<String> handler) {
 		final String sessionId = (sId != null) ? sId : UUID.randomUUID().toString();
 		generateSessionInfos(userId, new Handler<JsonObject>() {
 
 			@Override
 			public void handle(JsonObject infos) {
 				if (infos != null) {
-					long timerId = setTimer(userId, sessionId);
+					long timerId = setTimer(userId, sessionId, secureLocation);
 
 					try {
 						sessions.put(sessionId, infos.encode());
@@ -378,6 +379,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 						if (sessionIndex != null && nameId != null) {
 							json.put("SessionIndex", sessionIndex).put("NameID", nameId);
 						}
+						if (secureLocation) {
+							json.put("secureLocation", secureLocation);
+						}
 						mongo.save(SESSIONS_COLLECTION, json);
 					} else {
 						mongo.update(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId),
@@ -391,35 +395,34 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		});
 	}
 
-	protected long setTimer(final String userId, final String sessionId) {
+	protected long setTimer(final String userId, final String sessionId, final boolean secureLocation) {
 		if (inactivity != null) {
 			inactivity.put(sessionId, System.currentTimeMillis());
 		}
-		return setTimer(userId, sessionId, sessionTimeout);
+		return setTimer(userId, sessionId, sessionTimeout, secureLocation);
 	}
 
-	protected long setTimer(final String userId, final String sessionId, final long sessionTimeout) {
-		return vertx.setTimer(sessionTimeout, new Handler<Long>() {
-							public void handle(Long timerId) {
-								if (inactivity != null) {
-									final Long lastActivity = inactivity.get(sessionId);
-									if(lastActivity != null) {
-										final long timeoutTimestamp = lastActivity + AuthManager.this.sessionTimeout;
-										final long now = System.currentTimeMillis();
-										if (timeoutTimestamp > now) {
-											setTimer(userId, sessionId, (timeoutTimestamp - now));
-										} else {
-											dropSession(new ResultMessage(), sessionId, null);
-										}
-									} else {
-										dropSession(new ResultMessage(), sessionId, null);
-									}
-								} else {
-									logins.remove(userId);
-									sessions.remove(sessionId);
-								}
-							}
-						});
+	protected long setTimer(final String userId, final String sessionId, final long sessionTimeout, final boolean secureLocation) {
+		return vertx.setTimer(sessionTimeout, timerId -> {
+			if (inactivity != null) {
+				final Long lastActivity = inactivity.get(sessionId);
+				if(lastActivity != null) {
+					final long timeoutTimestamp = lastActivity +
+							(secureLocation ? AuthManager.this.prolongedSessionTimeout : AuthManager.this.sessionTimeout);
+					final long now = System.currentTimeMillis();
+					if (timeoutTimestamp > now) {
+						setTimer(userId, sessionId, (timeoutTimestamp - now), secureLocation);
+					} else {
+						dropSession(new ResultMessage(), sessionId, null);
+					}
+				} else {
+					dropSession(new ResultMessage(), sessionId, null);
+				}
+			} else {
+				logins.remove(userId);
+				sessions.remove(sessionId);
+			}
+		});
 	}
 
 	private void addLoginInfo(String userId, long timerId, String sessionId) {

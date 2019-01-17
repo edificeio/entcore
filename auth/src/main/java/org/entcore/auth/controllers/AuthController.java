@@ -427,24 +427,19 @@ public class AuthController extends BaseController {
 	}
 
 	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
-		UserUtils.createSession(eb, userId,
-				new io.vertx.core.Handler<String>() {
-
-					@Override
-					public void handle(String sessionId) {
-						if (sessionId != null && !sessionId.trim().isEmpty()) {
-							boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
-							long timeout = rememberMe ? 3600l * 24 * 365 : config
-									.getLong("cookie_timeout", Long.MIN_VALUE);
-							CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
-							CookieHelper.set("authenticated", "true", timeout, request);
-							redirect(request, callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?") ?
-									callBack.replaceFirst("/auth/login", "") : callBack, "");
-						} else {
-							loginResult(request, "auth.error.authenticationFailed", callBack);
-						}
-					}
-				});
+		UserUtils.createSession(eb, userId, "true".equals(request.formAttributes().get("secureLocation")), sessionId -> {
+			if (sessionId != null && !sessionId.trim().isEmpty()) {
+				boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
+				long timeout = rememberMe ? 3600l * 24 * 365 : config
+						.getLong("cookie_timeout", Long.MIN_VALUE);
+				CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
+				CookieHelper.set("authenticated", "true", timeout, request);
+				redirect(request, callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?") ?
+						callBack.replaceFirst("/auth/login", "") : callBack, "");
+			} else {
+				loginResult(request, "auth.error.authenticationFailed", callBack);
+			}
+		});
 	}
 
 	@Get("/logout")

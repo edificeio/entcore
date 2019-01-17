@@ -109,6 +109,7 @@ function LoginController($scope, template){
 			email: $('#email').val(),
 			password: $('#password').val(),
 			rememberMe: $scope.user.rememberMe,
+			secureLocation: $scope.user.secureLocation,
 			callBack: $scope.callBack
 		}))
 			.done(function(data){
