@@ -459,17 +459,24 @@ public class UserUtils {
 		});
 	}
 
-	public static void createSession(EventBus eb, String userId, final Handler<String> handler) {
-		createSession(eb, userId, null, null, handler);
+	public static void createSession(EventBus eb, String userId, boolean secureLocation, Handler<String> handler) {
+		createSession(eb, userId, null, null, secureLocation, handler);
+	}
+
+	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId, Handler<String> handler) {
+		createSession(eb, userId, sessionIndex, nameId, false, handler);
 	}
 
 	public static void createSession(EventBus eb, String userId, String sessionIndex, String nameId,
-			final Handler<String> handler) {
+			boolean secureLocation, final Handler<String> handler) {
 		JsonObject json = new JsonObject()
 				.put("action", "create")
 				.put("userId", userId);
 		if (sessionIndex != null && nameId != null && !sessionIndex.trim().isEmpty() && !nameId.trim().isEmpty()) {
 			json.put("SessionIndex", sessionIndex).put("NameID", nameId);
+		}
+		if (secureLocation) {
+			json.put("secureLocation", secureLocation);
 		}
 		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
