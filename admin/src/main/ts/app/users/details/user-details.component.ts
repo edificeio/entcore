@@ -23,6 +23,9 @@ import { Config } from './Config';
                 - {{ user.classes[0].name }}
             </span>
             </div>
+            <div class="login-date" *ngIf="details.lastLogin">
+                <s5l>lastLogin.date</s5l> {{ details.lastLogin | localizedDate:'short' }}
+            </div>
 
             <div class="panel-header-sub">
             <span *ngIf="isContextAdml()" class="user-admin">

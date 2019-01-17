@@ -397,6 +397,7 @@
     "users.since": "Utilisateurs créés depuis le :",
     "creation.date" : "Date de création",
     "modification.date" : "Date de dernière modification",
+    "lastLogin.date" : "Dernière connexion le ",
     "mergeKey": "Clé de fusion",
     "generate" : "Générer",
     "groups.local": "Groupes locaux :",
