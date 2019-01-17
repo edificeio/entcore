@@ -24,11 +24,8 @@ neo4j-shell -file changeRights.cypher
 
 2. *workspaceFolder.js*
 
-This script could be executed before or after starting vertx with the 3.3.0 entcore framework.
+This script should be executed after starting vertx with the 3.3.0 entcore framework.
 It computes the new folder's tree structure and add new fields in the MongoDB *documents* collection.
-
-This script does not override existing fields, so it could be possible (if needed) to downgrade from entcore 3.3.0 to 3.2.0.
-
 
 Run the script using the following command:
 
