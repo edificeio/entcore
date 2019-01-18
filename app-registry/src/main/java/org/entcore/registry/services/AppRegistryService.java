@@ -28,6 +28,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+
 public interface AppRegistryService {
 
 	void listApplications(String structureId, Handler<Either<String, JsonArray>> handler);
@@ -76,4 +78,7 @@ public interface AppRegistryService {
 
 	void listCasConnectors(Handler<Either<String, JsonArray>> handler);
 
+	void massAuthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler);
+
+	void massUnauthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler);
 }
