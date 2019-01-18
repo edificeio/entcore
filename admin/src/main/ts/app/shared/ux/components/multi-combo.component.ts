@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, Output, EventEmitter, Renderer, ElementRef } from '@angular/core'
 import { LabelsService } from '../services'
 
+/* If you need to use multi-combo in a form you should give a look to the MultiSelectComponent. */
+
 @Component({
     selector:'multi-combo',
     template: `

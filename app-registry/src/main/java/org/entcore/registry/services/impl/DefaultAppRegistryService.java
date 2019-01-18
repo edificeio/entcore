@@ -548,4 +548,34 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		return (addressURL != null && !StringUtils.isEmpty(addressURL.getHost())) ? addressURL : null;
 	}
 
+	@Override
+	public void massAuthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
+		String query =
+				"MATCH (r:Role), " +
+						"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE r.id IN {roleIds} " +
+						"AND p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->r) " +
+						"CREATE UNIQUE g-[:AUTHORIZED]->r";
+		executeQueryForStructureProfilesAndRoles(query, structureId, profiles, rolesId, handler);
+	}
+
+	@Override
+	public void massUnauthorize(String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
+		String query =
+				"MATCH (r:Role), " +
+						"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+						"WHERE r.id IN {roleIds} " +
+						"AND p.name IN {profiles} " +
+						"MATCH r<-[auth:AUTHORIZED]-g " +
+						"DELETE auth";
+		executeQueryForStructureProfilesAndRoles(query, structureId, profiles, rolesId, handler);
+	}
+
+	private void executeQueryForStructureProfilesAndRoles(String query, String structureId, List<String> profiles, List<String> rolesId, Handler<Either<String, JsonObject>> handler) {
+		JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles))
+				.put("roleIds", new fr.wseduc.webutils.collections.JsonArray(rolesId));
+		neo.execute(query, params, validEmptyHandler(handler));
+	}
 }

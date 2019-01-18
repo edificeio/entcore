@@ -58,6 +58,7 @@ import static org.entcore.common.bus.BusResponseHandler.busResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 import java.net.URL;
+import java.util.List;
 
 public class AppRegistryController extends BaseController {
 
@@ -103,7 +104,7 @@ public class AppRegistryController extends BaseController {
 		String actionType = request.params().get("actionType");
 		appRegistryService.listApplicationsWithActions(structureId, actionType, arrayResponseHandler(request));
 	}
-	
+
 	@Get("structure/:structureId/application/:appId/groups/roles")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	public void listApplicationRolesWithGroups(final HttpServerRequest request) {
@@ -435,6 +436,47 @@ public class AppRegistryController extends BaseController {
 			forbidden(request, "invalid.host");
 		}
 	}
+
+    @Put("/structures/:structureId/roles")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void authorizeProfiles(final HttpServerRequest request) {
+        bodyToJson(request, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject body) {
+                final String structureId = request.params().get("structureId");
+                List<String> profiles = body.getJsonArray("profiles").getList();
+                List<String> roles = body.getJsonArray("roles").getList();
+
+                if (structureId == null || structureId.trim().isEmpty() || profiles.isEmpty() || roles.isEmpty()) {
+                    badRequest(request);
+                    return;
+                }
+
+                appRegistryService.massAuthorize(structureId, profiles, roles, defaultResponseHandler(request));
+            }
+        });
+    }
+
+    @Delete("/structures/:structureId/roles")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void unauthorizeProfiles(final HttpServerRequest request) {
+        bodyToJson(request, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject body) {
+                final String structureId = request.params().get("structureId");
+                List<String> profiles = body.getJsonArray("profiles").getList();
+                List<String> roles = body.getJsonArray("roles").getList();
+
+                if (structureId == null || structureId.trim().isEmpty() || profiles.isEmpty() || roles.isEmpty()) {
+                    badRequest(request);
+                    return;
+                }
+                appRegistryService.massUnauthorize(structureId, profiles, roles, defaultResponseHandler(request));
+            }
+        });
+    }
 
 	@BusAddress("wse.app.registry.applications")
 	public void applications(final Message<JsonObject> message) {

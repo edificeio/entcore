@@ -1,6 +1,6 @@
-import { NgModule } from "@angular/core";
+import { NgModule } from '@angular/core';
 import { CommonModule, NgSwitch } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SijilModule } from 'sijil';
 
@@ -13,17 +13,20 @@ import { ConnectorsResolver } from './connectors/connectors.resolver';
 import { ApplicationRolesResolver } from './applications/details/roles.resolver';
 import { ConnectorRolesResolver } from './connectors/details/roles.resolver';
 
-import { ServicesComponent } from "./services.component";
+import { ServicesComponent } from './services.component';
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
 import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
 import { ApplicationDetailsComponent } from './applications/details/application-details.component';
+import { MassRoleAssignment } from './applications/details/mass-role-assignment.component';
+import { SmartMassRoleAssignment } from './applications/details/smart-mass-role-assignment.component';
 import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
-import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRoleAttributionComponent } from './shared/';
+import { ServicesListWithCompanionComponent, ServicesRoleAttributionComponent, ServicesRoleComponent } from './shared/';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         UxModule,
         SijilModule.forChild(),
         RouterModule.forChild(routes)
@@ -32,13 +35,15 @@ import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRole
         ServicesComponent,
         ApplicationsListComponent,
         ApplicationDetailsComponent,
+        MassRoleAssignment,
+        SmartMassRoleAssignment,
         ConnectorsListComponent,
         ConnectorDetailsComponent,
         ServicesListWithCompanionComponent,
         ServicesRoleComponent,
         ServicesRoleAttributionComponent
     ],
-    providers: [ 
+    providers: [
         NgSwitch,
         ServicesStore,
         ApplicationsResolver,
@@ -47,4 +52,5 @@ import { ServicesListWithCompanionComponent, ServicesRoleComponent, ServicesRole
         ConnectorRolesResolver
     ]
 })
-export class ServicesModule { }
+export class ServicesModule {
+}
