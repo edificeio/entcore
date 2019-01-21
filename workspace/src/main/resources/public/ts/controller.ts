@@ -15,8 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, template, idiom as lang, notify, idiom } from 'entcore';
-import { moment } from 'entcore';
+import { ng, template, idiom as lang, notify, idiom, moment } from 'entcore';
 import { NavigationDelegateScope, NavigationDelegate } from './delegates/navigation';
 import { ActionDelegate, ActionDelegateScope } from './delegates/actions';
 import { TreeDelegate, TreeDelegateScope } from './delegates/tree';
@@ -25,12 +24,13 @@ import { DragDelegate, DragDelegateScope } from './delegates/drag';
 import { SearchDelegate, SearchDelegateScope } from './delegates/search';
 import { RevisionDelegateScope, RevisionDelegate } from './delegates/revisions';
 import { KeyboardDelegate, KeyboardDelegateScope } from './delegates/keyboard';
+import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
 import { models, workspaceService } from "./services";
 
 
 
 
-export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope {
+export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope {
 
 	//new
 	lightboxDelegateClose: () => boolean
@@ -53,7 +53,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	isUploadedImage(): boolean
 	//selection
 }
-export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route) => {
+export let workspaceController = ng.controller('Workspace', ['$scope', '$rootScope', '$timeout', '$location', '$anchorScroll', 'route', '$route', ($scope: WorkspaceScope, $rootScope, $timeout, $location, $anchorScroll, route, $route) => {
 	$scope.lightboxDelegateClose = () => false;
 	$scope.setLightboxDelegateClose = function (f) {
 		$scope.lightboxDelegateClose = f;
@@ -128,10 +128,11 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	TreeDelegate($scope, $location);
 	ActionDelegate($scope);
 	CommentDelegate($scope);
-	DragDelegate($scope)
+	DragDelegate($scope);
 	SearchDelegate($scope);
 	RevisionDelegate($scope);
-	KeyboardDelegate($scope)
+	KeyboardDelegate($scope);
+    LoolDelegate($scope, $route);
 	/**
 	 * INIT
 	 */
@@ -259,5 +260,4 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 
 		return moment().format('L');
 	}
-
 }]);

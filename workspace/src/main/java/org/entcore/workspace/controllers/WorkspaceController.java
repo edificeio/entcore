@@ -350,6 +350,20 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	private void moveDocumentFromBus(final Message<JsonObject> message) {
+        String userId = message.body().getJsonObject("user").getString("userId");
+        String documentId = message.body().getString("document");
+        String destFolder = message.body().getString("destination");
+        UserUtils.getSessionByUserId(eb, userId, session -> {
+            workspaceService.move(documentId, destFolder, UserUtils.sessionToUserInfos(session), res -> {
+                if (res.succeeded())
+                    message.reply(res.result());
+                else
+                    message.fail(500, res.cause().getMessage());
+            });
+        });
+    }
+
 	@SuppressWarnings("unchecked")
 	@Post("/documents/copy/:folder")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
@@ -1268,6 +1282,9 @@ public class WorkspaceController extends BaseController {
 		case "copyDocument":
 			copyDocumentFromBus(message);
 			break;
+        case "moveDocument":
+            moveDocumentFromBus(message);
+            break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
