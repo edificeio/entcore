@@ -251,7 +251,12 @@ public abstract class ControllerHelper extends BaseController implements Shareab
 					String attr = (resourceNameAttribute != null && !resourceNameAttribute.trim().isEmpty()) ?
 							resourceNameAttribute : "name";
 					params.put("resourceName", r.right().getValue().getString(attr, ""));
-					notification.notifyTimeline(request, notificationName, user, recipients, params);
+					final Object preview = params.remove("preview");
+					if (preview instanceof JsonObject) {
+						notification.notifyTimeline(request, notificationName, user, recipients, null, null, params, false, (JsonObject) preview);
+					} else {
+						notification.notifyTimeline(request, notificationName, user, recipients, params);
+					}
 				} else {
 					log.error("Unable to send timeline notification : missing name on resource " + resource);
 				}
