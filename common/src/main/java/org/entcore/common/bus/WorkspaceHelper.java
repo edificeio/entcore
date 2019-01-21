@@ -198,6 +198,24 @@ public class WorkspaceHelper {
 		});
 	}
 
+    /**
+     * Move given document into provided folder
+     *
+     * @param documentId Document identifier
+     * @param destination Destination folder identifier
+     * @param userInfos User
+     * @param handler Function handler returning data
+     */
+	public void moveDocument(String documentId, String destination, UserInfos userInfos, Handler<AsyncResult<Message<JsonObject>>> handler) {
+        JsonObject m = new JsonObject()
+                .put("action", "moveDocument")
+                .put("user", new JsonObject().put("userId", userInfos.getUserId()))
+                .put("document", documentId)
+                .put("destination", destination);
+
+        eb.send(WORKSPACE_ADDRESS, m, handler);
+    }
+
 	public static class Document {
 		private final JsonObject document;
 		private final Buffer data;
