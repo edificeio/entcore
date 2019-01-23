@@ -34,7 +34,7 @@
 		<!--TODO move to cssutils?-->
 		<style>
 		[draggable=false],[draggable=false] *{
-			user-drag: none; 
+			user-drag: none;
 			user-select: none;
 			-moz-user-select: none;
 			-webkit-user-drag: none;
@@ -65,7 +65,7 @@
 						<i class="add" ng-if="button.icon"></i> [[button.text]]
 					</button>
 				</div>
-				<nav class="vertical nav-droppable mobile-navigation top-spacing-twice" side-nav>
+				<nav class="vertical nav-droppable mobile-navigation top-spacing-twice-1d" side-nav>
 					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100"></div>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
