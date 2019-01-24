@@ -52,12 +52,14 @@ public class Neo4jConversationService {
 		Set<String> ids = new HashSet<>();
 		ids.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
 		ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+		ids.addAll(message.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
 		if (message.containsKey("from")) {
 			ids.add(message.getString("from"));
 		}
 		if(parentMessage != null){
 			ids.addAll(parentMessage.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
 			ids.addAll(parentMessage.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+			ids.addAll(parentMessage.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
 			if(parentMessage.containsKey("from"))
 				ids.add(parentMessage.getString("from"));
 		}
@@ -89,6 +91,7 @@ public class Neo4jConversationService {
 		Set<Object> dest = new HashSet<>();
 		dest.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
 		dest.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+		dest.addAll(message.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
 
 		JsonObject params = new JsonObject().put("dest", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<Object>(dest)));
 

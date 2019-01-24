@@ -63,6 +63,7 @@ public class VisiblesFilter implements ResourcesProvider{
 			public void handle(final JsonObject message) {
 				ids.addAll(message.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
 				ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+				ids.addAll(message.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
 
 				final Handler<Void> checkHandler = new Handler<Void>() {
 					public void handle(Void v) {

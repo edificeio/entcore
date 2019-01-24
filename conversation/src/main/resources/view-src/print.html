@@ -46,6 +46,17 @@
                 </em>
             </div>
             <div class="row">
+                <em class="medium-importance medium-text" ng-if="(mail.cci.length + mail.cciName.length) > 0">
+                    <span translate key="cci"></span>
+                    <span ng-repeat="receiver in receivers = (mail.cci | filter: filterUsers(mail))">
+                                    <a ng-if="!users.list.isGroup(mail.map(receiver).id)" href="/userbook/annuaire#[[mail.map(receiver).id]]">[[receiver.displayName]]</a><span ng-if="users.list.isGroup(mail.map(receiver).id)">[[mail.map(receiver).displayName]]</span><span ng-if="$index !== receivers.length - 1 && receiver.displayName">,</span>
+                                </span>
+                    <span ng-repeat="receiverName in mail.cciName">
+                                    [[receiverName]]<span ng-if="$index !== mail.cciName.length - 1">,</span>
+                                </span>
+                </em>
+            </div>
+            <div class="row">
                 <hr />
             </div>
             <div class="row">
