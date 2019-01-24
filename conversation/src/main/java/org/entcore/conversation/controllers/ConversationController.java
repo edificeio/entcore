@@ -416,7 +416,7 @@ public class ConversationController extends BaseController {
 									if (!(o instanceof JsonObject)) {
 										continue;
 									}
-									translateGroupsNames((JsonObject) o, request);
+									translateGroupsNames((JsonObject) o, user, request);
 								}
 								renderJson(request, r.right().getValue());
 							} else {
@@ -433,7 +433,14 @@ public class ConversationController extends BaseController {
 		});
 	}
 
-	private void translateGroupsNames(JsonObject message, HttpServerRequest request) {
+	private void translateGroupsNames(JsonObject message, UserInfos userInfos, HttpServerRequest request) {
+		final JsonArray cci = getOrElse(message.getJsonArray("cci"), new fr.wseduc.webutils.collections.JsonArray());
+		final JsonArray cc = getOrElse(message.getJsonArray("cc"), new fr.wseduc.webutils.collections.JsonArray());
+		final JsonArray to = getOrElse(message.getJsonArray("to"), new fr.wseduc.webutils.collections.JsonArray());
+		final String from = message.getString("from");
+		final Boolean notIsSender = (!userInfos.getUserId().equals(from));
+		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
+
 		JsonArray d3 = new fr.wseduc.webutils.collections.JsonArray();
 		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new fr.wseduc.webutils.collections.JsonArray())) {
 			if (!(o2 instanceof String)) {
@@ -443,6 +450,8 @@ public class ConversationController extends BaseController {
 			if (a.length != 4) {
 				continue;
 			}
+
+			if (notIsSender && cci.contains(a[0]) && !cc.contains(a[0]) && !to.contains(a[0]) && !from.equals(a[0])) continue;
 			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(a[0]);
 			if (a[2] != null && !a[2].trim().isEmpty()) {
 				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
@@ -475,6 +484,42 @@ public class ConversationController extends BaseController {
 				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
 			}
 		}
+		JsonArray cciName = message.getJsonArray("cciName");
+		if (cciName != null) {
+			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray();
+			message.put("cciName", d2);
+			for (Object o : cciName) {
+				if (!(o instanceof String)) {
+					continue;
+				}
+				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+			}
+		}
+
+		if (notIsSender) {
+			//keep cci for user recipient only
+			final JsonArray newCci = new fr.wseduc.webutils.collections.JsonArray();
+			if (cci.contains(userInfos.getUserId())) {
+				newCci.add(userInfos.getUserId());
+			} else if (!userGroups.isEmpty()) {
+				for (final String groupId : userGroups) {
+					if (cci.contains(groupId)) {
+						newCci.add(userInfos.getUserId());
+						break;
+					}
+				}
+			}
+
+			//add user display name for recipient
+			if (!newCci.isEmpty()) {
+				JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(userInfos.getUserId());
+				d2.add(userInfos.getUsername());
+				d3.add(d2);
+			}
+
+			message.put("cci", newCci);
+			message.put("cciName", new fr.wseduc.webutils.collections.JsonArray());
+		}
 	}
 
 	@Get("threads/list")
@@ -497,7 +542,7 @@ public class ConversationController extends BaseController {
 									if (!(o instanceof JsonObject)) {
 										continue;
 									}
-									translateGroupsNames((JsonObject) o, request);
+									translateGroupsNames((JsonObject) o, user, request);
 								}
 								renderJson(request, r.right().getValue());
 							} else {
@@ -540,7 +585,7 @@ public class ConversationController extends BaseController {
 									if (!(o instanceof JsonObject)) {
 										continue;
 									}
-									translateGroupsNames((JsonObject) o, request);
+									translateGroupsNames((JsonObject) o, user, request);
 								}
 								renderJson(request, r.right().getValue());
 							} else {
@@ -594,7 +639,7 @@ public class ConversationController extends BaseController {
 									if (!(o instanceof JsonObject)) {
 										continue;
 									}
-									translateGroupsNames((JsonObject) o, request);
+									translateGroupsNames((JsonObject) o, user, request);
 								}
 								renderJson(request, r.right().getValue());
 							} else {
@@ -726,7 +771,7 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonObject> r) {
 							if (r.isRight()) {
-								translateGroupsNames(r.right().getValue(), request);
+								translateGroupsNames(r.right().getValue(), user, request);
 								renderJson(request, r.right().getValue());
 								eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(), request,
 										new JsonObject().put("resource", id));
