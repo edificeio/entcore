@@ -124,6 +124,9 @@ endMeasure("createindex")
 startMeasure("documents")
 db[COLLECTION_NAME].find({}).sort({ file: 1, folder: 1 }).forEach(function (doc) {
     var notSaved = !doc.eType;
+    if(!doc.name){
+        doc.name="unknown";
+    }
     //eType
     //print("start;" + doc._id + ";" + doc.name + ";" + isFile(doc))
     if (isFile(doc)) {
