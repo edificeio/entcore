@@ -19,6 +19,7 @@ export let conversationController = ng.controller('ConversationController', [
         };
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
+        $scope.ccCciShow = false;
 
         route({
             readMail: async function (params) {
@@ -384,6 +385,7 @@ export let conversationController = ng.controller('ConversationController', [
             mail.parentConversation = $scope.mail;
             await mail.setMailContent($scope.mail, 'transfer', $compile, $sanitize, $scope, $scope.getSignature());
             await Conversation.instance.folders.draft.transfer(mail.parentConversation, $scope.state.newItem);
+            $scope.ccCciShow = false;
             $scope.$apply();
         };
 
@@ -396,7 +398,7 @@ export let conversationController = ng.controller('ConversationController', [
                 mail.to = $scope.mail.to;
             else
                 $scope.addUser($scope.mail.sender());
-
+            $scope.ccCciShow = false;
             $scope.$apply();
         };
 
@@ -410,6 +412,8 @@ export let conversationController = ng.controller('ConversationController', [
             if (!_.findWhere($scope.state.newItem.to, { id: $scope.mail.sender().id })) {
                 $scope.addUser($scope.mail.sender());
             }
+
+            $scope.ccCciShow = (mail.cc.length || mail.cci.length);
             $scope.$apply();
         };
 

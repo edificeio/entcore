@@ -16,7 +16,19 @@
         <div>
 			<div class="row">
 				<div class="row receivers">
-					<label class="two cell twelve-mobile"><i18n>to</i18n></label>
+					<label class="two cell twelve-mobile">
+                        <div class="cell drop-down-block" ng-class="{slided: ccCciShow}" style="margin-bottom:0;">
+                            <div class="drop-down-label" style="margin-bottom:0;border-bottom:none">
+                                <div class="twelve cell" pulsar-highlight="7">
+                                    <label ng-click="ccCciShow = !ccCciShow">
+                                        <i class="arrow"></i>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <i18n>to</i18n>
+                        <i class="badge-info" tooltip="conversation.to.info">i</i>
+                    </label>
 					<div class="ten cell twelve-mobile right-magnet">
 						<recipient-list
 							ng-model="state.newItem.to"
@@ -27,19 +39,34 @@
 					</div>
 				</div>
 			</div>
-			<div>
-				<div class="row receivers">
-					<label class="two cell twelve-mobile"><i18n>copy</i18n></label>
-					<div class="ten cell twelve-mobile right-magnet">
-						<recipient-list
-							ng-model="state.newItem.cc"
-							ng-change="quickSaveDraft()"
-                            restriction="isLocalAdmin()"
-                            update-found-items="updateFoundUsers(search, model, founds, restriction)">
-						</recipient-list>
-					</div>
-				</div>
-			</div>
+            <div class="drop-down-content" slide="ccCciShow">
+			    <div>
+				    <div class="row receivers">
+					    <label class="two cell twelve-mobile"><i18n>copy</i18n></label>
+					    <div class="ten cell twelve-mobile right-magnet">
+						    <recipient-list
+							    ng-model="state.newItem.cc"
+							    ng-change="quickSaveDraft()"
+                                restriction="isLocalAdmin()"
+                                update-found-items="updateFoundUsers(search, model, founds, restriction)">
+						    </recipient-list>
+					    </div>
+				    </div>
+			    </div>
+                <div>
+                    <div class="row receivers">
+                        <label class="two cell twelve-mobile"><i18n>cci</i18n></label>
+                        <div class="ten cell twelve-mobile right-magnet">
+                            <recipient-list
+                                ng-model="state.newItem.cci"
+                                ng-change="quickSaveDraft()"
+                                restriction="isLocalAdmin()"
+                                update-found-items="updateFoundUsers(search, model, founds, restriction)">
+                            </recipient-list>
+                        </div>
+                    </div>
+                </div>
+            </div>
 			<div class="row subject">
 				<label class="two cell twelve-mobile"><i18n>subject</i18n></label>
 				<input type="text" class="ten cell twelve-mobile" ng-model="state.newItem.subject" ng-change="saveDraftAuto()"/>

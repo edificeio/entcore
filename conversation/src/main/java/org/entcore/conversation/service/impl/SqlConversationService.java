@@ -219,7 +219,7 @@ public class SqlConversationService implements ConversationService{
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
-		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date ";
+		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date ";
 
 		values.add("SENT").add(user.getUserId());
 		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user);
@@ -239,7 +239,7 @@ public class SqlConversationService implements ConversationService{
 				"GROUP BY m.id, unread " +
 				"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
 	}
 
 	//TODO : add to utils (similar function in SearchEngineController)
@@ -262,7 +262,7 @@ public class SqlConversationService implements ConversationService{
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
 		int nbThread =  10;
 		int skip = page * nbThread;
-		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc ";
+		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc, cci ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
 		values.add(user.getUserId());
@@ -277,13 +277,13 @@ public class SqlConversationService implements ConversationService{
 				"WHERE  um.trashed = false AND m.thread_id=threads.id GROUP BY m.thread_id) c ON threads.id = c.thread_id " +
 				"ORDER BY date DESC";
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "cci", "ccName", "displayNames"));
 	}
 
 	@Override
 	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		values.add(user.getUserId());
@@ -296,13 +296,13 @@ public class SqlConversationService implements ConversationService{
 				" AND m.state = 'SENT' AND um.trashed = false " +
 				" ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
 	}
 
 	@Override
 	public void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int maxMessageInThread = 15;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.\"displayNames\", m.date, m.thread_id ";
+		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		String condition, limit;
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
@@ -325,7 +325,7 @@ public class SqlConversationService implements ConversationService{
 				" AND m.state = 'SENT' AND um.trashed = false " +
 				" ORDER BY m.date DESC" + limit;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
 	}
 
 
@@ -451,7 +451,7 @@ public class SqlConversationService implements ConversationService{
 		builder.prepared(updateQuery, values);
 		builder.prepared(selectQuery, values);
 
-		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(1, result, "attachments", "to", "toName", "cc", "ccName", "displayNames"));
+		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(1, result, "attachments", "to", "toName", "cc", "ccName", "displayNames", "cci", "cciName"));
 	}
 
 	@Override
