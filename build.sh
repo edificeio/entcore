@@ -74,6 +74,36 @@ publish () {
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle publish
 }
 
+# Admin v2 tasks
+adminV2GradleClean () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle :admin:clean
+}
+
+adminV2GradleInstall () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" gradle gradle :admin:shadowJar :admin:install :admin:publishToMavenLocal
+}
+
+adminV2NodeClean () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-clean"
+}
+
+adminV2NodeBuildDev () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-build-dev"
+}
+
+adminV2NodeBuildProd () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-build"
+}
+
+adminV2NodeDevServer () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-dev-server"
+}
+
+adminV2NodeWatch () {
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "node_modules/gulp/bin/gulp.js adminV2-watch"
+}
+# End of AdminV2 tasks
+
 for param in "$@"
 do
   case $param in
@@ -97,6 +127,27 @@ do
       ;;
     publish)
       publish
+      ;;
+    adminV2GradleClean)
+      adminV2GradleClean
+      ;;
+    adminV2GradleInstall)
+      adminV2GradleInstall
+      ;;
+    adminV2NodeClean)
+      adminV2NodeClean
+      ;;
+    adminV2NodeBuildDev)
+      adminV2NodeBuildDev
+      ;;
+    adminV2NodeBuildProd)
+      adminV2NodeBuildProd
+      ;;
+    adminV2NodeDevServer)
+      adminV2NodeDevServer
+      ;;
+    adminV2NodeWatch)
+      adminV2NodeWatch
       ;;
     *)
       echo "Invalid argument : $param"

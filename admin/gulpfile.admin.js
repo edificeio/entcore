@@ -8,8 +8,8 @@ const sass = require('gulp-sass')
 const rename = require('gulp-rename')
 const del = require('del')
 
-const entCoreVersion = '2.1-SNAPSHOT'
-const springboardPath = '../springboard-open-ent'
+const entCoreVersion = '3.4-SNAPSHOT'
+const springboardPath = '../recette'
 const basePath = './admin/src/main'
 const target = springboardPath + '/mods/org.entcore~admin~' + entCoreVersion
 
