@@ -38,6 +38,7 @@ export class Mail implements Selectable {
     body: string;
     to: User[];
     cc: User[];
+    cci: User[];
     unread: boolean;
     state: string;
     parentConversation: Mail;
@@ -204,6 +205,7 @@ export class Mail implements Selectable {
         if (copyReceivers) {
             this.cc = origin.cc;
             this.to = origin.to;
+            this.cci = origin.cci;
         }
 
         return new Promise((resolve, reject) => {
@@ -293,6 +295,7 @@ export class Mail implements Selectable {
         var data: any = { subject: this.subject, body: this.body };
         data.to = _.pluck(this.to, 'id');
         data.cc = _.pluck(this.cc, 'id');
+        data.cci = _.pluck(this.cci, 'id');
 
         var path = '/conversation/draft';
         if (this.id) {
@@ -312,6 +315,7 @@ export class Mail implements Selectable {
         var data: any = { subject: this.subject, body: this.body };
         data.to = _.pluck(this.to, 'id');
         data.cc = _.pluck(this.cc, 'id');
+        data.cci = _.pluck(this.cci, 'id');
         if (data.to.indexOf(model.me.userId) !== -1) {
             Conversation.instance.folders['inbox'].nbUnread++;
         }
@@ -368,6 +372,12 @@ export class Mail implements Selectable {
             this.cc = [];
         else
             this.cc = _.map(this.cc, user => {
+                return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
+            });
+        if (!this.cci)
+            this.cci = [];
+        else
+            this.cci = _.map(this.cci, user => {
                 return new User(user, this.displayNames.find(name => name[0] === user as any)[1]);
             });
         if (!forPrint) {
