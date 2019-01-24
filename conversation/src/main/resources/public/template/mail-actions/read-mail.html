@@ -92,6 +92,22 @@
 						</folding-list>
 					</div>
 
+					<!-- cci for sender -->
+					<div ng-if="(mail.cci.length + mail.cciName.length) > 0">
+						<strong><span translate key="cci"></span>
+							<span> : </span></strong>
+
+						<folding-list
+								ng-model="mail.cci"
+								filter="[[filterUsers(mail)]]"
+								limit="state.recipientLimit">
+							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<span ng-if="content.isMe()"><i18n>me</i18n></span>
+							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
+							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>
+						</folding-list>
+					</div>
+
 				</div>
 
 			</div>
