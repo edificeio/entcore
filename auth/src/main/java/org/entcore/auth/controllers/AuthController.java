@@ -611,6 +611,21 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/activation/match")
+	public void activeAccountMatch(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, data->{
+			if(data==null){
+				badRequest(request);
+				return;
+			}
+			final String login = data.getString("login");
+			final String password = data.getString("password");
+			userAuthAccount.matchActivationCode(login, password, match->{
+				renderJson(request, new JsonObject().put("match",match));
+			});
+		});	
+	}
+
 	@Post("/activation")
 	public void activeAccountSubmit(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
