@@ -8,6 +8,8 @@
     "cc": "Copie à",
     "cci": "Copie cachée",
     "conversation.to.info" : "Vous devez saisir au moins un destinataire",
+    "conversation.cci.info" : "Les utilisateurs/groupes inscrits en copie cachée n’apparaissent pas dans le message reçu par les autres destinataires",
+    "conversation.show.copy" : "Copie, copie cachée",
     "chip.more1": "et",
     "chip.more2": "de plus",
     "clickhere": "Cliquez ici pour ",
