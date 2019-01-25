@@ -439,6 +439,7 @@ public class ConversationController extends BaseController {
 		final JsonArray to = getOrElse(message.getJsonArray("to"), new fr.wseduc.webutils.collections.JsonArray());
 		final String from = message.getString("from");
 		final Boolean notIsSender = (!userInfos.getUserId().equals(from));
+		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
 
 		JsonArray d3 = new fr.wseduc.webutils.collections.JsonArray();
 		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new fr.wseduc.webutils.collections.JsonArray())) {
@@ -496,7 +497,27 @@ public class ConversationController extends BaseController {
 		}
 
 		if (notIsSender) {
-			message.put("cci", new fr.wseduc.webutils.collections.JsonArray());
+			//keep cci for user recipient only
+			final JsonArray newCci = new fr.wseduc.webutils.collections.JsonArray();
+			if (cci.contains(userInfos.getUserId())) {
+				newCci.add(userInfos.getUserId());
+			} else if (!userGroups.isEmpty()) {
+				for (final String groupId : userGroups) {
+					if (cci.contains(groupId)) {
+						newCci.add(userInfos.getUserId());
+						break;
+					}
+				}
+			}
+
+			//add user display name for recipient
+			if (!newCci.isEmpty()) {
+				JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(userInfos.getUserId());
+				d2.add(userInfos.getUsername());
+				d3.add(d2);
+			}
+
+			message.put("cci", newCci);
 			message.put("cciName", new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}

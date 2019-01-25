@@ -162,6 +162,7 @@ export let conversationController = ng.controller('ConversationController', [
 
 
         $scope.openFolder = async folderName => {
+            $scope.ccCciShow = false;
             if (!folderName) {
                 if (Conversation.instance.currentFolder instanceof UserFolder) {
                     $scope.openUserFolder(Conversation.instance.currentFolder, {});
