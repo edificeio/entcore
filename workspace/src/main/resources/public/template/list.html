@@ -31,7 +31,7 @@
 						<span translate content="owner"></span>
 					</span>
 				</th>
-				<th scope="col" class="zero-mobile" ng-click="orderByField('modified')">
+				<th scope="col" class="last-modified zero-mobile" ng-click="orderByField('modified')">
 					<span class="sortable">
 						<span class="icons right-spacing">
 							<i class="arrow " ng-class="{'icon-off':!isOrderedAsc('modified')}"></i>
@@ -48,9 +48,8 @@
 						</span>
 						<span translate content="size"></span>
 					</span>
-				</span>
-				<th scope="col" class="zero-mobile" ng-if="!isTrashTree()">
 				</th>
+				<th scope="col" class="count-comment"></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -70,9 +69,10 @@
 					</strong>
 				</td>
 				<td class="user"><a ng-href="/userbook/annuaire#[[folder.owner]]">[[folder.ownerName]]</a></td>
-				<td class="small-font zero-mobile">[[shortDate(folder.modified)]]</td>
-				<td class="zero-mobile"></td>
-				<td class="zero-mobile" ng-if="!isTrashTree()">
+				<td class="date small-font zero-mobile">[[shortDate(folder.modified)]]</td>
+				<th scope="col" class="size zero-mobile">
+				</th>
+				<td ng-if="!isTrashTree()">
 					<span class="badge" ng-if="canShowBadgeComments(folder)" tooltip="comments" ng-click="showFolderComments(folder)">[[folder.comments.length]]</span>
 				</td>
 			</tr>
@@ -87,11 +87,11 @@
 				</td>
 				<td class="content"><a ng-click="viewFile(document)">[[document.name]]</a><em class="tag">[[document.metadata.extension]]</em></td>
 				<td class="user"><a ng-href="/userbook/annuaire#[[document.owner.userId]]">[[document.ownerName]]</a></td>
-				<td class="small-font zero-mobile">[[shortDate(document.modified)]]</td>
+				<td class="date small-font zero-mobile">[[shortDate(document.modified)]]</td>
 				<td class="size small-font zero-mobile">
 						[[formatDocumentSize(document.metadata.size)]]
 					</td>
-				<td ng-if="!isTrashTree()"><span class="badge" ng-if="canShowBadgeComments(document)" translate-attr="title" title="comments"
+				<td ng-if="!isTrashTree()"><span class="badge" ng-if="canShowBadgeComments(document)" translate-attr="title" tooltip="comments"
 					 ng-click="showComments(document)">[[document.comments.length]]</span>
 
 				</td>
