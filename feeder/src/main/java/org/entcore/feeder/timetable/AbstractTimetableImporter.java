@@ -61,8 +61,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"MATCH (s:Subject {id : {subjectId}}), (u:User) " +
 			"WHERE u.id IN {teacherIds} " +
 			"MERGE u-[r:TEACHES]->s " +
-			"SET r.classes = FILTER(c IN coalesce(r.classes, []) where NOT(c IN r.classes)) + {classes}, " +
-			"r.groups = FILTER(g IN coalesce(r.groups, []) where NOT(g IN r.groups)) + {groups}, " +
+			"SET r.classes = FILTER(c IN coalesce(r.classes, []) where NOT(c IN {classes})) + {classes}, " +
+			"r.groups = FILTER(g IN coalesce(r.groups, []) where NOT(g IN {groups})) + {groups}, " +
 			"r.lastUpdated = {now}, r.source = {source} ";
 	private static final String DELETE_SUBJECT =
 			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(sub:Subject {source: {source}}) " +
