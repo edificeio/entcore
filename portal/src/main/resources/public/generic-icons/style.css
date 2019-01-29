@@ -896,3 +896,6 @@ i {
 .star-full:before {
   content: "\e9d9";
 }
+.settings-class:before {
+  content: "\e942";
+}
