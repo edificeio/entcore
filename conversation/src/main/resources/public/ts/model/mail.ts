@@ -192,6 +192,9 @@ export class Mail implements Selectable {
     }
 
     addHideAndShow() {
+        if(this.body.search('<p class="medium-text')==-1){
+            return;
+        }
         let history = this.body.slice(this.body.search('<p class="medium-text'));
         let newBody = this.body
                 //.replace(/<p.*?p>/, '')
