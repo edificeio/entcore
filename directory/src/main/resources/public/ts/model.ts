@@ -488,9 +488,10 @@ directory.User.prototype.saveInfos = function(){
 		address: this.address,
 		email: this.email,
 		homePhone: this.homePhone,
-        mobile: this.mobile,
-		birthDate: moment(this.birthDate).format('YYYY-MM-DD')
+        mobile: this.mobile
 	} as any;
+
+	if (this.birthDate) userData.birthDate = moment(this.birthDate).format('YYYY-MM-DD');
 	if(this.type === 'Relative'){
 		userData.childrenIds = _.map(this.relatives, function(user){
 			return user.id;
