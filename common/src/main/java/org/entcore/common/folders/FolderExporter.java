@@ -103,13 +103,13 @@ public class FolderExporter {
 		Future<Void> futureRoot = Future.future();
 		fs.mkdirs(context.basePath, futureRoot.completer());
 		return futureRoot.compose(resRoot -> {
-			log.info("Folder Root creation succeed: " + "/" + context.basePath);
+			log.debug("Folder Root creation succeed: " + "/" + context.basePath);
 			@SuppressWarnings("rawtypes")
 			List<Future> futures = new ArrayList<>();
 			for (String path : uniqFolders) {
 				Future<Void> future = Future.future();
 				fs.mkdirs(path, res -> {
-					log.info("Folder creation result: " + "/" + res.succeeded() + "/" + path);
+					log.debug("Folder creation result: " + "/" + res.succeeded() + "/" + path);
 					future.completer().handle(res);
 				});
 				futures.add(future);
