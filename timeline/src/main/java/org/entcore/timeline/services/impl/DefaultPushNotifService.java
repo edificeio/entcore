@@ -28,6 +28,8 @@ import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.ws.OssFcm;
+import org.entcore.common.utils.HtmlUtils;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -201,8 +203,8 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 String body = pushNotif.getString("body", "");
                 body = body.length() < MAX_BODY_LENGTH ? body : body.substring(0, MAX_BODY_LENGTH)+"...";
 
-                notif.put("title", keys.getString(pushNotif.getString("title"), pushNotif.getString("title", "")));
-                notif.put("body", body);
+                notif.put("title", HtmlUtils.unescapeHtmlEntities(keys.getString(pushNotif.getString("title"), pushNotif.getString("title", ""))));
+                notif.put("body",HtmlUtils.unescapeHtmlEntities(body));
                 if(typeData) {
                     if (notification.containsKey("params"))
                         data.put("params", notification.getJsonObject("params").toString());
