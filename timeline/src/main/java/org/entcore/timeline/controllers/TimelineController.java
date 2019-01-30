@@ -362,6 +362,12 @@ public class TimelineController extends BaseController {
 		// This route is used to create allowLanguages Workflow right, nothing to do
 		return;
 	}
+    @Get("/zimbraExpert")
+    @SecuredAction("timeline.zimbraExpert")
+    public void zimbraExpert(final HttpServerRequest request) {
+        // This route is used to create zimbraExpert Workflow right, nothing to do
+        return;
+    }
 
 	@Delete("/:id")
 	@SecuredAction("timeline.delete.own.notification")

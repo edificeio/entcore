@@ -1,4 +1,4 @@
-import { ng, template, idiom as lang, ui, http, currentLanguage, $, _, moment } from 'entcore';
+import {ng, template, idiom as lang, ui, http, currentLanguage, $, _, moment, Behaviours} from 'entcore';
 import * as timelineControllers from './controller';
 
 export let mainController = ng.controller('MainController', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
@@ -7,13 +7,11 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 	};
 
 	$scope.widgets = model.widgets;
-
 	template.open('main', 'main');
 	template.open('widgets', 'widgets');
 	template.open('settings', 'settings');
 	template.open('notifications', 'notifications');
 	template.open('notifspanel', 'notifspanel');
-
 	$scope.template = template;
 	$scope.lang = lang;
 }]);
@@ -23,8 +21,9 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 	$scope.notificationTypes = model.notificationTypes;
     $scope.registeredNotifications = model.registeredNotifications;
 	$scope.translate = lang.translate;
-    $scope.filtered = {}
-
+    $scope.filtered = {};
+    model.me.workflow.load(['zimbra']);
+    $scope.modeExpert = false;
 	$scope.actions = {
 		discard: {
 			label: "timeline.action.discard",
@@ -163,15 +162,31 @@ export let personalizationController = ng.controller('Personalization', ['$rootS
 			$scope.languagePreference = currentLanguage;
 
     }.bind(this))
-
+    http().get('/userbook/preference/zimbra').done(function(data){
+        try{
+            if(data.preference){
+                $scope.modeExpert = JSON.parse(data.preference)['modeExpert']
+            }
+        } catch(e) {
+            $scope.modeExpert = false;
+        }
+    }.bind(this));
 	$scope.saveLang = function(language, $event){
 		$event.stopPropagation();
 		http().putJson('/userbook/preference/language', { 'default-domain': language}).done(function(){
 			location.reload();
 		})
 	};
-
-	$scope.togglePanel = function($event){
+    $scope.saveZimbraPref = function(modeExpert){
+        http().putJson('/userbook/preference/zimbra', { 'modeExpert': modeExpert}).done(function(){
+            $scope.$apply();
+        })
+    };
+    $scope.hasZimbraExpertWorkflows = () =>{
+        return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth')
+            && model.me.hasWorkflow('org.entcore.timeline.controllers.TimelineController|zimbraExpert')
+    };
+     $scope.togglePanel = function($event){
 		$scope.showPanel = !$scope.showPanel;
 		$event.stopPropagation();
 	};

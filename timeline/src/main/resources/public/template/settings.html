@@ -46,6 +46,13 @@
 					</div>
 				</div>
 			</div>
+            <div class="row"  ng-if="hasZimbraExpertWorkflows()">
+                <h2><i18n>Messagerie</i18n></h2>
+                <div class="row">
+                    <input type="checkbox" ng-model="modeExpert" ng-change="saveZimbraPref(modeExpert)" class="cell one" />
+                    <em class="cell"><i18n>timeline.zimbra.expert.mode</i18n> </em>
+                </div>
+            </div>
 
 		</div>
 	</div>

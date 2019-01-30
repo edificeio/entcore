@@ -8,7 +8,8 @@ Behaviours.register('timeline', {
 			historyView: "org.entcore.timeline.controllers.TimelineController|historyView",
 			deleteOwnNotification: "org.entcore.timeline.controllers.TimelineController|deleteNotification",
 			discardNotification: "org.entcore.timeline.controllers.TimelineController|discardNotification",
-			reportNotification: "org.entcore.timeline.controllers.TimelineController|reportNotification"
+			reportNotification: "org.entcore.timeline.controllers.TimelineController|reportNotification",
+            zimbraExpert: "org.entcore.timeline.controllers.TimelineController|zimbraExpert"
 		}
 	}
-})
+});
