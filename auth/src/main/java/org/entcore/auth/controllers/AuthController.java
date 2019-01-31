@@ -26,11 +26,11 @@ import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidRequest;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.serverError;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.unauthorizedClient;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -82,10 +82,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.cluster.ClusterManager;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
@@ -531,6 +529,9 @@ public class AuthController extends BaseController {
 						SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
 						String clientId = sr.getAttribute("client_id");
 						info = adapter.getInfo(infos, clientId);
+						if (isNotEmpty(clientId)) {
+							createStatsEvent(infos, clientId);
+						}
 					} else {
 						info = adapter.getInfo(infos, null);
 					}
@@ -540,6 +541,19 @@ public class AuthController extends BaseController {
 				}
 			}
 		});
+	}
+
+	private void createStatsEvent(JsonObject infos, String clientId) {
+		JsonObject custom = new JsonObject().put("override-module", clientId)
+				.put("connector-type", "OAuth2");
+		UserInfos user = new UserInfos();
+		user.setUserId(infos.getString("userId"));
+		final JsonArray structures = infos.getJsonArray("structures");
+		if (structures != null) {
+			user.setStructures(structures.getList());
+		}
+		user.setType(infos.getString("type"));
+		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, custom);
 	}
 
 	@Get("/internal/userinfo")
