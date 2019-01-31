@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.eventbus.EventBus;
@@ -35,8 +36,12 @@ import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.cas.async.Handler;
 import fr.wseduc.cas.entities.ServiceTicket;
 import fr.wseduc.cas.entities.User;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.user.UserInfos;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 public class DefaultRegisteredService implements RegisteredService {
 
@@ -46,6 +51,8 @@ public class DefaultRegisteredService implements RegisteredService {
 	protected EventBus eb;
 	protected String principalAttributeName = "login";
 	protected String directoryAction = "getUser";
+
+	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(this.getClass().getSimpleName());
 
 	protected static final Logger log = LoggerFactory.getLogger(DefaultRegisteredService.class);
 	protected static final String CONF_PATTERNS = "patterns";
@@ -91,11 +98,28 @@ public class DefaultRegisteredService implements RegisteredService {
 					User user = new User();
 					prepareUser(user, userId, service, res);
 					userHandler.handle(user);
+					createStatsEvent(userId, res, service);
 				} else {
 					userHandler.handle(null);
 				}
 			}
 		}));
+	}
+
+	private void createStatsEvent(String userId, JsonObject res, String service) {
+		UserInfos user = new UserInfos();
+		user.setUserId(userId);
+		JsonArray profiles = res.getJsonArray("profiles");
+		if (profiles != null && profiles.size() > 0) {
+			user.setType(profiles.getString(0));
+		}
+		JsonArray structureNodes = res.getJsonArray("structureNodes");
+		if (structureNodes != null && structureNodes.size() > 0) {
+			user.setStructures(structureNodes.stream().map(s -> ((JsonObject)s)
+					.getString("id")).collect(Collectors.toList()));
+		}
+		eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, new JsonObject()
+				.put("service", service).put("connector-type", "Cas"));
 	}
 
 	@Override
