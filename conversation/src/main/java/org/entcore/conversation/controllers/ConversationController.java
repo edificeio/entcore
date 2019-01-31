@@ -456,8 +456,11 @@ public class ConversationController extends BaseController {
 			if (a[2] != null && !a[2].trim().isEmpty()) {
 				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
 				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
+				//is group
+				d2.add(true);
 			} else {
 				d2.add(a[1]);
+				d2.add(false);
 			}
 			d3.add(d2);
 		}
@@ -514,6 +517,7 @@ public class ConversationController extends BaseController {
 			if (!newCci.isEmpty()) {
 				JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(userInfos.getUserId());
 				d2.add(userInfos.getUsername());
+				d2.add(false);
 				d3.add(d2);
 			}
 
