@@ -51,6 +51,8 @@ public class MongoConstants {
 	public static final String TRACE_TYPE_IMPORT 		= "IMPORT";
 	public static final String TRACE_TYPE_DELETE_USER 	= "DELETE_USER";
 	public static final String TRACE_TYPE_CREATE_USER 	= "CREATE_USER";
+	public static final String TRACE_TYPE_CONNECTOR 	= "CONNECTOR";
+	public static final String TRACE_TYPE_OAUTH     	= "OAUTH";
 	
 	//STATS COLLECTION FIELD NAMES
 	public static final String STATS_FIELD_DATE 		= "date";
