@@ -35,6 +35,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 
 public abstract class GenericEventStore implements EventStore {
 
@@ -116,11 +118,13 @@ public abstract class GenericEventStore implements EventStore {
 			event.mergeIn(customAttributes);
 		}
 		event.put("event-type", eventType)
-				.put("module", module)
+				.put("module", getOrElse(event.remove("override-module"), module, false))
 				.put("date", System.currentTimeMillis());
 		if (user != null) {
-			event.put("userId", user.getUserId())
-					.put("profil", user.getType());
+			event.put("userId", user.getUserId());
+			if (user.getType() != null) {
+				event.put("profil", user.getType());
+			}
 			if (user.getStructures() != null) {
 				event.put("structures", new fr.wseduc.webutils.collections.JsonArray(user.getStructures()));
 			}
