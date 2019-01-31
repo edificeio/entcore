@@ -77,6 +77,10 @@ public abstract class BaseServer extends Server {
 		super.start();
 
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
+
+		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+		eventStoreFactory.setVertx(vertx);
+
 		initFilters();
 
 		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
@@ -91,9 +95,6 @@ public abstract class BaseServer extends Server {
 		if (node != null) {
 			initModulesHelpers(node);
 		}
-
-		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setVertx(vertx);
 
 		if (config.getBoolean("csrf-token", false)) {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
