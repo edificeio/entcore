@@ -69,7 +69,7 @@
 							ng-model="mail.to"
 							filter="[[filterUsers(mail)]]"
 							limit="state.recipientLimit">
-							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<a ng-if="!content.isMe() && !content.isAGroup()" target="_blank" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
 							<span ng-if="content.isMe()"><i18n>me</i18n></span>
 							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
 							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>
@@ -85,7 +85,7 @@
 							ng-model="mail.cc"
 							filter="[[filterUsers(mail)]]"
 							limit="state.recipientLimit">
-							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<a ng-if="!content.isMe() && !content.isAGroup()" target="_blank" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
 							<span ng-if="content.isMe()"><i18n>me</i18n></span>
 							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
 							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>
@@ -101,7 +101,7 @@
 								ng-model="mail.cci"
 								filter="[[filterUsers(mail)]]"
 								limit="state.recipientLimit">
-							<a ng-if="!content.isMe() && !content.isAGroup()" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
+							<a ng-if="!content.isMe() && !content.isAGroup()" target="_blank" href="/userbook/annuaire#[[content.id]]">[[content.displayName]]</a>
 							<span ng-if="content.isMe()"><i18n>me</i18n></span>
 							<span ng-if="content.isAGroup()">[[content.displayName]]</span>
 							<span ng-if="$index !== contents.length - 1 && content.displayName">, </span>

@@ -15,7 +15,7 @@ export class User implements Selectable {
     constructor(id?: string, displayName?: string, profile?: string, isGroup?: boolean){
         this.id = id;
         this.profile = profile;
-        this.isGroup = typeof isGroup === 'undefined' ? this.isAGroup() : isGroup;
+        this.isGroup = isGroup;
         if (this.isGroup) {
             this.name = displayName;
         }
@@ -48,7 +48,7 @@ export class User implements Selectable {
         return _.map(_.filter(displayNames, function (user) {
             return user[0] === id;
         }), function (user) {
-            return new User(user[0], user[1]);
+            return new User(user[0], user[1], null, user[2]);
         })[0];
     }
 
@@ -59,7 +59,7 @@ export class User implements Selectable {
     isAGroup() {
         if (!this.id)
             return false;
-        return this.id.length < 36;
+        return this.isGroup;
     }
 }
 
