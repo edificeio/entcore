@@ -153,5 +153,6 @@
     "conversation.copy.info": "Rechercher et/ou sélectionner le dossier où vous voulez copier",
     "conversation.copy.action": "Copier",
     "conversation.copy.processing": "Copie en cours...",
-    "conversation.copy.finished": "Copie effectuée avec succès!"
+    "conversation.copy.finished": "Copie effectuée avec succès!",
+    "conversation.error.send.visible" : "Votre message n'a pas été envoyé car il ne respecte pas vos droits de communication"
 }

@@ -350,7 +350,11 @@ export class Mail implements Selectable {
             return { inactive: result.inactive, undelivered: result.undelivered };
         }
         catch (e) {
-            notify.error(e.response.data.error);
+            if (e.response.status === 401) {
+                notify.error("conversation.error.send.visible");
+            } else {
+                notify.error(e.response.data.error);
+            }
             return {};
         }
     };
