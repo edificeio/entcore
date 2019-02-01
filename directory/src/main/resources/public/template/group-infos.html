@@ -8,8 +8,8 @@
         <div class="flex-row horizontal-spacing justify-between">
             <div class="left-text">
                 <h4>[[ currentGroup.name ]]</h4>
-                <div ng-include="template.containers.groupActions"></div>
-                <div class="top-spacing-twice left-text italic-text indication small-text">[[currentGroup.nbUsers]] <i18n>portal.users</i18n></div>
+                <div ng-if= "currentGroup.users.length > 0" ng-include="template.containers.groupActions"></div>
+                <div class="top-spacing-twice left-text italic-text indication small-text">[[ currentGroup.users.length ]] <i18n>portal.users</i18n></div>
             </div>
         </div>
     </article>

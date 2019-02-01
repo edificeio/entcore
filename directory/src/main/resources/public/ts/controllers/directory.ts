@@ -29,6 +29,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.lightbox = {};
 	$scope.lightboxAddOneFavorite = {};
 	$scope.currentDeletingFavorite = null;
+	$scope.visibleUser = false;
 
 	$scope.search = {
 		users: '',
@@ -472,6 +473,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		user.open();
 		user.one('sync', async function(){
 			$scope.currentUser = user;
+			//check visible
+			$scope.visibleUser = await $scope.currentUser.visibleUser();
+
 			if (model.me.type !== 'ELEVE') {
 				await $scope.currentUser.loadInfos();
 			}
