@@ -495,6 +495,7 @@ export class Mails {
     selection: Selection<Mail>;
     userFolder: UserFolder;
     loading: boolean;
+    pageLoading: boolean;
 
     push(item: Mail) {
         this.all.push(item);
@@ -539,6 +540,7 @@ export class Mails {
 
     async sync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }) {
         this.loading = !data || !data.pageNumber || data.pageNumber == 0 || data.searchText != undefined && data.pageNumber == 0;
+        this.pageLoading = true;
         if (this.userFolder) {
             await this.userFolderSync(data);
         }
@@ -546,6 +548,7 @@ export class Mails {
             await this.apiSync(data);
         }
         this.loading = false;
+        this.pageLoading = false;        
     }
 
     async userFolderSync(data?: { pageNumber?: number, searchText?: string, emptyList?: boolean, filterUnread?: boolean, selectAll?: boolean }) {
