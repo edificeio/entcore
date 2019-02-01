@@ -579,6 +579,15 @@ directory.User.prototype.loadVisibility = function(){
 	}.bind(this));
 };
 
+directory.User.prototype.visibleUser = async function() : Promise<boolean>{
+	try {
+		await http.get('/directory/user/' + this.id);
+		return true;
+	} catch (e) {		
+		return false;
+	}
+};
+
 directory.User.prototype.loadInfos = async function(){
 	var data = (await http.get('/directory/user/' + this.id)).data;
 	var adminStructure, adml;
