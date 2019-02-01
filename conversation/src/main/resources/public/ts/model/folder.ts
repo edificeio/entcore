@@ -41,7 +41,7 @@ export abstract class Folder implements Selectable {
     }
 
     async nextPage(select : boolean) {
-        if (!this.mails.full) {
+        if (!this.mails.full && !this.mails.pageLoading) {
             this.pageNumber++;
             await this.mails.sync({ pageNumber: this.pageNumber, searchText: this.searchText, emptyList: false, filterUnread: this.filter, selectAll: select });
         }
