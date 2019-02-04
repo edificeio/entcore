@@ -119,7 +119,7 @@ public class FolderExporter {
 	}
 
 	private static String cleanName(JsonObject doc) {
-		String name = DocumentHelper.getName(doc, "undefined");
+		String name = DocumentHelper.getFileName(doc, "undefined");
 		return name.replaceAll("/", "_").replaceAll("\\\\", "_").trim();
 	}
 

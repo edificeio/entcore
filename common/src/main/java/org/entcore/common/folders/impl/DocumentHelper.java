@@ -87,6 +87,14 @@ public class DocumentHelper {
 		return doc.getString("file", "");
 	}
 
+	public static String getFileName(JsonObject doc, String defaut) {
+		JsonObject metadata = doc.getJsonObject("metadata");
+		if (metadata != null) {
+			return metadata.getString("filename", getName(doc, defaut));
+		}
+		return getName(doc, defaut);
+	}
+
 	public static boolean isFile(JsonObject doc) {
 		return getType(doc).equals(FolderManager.FILE_TYPE);
 	}
