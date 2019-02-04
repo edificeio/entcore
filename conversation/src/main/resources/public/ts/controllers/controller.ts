@@ -112,7 +112,7 @@ export let conversationController = ng.controller('ConversationController', [
             } else {
                 attachments = [attachment];
             }
-            const sources = await ($scope.mail as Mail).toFolderPickerSources(attachments);
+            const sources = await (($scope.mail as Mail) || ($scope.state.newItem as Mail)).toFolderPickerSources(attachments);
             $scope.copyLightbox.show = true;
             $scope.copyProps.sources = sources;
             $scope.$apply();
