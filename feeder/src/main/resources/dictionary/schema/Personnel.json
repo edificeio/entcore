@@ -94,7 +94,7 @@
 		},
 		"modules" : {
 			"type" : "array-string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"subjectTaught" : {
 			"type" : "array-string",

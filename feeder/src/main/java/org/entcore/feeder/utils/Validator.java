@@ -411,7 +411,18 @@ public class Validator {
 	private String validString(String attr, Object value, String validator, String acceptLanguage) {
 		Pattern p = patterns.get(validator);
 		if (p == null) {
-			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
+			if ("nop".equals(validator)) {
+				return null;
+			}
+			if (validator != null && validator.startsWith("empty-")) {
+				if (value instanceof String && ((String) value).isEmpty()) {
+					return null;
+				}
+				p = patterns.get(validator.substring(6));
+			}
+			if (p == null) {
+				return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
+			}
 		}
 		// hack #16883
 		if ("mobile".equals(validator) && value instanceof String && ((String) value).isEmpty()) {
