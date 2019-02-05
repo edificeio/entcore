@@ -20,6 +20,7 @@
 package org.entcore.workspace.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.entcore.common.folders.FolderManager;
@@ -104,6 +105,6 @@ public interface WorkspaceService extends FolderManager {
 	public void getShareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public Future<Set<String>> getNotifyContributorDest(String id, UserInfos user, Set<String> docIds);
+	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds);
 
 }

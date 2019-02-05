@@ -638,20 +638,25 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.notification = notification;
 	}
 
-	public Future<Set<String>> getNotifyContributorDest(String id, UserInfos user, Set<String> docIds) {
+	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds) {
 		Set<String> actions = new HashSet<>();
 		actions.add(WorkspaceController.SHARED_ACTION);
 		final Set<String> recipientId = new HashSet<>();
 		Future<Void> futureSHared = Future.future();
-		shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.of(actions), ev -> {
-			// get list of managers
-			if (ev.succeeded()) {
-				recipientId.addAll(ev.result());
-				futureSHared.complete();
-			} else {
-				futureSHared.fail(ev.cause());
-			}
-		});
+		if(id.isPresent()) {
+			shareService.findUserIdsForInheritShare(id.get(), user.getUserId(), Optional.of(actions), ev -> {
+				// get list of managers
+				if (ev.succeeded()) {
+					recipientId.addAll(ev.result());
+					futureSHared.complete();
+				} else {
+					futureSHared.fail(ev.cause());
+				}
+			});
+		}else {
+			//no folder => no need to get folder's contributors
+			futureSHared.complete();
+		}
 		return futureSHared.compose(resShared -> {
 			// get list of historic owner
 			return revisionDao.findByDocs(docIds).compose(versions -> {
