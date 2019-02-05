@@ -26,6 +26,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.util.Arrays;
+import java.util.List;
+
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.feeder.utils.AAFUtil.convertDate;
 
@@ -37,6 +40,9 @@ public final class AAFHandler extends DefaultHandler {
 	private JsonObject currentStructure;
 	private final JsonObject mapping;
 	private final ImportProcessing processing;
+	private final List<String> allowEmptyUpdate = Arrays.asList(
+			"ENTAuxEnsClassesPrincipal", "mobile", "ENTPersonMobileSMS", "ENTPersonAdresse",
+			"ENTPersonCodePostal", "ENTPersonVille", "ENTPersonPays", "ENTAuxEnsMEF");
 
 	public AAFHandler(ImportProcessing processing) {
 		this.processing = processing;
@@ -83,8 +89,7 @@ public final class AAFHandler extends DefaultHandler {
 	}
 
 	private void addValueInAttribute(String s) throws SAXException {
-		if (s == null || (s.isEmpty() && !"ENTAuxEnsClassesPrincipal".equals(currentAttribute) &&
-				!"mobile".equals(currentAttribute) && !"ENTPersonMobileSMS".equals(currentAttribute))) {
+		if (s == null || (s.isEmpty() && !allowEmptyUpdate.contains(currentAttribute))) {
 			return;
 		}
 		JsonObject j = mapping.getJsonObject(currentAttribute);

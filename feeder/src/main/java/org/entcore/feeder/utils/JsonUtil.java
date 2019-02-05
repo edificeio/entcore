@@ -64,7 +64,7 @@ public final class JsonUtil {
 					res = Long.parseLong(value);
 					break;
 				case "siecle-address":
-					if (value != null && !"$$$".equals(value)) {
+					if (value != null) {
 						res = value.replaceAll("\\$", "   ").trim();
 					} else {
 						return new None();
