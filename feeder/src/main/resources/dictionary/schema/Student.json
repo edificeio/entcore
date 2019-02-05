@@ -46,23 +46,23 @@
 		},
 		"address" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"postbox" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"zipCode" : {
 			"type" : "string",
-			"validator" : "zipCode"
+			"validator" : "empty-zipCode"
 		},
 		"city" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"country" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"homePhone" : {
 			"type" : "string",
