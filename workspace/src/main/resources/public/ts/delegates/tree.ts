@@ -23,7 +23,7 @@ export interface TreeDelegateScope {
     getHighlightCount(folder: models.Element): number
     openFolderRoute(el: models.Node, forceReload?: boolean)
     openFolder(el: models.Node);
-    openFolderById(id: string)
+    openFolderById(id: string):Promise<boolean>
     openFolderRouteById(id: string)
     rollFoldersRecursively();
     isInSelectedFolder(folder: models.Element)
@@ -258,7 +258,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         const founded = workspaceService.findFolderInTrees($scope.trees, folderId);
         if (founded) {
             $scope.openFolder(founded)
+            return true;
         }
+        return false;
     }
     $scope.openFolderRouteById = async function (folderId) {
         //if any refresh wait it finished
