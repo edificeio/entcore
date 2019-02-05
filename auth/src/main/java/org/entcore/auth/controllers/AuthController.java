@@ -112,36 +112,41 @@ public class AuthController extends BaseController {
 	private EventStore eventStore;
 	private Map<Object, Object> invalidEmails;
 	private JsonArray authorizedHostsLogin;
-	public enum AuthEvent { ACTIVATION, LOGIN, SMS }
+
+	public enum AuthEvent {
+		ACTIVATION, LOGIN, SMS
+	}
+
 	private Pattern passwordPattern;
 	private String smsProvider;
 	private boolean slo;
 	private List<String> internalAddress;
-	private boolean checkFederatedLogin= false;
+	private boolean checkFederatedLogin = false;
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		JsonObject oic = config.getJsonObject("openid-connect");
-		OpenIdConnectService openIdConnectService = (oic != null) ? new DefaultOpendIdConnectService(
-				oic.getString("iss"), vertx, oic.getString("keys")) : null;
+		OpenIdConnectService openIdConnectService = (oic != null)
+				? new DefaultOpendIdConnectService(oic.getString("iss"), vertx, oic.getString("keys"))
+				: null;
 		checkFederatedLogin = config.getBoolean("check-federated-login", false);
-		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService, checkFederatedLogin);
+		oauthDataFactory = new OAuthDataHandlerFactory(Neo4j.getInstance(), MongoDb.getInstance(), openIdConnectService,
+				checkFederatedLogin);
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		ClientCredentialFetcher clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
 		token.setDataHandlerFactory(oauthDataFactory);
 		token.setGrantHandlerProvider(grantHandlerProvider);
 		token.setClientCredentialFetcher(clientCredentialFetcher);
-		AccessTokenFetcherProvider accessTokenFetcherProvider =
-				new DefaultAccessTokenFetcherProvider();
+		AccessTokenFetcherProvider accessTokenFetcherProvider = new DefaultAccessTokenFetcherProvider();
 		protectedResource = new ProtectedResource();
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		passwordPattern = Pattern.compile(config.getString("passwordRegex", ".{8}.*"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		if(server != null && server.get("smsProvider") != null)
+		if (server != null && server.get("smsProvider") != null)
 			smsProvider = (String) server.get("smsProvider");
 		slo = config.getBoolean("slo", false);
 //		if (server != null) {
@@ -154,7 +159,8 @@ public class AuthController extends BaseController {
 //			}
 //		} else {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
-		internalAddress = config.getJsonArray("internalAddress", new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+		internalAddress = config.getJsonArray("internalAddress",
+				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
 	}
 
 	@Get("/oauth2/auth")
@@ -177,9 +183,8 @@ public class AuthController extends BaseController {
 								@Override
 								public void handle(UserInfos user) {
 									if (user != null && user.getUserId() != null) {
-										((OAuthDataHandler) data).createOrUpdateAuthInfo(
-												clientId, user.getUserId(), scope, redirectUri,
-												new Handler<AuthInfo>() {
+										((OAuthDataHandler) data).createOrUpdateAuthInfo(clientId, user.getUserId(),
+												scope, redirectUri, new Handler<AuthInfo>() {
 
 													@Override
 													public void handle(AuthInfo auth) {
@@ -237,8 +242,8 @@ public class AuthController extends BaseController {
 			}
 		}
 		if (error != null && !error.trim().isEmpty()) {
-			context.put("error", new JsonObject()
-					.put("message", I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
+			context.put("error", new JsonObject().put("message",
+					I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
 		}
 		UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 			@Override
@@ -257,7 +262,7 @@ public class AuthController extends BaseController {
 		context.put("passwordRegex", passwordPattern.toString());
 		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
 		renderJson(request, context);
-  	}
+	}
 
 	@Get("/admin-welcome-message")
 	public void adminWelcomeMessage(final HttpServerRequest request) {
@@ -274,8 +279,8 @@ public class AuthController extends BaseController {
 			}
 		}
 		if (error != null && !error.trim().isEmpty()) {
-			context.put("error", new JsonObject()
-					.put("message", I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
+			context.put("error", new JsonObject().put("message",
+					I18n.getInstance().translate(error, getHost(request), I18n.acceptLanguage(request))));
 		}
 		UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 			@Override
@@ -292,20 +297,20 @@ public class AuthController extends BaseController {
 		if (authorizedHostsLogin != null && isNotEmpty(host) && !authorizedHostsLogin.contains(host)) {
 			redirect(request, pathPrefix + "/openid/login");
 		} else {
-            UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
-                @Override
-                public void handle(UserInfos user) {
-                    if (user == null || !config.getBoolean("auto-redirect", true)) {
-                        viewLogin(request, null, request.params().get("callBack"));
-                    } else {
-                        String callBack = request.params().get("callBack");
-                        if (isEmpty(callBack)) {
-                            callBack = getScheme(request) + "://" + host;
-                        }
-                        redirect(request, callBack, "");
-                    }
-                }
-            });
+			UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
+				@Override
+				public void handle(UserInfos user) {
+					if (user == null || !config.getBoolean("auto-redirect", true)) {
+						viewLogin(request, null, request.params().get("callBack"));
+					} else {
+						String callBack = request.params().get("callBack");
+						if (isEmpty(callBack)) {
+							callBack = getScheme(request) + "://" + host;
+						}
+						redirect(request, callBack, "");
+					}
+				}
+			});
 		}
 	}
 
@@ -319,15 +324,13 @@ public class AuthController extends BaseController {
 				final StringBuilder callBack = new StringBuilder();
 				if (c != null && !c.trim().isEmpty()) {
 					try {
-						callBack.append(URLDecoder.decode(c,"UTF-8"));
+						callBack.append(URLDecoder.decode(c, "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						log.error(ex.getMessage(), ex);
-						callBack.append(config
-								.getJsonObject("authenticationServer").getString("loginCallback"));
+						callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 					}
 				} else {
-					callBack.append(config
-							.getJsonObject("authenticationServer").getString("loginCallback"));
+					callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 				}
 				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				final String login = request.formAttributes().get("email");
@@ -344,41 +347,56 @@ public class AuthController extends BaseController {
 							userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
 								@Override
 								public void handle(Boolean passIsActivationCode) {
-									if(passIsActivationCode){
+									if (passIsActivationCode) {
 										handleMatchActivationCode(login, password, request);
 									} else {
 										// try activation with loginAlias
-										userAuthAccount.matchActivationCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
-											@Override
-											public void handle(Boolean passIsActivationCode) {
-												if (passIsActivationCode) {
-													handleMatchActivationCode(login, password, request);
-												} else {
-													// try reset with login
-													userAuthAccount.matchResetCode(login, password, new io.vertx.core.Handler<Boolean>() {
-														@Override
-														public void handle(Boolean passIsResetCode) {
-															if (passIsResetCode) {
-																handleMatchResetCode(login, password, request);
-															} else {
-																// try reset with loginAlias
-																userAuthAccount.matchResetCodeByLoginAlias(login, password, new io.vertx.core.Handler<Boolean>() {
-																	@Override
-																	public void handle (Boolean passIsResetCode) {
-																		if (passIsResetCode) {
-																			handleMatchResetCode(login, password, request);
-																		} else {
-																			trace.info("Erreur de connexion pour l'utilisateur " + login);
-																			loginResult(request, "auth.error.authenticationFailed", c);
+										userAuthAccount.matchActivationCodeByLoginAlias(login, password,
+												new io.vertx.core.Handler<Boolean>() {
+													@Override
+													public void handle(Boolean passIsActivationCode) {
+														if (passIsActivationCode) {
+															handleMatchActivationCode(login, password, request);
+														} else {
+															// try reset with login
+															userAuthAccount.matchResetCode(login, password,
+																	new io.vertx.core.Handler<Boolean>() {
+																		@Override
+																		public void handle(Boolean passIsResetCode) {
+																			if (passIsResetCode) {
+																				handleMatchResetCode(login, password,
+																						request);
+																			} else {
+																				// try reset with loginAlias
+																				userAuthAccount
+																						.matchResetCodeByLoginAlias(
+																								login, password,
+																								new io.vertx.core.Handler<Boolean>() {
+																									@Override
+																									public void handle(
+																											Boolean passIsResetCode) {
+																										if (passIsResetCode) {
+																											handleMatchResetCode(
+																													login,
+																													password,
+																													request);
+																										} else {
+																											trace.info(
+																													"Erreur de connexion pour l'utilisateur "
+																															+ login);
+																											loginResult(
+																													request,
+																													"auth.error.authenticationFailed",
+																													c);
+																										}
+																									}
+																								});
+																			}
 																		}
-																	}
-																});
-															}
+																	});
 														}
-													});
-												}
-											}
-										});
+													}
+												});
 									}
 								}
 							});
@@ -396,7 +414,7 @@ public class AuthController extends BaseController {
 		userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
 				new io.vertx.core.Handler<Boolean>() {
 					public void handle(Boolean ok) {
-						if(!ok){
+						if (!ok) {
 							trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
 						}
 					}
@@ -427,19 +445,22 @@ public class AuthController extends BaseController {
 	}
 
 	private void createSession(String userId, final HttpServerRequest request, final String callBack) {
-		UserUtils.createSession(eb, userId, "true".equals(request.formAttributes().get("secureLocation")), sessionId -> {
-			if (sessionId != null && !sessionId.trim().isEmpty()) {
-				boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
-				long timeout = rememberMe ? 3600l * 24 * 365 : config
-						.getLong("cookie_timeout", Long.MIN_VALUE);
-				CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
-				CookieHelper.set("authenticated", "true", timeout, request);
-				redirect(request, callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?") ?
-						callBack.replaceFirst("/auth/login", "") : callBack, "");
-			} else {
-				loginResult(request, "auth.error.authenticationFailed", callBack);
-			}
-		});
+		UserUtils.createSession(eb, userId, "true".equals(request.formAttributes().get("secureLocation")),
+				sessionId -> {
+					if (sessionId != null && !sessionId.trim().isEmpty()) {
+						boolean rememberMe = "true".equals(request.formAttributes().get("rememberMe"));
+						long timeout = rememberMe ? 3600l * 24 * 365 : config.getLong("cookie_timeout", Long.MIN_VALUE);
+						CookieHelper.getInstance().setSigned("oneSessionId", sessionId, timeout, request);
+						CookieHelper.set("authenticated", "true", timeout, request);
+						redirect(request,
+								callBack.matches("https?://[0-9a-zA-Z\\.\\-_]+/auth/login/?(\\?.*)?")
+										? callBack.replaceFirst("/auth/login", "")
+										: callBack,
+								"");
+					} else {
+						loginResult(request, "auth.error.authenticationFailed", callBack);
+					}
+				});
 	}
 
 	@Get("/logout")
@@ -449,7 +470,8 @@ public class AuthController extends BaseController {
 			UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 				@Override
 				public void handle(UserInfos event) {
-					if (event != null && Boolean.TRUE.equals(event.getFederated()) && !request.params().contains("SAMLRequest")) {
+					if (event != null && Boolean.TRUE.equals(event.getFederated())
+							&& !request.params().contains("SAMLRequest")) {
 						if (config.containsKey("openid-federate")) {
 							redirect(request, "/auth/openid/slo?callback=" + c);
 						} else {
@@ -484,12 +506,10 @@ public class AuthController extends BaseController {
 				callback.append(URLDecoder.decode(c, "UTF-8"));
 			} catch (UnsupportedEncodingException e) {
 				log.error(e.getMessage(), e);
-				callback.append(config
-						.getJsonObject("authenticationServer").getString("logoutCallback", "/"));
+				callback.append(config.getJsonObject("authenticationServer").getString("logoutCallback", "/"));
 			}
 		} else {
-			callback.append(config
-					.getJsonObject("authenticationServer").getString("logoutCallback", "/"));
+			callback.append(config.getJsonObject("authenticationServer").getString("logoutCallback", "/"));
 		}
 
 		if (sessionId != null && !sessionId.trim().isEmpty()) {
@@ -541,22 +561,23 @@ public class AuthController extends BaseController {
 			forbidden(request);
 			return;
 		}
-		UserUtils.getSessionByUserId(eb, ((SecureHttpServerRequest)request).getAttribute("remote_user"), new io.vertx.core.Handler<JsonObject>() {
+		UserUtils.getSessionByUserId(eb, ((SecureHttpServerRequest) request).getAttribute("remote_user"),
+				new io.vertx.core.Handler<JsonObject>() {
 
-			@Override
-			public void handle(JsonObject infos) {
-				if (infos != null) {
-					JsonObject info;
-					UserInfoAdapter adapter = ResponseAdapterFactory.getUserInfoAdapter(request);
-					SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
-					String clientId = sr.getAttribute("client_id");
-					info = adapter.getInfo(infos, clientId);
-					renderJson(request, info);
-				} else {
-					unauthorized(request);
-				}
-			}
-		});
+					@Override
+					public void handle(JsonObject infos) {
+						if (infos != null) {
+							JsonObject info;
+							UserInfoAdapter adapter = ResponseAdapterFactory.getUserInfoAdapter(request);
+							SecureHttpServerRequest sr = (SecureHttpServerRequest) request;
+							String clientId = sr.getAttribute("client_id");
+							info = adapter.getInfo(infos, clientId);
+							renderJson(request, info);
+						} else {
+							unauthorized(request);
+						}
+					}
+				});
 	}
 
 	@BusAddress("wse.oauth")
@@ -570,24 +591,21 @@ public class AuthController extends BaseController {
 
 	private void validToken(final Message<JsonObject> message) {
 		protectedResource.handleRequest(new JsonRequestAdapter(message.body()),
-				new jp.eisbahn.oauth2.server.async.Handler<Try<OAuthError,ProtectedResource.Response>>() {
+				new jp.eisbahn.oauth2.server.async.Handler<Try<OAuthError, ProtectedResource.Response>>() {
 
-			@Override
-			public void handle(Try<OAuthError, ProtectedResource.Response> resp) {
-				ProtectedResource.Response response;
-				try {
-					response = resp.get();
-					JsonObject r = new JsonObject()
-					.put("status", "ok")
-					.put("client_id", response.getClientId())
-					.put("remote_user", response.getRemoteUser())
-					.put("scope", response.getScope());
-					message.reply(r);
-				} catch (OAuthError e) {
-					message.reply(new JsonObject().put("error", e.getType()));
-				}
-			}
-		});
+					@Override
+					public void handle(Try<OAuthError, ProtectedResource.Response> resp) {
+						ProtectedResource.Response response;
+						try {
+							response = resp.get();
+							JsonObject r = new JsonObject().put("status", "ok").put("client_id", response.getClientId())
+									.put("remote_user", response.getRemoteUser()).put("scope", response.getScope());
+							message.reply(r);
+						} catch (OAuthError e) {
+							message.reply(new JsonObject().put("error", e.getType()));
+						}
+					}
+				});
 	}
 
 	@Get("/activation")
@@ -613,17 +631,25 @@ public class AuthController extends BaseController {
 
 	@Post("/activation/match")
 	public void activeAccountMatch(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, data->{
-			if(data==null){
+		RequestUtils.bodyToJson(request, data -> {
+			if (data == null) {
 				badRequest(request);
 				return;
 			}
 			final String login = data.getString("login");
 			final String password = data.getString("password");
-			userAuthAccount.matchActivationCode(login, password, match->{
-				renderJson(request, new JsonObject().put("match",match));
+			// try activation with login
+			userAuthAccount.matchActivationCode(login, password, match -> {
+				if (match) {
+					renderJson(request, new JsonObject().put("match", match));
+				} else {
+					// try activation with loginAlias
+					userAuthAccount.matchActivationCodeByLoginAlias(login, password, matchAlias -> {
+						renderJson(request, new JsonObject().put("match", matchAlias));
+					});
+				}
 			});
-		});	
+		});
 	}
 
 	@Post("/activation")
@@ -640,12 +666,9 @@ public class AuthController extends BaseController {
 				final String theme = request.formAttributes().get("theme");
 				String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
-				if (config.getBoolean("cgu", true) &&
-						!"true".equals(request.formAttributes().get("acceptCGU"))) {
+				if (config.getBoolean("cgu", true) && !"true".equals(request.formAttributes().get("acceptCGU"))) {
 					trace.info("Invalid cgu " + login);
-					JsonObject error = new JsonObject()
-							.put("error", new JsonObject()
-							.put("message", "invalid.cgu"))
+					JsonObject error = new JsonObject().put("error", new JsonObject().put("message", "invalid.cgu"))
 							.put("cgu", true);
 					if (activationCode != null) {
 						error.put("activationCode", activationCode);
@@ -654,22 +677,20 @@ public class AuthController extends BaseController {
 						error.put("login", login);
 					}
 					renderJson(request, error);
-				} else if (
-					login == null || activationCode == null|| password == null ||
-					login.trim().isEmpty() || activationCode.trim().isEmpty() ||
-					password.trim().isEmpty() || !password.equals(confirmPassword) ||
-					!passwordPattern.matcher(password).matches() ||
-					(config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
-					  && (email == null || email.trim().isEmpty() || invalidEmails.containsKey(email))) ||
-					(config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
-					  && (phone == null || phone.trim().isEmpty())) ||
-					(email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email)) ||
-					(phone != null && !phone.trim().isEmpty() && !StringValidation.isPhone(phone))
-				) {
+				} else if (login == null || activationCode == null || password == null || login.trim().isEmpty()
+						|| activationCode.trim().isEmpty() || password.trim().isEmpty()
+						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()
+						|| (config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
+								&& (email == null || email.trim().isEmpty() || invalidEmails.containsKey(email)))
+						|| (config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
+								&& (phone == null || phone.trim().isEmpty()))
+						|| (email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email))
+						|| (phone != null && !phone.trim().isEmpty() && !StringValidation.isPhone(phone))) {
 					trace.info("Echec de l'activation du compte utilisateur " + login);
-					JsonObject error = new JsonObject()
-					.put("error", new JsonObject()
-					.put("message", I18n.getInstance().translate("auth.activation.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
+					JsonObject error = new JsonObject().put("error",
+							new JsonObject().put("message",
+									I18n.getInstance().translate("auth.activation.invalid.argument", getHost(request),
+											I18n.acceptLanguage(request))));
 					if (activationCode != null) {
 						error.put("activationCode", activationCode);
 					}
@@ -684,42 +705,49 @@ public class AuthController extends BaseController {
 					userAuthAccount.activateAccount(login, activationCode, password, email, phone, theme, request,
 							new io.vertx.core.Handler<Either<String, String>>() {
 
-						@Override
-						public void handle(Either<String, String> activated) {
-							if (activated.isRight() && activated.right().getValue() != null) {
-								handleActivation(login, request, activated);
-							} else {
-								// if failed because duplicated user
-								if(activated.isLeft() && "activation.error.duplicated".equals(activated.left().getValue())) {
-									trace.info("Echec de l'activation : utilisateur " + login + " en doublon.");
-									JsonObject error = new JsonObject()
-											.put("error", new JsonObject()
-													.put("message", I18n.getInstance().translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
-									error.put("activationCode", activationCode);
-									renderJson(request, error);
-								} else {
-									// else try activation with loginAlias
-									userAuthAccount.activateAccountByLoginAlias(login, activationCode, password, email, phone, theme, request,
-										new io.vertx.core.Handler<Either<String, String>>() {
-											@Override
-											public void handle(Either<String, String> activated) {
-												if (activated.isRight() && activated.right().getValue() != null) {
-													handleActivation(login, request, activated);
-												} else {
-													trace.info("Echec de l'activation : compte utilisateur " + login +
-															" introuvable ou déjà activé.");
-													JsonObject error = new JsonObject()
-															.put("error", new JsonObject()
-															.put("message", I18n.getInstance().translate(activated.left().getValue(), getHost(request), I18n.acceptLanguage(request))));
-													error.put("activationCode", activationCode);
-													renderJson(request, error);
-												}
-											}
-										});
+								@Override
+								public void handle(Either<String, String> activated) {
+									if (activated.isRight() && activated.right().getValue() != null) {
+										handleActivation(login, request, activated);
+									} else {
+										// if failed because duplicated user
+										if (activated.isLeft()
+												&& "activation.error.duplicated".equals(activated.left().getValue())) {
+											trace.info("Echec de l'activation : utilisateur " + login + " en doublon.");
+											JsonObject error = new JsonObject().put("error",
+													new JsonObject().put("message",
+															I18n.getInstance().translate(activated.left().getValue(),
+																	getHost(request), I18n.acceptLanguage(request))));
+											error.put("activationCode", activationCode);
+											renderJson(request, error);
+										} else {
+											// else try activation with loginAlias
+											userAuthAccount.activateAccountByLoginAlias(login, activationCode, password,
+													email, phone, theme, request,
+													new io.vertx.core.Handler<Either<String, String>>() {
+														@Override
+														public void handle(Either<String, String> activated) {
+															if (activated.isRight()
+																	&& activated.right().getValue() != null) {
+																handleActivation(login, request, activated);
+															} else {
+																trace.info("Echec de l'activation : compte utilisateur "
+																		+ login + " introuvable ou déjà activé.");
+																JsonObject error = new JsonObject().put("error",
+																		new JsonObject().put("message",
+																				I18n.getInstance().translate(
+																						activated.left().getValue(),
+																						getHost(request),
+																						I18n.acceptLanguage(request))));
+																error.put("activationCode", activationCode);
+																renderJson(request, error);
+															}
+														}
+													});
+										}
+									}
 								}
-							}
-						}
-					});
+							});
 				}
 			}
 		});
@@ -734,14 +762,14 @@ public class AuthController extends BaseController {
 			userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
 					new io.vertx.core.Handler<Boolean>() {
 						public void handle(Boolean ok) {
-							if(!ok){
-								trace.error("[Auth](loginSubmit) Error while storing last known domain for user " + userId);
+							if (!ok) {
+								trace.error(
+										"[Auth](loginSubmit) Error while storing last known domain for user " + userId);
 							}
 						}
 					});
 			eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login);
-			createSession(userId, request,
-					getScheme(request) + "://" + getHost(request));
+			createSession(userId, request, getScheme(request) + "://" + getHost(request));
 		} else {
 			redirect(request, "/auth/login");
 		}
@@ -772,7 +800,7 @@ public class AuthController extends BaseController {
 	}
 
 	@Post("/forgot-id")
-	public void forgetId(final HttpServerRequest request){
+	public void forgetId(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
 			public void handle(JsonObject data) {
 				final String mail = data.getString("mail");
@@ -783,99 +811,107 @@ public class AuthController extends BaseController {
 					badRequest(request);
 					return;
 				}
-				userAuthAccount.findByMailAndFirstNameAndStructure(mail, firstName, structure, new io.vertx.core.Handler<Either<String, JsonArray>>() {
-					@Override
-					public void handle(Either<String, JsonArray> event) {
-						//No user with that email, or more than one found.
-						if(event.isLeft()){
-							badRequest(request, event.left().getValue());
-							return;
-						}
-						JsonArray results = event.right().getValue();
-						if (results.size() == 0) {
-							badRequest(request, "no.match");
-							return;
-						}
-						JsonArray structures = new fr.wseduc.webutils.collections.JsonArray();
-						if(results.size() > 1) {
-							for (Object ob : results) {
-								JsonObject j = (JsonObject) ob;
-								j.remove("login");
-								j.remove("mobile");
-								if (!structures.toString().contains(j.getString("structureId")))
-									structures.add(j);
-							}
-							if (firstName != null && structures.size() == 1)
-								badRequest(request, "non.unique.result");
-							else
-								renderJson(request, new JsonObject().put("structures", structures));
-							return;
-						}
-						JsonObject match = results.getJsonObject(0);
-						final String id = match.getString("login", "");
-						final String mobile = match.getString("mobile", "");
-
-						//Force mail
-						if("mail".equals(service)){
-							userAuthAccount.sendForgottenIdMail(request, id, mail, new io.vertx.core.Handler<Either<String,JsonObject>>() {
-								public void handle(Either<String, JsonObject> event) {
-									if(event.isLeft()){
-										badRequest(request, event.left().getValue());
-										return;
-									}
-									if(smsProvider != null && !smsProvider.isEmpty()){
-										final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
-										renderJson(request, new JsonObject().put("mobile", obfuscatedMobile));
-									} else {
-										renderJson(request, new JsonObject());
-									}
+				userAuthAccount.findByMailAndFirstNameAndStructure(mail, firstName, structure,
+						new io.vertx.core.Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> event) {
+								// No user with that email, or more than one found.
+								if (event.isLeft()) {
+									badRequest(request, event.left().getValue());
+									return;
 								}
-							});
-						} else if("mobile".equals(service) && !mobile.isEmpty() && smsProvider != null && !smsProvider.isEmpty()){
-							eventStore.createAndStoreEvent(AuthEvent.SMS.name(), id);
-							userAuthAccount.sendForgottenIdSms(request, id, mobile, DefaultResponseHandler.defaultResponseHandler(request));
-						} else {
-							badRequest(request);
-						}
-					}
-				});
+								JsonArray results = event.right().getValue();
+								if (results.size() == 0) {
+									badRequest(request, "no.match");
+									return;
+								}
+								JsonArray structures = new fr.wseduc.webutils.collections.JsonArray();
+								if (results.size() > 1) {
+									for (Object ob : results) {
+										JsonObject j = (JsonObject) ob;
+										j.remove("login");
+										j.remove("mobile");
+										if (!structures.toString().contains(j.getString("structureId")))
+											structures.add(j);
+									}
+									if (firstName != null && structures.size() == 1)
+										badRequest(request, "non.unique.result");
+									else
+										renderJson(request, new JsonObject().put("structures", structures));
+									return;
+								}
+								JsonObject match = results.getJsonObject(0);
+								final String id = match.getString("login", "");
+								final String mobile = match.getString("mobile", "");
+
+								// Force mail
+								if ("mail".equals(service)) {
+									userAuthAccount.sendForgottenIdMail(request, id, mail,
+											new io.vertx.core.Handler<Either<String, JsonObject>>() {
+												public void handle(Either<String, JsonObject> event) {
+													if (event.isLeft()) {
+														badRequest(request, event.left().getValue());
+														return;
+													}
+													if (smsProvider != null && !smsProvider.isEmpty()) {
+														final String obfuscatedMobile = StringValidation
+																.obfuscateMobile(mobile);
+														renderJson(request,
+																new JsonObject().put("mobile", obfuscatedMobile));
+													} else {
+														renderJson(request, new JsonObject());
+													}
+												}
+											});
+								} else if ("mobile".equals(service) && !mobile.isEmpty() && smsProvider != null
+										&& !smsProvider.isEmpty()) {
+									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), id);
+									userAuthAccount.sendForgottenIdSms(request, id, mobile,
+											DefaultResponseHandler.defaultResponseHandler(request));
+								} else {
+									badRequest(request);
+								}
+							}
+						});
 			}
 		});
 	}
 
 	@Get("/password-channels")
 	public void getForgotPasswordService(final HttpServerRequest request) {
-		userAuthAccount.findByLogin(request.params().get("login"), null, checkFederatedLogin, new io.vertx.core.Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> result) {
-				if(result.isLeft()){
-					badRequest(request, result.left().getValue());
-					return;
-				}
-				if(result.right().getValue().size() == 0){
-					badRequest(request, "no.match");
-					return;
-				}
+		userAuthAccount.findByLogin(request.params().get("login"), null, checkFederatedLogin,
+				new io.vertx.core.Handler<Either<String, JsonObject>>() {
+					public void handle(Either<String, JsonObject> result) {
+						if (result.isLeft()) {
+							badRequest(request, result.left().getValue());
+							return;
+						}
+						if (result.right().getValue().size() == 0) {
+							badRequest(request, "no.match");
+							return;
+						}
 
-				final String mail = result.right().getValue().getString("email", "");
-				final String mobile = result.right().getValue().getString("mobile", "");
+						final String mail = result.right().getValue().getString("email", "");
+						final String mobile = result.right().getValue().getString("mobile", "");
 
-				boolean mailCheck = mail != null && !mail.trim().isEmpty();
-				boolean mobileCheck = mobile != null && !mobile.trim().isEmpty();
+						boolean mailCheck = mail != null && !mail.trim().isEmpty();
+						boolean mobileCheck = mobile != null && !mobile.trim().isEmpty();
 
-				if(!mailCheck && !mobileCheck){
-					badRequest(request, "no.match");
-					return;
-				}
+						if (!mailCheck && !mobileCheck) {
+							badRequest(request, "no.match");
+							return;
+						}
 
-				final String obfuscatedMail = StringValidation.obfuscateMail(mail);
-				final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
+						final String obfuscatedMail = StringValidation.obfuscateMail(mail);
+						final String obfuscatedMobile = StringValidation.obfuscateMobile(mobile);
 
-				if(smsProvider != null && !smsProvider.isEmpty())
-					renderJson(request, new JsonObject().put("mobile", obfuscatedMobile).put("mail", obfuscatedMail));
-				else
-					renderJson(request, new JsonObject().put("mail", obfuscatedMail));
-			}
-		});
+						if (smsProvider != null && !smsProvider.isEmpty())
+							renderJson(request,
+									new JsonObject().put("mobile", obfuscatedMobile).put("mail", obfuscatedMail));
+						else
+							renderJson(request, new JsonObject().put("mail", obfuscatedMail));
+					}
+				});
 	}
 
 	@Post("/forgot-password")
@@ -885,78 +921,79 @@ public class AuthController extends BaseController {
 				final String login = data.getString("login");
 				final String service = data.getString("service");
 				final String resetCode = StringValidation.generateRandomCode(8);
-				if(login == null || login.trim().isEmpty() || service == null || service.trim().isEmpty()){
+				if (login == null || login.trim().isEmpty() || service == null || service.trim().isEmpty()) {
 					badRequest(request, "invalid.login");
 					return;
 				}
 
-				userAuthAccount.findByLogin(login, resetCode, checkFederatedLogin, new io.vertx.core.Handler<Either<String,JsonObject>>() {
-					public void handle(Either<String, JsonObject> result) {
-						if(result.isLeft()){
-							badRequest(request, result.left().getValue());
-							return;
-						}
-						if(result.right().getValue().size() == 0){
-							badRequest(request, "no.match");
-							return;
-						}
+				userAuthAccount.findByLogin(login, resetCode, checkFederatedLogin,
+						new io.vertx.core.Handler<Either<String, JsonObject>>() {
+							public void handle(Either<String, JsonObject> result) {
+								if (result.isLeft()) {
+									badRequest(request, result.left().getValue());
+									return;
+								}
+								if (result.right().getValue().size() == 0) {
+									badRequest(request, "no.match");
+									return;
+								}
 
-						final String mail = result.right().getValue().getString("email", "");
-						final String mobile = result.right().getValue().getString("mobile", "");
+								final String mail = result.right().getValue().getString("email", "");
+								final String mobile = result.right().getValue().getString("mobile", "");
 
-						if("mail".equals(service)){
-							userAuthAccount.sendResetPasswordMail(request, mail, resetCode,
-									DefaultResponseHandler.defaultResponseHandler(request));
-						} else if("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()){
-							eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
-							userAuthAccount.sendResetPasswordSms(request, mobile, resetCode,
-									DefaultResponseHandler.defaultResponseHandler(request));
-						} else {
-							badRequest(request, "invalid.service");
-						}
-					}
-				});
+								if ("mail".equals(service)) {
+									userAuthAccount.sendResetPasswordMail(request, mail, resetCode,
+											DefaultResponseHandler.defaultResponseHandler(request));
+								} else if ("mobile".equals(service) && smsProvider != null && !smsProvider.isEmpty()) {
+									eventStore.createAndStoreEvent(AuthEvent.SMS.name(), login);
+									userAuthAccount.sendResetPasswordSms(request, mobile, resetCode,
+											DefaultResponseHandler.defaultResponseHandler(request));
+								} else {
+									badRequest(request, "invalid.service");
+								}
+							}
+						});
 
 			}
 		});
 	}
 
 	@Post("/sendResetPassword")
-	@SecuredAction( value = "", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@IgnoreCsrf
 	public void sendResetPassword(final HttpServerRequest request) {
-      String login = request.formAttributes().get("login");
-      String email = request.formAttributes().get("email");
-      String mobile = request.formAttributes().get("mobile");
-      SendPasswordDestination dest = null;
+		String login = request.formAttributes().get("login");
+		String email = request.formAttributes().get("email");
+		String mobile = request.formAttributes().get("mobile");
+		SendPasswordDestination dest = null;
 
-      if (login == null || login.trim().isEmpty()) {
-        badRequest(request, "login required");
-        return;
-      }
-      if (StringValidation.isEmail(email)) {
-        dest = new SendPasswordDestination();
-        dest.setType("email");
-        dest.setValue(email);
-      } else if (StringValidation.isPhone(mobile)) {
-        dest = new SendPasswordDestination();
-        dest.setType("mobile");
-        dest.setValue(mobile);
-      } else {
-        badRequest(request, "valid email or valid mobile required");
-        return;
-      }
+		if (login == null || login.trim().isEmpty()) {
+			badRequest(request, "login required");
+			return;
+		}
+		if (StringValidation.isEmail(email)) {
+			dest = new SendPasswordDestination();
+			dest.setType("email");
+			dest.setValue(email);
+		} else if (StringValidation.isPhone(mobile)) {
+			dest = new SendPasswordDestination();
+			dest.setType("mobile");
+			dest.setValue(mobile);
+		} else {
+			badRequest(request, "valid email or valid mobile required");
+			return;
+		}
 
-      userAuthAccount.sendResetCode(request, login, dest, checkFederatedLogin, new io.vertx.core.Handler<Boolean>() {
-        @Override
-        public void handle(Boolean sent) {
-          if (Boolean.TRUE.equals(sent)) {
-            renderJson(request, new JsonObject());
-          } else {
-            badRequest(request);
-          }
-        }
-      });
+		userAuthAccount.sendResetCode(request, login, dest, checkFederatedLogin, new io.vertx.core.Handler<Boolean>() {
+			@Override
+			public void handle(Boolean sent) {
+				if (Boolean.TRUE.equals(sent)) {
+					renderJson(request, new JsonObject());
+				} else {
+					badRequest(request);
+				}
+			}
+		});
 	}
 
 	@Post("/generatePasswordRenewalCode")
@@ -969,18 +1006,17 @@ public class AuthController extends BaseController {
 			return;
 		}
 
-		userAuthAccount.generateResetCode(login, checkFederatedLogin,
-				(Either<String, String> either) -> {
-					if (either.isRight()) {
-						renderJson(request, new JsonObject().put("renewalCode", either.right().getValue()));
-					} else {
-						renderError(request);
-					}
-				});
+		userAuthAccount.generateResetCode(login, checkFederatedLogin, (Either<String, String> either) -> {
+			if (either.isRight()) {
+				renderJson(request, new JsonObject().put("renewalCode", either.right().getValue()));
+			} else {
+				renderError(request);
+			}
+		});
 	}
 
 	@Put("/block/:userId")
-	@SecuredAction( value = "", type = ActionType.RESOURCE)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void blockUser(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
 			@Override
@@ -1031,15 +1067,13 @@ public class AuthController extends BaseController {
 					params = new JsonObject();
 				}
 				if (user != null && "password".equals(request.params().get("resetCode"))) {
-					renderView(request, params
-					.put("login", user.getLogin())
-					.put("callback", "/userbook/mon-compte"),
-					"changePassword.html", null);
+					renderView(request, params.put("login", user.getLogin()).put("callback", "/userbook/mon-compte"),
+							"changePassword.html", null);
 				} else {
-					renderView(request, params
-					.put("notLoggedIn", user == null)
-					.put("login", request.params().get("login"))
-					.put("resetCode", request.params().get("resetCode")), "reset.html", null);
+					renderView(request,
+							params.put("notLoggedIn", user == null).put("login", request.params().get("login"))
+									.put("resetCode", request.params().get("resetCode")),
+							"reset.html", null);
 				}
 			}
 		});
@@ -1057,34 +1091,30 @@ public class AuthController extends BaseController {
 				final String oldPassword = request.formAttributes().get("oldPassword");
 				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
-				final String callback = Utils.getOrElse(
-						request.formAttributes().get("callback"), "/auth/login", false);
-				if (login == null || ((resetCode == null || resetCode.trim().isEmpty()) &&
-						(oldPassword == null || oldPassword.trim().isEmpty())) ||
-						password == null || login.trim().isEmpty() ||
-						password.trim().isEmpty() || !password.equals(confirmPassword) ||
-						!passwordPattern.matcher(password).matches()) {
-					trace.info("Erreur lors de la réinitialisation "
-							+ "du mot de passe de l'utilisateur " + login);
-					JsonObject error = new JsonObject()
-					.put("error", new JsonObject()
-					.put("message", I18n.getInstance().translate("auth.reset.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
+				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
+				if (login == null
+						|| ((resetCode == null || resetCode.trim().isEmpty())
+								&& (oldPassword == null || oldPassword.trim().isEmpty()))
+						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
+						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
+					trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
+					JsonObject error = new JsonObject().put("error", new JsonObject().put("message", I18n.getInstance()
+							.translate("auth.reset.invalid.argument", getHost(request), I18n.acceptLanguage(request))));
 					if (resetCode != null) {
 						error.put("resetCode", resetCode);
 					}
 					renderJson(request, error);
 				} else {
-					final io.vertx.core.Handler<Boolean> resultHandler =
-							new io.vertx.core.Handler<Boolean>() {
+					final io.vertx.core.Handler<Boolean> resultHandler = new io.vertx.core.Handler<Boolean>() {
 
 						@Override
 						public void handle(Boolean reseted) {
 							if (Boolean.TRUE.equals(reseted)) {
-                trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
+								trace.info("Réinitialisation réussie du mot de passe de l'utilisateur " + login);
 								redirect(request, callback);
 							} else {
-                trace.info("Erreur lors de la réinitialisation "
-                    + "du mot de passe de l'utilisateur " + login);
+								trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur "
+										+ login);
 								error(request, resetCode);
 							}
 						}
@@ -1108,11 +1138,9 @@ public class AuthController extends BaseController {
 				}
 			}
 
-			private void error(final HttpServerRequest request,
-					final String resetCode) {
-				JsonObject error = new JsonObject()
-				.put("error", new JsonObject()
-				.put("message", I18n.getInstance().translate("reset.error", getHost(request), I18n.acceptLanguage(request))));
+			private void error(final HttpServerRequest request, final String resetCode) {
+				JsonObject error = new JsonObject().put("error", new JsonObject().put("message",
+						I18n.getInstance().translate("reset.error", getHost(request), I18n.acceptLanguage(request))));
 				if (resetCode != null) {
 					error.put("resetCode", resetCode);
 				}
@@ -1143,15 +1171,15 @@ public class AuthController extends BaseController {
 					String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 					UserUtils.deletePermanentSession(eb, user.getUserId(), sessionId,
 							new io.vertx.core.Handler<Boolean>() {
-						@Override
-						public void handle(Boolean event) {
-							if (event) {
-								ok(request);
-							} else {
-								renderError(request);
-							}
-						}
-					});
+								@Override
+								public void handle(Boolean event) {
+									if (event) {
+										ok(request);
+									} else {
+										renderError(request);
+									}
+								}
+							});
 				} else {
 					unauthorized(request);
 				}
