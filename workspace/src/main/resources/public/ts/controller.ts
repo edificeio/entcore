@@ -15,7 +15,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, template, idiom as lang } from 'entcore';
+import { ng, template, idiom as lang, notify, idiom } from 'entcore';
 import { moment } from 'entcore';
 import { NavigationDelegateScope, NavigationDelegate } from './delegates/navigation';
 import { ActionDelegate, ActionDelegateScope } from './delegates/actions';
@@ -62,6 +62,15 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		$scope.lightboxDelegateClose = () => false;
 
 	}
+	let displayNotFoundErrorLastId = null;
+	const displayNotFoundError = function (folderId) {
+		if (folderId == displayNotFoundErrorLastId) {
+			return;
+		}
+		//avoid display message twice if we have not reload page
+		notify.error(idiom.translate("workspace.element.uri.notfound"));
+		displayNotFoundErrorLastId = folderId;
+	}
 	/**
 	 * Routes
 	 */
@@ -69,15 +78,17 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		viewFolder: function (params) {
 			$scope.lastRoute = window.location.href
 			//attend chargement arbo dossier
-			$scope.onTreeInit(() => {
-				$scope.openFolderById(params.folderId)
+			$scope.onTreeInit(async () => {
+				const success = await $scope.openFolderById(params.folderId)
+				!success && displayNotFoundError(params.folderId);
 			})
 		},
 		viewSharedFolder: function (params) {
 			$scope.lastRoute = window.location.href;
 			//attend chargement arbo dossier
-			$scope.onTreeInit(() => {
-				$scope.openFolderById(params.folderId)
+			$scope.onTreeInit(async () => {
+				const success = $scope.openFolderById(params.folderId)
+				!success && displayNotFoundError(params.folderId);
 			})
 		},
 		openShared: function (params) {

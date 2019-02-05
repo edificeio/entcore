@@ -22,7 +22,7 @@ export interface SearchDelegateScope {
     currentTree: models.Tree
     openedFolder: models.FolderContext
     onReloadContent: Subject<() => void>
-    openFolderById(id: string)
+    openFolderById(id: string):Promise<boolean>
     openFolderRouteById(id: string)
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     selectedDocuments(): models.Element[]
