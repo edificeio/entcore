@@ -247,7 +247,8 @@ public class WorkspaceController extends BaseController {
 	@Post("/folder/notify/contrib/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.AUTHENTICATED)
 	public void notifyContrib(final HttpServerRequest request) {
-		String id = request.params().get("id");
+		String idParam = request.params().get("id");
+		Optional<String> idOpt = "root".equals(idParam) ? Optional.empty() : Optional.ofNullable(idParam);
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null && user.getUserId() != null) {
 				bodyToJson(request, body -> {
@@ -255,17 +256,26 @@ public class WorkspaceController extends BaseController {
 							.collect(Collectors.toSet());
 					Boolean addVersion = body.getBoolean("addVersion", false);
 					// find receivers
-					Future<Set<String>> futureRecipientIds = workspaceService.getNotifyContributorDest(id, user, ids);
+					Future<Set<String>> futureRecipientIds = workspaceService.getNotifyContributorDest(idOpt, user, ids);
 					futureRecipientIds.compose(recipientIds -> {
 						// find element to put in message
 						if (recipientIds.isEmpty()) {
 							return Future.succeededFuture(new JsonObject());
 						}
 						Future<JsonObject> futureFindResource = Future.future();
-						String elementId = id;
+						String elementId = null;
 						if (addVersion) {
+							// notification about a changed file
 							elementId = ids.iterator().next();
+						} else if (idOpt.isPresent()) {
+							// notification about a changed folder
+							elementId = idOpt.get();
+						} else {
+							// neither a folderid of a fileid => bad request
+							futureFindResource.fail("the id of the concerned folder was not specified");
+							return futureFindResource;
 						}
+						final String elementIdFinal = elementId;
 						workspaceService.findById(elementId,
 								new JsonObject().put("_id", 1).put("name", 1).put("eType", 1), event -> {
 									if ("ok".equals(event.getString("status"))
@@ -273,8 +283,8 @@ public class WorkspaceController extends BaseController {
 										futureFindResource.complete(event.getJsonObject("result"));
 									} else {
 										log.error("Unable to send timeline notification : missing name on resource "
-												+ id);
-										futureFindResource.fail("missing name or resource" + id);
+												+ elementIdFinal);
+										futureFindResource.fail("missing name or resource" + elementIdFinal);
 									}
 								});
 						return futureFindResource;
@@ -294,7 +304,11 @@ public class WorkspaceController extends BaseController {
 										.put("userUri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 										.put("userName", user.getUsername())
 										.put("appPrefix", pathPrefix + "/workspace");
-								params.put("resourceUri", pathPrefix + "/workspace#/folder/" + id);
+								if(idOpt.isPresent()) {
+									params.put("resourceUri", pathPrefix + "/workspace#/folder/" + idOpt.get());
+								}else {
+									params.put("resourceUri", pathPrefix + "/workspace#/shared");
+								}
 								params.put("resourceName", resourceName);
 								if (addVersion) {
 									final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
@@ -309,7 +323,7 @@ public class WorkspaceController extends BaseController {
 											new ArrayList<>(recipientId), resourceId, params);
 									created(request);
 								} else {
-									badRequest(request, "id is not a folder" + id);
+									badRequest(request, "id is not a folder" + idOpt.orElse("root"));
 								}
 							}
 						} else {
