@@ -2,7 +2,7 @@
 
  -->
 
-<article class="list-view no-margin-bottom height-minus210-mobile-1d minheight-500" drop-files="newFile.files" on-drop="setFilesName();" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}">
+<article class="list-view no-margin-bottom height-minus210-mobile-1d" drop-files="newFile.files" on-drop="setFilesName();" ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}">
 	<dropzone-overlay on-import="onImportFiles($event)"  reset-scroll="true" ng-if="isDropzoneEnabled()" can-drop="canDropOnFolder()" on-cannot-drop="onCannotDropFile()"></dropzone-overlay>
 	<table class="list-view sticky-header darkgrey primary-hover">
 		<thead>
@@ -156,5 +156,4 @@
 			</article>
 		</lightbox>
 	</div>
-	<hr class="vertical-spacing-twice row"/>
 </article>
