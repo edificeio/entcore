@@ -139,6 +139,7 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             $scope.copyingForShare = true;
             const res = await workspaceService.copyAll($scope.sharedElements, $scope.currentTree as models.Element)
             copiedFolders = res.copies;
+            $scope.sharedElements = res.copies;
             template.open('share', 'share/share');
         } finally {
             $scope.copyingForShare = false;
