@@ -151,6 +151,7 @@ export let conversationController = ng.controller('ConversationController', [
 
         $scope.constructNewItem = function () {
             $scope.state.newItem = new Mail();
+            $scope.state.newItem.setMailFirstSpace();
             $scope.state.newItem.setMailSignature($scope.getSignature());
         }
 
