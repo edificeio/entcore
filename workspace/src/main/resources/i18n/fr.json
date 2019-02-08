@@ -100,7 +100,7 @@
     "workspace.delete.version": "Supprimer la version",
     "workspace.document.comment": "Commenter",
     "workspace.document.comment.hide": "Masquer les commentaires",
-    "workspace.document.comment.show": "Afficher les commentaires",
+    "workspace.document.comment.show": "Voir les commentaires",
     "workspace.document.delete": "Supprimer un document",
     "workspace.document.file": "Fichier",
     "workspace.document.get": "Lire un document",
