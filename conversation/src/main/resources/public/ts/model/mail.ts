@@ -194,6 +194,10 @@ export class Mail implements Selectable {
         this.body = this.body + '<div><br></div><div class="signature new-signature">' + signature + '</div>'
     }
 
+    setMailFirstSpace() {
+        this.body = '<div>​</div><div>​</div>';
+    }
+
     setMailContent(origin: Mail, mailType: string, compile, sanitize, $scope, signature, copyReceivers?: boolean): Promise<any> {
         if (origin.subject.indexOf(format[mailType].prefix) === -1) {
             this.subject = lang.translate(format[mailType].prefix) + " " + origin.subject;
@@ -209,7 +213,7 @@ export class Mail implements Selectable {
         }
 
         return new Promise((resolve, reject) => {
-            this.body = '<div><br></div><div class="signature new-signature">' + signature + '</div>' +
+            this.body = '<div>​</div><div>​</div><div><br></div><div class="signature new-signature">' + signature + '</div>' +
                 format[mailType].content + '<br><blockquote>' + origin.body + '</blockquote>';
             const tempElement = compile(format[mailType].content)($scope);
             setTimeout(function () {
