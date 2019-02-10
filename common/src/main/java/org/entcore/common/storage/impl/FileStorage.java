@@ -49,12 +49,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class FileStorage implements Storage {
 
 	private static final Logger log = LoggerFactory.getLogger(FileStorage.class);
+	private static final Pattern RANGE = Pattern.compile("^bytes=(\\d+)-(\\d*)$");
 	private final String basePath;
 	private final FileSystem fs;
 	private final boolean flat;
@@ -351,15 +354,36 @@ public class FileStorage implements Storage {
 			if (metadata != null && metadata.getString("content-type") != null) {
 				resp.putHeader("Content-Type", metadata.getString("content-type"));
 			}
-			if (resultHandler != null) {
-				resp.sendFile(path, resultHandler);
-			} else {
-				resp.sendFile(path, ar -> {
+			long offset = 0;
+			long length = Long.MAX_VALUE;
+			final String rangeHeader = request.getHeader("Range");
+			if (rangeHeader != null && metadata != null) {
+				final Matcher m = RANGE.matcher(rangeHeader);
+				if (m.matches()) {
+					try {
+						final long size = metadata.getLong("size");
+						long lastByte = size - 1;
+						offset = Long.parseLong(m.group(1));
+						final String suffix = m.group(2);
+						if (isNotEmpty(suffix)) {
+							lastByte = Math.min(Long.parseLong(suffix), lastByte);
+						}
+						length = lastByte + 1 - offset;
+						request.response().putHeader("Content-Range", "bytes " + offset + "-" + lastByte + "/" + size);
+						request.response().setStatusCode(206).setStatusMessage("Partial Content");
+					} catch (Exception re) {
+						log.error("Error Range Not Satisfiable", re);
+					}
+				}
+			}
+			if (resultHandler == null) {
+				resultHandler = ar -> {
 					if (ar.failed() && !request.response().ended()) {
 						Renders.notFound(request);
 					}
-				});
+				};
 			}
+			resp.sendFile(path, offset, length, resultHandler);
 		} catch (FileNotFoundException e) {
 			resp.setStatusCode(404).setStatusMessage("Not Found").end();
 			if (resultHandler != null) {
