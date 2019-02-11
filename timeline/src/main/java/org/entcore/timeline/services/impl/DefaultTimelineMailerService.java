@@ -720,7 +720,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		aggregation
 				.put("aggregate", "timeline")
 				.put("allowDiskUse", true)
-				.put("pipeline", pipeline);
+				.put("pipeline", pipeline)
+				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
 		JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("date").greaterThanEquals(from));
 		JsonObject grouper = new JsonObject("{ \"_id\" : \"notifiedUsers\", \"recipients\" : {\"$addToSet\" : \"$recipients.userId\"}}");
@@ -735,7 +736,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				if ("error".equals(event.body().getString("status", "error"))) {
 					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				} else {
-					JsonArray r = event.body().getJsonObject("result", new JsonObject()).getJsonArray("result");
+					JsonArray r = event.body().getJsonObject("result", new JsonObject())
+							.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch");
 					if (r != null && r.size() > 0) {
 						handler.handle(r.getJsonObject(0).getJsonArray("recipients", new fr.wseduc.webutils.collections.JsonArray()));
 					} else {
@@ -787,7 +789,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		aggregation
 				.put("aggregate", "timeline")
 				.put("allowDiskUse", true)
-				.put("pipeline", pipeline);
+				.put("pipeline", pipeline)
+				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
 		JsonObject matcher = MongoQueryBuilder.build(
 				QueryBuilder
@@ -808,7 +811,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				} else {
 					handler.handle(
 							event.body().getJsonObject("result", new JsonObject())
-									.getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray()));
+									.getJsonObject("cursor", new JsonObject())
+									.getJsonArray("firstBatch", new fr.wseduc.webutils.collections.JsonArray()));
 				}
 			}
 
