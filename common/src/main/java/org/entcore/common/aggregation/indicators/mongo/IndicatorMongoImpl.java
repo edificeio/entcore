@@ -213,7 +213,8 @@ public class IndicatorMongoImpl extends Indicator{
 		aggregation
 			.put("aggregate", COLLECTIONS.events.name())
 			.put("allowDiskUse", true)
-			.put("pipeline", pipeline);
+			.put("pipeline", pipeline)
+			.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
 		pipeline.add(new JsonObject().put("$match", MongoQueryBuilder.build(filteringQuery)));
 		addUnwindPipeline(pipeline, group);
@@ -230,7 +231,8 @@ public class IndicatorMongoImpl extends Indicator{
 			@Override
 			public void handle(Message<JsonObject> message) {
 				if ("ok".equals(message.body().getString("status")) && message.body().getJsonObject("result", new JsonObject()).getInteger("ok") == 1){
-					JsonArray result = message.body().getJsonObject("result").getJsonArray("result");
+					JsonArray result = message.body().getJsonObject("result", new JsonObject())
+							.getJsonObject("cursor", new JsonObject()).getJsonArray("firstBatch");
 					writeStats(result, group, finalHandler);
 				} else {
 					String groupstr = group == null ? "Global" : group.toString();
