@@ -111,4 +111,14 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 				$scope.$apply()
 			})
 	}
+
+	$scope.noSpace = function(event) {
+		if (event.keyCode === 32) {
+			event.preventDefault();
+		}
+	}
+
+	$scope.noUpperCase = function() {
+		$scope.user.login = $scope.user.login.toLowerCase();
+	}
 }]);

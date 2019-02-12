@@ -140,4 +140,14 @@ export let loginController = ng.controller('LoginController', ['$scope', ($scope
 		}
 	}
 
+	$scope.noSpace = function(event) {
+		if (event.keyCode === 32) {
+			event.preventDefault();
+		}
+	}
+
+	$scope.noUpperCase = function() {
+		$scope.user.email = $scope.user.email.toLowerCase();
+	}
+
 }]);

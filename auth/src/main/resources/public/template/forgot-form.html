@@ -8,7 +8,7 @@
 				<label translate ng-if="user.mode === 'id'" content="auth.mail"></label>
 				<label translate ng-if="user.mode === 'checkFirstName'" content="auth.info.firstName"></label>
 				<label translate ng-if="user.mode === 'checkStructure'" content="auth.info.structure"></label>
-				<input type="text" name="login" ng-if="user.mode === 'password'" ng-model="user.login" required/>
+				<input type="text" name="login" ng-if="user.mode === 'password'" ng-keydown="noSpace($event)" ng-change="noUpperCase()" ng-model="user.login" required/>
 				<input type="email" name="mail" ng-if="user.mode === 'id'" ng-model="user.mail" required/>
 				<input type="text" name="firstName" ng-if="user.mode === 'checkFirstName'" ng-model="user.firstName" required/>
 				<select ng-if="user.mode === 'checkStructure'" ng-options="structure.structureId as structure.structureName for structure in structures | orderBy: 'name'" ng-model="user.structureId" required></select>
