@@ -113,6 +113,16 @@ export function DragDelegate($scope: DragDelegateScope) {
             if (!targetItem) {
                 return false;
             }
+            //cannot drop on owner root if already in it
+            const itemsNotInOwnerRoot = draggingItems.filter(item => item.eParent || item.isShared || item.deleted);
+            if(isTree && tree.filter=="owner" && itemsNotInOwnerRoot.length==0){
+                return false;
+            }
+            //cannot drop on his parent
+            const itemsNotInTarget = draggingItems.filter(item=>item.eParent!=targetItem._id);
+            if(itemsNotInTarget.length==0){
+                return false;
+            }
             //cannot drag on himself
             const targetIndex = draggingItems.filter(item => item === targetItem || (item && targetItem && item._id == targetItem._id))
             if (targetIndex.length > 0) {
