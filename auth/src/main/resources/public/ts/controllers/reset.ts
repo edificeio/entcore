@@ -1,6 +1,8 @@
 import { ng, http, template, idiom as lang } from 'entcore';
 
 declare let resetCode: string;
+declare let login: string;
+declare let callback: string;
 
 export let resetController = ng.controller('ResetController', ['$scope', ($scope) => {
 	$scope.template = template;
@@ -93,4 +95,30 @@ export let resetController = ng.controller('ResetController', ['$scope', ($scope
 			$scope.$apply('error');
 		});
 	};
+
+	$scope.resetForce = function(){
+		http().post('/auth/reset', http().serialize({
+			login: login,
+			password: $scope.user.password,
+			confirmPassword: $scope.user.confirmPassword,
+			oldPassword: $scope.user.oldPassword,
+			callback: callback,
+			forceChange : "force"
+		}))
+		.done(function(data){
+			if(typeof data !== 'object'){
+				if (callback) {
+					window.location.href = callback;
+				} else {
+					window.location.href = '/';
+				}
+			}
+			if(data.error){
+				$scope.error = data.error.message;
+			}
+
+			$scope.$apply('error');
+		});
+	};
+
 }]);
