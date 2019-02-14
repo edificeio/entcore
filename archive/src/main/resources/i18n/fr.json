@@ -1,7 +1,9 @@
 {
-    "archive.info": "Vous pouvez télécharger tous vos documents en cliquant sur le lien ci-dessous :",
+    "archive.info": "Vous pouvez choisir quelles applications vous souhaitez exporter :",
     "archive.title": "Export",
     "archive.waiting": "Le téléchargement va démarrer automatiquement dans quelques instants. L'attente peut prendre plusieurs minutes pour les fichiers volumineux. Si vous quittez cette page avant le début du téléchargement, un lien sera envoyé sur votre fil de nouveautés.",
+    "archive.all": "TOUT / AUCUN",
+    "archive.error": "L'export de vos données n'a pas pu être réalisé. Vous allez être redirigé.",
     "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
     "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
     "e403": "Le serveur a refusé votre requête",

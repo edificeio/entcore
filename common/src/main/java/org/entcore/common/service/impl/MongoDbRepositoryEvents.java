@@ -20,35 +20,45 @@
 package org.entcore.common.service.impl;
 
 import com.mongodb.QueryBuilder;
-import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import org.entcore.common.mongodb.MongoDbConf;
-import org.entcore.common.user.RepositoryEvents;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	protected static final Logger log = LoggerFactory.getLogger(MongoDbRepositoryEvents.class);
-	protected final MongoDb mongo = MongoDb.getInstance();
 	protected final String managerRight;
 	protected final String revisionsCollection;
 	protected final String revisionIdAttribute;
 
-	protected MongoDbRepositoryEvents() {
-		this(null, null, null);
+	public MongoDbRepositoryEvents() {
+		this(null, null, null, null);
 	}
 
-	protected MongoDbRepositoryEvents(String managerRight) {
-		this(managerRight, null, null);
+	public MongoDbRepositoryEvents(String managerRight) {
+		this(null, managerRight, null, null);
 	}
 
-	protected MongoDbRepositoryEvents(String managerRight, String revisionsCollection, String revisionIdAttribute) {
+	public MongoDbRepositoryEvents(Vertx vertx) {
+		this(vertx, null, null, null);
+	}
+
+	public MongoDbRepositoryEvents(Vertx vertx, String managerRight, String revisionsCollection,
+			String revisionIdAttribute) {
+		super(vertx);
 		this.managerRight = managerRight;
 		this.revisionsCollection = revisionsCollection;
 		this.revisionIdAttribute = revisionIdAttribute;
@@ -183,6 +193,88 @@ public abstract class MongoDbRepositoryEvents implements RepositoryEvents {
 				}
 			}
 		});
+	}
+
+	protected void exportFiles(final JsonArray results, String exportPath, Set<String> usedFileName,
+			final AtomicBoolean exported, final Handler<Boolean> handler) {
+		if (results.isEmpty()) {
+			exported.set(true);
+			log.info(title + " exported successfully to : " + exportPath);
+			handler.handle(exported.get());
+		} else {
+			JsonObject resources = results.getJsonObject(0);
+			String fileId = resources.getString("_id");
+			String fileName = resources.getString("title");
+			if (fileName == null) {
+				fileName = resources.getString("name");
+			}
+			if (fileName != null && fileName.contains("/")) {
+				fileName = fileName.replaceAll("/", "-");
+			}
+			if (!usedFileName.add(fileName)) {
+				fileName += "_" + fileId;
+			}
+			final String filePath = exportPath + File.separator + fileName;
+			vertx.fileSystem().writeFile(filePath, resources.toBuffer(), new Handler<AsyncResult<Void>>() {
+				@Override
+				public void handle(AsyncResult<Void> event) {
+					if (event.succeeded()) {
+						results.remove(0);
+						exportFiles(results, exportPath, usedFileName, exported, handler);
+					} else {
+						log.error(title + " : Could not write file " + filePath, event.cause());
+						handler.handle(exported.get());
+					}
+				}
+			});
+		}
+	}
+
+	@Override
+	public void exportResources(String exportId, String userId, JsonArray g, String exportPath, String locale,
+			String host, Handler<Boolean> handler) {
+			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
+			QueryBuilder findByOwner = QueryBuilder.start("owner.userId").is(userId);
+			QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
+			QueryBuilder findByShared = QueryBuilder.start().or(QueryBuilder.start("shared.userId").is(userId).get(),
+					QueryBuilder.start("shared.groupId").in(g).get());
+			QueryBuilder findByAuthorOrOwnerOrShared = QueryBuilder.start().or(findByAuthorOrOwner.get(),
+					findByShared.get());
+			final JsonObject query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
+			final AtomicBoolean exported = new AtomicBoolean(false);
+			final String collection = MongoDbConf.getInstance().getCollection();
+			mongo.find(collection, query, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null) {
+						createExportDirectory(exportPath, locale, new Handler<String>() {
+							@Override
+							public void handle(String path) {
+								if (path != null) {
+									exportDocumentsDependancies(results, path, new Handler<Boolean>() {
+										@Override
+										public void handle(Boolean bool) {
+											if (bool) {
+												exportFiles(results, path, new HashSet<String>(), exported, handler);
+											} else {
+												// Should never happen, export doesn't fail if docs export fail.
+												handler.handle(exported.get());
+											}
+										}
+									});
+								} else {
+									handler.handle(exported.get());
+								}
+							}
+						});
+					} else {
+						log.error(title + " : Could not proceed query " + query.encode(),
+								event.body().getString("message"));
+						handler.handle(exported.get());
+					}
+				}
+			});
 	}
 
 }
