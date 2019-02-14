@@ -465,7 +465,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
-				"SET n.password = {password} " +
+				"SET n.password = {password}, n.changePw = null " +
 				"RETURN n.password as pw";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);

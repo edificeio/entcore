@@ -20,6 +20,7 @@
 package org.entcore.common.http.filter;
 
 import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -30,15 +31,20 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.utils.StringUtils.isEmpty;
 
 public abstract class AbstractActionFilter implements Filter {
 
+	private static final List<String> allowedNotChangePwPaths =
+			Arrays.asList("/userbook/preference/language","/theme", "/auth/oauth2/userinfo", "/userbook/preference/apps");
 	protected static final List<String> authorizationTypes = Arrays.asList("Basic", "Bearer");
 	protected final Set<Binding> bindings;
 	protected final ResourcesProvider provider;
@@ -50,6 +56,8 @@ public abstract class AbstractActionFilter implements Filter {
 
 	protected void userIsAuthorized(HttpServerRequest request, JsonObject session,
 								  Handler<Boolean> handler) {
+		if (checkForceChangePassword(request, session)) return;
+
 		Binding binding = requestBinding(request);
 		if (ActionType.WORKFLOW.equals(binding.getActionType())) {
 			authorizeWorkflowAction(session, binding, handler);
@@ -60,6 +68,21 @@ public abstract class AbstractActionFilter implements Filter {
 		} else {
 			handler.handle(false);
 		}
+	}
+
+	private boolean checkForceChangePassword(HttpServerRequest request, JsonObject session) {
+		if (getOrElse(session.getBoolean("forceChangePassword"), false) &&
+				!allowedNotChangePwPaths.contains(request.path())) {
+			String callback;
+			try {
+				callback = URLEncoder.encode(request.path(), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				callback = "";
+			}
+			Renders.redirect(request, "/auth/reset/forceChangePassword?callback=" + callback);
+			return true;
+		}
+		return false;
 	}
 
 	private void authorizeResourceAction(HttpServerRequest request, JsonObject session,

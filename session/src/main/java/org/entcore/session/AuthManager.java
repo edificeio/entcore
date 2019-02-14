@@ -159,6 +159,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "[doDropCacheSession] Invalid userId : " + message.body().encode());
 			return;
 		}
+		final boolean deleteSessionCollection = getOrElse(message.body().getBoolean("deleteSessionCollection"), true);
 		final List<LoginInfo> loginInfos = logins.get(userId);
 		if (loginInfos != null) {
 			final List<String> sessionIds = new ArrayList<>();
@@ -166,7 +167,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				sessionIds.add(loginInfo.sessionId);
 			}
 			for (String sessionId : sessionIds) {
-				dropSession(null, sessionId, null);
+				dropSession(null, sessionId, null, deleteSessionCollection);
 			}
 		}
 		sendOK(message);
@@ -457,7 +458,13 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta) {
-		mongo.delete(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId));
+		dropSession(message, sessionId, meta, true);
+	}
+
+	private void dropSession(Message<JsonObject> message, String sessionId, JsonObject meta, boolean deleteSessionCollection) {
+		if (deleteSessionCollection) {
+			mongo.delete(SESSIONS_COLLECTION, new JsonObject().put("_id", sessionId));
+		}
 		JsonObject session =  null;
 		try {
 			session = unmarshal(sessions.get(sessionId));
@@ -622,7 +629,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"RETURN distinct " +
 				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
-				"n.birthDate as birthDate, " +
+				"n.birthDate as birthDate, n.changePw as forceChangePassword, " +
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
 				"COLLECT(distinct [s.id, s.name, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.UAI) as uai, " +
