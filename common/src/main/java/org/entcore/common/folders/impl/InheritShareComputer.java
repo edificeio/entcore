@@ -40,6 +40,7 @@ class InheritShareComputer {
 			JsonArray parentAncestors = parentFolder.getJsonArray("ancestors", new JsonArray());
 			JsonArray parentShared = parentFolder.getJsonArray("inheritedShares", new JsonArray());
 			JsonArray currentShared = current.getJsonArray("shared", new JsonArray());
+			boolean isParentShared = DocumentHelper.isShared(parentFolder);
 			//
 			JsonArray inherit = new JsonArray();
 			inherit.addAll(currentShared);
@@ -52,6 +53,12 @@ class InheritShareComputer {
 			current.put("ancestors", ancestors);
 			current.put("inheritedShares", inherit);
 			current.put("isShared", inherit.size() > 0);
+			//if parent is not shared=> child is also not shared
+			if(!isParentShared) {
+				current.put("shared", new JsonArray());
+				current.put("inheritedShares", new JsonArray());
+				current.put("isShared", false);
+			}
 		}
 	}
 
