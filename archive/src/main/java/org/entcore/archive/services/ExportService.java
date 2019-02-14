@@ -20,13 +20,14 @@
 package org.entcore.archive.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 
 public interface ExportService {
 
-	void export(UserInfos user, String locale, HttpServerRequest request, Handler<Either<String, String>> handler);
+	void export(UserInfos user, String locale, JsonArray apps, HttpServerRequest request, Handler<Either<String, String>> handler);
 
 	void userExportExists(UserInfos user, Handler<Boolean> handler);
 
