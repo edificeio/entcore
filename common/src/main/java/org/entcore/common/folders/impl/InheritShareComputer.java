@@ -33,13 +33,14 @@ class InheritShareComputer {
 		}
 	}
 
-	public static void mergeShared(JsonObject parentFolder, JsonObject current) throws RuntimeException {
+	public static void mergeShared(JsonObject parentFolder, JsonObject current, boolean resetSharedIfNeeded) throws RuntimeException {
 		if (!DocumentHelper.isFolder(parentFolder)) {
 			throw new IllegalArgumentException("The parent is not a folder :" + parentFolder.getString("_id"));
 		} else {
 			JsonArray parentAncestors = parentFolder.getJsonArray("ancestors", new JsonArray());
 			JsonArray parentShared = parentFolder.getJsonArray("inheritedShares", new JsonArray());
 			JsonArray currentShared = current.getJsonArray("shared", new JsonArray());
+			boolean isParentShared = DocumentHelper.isShared(parentFolder);
 			//
 			JsonArray inherit = new JsonArray();
 			inherit.addAll(currentShared);
@@ -52,12 +53,18 @@ class InheritShareComputer {
 			current.put("ancestors", ancestors);
 			current.put("inheritedShares", inherit);
 			current.put("isShared", inherit.size() > 0);
+			//if parent is not shared=> child is also not shared
+			if(resetSharedIfNeeded && !isParentShared) {
+				current.put("shared", new JsonArray());
+				current.put("inheritedShares", new JsonArray());
+				current.put("isShared", false);
+			}
 		}
 	}
 
-	public static void mergeShared(Optional<JsonObject> parentFolder, JsonObject current) throws RuntimeException {
+	public static void mergeShared(Optional<JsonObject> parentFolder, JsonObject current, boolean resetSharedIfNeeded) throws RuntimeException {
 		if (parentFolder.isPresent()) {
-			mergeShared(parentFolder.get(), current);
+			mergeShared(parentFolder.get(), current, resetSharedIfNeeded);
 		} else {
 			JsonArray shared = current.getJsonArray("shared", new JsonArray());
 			current.put("shared", shared);
@@ -98,8 +105,8 @@ class InheritShareComputer {
 		return rootParentFuture.compose(rootParentInheritShared -> {
 			return this.childrens(root, recursive);
 		}).map(childrens -> {
-			// merge root
-			mergeShared(rootParentFuture.result(), root);
+			// merge root (dont reset root's share=> root shares are setted by user)
+			mergeShared(rootParentFuture.result(), root, false);
 			// merge children
 			mergeRecursive(root, childrens);
 			// return result
@@ -114,8 +121,8 @@ class InheritShareComputer {
 		return rootParentFuture.compose(rootParentInheritShared -> {
 			return this.childrens(root, recursive);
 		}).map(childrens -> {
-			// merge root
-			mergeShared(rootParentFuture.result(), root);
+			// merge root (dont reset root's share=> root shares are setted by user)
+			mergeShared(rootParentFuture.result(), root, false);
 			// merge children
 			mergeRecursive(root, childrens);
 			// return result
@@ -132,7 +139,8 @@ class InheritShareComputer {
 		for (JsonObject current : all) {
 			String eParent = DocumentHelper.getParent(current);
 			if (parentId != null && parentId.equals(eParent)) {
-				mergeShared(parent, current);
+				// reset shared of child if parent is not shared
+				mergeShared(parent, current, true);
 				// recurse after updating shared
 				mergeRecursive(current, all);
 			}
