@@ -19,11 +19,14 @@
 
 package org.entcore.common.user;
 
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.Utils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.Config;
 
 
 public class RepositoryHandler implements Handler<Message<JsonObject>> {
@@ -46,24 +49,28 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 		String action = message.body().getString("action", "");
 		switch (action) {
 			case "export" :
-				final String exportId = message.body().getString("exportId", "");
-				String userId = message.body().getString("userId", "");
-				String path = message.body().getString("path", "");
-				final String locale = message.body().getString("locale", "fr");
-				final String host = message.body().getString("host", "");
-				JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
-				repositoryEvents.exportResources(exportId, userId, groupIds, path, locale, host, new Handler<Boolean>() {
-					@Override
-					public void handle(Boolean isExported) {
-						JsonObject exported = new JsonObject()
-								.put("action", "exported")
-								.put("status", (isExported ? "ok" : "error"))
-								.put("exportId", exportId)
-								.put("locale", locale)
-								.put("host", host);
-						eb.publish("entcore.export", exported);
-					}
-				});
+				final JsonArray apps = message.body().getJsonArray("apps");
+				String title = Server.getPathPrefix(Config.getConf());
+				if (!Utils.isEmpty(title) && apps.contains(title.substring(1))) {
+					final String exportId = message.body().getString("exportId", "");
+					String userId = message.body().getString("userId", "");
+					String path = message.body().getString("path", "");
+					final String locale = message.body().getString("locale", "fr");
+					final String host = message.body().getString("host", "");
+					JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
+					repositoryEvents.exportResources(exportId, userId, groupIds, path, locale, host, new Handler<Boolean>() {
+						@Override
+						public void handle(Boolean isExported) {
+							JsonObject exported = new JsonObject()
+									.put("action", "exported")
+									.put("status", (isExported ? "ok" : "error"))
+									.put("exportId", exportId)
+									.put("locale", locale)
+									.put("host", host);
+							eb.publish("entcore.export", exported);
+						}
+					});
+				}
 				break;
 			case "delete-groups" :
 				JsonArray groups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
