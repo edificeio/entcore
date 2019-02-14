@@ -131,6 +131,10 @@ export let timelineController = ng.controller('Timeline', ['$scope', 'model', ($
 
 	$scope.display = {};
 
+	$scope.suffixTitle = function(type) {
+		return lang.translate(type === 'timeline' ? type + '.notification' : type);
+	}
+
 }]);
 
 export let personalizationController = ng.controller('Personalization', ['$rootScope', '$scope', 'model', ($rootScope, $scope, model) => {
