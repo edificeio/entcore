@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.code;
@@ -1086,6 +1087,10 @@ public class AuthController extends BaseController {
 				if (user != null && "password".equals(request.params().get("resetCode"))) {
 					renderView(request, params.put("login", user.getLogin()).put("callback", "/userbook/mon-compte"),
 							"changePassword.html", null);
+				} else if (user != null && "forceChangePassword".equals(request.params().get("resetCode"))) {
+					renderView(request, params.put("login", user.getLogin())
+									.put("callback", getOrElse(request.params().get("callback"), "/")),
+							"forceChangePassword.html", null);
 				} else {
 					renderView(request,
 							params.put("notLoggedIn", user == null).put("login", request.params().get("login"))
@@ -1109,9 +1114,10 @@ public class AuthController extends BaseController {
 				final String password = request.formAttributes().get("password");
 				String confirmPassword = request.formAttributes().get("confirmPassword");
 				final String callback = Utils.getOrElse(request.formAttributes().get("callback"), "/auth/login", false);
+				final String forceChange = request.formAttributes().get("forceChange");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
-								&& (oldPassword == null || oldPassword.trim().isEmpty()))
+								&& (oldPassword == null || oldPassword.trim().isEmpty()) || oldPassword.equals(password))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
 					trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
@@ -1145,7 +1151,20 @@ public class AuthController extends BaseController {
 							@Override
 							public void handle(String userId) {
 								if (userId != null && !userId.trim().isEmpty()) {
-									userAuthAccount.changePassword(login, password, resultHandler);
+									if ("force".equals(forceChange)) {
+										userAuthAccount.changePassword(login, password, reseted -> {
+											if (Boolean.TRUE.equals(reseted)) {
+												trace.info("Changement forcé réussie du mot de passe de l'utilisateur " + login);
+												UserUtils.deleteCacheSession(eb, userId,
+														false, r -> redirect(request, callback));
+											} else {
+												trace.info("Erreur lors du changement forcé du mot de passe de l'utilisateur " + login);
+												error(request, resetCode);
+											}
+										});
+									} else {
+										userAuthAccount.changePassword(login, password, resultHandler);
+									}
 								} else {
 									error(request, null);
 								}

@@ -548,9 +548,14 @@ public class UserUtils {
 	}
 
 	public static void deleteCacheSession(EventBus eb, String userId, final Handler<Boolean> handler) {
+		deleteCacheSession(eb, userId, true, handler);
+	}
+
+	public static void deleteCacheSession(EventBus eb, String userId, boolean deleteSessionCollection, final Handler<Boolean> handler) {
 		JsonObject json = new JsonObject()
 				.put("action", "dropCacheSession")
-				.put("userId", userId);
+				.put("userId", userId)
+				.put("deleteSessionCollection", deleteSessionCollection);
 		eb.send(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override

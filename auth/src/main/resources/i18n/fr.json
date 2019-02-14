@@ -103,5 +103,6 @@
     "connect.federated.user" : "Se connecter",
     "fed.form.user.wait" : "Veuillez patienter, vous allez être redirigé vers l'application demandée.",
     "fed.form.user.redirect" : "Si vous n'êtes pas automatiquement redirigé, vous pouvez cliquer sur le bouton ci-dessous.",
-    "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifiants ENT ou contactez votre établissement."
+    "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifiants ENT ou contactez votre établissement.",
+    "auth.force.change.pw.header" : "Vous devez renouveler votre mot de passe"
 }
