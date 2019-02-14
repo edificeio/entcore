@@ -11,7 +11,11 @@ object ArchiveScenario {
   val scn =
     exec(http("Ask archive creation")
     .post("/archive/export")
+    .body(StringBody("""{"apps":["rack","workspace"]}"""))
     .check(status.is(200), jsonPath("$.exportId").find.saveAs("exportId")))
+    .exec(http("Verify archive")
+    .get("/archive/export/verify/${exportId}")
+    .check(status.is(200)))
     .exec(http("Get archive")
     .get("/archive/export/${exportId}")
     .check(status.is(200)))
