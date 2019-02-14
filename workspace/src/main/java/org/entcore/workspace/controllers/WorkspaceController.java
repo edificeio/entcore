@@ -518,11 +518,16 @@ public class WorkspaceController extends BaseController {
 		final String filter = getOrElse(request.params().get("filter"), "owner", false);
 		final String application = getOrElse(request.params().get("application"), null, false);
 		final String search = request.params().get("search");
+		final String id = request.params().get("id");
 		//
 		ElementQuery query = new ElementQuery(false);
 		query.setHierarchical(hierarchical != null && hierarchical.equals("true"));
 		query.setApplication(application);
 		query.setTrash(false);
+		//find by id
+		if (!StringUtils.isEmpty(id)) {
+			query.setId(id);
+		}
 		// search
 		if (!StringUtils.isEmpty(search)) {
 			final List<String> searchs = StringUtils.split(search, "\\s+");
