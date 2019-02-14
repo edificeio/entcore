@@ -24,32 +24,163 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.service.impl.SqlRepositoryEvents;
+import io.vertx.core.Vertx;
+import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import fr.wseduc.webutils.Either;
 
-public class ConversationRepositoryEvents implements RepositoryEvents {
+public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	private static final Logger log = LoggerFactory.getLogger(ConversationRepositoryEvents.class);
 	private final Sql sql = Sql.getInstance();
 	private final Storage storage;
 	private final long timeout;
 
-	public ConversationRepositoryEvents(Storage storage, long timeout) {
+	public ConversationRepositoryEvents(Storage storage, long timeout, Vertx vertx) {
+		super(vertx);
 		this.storage = storage;
 		this.timeout = timeout;
+	}
+
+	private void exportAttachments(String exportPath, JsonArray query, Handler<Boolean> handler) {
+		sql.transaction(query, new Handler<Message<JsonObject>>() {
+			public void handle(Message<JsonObject> event) {
+				if ("ok".equals(event.body().getString("status"))) {
+					JsonArray ja = event.body().getJsonArray("results");
+					if (ja != null && !ja.isEmpty()) {
+						JsonArray results = ja.getJsonObject(0).getJsonArray("results");
+						if (results != null && !results.isEmpty()) {
+							List<String> ids = new ArrayList<>();
+							Map<String, Object> filenamesByIds = new HashMap<>();
+							for (int i = 0; i < results.size(); i++) {
+								JsonArray result = results.getJsonArray(i);
+								String id = result.getString(0);
+								String filename = result.getString(3);
+								int dot = filename.indexOf('.');
+								filename = dot > -1 ? filename.substring(0, dot) + "_" + id + filename.substring(dot)
+								: filename + "_" + id;
+								ids.add(id);
+								filenamesByIds.put(id, filename);
+							}
+							JsonObject aliases = new JsonObject(filenamesByIds);
+							final String exportPathTmp = exportPath + File.separator + "_tmp2";
+							final String exportPathFinal = exportPath + File.separator + "Attachments";
+							vertx.fileSystem().mkdir(exportPathTmp, new Handler<AsyncResult<Void>>() {
+								@Override
+								public void handle(AsyncResult<Void> event) {
+									if (event.succeeded()) {
+										storage.writeToFileSystem(ids.stream().toArray(String[]::new), exportPathTmp,
+												aliases, new Handler<JsonObject>() {
+													@Override
+													public void handle(JsonObject event) {
+														if (!"ok".equals(event.getString("status"))) {
+															log.error(title
+																	+ " : Failed to export one or more attachments to "
+																	+ exportPathTmp + " - "
+																	+ event.getJsonArray("errors").toString());
+														}
+														vertx.fileSystem().move(exportPathTmp, exportPathFinal,
+																resMove -> {
+																	if (resMove.succeeded()) {
+																		log.info(title
+																				+ " : Attachments (if any) successfully exported from "
+																				+ exportPathTmp + " to "
+																				+ exportPathFinal);
+																		handler.handle(true);
+																	} else {
+																		log.error(title
+																				+ " : Failed to export attachments from "
+																				+ exportPathTmp + " to "
+																				+ exportPathFinal + " - "
+																				+ resMove.cause());
+																		handler.handle(true);
+																	}
+																});
+													}
+												});
+									} else {
+										log.error(title + " : Could not create folder " + exportPathTmp + " - "
+												+ event.cause());
+										handler.handle(true);
+									}
+								}
+							});
+						} else {
+							handler.handle(true);
+						}
+					} else {
+						handler.handle(true);
+					}
+				} else {
+					handler.handle(true);
+				}
+			}
+		});
 	}
 
 	@Override
 	public void exportResources(String exportId, String userId, JsonArray groups, String exportPath,
 			String locale, String host, Handler<Boolean> handler) {
 
+
+			final HashMap<String, JsonArray> queries = new HashMap<String, JsonArray>();
+
+			final String attachmentTable = "conversation.attachments", foldersTable = "conversation.folders",
+					messagesTable = "conversation.messages", usermessagesTable = "conversation.usermessages",
+					usermessagesattachmentsTable = "conversation.usermessagesattachments";
+
+			JsonArray userIdParam = new JsonArray().add(userId);
+
+			String queryAttachments = "SELECT DISTINCT att.* " + "FROM " + attachmentTable + " att " + "LEFT JOIN "
+					+ usermessagesattachmentsTable + " userAtt ON att.id = userAtt.attachment_id "
+					+ "WHERE userAtt.user_id = ?";
+			JsonArray attachments = new SqlStatementsBuilder().prepared(queryAttachments, userIdParam).build();
+			queries.put(attachmentTable, attachments);
+
+			String queryFolders = "SELECT DISTINCT fol.* " + "FROM " + foldersTable + " fol " + "WHERE fol.user_id = ?";
+			queries.put(foldersTable, new SqlStatementsBuilder().prepared(queryFolders, userIdParam).build());
+
+			String queryMessages = "SELECT DISTINCT mess.* " + "FROM " + messagesTable + " mess " + "LEFT JOIN "
+					+ usermessagesTable + " umess ON mess.id = umess.message_id " + "WHERE umess.user_id = ?";
+			queries.put(messagesTable, new SqlStatementsBuilder().prepared(queryMessages, userIdParam).build());
+
+			String queryUserMessages = "SELECT DISTINCT umess.* " + "FROM " + usermessagesTable + " umess "
+					+ "WHERE umess.user_id = ?";
+			queries.put(usermessagesTable, new SqlStatementsBuilder().prepared(queryUserMessages, userIdParam).build());
+
+			String queryUserMessagesAttachments = "SELECT DISTINCT umessatt.* " + "FROM " + usermessagesattachmentsTable
+					+ " umessatt " + "WHERE umessatt.user_id = ?";
+			queries.put(usermessagesattachmentsTable,
+					new SqlStatementsBuilder().prepared(queryUserMessagesAttachments, userIdParam).build());
+
+			AtomicBoolean exported = new AtomicBoolean(false);
+
+			createExportDirectory(exportPath, locale, new Handler<String>() {
+				@Override
+				public void handle(String path) {
+					if (path != null) {
+						exportAttachments(path, attachments, new Handler<Boolean>() {
+							@Override
+							public void handle(Boolean event) {
+								exportTables(queries, new JsonArray(), path, exported, handler);
+							}
+						});
+					} else {
+						handler.handle(exported.get());
+					}
+				}
+			});
 	}
 
 	@Override

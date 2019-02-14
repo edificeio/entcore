@@ -21,9 +21,22 @@
 
 		<div class="row">
 			<div class="twelve cell reduce-block-eight">
-				<div class="twelve cell info vertical-spacing-twice">
+				<div class="twelve cell info vertical-spacing-twice" ng-if="!loading">
 					<i18n>archive.info</i18n>
 				</div>
+
+				<div class="chips drop-down-block">
+					<label class="chip multiselect" ng-if="!loading">
+						<span><i18n>archive.all</i18n></span>
+						<input type="checkbox" ng-click="selectAll()" />
+					</label>
+					<label ng-repeat="app in availableApps" ng-if="!loading" class="chip [[app]]" ng-class="{ selected: selectedApps[app] }">
+						<i class="[[app]] type"></i>
+						<span translate content="[[app]]"></span>
+						<input type="checkbox" ng-model="selectedApps[app]" />
+					</label>
+				</div>
+
 				<div class="row centered" ng-if="!loading">
 					<button ng-click="initiateExport()">
 						<i18n>export</i18n>
@@ -31,6 +44,9 @@
 				</div>
 				<div class="row centered" ng-if="loading">
 					<i18n>archive.waiting</i18n>
+				</div>
+				<div class="row centered-text" ng-if="loadingSpinner">
+					<i class="loading loadingExport"></i>
 				</div>
 			</div>
 
