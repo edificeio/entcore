@@ -41,7 +41,7 @@
 					</label>
 					<label class="chip [[type.data.toLowerCase()]]" ng-class="{ selected: type.selected }" ng-repeat="type in (filtered.notificationTypes = notificationTypes.all)">
 						<i class="[[type.data.toLowerCase()]] type"></i>
-						<span translate content="[[type.data.toLowerCase()]]"></span>
+						<span>[[suffixTitle(type.data.toLowerCase())]]</span>
 						<input type="checkbox" ng-model="type.selected" ng-change="type.apply()" />
 					</label>
 				</div>
