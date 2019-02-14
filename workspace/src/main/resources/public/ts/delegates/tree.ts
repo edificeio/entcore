@@ -17,13 +17,13 @@ export interface TreeDelegateScope {
     trees: models.Tree[]
     quota: Quota
     currentTree: models.Tree
-    currentFolderName():string;
+    currentFolderName(): string;
     onTreeInit(cb: () => void);
     isHighlightTree(folder: models.Element): boolean
     getHighlightCount(folder: models.Element): number
     openFolderRoute(el: models.Node, forceReload?: boolean)
     openFolder(el: models.Node);
-    openFolderById(id: string):Promise<boolean>
+    openFolderById(id: string): Promise<boolean>
     openFolderRouteById(id: string)
     rollFoldersRecursively();
     isInSelectedFolder(folder: models.Element)
@@ -144,7 +144,8 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             }
             quota.refresh();
             if (event.dest || event.treeDest) {
-                $scope.setHighlightTree([{ folder: event.dest ? event.dest : $scope.getTreeByFilter(event.treeDest), count: event.elements.length }]);
+                const count = event.elements ? event.elements.length : event.ids ? event.ids.length : 0;
+                $scope.setHighlightTree([{ folder: event.dest ? event.dest : $scope.getTreeByFilter(event.treeDest), count }]);
             }
             $scope.safeApply()
         })
