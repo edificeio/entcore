@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -78,7 +79,7 @@ public class SqlShareService extends GenericShareService {
 	}
 
 	@Override
-	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
+	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final ShareInfosQuery search,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (userId == null || userId.trim().isEmpty()) {
 			handler.handle(new Either.Left<String, JsonObject>("Invalid userId."));

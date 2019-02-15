@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
@@ -136,12 +137,17 @@ public abstract class GenericShareService implements ShareService {
 				.collect(Collectors.toSet());
 		return !inheritActionSet.containsAll(actionSet) || !actionSet.containsAll(inheritActionSet);
 	}
-
+	
+	@Override
+	public void shareInfos(String userId, String resourceId, String acceptLanguage, String search, Handler<Either<String, JsonObject>> handler) {
+		shareInfos(userId, resourceId, acceptLanguage, new ShareInfosQuery(search), handler);
+	}
+	
 	protected void getInheritShareInfos(final String userId, final JsonArray actions,
 			final JsonObject inheritGroupCheckedActions, final JsonObject inheritUserCheckedActions,
 			final JsonObject groupCheckedActions, final JsonObject userCheckedActions, final String acceptLanguage,
 			String search, final Handler<JsonObject> handler) {
-		getShareInfos(userId, actions, inheritGroupCheckedActions, inheritUserCheckedActions, acceptLanguage, search,
+		getShareInfos(userId, actions, inheritGroupCheckedActions, inheritUserCheckedActions, acceptLanguage, new ShareInfosQuery(search),
 				res -> {
 					if (res != null) {
 						// if shared does not contains userId => it is from inherited shared
@@ -197,94 +203,99 @@ public abstract class GenericShareService implements ShareService {
 	}
 
 	protected void getShareInfos(final String userId, final JsonArray actions, final JsonObject groupCheckedActions,
-			final JsonObject userCheckedActions, final String acceptLanguage, String search,
+			final JsonObject userCheckedActions, final String acceptLanguage, ShareInfosQuery query,
 			final Handler<JsonObject> handler) {
-		final JsonObject params = new JsonObject().put("groupIds",
+		final JsonObject groupParams = new JsonObject().put("groupIds",
 				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
-		final JsonObject params2 = new JsonObject().put("userIds",
+		final JsonObject userParams = new JsonObject().put("userIds",
 				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
+		final String search = query.getSearch();
 		if (search != null && search.trim().isEmpty()) {
 			final Neo4j neo4j = Neo4j.getInstance();
-			neo4j.execute(GROUP_SHARED, params, validResultHandler(new Handler<Either<String, JsonArray>>() {
-				@Override
-				public void handle(Either<String, JsonArray> sg) {
-					JsonArray visibleGroups;
-					if (sg.isRight()) {
-						visibleGroups = sg.right().getValue();
-					} else {
-						visibleGroups = new fr.wseduc.webutils.collections.JsonArray();
-					}
-					final JsonObject groups = new JsonObject();
-					groups.put("visibles", visibleGroups);
-					groups.put("checked", groupCheckedActions);
-					for (Object u : visibleGroups) {
-						if (!(u instanceof JsonObject))
-							continue;
-						JsonObject group = (JsonObject) u;
-						UserUtils.groupDisplayName(group, acceptLanguage);
-					}
-					neo4j.execute(USER_SHARED, params2, validResultHandler(new Handler<Either<String, JsonArray>>() {
-						@Override
-						public void handle(Either<String, JsonArray> event) {
-							JsonArray visibleUsers;
-							if (event.isRight()) {
-								visibleUsers = event.right().getValue();
-							} else {
-								visibleUsers = new fr.wseduc.webutils.collections.JsonArray();
-							}
-							JsonObject users = new JsonObject();
-							users.put("visibles", visibleUsers);
-							users.put("checked", userCheckedActions);
-							JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
-									.put("users", users);
-							handler.handle(share);
-						}
-					}));
+			neo4j.execute(GROUP_SHARED, groupParams, validResultHandler(sg-> {
+				JsonArray visibleGroups;
+				if (sg.isRight()) {
+					visibleGroups = sg.right().getValue();
+				} else {
+					visibleGroups = new fr.wseduc.webutils.collections.JsonArray();
 				}
+				final JsonObject groups = new JsonObject();
+				groups.put("visibles", visibleGroups);
+				groups.put("checked", groupCheckedActions);
+				for (Object u : visibleGroups) {
+					if (!(u instanceof JsonObject))
+						continue;
+					JsonObject group = (JsonObject) u;
+					UserUtils.groupDisplayName(group, acceptLanguage);
+				}
+				neo4j.execute(USER_SHARED, userParams, validResultHandler(event-> {
+					JsonArray visibleUsers;
+					if (event.isRight()) {
+						visibleUsers = event.right().getValue();
+					} else {
+						visibleUsers = new fr.wseduc.webutils.collections.JsonArray();
+					}
+					JsonObject users = new JsonObject();
+					users.put("visibles", visibleUsers);
+					users.put("checked", userCheckedActions);
+					JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
+							.put("users", users);
+					handler.handle(share);
+				}));
 			}));
 		} else {
-			final String preFilter;
-			if (search != null) {
-				preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
-				String sanitizedSearch = StringValidation.sanitize(search);
-				params.put("search", sanitizedSearch);
-				params2.put("search", sanitizedSearch);
-			} else {
-				preFilter = null;
-			}
-
-			final String q = "RETURN distinct profileGroup.id as id, profileGroup.name as name, "
+			final String groupQuery = "RETURN distinct profileGroup.id as id, profileGroup.name as name, "
 					+ "profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName "
 					+ "ORDER BY name " + "UNION " + GROUP_SHARED;
 
-			final String q2 = "RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, "
+			final String userQuery = "RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, "
 					+ "visibles.lastName as lastName, visibles.firstName as firstName, visibles.profiles[0] as profile "
 					+ "ORDER BY username " + "UNION " + USER_SHARED;
-
-			UserUtils.findVisibleProfilsGroups(eb, userId, q, params, new Handler<JsonArray>() {
-				@Override
-				public void handle(JsonArray visibleGroups) {
-					final JsonObject groups = new JsonObject();
-					groups.put("visibles", visibleGroups);
-					groups.put("checked", groupCheckedActions);
-					for (Object u : visibleGroups) {
-						if (!(u instanceof JsonObject))
-							continue;
-						JsonObject group = (JsonObject) u;
-						UserUtils.groupDisplayName(group, acceptLanguage);
-					}
-					findVisibleUsers(eb, userId, false, preFilter, q2, params2, new Handler<JsonArray>() {
-						@Override
-						public void handle(JsonArray visibleUsers) {
-							JsonObject users = new JsonObject();
-							users.put("visibles", visibleUsers);
-							users.put("checked", userCheckedActions);
-							JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
-									.put("users", users);
-							handler.handle(share);
-						}
-					});
+			//
+			final StringBuilder preFilterUserBuilder = new StringBuilder();
+			final StringBuilder preFilterGroupBuilder = new StringBuilder();
+			//PREFILTER GROUPS AND USERS BY SEARCH
+			if (search != null) {
+				String sanitizedSearch = StringValidation.sanitize(search);
+				groupParams.put("search", sanitizedSearch);
+				userParams.put("search", sanitizedSearch);
+				//
+				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
+				// historically this filter was not user. should it be?
+				//preFilterGroupBuilder.append(" AND profileGroup.displayNameSearchField CONTAINS {search} ");
+			}
+			//PREFILTER GROUPS BY FILTER
+			if(query.getOnlyGroupsWithFilters() != null && query.getOnlyGroupsWithFilters().size() > 0) {
+				groupParams.put("onlyGroupsWithFilters", new JsonArray(query.getOnlyGroupsWithFilters()));
+				preFilterGroupBuilder.append(" AND gp.filter IN {onlyGroupsWithFilters} ");
+			}
+			//PREFILTER USERS BY PROFILES
+			if(query.getOnlyUsersWithProfiles() != null && query.getOnlyUsersWithProfiles().size() > 0) {
+				userParams.put("onlyUserWithProfiles", new JsonArray(query.getOnlyUsersWithProfiles()));
+				preFilterUserBuilder.append(" AND ANY(pro IN m.profiles WHERE pro IN {onlyUserWithProfiles}) ");
+			}
+			//
+			String preFilterGroup = preFilterGroupBuilder.toString().trim().isEmpty() ? null : preFilterGroupBuilder.toString();
+			UserUtils.findVisibleProfilsGroups(eb, userId, preFilterGroup, groupQuery, groupParams, visibleGroups-> {
+				final JsonObject groups = new JsonObject();
+				groups.put("visibles", visibleGroups);
+				groups.put("checked", groupCheckedActions);
+				for (Object u : visibleGroups) {
+					if (!(u instanceof JsonObject))
+						continue;
+					JsonObject group = (JsonObject) u;
+					UserUtils.groupDisplayName(group, acceptLanguage);
 				}
+				//
+				String preFilterUser = preFilterUserBuilder.toString().trim().isEmpty() ? null : preFilterUserBuilder.toString();
+				findVisibleUsers(eb, userId, false, preFilterUser, userQuery, userParams,visibleUsers-> {
+					JsonObject users = new JsonObject();
+					users.put("visibles", visibleUsers);
+					users.put("checked", userCheckedActions);
+					JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
+							.put("users", users);
+					handler.handle(share);
+				});
 			});
 		}
 	}
