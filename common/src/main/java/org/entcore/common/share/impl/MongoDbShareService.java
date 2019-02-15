@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.entcore.common.share.ShareInfosQuery;
+
 import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
@@ -227,7 +229,7 @@ public class MongoDbShareService extends GenericShareService {
 	}
 
 	@Override
-	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
+	public void shareInfos(final String userId, String resourceId, final String acceptLanguage, final ShareInfosQuery search,
 			final Handler<Either<String, JsonObject>> handler) {
 		if (!this.checkParams(userId, resourceId, handler)) {
 			return;
