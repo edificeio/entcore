@@ -1,7 +1,9 @@
 package org.entcore.common.folders.impl;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import java.util.Optional;
 
@@ -89,6 +91,19 @@ public class DocumentHelper {
 
 	public static boolean isFile(JsonObject doc) {
 		return getType(doc).equals(FolderManager.FILE_TYPE);
+	}
+
+	public static JsonArray getAncestors(JsonObject doc) {
+		return doc.getJsonArray("ancestors", new JsonArray());
+	}
+
+	public static List<String> getAncestorsAsList(JsonObject doc) {
+		List<String> ancestors = new ArrayList<>();
+		for (Object o : getAncestors(doc)) {
+			if (o instanceof String)
+				ancestors.add((String) o);
+		}
+		return ancestors;
 	}
 
 	public static boolean isFolder(JsonObject doc) {

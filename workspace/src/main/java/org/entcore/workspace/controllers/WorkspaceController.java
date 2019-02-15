@@ -545,6 +545,7 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("comments");
 				query.getProjection().add("application");
 				query.getProjection().add("trasher");
+				query.getProjection().add("ancestors");
 				workspaceService.findByQuery(query, userInfos, asyncArrayResponseHandler(request));
 			} else {
 				unauthorized(request);
