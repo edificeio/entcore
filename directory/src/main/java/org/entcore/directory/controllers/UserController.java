@@ -166,6 +166,14 @@ public class UserController extends BaseController {
 		}
 	}
 
+	@Get("/myinfos")
+	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
+	public void myinfos(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			userService.get(user.getUserId(), false, defaultResponseHandler(request));
+		});
+	}
+
 	@Get("/userbook/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getUserBook(final HttpServerRequest request) {
