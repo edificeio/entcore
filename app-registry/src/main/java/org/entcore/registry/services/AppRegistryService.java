@@ -69,6 +69,10 @@ public interface AppRegistryService {
 
 	void deleteApplication(String applicationId, Handler<Either<String, JsonObject>> handler);
 
+	void setLevelsOfEducation(String applicationId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler);
+
+	void setRoleDistributions(String roleId, List<String> distributions, Handler<Either<String, JsonObject>> handler);
+
 	void applicationAllowedUsers(String application, JsonArray users, JsonArray groups,
 			Handler<Either<String, JsonArray>> handler);
 

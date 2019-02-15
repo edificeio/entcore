@@ -54,6 +54,10 @@ public interface SchoolService {
 
 	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
+	void setLevelsOfEducation(String structureId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler);
+
+	void setDistributions(String structureId, List<String> distributions, Handler<Either<String, JsonObject>> handler);
+
 	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren,

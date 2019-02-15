@@ -229,6 +229,40 @@ public class StructureController extends BaseController {
 		});
 	}
 
+	@Put("/structure/:structureId/levels-of-education")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void setLevels(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray jsonLevelsOfEducation = body.getJsonArray("levelsOfEducation");
+				List<Integer> levelsOfEducation = jsonLevelsOfEducation.getList();
+				structureService.setLevelsOfEducation(
+						request.params().get("structureId"),
+						levelsOfEducation,
+						defaultResponseHandler(request)
+				);
+			}
+		});
+	}
+
+	@Put("/structure/:structureId/distributions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void setDistributions(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray jsonDistributions = body.getJsonArray("distributions");
+				List<String> distributions = jsonDistributions.getList();
+				structureService.setDistributions(
+						request.params().get("structureId"),
+						distributions,
+						defaultResponseHandler(request)
+				);
+			}
+		});
+	}
+
 	@Get("/structure/:structureId/massMail/users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void getMassmailUsers(final HttpServerRequest request){

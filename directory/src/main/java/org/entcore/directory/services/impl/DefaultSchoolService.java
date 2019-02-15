@@ -106,7 +106,7 @@ public class DefaultSchoolService implements SchoolService {
 				"MATCH (s:Structure) " + condition +
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
-				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, " +
+				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, validResultHandler(results));
@@ -212,6 +212,34 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
+	public void setLevelsOfEducation(String structureId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler) {
+		String query =
+				"MATCH (s:Structure {id: {structureId}}) " +
+				"SET s.levelsOfEducation = {levelsOfEducation} " +
+				"RETURN s.id as id, s.levelsOfEducation as levelsOfEducation";
+
+		JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("levelsOfEducation", levelsOfEducations);
+
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+    @Override
+    public void setDistributions(String structureId, List<String> distributions, Handler<Either<String, JsonObject>> handler) {
+        String query =
+                "MATCH (s:Structure {id: {structureId}}) " +
+                        "SET s.distributions = {distributions} " +
+                        "RETURN s.id as id, s.distributions as distributions";
+
+        JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("distributions", distributions);
+
+        neo.execute(query, params, validUniqueResultHandler(handler));
+    }
+
+    @Override
 	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		this.massmailUsers(structureId, filterObj, true, true, null, userInfos, results);
 	}
