@@ -97,11 +97,47 @@ public class FolderManagerMongoImpl implements FolderManager {
 	@Override
 	public void copy(String sourceId, Optional<String> destFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
-		queryHelper.findAllAsList(
-				queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(sourceId))
-				.compose(docs -> {
-					return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, false);
-				}).setHandler(handler);
+		assertDestinationOnMoveOrCopy(sourceId, destFolderId).compose(ok -> {
+			return queryHelper.findAllAsList(
+					queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(sourceId))
+					.compose(docs -> {
+						return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, false);
+					});
+		}).setHandler(handler);
+	}
+
+	private Future<Void> assertDestinationOnMoveOrCopy(String sourceId, Optional<String> destinationFolderId) {
+		List<String> sourceIds = new ArrayList<>();
+		sourceIds.add(sourceId);
+		return assertDestinationOnMoveOrCopy(sourceIds, destinationFolderId);
+	}
+
+	private Future<Void> assertDestinationOnMoveOrCopy(Collection<String> sourceIds,
+			Optional<String> destinationFolderId) {
+		if (destinationFolderId.isPresent()) {
+			final String destinationId = destinationFolderId.get();
+			return queryHelper.findById(destinationId).compose(destination -> {
+				// destination should be a folder
+				if (!DocumentHelper.isFolder(destination)) {
+					return Future.failedFuture("Destination is not a folder: " + DocumentHelper.getType(destination));
+				}
+				// source should not be equals to dest
+				if (sourceIds.contains(destinationId)) {
+					return Future.failedFuture("Source should cant also be destination: " + destinationId);
+				}
+				// destination cannot be a descendant of source
+				List<String> ancestors = DocumentHelper.getAncestorsAsList(destination);
+				for (String a : ancestors) {
+					if (sourceIds.contains(a)) {
+						return Future.failedFuture("Source cannot be an ancestor of destination: " + a);
+					}
+				}
+				return Future.succeededFuture();
+			});
+		} else {
+			// if copying to root => no matters
+			return Future.succeededFuture();
+		}
 	}
 
 	@Override
@@ -111,15 +147,16 @@ public class FolderManagerMongoImpl implements FolderManager {
 			handler.handle(new DefaultAsyncResult<JsonArray>(new JsonArray()));
 			return;
 		}
-		queryHelper.findAllAsList(
-				queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withExcludeDeleted().withId(sourceIds))
-				.compose(docs -> {
-					return copyRecursivelyFromParentId(Optional.of(user), docs, destinationFolderId, false);
-				}).setHandler(handler);
+		assertDestinationOnMoveOrCopy(sourceIds, destinationFolderId).compose(ok -> {
+			return queryHelper.findAllAsList(queryHelper.queryBuilder().filterByInheritShareAndOwner(user)
+					.withExcludeDeleted().withId(sourceIds)).compose(docs -> {
+						return copyRecursivelyFromParentId(Optional.of(user), docs, destinationFolderId, false);
+					});
+		}).setHandler(handler);
 	}
 
 	private Future<JsonArray> copyFile(Optional<UserInfos> userOpt, Collection<JsonObject> originals,
-			Optional<JsonObject> parent,boolean keepVisibility) {
+			Optional<JsonObject> parent, boolean keepVisibility) {
 		return StorageHelper.copyFileInStorage(storage, originals, false).compose(oldFileIdForNewFileId -> {
 			// set newFileIds and parent
 			List<JsonObject> copies = originals.stream().map(o -> {
@@ -133,7 +170,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					copy.remove("eParent");
 				}
 				copy.remove("eParentOld");
-				if(!keepVisibility) {
+				if (!keepVisibility) {
 					copy.remove("protected");
 					copy.remove("public");
 				}
@@ -166,8 +203,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 	private Future<JsonArray> copyRecursivelyFromParentId(Optional<UserInfos> userOpt, Collection<JsonObject> docs,
 			Optional<String> newParentIdOpt, boolean keepVisibility) {
 		if (newParentIdOpt.isPresent()) {
-			return queryHelper.findById(newParentIdOpt.get()).compose(
-					newParent -> copyRecursivelyFromParent(userOpt, docs, Optional.ofNullable(newParent), keepVisibility));
+			return queryHelper.findById(newParentIdOpt.get()).compose(newParent -> copyRecursivelyFromParent(userOpt,
+					docs, Optional.ofNullable(newParent), keepVisibility));
 		} else {
 			return copyRecursivelyFromParent(userOpt, docs, Optional.empty(), keepVisibility);
 		}
@@ -215,8 +252,11 @@ public class FolderManagerMongoImpl implements FolderManager {
 	@Override
 	public void copyUnsafe(String sourceId, Optional<String> destFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
-		queryHelper.findAllAsList(queryHelper.queryBuilder().withId(sourceId).withExcludeDeleted()).compose(docs -> {
-			return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, true);
+		assertDestinationOnMoveOrCopy(sourceId, destFolderId).compose(ok -> {
+			return queryHelper.findAllAsList(queryHelper.queryBuilder().withId(sourceId).withExcludeDeleted())
+					.compose(docs -> {
+						return copyRecursivelyFromParentId(Optional.of(user), docs, destFolderId, true);
+					});
 		}).setHandler(handler);
 	}
 
@@ -544,11 +584,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 			if (msg.succeeded()) {
 				JsonObject previous = msg.result();
 				if (previous != null) {
-					queryHelper.updateMove(sourceId, destinationFolderId).compose(s -> {
-						DocumentHelper.setParent(previous, destinationFolderId);
-						return this.inheritShareComputer.compute(previous, true)
-								.compose(res -> queryHelper.bulkUpdateShares(res));
-					}).map(previous).setHandler(handler);
+					assertDestinationOnMoveOrCopy(sourceId, Optional.ofNullable(destinationFolderId)).compose(ok -> {
+						return queryHelper.updateMove(sourceId, destinationFolderId).compose(s -> {
+							DocumentHelper.setParent(previous, destinationFolderId);
+							return this.inheritShareComputer.compute(previous, true)
+									.compose(res -> queryHelper.bulkUpdateShares(res));
+						}).map(previous);
+					}).setHandler(handler);
 				} else {
 					handler.handle(toError("not.found"));
 				}
@@ -562,15 +604,17 @@ public class FolderManagerMongoImpl implements FolderManager {
 	@Override
 	public void moveAll(Collection<String> sourceIds, String destinationFolderId, UserInfos user,
 			Handler<AsyncResult<JsonArray>> handler) {
-		@SuppressWarnings("rawtypes")
-		List<Future> futures = sourceIds.stream().map(sourceId -> {
-			Future<JsonObject> future = Future.future();
-			this.move(sourceId, destinationFolderId, user, future.completer());
-			return future;
-		}).collect(Collectors.toList());
-		CompositeFuture.all(futures).map(results -> {
-			return results.list().stream().map(o -> (JsonObject) o).collect(JsonArray::new, JsonArray::add,
-					JsonArray::addAll);
+		assertDestinationOnMoveOrCopy(sourceIds, Optional.ofNullable(destinationFolderId)).compose(ok -> {
+			@SuppressWarnings("rawtypes")
+			List<Future> futures = sourceIds.stream().map(sourceId -> {
+				Future<JsonObject> future = Future.future();
+				this.move(sourceId, destinationFolderId, user, future.completer());
+				return future;
+			}).collect(Collectors.toList());
+			return CompositeFuture.all(futures).map(results -> {
+				return results.list().stream().map(o -> (JsonObject) o).collect(JsonArray::new, JsonArray::add,
+						JsonArray::addAll);
+			});
 		}).setHandler(handler);
 	}
 
