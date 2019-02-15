@@ -36,6 +36,9 @@ public interface ShareService {
 	void shareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler);
 
+	void shareInfos(String userId, String resourceId, String acceptLanguage, ShareInfosQuery query,
+			Handler<Either<String, JsonObject>> handler);
+
 	void groupShare(String userId, String groupShareId, String resourceId, List<String> actions,
 			Handler<Either<String, JsonObject>> handler);
 
