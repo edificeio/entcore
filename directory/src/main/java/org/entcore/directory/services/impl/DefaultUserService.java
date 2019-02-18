@@ -152,7 +152,7 @@ public class DefaultUserService implements UserService {
 		String getMgroups = "";
 		String resultMgroups = "";
 		if (getManualGroups) {
-			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, admStruct, admGroups, parents, children, functions, u, structureNodes ";
+			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
 			resultMgroups = "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
 		}
 		String query =
@@ -163,12 +163,14 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId}) as parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				getMgroups +
 				"RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 				"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
 				"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
 				"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
 				"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
+				"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, " +
 				resultMgroups +
 				"u";
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
