@@ -83,23 +83,22 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 							String exportPathTmp = exportPath + "_tmp";
 							String exportPathFinal = exportPath + File.separator + "Documents";
 							exporter.export(new FolderExporterContext(exportPathTmp), list).setHandler(res -> {
-								if (res.succeeded()) {
-									vertx.fileSystem().move(exportPathTmp, exportPathFinal, resMove -> {
-										if (resMove.succeeded()) {
-											log.info(title + " : Documents successfully exported from " + exportPathTmp
-													+ " to " + exportPathFinal);
-											handler.handle(true);
-										} else {
-											log.error(title + " : Failed to export document from " + exportPathTmp
-													+ " to " + exportPathFinal + " - " + resMove.cause());
-											handler.handle(true);
-										}
-									});
-								} else {
+								if (res.failed()) {
 									log.error(title + " : Failed to export document to " + exportPathTmp + " - "
 											+ res.cause());
-									handler.handle(true);
 								}
+								// We still move the tmp folder if it failed
+								vertx.fileSystem().move(exportPathTmp, exportPathFinal, resMove -> {
+									if (resMove.succeeded()) {
+										log.info(title + " : Documents successfully exported from " + exportPathTmp
+												+ " to " + exportPathFinal);
+										handler.handle(true);
+									} else {
+										log.error(title + " : Failed to export document from " + exportPathTmp
+												+ " to " + exportPathFinal + " - " + resMove.cause());
+										handler.handle(true);
+									}
+								});
 							});
 						} else {
 							log.error(title + " : Failed to export document: " + event.body().getString("message"));
