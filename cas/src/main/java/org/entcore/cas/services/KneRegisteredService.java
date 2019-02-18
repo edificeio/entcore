@@ -40,7 +40,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 
 	private final Pattern mefStatPattern = Pattern.compile(".*\\$([0-9]{6}).*\\$.*");
 	private final Pattern classGroupPattern = Pattern.compile(".*\\$(.*)");
-	private final Pattern matPattern = Pattern.compile(".*\\$.*\\$([0-9]{6}).*");
+	private final Pattern matPattern = Pattern.compile(".*\\-([0-9]{6}).*");
 
 	/* 		Tools 		*/
 
@@ -153,7 +153,7 @@ public class KneRegisteredService extends AbstractCas20ExtensionRegisteredServic
 					additionalAttributes.add(createTextElement("ENTEleveCodeEnseignements", "", doc));
 					additionalAttributes.add(createTextElement("ENTEleveClasses", "", doc));
 					additionalAttributes.add(createTextElement("ENTEleveGroupes", "", doc));
-					addArray("ENTAuxEnsClassesMatiere", "classesFieldOfStudy", data, doc, additionalAttributes, new Mapper<String, String>(){
+					addArray("ENTAuxEnsClassesMatiere", "subjectCodes", data, doc, additionalAttributes, new Mapper<String, String>(){
 						String map(String input) {
 							Matcher m = matPattern.matcher(input);
 							if(m.matches() && m.groupCount() >= 1){
