@@ -99,7 +99,7 @@
 	</div>
     <div class="row drop-down-block" ng-class="{slided: signatureShow}">
 		<div class="drop-down-label">
-			<div class="twelve cell" pulsar-highlight="7">
+			<div class="twelve cell bottom-spacing" pulsar-highlight="7">
 				<label ng-click="signatureShow = !signatureShow">
 					<i class="arrow"></i>
 					<i18n>add.signature</i18n>
@@ -121,25 +121,21 @@
 	</div>
 
 	<div class="row">
-
         <!-- attachment list header -->
         <div ng-if="state.newItem.attachments.length">
-            <h2 class="no-margin">
-                <i18n>attachments</i18n>
-				<a data-ng-if="state.newItem.attachments.length > 1"
-						ng-click="copyToWorkspace(state.newItem.attachments)" class="right-magnet fade-in-hover large-text"
-					tooltip="conversation.copy.all.toworkspace">
-					<i class="folder info-color horizontal-spacing"></i>
-				</a>
-                <a data-ng-if="state.newItem.attachments.length > 1"
-                    class="right-magnet fade-in-hover"
-                    ng-href="[['message/'+state.newItem.id+'/allAttachments']]"
-                    tooltip="download.all.attachment">
-                    <i class="download-disk valid-color horizontal-spacing"></i>
-                </a>
-            </h2>
-            <hr class="line no-margin" />
-		</div>
+          <h2>
+            <i18n>attachments</i18n>
+            <div class="save-attachments right-magnet">
+              <a data-ng-if="state.newItem.attachments.length > 1" ng-click="copyToWorkspace(state.newItem.attachments)" class="fade-in-hover" tooltip="conversation.copy.all.toworkspace">
+                <i class="folder-close info-color"></i>
+              </a>
+              <a data-ng-if="state.newItem.attachments.length > 1" class="fade-in-hover" ng-href="[['message/'+state.newItem.id+'/allAttachments']]" tooltip="download.all.attachment">
+                <i class="download-disk valid-color"></i>
+              </a>
+            </div>
+          </h2>
+          <hr class="line no-margin" />
+        </div>
 
         <!-- attachment list while loading -->
         <div ng-if="state.newItem.loadingAttachments.length > 0">
@@ -176,16 +172,15 @@
                 <div class="status-infos">
                     <span class="small-text reduce-block-four">[[formatSize(attachment.size)]]</span>
                 </div>
-                <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover large-text reduce-block-four">
+                <div class="save-attachments">
+                  <a ng-click="copyToWorkspace(attachment)" class="fade-in-hover">
+                      <i class="folder-close info-color" tooltip="conversation.copy.toworkspace"></i>
+                  </a>
+                  <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover">
                     <i class="download-disk valid-color" tooltip="download"></i>
-                </a>
-                <a ng-click="copyToWorkspace(attachment)" class="left-spacing fade-in-hover large-text">
-                    <i class="folder info-color" tooltip="conversation.copy.toworkspace"></i>
-                </a>
-                <i class="close"
-                   ng-click="deleteAttachment($event, attachment, state.newItem)"
-                   tooltip="remove.attachment">
-                </i>
+                  </a>
+                  <i class="close" ng-click="deleteAttachment($event, attachment, state.newItem)" tooltip="remove.attachment"></i>
+                </div>
             </li>
         </ul>
     </div>
