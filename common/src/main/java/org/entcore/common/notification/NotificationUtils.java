@@ -123,7 +123,7 @@ public class NotificationUtils {
         if(text.length() > 146)
             text = text.substring(0, 146) + "...";
         preview.put("text", text);
-        preview.put("images", HtmlUtils.getAllImagesSrc(htmlContent, 2));
+        preview.put("images", HtmlUtils.getAllImagesSrc(htmlContent));
         return preview;
     }
 }
