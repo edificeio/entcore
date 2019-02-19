@@ -69,7 +69,7 @@ public interface WorkspaceService extends FolderManager {
 
 	public Future<JsonObject> getRevision(final String revisionId);
 
-	public void deleteRevision(final String documentId, final String revisionId,
+	public void deleteRevision(final String documentId, final String revisionId, final List<String> thumbs,
 			final Handler<Either<String, JsonObject>> handler);
 
 	public void emptySize(final String userId, final Handler<Long> emptySizeHandler);
