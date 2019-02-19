@@ -65,8 +65,8 @@ public class DocumentDao extends GenericDao {
 		return future;
 	}
 
-	public Future<Void> restaureFromRevision(String docId, JsonObject revision) {
-		Future<Void> future = Future.future();
+	public Future<JsonObject> restaureFromRevision(String docId, JsonObject revision) {
+		Future<JsonObject> future = Future.future();
 		String now = MongoDb.formatDate(new Date());
 		String name = revision.getString("name", "");
 		MongoUpdateBuilder set = new MongoUpdateBuilder().set("modified", now)//
@@ -80,7 +80,16 @@ public class DocumentDao extends GenericDao {
 		mongo.update(collection, toJson(QueryBuilder.start("_id").is(docId)), set.build(), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
-				future.complete(null);
+				JsonObject doc = new JsonObject()
+				.put("_id", docId)//
+				.put("name", name)//
+				.put("owner", revision.getString("userId"))//
+				.put("ownerName", revision.getString("userName"))//
+				.put("file", revision.getString("file"))//
+				.put("thumbnails", revision.getJsonObject("thumbnails"))//
+				.put("metadata", revision.getJsonObject("metadata"))//
+				.put("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
+				future.complete(doc);
 			} else {
 				future.fail(toErrorStr(body));
 			}

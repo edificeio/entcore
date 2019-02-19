@@ -355,7 +355,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		});
 	}
 
-	public void deleteRevision(final String documentId, final String revisionId,
+	public void deleteRevision(final String documentId, final String revisionId, final List<String> thumbs,
 			final Handler<Either<String, JsonObject>> handler) {
 		final Future<JsonArray> lastTwoFuture = revisionDao.getLastRevision(documentId, 2);
 		final Future<Boolean> isLastFuture = lastTwoFuture
@@ -375,7 +375,16 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			// restore document it was last
 			if (isLastFuture.result()) {
 				JsonObject previous = lastTwoFuture.result().getJsonObject(1);
-				return documentDao.restaureFromRevision(documentId, previous).map(revision);
+				return documentDao.restaureFromRevision(documentId, previous).compose(doc->{
+					final JsonObject oldThumbnail = doc.getJsonObject("thumbnails");
+					if(oldThumbnail!=null) {
+						return Future.succeededFuture(oldThumbnail);
+					}
+					JsonObject srcFile = new JsonObject()//
+							.put("_id", doc.getString("file"))//
+							.put("metadata", doc.getJsonObject("metadata"));
+					return createThumbnailIfNeeded(DocumentDao.DOCUMENTS_COLLECTION, srcFile, doc.getString("_id"), oldThumbnail, thumbs);
+				}).map(revision);
 			} else {
 				return Future.succeededFuture(revision);
 			}
@@ -444,6 +453,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 										future.complete(thumbnails);
 									}
 								}));
+					}else {
+						future.fail("workspace.thumb.create.fail");
 					}
 				}
 			}));

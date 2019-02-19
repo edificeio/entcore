@@ -491,7 +491,8 @@ public class WorkspaceController extends BaseController {
 	public void deleteRevision(final HttpServerRequest request) {
 		final String id = request.params().get("id");
 		final String revisionId = request.params().get("revisionId");
-		workspaceService.deleteRevision(id, revisionId, defaultResponseHandler(request));
+		final List<String> thumbs = request.params().getAll("thumbnail");
+		workspaceService.deleteRevision(id, revisionId, thumbs, defaultResponseHandler(request));
 	}
 
 	@Get("/document/archive/:ids")
