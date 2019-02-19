@@ -9,6 +9,8 @@ export interface RevisionDelegateScope {
     selectedFolders(): models.Element[];
     currentTree: models.Tree
     //revisions
+    deletingRevision:models.Revision;
+    isDeletingRevision(r:models.Revision):boolean
     targetDocument: models.Element
     createRevision(files: string[])
     openHistory(doc: models.Element);
@@ -59,17 +61,27 @@ export function RevisionDelegate($scope: RevisionDelegateScope) {
     $scope.canShowRevision = function () {
         return $scope.selectedFolders().length === 0 && $scope.selectedDocuments().length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
     }
+    $scope.isDeletingRevision = function (r) {
+        return $scope.deletingRevision === r;
+    }
     $scope.deleteRevision = async function (revision) {
-        await workspaceService.deleteRevision(revision);
-        $('.tooltip').remove()
-        $scope.openHistory($scope.targetDocument)
-        await quota.refresh();
-        workspaceService.onChange.next({ action: "document-change", elements: [$scope.targetDocument] });
-        $scope.safeApply();
+        try{
+            $scope.deletingRevision = revision;
+            await workspaceService.deleteRevision(revision);
+            $('.tooltip').remove()
+            workspaceService.onChange.next({ action: "document-change", elements: [$scope.targetDocument] });
+            $scope.safeApply();
+        }finally{
+            $scope.deletingRevision = null;
+            await quota.refresh();
+            template.close('lightbox');
+            await workspaceService.syncHistory($scope.targetDocument);
+            $scope.safeApply();
+        }
     }
     $scope.canDeleteRevision = function (revision) {
         const hasRights = ($scope.targetDocument.myRights["manager"]) || (revision["userId"] === model.me.userId && $scope.targetDocument.myRights["contrib"]);
-        return hasRights && $scope.targetDocument.revisions.length > 1;
+        return !$scope.deletingRevision && hasRights && $scope.targetDocument.revisions.length > 1;
     }
 }
 

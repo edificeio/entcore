@@ -71,6 +71,7 @@
                     [[formatDocumentSize(revision.metadata.size)]]
                 </td>
                 <td>
+                    <loading-icon default="loading" ng-if="isDeletingRevision(revision)"></loading-icon>
                     <i class="close"
                        ng-click="deleteRevision(revision)"
                        tooltip="workspace.delete.version"
