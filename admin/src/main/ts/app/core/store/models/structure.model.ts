@@ -37,6 +37,8 @@ export class StructureModel extends Model<StructureModel> {
     sources: string[] = [];
     profiles: { name: string, blocked: any }[] = [];
     aafFunctions: string[] = [];
+    levelsOfEducation: number[];
+    distributions: string[];
 
     quickSearchUsers(input: string) {
         return this.http.get(`/directory/structure/${this.id}/quicksearch/users`, {

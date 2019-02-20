@@ -44,6 +44,8 @@
 				<div class="row angle-container">
 					<button ng-click="selectAllActions(role)"   class="instantButtons select" tooltip="appregistry.tooltip.selectAll"></button>
 					<button ng-click="deselectAllActions(role)" class="instantButtons deselect" tooltip="appregistry.tooltip.deselectAll"></button>
+					<select ng-if="distributions && distributions.length > 0" style="min-height: 40px;" multiple ng-model="role.distributions" ng-change="changeRoleDistributions(role.id, role.distributions);" ng-options="item for item in distributions">
+					</select>
 					<button class="two right-magnet" ng-click="saveAppRole(role)" ng-disabled="role.actions.length() === 0 || !role.name">[[lang.translate("appregistry.save")]]</button>
 					<button class="two right-magnet" ng-click="deleteRole(role)" style="margin-right: 10px;">[[lang.translate("appregistry.delete")]]</button>
 				</div>

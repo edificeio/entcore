@@ -181,6 +181,24 @@ public class AppRegistryController extends BaseController {
 		}
 	}
 
+	@Put("/role/:roleId/distributions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void setRoleDistributions(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray jsonDistributions = body.getJsonArray("distributions");
+				List<String> distributions = jsonDistributions.getList();
+				appRegistryService.setRoleDistributions(
+						request.params().get("roleId"),
+						distributions,
+						defaultResponseHandler(request)
+				);
+			}
+		});
+	}
+
 	@Post("/authorize/group")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(LinkRoleGroupFilter.class)
@@ -435,6 +453,24 @@ public class AppRegistryController extends BaseController {
 		} else {
 			forbidden(request, "invalid.host");
 		}
+	}
+
+	@Put("/application/:applicationId/levels-of-education")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void setLevelsOfEducation(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+				JsonArray jsonLevelsOfEducation = body.getJsonArray("levelsOfEducation");
+				List<Integer> levelsOfEducation = jsonLevelsOfEducation.getList();
+				appRegistryService.setLevelsOfEducation(
+						request.params().get("applicationId"),
+						levelsOfEducation,
+						defaultResponseHandler(request)
+				);
+			}
+		});
 	}
 
     @Put("/structures/:structureId/roles")

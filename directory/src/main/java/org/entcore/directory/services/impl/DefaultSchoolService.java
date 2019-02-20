@@ -35,6 +35,7 @@ import io.vertx.core.json.JsonObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collector;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -43,6 +44,12 @@ import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultSchoolService implements SchoolService {
+	private final int firstLevel = 1;
+	private final int secondLevel = 2;
+	private final JsonArray defaultStructureLevelsOfEducation = new JsonArray()
+			.add(firstLevel)
+			.add(secondLevel);
+	private final JsonArray defaultStructureDistributions = new JsonArray();
 
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EventBus eventBus;
@@ -106,10 +113,25 @@ public class DefaultSchoolService implements SchoolService {
 				"MATCH (s:Structure) " + condition +
 				"OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
-				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, " +
+				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
-		neo.execute(query, params, validResultHandler(results));
+		neo.execute(query, params, result -> {
+			Either<String, JsonArray> resultAsArray = validResult(result);
+			if(resultAsArray.isRight()) {
+				JsonArray structures = resultAsArray
+						.right()
+						.getValue()
+						.stream()
+						.map(JsonObject.class::cast)
+						.map(structure -> structure
+								.put("levelsOfEducation", structure.getJsonArray("levelsOfEducation", defaultStructureLevelsOfEducation))
+								.put("distributions", structure.getJsonArray("distributions", defaultStructureDistributions)))
+						.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+				resultAsArray = new Either.Right<>(structures);
+			}
+			results.handle(resultAsArray);
+		});
 	}
 
 	@Override
@@ -212,6 +234,34 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
+	public void setLevelsOfEducation(String structureId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler) {
+		String query =
+				"MATCH (s:Structure {id: {structureId}}) " +
+				"SET s.levelsOfEducation = {levelsOfEducation} " +
+				"RETURN s.id as id, s.levelsOfEducation as levelsOfEducation";
+
+		JsonObject params = new JsonObject()
+				.put("structureId", structureId)
+				.put("levelsOfEducation", levelsOfEducations);
+
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+    @Override
+    public void setDistributions(String structureId, List<String> distributions, Handler<Either<String, JsonObject>> handler) {
+        String query =
+                "MATCH (s:Structure {id: {structureId}}) " +
+                        "SET s.distributions = {distributions} " +
+                        "RETURN s.id as id, s.distributions as distributions";
+
+        JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("distributions", distributions);
+
+        neo.execute(query, params, validUniqueResultHandler(handler));
+    }
+
+    @Override
 	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 		this.massmailUsers(structureId, filterObj, true, true, null, userInfos, results);
 	}

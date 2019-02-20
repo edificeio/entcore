@@ -5,7 +5,7 @@ import { routing } from '../../core/services';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from '../services.store';
-import { SessionModel } from '../../core/store';
+import { ApplicationModel, SessionModel } from '../../core/store';
 
 interface ServiceInfo {
     collection: any[],
@@ -113,6 +113,12 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
                 if (data[this.collectionRef[this.serviceName].routeData]) {
                     this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
                         .filter(app => this.filteredApps.indexOf(app.name) < 0);
+                    if (this.serviceName === 'applications') {
+                        this.collectionRef[this.serviceName].collection = filterApplicationsByLevelsOfEducation(
+                            this.collectionRef[this.serviceName].collection,
+                            this.servicesStore.structure.levelsOfEducation
+                        )
+                    }
                     this.cdRef.markForCheck();
                 }
             })
@@ -120,7 +126,10 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
 
         this.collectionRef = {
             applications: {
-                collection: this.servicesStore.structure.applications.data,
+                collection: filterApplicationsByLevelsOfEducation(
+                    this.servicesStore.structure.applications.data,
+                    this.servicesStore.structure.levelsOfEducation
+                ),
                 model: this.servicesStore.application,
                 routeData: 'apps',
                 searchPlaceholder: 'services.application.search',
@@ -163,4 +172,8 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     private isIconWorkspaceImg(src: String) {
         return src.startsWith('/workspace');
     }
+}
+
+export function filterApplicationsByLevelsOfEducation(apps: ApplicationModel[], levelsOfEducation: number[]): ApplicationModel[] {
+    return apps.filter(app => levelsOfEducation.some(level => app.levelsOfEducation.indexOf(level) >= 0));
 }

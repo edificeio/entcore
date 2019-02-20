@@ -67,8 +67,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	$scope.localImport = function(){
-		http().post('/directory/import', function(){ 
-			notify.info('directory.notify.import'); 
+		http().post('/directory/import', function () {
+			notify.info('directory.notify.import');
 		});
 	};
 
@@ -76,7 +76,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		default: function(){
 			$scope.structures.sync(function(){
 				$scope.$apply()
-			})
+			});
+			$http.get('/admin/api/platform/config').success(function (data) {
+				$scope.distributions = data.distributions;
+			});
 		},
         viewStructureUser: function(params){
             var userId = params.userId
@@ -790,13 +793,13 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
             ok: lang.translate('ok')
         }
 	}
-	
+
 	$scope.notifyTop = function(text, action){
         $scope.topNotification.message = "<p>"+text+"</p>"
         $scope.topNotification.confirm = action
         $scope.topNotification.show = true
 	}
-	
+
 	$scope.blockUsers = function(profile, block){
 		if (profile != undefined){
 			let blockFun = function(){
@@ -1021,6 +1024,24 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
             })
         })
 	}
+
+	$scope.changeLevelsOfEducation = function (structureId, levels) {
+		$http.put('/directory/structure/' + structureId + '/levels-of-education', {
+			levelsOfEducation: levels.map(function (level) {
+				return parseInt(level, 10);
+			})
+		}).success(function () {
+			notify.info(lang.translate("directory.notify.levelsUpdate"));
+		});
+	};
+
+	$scope.changeDistributions = function (structureId, distributions) {
+		$http.put('/directory/structure/' + structureId + '/distributions', {
+			distributions: distributions
+		}).success(function () {
+			notify.info(lang.translate("directory.notify.distributionsUpdate"));
+		});
+	};
 
 	$scope.addChild = function(child, user){
 		if(user.children.indexOf(child) < 0){
@@ -1386,7 +1407,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
     $scope.isMainStructure = function(user, structure){
         return _.findWhere(user.administrativeStructures, {id: structure.id})
 	}
-	
+
 	$scope.alreadyAttached = function(structure, potentialChild){
 		return potentialChild.children && potentialChild.children.some(function(child){ return child.id === structure.id })
 	}

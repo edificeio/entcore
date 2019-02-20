@@ -1,10 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
-
 import { Subscription } from 'rxjs/Subscription';
-
 import { ServicesStore } from './services.store';
-import { routing, SpinnerService } from '../core/services';
+import { routing } from '../core/services';
 
 @Component({
     selector: 'services-root',
@@ -37,7 +35,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private cdRef: ChangeDetectorRef,
-        private ls: SpinnerService,
         private servicesStore: ServicesStore) {
     }
 
