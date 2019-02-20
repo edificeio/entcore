@@ -41,7 +41,7 @@
     "@angular/platform-browser-dynamic": "4.4.7",
     "@angular/router": "4.4.7",
     "axios": "0.15.3",
-    "entcore-generic-icons": "^1.5.1",
+    "entcore-generic-icons": "opendigitaleducation/generic-icons",
     "flatpickr": "2.6.1",
     "infra-components": "^1.1.0-alpha",
     "ngx-infinite-scroll": "^0.7.0",
