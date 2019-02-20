@@ -50,20 +50,18 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
 					if ("ok".equals(event.body().getString("status"))) {
 						JsonArray ja = event.body().getJsonArray("results");
 						if (ja != null && !ja.isEmpty()) {
-							JsonArray results = ja.getJsonObject(0).getJsonArray("results");
+							JsonObject results = new JsonObject();
+							results.put("fields",ja.getJsonObject(0).getJsonArray("fields"));
+							results.put("results",ja.getJsonObject(0).getJsonArray("results"));
 							queries.remove(tableName);
-							if (results != null && !results.isEmpty()) {
-								vertx.fileSystem().writeFile(filePath, results.toBuffer(),
-										new Handler<AsyncResult<Void>>() {
-											@Override
-											public void handle(AsyncResult<Void> voidAsyncResult) {
-												exportTables(queries, cumulativeResult.addAll(results), exportPath,
-														exported, handler);
-											}
-										});
-							} else {
-								exportTables(queries, cumulativeResult, exportPath, exported, handler);
-							}
+							vertx.fileSystem().writeFile(filePath, results.toBuffer(),
+									new Handler<AsyncResult<Void>>() {
+										@Override
+										public void handle(AsyncResult<Void> voidAsyncResult) {
+											exportTables(queries, cumulativeResult.add(results), exportPath,
+													exported, handler);
+										}
+							});
 						} else {
 							log.error(title + " : Error, unexpected result " + event.body().encode());
 							handler.handle(exported.get());
