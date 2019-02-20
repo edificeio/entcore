@@ -13,9 +13,12 @@ export interface ActionTrashScope {
     deleteSelection();
     //
     emptyTrash();
+    confirmDelete();
+    isTrashEmpty(): boolean;
     canEmptyTrash(): boolean;
     //from others
     currentTree: models.Tree
+    openedFolder: models.FolderContext
     setCurrentTreeRoute(tree: models.TREE_NAME, forceReload?: boolean);
     safeApply()
     selectedItems(): models.Element[]
@@ -63,6 +66,14 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         return $scope.currentTree.filter === 'trash';
     }
 
+    $scope.isTrashEmpty = function () {
+        return $scope.currentTree.filter === 'trash' && $scope.openedFolder.all.length == 0;
+    }
+
+    $scope.confirmDelete = function () {
+        template.open('lightbox', 'trash/confirm-empty-trash');
+    }
+
     $scope.emptyTrash = async function () {
         //dont be in a folder when deleting
         $scope.setCurrentTreeRoute("trash")
@@ -70,8 +81,10 @@ export function ActionTrashDelegate($scope: ActionTrashScope) {
         //wait revision to be deleted
         setTimeout(async () => {
             await quota.refresh();
+            notify.info('workspace.empty.trash.confirm');
             $scope.safeApply();
-        }, 300)
+        }, 300);
+        template.close('lightbox');
     };
 
     $scope.deleteSelection = async function () {
