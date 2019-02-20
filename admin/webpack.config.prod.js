@@ -41,7 +41,14 @@ module.exports = webpackMerge(commonConfig, {
             },
             {
                 test: /\.woff$/,
-                use: 'file-loader?emitFile=false&name=[name].[ext]&publicPath=./'
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[hash].[ext]',
+                        outputPath: 'styles/',
+                        publicPath: './'
+                    }
+                }]
             }
         ]
     },
