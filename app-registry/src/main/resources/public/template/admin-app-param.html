@@ -4,100 +4,119 @@
 	||||||||||||||||||||
 -->
 <div class="twelve">
-	<nav class="three cell recursive-list">
-		<input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps" />
-		<ul>
-			<li ng-class="{ selected: !application.id }" ng-click="newApplication()" class="top-item last">
-				<strong>[[lang.translate("appregistry.createApp")]]</strong>
-			</li>
-			<li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'" ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
-				[[application.name]]
-			</li>
-		</ul>
-	</nav>
-	<article class="side-tabs-content nine cell" ng-if="application">
-		<h1 class="nine cell">[[application.name]]</h1>
+    <nav class="three cell recursive-list">
+        <input type="text" placeholder="[[lang.translate('appregistry.search')]]" ng-model="filterApps"/>
+        <ul>
+            <li ng-class="{ selected: !application.id }" ng-click="newApplication()" class="top-item last">
+                <strong>[[lang.translate("appregistry.createApp")]]</strong>
+            </li>
+            <li ng-repeat="application in applications.all | filter: {name: filterApps} | orderBy: 'name'"
+                ng-click="viewApplication(application)" ng-class="{ selected: $parent.application === application }">
+                [[application.name]]
+            </li>
+        </ul>
+    </nav>
+    <article class="side-tabs-content nine cell" ng-if="application">
+        <h1 class="nine cell">[[application.name]]</h1>
 
-		<div class="twelve row preview">
-			<a ng-click="refreshPreview()"><h2>[[lang.translate("appregistry.preview")]]</h2></a>
-			<iframe id="previewFrame" ng-src="[[previewPath(application)]]"></iframe>
-		</div>
+        <div class="twelve row preview">
+            <a ng-click="refreshPreview()"><h2>[[lang.translate("appregistry.preview")]]</h2></a>
+            <iframe id="previewFrame" ng-src="[[previewPath(application)]]"></iframe>
+        </div>
 
-		<div class="row">
-			<label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
-			<input type="text" ng-model="application.name" class="four cell" ng-disabled="application.id"/>
-		</div>
-		<div class="row">
-			<label class="four cell"><span tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
-			<input type="text" ng-model="application.displayName" complete-change="updatePath()" class="four cell" />
-		</div>
-		<div class="row">
-			<label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
-			<input type="text" ng-model="application.icon" complete-change="updatePath()" class="four cell" />
-		</div>
-		<div class="row">
-			<label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
-			<input type="text" ng-model="application.address" complete-change="updatePath()" class="four cell" />
-		</div>
+        <div class="row">
+            <label class="four cell"><span tooltip="tooltip.name">[[lang.translate("appregistry.name")]]</span></label>
+            <input type="text" ng-model="application.name" class="four cell" ng-disabled="application.id"/>
+        </div>
+        <div class="row">
+            <label class="four cell"><span
+                    tooltip="tooltip.displayName">[[lang.translate("appregistry.i18nkey")]]</span></label>
+            <input type="text" ng-model="application.displayName" complete-change="updatePath()" class="four cell"/>
+        </div>
+        <div class="row">
+            <label class="four cell"><span tooltip="tooltip.icon">[[lang.translate("appregistry.icon")]]</span></label>
+            <input type="text" ng-model="application.icon" complete-change="updatePath()" class="four cell"/>
+        </div>
+        <div class="row">
+            <label class="four cell"><span tooltip="tooltip.url">[[lang.translate("appregistry.url")]]</span></label>
+            <input type="text" ng-model="application.address" complete-change="updatePath()" class="four cell"/>
+        </div>
 
-		<div class="row">
-			<label class="four cell"><span tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
-			<select ng-model="application.target" ng-change="updatePath()" class="four cell">
-				<option value="">[[lang.translate("appregistry.portal")]]</option>
-				<option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
-				<option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
-			</select>
-		</div>
-		<div class="row" ng-if="display.advanced">
-			<hr class="separator">
+        <div class="row">
+            <label class="four cell"><span
+                    tooltip="tooltip.target">[[lang.translate("appregistry.target")]]</span></label>
+            <select ng-model="application.target" ng-change="updatePath()" class="four cell">
+                <option value="">[[lang.translate("appregistry.portal")]]</option>
+                <option value="_blank">[[lang.translate("appregistry.newpage")]]</option>
+                <option value="adapter">[[lang.translate("appregistry.adaptor")]]</option>
+            </select>
+        </div>
+        <div class="row" ng-if="display.advanced">
+            <hr class="separator">
             <fieldset ng-disabled="!application.hasCas">
-    			<legend>
+                <legend>
                     <i18n>appregistry.cas.fields</i18n>
                     <input type="checkbox" ng-model="application.hasCas" ng-change="switchCas(application)"></input>
                 </legend>
                 <div class="row bottom-spacing" ng-if="application.casType">
                     <strong class="small-text" ng-bind-html="casDescription(application.casType)"></strong>
                 </div>
-    			<div class="row bottom-spacing">
-    				<label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
-    				<select class="four cell" ng-model="application.casType" ng-options="type.id as type.name for type in casTypes"></select>
-    			</div>
-    			<div class="row" ng-if="isCentralAdmin()">
-    				<label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
-    				<input type="text" ng-model="application.pattern" class="four cell" i18n-placeholder="optional"/>
-    			</div>
-    		</fieldset>
+                <div class="row bottom-spacing">
+                    <label class="four cell"><span tooltip="tooltip.cas.server.type">[[lang.translate("appregistry.cas.server.type")]]</span></label>
+                    <select class="four cell" ng-model="application.casType"
+                            ng-options="type.id as type.name for type in casTypes"></select>
+                </div>
+                <div class="row" ng-if="isCentralAdmin()">
+                    <label class="four cell"><span tooltip="tooltip.cas.pattern">[[lang.translate("appregistry.cas.pattern")]]</span></label>
+                    <input type="text" ng-model="application.pattern" class="four cell" i18n-placeholder="optional"/>
+                </div>
+            </fieldset>
             <fieldset>
-    			<legend translate content="appregistry.oauth.fields"></legend>
-    			<div class="row">
-    				<label class="four cell">[[lang.translate("appregistry.scope")]]</label>
-    				<input class="four cell" type="text" ng-model="application.scope" />
-    			</div>
-    			<div class="row">
-    				<label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
-    				<input type="text" ng-model="application.secret" class="four cell" />
-    			</div>
-    			<div class="row">
-    				<label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
-    				<select class="four cell" ng-model="application.grantType">
-    					<option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
-    					<option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
-						<option value="password">[[lang.translate("appregistry.password")]]</option>
-    					<option value="Basic">[[lang.translate("appregistry.basic")]]</option>
-    				</select>
-    			</div>
+                <legend translate content="appregistry.oauth.fields"></legend>
                 <div class="row">
-        			<input type="checkbox" ng-model="application.transferSession" ng-change="setUserinfoScope()" />
-        			<label class="three cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
-        		</div>
-    		</div>
-        </fieldset>
-		<hr class="separator">
-		<div class="row">
-			<input type="button" class="left-magnet"  ng-if="!display.advanced" ng-click="showAdvanced()" ng-value="lang.translate('appregistry.advancedParams')"/>
-			<input type="button" class="left-magnet"  ng-if="display.advanced"  ng-click="hideAdvanced()" ng-value="lang.translate('appregistry.simpleMode')"/>
-			<input type="button" class="right-magnet" ng-click="application.save()" ng-value="lang.translate('appregistry.save')" />
-			<input type="button" class="right-magnet" ng-click="deleteApplication()" ng-if="application.id" ng-value="lang.translate('appregistry.delete')"/>
-		</div>
-	</article>
+                    <label class="four cell">[[lang.translate("appregistry.scope")]]</label>
+                    <input class="four cell" type="text" ng-model="application.scope"/>
+                </div>
+                <div class="row">
+                    <label class="four cell"><span tooltip="tooltip.password">[[lang.translate("appregistry.secretcode")]]</span></label>
+                    <input type="text" ng-model="application.secret" class="four cell"/>
+                </div>
+                <div class="row">
+                    <label class="four cell">[[lang.translate("appregistry.idMode")]]</label>
+                    <select class="four cell" ng-model="application.grantType">
+                        <option value="authorization_code">[[lang.translate("appregistry.code")]]</option>
+                        <option value="client_credentials">[[lang.translate("appregistry.clientId")]]</option>
+                        <option value="password">[[lang.translate("appregistry.password")]]</option>
+                        <option value="Basic">[[lang.translate("appregistry.basic")]]</option>
+                    </select>
+                </div>
+                <div class="row">
+                    <input type="checkbox" ng-model="application.transferSession" ng-change="setUserinfoScope()"/>
+                    <label class="three cell"><span tooltip="tooltip.transferSession">[[lang.translate("appregistry.transmitsession")]]</span></label>
+                </div>
+            </fieldset>
+            <fieldset ng-if="isCentralAdmin()">
+                <legend translate content="appregistry.levels-of-education"></legend>
+                <div class="row">
+                    <label class="four cell">[[lang.translate("appregistry.levels-of-education")]]</label>
+                    <select style="min-height: 40px;" multiple ng-model="application.levelsOfEducation"
+                            ng-change="changeLevelsOfEducation(application.id, application.levelsOfEducation);">
+                        <option value=1>[[lang.translate("appregistry.levels-of-education.1")]]</option>
+                        <option value=2>[[lang.translate("appregistry.levels-of-education.2")]]</option>
+                    </select>
+                </div>
+            </fieldset>
+        </div>
+        <hr class="separator">
+        <div class="row">
+            <input type="button" class="left-magnet" ng-if="!display.advanced" ng-click="showAdvanced()"
+                   ng-value="lang.translate('appregistry.advancedParams')"/>
+            <input type="button" class="left-magnet" ng-if="display.advanced" ng-click="hideAdvanced()"
+                   ng-value="lang.translate('appregistry.simpleMode')"/>
+            <input type="button" class="right-magnet" ng-click="application.save()"
+                   ng-value="lang.translate('appregistry.save')"/>
+            <input type="button" class="right-magnet" ng-click="deleteApplication()" ng-if="application.id"
+                   ng-value="lang.translate('appregistry.delete')"/>
+        </div>
+    </article>
 </div>

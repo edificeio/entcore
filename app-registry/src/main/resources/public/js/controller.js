@@ -1,4 +1,4 @@
-function AppRegistry($scope, $sce, model, template, httpWrapper){
+function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
 
 	/////// VARS ///////
 	$scope.template = template
@@ -187,6 +187,10 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
     $scope.schools.on('sync', function(){
         $scope.schools.parentStructures = $scope.schools.filter(function(s){ return s.children })
     })
+
+    $http.get('/admin/api/platform/config').success(function (data) {
+        $scope.distributions = data.distributions;
+    });
 
 	/////// APPLICATIONS ///////
 	http().get('/appregistry/cas-types').done(function(data){
@@ -866,4 +870,21 @@ function AppRegistry($scope, $sce, model, template, httpWrapper){
 		model.applications.syncApps()
 	}
 
+    $scope.changeLevelsOfEducation = function (applicationId, levels) {
+        $http.put('/appregistry/application/' + applicationId + '/levels-of-education', {
+            levelsOfEducation: levels.map(function (level) {
+                return parseInt(level, 10);
+            })
+        }).success(function () {
+            notify.info(lang.translate("appregistry.notify.levelsUpdate"));
+        });
+    };
+
+    $scope.changeRoleDistributions = function (roleId, distributions) {
+        $http.put('/appregistry/role/' + roleId + '/distributions', {
+            distributions: distributions
+        }).success(function () {
+            notify.info(lang.translate("appregistry.notify.distributionsUpdate"));
+        });
+    };
 }

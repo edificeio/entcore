@@ -22,6 +22,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.JsonArray;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
@@ -57,6 +58,7 @@ public class PlatformInfoController extends BaseController {
                 .put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
                 .put("pre-delete-user-delay", config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay))
                 .put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
+                .put("distributions", config.getJsonArray("distributions", new JsonArray()))
 		);
 	}
 }

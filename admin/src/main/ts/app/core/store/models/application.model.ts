@@ -1,7 +1,6 @@
 import { RoleModel } from '.';
-import { globalStore } from '..';
 
-import { Model, Mix } from 'entcore-toolkit';
+import { Mix, Model } from 'entcore-toolkit';
 
 export class ApplicationModel extends Model<ApplicationModel> {
 
@@ -12,7 +11,10 @@ export class ApplicationModel extends Model<ApplicationModel> {
 
     private _id: string;
 
-    get id(){ return this._id };
+    get id() {
+        return this._id
+    };
+
     set id(id) {
         this._id = id
     };
@@ -20,10 +22,12 @@ export class ApplicationModel extends Model<ApplicationModel> {
     syncRoles = (structureId: string): Promise<void> => {
         return this.http.get(`/appregistry/structure/${structureId}/application/${this._id}/groups/roles`)
             .then(res => {
-                this.roles = Mix.castArrayAs(RoleModel, res.data);
-            }
-        );
-    }
+                    this.roles = Mix.castArrayAs(RoleModel, res.data);
+                }
+            );
+    };
 
     roles: RoleModel[];
+    levelsOfEducation: number[];
+    name: string;
 }

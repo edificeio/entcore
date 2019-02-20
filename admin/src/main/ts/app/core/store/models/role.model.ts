@@ -12,6 +12,7 @@ export class RoleModel extends Model<RoleModel> {
     groups: GroupModel[];
     transverse: boolean;
     subStructures: string[];
+    distributions: string[];
 
     removeGroup(group:GroupModel): Promise<void> {
         return this.http

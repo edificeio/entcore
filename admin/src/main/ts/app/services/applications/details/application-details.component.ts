@@ -105,7 +105,9 @@ export class ApplicationDetailsComponent implements OnInit, OnDestroy {
         this.routeDataSubscription = this.route.data.subscribe(data => {
             if (data['roles']) {
                 this.servicesStore.application.roles = data['roles'];
-                this.app.roles = this.servicesStore.application.roles.filter(r => r.transverse == false);
+                this.app.roles = filterRolesByDistributions(
+                    this.servicesStore.application.roles.filter(r => r.transverse == false),
+                    this.servicesStore.structure.distributions);
                 this.currentTab = 'assignment';
                 this.changeDetectorRef.markForCheck();
             }
@@ -115,12 +117,8 @@ export class ApplicationDetailsComponent implements OnInit, OnDestroy {
     }
 
     onMassAssignment() {
-        console.log('massAssign before', this.app.roles);
         this.servicesStore.application.syncRoles(this.servicesStore.structure.id)
-            .then(() => {
-                this.changeDetectorRef.markForCheck();
-                console.log('massAssign', this.app.roles);
-            });
+            .then(() => this.changeDetectorRef.markForCheck());
     }
 
     openRoleAttribution(role: RoleModel) {
@@ -149,6 +147,15 @@ export class ApplicationDetailsComponent implements OnInit, OnDestroy {
         this.routeParamsSubscription.unsubscribe();
         this.routeDataSubscription.unsubscribe();
     }
+}
+
+export function filterRolesByDistributions(roles: RoleModel[], distributions: string[]): RoleModel[] {
+    return roles.filter(role => {
+        if (role.distributions.length === 0) {
+            return true;
+        }
+        return distributions.some(distribution => role.distributions.indexOf(distribution) >= 0);
+    });
 }
 
 const appsTarget = {
