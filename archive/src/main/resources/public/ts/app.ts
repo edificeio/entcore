@@ -16,6 +16,9 @@ const archiveController = ng.controller('ArchiveController', ['$scope', ($scope)
 			$scope.areAllSelected = function() {
 				return $scope.availableApps.find(app => !$scope.selectedApps[app]) === undefined
 			}
+			$scope.areNoneSelected = function() {
+				return $scope.availableApps.find(app => $scope.selectedApps[app]) === undefined
+			}
 			$scope.selectAll = function(){
 				let oneFalse = !$scope.areAllSelected()
 				$scope.availableApps.forEach(app => { $scope.selectedApps[app] = oneFalse })

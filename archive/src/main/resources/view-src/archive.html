@@ -38,7 +38,7 @@
 				</div>
 
 				<div class="row centered" ng-if="!loading">
-					<button ng-click="initiateExport()">
+					<button ng-disabled="areNoneSelected()" ng-click="initiateExport()">
 						<i18n>export</i18n>
 					</button>
 				</div>
