@@ -312,7 +312,8 @@ public class DefaultUserService implements UserService {
 				functionMatch + filterProfile + condition + optionalMatch +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
 				"u.activationCode as code, " + 
-				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " + 
+				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " +
+				"u.login as originalLogin, " +
 				"u.firstName as firstName, " +
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
 				"u.birthDate as birthDate, u.blocked as blocked, u.created as creationDate, " +
