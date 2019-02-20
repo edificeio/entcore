@@ -1,4 +1,4 @@
-"Id";"Id Siecle";"Type";"Nom";"Prénom";"Login";"Alias de login"
+"Id";"Id Siecle";"Type";"Nom";"Prénom";"Login"
 {{#list}}
-"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{originalLogin}}";"{{login}}"
+"{{externalId}}";"{{attachmentId}}";"{{#i18n}}{{type}}{{/i18n}}";"{{lastName}}";"{{firstName}}";"{{originalLogin}}"
 {{/list}}
