@@ -71,7 +71,7 @@
 					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100"></div>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
-					<a ng-click="emptyTrash()" ng-if="canEmptyTrash()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
+					<a ng-click="confirmDelete()" ng-if="canEmptyTrash()" ng-disabled="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
                     <div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree()">
                         <sniplet application="lool" template="create"></sniplet>
                     </div>
