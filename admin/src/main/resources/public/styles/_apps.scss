@@ -306,6 +306,17 @@ i.admin::before {
     color: $yellow;
 }
 
+i.settings-class-large,
+i.settings-class {
+    @include fonticon;
+}
+
+i.settings-class-large::before,
+i.settings-class::before {
+    content: '\e942';
+    color: $cyan;
+}
+
 i.rbs-large,
 i.type.rbs,
 i.rbs {
