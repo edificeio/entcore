@@ -19,6 +19,7 @@ export interface DragDelegateScope {
     lockDropzone: boolean
     isDropzoneEnabled(): boolean
     canDropOnElement(el: models.Element): boolean
+    cannotDropSelectionOnElement(el: models.Element): boolean
     dropMove(origin: models.Element[], target: models.Element)
     drag(item: models.Element, event?: any)
     dragEnd(item: models.Element, event?: any)
@@ -119,9 +120,11 @@ export function DragDelegate($scope: DragDelegateScope) {
                 return false;
             }
             //cannot drop on his parent
-            const itemsNotInTarget = draggingItems.filter(item=>item.eParent!=targetItem._id);
-            if(itemsNotInTarget.length==0){
-                return false;
+            if(targetItem._id){
+                const itemsNotInTarget = draggingItems.filter(item=>item.eParent!=targetItem._id);
+                if(itemsNotInTarget.length==0){
+                    return false;
+                }
             }
             //cannot drag on himself
             const targetIndex = draggingItems.filter(item => item === targetItem || (item && targetItem && item._id == targetItem._id))
@@ -144,6 +147,12 @@ export function DragDelegate($scope: DragDelegateScope) {
     }
     $scope.canDropOnElement = function (el) {
         return $scope.isDraggingElement && $scope.dropCondition(el)(null);
+    }
+    $scope.cannotDropSelectionOnElement = function (el) {
+        if(!$scope.isDraggingElement ){
+            return false; //if nothing selected => cannotdrop is false
+        }
+        return !$scope.dropCondition(el)(null);
     }
 
     $scope.dropTo = async function (targetItem, $originalEvent) {

@@ -24,8 +24,8 @@
 			   <i class="arrow" ng-if="canExpendTree(folder)" ng-click="openOrCloseFolder($event,folder)"></i><i ng-if="folder.filter == 'shared'" class="shared"></i> <span class="workspace-menu-label no-style">[[folder.name]]</span>
 			</a>
 			<!--MUST BE AFTER a.droptarget-->
-			<span ng-class="{'highlight-no-droppable':!canDropOnElement(folder)}" class="highlight-title highlight-title-border">
-				<span class="count-badge">[[canDropOnElement(folder)?countDragItems():'']]</span>
+			<span ng-class="{'highlight-no-droppable':cannotDropSelectionOnElement(folder)}" class="highlight-title highlight-title-border">
+				<span class="count-badge" ng-class="{'highlight-not-allowed':cannotDropSelectionOnElement(folder)}">[[canDropOnElement(folder)?countDragItems():'']]</span>
 			</span>
 			<ul data-ng-class="{ selected: isOpenedFolder(folder), closed: !isRolledFolder(folder) }" ng-if="isOpenedFolder(folder) || isRolledFolder(folder)">
 				<li data-ng-repeat="folder in folder.children" data-ng-include="'folder-content'" class="highlight-title-wrapper"></li>
