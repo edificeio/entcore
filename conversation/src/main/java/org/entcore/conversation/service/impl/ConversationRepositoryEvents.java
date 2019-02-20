@@ -67,7 +67,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 								JsonArray result = results.getJsonArray(i);
 								String id = result.getString(0);
 								String filename = result.getString(3);
-								int dot = filename.indexOf('.');
+								int dot = filename.lastIndexOf('.');
 								filename = dot > -1 ? filename.substring(0, dot) + "_" + id + filename.substring(dot)
 								: filename + "_" + id;
 								ids.add(id);

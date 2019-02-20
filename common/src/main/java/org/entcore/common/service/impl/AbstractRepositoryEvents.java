@@ -73,7 +73,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 								JsonObject doc = ((JsonObject) elem);
 								String filename = doc.getString("name");
 								String fileId = doc.getString("_id");
-								int dot = filename.indexOf('.');
+								int dot = filename.lastIndexOf('.');
 								filename = dot > -1 ? filename.substring(0, dot) + "_" + fileId + filename.substring(dot)
 										: filename + "_" + fileId;
 								doc.put("name",filename);
