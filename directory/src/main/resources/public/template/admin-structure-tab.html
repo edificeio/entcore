@@ -162,6 +162,23 @@
         </div>
         <em class="twelve cell"><i18n>directory.maxQuota</i18n> : [[ formatQuota(getMaxProfileQuota(quotaProfile)) ]]</em>
 
+        <!-- Levels of education -->
+        <hr class="separator cell">
+        <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.levels-of-education")]]</h3>
+        <div class="twelve cell">
+            <select style="min-height: 40px;" multiple ng-model="structure.levelsOfEducation" ng-change="changeLevelsOfEducation(structure.id, structure.levelsOfEducation);">
+                <option value="1">[[lang.translate("directory.levels-of-education.1")]]</option>
+                <option value="2">[[lang.translate("directory.levels-of-education.2")]]</option>
+            </select>
+        </div>
+
+        <!-- Distributions -->
+        <hr class="separator cell" ng-if="distributions && distributions.length > 0">
+        <h3 class="twelve cell" style="margin-top: 0;" ng-if="distributions && distributions.length > 0">[[lang.translate("directory.distributions")]]</h3>
+        <div class="twelve cell" ng-if="distributions && distributions.length > 0">
+            <select style="min-height: 40px;" multiple ng-model="structure.distributions" ng-change="changeDistributions(structure.id, structure.distributions);" ng-options="item for item in distributions">
+            </select>
+        </div>
     </div>
 
     <!-- Structure creation -->

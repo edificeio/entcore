@@ -42,6 +42,11 @@ Application.prototype.open = function(){
         if(data.casType){
             data.hasCas = true
         }
+        if(data.levelsOfEducation) {
+			data.levelsOfEducation = data.levelsOfEducation.map(function(level) {
+				return level.toString();
+			});
+		}
 		this.updateData(data);
 
 	}.bind(this));
@@ -431,6 +436,7 @@ model.build = function(){
 					return {
 						id: role.id,
 						name: role.name,
+						distributions: role.distributions,
 						actions: _.map(role.actions, function(action){
 							return {
 								name: action[0],

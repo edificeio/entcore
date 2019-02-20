@@ -572,6 +572,11 @@ function Structures(){
                 that.load(data)
 
                 _.forEach(that.all, function(struct){
+                    if (struct.levelsOfEducation) {
+                        struct.levelsOfEducation = struct.levelsOfEducation.map(function (level) {
+                            return level.toString();
+                        });
+                    }
                     struct.parents = _.filter(struct.parents, function(parent){
                         var parentMatch = _.findWhere(that.all, {id: parent.id})
                         if(parentMatch){

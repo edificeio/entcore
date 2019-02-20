@@ -41,8 +41,10 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -50,9 +52,29 @@ import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultAppRegistryService implements AppRegistryService {
 
+	private final int firstLevel = 1;
+	private final int secondLevel = 2;
+	private final JsonArray defaultLevelsOfEducation = new JsonArray()
+			.add(firstLevel)
+			.add(secondLevel);
+	private final JsonArray defaultDistributions = new JsonArray();
+
 	private final Neo4j neo = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultAppRegistryService.class);
 	private static Pattern URL_PATTERN = Pattern.compile("^https?://[^\\s/$.?#].[^\\s]*$");
+	private final Function<Either<String, JsonArray>, Either<String, JsonArray>> addsDefaultRoleDistributions = result -> {
+		if(result.isRight()) {
+			JsonArray applications = result
+					.right()
+					.getValue()
+					.stream()
+					.map(JsonObject.class::cast)
+					.map(role -> role.put("distributions", role.getJsonArray("distributions", defaultDistributions)))
+					.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+			result = new Either.Right<>(applications);
+		}
+		return result;
+	};
 
 	@Override
 	public void listApplications(String structureId, Handler<Either<String, JsonArray>> handler) {
@@ -64,11 +86,22 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		}
 		String query =
 				"MATCH (n:Application) " + filter +
-				"RETURN n.id as id, n.name as name, n.icon as icon, 'External' IN labels(n) as isExternal";
-		neo.execute(query, params, validResultHandler(handler));
+				"RETURN n.id as id, n.name as name, n.icon as icon, 'External' IN labels(n) as isExternal, n.levelsOfEducation as levelsOfEducation";
+		neo.execute(query, params, result -> {
+			Either<String, JsonArray> resultAsArray = validResult(result);
+			if(resultAsArray.isRight()) {
+				JsonArray applications = resultAsArray
+                        .right()
+                        .getValue()
+                        .stream()
+                        .map(JsonObject.class::cast)
+                        .map(app -> app.put("levelsOfEducation", app.getJsonArray("levelsOfEducation", defaultLevelsOfEducation)))
+                        .collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+				resultAsArray = new Either.Right<>(applications);
+			}
+			handler.handle(resultAsArray);
+		});
 	}
-	
-	
 
 	@Override
 	public void listRoles(String structureId, Handler<Either<String, JsonArray>> handler) {
@@ -95,8 +128,8 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		String query =
 				"MATCH (n:Role) " + filter +
 				"OPTIONAL MATCH n-[r:AUTHORIZE]->a " +
-				"RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions";
-		neo.execute(query, params, validResultHandler(handler));
+				"RETURN n.id as id, n.name as name, n.distributions as distributions, COLLECT([a.name, a.displayName, a.type]) as actions";
+		neo.execute(query, params, result -> handler.handle(addsDefaultRoleDistributions.apply(validResult(result))));
 	}
 
 	@Override
@@ -148,7 +181,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		query += "RETURN n.id as id, n.name as name, COLLECT([a.name, a.displayName, a.type]) as actions";
 		neo.execute(query, params, validResultHandler(handler));
 	}
-	
+
 	@Override
 	public void listApplicationRolesWithGroups(String structureId, String appId, Handler<Either<String, JsonArray>> handler) {
 		String query =
@@ -157,11 +190,11 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"MATCH (r)-[:AUTHORIZE]->(:Action)<-[:PROVIDE]-(apps:Application) " +
 				"    OPTIONAL MATCH (s:Structure {id: {structureId}})<-[:DEPENDS*1..2]-(g:Group)-[:AUTHORIZED]->(r) " +
 				"    WITH r, a, apps, CASE WHEN g IS NOT NULL THEN COLLECT(DISTINCT{ id: g.id, name: g.name }) ELSE [] END as groups " +
-				"RETURN r.id as id, r.name as name, a.id as appId, groups, COUNT(DISTINCT apps) > 1 as transverse";
+				"RETURN r.id as id, r.name as name, r.distributions as distributions, a.id as appId, groups, COUNT(DISTINCT apps) > 1 as transverse";
 		JsonObject params = new JsonObject()
 			.put("appId", appId)
 			.put("structureId", structureId);
-		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
+		neo.execute(query, params, result -> handler.handle(addsDefaultRoleDistributions.apply(validResult(result))));
 	}
 
 	@Override
@@ -301,6 +334,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			application.put("structureId", structureId);
 		}
+		if (application.getJsonArray("levelsOfEducation") == null) {
+			application.put("levelsOfEducation", defaultLevelsOfEducation);
+		}
 		final StatementsBuilder b = new StatementsBuilder()
 				.add(createApplicationQuery, params.copy().put("props", application));
 		if (actions != null && actions.size() > 0) {
@@ -376,7 +412,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"RETURN n.id as id, n.name as name, " +
 				"n.grantType as grantType, n.secret as secret, n.address as address, " +
 				"n.icon as icon, n.target as target, n.displayName as displayName, " +
-				"n.scope as scope, n.pattern as pattern, n.casType as casType";
+				"n.scope as scope, n.pattern as pattern, n.casType as casType, n.levelsOfEducation as levelsOfEducation";
 		JsonObject params = new JsonObject()
 				.put("id", applicationId);
 		neo.execute(query,params, new Handler<Message<JsonObject>>() {
@@ -392,7 +428,15 @@ public class DefaultAppRegistryService implements AppRegistryService {
 						j.put("scope", "");
 					}
 				}
-				handler.handle(validUniqueResult(res));
+				Either<String, JsonObject> result = validUniqueResult(res);
+				if (result.isRight()) {
+					JsonObject app = result
+							.right()
+							.getValue();
+					app.put("levelsOfEducation", app.getJsonArray("levelsOfEducation", defaultLevelsOfEducation));
+					result = new Either.Right<>(app);
+				}
+				handler.handle(result);
 			}
 		});
 	}
@@ -424,6 +468,32 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"DELETE a, r2";
 		JsonObject params = new JsonObject().put("id", applicationId);
 		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void setLevelsOfEducation(String applicationId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (a:Application { id : {applicationId}}) " +
+				"SET a.levelsOfEducation = {levelsOfEducation} " +
+				"RETURN a.id as id, a.levelsOfEducation as levelsOfEducation";
+
+		JsonObject params = new JsonObject()
+				.put("applicationId", applicationId)
+				.put("levelsOfEducation", levelsOfEducations);
+
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void setRoleDistributions(String roleId, List<String> distributions, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (r:Role { id : {roleId}}) " +
+				"SET r.distributions = {distributions} " +
+				"RETURN r.id as id, r.distributions as distributions";
+
+		JsonObject params = new JsonObject()
+				.put("roleId", roleId)
+				.put("distributions", distributions);
+
+		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
 
 	@Override
