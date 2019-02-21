@@ -19,7 +19,9 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.user.UserInfos;
 
@@ -43,6 +45,9 @@ public class UserAccess extends AnyAdminOfUser {
                 if(event){
                     handler.handle(true);
                 }else{
+                    if (Vertx.currentContext().config().getBoolean("visible-check", true)) {
+                        ((SecureHttpServerRequest) request).setAttribute("visibleCheck", "true");
+                    }
                     DirectoryResourcesProvider.isTeacherOf(request, user, handler);
                 }
             }
