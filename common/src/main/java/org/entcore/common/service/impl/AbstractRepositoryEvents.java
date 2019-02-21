@@ -37,7 +37,11 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 		this.vertx = vertx;
 		String app = Server.getPathPrefix(Config.getConf()).substring(1);
 		this.title = String.valueOf(app.charAt(0)).toUpperCase() + app.substring(1);
-		this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), vertx.fileSystem());
+		if (vertx != null) {
+			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), vertx.fileSystem());
+		} else {
+			this.exporter = null;
+		}
 	}
 
 	protected void createExportDirectory(String exportPath, String locale, final Handler<String> handler) {
