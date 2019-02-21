@@ -2,12 +2,15 @@ package org.entcore.archive.services.impl;
 
 import io.vertx.core.shareddata.Shareable;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class UserExport implements Shareable {
+public class UserExport implements Shareable, Serializable {
+
+	private static final long serialVersionUID = 42L;
 
 	private AtomicLong progress;
 	private AtomicInteger counter;
