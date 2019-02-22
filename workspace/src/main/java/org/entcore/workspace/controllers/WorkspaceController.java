@@ -1170,6 +1170,110 @@ public class WorkspaceController extends BaseController {
 
 	}
 
+	@Put("/share/json/:id")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void shareJsonSubmit(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		request.setExpectMultipart(true);
+		request.endHandler(v -> {
+			final List<String> actions = request.formAttributes().getAll("actions");
+			final String groupId = request.formAttributes().get("groupId");
+			final String userId = request.formAttributes().get("userId");
+			if (actions == null || actions.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+			UserUtils.getUserInfos(eb, request, user -> {
+				if (user != null) {
+					ElementShareOperations shareOp = null;
+					if (!StringUtils.isEmpty(userId)) {
+						shareOp = ElementShareOperations.addShareUser(SHARED_ACTION, user, userId, actions);
+					} else if (!StringUtils.isEmpty(groupId)) {
+						shareOp = ElementShareOperations.addShareGroup(SHARED_ACTION, user, groupId, actions);
+					}
+					if (shareOp == null) {
+						badRequest(request, "Missing parameters");
+						return;
+					}
+					workspaceService.share(id, shareOp, event -> {
+						if (event.succeeded()) {
+							JsonArray n = event.result().getJsonArray("notify-timeline-array");
+							if (n != null) {
+								shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.empty(),
+										evRecipients -> {
+											if (evRecipients.succeeded()) {
+												sendNotify(request, id, user, evRecipients.result());
+											}
+										});
+							}
+							renderJson(request, event.result());
+						} else {
+							JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+							renderJson(request, error, 400);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			});
+		});
+	}
+	
+	// used by copyRights (pages for exemple)
+	@Put("/share/remove/:id")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void removeShare(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (id == null || id.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+
+		request.setExpectMultipart(true);
+		request.endHandler(v -> {
+			final List<String> actions = request.formAttributes().getAll("actions");
+			final String groupId = request.formAttributes().get("groupId");
+			final String userId = request.formAttributes().get("userId");
+			UserUtils.getUserInfos(eb, request, user -> {
+				if (user != null) {
+					ElementShareOperations shareOp = null;
+					if (!StringUtils.isEmpty(userId)) {
+						shareOp = ElementShareOperations.removeShareUser(SHARED_ACTION, user, userId, actions);
+					} else if (!StringUtils.isEmpty(groupId)) {
+						shareOp = ElementShareOperations.removeShareGroup(SHARED_ACTION, user, groupId, actions);
+					}
+					if (shareOp == null) {
+						badRequest(request, "Missing parameters");
+						return;
+					}
+					workspaceService.share(id, shareOp, event -> {
+						if (event.succeeded()) {
+							JsonArray n = event.result().getJsonArray("notify-timeline-array");
+							if (n != null) {
+								shareService.findUserIdsForInheritShare(id, user.getUserId(), Optional.empty(),
+										evRecipients -> {
+											if (evRecipients.succeeded()) {
+												sendNotify(request, id, user, evRecipients.result());
+											}
+										});
+							}
+							renderJson(request, event.result());
+						} else {
+							JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+							renderJson(request, error, 400);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			});
+		});
+	}
+
 	@Put("/document/:id")
 	@SecuredAction(value = "workspace.contrib", type = ActionType.RESOURCE)
 	public void updateDocument(final HttpServerRequest request) {
