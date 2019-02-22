@@ -26,6 +26,16 @@ function getNotify() {
 }
 console.log('workspace behaviours loaded');
 
+function extractDocIdFromUrl(url) {
+	if (url) {
+		if (url.indexOf("?")) {
+			url = url.split("?")[0];
+		}
+		var parts = url.split('/');
+		return parts[parts.length - 1];
+	}
+	return "";
+}
 Behaviours.register('workspace', {
 	rights: {
 		resource: {
@@ -54,73 +64,73 @@ Behaviours.register('workspace', {
 	},
 	loadResources: function (callback) {
 		http().get('/workspace/documents?filter=all&hierarchical=true').done(function (documents) {
-					this.resources = documents.filter(function(doc){return !doc.deleted}).map(function (doc) {
-						if (doc.metadata['content-type'].indexOf('image') !== -1) {
-							doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
-						}
-						else {
-							doc.icon = '/img/icons/unknown-large.png';
-						}
-						return {
-							title: doc.name,
-							owner: {
-								name: doc.ownerName,
-								userId: doc.owner
-							},
-							icon: doc.icon,
-							path: '/workspace/document/' + doc._id,
-							_id: doc._id,
-							metadata: doc.metadata,
-							protected: doc.protected
-						};
-					});
-					if (typeof callback === 'function') {
-						callback(this.resources);
-					}
+			this.resources = documents.filter(function (doc) { return !doc.deleted }).map(function (doc) {
+				if (doc.metadata['content-type'].indexOf('image') !== -1) {
+					doc.icon = '/workspace/document/' + doc._id + '?thumbnail=150x150';
+				}
+				else {
+					doc.icon = '/img/icons/unknown-large.png';
+				}
+				return {
+					title: doc.name,
+					owner: {
+						name: doc.ownerName,
+						userId: doc.owner
+					},
+					icon: doc.icon,
+					path: '/workspace/document/' + doc._id,
+					_id: doc._id,
+					metadata: doc.metadata,
+					protected: doc.protected
+				};
+			});
+			if (typeof callback === 'function') {
+				callback(this.resources);
+			}
 		}.bind(this));
 	},
-	create: function(file, callback){
+	create: function (file, callback) {
 		console.log('creating file');
 		console.log(file);
 		file.loading = true;
 		var splitName = file.file[0].name.split('.');
 		var ext = splitName[splitName.length - 1];
-		if(file.title !== file.file[0].name){
+		if (file.title !== file.file[0].name) {
 			file.title += ('.' + ext);
 		}
 		var formData = new FormData();
 		formData.append('file', file.file[0], file.title);
 
-		http().postFile('/workspace/document?protected=true&application=media-library', formData).done(function(data){
+		http().postFile('/workspace/document?protected=true&application=media-library', formData).done(function (data) {
 			file.loading = false;
 			this.loadResources(function (resources) {
-			    file.title = splitName[0];
+				file.title = splitName[0];
 				callback(resources, data);
 			});
-		}.bind(this)).e400(function(e){
+		}.bind(this)).e400(function (e) {
 			file.loading = false;
 			var error = JSON.parse(e.responseText);
 			//can't use notify.error, notify is undefined in not TS app like support
 			(<any>window).notify.error(error.error);
 		}.bind(this));
 	},
-	duplicate: function(file, visibility, callback){
+	duplicate: function (file, visibility, callback) {
 		console.log(file);
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', '/workspace/document/' + file._id, true);
 		xhr.responseType = 'blob';
-		xhr.onload = function(e) {
+		xhr.onload = function (e) {
 			if (xhr.status == 200) {
 				var blobDocument = xhr.response;
 				var formData = new FormData();
 				formData.append('file', blobDocument, file.metadata.filename);
-				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + MediaLibrary.thumbnails, formData).done(function(data){
-					http().putJson('/workspace/rename/document/' + data._id, { 
-						legend: file.legend, 
-						alt: file.alt, 
+				http().postFile('/workspace/document?' + visibility + '=true&application=media-library&' + MediaLibrary.thumbnails, formData).done(function (data) {
+					http().putJson('/workspace/rename/document/' + data._id, {
+						legend: file.legend,
+						alt: file.alt,
 						name: file.name.replace('.' + file.metadata.extension, '')
-					}).done(function(){
-						if(typeof callback === 'function'){
+					}).done(function () {
+						if (typeof callback === 'function') {
 							data.metadata = file.metadata;
 							data.name = file.metadata.filename;
 							data.alt = file.alt;
@@ -286,8 +296,7 @@ Behaviours.register('workspace', {
 				},
 				getReferencedResources: function (source) {
 					return _.map(_.filter(source.documents, function (doc) { return doc.icon }), function (doc) {
-						var spl = doc.icon.split('/');
-						return spl[spl.length - 1];
+						return extractDocIdFromUrl(doc.path);
 					});
 				},
 				documentIcon: function (doc) {
@@ -350,8 +359,7 @@ Behaviours.register('workspace', {
 				},
 				getReferencedResources: function (source) {
 					return _.map(source.documents, function (doc) {
-						var spl = doc.icon.split('/');
-						return spl[spl.length - 1];
+						return extractDocIdFromUrl(doc.path);
 					});
 				}
 			}

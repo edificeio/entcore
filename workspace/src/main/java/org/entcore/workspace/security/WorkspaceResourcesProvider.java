@@ -75,6 +75,8 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "deleteFolder":
 			case "shareJson":
 			case "shareResource":
+			case "shareJsonSubmit":
+			case "removeShare":
 			case "getRevision":
 			case "listRevisions":
 				authorizeDocument(request, user, binding.getServiceMethod(), handler);
