@@ -275,4 +275,8 @@ public final class StringUtils {
             pos = str.indexOf(substr, pos + 1);
         return pos;
     }
+
+    public static String replaceForbiddenCharacters(String s) {
+        return s.replaceAll("(\\\\|\\/|\\*|\\\"|\\<|\\>|:|\\?|\\|)","_");
+    }
 }
