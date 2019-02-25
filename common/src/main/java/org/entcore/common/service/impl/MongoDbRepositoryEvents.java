@@ -31,6 +31,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.util.HashSet;
@@ -208,9 +209,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			if (fileName == null) {
 				fileName = resources.getString("name");
 			}
-			if (fileName != null && fileName.contains("/")) {
-				fileName = fileName.replaceAll("/", "-");
-			}
+			fileName = StringUtils.replaceForbiddenCharacters(fileName);
 			if (!usedFileName.add(fileName)) {
 				fileName += "_" + fileId;
 			}

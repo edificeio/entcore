@@ -145,6 +145,7 @@ public class FolderExporter {
 						name = name + "_" + count;
 					}
 				}
+				name = StringUtils.replaceForbiddenCharacters(name);
 				nameByFileId.put(fileId, name);
 			}
 			//
