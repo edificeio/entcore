@@ -39,6 +39,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import fr.wseduc.webutils.Either;
+import org.entcore.common.utils.StringUtils;
 
 public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
@@ -70,6 +71,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 								int dot = filename.lastIndexOf('.');
 								filename = dot > -1 ? filename.substring(0, dot) + "_" + id + filename.substring(dot)
 								: filename + "_" + id;
+								filename = StringUtils.replaceForbiddenCharacters(filename);
 								ids.add(id);
 								filenamesByIds.put(id, filename);
 							}
