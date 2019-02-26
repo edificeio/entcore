@@ -424,6 +424,7 @@ export let conversationController = ng.controller('ConversationController', [
             window.scrollTo(0, 0);
             $scope.state.newItem = draft;
             await draft.open();
+            $scope.ccCciShow = (draft.cc.length || draft.cci.length);
             $scope.$apply();
         };
 
