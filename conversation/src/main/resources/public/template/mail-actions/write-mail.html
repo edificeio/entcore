@@ -16,11 +16,11 @@
         <div>
 			<div class="row">
 				<div class="row receivers">
-					<label class="two cell twelve-mobile">
+					<label class="c-two cell twelve-mobile">
                         <i18n>to</i18n>
                         <i class="badge-info" ng-if="!state.newItem.to.length" tooltip="conversation.to.info">?</i>
                     </label>
-					<div class="ten cell twelve-mobile right-magnet">
+					<div class="c-ten cell twelve-mobile right-magnet">
 						<recipient-list
 							ng-model="state.newItem.to"
 							ng-change="quickSaveDraft()"
@@ -36,7 +36,6 @@
                         <label ng-click="ccCciShow = !ccCciShow" style="padding: 0">
                             <i class="arrow"></i>
                             <i18n class="medium-importance">conversation.show.copy</i18n>
-                            <i class="badge-info" tooltip="conversation.cci.info">?</i>
                         </label>
                     </div>
                 </div>
@@ -44,8 +43,8 @@
             <div class="drop-down-content" slide="ccCciShow">
 			    <div>
 				    <div class="row receivers">
-					    <label class="two cell twelve-mobile"><i18n>copy</i18n></label>
-					    <div class="ten cell twelve-mobile right-magnet">
+					    <label class="c-two cell twelve-mobile"><i18n>copy</i18n></label>
+					    <div class="c-ten cell twelve-mobile right-magnet">
 						    <recipient-list
 							    ng-model="state.newItem.cc"
 							    ng-change="quickSaveDraft()"
@@ -57,10 +56,11 @@
 			    </div>
                 <div>
                     <div class="row receivers">
-                        <label class="two cell twelve-mobile">
+                        <label class="c-two cell twelve-mobile">
                             <i18n>cci</i18n>
+                            <i class="badge-info" tooltip="conversation.cci.info">?</i>
                         </label>
-                        <div class="ten cell twelve-mobile right-magnet">
+                        <div class="c-ten cell twelve-mobile right-magnet">
                             <recipient-list
                                 ng-model="state.newItem.cci"
                                 ng-change="quickSaveDraft()"
@@ -72,8 +72,8 @@
                 </div>
             </div>
 			<div class="row subject">
-				<label class="two cell twelve-mobile"><i18n>subject</i18n></label>
-				<input type="text" class="ten cell twelve-mobile" ng-model="state.newItem.subject" ng-change="saveDraftAuto()"/>
+				<label class="c-two cell twelve-mobile"><i18n>subject</i18n></label>
+				<input type="text" class="c-ten cell twelve-mobile" ng-model="state.newItem.subject" ng-change="saveDraftAuto()"/>
 			</div>
 		</div>
 	</div>
@@ -102,7 +102,7 @@
 			<div class="twelve cell bottom-spacing" pulsar-highlight="7">
 				<label ng-click="signatureShow = !signatureShow">
 					<i class="arrow"></i>
-					<i18n>add.signature</i18n>
+					<i18n class="medium-importance">add.signature</i18n>
 				</label>
 
 				<!-- <input type="checkbox" ng-model="conversation.preference.useSignature"  ng-click="refreshSignature(conversation.preference.useSignature)"/> -->
