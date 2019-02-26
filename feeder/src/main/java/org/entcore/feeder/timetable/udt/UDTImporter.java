@@ -491,6 +491,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	private void generateCourses(int periodWeek, boolean theoretical) {
 		for (Map.Entry<Integer, Integer> e : getNextHolidaysWeek(periodWeek).entrySet()) {
+			if (!theoretical && e.getKey() != periodWeek) continue;
+			final int startPeriodWeek = e.getKey();
+			final int endPeriodWeek = theoretical ? e.getValue() : startPeriodWeek;
 			for (List<JsonObject> c : lfts.values()) {
 				Collections.sort(c, new LftComparator());
 				String start = null;
@@ -504,7 +507,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 						start = j.getString("fic");
 						current = val;
 					} else if ((++current) != val || count == c.size()) {
-						persistCourse(generateCourse(start, previous.getString("fic"), previous, e.getKey(), e.getValue(), theoretical));
+						persistCourse(generateCourse(start, previous.getString("fic"),
+								previous, startPeriodWeek, endPeriodWeek, theoretical));
 						start = j.getString("fic");
 						current = val;
 					}
@@ -568,6 +572,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 		endDate = endDate.plusSeconds(slotEnd.getEnd());
 		if (endDate.isBefore(startDate)) {
 			log.error("endDate before start date. cpw : " + cpw + ", cepw : " + cepw + ", startDateWeek1 : " + startDateWeek1 + ", endPeriodOfWeek : " + endPeriodWeek);
+			return null;
 		}
 		final Set<String> ce = coens.get(start);
 		JsonArray teacherIds;
@@ -588,6 +593,9 @@ public class UDTImporter extends AbstractTimetableImporter {
 				.put("dayOfWeek", day)
 				.put("teacherIds", teacherIds)
 				.put("theoretical", theoretical);
+		if (!theoretical) {
+			c.put("periodWeek", periodWeek);
+		}
 		final String sId = subjects.get(entity.getString("mat"));
 		if (isNotEmpty(sId)) {
 			c.put("subjectId", sId);
