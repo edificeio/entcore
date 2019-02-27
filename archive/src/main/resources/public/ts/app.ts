@@ -3,6 +3,7 @@ import http from 'axios'
 
 const archiveController = ng.controller('ArchiveController', ['$scope', ($scope) => {
 	$scope.filePath = 'about:blank'
+	var expected;
 	http.get('/archive/conf/public').then(function(exportApps){
 		http.get('/applications-list').then(function(myApps){
 			$scope.selectedApps = [];
@@ -12,22 +13,35 @@ const archiveController = ng.controller('ArchiveController', ['$scope', ($scope)
 				let a2 = lang.translate(a), b2 = lang.translate(b);
 				return a2 < b2 ? -1 : a2 > b2 ? 1 : 0;
 			});
-			$scope.availableApps.forEach(app => { $scope.selectedApps[app] = true });
+			if ($scope.availableApps.length === 0) {
+				$scope.isPreDeleted = true;
+				expected = exportApps.data.apps;
+			}
+			$scope.availableApps.forEach(app => { $scope.selectedApps[app] = false });
+			$scope.selectedApps["workspace"] = true;
+			$scope.selectedApps["rack"] = true;
 			$scope.areAllSelected = function() {
 				return $scope.availableApps.find(app => !$scope.selectedApps[app]) === undefined
 			}
 			$scope.areNoneSelected = function() {
 				return $scope.availableApps.find(app => $scope.selectedApps[app]) === undefined
 			}
-			$scope.selectAll = function(){
+			$scope.selectAll = function(event){
 				let oneFalse = !$scope.areAllSelected()
 				$scope.availableApps.forEach(app => { $scope.selectedApps[app] = oneFalse })
 			}
 			$scope.$apply();
 		});
 	});
-	$scope.initiateExport = function(){
-		var appList = $scope.availableApps.filter(app => $scope.selectedApps[app]);
+	$scope.initiateExport = function(mode: string){
+		var appList;
+		if (mode === "docsOnly") {
+			appList = ["workspace","rack"];
+		} else if (mode === "all") {
+			appList = expected;
+		} else if (mode === "apps") {
+			appList = $scope.availableApps.filter(app => $scope.selectedApps[app]);
+		}
 		http.post('/archive/export', {'apps':appList}).then(function(res){
 			$scope.loadingSpinner = true;
 			setTimeout(function() {
@@ -44,6 +58,8 @@ const archiveController = ng.controller('ArchiveController', ['$scope', ($scope)
 			},5000);
 			$scope.loading = true;
 			$scope.$apply();
+		}).catch(function(){
+			notify.error('export.already');
 		})
 	};
 }]);
