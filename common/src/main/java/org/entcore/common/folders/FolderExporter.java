@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
@@ -30,6 +31,7 @@ public class FolderExporter {
 		public Map<String, String> namesByIds = new HashMap<>();
 		public Map<String, List<JsonObject>> docByFolders = new HashMap<>();
 		public Set<String> folders = new HashSet<>();
+		public JsonArray errors = new JsonArray();
 
 		public FolderExporterContext(String basePath) {
 			super();
@@ -147,6 +149,7 @@ public class FolderExporter {
 				}
 				name = StringUtils.replaceForbiddenCharacters(name);
 				nameByFileId.put(fileId, name);
+				context.namesByIds.put(fileId,name);
 			}
 			//
 			String[] ids = nameByFileId.fieldNames().stream().toArray(String[]::new);
@@ -156,7 +159,8 @@ public class FolderExporter {
 				} else if (throwErrors) {
 					future.fail(res.getString("error"));
 				} else {
-					future.complete(new JsonObject());
+					context.errors.addAll(res.getJsonArray("errors"));
+					future.complete();
 					log.error("Failed to export file : " + folderPath + " - " + nameByFileId + "- "
 							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
 							+ res.encode());
