@@ -71,7 +71,7 @@ public class ArchiveController extends BaseController {
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		Boolean cluster = (Boolean) server.get("cluster");
-		final Map<String, UserExport> userExport = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
+		final Map<String, UserExport> userExport = new HashMap<>();
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
