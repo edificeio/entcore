@@ -472,13 +472,13 @@ public class FileStorage implements Storage {
 					@Override
 					public void handle(JsonObject event) {
 						if (!"ok".equals(event.getString("status"))) {
-							errors.add(event);
+							errors.add(event.put("fileId",id));
 						}
 						decrementWriteToFS(count, errors, handler);
 					}
 				});
 			} catch (FileNotFoundException e) {
-				errors.add(new JsonObject().put("status", "error").put("message", "invalid.path"));
+				errors.add(new JsonObject().put("status", "error").put("message", "invalid.path").put("fileId",id));
 				decrementWriteToFS(count, errors, handler);
 				log.warn(e.getMessage(), e);
 			}
