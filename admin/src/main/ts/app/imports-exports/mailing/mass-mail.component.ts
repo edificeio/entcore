@@ -17,13 +17,13 @@ import { FilterPipe } from '../../shared/ux/pipes'
             <h2>{{ 'massmail.accounts' | translate }}</h2>
             
             <div class="has-vertical-padding is-pulled-left">
-                <a (click)="toggleVisibility()" 
+                <button (click)="toggleVisibility()"
                     class="button is-primary" 
                     [ngClass]="setFiltersOnStyle()" 
                     #filtersToggle>
                     <s5l>massmail.filters</s5l> 
                     <i class="fa fa-chevron-down"></i>
-                </a>
+                </button>
                 
                 <div [hidden]="!show" class="filters" #filtersDiv>
                     <i class="fa fa-close close" (click)="show=false"></i>
@@ -56,11 +56,44 @@ import { FilterPipe } from '../../shared/ux/pipes'
                     </div>
                 </div>
             </div>
-            <div class="has-vertical-padding is-pulled-right">
-                <a><s5l>process.massmail</s5l> : </a>
-                
-                <button class="cell" (click)="processMassMail('pdf')" [disabled]="countUsers == 0"><s5l>massmail.pdf</s5l></button>
-                <button class="cell" (click)="processMassMail('mail')" [disabled]="countUsers == 0"><s5l>massmail.mail</s5l></button>
+            <div class="has-vertical-padding flex is-pulled-right">
+                <div class="mailing__sort">
+                    <p><s5l>massmail.sorttitle</s5l></p>
+                    <div>
+                        <span><s5l>massmail.firstsort</s5l></span>
+                        <select [(ngModel)]="firstSort" (ngModelChange)="secondSort = 'none'">
+                            <option value="none">
+                                <s5l>massmail.none</s5l>
+                            </option>
+                            <option value="profile">
+                                <s5l>massmail.profile</s5l>
+                            </option>
+                            <option value="classname">
+                                <s5l>massmail.classname</s5l>
+                            </option>
+                        </select>
+                        <span [hidden]="firstSort === 'none'"><s5l>massmail.secondsort</s5l></span>
+                        <select [(ngModel)]="secondSort" [hidden]="firstSort === 'none'">
+                            <option value="none">
+                                <s5l>massmail.none</s5l>
+                            </option>
+                            <option *ngIf="firstSort === 'classname'" value="profile">
+                                <s5l>massmail.profile</s5l>
+                            </option>
+                            <option *ngIf="firstSort === 'profile'" value="classname">
+                                <s5l>massmail.classname</s5l>
+                            </option>
+                        </select>
+                    </div>
+                    <div class="mailing__notice"><s5l>massmail.notice</s5l></div>
+                </div>
+                <div  class="mailing__publish">
+                    <p><s5l>process.massmail</s5l></p>
+                    <div>
+                        <button class="cell" (click)="processMassMail('pdf')" [disabled]="countUsers == 0"><s5l>massmail.pdf</s5l></button>
+                        <button class="cell" (click)="processMassMail('mail')" [disabled]="countUsers == 0"><s5l>massmail.mail</s5l></button>
+                    </div>
+                </div>
             </div>
             
             <div class="has-vertical-padding is-clearfix">
@@ -126,6 +159,12 @@ import { FilterPipe } from '../../shared/ux/pipes'
     host: {
         '(document:click)': 'onClick($event)',
     },
+    styles: [
+        '.flex {display: flex;}',
+        '.mailing__sort, .mailing__publish {margin: 0 10px;}',
+        '.mailing__sort p, .mailing__publish p {margin: 0 0 5px 0;}',
+        '.mailing__notice {font-style: italic; font-size: 12px; margin-top: 5px;}'
+    ],
     changeDetection: ChangeDetectionStrategy.OnPush
 
 
@@ -152,6 +191,9 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     downloadAnchor = null;
     downloadObjectUrl = null;
+
+    public firstSort: "none" | "profile" | "classname" = 'none';
+    public secondSort: "none" | "profile" | "classname" = 'none';
 
     translate = (...args) => { return (<any>this.bundles.translate)(...args) }
 
@@ -216,11 +258,22 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     async processMassMail(type: String): Promise<void> {
         let outputModels = this.userlistFiltersService.getFormattedOutputModels();
+        let sorts = null;
+        if (this.firstSort !== 'none') {
+            sorts = [this.firstSort];
+            if(this.secondSort !== 'none') {
+                sorts.push(this.secondSort);
+            }
+        }
 
         let params: any = {
             p: outputModels['type'],
             c: outputModels['classes'].map(c => c.id),
             a: 'all'
+        };
+
+        if (sorts) {
+            params.s = sorts;
         }
 
         let blob;
