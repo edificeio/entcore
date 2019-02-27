@@ -2,7 +2,7 @@ import { Routes } from '@angular/router'
 import { ImportsExportsRoot } from './imports-exports-root.component'
 import { ImportCSV } from './import/import-csv.component'
 import { ExportComponent } from './export/export.component'
-import { MassMailComponent } from './export/mass-mail.component'
+import { MassMailComponent } from './mailing/mass-mail.component'
 
 
 export let routes : Routes = [
