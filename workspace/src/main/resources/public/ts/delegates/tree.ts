@@ -191,9 +191,11 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
     $scope.openFolderRoute = function (folder, forceReload = false) {
-        const doLocation = function (path) {
-            if (forceReload) {
-                if ($location.path() == path) {
+        const doLocation=function(path){
+            //close view file if needed
+            $scope.closeViewFile();
+            if(forceReload){
+                if($location.path()==path){
                     window.location.reload()
                 } else {
                     $location.path(path)
