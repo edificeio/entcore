@@ -290,13 +290,19 @@ public class SqlConversationService implements ConversationService{
 		values.add(threadId);
 
 		String query =
-				"SELECT "+messagesFields+", um.unread as unread FROM " +userMessageTable + " as um " +
+				"SELECT "+messagesFields+", um.unread as unread, " +
+				" CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
+				" FROM " +userMessageTable + " as um" +
 				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
+				" LEFT JOIN " + userMessageAttachmentTable + " uma USING (user_id, message_id) " +
+				" LEFT JOIN " + attachmentTable + " att " +
+				" ON att.id = uma.attachment_id " +
 				" WHERE um.user_id = ? AND m.thread_id = ? " +
 				" AND m.state = 'SENT' AND um.trashed = false " +
+				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"));
 	}
 
 	@Override
