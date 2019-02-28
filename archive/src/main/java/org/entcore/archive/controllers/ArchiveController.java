@@ -71,13 +71,13 @@ public class ArchiveController extends BaseController {
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		Boolean cluster = (Boolean) server.get("cluster");
-		final Map<String, UserExport> userExport = new HashMap<>();
+		final Map<String, Long> exportInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 		EmailFactory emailFactory = new EmailFactory(vertx, config);
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
 		storage = new StorageFactory(vertx, config).getStorage();
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
-				eb, exportPath, notification, storage, userExport, new TimelineHelper(vertx, eb, config));
+				eb, exportPath, notification, storage, exportInProgress, new TimelineHelper(vertx, eb, config));
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 		Long periodicUserClear = config.getLong("periodicUserClear");
 		if (periodicUserClear != null) {
@@ -85,10 +85,10 @@ public class ArchiveController extends BaseController {
 				@Override
 				public void handle(Long event) {
 					final long limit = System.currentTimeMillis() - config.getLong("userClearDelay", 3600000l);
-					Set<Map.Entry<String, UserExport>> entries = new HashSet<>(userExport.entrySet());
-					for (Map.Entry<String, UserExport> e : entries) {
-						if (e.getValue() == null || e.getValue().getProgress() < limit) {
-							userExport.remove(e.getKey());
+					Set<Map.Entry<String, Long>> entries = new HashSet<>(exportInProgress.entrySet());
+					for (Map.Entry<String, Long> e : entries) {
+						if (e.getValue() == null || e.getValue() < limit) {
+							exportInProgress.remove(e.getKey());
 						}
 					}
 				}

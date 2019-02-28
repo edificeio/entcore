@@ -62,7 +62,8 @@ public class FileSystemExportService implements ExportService {
 	private final EmailSender notification;
 	private final Storage storage;
 	private static final Logger log = LoggerFactory.getLogger(FileSystemExportService.class);
-	private final Map<String, UserExport> userExportInProgress;
+	private final Map<String, Long> userExportInProgress;
+	private final Map<String, UserExport> userExport;
 	private final TimelineHelper timeline;
 
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
@@ -70,7 +71,7 @@ public class FileSystemExportService implements ExportService {
 
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath,
 			EmailSender notification, Storage storage,
-			Map<String, UserExport> userExportInProgress, TimelineHelper timeline) {
+			Map<String, Long> userExportInProgress, TimelineHelper timeline) {
 		this.vertx = vertx;
 		this.fs = fs;
 		this.eb = eb;
@@ -78,6 +79,7 @@ public class FileSystemExportService implements ExportService {
 		this.notification = notification;
 		this.storage = storage;
 		this.userExportInProgress = userExportInProgress;
+		this.userExport = new HashMap<>();
 		this.timeline = timeline;
 	}
 
@@ -90,7 +92,8 @@ public class FileSystemExportService implements ExportService {
 				if (Boolean.FALSE.equals(event)) {
 					long now = System.currentTimeMillis();
 					final String exportId = now + "_" +user.getUserId();
-					userExportInProgress.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList())));
+					userExportInProgress.put(user.getUserId(), now);
+					userExport.put(user.getUserId(), new UserExport(new HashSet<>(apps.getList())));
 					final String exportDirectory = exportPath + File.separator + exportId;
 					fs.mkdirs(exportDirectory, new Handler<AsyncResult<Void>>() {
 						@Override
@@ -140,8 +143,7 @@ public class FileSystemExportService implements ExportService {
 
 	@Override
 	public void waitingExport(String exportId, final Handler<Boolean> handler) {
-		UserExport ue = userExportInProgress.get(getUserId(exportId));
-		Long v = ue != null ? ue.getProgress() : null;
+		Long v = userExportInProgress.get(getUserId(exportId));
 		handler.handle(v != null && v > 0);
 	}
 
@@ -177,7 +179,7 @@ public class FileSystemExportService implements ExportService {
 		if (!userExportInProgress.containsKey(userId)) {
 			return;
 		}
-		final UserExport export = userExportInProgress.get(userId);
+		final UserExport export = userExport.get(userId);
 		final int counter = export.incrementAndGetCounter();
 		final boolean isFinished = counter == export.getExpectedExport().size();
 		if (!"ok".equals(status)) {
@@ -242,7 +244,7 @@ public class FileSystemExportService implements ExportService {
 												userExportInProgress.remove(userId);
 												publish(event);
 											} else {
-												userExportInProgress.get(userId).setProgress(-1l);
+												userExportInProgress.put(userId,-1l);
 												MongoDb.getInstance().save(
 														Archive.ARCHIVES, new JsonObject().put("file_id", exportId)
 																.put("date", MongoDb.now()),
@@ -314,21 +316,20 @@ public class FileSystemExportService implements ExportService {
 	public void setDownloadInProgress(String exportId) {
 		String userId = getUserId(exportId);
 		if (userExportInProgress.containsKey(userId)) {
-			userExportInProgress.get(userId).setProgress(DOWNLOAD_IN_PROGRESS);
+			userExportInProgress.put(userId,DOWNLOAD_IN_PROGRESS);
 		}
 	}
 
 	@Override
 	public boolean downloadIsInProgress(String exportId) {
-		UserExport ue = userExportInProgress.get(getUserId(exportId));
-		Long v = ue != null ? ue.getProgress() : null;
+		Long v = userExportInProgress.get(getUserId(exportId));
 		return v != null && v == DOWNLOAD_IN_PROGRESS;
 	}
 
 	private void addManifestToExport(String exportId, String exportDirectory, Handler<AsyncResult<Void>> handler) {
 		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		JsonObject manifest = new JsonObject();
-		Set<String> expectedExport = this.userExportInProgress.get(getUserId(exportId)).getExpectedExport();
+		Set<String> expectedExport = this.userExport.get(getUserId(exportId)).getExpectedExport();
 		versionMap.forEach((k, v) -> {
 			String[] s = k.split("\\.");
 			// Removing of "-" for scrapbook
