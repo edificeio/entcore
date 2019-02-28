@@ -96,9 +96,9 @@
 							</button>
 						</div>
 						<!--SEARCH DESKTOP-->
-						<div class="cell four seven search-pagination zero-mobile">
-							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
-							<input ng-class="{'eleven twelve-1d':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
+						<div class="cell eight search-pagination zero-mobile">
+							<a ng-class="{'show-close':canResetSearch()}" ng-show="canResetSearch()" ng-click="resetSearch()" class="cell"><i class="blue-1d close horizontal-spacing cell-ellipsis"></i></a>
+							<input ng-class="{'eleven':canResetSearch(),'twelve':!canResetSearch()}" type="text" ng-model="search.criteria" ng-keyup="searchKeyUp($event)"
 							 i18n-placeholder="workspace.search.placeholder">
 							<i class="search" ng-click="searchSubmit()"></i>
 						</div>
