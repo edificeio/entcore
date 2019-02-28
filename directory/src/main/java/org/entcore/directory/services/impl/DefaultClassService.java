@@ -85,7 +85,7 @@ public class DefaultClassService implements ClassService {
 				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
 				filter +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
-				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.activationCode as activationCode, m.birthDate as birthDate, " +
+				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.birthDate as birthDate, " +
 				"p.name as type, m.blocked as blocked, m.source as source " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
