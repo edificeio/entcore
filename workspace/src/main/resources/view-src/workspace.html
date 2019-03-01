@@ -11,7 +11,10 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 	<script type="text/javascript" src="/workspace/public/dist/entcore/ng-app.js" id="context"></script>
 	<script type="text/javascript" src="/workspace/public/dist/application.js"></script>
-
+	<script type="text/javascript">
+		var ENABLE_LOOL= {{enableLool}};
+	</script>
+	
 	<script type="text/ng-template" id="folder-content">
 			<span ng-class="{'highlight-title-3s':isHighlightTree(folder)}" class="highlight-title">
 				<span class="count-badge">[[getHighlightCount(folder)]]</span>
@@ -72,7 +75,7 @@
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolderShared()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new.shared</i18n></a>
 					<a ng-click="confirmDelete()" ng-if="canEmptyTrash()" ng-disabled="isTrashEmpty()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>workspace.empty.trash</i18n></a>
-                    <div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree()">
+                    <div workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
                         <sniplet application="lool" template="create"></sniplet>
                     </div>
 					<div class="row">
