@@ -25,13 +25,13 @@
 					<div class="twelve cell info vertical-spacing-twice" ng-if="!loading">
 						<i18n>archive.info</i18n>
 					</div>
-					<label class="checkbox top-spacing-twice aligned" ng-if="!loading">
+					<label class="checkbox top-spacing-twice aligned archive" ng-if="!loading">
 						<input type="checkbox" ng-checked="areAllSelected()" ng-click="selectAll($event)" />
 						<span></span>
 						<span><i18n>archive.all</i18n></span>
 					</label>
 					<div class="left-spacing-four">
-						<label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned">
+						<label ng-repeat="app in availableApps" ng-if="!loading" class="checkbox right-spacing-three top-spacing-twice aligned archive">
 							<input type="checkbox" ng-model="selectedApps[app]" />
 							<span></span>
 							<span translate content="[[app]]"></span>
