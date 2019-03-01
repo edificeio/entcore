@@ -511,11 +511,11 @@ public class UserController extends BaseController {
 		userService.unlinkRelativeStudent(relativeId, studentId, defaultResponseHandler(request));
 	}
 
-	@Delete("/duplicate/ignore/:userId1/:userId2")
-	@ResourceFilter(AdmlOfTwoUsers.class)
+	@Delete("/duplicate/ignore/:userId/:userId2")
+	@ResourceFilter(AdmlOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void ignoreDuplicate(final HttpServerRequest request) {
-		final String userId1 = request.params().get("userId1");
+		final String userId1 = request.params().get("userId");
 		final String userId2 = request.params().get("userId2");
 		userService.ignoreDuplicate(userId1, userId2, defaultResponseHandler(request));
 	}
