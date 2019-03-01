@@ -154,9 +154,10 @@ input[type="search"] {
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     border: none;
     border-bottom: 1px solid #ddd;
+    background-color: white;
     outline: none;
     transition: border-color 0.25s;
-    padding: 0;
+    padding: 5px;
     font-size: 1em;
     font-family: 'Oxygen', sans-serif;
 
@@ -555,7 +556,9 @@ i.top-right {
 .action {
     transition: color 0.25s;
     cursor: pointer;
-
+    text-decoration: underline;
+    padding: 0 5px;
+    color: $main-dark;
     &:hover {
         color: $accent;
     }
@@ -594,6 +597,11 @@ i.opener {
             transform: rotate(90deg);
         }
     }
+}
+
+i.fa-times {
+  color: $warning;
+  text-decoration: none;
 }
 
 .round-button {
