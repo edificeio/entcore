@@ -1344,12 +1344,14 @@ public class WorkspaceController extends BaseController {
 	@Get("/workspace")
 	@SecuredAction("workspace.view")
 	public void view(final HttpServerRequest request) {
+		final JsonObject context = new JsonObject();
+		context.put("enableLool", config.getBoolean("enable-lool", false));
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					if (user.getAttribute("storage") != null && user.getAttribute("quota") != null) {
-						renderView(request);
+						renderView(request, context);
 						eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
 						return;
 					}
@@ -1362,7 +1364,7 @@ public class WorkspaceController extends BaseController {
 									UserUtils.addSessionAttribute(eb, user.getUserId(), attr, j.getLong(attr), null);
 								}
 							}
-							renderView(request);
+							renderView(request, context);
 							eventStore.createAndStoreEvent(WokspaceEvent.ACCESS.name(), request);
 						}
 					});

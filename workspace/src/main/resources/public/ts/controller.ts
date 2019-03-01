@@ -28,10 +28,10 @@ import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
 import { models, workspaceService } from "./services";
 
 
-
+declare var ENABLE_LOOL:boolean;
 
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope {
-
+	ENABLE_LOOL:boolean;
 	//new
 	lightboxDelegateClose: () => boolean
 	newFile: { chosenFiles: any[] }
@@ -132,7 +132,8 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	SearchDelegate($scope);
 	RevisionDelegate($scope);
 	KeyboardDelegate($scope);
-    LoolDelegate($scope, $route);
+	ENABLE_LOOL && LoolDelegate($scope, $route);
+	$scope.ENABLE_LOOL = ENABLE_LOOL;
 	/**
 	 * INIT
 	 */
