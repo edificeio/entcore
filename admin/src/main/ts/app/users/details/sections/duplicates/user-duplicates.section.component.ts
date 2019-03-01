@@ -77,6 +77,7 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
         protected cdRef: ChangeDetectorRef,
         private router: Router,
         private usersStore: UsersStore,
+        private userListService: UserListService,
         private ns: NotifyService) {
         super()
     }
@@ -112,7 +113,8 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
                 this.usersStore.structure.users.data.splice(
                     this.usersStore.structure.users.data.findIndex(u => u.id == this.user.id), 1
                 );
-                this.router.navigate(['/admin', res['structure'], 'users', res.id])
+                this.router.navigate(['/admin', res['structure'], 'users', res.id]);
+                this.userListService.updateSubject.next();
                 this.ns.success({
                     key: 'notify.user.merge.success.content',
                     parameters: {}
@@ -133,6 +135,7 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
 
     private separate = (dupId) => {
         return this.spinner.perform(dupId, this.user.separateDuplicate(dupId)).then(res => {
+            this.userListService.updateSubject.next();
             this.ns.success({
                 key: 'notify.user.dissociate.success.content',
                 parameters: {}
