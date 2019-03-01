@@ -166,7 +166,8 @@
         <hr class="separator cell">
         <h3 class="twelve cell" style="margin-top: 0;">[[lang.translate("directory.levels-of-education")]]</h3>
         <div class="twelve cell">
-            <select style="min-height: 40px;" multiple ng-model="structure.levelsOfEducation" ng-change="changeLevelsOfEducation(structure.id, structure.levelsOfEducation);">
+            <p ng-if="!isCentralAdmin()">[[lang.translate("directory.levels-of-education.local-admin-explanation")]]</p>
+            <select ng-disabled="!isCentralAdmin()" style="min-height: 40px;" multiple ng-model="structure.levelsOfEducation" ng-change="changeLevelsOfEducation(structure.id, structure.levelsOfEducation);">
                 <option value="1">[[lang.translate("directory.levels-of-education.1")]]</option>
                 <option value="2">[[lang.translate("directory.levels-of-education.2")]]</option>
             </select>
@@ -176,7 +177,8 @@
         <hr class="separator cell" ng-if="distributions && distributions.length > 0">
         <h3 class="twelve cell" style="margin-top: 0;" ng-if="distributions && distributions.length > 0">[[lang.translate("directory.distributions")]]</h3>
         <div class="twelve cell" ng-if="distributions && distributions.length > 0">
-            <select style="min-height: 40px;" multiple ng-model="structure.distributions" ng-change="changeDistributions(structure.id, structure.distributions);" ng-options="item for item in distributions">
+            <p ng-if="!isCentralAdmin()">[[lang.translate("directory.distributions.local-admin-explanation")]]</p>
+            <select  ng-disabled="!isCentralAdmin()" style="min-height: 40px;" multiple ng-model="structure.distributions" ng-change="changeDistributions(structure.id, structure.distributions);" ng-options="item for item in distributions">
             </select>
         </div>
     </div>
