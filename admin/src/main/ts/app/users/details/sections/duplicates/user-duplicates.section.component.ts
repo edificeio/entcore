@@ -16,7 +16,7 @@ import { UsersStore } from '../../../users.store'
             <ul class="actions-list">
                 <li *ngFor="let duplicate of user?.duplicates">
                     <span *ngIf="findVisibleStruct(duplicate.structures)">
-                        <a class="action" 
+                        <a class="action" target="_blank"
                             [routerLink]="['/admin', findVisibleStruct(duplicate.structures).id, 'users', duplicate.id]">
                             {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ formatStructures(duplicate.structures) }}
                         </a>
