@@ -85,6 +85,30 @@ public class DirectoryController extends BaseController {
 		renderView(request);
 	}
 
+	@Get("/class-admin/:userId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void classAdminUsers(HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		userService.getUserInfos(userId, new Handler<Either<String, JsonObject>>() {
+			@Override
+			public void handle(final Either<String, JsonObject> either) {
+				if (either.isRight()) {
+					if (either.right().getValue() != null && either.right().getValue().size() > 0) {
+						renderJson(request, either.right().getValue());
+					} else {
+						request.response().setStatusCode(404).end();
+					}
+				} else {
+					leftToResponse(request, either.left());
+				}
+			}
+		});
+	}
+
 	@Post("/import")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructuresByExternalId.class)

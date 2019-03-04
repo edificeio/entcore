@@ -1071,6 +1071,47 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Put("/users/block")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void blockUsers(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				JsonArray userIds = json.getJsonArray("users");
+				boolean block = json.getBoolean("block", true);
+				userAuthAccount.blockUsers(userIds, block, new io.vertx.core.Handler<Boolean>() {
+					@Override
+					public void handle(Boolean r) {
+						if (Boolean.TRUE.equals(r)) {
+							request.response().end();
+							for (int i = 0; i < userIds.size(); i++) {
+								String userId = userIds.getString(i);
+								UserUtils.deletePermanentSession(eb, userId, null, new io.vertx.core.Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (!event) {
+											log.error("Error delete permanent session with userId : " + userId);
+										}
+									}
+								});
+								UserUtils.deleteCacheSession(eb, userId, new io.vertx.core.Handler<Boolean>() {
+									@Override
+									public void handle(Boolean event) {
+										if (!event) {
+											log.error("Error delete cache session with userId : " + userId);
+										}
+									}
+								});
+							}
+						} else {
+							badRequest(request);
+						}
+					}
+				});
+			}
+		});
+	}
+
 	@Get("/reset/:resetCode")
 	public void resetPassword(final HttpServerRequest request) {
 		resetPasswordView(request, null);
