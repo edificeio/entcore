@@ -1,0 +1,197 @@
+<div class="content">
+	<article class="grid cell twelve horizontal-spacing-twice">
+		<div class="flex-row vertical-spacing-four justify-between">
+			<a class="vertical-spacing-four" ng-disabled="!canSwitchToPreviousUser()" ng-click="switchToPreviousUser()">
+				<i class="back"></i>
+				<i18n>classAdmin.userInfos.previous</i18n>
+			</a>
+			<a class="vertical-spacing-four" ng-disabled="!canSwitchToNextUser()" ng-click="switchToNextUser()">
+				<i18n>classAdmin.userInfos.next</i18n> <i class="forward"></i>
+			</a>
+		</div>
+		<h3 class="name centered vertical-spacing-two">[[selectedUser.safeDisplayName]]</h3>
+		<div class="cell four height-four reduce-block-six avatar">
+			<div class="rigid-grid twelve cell clip" ng-if="userInfosDisplayUserbook()">
+				<image-select ng-model="selectedUser.picture" default="/img/illustrations/no-avatar.svg" thumbnails="[{ width: 381, height: 381 }]"
+				 ng-change="saveUserBookChanges()"></image-select>
+				<!--<img ng-src="/userbook/avatar/[[selectedUser.id]]?thumbnail=381x381" />-->
+			</div>
+			<div class="rigid-grid twelve cell clip" ng-if="!userInfosDisplayUserbook()">
+				<img ng-src="[[account.picture]]?thumbnail=290x290" ng-if="account.picture" class="absolute" />
+				<img skin-src="/img/illustrations/no-avatar.svg" ng-if="!account.picture" class="absolute" />
+			</div>
+		</div>
+		<!--FORM-->
+		<div class="cell eight horizontal-spacing-twice bottom-spacing-three">
+			<div class="flex-row">
+				<span class="cell circle square-mini top-spacing-small right-spacing-small purple" ng-class="selectedUser.getProfile()"></span>
+				<span class="cell low-importance">[[selectedUser.getProfileName()]]</span>
+			</div>
+			<form class="sheet small-text top-spacing-twice">
+				<div class="row">
+					<label translate content="userBook.profile.login" class="four cell"><span class="no-style ng-scope"></span></label>
+					<label ng-if="!showLoginInput" class="four cell"><span class="no-style">[[selectedUser.login]]</span></label>
+					<input ng-if="showLoginInput" class="four cell inline-editing" ng-model="selectedUser.tempLoginAlias" type="text">
+					<label ng-if="!showLoginInput"><a ng-click="openLoginInput()" href="#" translate content="directory.modify"></a></label>
+					<label ng-if="showLoginInput && !isLoginAliasWellFormatted()" tooltip="classAdmin.pattern">
+						<a disabled="disabled" href="#" translate content="classAdmin.save"></a>
+					</label>
+					<label ng-if="showLoginInput && isLoginAliasWellFormatted()">
+						<a ng-click="saveAndCloseLoginInput()" href="#" translate content="classAdmin.save"></a>
+					</label>
+				</div>
+				<div class="row">
+					<label class="four cell">
+						<span class="no-style">
+							<i18n>userBook.profile.firstName</i18n>
+						</span>
+					</label>
+					<label class="four cell">
+						<em class="eight cell">[[selectedUser.firstName]]</em>
+					</label>
+				</div>
+				<div class="row">
+					<label class="four cell">
+						<span class="no-style">
+							<i18n>userBook.profile.lastName</i18n>
+						</span>
+					</label>
+					<label class="four cell">
+						<em class="eight cell">[[selectedUser.lastName]]</em>
+					</label>
+				</div>
+				<div class="row">
+					<label translate content="userBook.profile.displayName" class="four cell"><span class="no-style ng-scope"></span></label>
+					<input class="eight cell inline-editing" ng-model="selectedUser.displayName" complete-change="saveUserInfoChanges()"
+					 type="text">
+				</div>
+				<div class="row">
+					<label translate content="userBook.profile.email" class="four cell"><span class="no-style"></span></label>
+					<input class="eight cell inline-editing" ng-model="selectedUser.email" complete-change="saveUserInfoChanges()"
+					 type="email">
+				</div>
+				<div class="row">
+					<label translate content="userBook.profile.telephone" class="four cell"><span class="no-style"></span></label>
+					<input name="phone" class="eight cell inline-editing" ng-model="selectedUser.homePhone" complete-change="saveUserInfoChanges()"
+					 type="tel">
+				</div>
+				<div class="row">
+					<label translate content="userBook.profile.mobilePhone" class="four cell"><span class="no-style"></span></label>
+					<input class="eight cell inline-editing" ng-model="selectedUser.mobile" complete-change="saveUserInfoChanges()"
+					 type="tel">
+				</div>
+				<div class="row">
+					<label translate content="userBook.profile.birthdate" class="four cell"><span class="no-style"></span></label>
+					<em>
+						<inputdate class="eight cell inline-editing" ng-model="selectedUser.birthDate" on-success="saveUserInfoChanges()"
+						 ng-model-options="{ updateOn: 'blur' }" />
+					</em>
+				</div>
+			</form>
+		</div>
+		<!--END FORM-->
+		<!--BUTTONS-->
+		<div class="row twelve bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+			<a ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
+			<a ng-if="selectedUser.activationCode" class="button" href="#" translate content="classAdmin.userInfos.connectInfos"></a>
+		</div>
+		<!--END BUTTON-->
+		<!--MOOD-->
+		<div class="row rigid-grid bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+			<div class="three cell twelve-mobile mood" style="height: 100px;">
+				<div class="cell twelve">
+					<div class="twelve cell">
+						<icons-select class="reduce-block-six icons-select cell twelve height-two" current="selectedUser.safeMood"
+						 options="availableMoods()" change="saveUserBookChanges()">
+						</icons-select>
+					</div>
+				</div>
+			</div>
+
+			<div class="margin-three reduce-block-six twelve-mobile">
+				<article class="twelve cell" style="padding-top: 20px;margin:0">
+					<div class="row">
+						<h2 translate content="userBook.profile.motto"></h2>
+						<div class="flex-row twelve cell">
+							<div class="flex-all-remains">
+								<input class="twelve no-margin monoline top-spacing-twice" type="text" maxlength="75" ng-model="selectedUser.motto"
+								 ng-change="onMottoChanged()" />
+								<small class="twelve input-warnings" ng-if="mottoShouldPublish">
+									<i18n>userBook.motto.warning</i18n>
+								</small>
+							</div>
+							<button class="left-spacing-twice bottom-spacing-three block" ng-click="saveUserBookChanges()" ng-disabled="!mottoShouldPublish">
+								<i18n>portal.publish</i18n>
+							</button>
+						</div>
+					</div>
+				</article>
+			</div>
+		</div>
+		<!--END MOOD-->
+		<!--SCHOOLS-->
+		<div class="row twelve bottom-spacing-three" ng-repeat="school in selectedUser.attachedStructures">
+			<h2 translate content="userBook.profile.schools"></h2>
+			<strong class="multiline-ellipsis-three block ng-binding" tooltip="[[school.name]]" tooltip-check-content>[[school.name]]</strong>
+			<span class="no-style" translate content="classAdmin.userInfos.classes"></span>
+			<ul ng-if="school.classes && school.classes.length" class="list no-padding overflow-vertical-height-list bottom-spacing">
+				<li ng-repeat="class in school.classes | orderBy:'name'">[[class.name]]</li>
+			</ul>
+		</div>
+		<!--END SCHOOLS-->
+		<!--RELATIVES-->
+		<div class="row bottom-spacing-three" ng-if="userInfosDisplayRelative()">
+			<h2 content="userBook.profile.relatives"><span class="no-style" translate key="userBook.profile.relatives"></span></h2>
+			<div class="reduce-block-eight">
+				<div class="flex-row align-center top-spacing-twice" ng-repeat="relative in selectedUser.relatives | orderBy:'displayName'">
+					<div class="cell round bg-white square-medium right-spacing">
+						<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100">
+					</div>
+					<div>
+						<a class="cell-ellipsis small-text block left-text" href="/userbook/annuaire#[[relative.id]]" target="_blank">[[relative.displayName]]</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--END RELATIVES-->
+		<!--CHILDREN-->
+		<div class="row bottom-spacing-three" ng-if="userInfosDisplayChildren()">
+			<h2 translate content="userBook.profile.children"></h2>
+			<content-divider ng-model="selectedUser.childrenStructure" order="structureName">
+				<div>
+					<strong class="cell-ellipsis">[[content.structureName]]</strong>
+					<div class="flex-row top-spacing-twice" ng-repeat="child in content.children | orderBy:'displayName'">
+						<div class="cell round bg-white square-medium right-spacing">
+							<img ng-src="/userbook/avatar/[[child.id]]?thumbnail=100x100" />
+						</div>
+						<div>
+							<a href="/userbook/annuaire#[[child.id]]" target="_blank" class="cell-ellipsis small-text block left-text">[[
+								child.displayName ]]</a>
+							<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[
+								child.classesNames[0] ]]</span>
+						</div>
+					</div>
+				</div>
+			</content-divider>
+		</div>
+		<!--END CHILDREN-->
+		<div class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+			<h2 translate key="classAdmin.userInfos.hobbies"></h2>
+			<div class="row" ng-repeat="hobby in selectedUser.hobbies">
+				<div class="three cell reduce-block-six"><span>[[hobby.displayName]]</span></div>
+				<div class="nine cell">
+					<input class="twelve cell inline-editing" type="text" complete-change="saveUserBookChanges()" ng-model="hobby.values">
+				</div>
+			</div>
+		</div>
+
+		<div class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+			<h2>
+				<i18n>userBook.profile.health</i18n>
+			</h2>
+			<div class="row medium-text">
+				<textarea data-ng-model="selectedUser.health" complete-change="saveUserBookChanges()"></textarea>
+			</div>
+		</div>
+	</article>
+</div>

@@ -21,6 +21,7 @@ package org.entcore.auth.security;
 
 import fr.wseduc.webutils.http.Binding;
 
+import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.auth.controllers.AuthController;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo;
@@ -50,6 +51,9 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			switch (method) {
 				case "blockUser" :
 					isClassTeacher(request, user, handler);
+					break;
+				case "blockUsers" :
+					isClassTeacherOfMultipleUsers(request, user, handler);
 					break;
 				case "sendResetPassword" :
 					isClassTeacherByUserLogin(request, user, handler);
@@ -83,13 +87,12 @@ public class AuthResourcesProvider implements ResourcesProvider {
 			query =
 					"MATCH (t:User { id : {teacherId}})-[:IN]->(fg:FunctionGroup)-[:DEPENDS]->(s:Structure)" +
 					"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
-					"WHERE fg.name =~ \".*AdminLocal.*\"" +
+					"WHERE fg.name =~ \".*AdminLocal.*\" " +
 					"RETURN count(*) >= 1 as exists ";
 		} else {
-			query =
-					"MATCH (t:User { id : {teacherId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class)" +
-					"<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User {id : {id}}) " +
-					"RETURN count(*) >= 1 as exists ";
+			request.resume();
+			handler.handle(false);
+			return;
 		}
 		JsonObject params = new JsonObject()
 				.put("id", id)
@@ -103,6 +106,45 @@ public class AuthResourcesProvider implements ResourcesProvider {
 						"ok".equals(r.body().getString("status")) &&
 								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
+			}
+		});
+	}
+
+	private void isClassTeacherOfMultipleUsers(final HttpServerRequest request, UserInfos user,
+								final Handler<Boolean> handler) {
+		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
+			request.resume();
+			handler.handle(true);
+			return;
+		}
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				request.pause();
+				JsonArray userIds = json.getJsonArray("users");
+				if (userIds == null || userIds.isEmpty()) {
+					handler.handle(false);
+					return;
+				}
+				String query = "MATCH (c:Class)<-[:DEPENDS]-(Group)<-[:IN]-(User { id : {teacherId}}) " +
+						"WITH c MATCH (u:User)-[:IN]->(Group)-[:DEPENDS]->(c) " +
+						"WHERE u.id in {ids} " +
+						"RETURN count(distinct u) = {size} as exists";
+				JsonObject params = new JsonObject()
+						.put("teacherId", user.getUserId())
+						.put("ids", userIds)
+						.put("size", userIds.size());
+				neo.execute(query, params, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						JsonArray res = r.body().getJsonArray("result");
+						request.resume();
+						handler.handle(
+								"ok".equals(r.body().getString("status")) &&
+										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+						);
+					}
+				});
 			}
 		});
 	}

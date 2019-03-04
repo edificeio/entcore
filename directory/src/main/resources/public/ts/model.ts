@@ -274,6 +274,21 @@ export const directory = {
 					classrooms = classrooms.concat(school.classrooms.all);
 				});
 				return classrooms;
+			},
+			getSchool: function(classroomId) {
+				var res = undefined;
+				this.forEach(function(school){
+					school.classrooms.all.forEach(function(classroom){
+						if (classroom.id === classroomId) {
+							res = school;
+							return;
+						}
+					});
+					if (res !== undefined) {
+						return;
+					}
+				});
+				return res;
 			}
 		});
 	},
