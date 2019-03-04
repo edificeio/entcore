@@ -71,7 +71,13 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "unlinkUser" :
 				case "linkUser" :
-					isAdminOfStructureOrClass4(request, user, handler);
+					isAdminOfStructureOrClass4(request, user, res->{
+						if(res) {
+							handler.handle(res);
+						}else {
+							isClassTeacher2(request, user, handler);
+						}
+					});
 					break;
 				default: handler.handle(false);
 			}
@@ -158,6 +164,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "export" :
 					isAdminOfStructureOrClass3(request, user, handler);
+					break;
+				case "classAdminUsers" :
+					isClassTeacher2(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}
@@ -481,6 +490,42 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				} else {
 					handler.handle(false);
 				}
+			}
+		});
+	}
+
+	private void isClassTeacher2(final HttpServerRequest request, UserInfos user,
+								 final Handler<Boolean> handler) {
+		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
+			request.resume();
+			handler.handle(true);
+			return;
+		}
+		request.pause();
+		String userId = request.params().get("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			handler.handle(false);
+			return;
+		}
+		String query = "MATCH (n:User { id : {teacherId}}) " +
+				// add class-admin workflow when it is created with right name
+				//"-[:IN]->(Group)-[:AUTHORIZED]->(Role)-[:AUTHORIZE]->(aw:Action:WorkflowAction { name : ''}) " +
+				"WITH n MATCH (s:Structure)<-[:DEPENDS]-(Group)<-[:IN]-(n) " +
+				"WITH s MATCH (u:User { id : {userId}})-[:IN]->(Group)-[:DEPENDS]->(s) " +
+				"RETURN count(*) > 0 as exists";
+
+		JsonObject params = new JsonObject()
+				.put("teacherId", user.getUserId())
+				.put("userId", userId);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				JsonArray res = r.body().getJsonArray("result");
+				request.resume();
+				handler.handle(
+						"ok".equals(r.body().getString("status")) &&
+								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+				);
 			}
 		});
 	}

@@ -99,4 +99,6 @@ public interface UserService {
 
 	void listChildren(String userId, Handler<Either<String,JsonArray>> eitherHandler);
 
+	void getUserInfos(String userId, Handler<Either<String,JsonObject>> handler);
+
 }

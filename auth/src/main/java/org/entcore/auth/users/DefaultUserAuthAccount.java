@@ -22,6 +22,7 @@ package org.entcore.auth.users;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.Either;
 
@@ -533,6 +534,20 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void blockUser(String id, boolean block, final Handler<Boolean> handler) {
 		String query = "MATCH (n:`User` { id : {id}}) SET n.blocked = {block} return count(*) = 1 as exists";
 		JsonObject params = new JsonObject().put("id", id).put("block", block);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				handler.handle("ok".equals(r.body().getString("status")) &&
+						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
+						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
+			}
+		});
+	}
+
+	@Override
+	public void blockUsers(JsonArray ids, boolean block, final Handler<Boolean> handler) {
+		String query = "MATCH (n:`User`) WHERE n.id in {ids} SET n.blocked = {block} return count(n) = {size} as exists";
+		JsonObject params = new JsonObject().put("ids", ids).put("block", block).put("size",ids.size());
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {

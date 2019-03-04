@@ -1,0 +1,95 @@
+<section class="vertical-spacing-twice ng-scope flex-row f-column align-center">
+    <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreate()">
+        <h2 class="top-spacing-four bottom-spacing-three">
+            <i18n>classAdmin.create.title</i18n>
+        </h2>
+        <div class="flex-row justify-end twelve">
+            <small class="warning-color">
+                <i18n>classAdmin.required</i18n>
+            </small>
+        </div>
+        <span class="bold">
+            <i18n>directory.admin.profile</i18n>
+            <span class="warning-color">*</span>
+            <!-- TODO : Rendre ce champ obligatoire -->
+        </span>
+        <div class="flex-row justify-between eight top-spacing-twice">
+            <label>
+                <input class="v-middle" type="radio" ng-value="kinds.Student" ng-model="userCreate.form.type" ng-change="onUserCreateChange(fields.Type)"
+                    required="true" />
+                <i18n>directory.Student</i18n>
+            </label>
+            <label>
+                <input class="v-middle" type="radio" ng-value="kinds.Relative" ng-model="userCreate.form.type" ng-change="onUserCreateChange(fields.Type)"
+                    required="true" />
+                <i18n>directory.Relative</i18n>
+            </label>
+            <label>
+                <input class="v-middle" type="radio" ng-value="kinds.Teacher" ng-model="userCreate.form.type" ng-change="onUserCreateChange(fields.Type)"
+                    required="true" />
+                <i18n>directory.Teacher</i18n>
+            </label>
+            <label>
+                <input class="v-middle" type="radio" ng-value="kinds.Personnel" ng-model="userCreate.form.type" ng-change="onUserCreateChange(fields.Type)"
+                    required="true" />
+                <i18n>directory.Personnel</i18n>
+            </label>
+        </div>
+        <div class="twelve">
+            <div class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.admin.name</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.Name)">*</span>
+                </span>
+                <input type="text" ng-model="userCreate.form.safeLastName" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Name)"
+                    ng-blur="onUserCreateBlur(fields.Name)" />
+            </div>
+            <div class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.firstName</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.FName)">*</span>
+                </span>
+                <input type="text" ng-model="userCreate.form.safeFirstName" class="vertical-spacing" ng-required="isUserCreateRequired(fields.FName)" />
+            </div>
+            <div class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.admin.birthDate</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.Birthdate)">*</span>
+                </span>
+                <inputdate ng-model="userCreate.form.birthDate" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Birthdate)"
+                ng-min="userCreate.minDate" ng-max="userCreate.maxDate"/>
+            </div>
+            <div class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.mail</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.Mail)">*</span>
+                </span>
+                <input type="email" ng-model="userCreate.form.mail" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Mail)" />
+            </div>
+        </div>
+        <div ng-if="isUserCreateSearchVisible()">
+            <div class="flex-row f-column twelve top-spacing-four">
+                <span class="bold">
+                    <i18n>classAdmin.create.search</i18n>
+                </span>
+                <input type="text" ng-model="userCreate.search" class="seven vertical-spacing" ng-change="onUserCreateSearchChange()" i18n-placeholder="classAdmin.searchStudent" />
+                <drop-down options="userCreate.results" ng-change="onUserCreateSearchSelect()" on-close="onUserCreateSearchClean()"
+                    ng-model="userCreate.select">
+                </drop-down>
+            </div>
+            <div class="flex-row">
+                <contact-chip class="block relative removable" ng-model="user" action="onUserCreateRemoveChild(user)"
+                    ng-repeat="user in userCreate.form.relatives">
+                </contact-chip>
+            </div>
+        </div>
+        <div class="twelve flex-row justify-end top-spacing-four">
+            <button class="left-spacing-twice" ng-click="submitUserCreate()" ng-disabled="!canUserCreateSubmit(createForm)">
+                <i18n>classAdmin.create.submit</i18n>
+            </button>
+            <button class="left-spacing-twice" ng-click="submitUserCreate(true)" ng-disabled="!canUserCreateSubmit(createForm)">
+                <i18n>classAdmin.create.submit.thenadd</i18n>
+            </button>
+        </div>
+    </form>
+</section>
