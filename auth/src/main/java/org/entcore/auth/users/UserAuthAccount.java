@@ -47,6 +47,8 @@ public interface UserAuthAccount {
 
 	void blockUser(String id, boolean block, Handler<Boolean> handler);
 
+	void blockUsers(JsonArray ids, boolean block, Handler<Boolean> handler);
+
 	void matchActivationCode(String login, String potentialActivationCode,
 			Handler<Boolean> handler);
 
