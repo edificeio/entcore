@@ -42,6 +42,9 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     administrativeStructures?: Array<string>
     mergeKey?: string
     loginAlias?: string
+    quota?: number
+    storage?: number
+    maxQuota?: number
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
