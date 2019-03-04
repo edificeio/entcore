@@ -667,4 +667,21 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, params, validResultHandler(handler));
 	}
 
+	@Override
+	public void getUserInfos(String userId, final Handler<Either<String,JsonObject>> handler) {
+		String query = "MATCH (u:`User` { id : {userId}}) " +
+				"OPTIONAL MATCH u-[:USERBOOK]->(ub: UserBook)-[v:PUBLIC|PRIVE]->(h:Hobby) WITH ub.motto as motto, ub.health as health, ub.mood as mood, COLLECT(distinct {visibility: type(v), category: h.category, values: h.values}) as hobbies, u  " +
+				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(s) WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
+				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c}) as schools, motto, health, mood, hobbies, u " +
+				"OPTIONAL MATCH u-[:RELATED]-(u2: User) WITH COLLECT(distinct {relatedName: u2.displayName, relatedId: u2.id, relatedType: u2.profiles}) as relativeList, schools, motto, health, mood, hobbies, u " +
+				"RETURN DISTINCT u.profiles as type, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
+				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
+				"motto, health, mood, " +
+				"CASE WHEN hobbies IS NULL THEN [] ELSE hobbies END as hobbies, " +
+				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
+		JsonObject params = new JsonObject();
+		params.put("userId", userId);
+		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
 }

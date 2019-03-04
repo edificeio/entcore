@@ -1,0 +1,94 @@
+<section class="twelve cell tabs row">
+    <header ng-class="selectedTabCss(kinds.Student)" ng-click="selectTab(kinds.Student)" translate content="directory.students">
+    </header>
+    <header ng-class="selectedTabCss(kinds.Relative)" ng-click="selectTab(kinds.Relative)" translate content="directory.relatives">
+    </header>
+    <header ng-class="selectedTabCss(kinds.Teacher)" ng-click="selectTab(kinds.Teacher)" translate content="userBook.teachers">
+    </header>
+    <header ng-class="selectedTabCss(kinds.Personnel)" ng-click="selectTab(kinds.Personnel)" translate content="directory.personnels">
+    </header>
+    <section class="medium-text">
+        <div class="row">
+            <article class="twelve cell vertical-spacing-twice list-view">
+                <table class="row" id="searchUser">
+                    <thead>
+                        <tr>
+                            <th class="align-checkbox zero-mobile-fat-mobile">
+                                <div class="check-col">
+                                  <label class="wrapping-checkbox relative">
+                                    <input type="checkbox" ng-model="userList.selectAll" ng-change="switchAll()" />
+                                    <i18n></i18n>
+                                  </label>
+                                </div>
+                            </th>
+                            <th ng-click="toggleSort(columns.Name)">
+                                <span class="sortable">
+                                    <span class="icons right-spacing">
+                                        <i ng-class="{'icon-off':!isSortAsc(columns.Name)}" ng-click="sortAsc(columns.Name,$event)" class="arrow"></i>
+                                        <i ng-class="{'icon-off':!isSortDesc(columns.Name)}" ng-click="sortDesc(columns.Name,$event)" class="arrow bottom"></i>
+                                    </span>
+                                    <span translate content="directory.lastName"></span>
+                                </span>
+                            </th>
+                            <th ng-click="toggleSort(columns.Birthdate)" ng-if="isSelectedTab(kinds.Student)">
+                                <span class="sortable">
+                                    <span class="icons right-spacing">
+                                        <i ng-class="{'icon-off':!isSortAsc(columns.Birthdate)}" ng-click="sortAsc(columns.Birthdate,$event)" class="arrow"></i>
+                                        <i ng-class="{'icon-off':!isSortDesc(columns.Birthdate)}" ng-click="sortDesc(columns.Birthdate,$event)" class="arrow bottom"></i>
+                                    </span>
+                                    <span translate content="directory.birthdate"></span>
+                                </span>
+                            </th>
+                            <th ng-click="toggleSort(columns.Login)" >
+                              <span class="sortable">
+                                  <span class="icons right-spacing">
+                                      <i ng-class="{'icon-off':!isSortAsc(columns.Login)}" ng-click="sortAsc(columns.Login,$event)" class="arrow"></i>
+                                      <i ng-class="{'icon-off':!isSortDesc(columns.Login)}" ng-click="sortDesc(columns.Login,$event)" class="arrow bottom"></i>
+                                  </span>
+                                  <span translate content="directory.login"></span>
+                              </span>
+                            </th>
+                            <th  ng-click="toggleSort(columns.Activation)">
+                              <span class="sortable">
+                                  <span class="icons right-spacing">
+                                      <i ng-class="{'icon-off':!isSortAsc(columns.Activation)}" ng-click="sortAsc(columns.Activation,$event)" class="arrow"></i>
+                                      <i ng-class="{'icon-off':!isSortDesc(columns.Activation)}" ng-click="sortDesc(columns.Activation,$event)" class="arrow bottom"></i>
+                                  </span>
+                                  <span translate content="directory.activation"></span>
+                              </span>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th colspan="5">
+                              <div class="searchbar ten relative">
+                                <input type="text" class="class-admin__input--no-border twelve" i18n-placeholder="userBook.search" ng-model="userList.search" ng-focus="smoothScrollTo('#searchUser')"/>
+                                <i class="search" ng-click="search(searchField.words)"></i>
+                              </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="class-admin__list" ng-class="{ checked: user.selected }" ng-repeat="user in usersForType()" ng-click="openInfosIfNotSelected(user)">
+                            <td class="twelve flex-row align-center zero-mobile-fat-mobile no-margin">
+                              <label class="wrapping-checkbox relative">
+                                <div class="avatar" ng-click="$event.stopPropagation()">
+                                  <input type="checkbox" ng-model="user.selected" ng-if="!user.isMe" ng-change="onUserSelected()"/>
+                                  <i18n></i18n>
+                                  <img class="class-admin__avatar" ng-src="[[user.safePicture]]" />
+                                </div>
+                              </label>
+                            </td>
+                            <td>
+                                <span>[[user.safeDisplayName]]</span>
+                            </td>
+                            <td ng-if="isSelectedTab(kinds.Student)"><span ng-if="user.hasBirthDate">[[user.shortBirthDate]]</span></td>
+                            <td>[[user.login]]</td>
+                            <td ng-class="displayCodeCss(user)">[[displayCode(user)]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+            <a translate content="classAdmin.exportFile" ng-href="[[exportActivationUri()]]"></a>
+        </div>
+    </section>
+</section>

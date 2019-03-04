@@ -10,18 +10,23 @@
 		<br /><span translate content="classAdmin.fileHelp"></span>
 	</div>
 
-	<div class="row vertical-spacing-twice">
-		<div class="twelve cell select-file input-block">
+	<div class="flex-row vertical-spacing-twice justify-between">
+		<div class="select-file input-block">
 			<div class="hidden-content">
 				<input type="file" files-input-change ng-model="import.csv" />
 			</div>
 			<input type="text" ng-model="import.csv[0].name" class="cell" />
 			<button class="file-button" translate key="choose"></button>
 		</div>
+		<div ng-if="display.importing">
+			<loading-icon class="cell" request="loadingUsers" default="loading" />
+		</div>
 	</div>
-
 	<div class="row">
-		<button class="right-magnet" ng-click="importCSV()" translate content="classAdmin.import"></button>
-		<button class="cancel right-magnet" translate content="cancel"></button>
+		
+	</div>
+	<div class="row">
+		<button class="right-magnet" ng-disabled="!import.csv.length" ng-click="importCSV()" translate content="classAdmin.import"></button>
+		<button class="cancel right-magnet" ng-click="closeLightbox()" translate content="cancel"></button>
 	</div>
 </div>

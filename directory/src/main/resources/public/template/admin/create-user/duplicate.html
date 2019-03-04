@@ -1,0 +1,44 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <h2 class="twleve bottom-spacing-three">
+        <i18n>classAdmin.duplicate</i18n>
+    </h2>
+    <div class="warning vertical-spacing-twice text-center force-fullwidth">
+        <strong>
+            <i18n>classAdmin.duplicate.title</i18n>
+        </strong>
+        <br />
+        <i18n>classAdmin.duplicate.subtitle</i18n>
+    </div>
+    <table class="row" >
+        <tr class="class-admin__list" ng-click="selectUserToAttach(user)" ng-class="{'checked':isUserAttachSelected(user)}" ng-repeat="user in userCreate.duplicates">
+            <td class="twelve flex-row align-center no-margin">
+                <label>
+                    <div class="avatar">
+                        <img class="class-admin__avatar medium-avatar" ng-src="[[user.avatar48Uri]]" />
+                    </div>
+                </label>
+            </td>
+            <td>
+                <strong>[[user.displayName]]</strong>
+                <span>[[classnameForDuplicateUser(user)]]</span>
+            </td>
+        </tr>
+    </table>
+    <div class="flex-row justify-end top-spacing twice">
+        <button ng-click="attachUserToMyClassOnly()">
+            <span class="large-text">
+                <i18n>classAdmin.duplicate.submit.change</i18n>
+            </span>
+        </button>
+        <button class="horizontal-margin-twice" ng-click="attachUserToMyClass()">
+            <span class="large-text">
+                <i18n>classAdmin.duplicate.submit</i18n>
+            </span>
+        </button>
+        <button ng-click="createAndAttacheUserToMyClass()">
+            <span class="large-text">
+                <i18n>classAdmin.create.user</i18n>
+            </span>
+        </button>
+    </div>
+</section>
