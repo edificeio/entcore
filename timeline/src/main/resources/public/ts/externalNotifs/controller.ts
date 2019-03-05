@@ -69,6 +69,9 @@ export let mainController = ng.controller('MainController', ['$rootScope', '$sco
 		})
 		model.preference.putinfo();
 		notify.info("preferences.saved")
-	}
+	};
+    $scope.hasWorkflowZimbraExpert = () => {
+        return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth');
+    };
 
 }]);
