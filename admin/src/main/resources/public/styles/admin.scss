@@ -878,21 +878,17 @@ div.panel-message {
     font-size: 0.7em;
     margin-top: 10px;
     line-height: 20px;
-
     i {
         padding-right: 5px;
         font-size: 1.1em;
-
         &.duplicates {
             font-size: 1.5em;
             color: #fff;
-
             &::before {
                 content: '\e7fb';
             }
         }
     }
-
     button.action {
         display: flex;
         align-items: center;
@@ -900,7 +896,7 @@ div.panel-message {
         margin-left: 10px;
         color: $contrast;
         transition: none;
-
+        text-decoration: none;
         &:hover {
             background-color: #f2f2f2;
             color: $accent;
@@ -1074,7 +1070,11 @@ user-list {
         display: flex;
         align-items: center;
 
-        > i { @extend .action; padding-right: 5px;}
+        > i {
+          @extend .action;
+          padding-right: 5px;
+          text-decoration: none;
+        }
 
         .is-pulled-right {
             margin-left: auto;
