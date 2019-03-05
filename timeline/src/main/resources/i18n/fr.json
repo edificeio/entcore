@@ -175,6 +175,7 @@
     "assistant.student.communicate": "Communiquer facilement avec vos enseignants et vos camarades grâce aux services...",
 
     "assistant.teacher.accompany": "Accompagner le travail des élèves grâce aux services...",
-    "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services..."
+    "assistant.teacher.visibility": "Donner de la visibilité à un projet grâce aux services...",
+    "panel.user.messagerie":"messagerie"
 
 }
