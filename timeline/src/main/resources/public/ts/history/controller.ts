@@ -1,4 +1,4 @@
-import { ui, http, idiom as lang, ng, skin, $, moment } from 'entcore';
+import {ui, http, idiom as lang, ng, skin, $, moment, model} from 'entcore';
 
 export let historyController = ng.controller('HistoryController', ['$scope', 'model', function HistoryController($scope, model){
 	$scope.notifications = [];
@@ -93,5 +93,8 @@ export let historyController = ng.controller('HistoryController', ['$scope', 'mo
 	})
 
 	$scope.display = {};
-
+    model.me.workflow.load(['zimbra']);
+    $scope.hasWorkflowZimbraExpert = () => {
+       return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth');
+    };
 }]);

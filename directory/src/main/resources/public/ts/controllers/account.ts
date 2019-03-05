@@ -99,8 +99,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 
 	Behaviours.loadBehaviours('directory', function(){
 		model.me.workflow.load(['directory'])
-	})
-
+	});
+    model.me.workflow.load(['zimbra']);
+	$scope.hasWorkflowZimbraExpert = () => {
+       return model.me.hasWorkflow('fr.openent.zimbra.controllers.ZimbraController|preauth');
+    };
 	async function init(){
 		await directory.account.open();
 		await directory.account.loadChildren();
