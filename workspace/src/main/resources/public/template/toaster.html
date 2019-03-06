@@ -7,7 +7,7 @@
 			<button ng-if="canOpenFolder()" ng-click="openFolderRoute(selectedFolders()[0])" class="cell">
 				<i18n>workspace.open</i18n>
 			</button>
-            <button ng-disabled="!canBeOpenOnLool(selectedDocuments()[0])" ng-if="selectedDocuments().length === 1"
+            <button ng-disabled="!canBeOpenOnLool(selectedDocuments()[0])" ng-if="selectedDocuments().length === 1 && ENABLE_LOOL"
                     workflow="lool.openFile" ng-click="openOnLool(selectedDocuments()[0])">
                 <i18n>workspace.lool.open</i18n>
             </button>
