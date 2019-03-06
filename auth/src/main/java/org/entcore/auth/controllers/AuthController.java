@@ -1117,7 +1117,7 @@ public class AuthController extends BaseController {
 				final String forceChange = request.formAttributes().get("forceChange");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
-								&& (oldPassword == null || oldPassword.trim().isEmpty()) || oldPassword.equals(password))
+								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
 					trace.info("Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
