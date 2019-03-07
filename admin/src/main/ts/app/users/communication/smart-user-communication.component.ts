@@ -1,55 +1,51 @@
 import { ActivatedRoute, Data, Router } from '@angular/router';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { UserDetailsModel } from '../../core/store/models';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { UserModel } from '../../core/store/models';
 import { Subscription } from 'rxjs/Subscription';
 import { SpinnerService } from '../../core/services';
-import { UsersStore } from '../users.store';
+import { CommunicationRulesService } from './communication-rules.service';
+import { CommunicationRule } from './communication-rules.component';
 
 @Component({
     selector: 'smart-user-communication',
+    providers: [CommunicationRulesService],
     template: `
-        <user-communication *ngIf="user" [user]="user" (close)="openUserDetails()"></user-communication>`
+        <user-communication *ngIf="user && userSendingCommunicationRules" [user]="user"
+                            [userSendingCommunicationRules]="userSendingCommunicationRules"
+                            (close)="openUserDetails()"></user-communication>`
 })
 export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
-    user: UserDetailsModel;
 
-    private usersStoreChangeSubscription: Subscription;
+    public user: UserModel;
+    public userSendingCommunicationRules: CommunicationRule[];
+
     private routeSubscription: Subscription;
 
     constructor(
         public spinner: SpinnerService,
-        private usersStore: UsersStore,
+        public communicationRulesService: CommunicationRulesService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private changeDetector: ChangeDetectorRef
     ) {
     }
 
     ngOnInit() {
-        this.usersStoreChangeSubscription = this.usersStore.onchange.subscribe(field => {
-            if (field === 'user') {
-                if (this.usersStore.user &&
-                    !this.usersStore.user.structures.find(
-                        s => this.usersStore.structure.id === s.id)) {
-                    setTimeout(() => {
-                        this.router.navigate(['..'],
-                            {relativeTo: this.route, replaceUrl: true});
-                    }, 0);
-                } else {
-                    this.user = this.usersStore.user.userDetails;
-                }
-            }
+        this.communicationRulesService.changes().subscribe(rules => {
+            this.userSendingCommunicationRules = rules;
+            this.changeDetector.markForCheck();
         });
         this.routeSubscription = this.route.data.subscribe((data: Data) => {
-            this.usersStore.user = data['user'];
+            this.user = data['user'];
+            this.communicationRulesService.setGroups(data['groups']);
         });
+    }
+
+    public openUserDetails() {
+        this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'details'], {relativeTo: this.route.parent}));
     }
 
     ngOnDestroy(): void {
-        this.usersStoreChangeSubscription.unsubscribe();
         this.routeSubscription.unsubscribe();
-    }
-
-    openUserDetails() {
-        this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'details'], {relativeTo: this.route.parent}));
     }
 }
