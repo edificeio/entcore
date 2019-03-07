@@ -32,6 +32,7 @@ import { UserInfoService } from './details/sections/info/user-info.service';
 import { HttpClientModule } from '@angular/common/http';
 import { globalStoreProvider } from '../core/store';
 import { UserCommunicationComponent } from './communication/user-communication.component';
+import { SmartUserCommunicationComponent } from './communication/smart-user-communication.component';
 
 @NgModule({
     imports: [
@@ -59,7 +60,8 @@ import { UserCommunicationComponent } from './communication/user-communication.c
         UserClassesSection,
         UserManualGroupsSection,
         UserFunctionalGroupsSection,
-        UserCommunicationComponent
+        UserCommunicationComponent,
+        SmartUserCommunicationComponent
     ],
     providers: [
         ConfigResolver,

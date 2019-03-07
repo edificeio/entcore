@@ -14,8 +14,7 @@ import { Config } from './Config';
 @Component({
     selector: 'user-detail',
     template: `
-        <user-communication [user]="details" (close)="currentTab = 'details'" *ngIf="currentTab === 'communication'"></user-communication>
-        <div *ngIf="currentTab === 'details'" class="panel-header">
+        <div class="panel-header">
             <div>
             <span class="user-displayname">
                 {{ details.lastName | uppercase }} {{ details.firstName }}
@@ -113,7 +112,7 @@ import { Config } from './Config';
                 </div>
 
                 <div class="right" *ngIf="!user.deleteDate">
-                    <button class="big" (click)="currentTab = 'communication'">
+                    <button class="big" (click)="openUserCommunication()">
                         <s5l>users.details.button.comm.rules</s5l>
                         <i class="fa fa-podcast"></i>
                     </button>
@@ -126,7 +125,7 @@ import { Config } from './Config';
             </div>
         </div>
 
-        <div *ngIf="currentTab === 'details'">
+        <div>
             <user-info-section [user]="user" [structure]="structure" [config]="config">
             </user-info-section>
 
@@ -173,9 +172,6 @@ export class UserDetails implements OnInit, OnDestroy {
     codeInput: AbstractControl;
     @ViewChild("administrativeForm")
     administrativeForm: NgForm;
-
-
-    public currentTab: 'details' | 'communication' = 'details';
 
     public config: Config;
 
@@ -451,6 +447,10 @@ export class UserDetails implements OnInit, OnDestroy {
 
     imgLoad() {
         this.imgLoaded = true;
+    }
+
+    openUserCommunication() {
+        this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'communication'], {relativeTo: this.route.parent}));
     }
 
     private updateDeletedInStructures() {
