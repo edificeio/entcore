@@ -127,7 +127,7 @@ import { Config } from './Config';
                 </div>
 
                 <div class="right" *ngIf="!user.deleteDate">
-                    <button class="big" disabled title="En construction">
+                    <button class="big" (click)="openUserCommunication()">
                         <s5l>users.details.button.comm.rules</s5l>
                         <i class="fa fa-podcast"></i>
                     </button>
@@ -186,9 +186,7 @@ export class UserDetails implements OnInit, OnDestroy {
     @ViewChild("codeInput")
     codeInput: AbstractControl;
     @ViewChild("administrativeForm")
-    administrativeForm: NgForm
-
-    ;
+    administrativeForm: NgForm;
 
     public config: Config;
 
@@ -486,6 +484,10 @@ export class UserDetails implements OnInit, OnDestroy {
 
     imgLoad() {
         this.imgLoaded = true;
+    }
+
+    openUserCommunication() {
+        this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'communication'], {relativeTo: this.route.parent}));
     }
 
     private updateDeletedInStructures() {
