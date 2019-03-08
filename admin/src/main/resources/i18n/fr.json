@@ -437,5 +437,9 @@
     "confirm": "Confirmer",
     "warning": "Attention !",
     "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
-    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?"
+    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?",
+
+    "user.communication.title": "Communication de {{ lastName }} {{ firstName }}",
+    "user.communication.back-to-user-details": "Retour à la fiche",
+    "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés."
 }
