@@ -8,6 +8,7 @@ import { UserCreate } from './create/user-create.component';
 import { UserFilters } from './filters/user-filters.component';
 import { UserDetails } from './details/user-details.component';
 import { ConfigResolver } from './details/config.resolver';
+import { SmartUserCommunicationComponent } from './communication/smart-user-communication.component';
 
 export let routes: Routes = [
     {
@@ -16,8 +17,13 @@ export let routes: Routes = [
             {path: 'create', component: UserCreate},
             {path: 'filter', component: UserFilters},
             {
-                path: ':userId', component: UserDetails, resolve: {
+                path: ':userId/details', component: UserDetails, resolve: {
                     config: ConfigResolver,
+                    user: UserDetailsResolver
+                }
+            },
+            {
+                path: ':userId/communication', component: SmartUserCommunicationComponent, resolve: {
                     user: UserDetailsResolver
                 }
             }
