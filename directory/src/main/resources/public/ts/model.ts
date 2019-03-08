@@ -226,7 +226,7 @@ export const directory = {
 		this.resetPasswords = function(){
 			this.users.selection().forEach(function(user){
 				oldHttp().post('/auth/sendResetPassword', {
-					login: user.login,
+					login: user.originalLogin,
 					email: model.me.email
 				});
 			});
