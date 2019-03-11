@@ -210,7 +210,7 @@
     "workspace.create.cancel.own": "Créer dans mes documents personnels",
     "workspace.create.cancel.content": "Si vous ne partagez pas ce dossier, <b>vous ne pouvez pas le laisser à la racine des documents partagés.</b> Voulez-vous le créer dans vos documents personnels ?",
     "workspace.create.share.warning": "Attention ! Vous devez obligatoirement partager le dossier créé, sinon",
-    "workspace.create.share.warning2": " créez le dans vos espace personnel",
+    "workspace.create.share.warning2": " créez le dans votre espace personnel",
     "workspace.import.shared.title": "Partager vos fichiers importés",
     "workspace.import.share.warning": "Attention ! Vous devez obligatoirement partager vos fichiers importés, sinon",
     "workspace.import.share.warning2": "importez les dans votre espace personnel.",
