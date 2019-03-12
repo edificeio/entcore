@@ -163,6 +163,7 @@ export let conversationController = ng.controller('ConversationController', [
 
 
         $scope.openFolder = async folderName => {
+            $scope.mail = undefined;
             $scope.ccCciShow = false;
             if (!folderName) {
                 if (Conversation.instance.currentFolder instanceof UserFolder) {
