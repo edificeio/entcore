@@ -86,7 +86,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		}
 		String query =
 				"MATCH (n:Application) " + filter +
-				"RETURN n.id as id, n.name as name, n.icon as icon, 'External' IN labels(n) as isExternal, n.levelsOfEducation as levelsOfEducation";
+				"RETURN n.id as id, n.name as name, n.icon as icon, 'External' IN labels(n) as isExternal, n.levelsOfEducation as levelsOfEducation, n.appType as appType";
 		neo.execute(query, params, result -> {
 			Either<String, JsonArray> resultAsArray = validResult(result);
 			if(resultAsArray.isRight()) {
