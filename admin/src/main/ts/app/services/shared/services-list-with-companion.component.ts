@@ -55,25 +55,6 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     self = this;
     _storedElements = [];
 
-    private filteredApps = [
-        'Auth',
-        'Application Mobile',
-        'AppRegistry',
-        'Cas',
-        'Communication',
-        'Directory',
-        'Eliot',
-        'FakeSSO',
-        'Portal',
-        'Rss',
-        'Searchengine',
-        'Signets',
-        'Starter',
-        'Supportpivot',
-        'Timeline',
-        'Xiti'
-    ];
-
     constructor(
         private cdRef: ChangeDetectorRef,
         public router: Router,
@@ -100,19 +81,19 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
     private routeSubscriber: Subscription;
 
     ngOnInit(): void {
-        // HAck : display app just if user is ADMC => TODO implement a directive or a component
-        // Session is already fetched in nav.component and must be shared instead of being requested again
         SessionModel.getSession().then(session => {
-            if (!session.functions['SUPER_ADMIN']) {
-                this.filteredApps.push('Admin', 'Administration', 'ABSENCES', 'NOTES', 'SCOLARITE', 'TEXTES', 'AGENDA');
-            }
             if (!this.serviceName) {
                 throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
             }
             this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
                 if (data[this.collectionRef[this.serviceName].routeData]) {
                     this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData]
-                        .filter(app => this.filteredApps.indexOf(app.name) < 0);
+                        .filter((app: ApplicationModel) => {
+                            if (session.functions['SUPER_ADMIN']) {
+                                return app.appType == 'END_USER' || app.appType == 'SYSTEM';
+                            }
+                            return app.appType == 'END_USER';
+                        });
                     if (this.serviceName === 'applications') {
                         this.collectionRef[this.serviceName].collection = filterApplicationsByLevelsOfEducation(
                             this.collectionRef[this.serviceName].collection,
