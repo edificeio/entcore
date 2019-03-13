@@ -30,4 +30,5 @@ export class ApplicationModel extends Model<ApplicationModel> {
     roles: RoleModel[];
     levelsOfEducation: number[];
     name: string;
+    appType: string;
 }
