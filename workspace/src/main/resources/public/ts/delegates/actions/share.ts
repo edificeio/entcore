@@ -51,8 +51,8 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             }
             return true;
         }
-        if(needShareWarning()) {
-            if(!!$scope.sharedElements.find(a => workspaceService.isFolder(a))) {
+        if (needShareWarning()) {
+            if (!!$scope.sharedElements.find(a => workspaceService.isFolder(a))) {
                 template.open('share', 'share/share-folders-warning');
             } else {
                 template.open('share', 'share/share-files-warning');
@@ -139,7 +139,12 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
             $scope.copyingForShare = true;
             const res = await workspaceService.copyAll($scope.sharedElements, $scope.currentTree as models.Element)
             copiedFolders = res.copies;
-            $scope.sharedElements = res.copies;
+            const sourceElementIds = $scope.sharedElements.map(share => share._id);
+            $scope.sharedElements = res.copies.filter(copy => {
+                //FIX: #23852 when copying=>share only selected elements (share is inherited)
+                const sourceId = copy["copyFromId"];
+                return sourceElementIds.indexOf(sourceId) > -1;
+            });
             template.open('share', 'share/share');
         } finally {
             $scope.copyingForShare = false;
