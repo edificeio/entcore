@@ -1,10 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { BundlesService } from "sijil";
+import { BundlesService } from 'sijil';
+import { SpinnerService } from '../../core/services';
+import { ActivatedRoute, Router } from '@angular/router';
 
 const css = {
     title: 'lct-group-card-title',
+    viewMembersButton: 'lct-group-card-view-members-button',
     addCommunicationButton: 'lct-group-card-add-communicaiton-button',
     removeCommunicationButton: 'lct-group-card-remove-communicaiton-button',
     internalCommunicationSwitch: 'lct-group-card-internal-communication-switch'
@@ -12,6 +15,7 @@ const css = {
 
 export const groupCardLocators = {
     title: `.${css.title}`,
+    viewMembersButton: `.${css.viewMembersButton}`,
     addCommunicationButton: `.${css.addCommunicationButton}`,
     removeCommunicationButton: `.${css.removeCommunicationButton}`,
     internalCommunicationSwitch: `.${css.internalCommunicationSwitch}`
@@ -22,7 +26,10 @@ export const groupCardLocators = {
     template: `
         <div class="group-card"
         [ngClass]="{'group-card--active': active, 'group-card--selected': selected, 'group-card--highlighted': highlighted}">
-            <div class="group-card__title ${css.title}">{{getGroupName(group)}}</div>
+            <div class="group-card__title ${css.title}">
+                <span class="group-card__title-label">{{getGroupName(group)}}</span>
+                <i (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-eye"></i>
+            </div>
             <div class="group-card__actions">
                 <button
                     class="group-card__action-add-communication ${css.addCommunicationButton}"
@@ -83,10 +90,25 @@ export const groupCardLocators = {
     `, `
         .group-card__title {
             font-size: 16px;
+            display: flex;
+            align-items: center;
         }
 
         .group-card--active .group-card__title {
             margin-bottom: 15px;
+        }
+        `, `
+        .group-card__title-label {
+            flex-grow: 1;
+        }
+        `, `
+        .group-card__title-icon {
+            display: none;
+            cursor: pointer;
+        }
+
+        .group-card--active .group-card__title-icon {
+            display: initial;
         }
     `, `
         .group-card__actions {
@@ -164,7 +186,12 @@ export class GroupCardComponent {
     @Input()
     highlighted: boolean = false;
 
-    constructor(private communicationRulesService: CommunicationRulesService, private bundlesService: BundlesService) {
+    constructor(
+        private spinner: SpinnerService,
+        private route: ActivatedRoute,
+        private router: Router,
+        private communicationRulesService: CommunicationRulesService,
+        private bundlesService: BundlesService) {
     }
 
     public toggleInternalCommunicationRule() {
@@ -193,4 +220,18 @@ export class GroupCardComponent {
         }
         return `${this.bundlesService.translate(group.name.slice(0, indexOfSeparation))}-${this.bundlesService.translate(group.name.slice(indexOfSeparation + 1))}`;
     }
+
+    public viewMembers(group: GroupModel) {
+        this.spinner.perform('portal-content',
+            this.router.navigate(['groups', groupTypeRouteMapping.get(group.type), group.id],
+                {
+                    relativeTo: this.route.root.firstChild.firstChild
+                })
+        );
+    }
 }
+
+const groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
+    .set('ManualGroup', 'manual')
+    .set('ProfileGroup', 'profile')
+    .set('FunctionalGroup', 'functional');

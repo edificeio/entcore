@@ -6,19 +6,32 @@ import { clickOn, generateGroup, getText } from './communication-test-utils';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { CommunicationRulesService } from './communication-rules.service';
+import { SpinnerService } from '../../core/services';
+import { ActivatedRoute, Router } from '@angular/router';
 
 describe('GroupCardComponent', () => {
     let component: GroupCardComponent;
     let communicationRulesService: CommunicationRulesService;
+    let spinnerService: SpinnerService;
+    let router: Router;
+    let activatedRoute: ActivatedRoute;
     let fixture: ComponentFixture<GroupCardComponent>;
 
     beforeEach(async(() => {
         communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
+        spinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
+        router = jasmine.createSpyObj('Router', ['navigate']);
+        activatedRoute = {root: {firstChild: {firstChild: {}}}} as ActivatedRoute;
         TestBed.configureTestingModule({
             declarations: [
                 GroupCardComponent
             ],
-            providers: [{useValue: communicationRulesService, provide: CommunicationRulesService}],
+            providers: [
+                {useValue: communicationRulesService, provide: CommunicationRulesService},
+                {useValue: spinnerService, provide: SpinnerService},
+                {useValue: router, provide: Router},
+                {useValue: activatedRoute, provide: ActivatedRoute}
+            ],
             imports: [
                 SijilModule.forRoot(),
                 UxModule.forRoot(null)
@@ -87,6 +100,13 @@ describe('GroupCardComponent', () => {
                     name: 'Emile Zola'
                 }], 'Student'))).toBe('Élèves de Emile Zola');
         });
+    });
+
+    describe('viewMembers', () => {
+       it(`should navigate to /groups/manual/groupId given a manual group with id groupId`, () => {
+           component.viewMembers(generateGroup('groupId', 'BOTH', 'ManualGroup'));
+           expect((router.navigate as jasmine.Spy).calls.mostRecent().args[0]).toEqual(['groups', 'manual', 'groupId']);
+       });
     });
 });
 
