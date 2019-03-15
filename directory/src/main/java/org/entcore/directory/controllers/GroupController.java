@@ -196,4 +196,9 @@ public class GroupController extends BaseController {
 		});
 	}
 
+	@Get("/group/:groupId/outgoing")
+	public void getGroupsReachableByGroup(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		groupService.getGroupsReachableByGroup(groupId, arrayResponseHandler(request));
+	}
 }

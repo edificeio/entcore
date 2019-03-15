@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { CommunicationRule } from './communication-rules.component';
-import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/forkJoin';
@@ -40,16 +39,19 @@ export class CommunicationRulesService {
         }
 
         return request.do(() => {
-            const groupInCommunicationRules = this.findGroup(this.currentRules, group.id);
-            if (!!groupInCommunicationRules) {
-                groupInCommunicationRules.internalCommunicationRule = direction;
-                this.rulesSubject.next(this.clone(this.currentRules));
+            if (this.currentRules) {
+                const groupInCommunicationRules = this.findGroup(this.currentRules, group.id);
+                if (!!groupInCommunicationRules) {
+                    groupInCommunicationRules.internalCommunicationRule = direction;
+                    this.rulesSubject.next(this.clone(this.currentRules));
+                }
             }
         });
     }
 
     private getCommunicationRulesOfGroup(sender: GroupModel): Observable<CommunicationRule> {
-        return Observable.of({sender, receivers: []});
+        return this.http.get<GroupModel[]>(`/directory/group/${sender.id}/outgoing`)
+            .map(receivers => ({sender, receivers}));
     }
 
     private findGroup(communicationRules: CommunicationRule[], groupId: string): GroupModel {
