@@ -1,11 +1,10 @@
 import { Component, Input, OnInit, ChangeDetectorRef } from "@angular/core";
 import { AbstractSection } from "../abstract.section";
 import { HttpClient } from '@angular/common/http';
-import { Quota } from "./Quota";
+import { UsedSpace } from "./UsedSpace";
 import { UserModel } from "../../../../core/store";
 import { MaxQuotas } from "./MaxQuotas";
-import { Unit } from "./Unit";
-import { NumberRepresentation } from "./NumberRepresentation";
+import { Unit, getUnit, UNITS } from "../../../../shared/utils/math";
 import { NotifyService } from "../../../../core/services";
 
 @Component({
@@ -13,13 +12,17 @@ import { NotifyService } from "../../../../core/services";
     template: `
         <panel-section section-title="users.details.section.quota">
             <div class="quota-container">
-                <div class="quota-data">
-                    <div class="quota-data-number">                
-                        {{ round2digits(storage.value) }} / {{ floor2digits(quota.value) }} {{ quota.unit.label | translate }} {{ "quota.usedSpace" | translate }}
+                <div *ngIf="isDataInitialized()">
+                    <div class="quota-numbers">
+                        {{ details.storage | bytes: unit.value:2 }} / {{ details.quota | bytes: unit.value }} {{ unit?.label | translate }} {{ "quota.usedSpace" | translate }}
                     </div>
                     
-                    <div class="quota-data-bar">
-                        <div [ngStyle]="{ 'flex-basis': storageRatio + '%' }"></div>
+                    <div class="quota-bar">
+                        <div class="quota-bar__used-space" 
+                            [ngStyle]="{ 'flex-basis': storageRatio + '%' }">
+                        </div>
+                        <div class="quota-bar__unused-space">
+                        </div>
                     </div>
                 </div>
 
@@ -29,18 +32,18 @@ import { NotifyService } from "../../../../core/services";
                     </div>
                     <div class="quota-form-body">
                         <form #quotaForm="ngForm">
-                            <select name="selectQuotaUnitValue"
-                                [(ngModel)]="selectQuotaUnitValue"
-                                (change)="inputQuotaValue = inputQuotaValueInBytes / selectQuotaUnitValue">
+                            <select name="newQuotaUnitValue"
+                                [ngModel]="newQuotaUnitValue"
+                                (ngModelChange)="refreshNewQuotaValue($event)">
                                 <option *ngFor="let unit of units" [value]="unit.value">
-                                    {{ unit.label | translate }}
+                                    {{ unit?.label | translate }}
                                 </option>
                             </select>
 
                             <input type="number" 
-                                name="inputQuotaValue"
-                                [(ngModel)]="inputQuotaValue"
-                                (change)="inputQuotaValueInBytes = inputQuotaValue * selectQuotaUnitValue" />
+                                name="newQuotaValue"
+                                [(ngModel)]="newQuotaValue" 
+                                class="quota-form-body__input" />
 
                             <button (click)="saveQuota()" 
                                 [disabled]="quotaForm.pristine || quotaForm.invalid || isQuotaInferiorToStorage() || isQuotaSuperiorToMaxQuota()">
@@ -49,8 +52,8 @@ import { NotifyService } from "../../../../core/services";
                             </button>
                         </form>
                     </div>
-                    <div class="quota-form-footer">
-                        <em><s5l>quota.maxQuota</s5l> {{ floor2digits(maxQuota.value) }} {{ maxQuota.unit.label | translate }}</em>
+                    <div class="quota-form-footer" *ngIf="maxQuota">
+                        <em><s5l>quota.maxQuota</s5l> {{ maxQuota | bytes: unit.value }} {{ unit?.label | translate }}</em>
                     </div>
                 </div>
             </div>
@@ -60,31 +63,21 @@ import { NotifyService } from "../../../../core/services";
 export class UserQuotaSection extends AbstractSection implements OnInit {
     @Input() user: UserModel;
 
-    /** user storage and quota display. */
-    storage: NumberRepresentation = {"value": 0, unit: {"label": "", "value": 0}};
-    quota: NumberRepresentation = {"value": 0, unit: {"label": "", "value": 0}};
+    /** unit calculated from user quota */
     unit: Unit;
+
+    units = UNITS;
     
     /** ratio for quota bar. */
     storageRatio: number;
 
-    /** user storage and quota form inputs. */
-    selectQuotaUnitValue: number;
-    inputQuotaValue: number;
-    inputQuotaValueInBytes: number;
-    storageInBytes: number;
+    /** new quota form inputs. */
+    newQuotaUnitValue: number;
+    newQuotaValue: number;
 
     /** maxQuota per profile. */
     maxQuotas: MaxQuotas[] = [];
-    maxQuota: NumberRepresentation = {"value": 0, unit: {"label": "", "value": 0}};
-    maxQuotaInBytes: number;
-    
-    units: Array<Unit> = [
-        { label: "quota.byte", value: 1 },
-        { label: "quota.kilobyte", value: 1024 },
-        { label: "quota.megabyte", value: 1048576 },
-        { label: "quota.gigabyte", value: 1073741824 }
-    ];
+    maxQuota: number;
     
     constructor(private http: HttpClient, 
         private ns: NotifyService,
@@ -95,86 +88,56 @@ export class UserQuotaSection extends AbstractSection implements OnInit {
     ngOnInit(): void {
         this.http.get<MaxQuotas[]>('/workspace/quota/default').subscribe((data: MaxQuotas[]) => {
             this.maxQuotas = data;
+            this.maxQuota = this.getMaxUserQuota();
         });
     }
 
     protected onUserChange(): void {
         if(!this.details.storage && this.details.storage != 0) {
-            this.http.get<Quota>('/workspace/quota/user/' + this.user.id).subscribe((data: Quota) => {
-                this.initQuota(data);
-                // save values in user to prevent fetching data again
+            this.http.get<UsedSpace>(`/workspace/quota/user/${this.user.id}`).subscribe((data: UsedSpace) => {
                 this.details.storage = data.storage;
                 this.details.quota = data.quota;
-                this.details.maxQuota = this.maxQuotaInBytes;
+                this.initData();
             });
         } else {
-            this.initQuota({storage: this.details.storage, quota: this.details.quota});
+            this.initData();
         }
     }
 
-    private initQuota(data: Quota) {
-        this.quota = this.getNumberRepresentation(data.quota);
-        this.unit = this.quota.unit;
-        this.storage = {
-            "value": this.calcStorage(data.storage, this.unit),
-            "unit": this.unit
-        };
-        this.storageInBytes = data.storage;
-
-        this.inputQuotaValue = this.quota.value;
-        this.inputQuotaValueInBytes = data.quota;
-
-        this.selectQuotaUnitValue = this.quota.unit.value;
-        this.storageRatio = this.getStorageRatio(data.storage, data.quota);
-
-        this.maxQuota = this.getMaxUserQuota();
-        this.maxQuotaInBytes = this.maxQuota.value * this.maxQuota.unit.value;
-    }
-
-    private getNumberRepresentation(bytes: number): NumberRepresentation {
-        let unit = 0;
-        let finalValue = bytes;
-        while(finalValue >= 1024 && unit < 3) {
-            finalValue = finalValue / 1024;
-            unit++;
+    initData(): void {
+        this.unit = getUnit(this.details.quota);
+        this.newQuotaUnitValue = this.unit.value;
+        this.newQuotaValue = this.details.quota / this.newQuotaUnitValue;
+        this.storageRatio = this.getStorageRatio(this.details.storage, this.details.quota);
+        
+        if(this.maxQuotas.length > 0) {
+            this.maxQuota = this.getMaxUserQuota();
         }
-        return { value: finalValue, unit: this.units[unit] };
+
+        this.cdRef.markForCheck();
     }
 
-    private calcStorage(storage: number, quotaUnit: Unit): number {
-        return storage / quotaUnit.value;
-    }
-
-    floor2digits(nb: number): number {
-        return (Math.floor(nb * 100) / 100);
-    }
-
-    round2digits(nb: number): number {
-        return (Math.round(nb * 100) / 100);
-    }
-
-    private getStorageRatio(storage: number, quota: number): number {
-        return Math.min(100, Math.round((storage * 100) / quota * 100) / 100);
+    isDataInitialized(): boolean {
+        return this.details.storage != null;
     }
 
     saveQuota(): void {
+        let newQuotaValue = this.newQuotaValue * this.newQuotaUnitValue;
+
         this.http.put('/workspace/quota', {
             users: [this.details.id],
-            quota: Math.floor(this.inputQuotaValueInBytes)
+            quota: Math.floor(newQuotaValue)
         }).subscribe(
             data => {
-                // update storage, quota and ratio display
-                this.quota = this.getNumberRepresentation(this.inputQuotaValueInBytes);
-                this.storage = {value: this.calcStorage(this.storageInBytes, this.quota.unit), unit: this.quota.unit};
-                this.storageRatio = this.getStorageRatio(this.storageInBytes, this.inputQuotaValueInBytes);
-                // update quota in user details
-                this.details.quota = this.inputQuotaValueInBytes;
+                // update storage and ratio display
+                this.details.quota = newQuotaValue;
+                this.storageRatio = this.getStorageRatio(this.details.storage, this.details.quota);
 
                 this.ns.success(
                     { 
                         key: 'notify.user.quota.update.content', 
                         parameters: {
-                            user: this.details.firstName + ' ' + this.user.lastName 
+                            user: `${this.details.firstName} ${this.user.lastName}`
                         } 
                     }, 'notify.user.quota.update.title');
                 this.cdRef.markForCheck();
@@ -184,23 +147,39 @@ export class UserQuotaSection extends AbstractSection implements OnInit {
                     {
                         key: 'notify.user.quota.update.error.content',
                         parameters: {
-                            user: this.user.firstName + ' ' + this.user.lastName
+                            user: `${this.details.firstName} ${this.user.lastName}`
                         }
                     }, 'notify.user.quota.update.error.title', error);
             }
         );
     }
 
-    getMaxUserQuota(): NumberRepresentation {
+    /**
+     * Refresh newQuotaValue with new selected unit value.
+     * @param event new selected unit value
+     */
+    refreshNewQuotaValue(event): void {
+        let newQuotaValueBytes: number = this.newQuotaValue * this.newQuotaUnitValue;
+        this.newQuotaValue = newQuotaValueBytes / event;
+        this.newQuotaUnitValue = event;
+    }
+
+    getMaxUserQuota(): number {
         let maxQuotaObj = this.maxQuotas.find(maxQuota => maxQuota.name == this.user.type);
-        return this.getNumberRepresentation(maxQuotaObj.maxQuota);
+        return maxQuotaObj.maxQuota;
     }
 
     isQuotaInferiorToStorage(): boolean {
-        return (this.inputQuotaValue * this.selectQuotaUnitValue) < this.storageInBytes;
+        let newQuotaValueBytes: number = this.newQuotaValue * this.newQuotaUnitValue;
+        return newQuotaValueBytes < this.details.storage;
     }
 
     isQuotaSuperiorToMaxQuota(): boolean {
-        return (this.inputQuotaValue * this.selectQuotaUnitValue) > this.maxQuotaInBytes;
+        let newQuotaValueBytes: number = this.newQuotaValue * this.newQuotaUnitValue;
+        return newQuotaValueBytes > this.maxQuota;
+    }
+
+    private getStorageRatio(storage: number, quota: number): number {
+        return Math.min(100, Math.round((storage * 100) / quota * 100) / 100);
     }
 }

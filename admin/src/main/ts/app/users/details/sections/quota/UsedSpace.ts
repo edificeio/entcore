@@ -1,5 +1,5 @@
 /** User Storage and Quota returned by /workspace/quota/user/:userId API. */
-export interface Quota {
+export interface UsedSpace {
     'quota': number;
     'storage': number;
 }
