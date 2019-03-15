@@ -25,7 +25,8 @@ import {
     UserInfoSection,
     UserManualGroupsSection,
     UserRelativesSection,
-    UserStructuresSection
+    UserStructuresSection,
+    UserQuotaSection
 } from './details/sections';
 import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';
@@ -61,7 +62,8 @@ import { SmartUserCommunicationComponent } from './communication/smart-user-comm
         UserManualGroupsSection,
         UserFunctionalGroupsSection,
         UserCommunicationComponent,
-        SmartUserCommunicationComponent
+        SmartUserCommunicationComponent,
+        UserQuotaSection
     ],
     providers: [
         ConfigResolver,

@@ -147,6 +147,10 @@ import { Config } from './Config';
             <user-administrative-section [user]="user" [structure]="structure">
             </user-administrative-section>
 
+            <user-quota-section [user]="user"
+                *ngIf="!details.activationCode && !user.deleteDate">
+            </user-quota-section>
+
             <user-duplicates-section [user]="user" [structure]="structure"
                                      [open]="forceDuplicates">
             </user-duplicates-section>
