@@ -2061,3 +2061,41 @@ i.fa {
   &.is-danger .message-header { background: red;}
   &.is-warning .message-header { background: orange;}
 }
+
+.quota-container {
+    display: flex;
+}
+
+.quota-numbers {
+    padding: 10px 0px;
+}
+
+.quota-bar {
+    display: flex;
+    border: 1px solid #000;
+    border-radius: 5px;
+    height: 25px;
+    margin: 10px 0px;
+}
+
+.quota-bar__used-space {
+    background-color: $main;
+}
+
+.quota-bar__unused-space {
+    background-color: #fff;
+}
+
+.quota-form {
+    margin-left: 20px;
+    padding-left: 20px;
+    border-left: solid 1px #000;
+}
+
+.quota-form-title {
+    padding: 10px 0px;
+}
+
+.quota-form-body__input {
+    width: 100px;
+}
