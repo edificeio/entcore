@@ -87,6 +87,7 @@
     "users.details.section.functional.groups": "Groupe(s) d'enseignement",
     "users.details.section.manual.groups": "Groupe(s) manuel(s)",
     "users.details.section.duplicates": "Doublon(s)",
+    "users.details.section.quota": "Quota de stockage",
     "users.details.button.comm.rules": "Règles de communication de l'utilisateur",
     "users.details.button.app.rights": "Droits applicatifs de l'utilisateur",
 
@@ -373,6 +374,11 @@
     "notify.user.dissociate.error.title": "Erreur lors de la dissociation des comptes",
     "notify.user.dissociate.error.content": "Vous n'avez pas les droits d'administration sur les utilisateurs concernés, veuillez contacter l'assistance",    
 
+    "notify.user.quota.update.title": "Modification effectuée",
+    "notify.user.quota.update.content": "Le quota de l'utilisateur {{user}} a bien été mis à jour.",
+    "notify.user.quota.update.error.title": "Erreur lors de la modification du quota",
+    "notify.user.quota.update.error.content": "Le quota de l'utilisateur {{user}} n'a pas pu être mis à jour.",
+
     "notify.group.create.title": "Création effectuée",
     "notify.group.create.content": "Le groupe {{group}} a bien été créé.",
     "notify.group.create.error.title" : "Erreur lors de la création",
@@ -449,5 +455,14 @@
 
     "user.communication.title": "Communication de {{ lastName }} {{ firstName }}",
     "user.communication.back-to-user-details": "Retour à la fiche",
-    "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés."
+    "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés.",
+    
+    "quota.byte": "Octet(s)",
+    "quota.kilobyte": "KiloOctet(s)",
+    "quota.megabyte": "MegaOctet(s)",
+    "quota.gigabyte": "GigaOctet(s)",
+    "quota.terabyte": "TeraOctet(s)",
+    "quota.usedSpace": "utilisés.",
+    "quota.form.title": "Modifier l'espace de stockage de l'utilisateur",
+    "quota.maxQuota": "Quota maximum autorisé pour ce profil :"
 }
