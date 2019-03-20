@@ -6,15 +6,12 @@ import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
-import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/observable/merge';
 
 import { GroupsStore } from '../groups.store';
-import {
-    GroupIdAndInternalCommunicationRule,
-    InternalCommunicationRule
-} from './group-internal-communication-rule.resolver';
+import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
+import { InternalCommunicationRule } from '../../core/store/models';
 
 @Component({
     selector: 'group-detail',

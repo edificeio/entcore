@@ -20,17 +20,11 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
-
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.eventbus.DeliveryOptions;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.Directory;
-import org.entcore.directory.services.UserService;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -38,17 +32,19 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.Directory;
+import org.entcore.directory.services.UserService;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
-import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
-import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
-import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
+import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultUserService implements UserService {
 
@@ -148,7 +144,7 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, Handler<Either<String, JsonObject>> result) {
-		
+
 		String getMgroups = "";
 		String resultMgroups = "";
 		if (getManualGroups) {
@@ -186,6 +182,31 @@ public class DefaultUserService implements UserService {
 		};
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
+
+    @Override
+    public void getGroups(String id, Handler<Either<String, JsonArray>> results) {
+        String query = ""
+				+ "MATCH (g:Group)<-[:IN]-(u:User { id: {id} }) WHERE exists(g.id) "
+				+ "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
+				+ "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
+				+ "WITH COALESCE(sg, sc) as s, c, g "
+				+ "WITH s, c, g, "
+				+ "collect( distinct {name: c.name, id: c.id}) as classes, "
+				+ "collect( distinct {name: s.name, id: s.id}) as structures, "
+				+ "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
+				+ "RETURN DISTINCT "
+				+ "g.id as id, "
+				+ "g.name as name, "
+				+ "g.filter as filter, "
+				+ "g.displayName as displayName, "
+				+ "g.users as internalCommunicationRule, "
+				+ "type, "
+				+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
+				+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
+				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
+        JsonObject params = new JsonObject().put("id", id);
+        neo.execute(query, params, validResultHandler(results));
+    }
 
 	@Override
 	public void list(String structureId, String classId, JsonArray expectedProfiles,
@@ -313,7 +334,7 @@ public class DefaultUserService implements UserService {
 				"MATCH " + filter + "(u:User) " +
 				functionMatch + filterProfile + condition + optionalMatch +
 				"RETURN DISTINCT u.id as id, p.name as type, u.externalId as externalId, " +
-				"u.activationCode as code, " + 
+				"u.activationCode as code, " +
 				"CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, " +
 				"u.login as originalLogin, " +
 				"u.firstName as firstName, " +
@@ -408,7 +429,7 @@ public class DefaultUserService implements UserService {
 
 	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
 		String query =
-				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " + 
+				"MATCH (u:User{id: {userId}})-[rf:HAS_FUNCTION]->fg-[:CONTAINS_FUNCTION*0..1]->(f:Function) " +
 				"RETURN COLLECT(distinct [f.externalId, rf.scope]) as functions";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
