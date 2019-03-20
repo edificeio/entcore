@@ -34,6 +34,7 @@ export const userCommunicationLocators = {
             background: none;
             border: 0;
             padding: 5px;
+            font-size: 1.2rem;
         }
     `, `
         .button.button--back:hover, .button.button--back:hover i {

@@ -105,6 +105,12 @@ public class CommunicationController extends BaseController {
 		communicationService.communiqueWith(groupId, notEmptyResponseHandler(request));
 	}
 
+	@Get("/group/:groupId/outgoing")
+	public void getGroupsReachableByGroup(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		communicationService.getGroupsReachableByGroup(groupId, arrayResponseHandler(request));
+	}
+
 	@Post("/relative/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void addLinkBetweenRelativeAndStudent(HttpServerRequest request) {
