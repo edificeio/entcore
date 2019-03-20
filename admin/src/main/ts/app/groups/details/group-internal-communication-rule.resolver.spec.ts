@@ -1,12 +1,11 @@
 import { ActivatedRouteSnapshot, convertToParamMap, RouterStateSnapshot } from '@angular/router';
 import { async, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-
 import {
-CommunicationGroupResponse,
-GroupInternalCommunicationRuleResolver,
-InternalCommunicationRule
+    CommunicationGroupResponse,
+    GroupInternalCommunicationRuleResolver
 } from './group-internal-communication-rule.resolver';
+import { InternalCommunicationRule } from '../../core/store/models';
 
 describe('GroupInternalCommunicationRuleResolver', () => {
     let service: GroupInternalCommunicationRuleResolver;

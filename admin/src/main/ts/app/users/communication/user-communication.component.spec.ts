@@ -1,19 +1,24 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserCommunicationComponent, userCommunicationLocators as locators } from './user-communication.component';
-import { UserDetailsModel } from '../../core/store/models';
+import { GroupModel, UserDetailsModel, UserModel } from '../../core/store/models';
 import { By } from '@angular/platform-browser';
 import { BundlesService, SijilModule } from 'sijil';
-import { DebugElement } from '@angular/core';
+import { Component, DebugElement, Input } from '@angular/core';
 import { UxModule } from '../../shared/ux/ux.module';
+import { CommunicationRule } from './communication-rules.component';
+import { clickOn, generateGroup, getText } from './communication-test-utils';
 
 describe('UserCommunicationComponent', () => {
     let component: UserCommunicationComponent;
     let fixture: ComponentFixture<UserCommunicationComponent>;
+    let axellePotier: UserCommunicationTestingData;
+    let harryPotter: UserCommunicationTestingData;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [
-                UserCommunicationComponent
+                UserCommunicationComponent,
+                MockCommunicationRulesComponent
             ],
             providers: [],
             imports: [
@@ -30,7 +35,21 @@ describe('UserCommunicationComponent', () => {
             "user.communication.title": "Communication de {{ lastName }} {{ firstName }}"
         });
 
-        component.user = generateUser('Axelle', 'Potier');
+        axellePotier = generateTestingData(
+            'Axelle',
+            'Potier',
+            [generateGroup('c1')],
+            [generateGroup('groupf1'), generateGroup('groupf2')],
+            [generateGroup('groupm1')]);
+        harryPotter = generateTestingData(
+            'Harry',
+            'Potter',
+            [generateGroup('c1')],
+            null,
+            null);
+
+        component.user = axellePotier.user;
+        component.userSendingCommunicationRules = axellePotier.communicationRules;
         fixture.detectChanges();
     }));
 
@@ -43,7 +62,8 @@ describe('UserCommunicationComponent', () => {
     }));
 
     it('should have the title "Communication de POTTER Harry" given user Harry Potter', async(() => {
-        component.user = generateUser('Harry', 'Potter');
+        component.user = harryPotter.user;
+        component.userSendingCommunicationRules = harryPotter.communicationRules;
         fixture.detectChanges();
         expect(getText(getTitle(fixture))).toBe('Communication de POTTER Harry');
     }));
@@ -56,8 +76,24 @@ describe('UserCommunicationComponent', () => {
     }));
 });
 
-function generateUser(firstName: string, lastName: string): UserDetailsModel {
-    return {firstName, lastName} as UserDetailsModel;
+interface UserCommunicationTestingData {
+    user: UserModel,
+    communicationRules: CommunicationRule[]
+}
+
+function generateTestingData(firstName: string, lastName: string, classes: GroupModel[], functionalGroups: GroupModel[], manualGroups: GroupModel[]): UserCommunicationTestingData {
+    const userDetails: UserDetailsModel = {functionalGroups, manualGroups} as UserDetailsModel;
+    const user: UserModel = {
+        firstName,
+        lastName,
+        userDetails
+    } as UserModel;
+    const groups = [];
+    groups.push(...classes);
+    groups.push(...functionalGroups);
+    groups.push(...manualGroups);
+    const communicationRules: CommunicationRule[] = groups.map(mg => ({sender: mg, receivers: []}));
+    return {user, communicationRules};
 }
 
 function getTitle(fixture: ComponentFixture<UserCommunicationComponent>): DebugElement {
@@ -68,10 +104,11 @@ function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): D
     return fixture.debugElement.query(By.css(locators.backButton));
 }
 
-function getText(el: DebugElement): string {
-    return el.nativeElement.textContent;
-}
-
-function clickOn(el: DebugElement): void {
-    return el.triggerEventHandler('click', null);
+@Component({
+    selector: 'communication-rules',
+    template: ''
+})
+class MockCommunicationRulesComponent {
+    @Input()
+    communicationRules: CommunicationRule[];
 }

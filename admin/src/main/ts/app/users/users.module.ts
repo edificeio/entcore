@@ -34,6 +34,9 @@ import { HttpClientModule } from '@angular/common/http';
 import { globalStoreProvider } from '../core/store';
 import { UserCommunicationComponent } from './communication/user-communication.component';
 import { SmartUserCommunicationComponent } from './communication/smart-user-communication.component';
+import { GroupCardComponent } from './communication/group-card.component';
+import { CommunicationRulesComponent } from './communication/communication-rules.component';
+import { UserGroupsResolver } from './communication/user-groups.resolver';
 
 @NgModule({
     imports: [
@@ -63,12 +66,15 @@ import { SmartUserCommunicationComponent } from './communication/smart-user-comm
         UserFunctionalGroupsSection,
         UserCommunicationComponent,
         SmartUserCommunicationComponent,
-        UserQuotaSection
+        UserQuotaSection,
+        GroupCardComponent,
+        CommunicationRulesComponent
     ],
     providers: [
         ConfigResolver,
         UserDetailsResolver,
         UsersResolver,
+        UserGroupsResolver,
         UserlistFiltersService,
         UserInfoService,
         globalStoreProvider

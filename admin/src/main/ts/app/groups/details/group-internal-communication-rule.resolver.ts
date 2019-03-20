@@ -3,8 +3,7 @@ import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/r
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import { HttpClient } from '@angular/common/http';
-
-export type InternalCommunicationRule = 'BOTH' | 'INCOMING' | 'OUTGOING' | 'NONE';
+import { InternalCommunicationRule } from '../../core/store/models';
 
 export interface CommunicationGroupResponse {
     groupDisplayName: string;

@@ -4,36 +4,13 @@ import { ActivatedRoute } from '@angular/router';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SijilModule } from 'sijil';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import 'rxjs/add/observable/of';
-
 import { UxModule } from '../../shared/ux/ux.module';
 import { GroupsStore } from '../groups.store';
 import { GroupDetails } from './group-details.component';
 import { GroupModel, StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
-
-@Component({
-    selector: 'group-manage-users',
-    template: ''
-})
-class MockGroupManageUsers {
-    @Output() close: EventEmitter<void> = new EventEmitter<void>();
-}
-
-@Component({
-    selector: 'group-users-list',
-    template: '<ng-content></ng-content>'
-})
-class MockGroupUsersList {
-    @Input() users;
-}
-
-function generateMockGroupModel(id: string, type: string): GroupModel {
-    const groupModel: GroupModel = {id, type} as GroupModel;
-    groupModel.users = [];
-    return groupModel;
-}
+import 'rxjs/add/observable/of';
 
 describe('GroupDetails', () => {
     let component: GroupDetails;
@@ -190,3 +167,25 @@ describe('GroupDetails', () => {
         expect(component.internalCommunicationRule).toBe('BOTH');
     });
 });
+
+@Component({
+    selector: 'group-manage-users',
+    template: ''
+})
+class MockGroupManageUsers {
+    @Output() close: EventEmitter<void> = new EventEmitter<void>();
+}
+
+@Component({
+    selector: 'group-users-list',
+    template: '<ng-content></ng-content>'
+})
+class MockGroupUsersList {
+    @Input() users;
+}
+
+function generateMockGroupModel(id: string, type: string): GroupModel {
+    const groupModel: GroupModel = {id, type} as GroupModel;
+    groupModel.users = [];
+    return groupModel;
+}
