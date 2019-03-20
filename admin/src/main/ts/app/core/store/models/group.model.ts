@@ -1,6 +1,7 @@
 import { Model } from 'entcore-toolkit';
 import { UserModel } from './user.model';
-import { InternalCommunicationRule } from '../../../groups/details/group-internal-communication-rule.resolver';
+
+export type InternalCommunicationRule = 'BOTH' | 'INCOMING' | 'OUTGOING' | 'NONE';
 
 export class GroupModel extends Model<GroupModel> {
 

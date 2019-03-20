@@ -18,7 +18,7 @@ export const communicationRulesLocators = {
         </div>`,
     styles: [`
         .title {
-            color: #00a4d3;
+            color: #2a9cc8;
             font-size: 20px;
         }`]
 })

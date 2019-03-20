@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { CommunicationRulesService } from './communication-rules.service';
 import { CommunicationRule } from './communication-rules.component';
-import { generateGroup } from './user-communication.component.spec';
+import { generateGroup } from './communication-test-utils';
 import { GroupModel } from '../../core/store/models';
 import 'rxjs/add/operator/skip';
 

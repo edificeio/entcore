@@ -19,6 +19,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
     public user: UserModel;
     public userSendingCommunicationRules: CommunicationRule[];
 
+    private communicationRulesChangesSubscription: Subscription;
     private routeSubscription: Subscription;
 
     constructor(
@@ -31,7 +32,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.communicationRulesService.changes().subscribe(rules => {
+        this.communicationRulesChangesSubscription = this.communicationRulesService.changes().subscribe(rules => {
             this.userSendingCommunicationRules = rules;
             this.changeDetector.markForCheck();
         });
@@ -46,6 +47,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        this.communicationRulesChangesSubscription.unsubscribe();
         this.routeSubscription.unsubscribe();
     }
 }

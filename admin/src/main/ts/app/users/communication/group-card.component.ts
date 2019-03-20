@@ -40,7 +40,7 @@ export const groupCardLocators = {
         </div>`,
     styles: [`
         .group-card {
-            background-color: #00a4d3;
+            background-color: #2a9cc8;
             font-size: 14px;
             padding: 10px;
             margin: 10px 0;

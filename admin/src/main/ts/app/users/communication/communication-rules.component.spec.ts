@@ -8,7 +8,7 @@ import {
     CommunicationRulesComponent,
     communicationRulesLocators as locators
 } from './communication-rules.component';
-import { generateGroup } from './user-communication.component.spec';
+import { generateGroup } from './communication-test-utils';
 import { GroupModel } from '../../core/store/models';
 
 describe('CommunicationRulesComponent', () => {

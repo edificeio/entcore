@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { UxModule } from '../../shared/ux/ux.module';
 import { GroupCardComponent, groupCardLocators as locators } from './group-card.component';
 import { BundlesService, SijilModule } from 'sijil';
-import { clickOn, generateGroup, getText } from './user-communication.component.spec';
+import { clickOn, generateGroup, getText } from './communication-test-utils';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { CommunicationRulesService } from './communication-rules.service';

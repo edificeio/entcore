@@ -6,7 +6,7 @@ import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
 import { UxModule } from '../../shared/ux/ux.module';
 import { CommunicationRule } from './communication-rules.component';
-import { InternalCommunicationRule } from '../../groups/details/group-internal-communication-rule.resolver';
+import { clickOn, generateGroup, getText } from './communication-test-utils';
 
 describe('UserCommunicationComponent', () => {
     let component: UserCommunicationComponent;
@@ -35,8 +35,18 @@ describe('UserCommunicationComponent', () => {
             "user.communication.title": "Communication de {{ lastName }} {{ firstName }}"
         });
 
-        axellePotier = generateTestingData('Axelle', 'Potier', [generateGroup('c1')], [generateGroup('groupf1'), generateGroup('groupf2')], [generateGroup('groupm1')]);
-        harryPotter = generateTestingData('Harry', 'Potter', [generateGroup('c1')], null, null);
+        axellePotier = generateTestingData(
+            'Axelle',
+            'Potier',
+            [generateGroup('c1')],
+            [generateGroup('groupf1'), generateGroup('groupf2')],
+            [generateGroup('groupm1')]);
+        harryPotter = generateTestingData(
+            'Harry',
+            'Potter',
+            [generateGroup('c1')],
+            null,
+            null);
 
         component.user = axellePotier.user;
         component.userSendingCommunicationRules = axellePotier.communicationRules;
@@ -86,29 +96,12 @@ function generateTestingData(firstName: string, lastName: string, classes: Group
     return {user, communicationRules};
 }
 
-export function generateGroup(name: string,
-                              internalCommunicationRule: InternalCommunicationRule = 'BOTH',
-                              type: string = null, subType: string = null,
-                              classes: { id: string, name: string }[] = null,
-                              structures: { id: string, name: string }[] = null,
-                              filter: string = null): GroupModel {
-    return {name, id: name, internalCommunicationRule, type, subType, classes, structures, filter} as GroupModel;
-}
-
 function getTitle(fixture: ComponentFixture<UserCommunicationComponent>): DebugElement {
     return fixture.debugElement.query(By.css(locators.title));
 }
 
 function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): DebugElement {
     return fixture.debugElement.query(By.css(locators.backButton));
-}
-
-export function getText(el: DebugElement): string {
-    return el.nativeElement.textContent;
-}
-
-export function clickOn(el: DebugElement): void {
-    return el.triggerEventHandler('click', null);
 }
 
 @Component({

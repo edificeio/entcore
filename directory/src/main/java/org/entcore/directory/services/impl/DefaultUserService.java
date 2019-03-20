@@ -186,7 +186,7 @@ public class DefaultUserService implements UserService {
     @Override
     public void getGroups(String id, Handler<Either<String, JsonArray>> results) {
         String query = ""
-				+ "MATCH (g:Group)<-[:IN]-(u:User { id: {id} }) WHERE exists(g.id) "
+				+ "MATCH (g:Group)<-[:IN]-(u:User { id: {id} }) "
 				+ "OPTIONAL MATCH (c:Class)<-[:DEPENDS]-(g) "
 				+ "OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(g) "
 				+ "WITH g, collect( distinct {name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, "

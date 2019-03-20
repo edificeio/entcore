@@ -6,8 +6,7 @@ import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/forkJoin';
-import { GroupModel } from '../../core/store/models';
-import { InternalCommunicationRule } from '../../groups/details/group-internal-communication-rule.resolver';
+import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable()
