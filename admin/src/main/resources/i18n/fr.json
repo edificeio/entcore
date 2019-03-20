@@ -448,7 +448,21 @@
     "user.communication.title": "Communication de {{ lastName }} {{ firstName }}",
     "user.communication.back-to-user-details": "Retour à la fiche",
     "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés.",
-    
+    "user.communication.groups-of-user": "Groupes de l'utlisateur",
+
+    "group.card.add-communication-button": "Ajouter un droit de communication",
+
+    "group.card.structure.Personnel": "Personnels de {{name}}",
+    "group.card.structure.Relative": "Parents de {{name}}",
+    "group.card.structure.Student": "Élèves de {{name}}",
+    "group.card.structure.Teacher": "Enseignants de {{name}}",
+    "group.card.structure.Guest": "Invités de {{name}}",
+    "group.card.class.Personnel": "Personnels de la classe {{name}}",
+    "group.card.class.Relative": "Parents de la classe {{name}}",
+    "group.card.class.Student": "Élèves de la classe {{name}}",
+    "group.card.class.Teacher": "Enseignants de la classe {{name}}",
+    "group.card.class.Guest": "Invités de la classe {{name}}",
+
     "quota.byte": "Octet(s)",
     "quota.kilobyte": "KiloOctet(s)",
     "quota.megabyte": "MegaOctet(s)",
