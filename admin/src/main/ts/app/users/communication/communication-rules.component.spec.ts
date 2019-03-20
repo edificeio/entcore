@@ -92,6 +92,12 @@ describe('CommunicationRulesComponent', () => {
             expect(component.highlighted.column).toBe('sending');
             expect(component.highlighted.group.id).toBe('group2');
         });
+
+        it('should set the highlighted cell if the selected cell is null', () => {
+            component.highlight('receiving', generateGroup('group1'), null);
+            expect(component.highlighted.column).toBe('receiving');
+            expect(component.highlighted.group.id).toBe('group1');
+        });
     });
 
     describe('isSelected', () => {

@@ -81,7 +81,7 @@ export class CommunicationRulesComponent {
     }
 
     public highlight(column: Column, group: GroupModel, selected: Cell): void {
-        if (column !== selected.column || group.id !== selected.group.id) {
+        if (!selected || column !== selected.column || group.id !== selected.group.id) {
             this.highlighted = {column, group};
         }
     }
