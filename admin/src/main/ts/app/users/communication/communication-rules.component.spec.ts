@@ -6,7 +6,8 @@ import { UxModule } from '../../shared/ux/ux.module';
 import {
     CommunicationRule,
     CommunicationRulesComponent,
-    communicationRulesLocators as locators
+    communicationRulesLocators as locators,
+    uniqueGroups
 } from './communication-rules.component';
 import { generateGroup } from './communication-test-utils';
 import { GroupModel } from '../../core/store/models';
@@ -48,22 +49,37 @@ describe('CommunicationRulesComponent', () => {
     }));
 
     it('should display the user groups (c1, groupf1, groupf2, groupm1) given user belonging to c1, groupf1, groupf2 and groupm1', () => {
-        expect(getGroups(fixture).length).toBe(4);
+        expect(getSendingGroups(fixture).length).toBe(4);
     });
 
-    it('should display the user groups (c1) given user belonging to c1', () => {
-        component.communicationRules = [generateCommunicationRule('c1')];
+    it('should display the user groups (c1) and receiver groups (c2, c3) given user belonging to c1 and c1 can communicate with c2 and c3', () => {
+        component.communicationRules = [generateCommunicationRule('c1', ['c2', 'c3'])];
         fixture.detectChanges();
-        expect(getGroups(fixture).length).toBe(1);
+        expect(getSendingGroups(fixture).length).toBe(1);
+        expect(getReceivingGroups(fixture).length).toBe(2);
     });
 });
 
-function getGroups(fixture: ComponentFixture<CommunicationRulesComponent>): DebugElement[] {
-    return fixture.debugElement.queryAll(By.css(locators.group));
+describe('uniqueGroups', () => {
+    it('should return a filtered array of unique groups', () => {
+        const nonUniqueGroups = [generateGroup('jojo'),
+            generateGroup('titi'),
+            generateGroup('jojo')];
+        const filtered = uniqueGroups(nonUniqueGroups);
+        expect(filtered.map(g => g.id)).toEqual(['jojo', 'titi']);
+    });
+});
+
+function getSendingGroups(fixture: ComponentFixture<CommunicationRulesComponent>): DebugElement[] {
+    return fixture.debugElement.queryAll(By.css(`${locators.sendingColumn} ${locators.group}`));
 }
 
-function generateCommunicationRule(groupName: string): CommunicationRule {
-    return {sender: generateGroup(groupName), receivers: []}
+function getReceivingGroups(fixture: ComponentFixture<CommunicationRulesComponent>): DebugElement[] {
+    return fixture.debugElement.queryAll(By.css(`${locators.receivingColumn} ${locators.group}`));
+}
+
+function generateCommunicationRule(senderName: string, receiversName: string[] = []): CommunicationRule {
+    return {sender: generateGroup(senderName), receivers: receiversName.map(name => generateGroup(name))}
 }
 
 @Component({
