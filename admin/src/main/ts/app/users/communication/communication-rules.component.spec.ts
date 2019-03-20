@@ -58,6 +58,146 @@ describe('CommunicationRulesComponent', () => {
         expect(getSendingGroups(fixture).length).toBe(1);
         expect(getReceivingGroups(fixture).length).toBe(2);
     });
+
+    describe('resetHighlight', () => {
+        it('should unset the highlighted cell', () => {
+            component.highlighted = {column: 'sending', group: generateGroup('group1')};
+            component.resetHighlight();
+            expect(component.highlighted).toBeNull();
+        });
+    });
+
+    describe('select', () => {
+        it('should set the selected cell and call resetHighlight', () => {
+            spyOn(component, 'resetHighlight');
+            component.select('receiving', generateGroup('group2'));
+            expect(component.selected.column).toBe('receiving');
+            expect(component.selected.group.id).toBe('group2');
+            expect(component.resetHighlight).toHaveBeenCalled();
+        });
+    });
+
+    describe('highlight', () => {
+        it('should set the highlighted cell if the selected and highlighted cells are different', () => {
+            component.highlight('receiving', generateGroup('group1'),
+                {column: 'sending', group: generateGroup('group2')});
+            expect(component.highlighted.column).toBe('receiving');
+            expect(component.highlighted.group.id).toBe('group1');
+        });
+
+        it('should not set the highlighted cell if the selected and highlighted cells are the same', () => {
+            component.highlighted = {column: 'sending', group: generateGroup('group2')};
+            component.highlight('receiving', generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group1')});
+            expect(component.highlighted.column).toBe('sending');
+            expect(component.highlighted.group.id).toBe('group2');
+        });
+    });
+
+    describe('isSelected', () => {
+        it('should return true if the given cell is the one selected', () => {
+            expect(component.isSelected(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group1')}
+            )).toBe(true);
+        });
+
+        it('should return false if the given cell is not the one selected (different id)', () => {
+            expect(component.isSelected(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group2')}
+            )).toBe(false);
+        });
+
+        it('should return false if the given cell is not the one selected (different column)', () => {
+            expect(component.isSelected(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'sending', group: generateGroup('group1')}
+            )).toBe(false);
+        });
+    });
+
+    describe('isRelatedWithCell', () => {
+        it('should return false if the given related cell is null', () => {
+            expect(component.isRelatedWithCell(
+                'receiving',
+                generateGroup('group1'),
+                null,
+                [
+                    generateCommunicationRule('group1', ['group2', 'group3'])
+                ])
+            ).toBe(false);
+        });
+
+        it('should return false if they both are in the same column but with different ids', () => {
+            expect(component.isRelatedWithCell(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group2')},
+                [
+                    generateCommunicationRule('group1', ['group2', 'group3'])
+                ])
+            ).toBe(false);
+        });
+
+        it('should return true if the cells are the same', () => {
+            expect(component.isRelatedWithCell(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group1')},
+                [
+                    generateCommunicationRule('group1', ['group2', 'group3'])
+                ])
+            ).toBe(true);
+        });
+
+        it('should return true if the column and group match a sending group of the related receiving cell communication rules', () => {
+            expect(component.isRelatedWithCell(
+                'sending',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group2')},
+                [
+                    generateCommunicationRule('group1', ['group2'])
+                ])
+            ).toBe(true);
+        });
+
+        it('should return false if the column and group does not match a sending group of the related receiving cell communication rules', () => {
+            expect(component.isRelatedWithCell(
+                'sending',
+                generateGroup('group1'),
+                {column: 'receiving', group: generateGroup('group2')},
+                [
+                    generateCommunicationRule('group3', ['group2'])
+                ])
+            ).toBe(false);
+        });
+
+        it('should return true if the column and group match a receiving group of the related sending cell communication rules', () => {
+            expect(component.isRelatedWithCell(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'sending', group: generateGroup('group2')},
+                [
+                    generateCommunicationRule('group2', ['group3', 'group1'])
+                ])
+            ).toBe(true);
+        });
+
+        it('should return false if the column and group does not match a receiving group of the related sending cell communication rules', () => {
+            expect(component.isRelatedWithCell(
+                'receiving',
+                generateGroup('group1'),
+                {column: 'sending', group: generateGroup('group2')},
+                [
+                    generateCommunicationRule('group2', ['group3'])
+                ])
+            ).toBe(false);
+        });
+    });
 });
 
 describe('uniqueGroups', () => {
@@ -89,4 +229,13 @@ function generateCommunicationRule(senderName: string, receiversName: string[] =
 class MockGroupCard {
     @Input()
     group: GroupModel;
+
+    @Input()
+    active: boolean = false;
+
+    @Input()
+    selected: boolean = false;
+
+    @Input()
+    highlighted: boolean = false;
 }
