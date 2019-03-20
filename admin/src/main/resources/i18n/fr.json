@@ -457,6 +457,7 @@
     "user.communication.back-to-user-details": "Retour à la fiche",
     "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés.",
     "user.communication.groups-of-user": "Groupes de l'utlisateur",
+    "user.communication.groups-that-user-can-communicate-with": "Groupes que l'utilisateur peut voir",
 
     "group.card.add-communication-button": "Ajouter un droit de communication",
 
