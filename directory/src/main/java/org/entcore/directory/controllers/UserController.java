@@ -166,6 +166,14 @@ public class UserController extends BaseController {
 		}
 	}
 
+	@Get("/user/:userId/groups")
+	@ResourceFilter(UserAccessOrVisible.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void getGroups(final HttpServerRequest request) {
+		String userId = request.params().get("userId");
+		userService.getGroups(userId, arrayResponseHandler(request));
+	}
+
 	@Get("/myinfos")
 	@SecuredAction(value = "auth.user.info", type = ActionType.AUTHENTICATED)
 	public void myinfos(final HttpServerRequest request) {
