@@ -40,6 +40,7 @@ describe('GroupCardComponent', () => {
             "group.card.class.Guest": "Invités de la classe {{name}}"
         });
         component.group = generateGroup('Elèves du Lycée Paul Martin');
+        component.active = true;
         fixture.detectChanges();
     }));
 
