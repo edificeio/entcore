@@ -70,9 +70,10 @@ describe('CommunicationRulesService', () => {
             });
         });
 
-        it(`should emit a new communication rules if the given group is part of the current communication rules`, () => {
+        it(`should emit a new communication rules if the given group is part of the current communication rules as sender`, () => {
             const group1: GroupModel = generateGroup('group1', 'BOTH');
             const group2: GroupModel = generateGroup('group2', 'BOTH');
+            const group3: GroupModel = generateGroup('group3', 'BOTH');
             let rules: CommunicationRule[] = [];
             communicationRulesService
                 .changes()
@@ -80,10 +81,27 @@ describe('CommunicationRulesService', () => {
                 .subscribe(cr => rules = cr);
             communicationRulesService.setGroups([group1, group2]);
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
-            httpController.expectOne('/communication/group/group2/outgoing').flush([generateGroup('group3')]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
             communicationRulesService.toggleInternalCommunicationRule(group1).subscribe();
             httpController.expectOne('/communication/group/group1').flush('');
             expect(rules[0].sender.internalCommunicationRule).toBe('NONE');
+        });
+
+        it(`should emit a new communication rules if the given group is part of the current communication rules as a receiver`, () => {
+            const group1: GroupModel = generateGroup('group1', 'BOTH');
+            const group2: GroupModel = generateGroup('group2', 'BOTH');
+            const group3: GroupModel = generateGroup('group3', 'BOTH');
+            let rules: CommunicationRule[] = [];
+            communicationRulesService
+                .changes()
+                .skip(1)
+                .subscribe(cr => rules = cr);
+            communicationRulesService.setGroups([group1, group2]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
+            communicationRulesService.toggleInternalCommunicationRule(group3).subscribe();
+            httpController.expectOne('/communication/group/group3').flush('');
+            expect(rules[1].receivers[0].internalCommunicationRule).toBe('NONE');
         });
 
         it(`should not emit a new communication rules if the given group is not part of the current communication rules`, () => {
@@ -97,7 +115,7 @@ describe('CommunicationRulesService', () => {
                 .subscribe(() => emitted = true);
             communicationRulesService.setGroups([group1, group2]);
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
-            httpController.expectOne('/communication/group/group2/outgoing').flush([generateGroup('group3')]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([]);
             communicationRulesService.toggleInternalCommunicationRule(group3).subscribe();
             httpController.expectOne('/communication/group/group3').flush('');
             expect(emitted).toBe(false);

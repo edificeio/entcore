@@ -55,7 +55,10 @@ export class CommunicationRulesService {
     }
 
     private findGroup(communicationRules: CommunicationRule[], groupId: string): GroupModel {
-        return communicationRules.map(rule => rule.sender).find(sender => sender.id === groupId);
+        return communicationRules.reduce(
+            (arrayOfGroups: GroupModel[], communicationRule: CommunicationRule): GroupModel[] =>
+                [...arrayOfGroups, communicationRule.sender, ...communicationRule.receivers], [])
+            .find(group => group.id === groupId);
     }
 
     private clone(communicationRules: CommunicationRule[]): CommunicationRule[] {

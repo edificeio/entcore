@@ -23,13 +23,27 @@ export const communicationRulesLocators = {
         </div>
         <div class="communication-rules__columns">
             <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
-                <div class="group ${css.group}" *ngFor="let sender of getSenders(); trackBy: trackByGroupId">
-                    <group-card [group]="sender"></group-card>
+                <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
+                    <group-card
+                    (click)="select('sending', group)"
+                    (mouseenter)="highlight('sending', group, selected)"
+                    (mouseleave)="resetHighlight()"
+                    [group]="group"
+                    [selected]="isSelected('sending', group, selected)"
+                    [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
+                    [active]="isRelatedWithCell('sending', group, selected, communicationRules)"></group-card>
                 </div>
             </div>
             <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
-                <div class="group ${css.group}" *ngFor="let receiver of getReceivers(); trackBy: trackByGroupId">
-                    <group-card [group]="receiver"></group-card>
+                <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
+                    <group-card
+                    (click)="select('receiving', group)"
+                    (mouseenter)="highlight('receiving', group, selected)"
+                    (mouseleave)="resetHighlight()"
+                    [group]="group"
+                    [selected]="isSelected('receiving', group, selected)"
+                    [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
+                    [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"></group-card>
                 </div>
             </div>
         </div>`,
@@ -37,14 +51,19 @@ export const communicationRulesLocators = {
         .communication-rules__header {
             color: #2a9cc8;
             font-size: 20px;
-        }`, `
+        }
+    `, `
         .communication-rules__headers, .communication-rules__columns {
             display: flex;
-            align-items: center;
-        }`, `
+        }
+    `, `
         .communication-rules__header, .communication-rules__column {
             flex-grow: 1;
             flex-basis: 0;
+        }
+    `, `
+        group-card {
+            display: inline-block;
         }
     `, `
         .communication-rules__column.communication-rules__column--sending,
@@ -63,6 +82,24 @@ export class CommunicationRulesComponent {
     @Input()
     communicationRules: CommunicationRule[];
 
+    selected: Cell;
+    highlighted: Cell;
+
+    public select(column: Column, group: GroupModel): void {
+        this.selected = {column, group};
+        this.resetHighlight();
+    }
+
+    public highlight(column: Column, group: GroupModel, selected: Cell): void {
+        if (!selected || column !== selected.column || group.id !== selected.group.id) {
+            this.highlighted = {column, group};
+        }
+    }
+
+    public resetHighlight(): void {
+        this.highlighted = null;
+    }
+
     public getSenders(): GroupModel[] {
         return this.communicationRules.map(rule => rule.sender);
     }
@@ -75,6 +112,28 @@ export class CommunicationRulesComponent {
 
     public trackByGroupId(index: number, group: GroupModel): string {
         return group.id;
+    }
+
+    public isSelected(column: Column, group: GroupModel, selected: Cell) {
+        if (!selected) {
+            return false;
+        }
+
+        return group.id === selected.group.id && column === selected.column;
+    }
+
+    public isRelatedWithCell(column: Column, group: GroupModel, cell: Cell, communicationRules: CommunicationRule[]): boolean {
+        if (!cell) {
+            return false;
+        }
+
+        if (column === cell.column) {
+            return group.id === cell.group.id;
+        }
+
+        return communicationRules
+            .filter(cr => (cr.sender.id === cell.group.id) || cr.receivers.some(g => g.id === cell.group.id))
+            .some(cr => (cr.sender.id === group.id) || cr.receivers.some(g => g.id === group.id));
     }
 }
 
@@ -91,4 +150,11 @@ export function uniqueGroups(groups: GroupModel[]): GroupModel[] {
         }
     });
     return uniqGroups;
+}
+
+type Column = 'sending' | 'receiving';
+
+interface Cell {
+    column: Column;
+    group: GroupModel;
 }
