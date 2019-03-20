@@ -29,8 +29,8 @@ describe('CommunicationRulesService', () => {
             .changes()
             .subscribe(cr => rules = cr);
         communicationRulesService.setGroups([generateGroup('group1'), generateGroup('group2')]);
-        httpController.expectOne('/directory/group/group1/outgoing').flush([]);
-        httpController.expectOne('/directory/group/group2/outgoing').flush([generateGroup('group3')]);
+        httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+        httpController.expectOne('/communication/group/group2/outgoing').flush([generateGroup('group3')]);
         expect(rules.length).toBe(2);
         expect(rules[1].receivers[0].id).toBe('group3');
     });
@@ -79,8 +79,8 @@ describe('CommunicationRulesService', () => {
                 .skip(1)
                 .subscribe(cr => rules = cr);
             communicationRulesService.setGroups([group1, group2]);
-            httpController.expectOne('/directory/group/group1/outgoing').flush([]);
-            httpController.expectOne('/directory/group/group2/outgoing').flush([generateGroup('group3')]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([generateGroup('group3')]);
             communicationRulesService.toggleInternalCommunicationRule(group1).subscribe();
             httpController.expectOne('/communication/group/group1').flush('');
             expect(rules[0].sender.internalCommunicationRule).toBe('NONE');
@@ -96,8 +96,8 @@ describe('CommunicationRulesService', () => {
                 .skip(1)
                 .subscribe(() => emitted = true);
             communicationRulesService.setGroups([group1, group2]);
-            httpController.expectOne('/directory/group/group1/outgoing').flush([]);
-            httpController.expectOne('/directory/group/group2/outgoing').flush([generateGroup('group3')]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([generateGroup('group3')]);
             communicationRulesService.toggleInternalCommunicationRule(group3).subscribe();
             httpController.expectOne('/communication/group/group3').flush('');
             expect(emitted).toBe(false);

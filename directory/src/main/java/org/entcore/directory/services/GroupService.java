@@ -43,5 +43,4 @@ public interface GroupService {
 
 	void getInfos(String groupId, Handler<Either<String,JsonObject>> handler);
 
-	void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results);
 }

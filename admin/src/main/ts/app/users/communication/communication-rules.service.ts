@@ -50,7 +50,7 @@ export class CommunicationRulesService {
     }
 
     private getCommunicationRulesOfGroup(sender: GroupModel): Observable<CommunicationRule> {
-        return this.http.get<GroupModel[]>(`/directory/group/${sender.id}/outgoing`)
+        return this.http.get<GroupModel[]>(`/communication/group/${sender.id}/outgoing`)
             .map(receivers => ({sender, receivers}));
     }
 

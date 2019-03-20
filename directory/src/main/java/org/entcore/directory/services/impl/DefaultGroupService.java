@@ -159,25 +159,4 @@ public class DefaultGroupService implements GroupService {
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
 
-	@Override
-	public void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results) {
-		String query = ""
-				+ "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
-				+ "OPTIONAL MATCH (c:Class)<-[:DEPENDS]-(g) "
-				+ "OPTIONAL MATCH (s:Structure)<-[:DEPENDS]-(g) "
-				+ "WITH g, collect( distinct {name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, "
-				+ "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
-				+ "RETURN DISTINCT "
-				+ "g.id as id, "
-				+ "g.name as name, "
-				+ "g.filter as filter, "
-				+ "g.displayName as displayName, "
-				+ "g.users as internalCommunicationRule, "
-				+ "type, "
-				+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
-				+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
-		JsonObject params = new JsonObject().put("id", id);
-		neo.execute(query, params, validResultHandler(results));
-	}
 }
