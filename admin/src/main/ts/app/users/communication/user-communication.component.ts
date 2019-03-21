@@ -28,9 +28,9 @@ export const userCommunicationLocators = {
         </div>
         
         <panel-section section-title="user.communication.section.title.sending-rules" [folded]="false">
-            <panel-section-header-icons>
+            <div panel-section-header-icons>
                 <i class='fa fa-user'></i> <i class='fa fa-arrow-right'></i> <strong>?</strong>
-            </panel-section-header-icons>
+            </div>
 
             <div class="user-communication__content">
                 <communication-rules [communicationRules]="userSendingCommunicationRules"></communication-rules>
@@ -38,9 +38,9 @@ export const userCommunicationLocators = {
         </panel-section>
         
         <panel-section section-title="user.communication.section.title.receiving-rules" [folded]="false">
-            <panel-section-header-icons>
+            <div panel-section-header-icons>
                 <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
-            </panel-section-header-icons>
+            </div>
         </panel-section>`,
     styles: [`
         .button.button--back {

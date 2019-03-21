@@ -394,6 +394,14 @@ i.group_add {
     display: none !important;
 }
 
+.is-flex {
+    display: flex;
+}
+
+.has-space-between {
+    justify-content: space-between;
+}
+
 /* UX */
 .badge {
     font-size: 0.8em;
@@ -581,7 +589,6 @@ i.opener {
     cursor: pointer;
     font-style: normal;
     font-family: "FontAwesome";
-    float: right;
 
     transition: color 0.25s;
 
