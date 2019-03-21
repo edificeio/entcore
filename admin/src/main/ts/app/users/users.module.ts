@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { HttpModule } from '@angular/http';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { SijilModule } from 'sijil';
 
 import { UxModule } from '../shared/ux/ux.module';
@@ -81,7 +81,8 @@ import { UserGroupsResolver } from './communication/user-groups.resolver';
     ],
     exports: [
         RouterModule
-    ]
+    ],
+    schemas: [ CUSTOM_ELEMENTS_SCHEMA ]
 })
 export class UsersModule {
 }

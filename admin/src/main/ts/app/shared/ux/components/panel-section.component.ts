@@ -6,6 +6,10 @@ import { Component, Input } from '@angular/core'
         <section class="panel-section">
             <div class="panel-section-header" (click)="folded !== null ? folded=!folded : null" [class.foldable]="folded !== null">
                 <s5l>{{ sectionTitle }}</s5l>
+                <span class="has-left-padding-10">
+                    <ng-content select="panel-section-header-icons"></ng-content>
+                </span>
+
                 <i class="opener" *ngIf="folded !== null"
                     [class.opened]="!folded"></i>
             </div>
