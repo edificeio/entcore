@@ -43,7 +43,12 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
     }
 
     public openUserDetails() {
-        this.spinner.perform('portal-content', this.router.navigate([this.user.id, 'details'], {relativeTo: this.route.parent}));
+        this.spinner.perform('portal-content',
+            this.router.navigate([this.user.id, 'details'],
+                {
+                    relativeTo: this.route.parent
+                })
+        );
     }
 
     ngOnDestroy(): void {
