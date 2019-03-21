@@ -2,7 +2,7 @@ import { DebugElement } from '@angular/core';
 import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
 
 export function getText(el: DebugElement): string {
-    return el.nativeElement.textContent;
+    return el.nativeElement.textContent.trim();
 }
 
 export function clickOn(el: DebugElement): void {
