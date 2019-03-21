@@ -63,7 +63,7 @@ export class GroupUsersList {
 
     selectUser(user: UserModel) {
         if (user.structures.length > 0) {
-            this.router.navigate(['admin', user.structures[0].id, 'users', user.id]);
+            this.router.navigate(['admin', user.structures[0].id, 'users', user.id, 'details']);
         }
     }
 }

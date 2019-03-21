@@ -452,6 +452,7 @@
 
     "group.card.add-communication-button": "Ajouter un droit de communication",
     "group.card.remove-communication-button": "Supprimer le droit de communication",
+    "group.card.view-members-button": "Voir la composition du groupe",
 
     "group.card.structure.Personnel": "Personnels de {{name}}",
     "group.card.structure.Relative": "Parents de {{name}}",

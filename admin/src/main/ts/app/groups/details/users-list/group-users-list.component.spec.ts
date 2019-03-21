@@ -64,7 +64,7 @@ describe('GroupUsersList', () => {
                 ]
             };
             component.selectUser(selectedUser as UserModel);
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['admin', 'firstStructureId', 'users', 'userId']);
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['admin', 'firstStructureId', 'users', 'userId', 'details']);
         });
     });
 });
