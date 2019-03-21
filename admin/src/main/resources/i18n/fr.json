@@ -447,6 +447,8 @@
     "user.communication.help": "Un droit de communication s'acquière par l'appartenance à un groupe. On affiche donc la liste des groupes de l'utilisateur et les groupes qui sont visibles. Cliquez sur un groupe pour voir les droits qui lui sont associés.",
     "user.communication.groups-of-user": "Groupes de l'utlisateur",
     "user.communication.groups-that-user-can-communicate-with": "Groupes que l'utilisateur peut voir",
+    "user.communication.section.title.sending-rules": "Avec qui l'utilisateur peut-il communiquer <span class='has-left-padding-10'><i class='fa fa-user'></i> <i class='fa fa-arrow-right'></i> <strong>?</strong></span>",
+    "user.communication.section.title.receiving-rules": "Qui peut communiquer avec l'utilisateur <span class='has-left-padding-10'><strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i></span>",
 
     "group.card.add-communication-button": "Ajouter un droit de communication",
     "group.card.remove-communication-button": "Supprimer le droit de communication",

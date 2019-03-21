@@ -5,7 +5,7 @@ import { Component, Input } from '@angular/core'
     template: `
         <section class="panel-section">
             <div class="panel-section-header" (click)="folded !== null ? folded=!folded : null" [class.foldable]="folded !== null">
-                {{ sectionTitle | translate }}
+                <s5l>{{ sectionTitle }}</s5l>
                 <i class="opener" *ngIf="folded !== null"
                     [class.opened]="!folded"></i>
             </div>
