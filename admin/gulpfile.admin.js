@@ -6,7 +6,7 @@ const changed = require('gulp-changed')
 const gutil = require('gulp-util')
 const del = require('del')
 
-const entCoreVersion = '3.4-SNAPSHOT'
+const entCoreVersion = '3.5-adminv2-SNAPSHOT'
 const springboardPath = '../recette'
 const basePath = './admin/src/main'
 const target = springboardPath + '/mods/org.entcore~admin~' + entCoreVersion
