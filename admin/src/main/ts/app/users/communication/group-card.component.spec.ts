@@ -103,10 +103,17 @@ describe('GroupCardComponent', () => {
     });
 
     describe('viewMembers', () => {
-       it(`should navigate to /groups/manual/groupId given a manual group with id groupId`, () => {
-           component.viewMembers(generateGroup('groupId', 'BOTH', 'ManualGroup'));
-           expect((router.navigate as jasmine.Spy).calls.mostRecent().args[0]).toEqual(['groups', 'manual', 'groupId']);
-       });
+        it(`should navigate to /admin/myStructure/groups/manual/groupId given a manual group with id groupId and structure id myStructure`, () => {
+            component.viewMembers(generateGroup('groupId',
+                'BOTH',
+                'ManualGroup', null, null,
+                [{
+                    id: 'myStructure',
+                    name: 'myStructureName'
+                }]));
+            expect((router.navigate as jasmine.Spy).calls.mostRecent().args[0])
+                .toEqual(['admin','myStructure', 'groups', 'manual', 'groupId']);
+        });
     });
 });
 

@@ -223,10 +223,7 @@ export class GroupCardComponent {
 
     public viewMembers(group: GroupModel) {
         this.spinner.perform('portal-content',
-            this.router.navigate(['groups', groupTypeRouteMapping.get(group.type), group.id],
-                {
-                    relativeTo: this.route.root.firstChild.firstChild
-                })
+            this.router.navigate(['admin', group.structures[0].id, 'groups', groupTypeRouteMapping.get(group.type), group.id])
         );
     }
 }
