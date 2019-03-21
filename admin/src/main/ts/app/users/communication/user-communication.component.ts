@@ -26,9 +26,22 @@ export const userCommunicationLocators = {
                 <message-sticker class="is-pulled-right" [type]="'info'" [messages]="['user.communication.help']"></message-sticker>
             </div>
         </div>
-        <div class="user-communication__content">
-            <communication-rules [communicationRules]="userSendingCommunicationRules"></communication-rules>
-        </div>`,
+        
+        <panel-section section-title="user.communication.section.title.sending-rules" [folded]="false">
+            <div panel-section-header-icons>
+                <i class='fa fa-user'></i> <i class='fa fa-arrow-right'></i> <strong>?</strong>
+            </div>
+
+            <div class="user-communication__content">
+                <communication-rules [communicationRules]="userSendingCommunicationRules"></communication-rules>
+            </div>
+        </panel-section>
+        
+        <panel-section section-title="user.communication.section.title.receiving-rules" [folded]="false">
+            <div panel-section-header-icons>
+                <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
+            </div>
+        </panel-section>`,
     styles: [`
         .button.button--back {
             background: none;
