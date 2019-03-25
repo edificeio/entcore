@@ -22,7 +22,7 @@ import { GroupModel, RoleModel, StructureModel } from '../../../core/store/model
         <smart-mass-role-assignment *ngIf="currentTab  === 'massAssignment'"
                                     (massAssignment)="onMassAssignment()"></smart-mass-role-assignment>
         <div *ngIf="currentTab  === 'assignment'">
-            <div *ngIf="['1D','2D'].includes(appsTarget[app.icon])" class="message is-warning">
+            <div *ngIf="['1D','2D'].includes(appsTarget[app.icon])" class="message is-warning has-margin-10">
                 <div class="message-body">
                     {{ 'services.application.message.targetWarning' | translate:{target: appsTarget[app.icon]} }}
                 </div>
