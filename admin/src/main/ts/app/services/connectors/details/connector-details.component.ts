@@ -20,7 +20,7 @@ import { BundlesService } from 'sijil'
         </div>
 
         <div class="panel-section">
-            <div *ngIf="connector.roles.length == 0" class="message is-warning">
+            <div *ngIf="connector.roles.length == 0" class="message is-warning has-margin-10">
                 <div class="message-body">
                     {{ 'services.connector.roles.list.empty' | translate }}
                 </div>

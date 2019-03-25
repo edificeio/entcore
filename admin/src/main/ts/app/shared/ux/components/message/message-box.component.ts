@@ -34,6 +34,9 @@ export const icons = {
             top: -5px;
             right: -5px; 
         }
+        :host .message {
+            border: 1px solid;
+        }
         i.fa-times-circle {
             display:inline-flex;
             float: right;
