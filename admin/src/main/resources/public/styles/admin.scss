@@ -317,7 +317,6 @@ i.group_add {
 }
 
 .message {
-    border-radius: 3px;
     margin: 15px 0px;
 
     p { margin : 0px ;}
@@ -330,15 +329,15 @@ i.group_add {
     }
 
     .message-body {
-        padding: .5em;
+        padding: .5em !important;
         font-size: 0.9em;
         font-weight: initial;
     }
 
-    &.is-success { border-color: $success; color: $success; background-color: lighten($success, 40%);}
-    &.is-info { border-color:  $info; color: $info; background-color: lighten($info, 45%);}
-    &.is-danger { border-color: $danger; color: $danger; background-color: lighten($danger, 40%);}
-    &.is-warning { border-color: $warning; color: $warning; background-color: lighten($warning, 30%);}
+    &.is-success { color: $success; background-color: lighten($success, 40%); border-color: $success;}
+    &.is-info { color: $info; background-color: lighten($info, 45%); border-color: $info;}
+    &.is-danger { color: $danger; background-color: lighten($danger, 40%); border-color: $danger;}
+    &.is-warning { color: $warning; background-color: lighten($warning, 33%); border-color: $warning;}
 
     &.is-success .message-header  { background: $success;}
     &.is-info .message-header { background: $info;}
@@ -362,8 +361,32 @@ i.group_add {
     text-align: center !important;
 }
 
+.has-padding-10 {
+    padding: 10px;
+}
+
+.has-top-padding-10 {
+    padding-left: 10px;
+}
+
+.has-bottom-padding-10 {
+    padding-left: 10px;
+}
+
 .has-left-padding-10 {
     padding-left: 10px;
+}
+
+.has-right-padding-10 {
+    padding-left: 10px;
+}
+
+.has-margin-10 {
+    margin: 10px;
+}
+
+.has-right-margin-5 {
+    margin-right: 5px;
 }
 
 .has-vertical-padding {
@@ -2032,45 +2055,13 @@ div.flatpickr {
 }
 
 /* reset */
-
 div:focus { outline: 0; }
 
 i.fa {
-  &.is-succcess { color: green; }
-  &.is-info { color: blue; }
-  &.is-danger { color: red; }
-  &.is-warning { color: orange; }
-}
-
-.message {
-  border: 1px solid black;
-  font-weight: bold;
-  box-shadow: 1px 1px 2px 1px #CCC; // TODO: use a color variable
-
-  p { margin : 0px ;}
-  .message-header {
-    padding: .25em;
-    background: black;
-    color:white;
-    font-size: 1.1em;
-    font-weight: bold;
-  }
-
-  .message-body {
-    padding: .5em;
-    font-size: 0.9em;
-    background: white;
-  }
-
-  &.is-success { border-color:  green; color: green;}
-  &.is-info { border-color:  blue; color: blue;}
-  &.is-danger { border-color: red; color: red;}
-  &.is-warning { border-color: orange; color: orange;}
-
-  &.is-success .message-header  { background: green;}
-  &.is-info .message-header { background: blue;}
-  &.is-danger .message-header { background: red;}
-  &.is-warning .message-header { background: orange;}
+  &.is-succcess { color: $success; }
+  &.is-info { color: $info; }
+  &.is-danger { color: $danger; }
+  &.is-warning { color: $warning; }
 }
 
 .quota-container {
