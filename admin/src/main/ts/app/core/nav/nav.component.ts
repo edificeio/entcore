@@ -74,7 +74,7 @@ import { Subscription } from 'rxjs/Subscription'
                         display="name"
                         [flatten]="structureFilter && structureFilter.trim() ? ['children'] : []"
                         [filter]="{ name : structureFilter?.trim() }"
-                        (onSelect)="currentStructure = $event"
+                        (onSelect)="currentStructure = $event; !currentStructure.children && openside = false;"
                         [lastSelected]="currentStructure"></item-tree>
                 </side-panel>
 
