@@ -124,7 +124,7 @@ public class CsvReport extends Report {
 				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
 				(isNotEmpty(UAI) ? "_" + UAI : ""));
 //				.replaceFirst("tmp", "tmp/test");
-		fs.mkdir(p, new Handler<AsyncResult<Void>>() {
+		fs.mkdirs(p, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				try {

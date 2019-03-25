@@ -69,9 +69,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject customMapping) {
-		super(vertx, new JsonObject());
-		setMappings(customMapping);
+	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject importInfos) {
+		super(vertx, importInfos);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
 		defaultStudentSeed = getSeed();
@@ -152,6 +151,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()) {
+					clearBeforeValidation();
 					clearBeforeValidation();
 					validate(event.result(), new Handler<JsonObject>() {
 						@Override
@@ -769,9 +769,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 								}
 								break;
 						}
-						JsonArray errorsContext = new fr.wseduc.webutils.collections.JsonArray(); // Must follow that shape : [{"reason":"error.key", "attribute":"lastName", "value":""}...]
-						String error = validator.validate(user, acceptLanguage, true, errorsContext);
-						if (error != null) {
+						// softerrorContext is used to collect context information usefull to display soft Error
+						// it follows the shape : [{"reason":"error.key", "attribute":"lastName", "value":""}...
+						// TODO : Merge error (return of Validator.validate()) and softErrorContext
+						JsonArray softErrorsContext = new JsonArray();
+						String error = validator.validate(user, acceptLanguage, true, softErrorsContext);
+						if (error != null && softErrorsContext == null) {
 							log.warn(error);
 							addErrorByFile(profile, "validator.errorWithLine", "" + (i+1), error); // Note that 'error' is already translated
 						} else {
@@ -785,20 +788,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 									.put("childExternalId", linkStudents)
 									.put("line", i + 1)
 							);
-							for (Object ec : errorsContext) {
-								JsonObject err = (JsonObject)ec;
+							for (Object sec : softErrorsContext) {
+								JsonObject err = (JsonObject)sec;
 								addSoftErrorByFile(profile,
 										err.getString("reason"), "" + (i + 1), err.getString("attribute"), err.getString("value"));
 							}
 						}
-						final String classesStr = Joiner.on(", ").join(classesNames);
-						classesNamesMapping.put(user.getString("externalId"), classesStr);
-						addUser(profile, user.put("state", translate(state.name()))
-										.put("translatedProfile", translate(profile))
-										.put("classesStr", classesStr)
-										.put("childExternalId", linkStudents)
-										.put("line", i + 1)
-						);
 						i++;
 					}
 				} catch (Exception e) {
