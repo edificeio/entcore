@@ -96,8 +96,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		defaultFeed = config.getString("feeder", "AAF");
 		feeds.put("AAF", new AafFeeder(vertx, getFilesDirectory("AAF")));
 		feeds.put("AAF1D", new Aaf1dFeeder(vertx, getFilesDirectory("AAF1D")));
-		final long deleteUserDelay = config.getLong("delete-user-delay", 90 * 24 * 3600 * 1000l);
-		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", 90 * 24 * 3600 * 1000l);
+		feeds.put("CSV", new CsvFeeder(vertx));
+		final long deleteUserDelay = config.getLong("delete-user-delay", defaultDeleteUserDelay);
+		final long preDeleteUserDelay = config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay);
+
 		final String deleteCron = config.getString("delete-cron", "0 0 2 * * ? *");
 		final String preDeleteCron = config.getString("pre-delete-cron", "0 0 3 * * ? *");
 		final String importCron = config.getString("import-cron");
@@ -420,11 +422,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		v.columnsMapping(path, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
-				JsonObject result = new JsonObject().put("result",
-						v.getResult().put("availableFields", v.getColumnsMapper().availableFields())
-				);
+				JsonObject result = v.getResult().put("availableFields", v.getColumnsMapper().availableFields());
 				if (!v.containsErrors()) {
-					result.getJsonObject("result").remove("errors");
+					result.remove("errors");
 				}
 				sendOK(message, result);
 			}
