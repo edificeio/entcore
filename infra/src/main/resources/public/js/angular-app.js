@@ -5969,8 +5969,8 @@ module.directive('embedder', function($compile){
                     return;
                 }
 
-                label:for(var pattern of scope.display.provider.url) {
-
+                label:for(var $index1 = 0 ; $index1< scope.display.provider.url.length; $index1++){
+                    var pattern = scope.display.provider.url[$index1];
                     var agnosticUrl = scope.display.url.split('//')[1];
                     var matchParams = new RegExp('\{[a-zA-Z0-9_.]+\}', "g");
                     var params = pattern.match(matchParams);
@@ -5978,7 +5978,8 @@ module.directive('embedder', function($compile){
                     var computedEmbed = scope.display.provider.embed;
 
                     params.splice(1, params.length);
-                    for(var param of params) {
+                    for(var $index2 = 0 ; $index2< params.length; $index2++){
+                        var param = params[$index2];
                         scope.display.invalidPath = false;
                         var paramBefore = pattern.split(param)[0];
                         var additionnalSplit = paramBefore.split('}')
