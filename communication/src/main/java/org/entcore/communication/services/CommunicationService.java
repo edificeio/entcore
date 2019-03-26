@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface CommunicationService {
+	String impossibleToChangeDirection = "impossible to change direction";
 
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup");
@@ -83,4 +84,6 @@ public interface CommunicationService {
 			Handler<Either<String, JsonArray>> handler);
 
 	void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results);
+
+	void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler);
 }

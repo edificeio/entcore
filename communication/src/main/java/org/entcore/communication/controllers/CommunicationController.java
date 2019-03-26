@@ -31,19 +31,17 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.communication.services.CommunicationService;
-import org.entcore.communication.services.impl.DefaultCommunicationService;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
+import org.entcore.communication.services.CommunicationService;
+import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
 
@@ -505,4 +503,37 @@ public class CommunicationController extends BaseController {
 		return groupId;
 	}
 
+    @Post("/group/:groupId/users")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    public void safelyAddLinksWithUsers(HttpServerRequest request) {
+        String groupId = getGroupId(request);
+        if (groupId == null) return;
+        communicationService.addLinkWithUsers(groupId, CommunicationService.Direction.BOTH, event -> {
+            if (event.isRight()) {
+                Renders.renderJson(request, new JsonObject().put("users", CommunicationService.Direction.BOTH), 200);
+            } else {
+                JsonObject error = new JsonObject().put("error", event.left().getValue());
+                Renders.renderJson(request, error, 400);
+            }
+        });
+    }
+
+    @Delete("/group/:groupId/users")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    public void safelyRemoveLinksWithUsers(HttpServerRequest request) {
+        String groupId = getGroupId(request);
+        if (groupId == null) return;
+        communicationService.safelyRemoveLinkWithUsers(groupId, event -> {
+            if (event.isLeft()) {
+                String error = event.left().getValue();
+                if (error.equals(communicationService.impossibleToChangeDirection)) {
+                    Renders.renderJson(request, new JsonObject().put("error", error), 409);
+                } else {
+                    Renders.renderJson(request, new JsonObject().put("error", error), 500);
+                }
+            } else {
+                Renders.renderJson(request, event.right().getValue(), 200);
+            }
+        });
+    }
 }

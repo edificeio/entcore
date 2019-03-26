@@ -6,18 +6,20 @@ import { clickOn, generateGroup, getText } from './communication-test-utils';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { CommunicationRulesService } from './communication-rules.service';
-import { SpinnerService } from '../../core/services';
 import { ActivatedRoute } from '@angular/router';
+import { NotifyService, SpinnerService } from '../../core/services';
 
 describe('GroupCardComponent', () => {
     let component: GroupCardComponent;
     let communicationRulesService: CommunicationRulesService;
+    let notifyService: NotifyService;
     let spinnerService: SpinnerService;
     let activatedRoute: ActivatedRoute;
     let fixture: ComponentFixture<GroupCardComponent>;
 
     beforeEach(async(() => {
         communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
+        notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         spinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
         activatedRoute = {root: {firstChild: {firstChild: {}}}} as ActivatedRoute;
         TestBed.configureTestingModule({
@@ -27,6 +29,7 @@ describe('GroupCardComponent', () => {
             providers: [
                 {useValue: communicationRulesService, provide: CommunicationRulesService},
                 {useValue: spinnerService, provide: SpinnerService},
+                {useValue: notifyService, provide: NotifyService},
                 {useValue: activatedRoute, provide: ActivatedRoute}
             ],
             imports: [
