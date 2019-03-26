@@ -1,0 +1,59 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <h2>
+        <i class="back" ng-click="userExportGoBack()" ng-if="userExportCanBack()"></i>&nbsp;
+        <i18n>classAdmin.export.mail.confirm</i18n>
+    </h2>
+    <p class="warning force-fullwidth">
+        <i18n>classAdmin.export.mail.warning</i18n>
+    </p>
+    <div class="twelve flex-row justify-end top-spacing-three">
+        <button class="" ng-click="userExportPrint()">
+            <i18n>classAdmin.export.mail.print</i18n>
+        </button>
+        <button class="left-spacing-twice" ng-disabled="!usersWithMailsExist()" ng-click="userExportSend()">
+            <i18n>classAdmin.export.mail.continue</i18n>
+        </button>
+    </div>
+    <div class="row">
+        <article class="twelve cell vertical-spacing-twice list-view">
+            <table class="row">
+                <thead>
+                    <tr>
+                        <th ng-click="toggleExportSort(exportCol.Name)">
+                            <span class="sortable">
+                                <span class="icons right-spacing">
+                                    <i ng-class="{'icon-off':!isExportSortAsc(exportCol.Name)}" ng-click="exportSortAsc(exportCol.Name,$event)"
+                                        class="arrow"></i>
+                                    <i ng-class="{'icon-off':!isExportSortDesc(exportCol.Name)}" ng-click="exportSortDesc(exportCol.Name,$event)"
+                                        class="arrow bottom"></i>
+                                </span>
+                                <span translate content="directory.user"></span>
+                            </span>
+                        </th>
+                        <th ng-click="toggleExportSort(exportCol.Name)">
+                            <span class="sortable">
+                                <span class="icons right-spacing">
+                                    <i ng-class="{'icon-off':!isExportSortAsc(exportCol.Profil)}" ng-click="exportSortAsc(exportCol.Profil,$event)"
+                                        class="arrow"></i>
+                                    <i ng-class="{'icon-off':!isExportSortDesc(exportCol.Profil)}" ng-click="exportSortDesc(exportCol.Profil,$event)"
+                                        class="arrow bottom"></i>
+                                </span>
+                                <span translate content="directory.profil"></span>
+                            </span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="class-admin__list" ng-repeat="user in usersWithoutMails()">
+                        <td class="no-padding">
+                            <div class="block-container">[[user.safeDisplayName]]</div>
+                        </td>
+                        <td class="no-padding">
+                            <div class="block-container">[[userProfile(user)]]</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+    </div>
+</section>

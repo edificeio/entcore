@@ -1,0 +1,65 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <div class="horizontal-margin-twice ">
+        <h2>
+            <i class="back" ng-click="userExportGoBack()" ng-if="userExportCanBack()"></i>&nbsp;
+            [[userExport.title]]
+        </h2>
+        <p class="info">
+            [[userExportInfo()]]
+        </p>
+    </div>
+    <div class="flex-row f-column">
+        <a class="button-big force-fullwidth no-padding vertical-spacing-twice" href="#" ng-click="userExportChoice(exportTypes.Detail)">
+            <div class="flex-row justify-between big-block-container">
+                <i class="file-text right-spacing-twice"></i>
+                <div>
+                    <div class="left-text">
+                        <i18n>classAdmin.export.detail</i18n>
+                    </div>
+                    <i class="small-text medium-importance italic-text left-text">
+                        <i18n>classAdmin.export.detail.info</i18n>
+                    </i>
+                </div>
+            </div>
+        </a>
+        <a class="button-big force-fullwidth no-padding vertical-spacing-twice" href="#" ng-click="userExportChoice(exportTypes.Simple)">
+            <div class="flex-row justify-between big-block-container">
+                <i class="file-pdf right-spacing-twice"></i>
+                <div>
+                    <div class="left-text">
+                        <i18n>classAdmin.export.simple</i18n>
+                    </div>
+                    <i class="small-text medium-importance italic-text left-text">
+                        <i18n>classAdmin.export.simple.info</i18n>
+                    </i>
+                </div>
+            </div>
+        </a>
+        <a class="button-big force-fullwidth no-padding vertical-spacing-twice" href="#" ng-click="userExportChoice(exportTypes.Mail)">
+            <div class="flex-row justify-between big-block-container">
+                <i class="mail-o right-spacing-twice"></i>
+                <div>
+                    <div class="left-text">
+                        <i18n>classAdmin.export.mail</i18n>
+                    </div>
+                    <i class="small-text medium-importance italic-text left-text">
+                        <i18n>classAdmin.export.mail.info</i18n>
+                    </i>
+                </div>
+            </div>
+        </a>
+        <a class="button-big force-fullwidth no-padding vertical-spacing-twice" href="#" ng-click="userExportChoice(exportTypes.CSV)">
+            <div class="flex-row justify-between big-block-container">
+                <i class="file-xls right-spacing-twice"></i>
+                <div>
+                    <div class="left-text">
+                        <i18n>classAdmin.export.csv</i18n>
+                    </div>
+                    <i class="small-text medium-importance italic-text left-text">
+                        <i18n>classAdmin.export.csv.info</i18n>
+                    </i>
+                </div>
+            </div>
+        </a>
+    </div>
+</section>

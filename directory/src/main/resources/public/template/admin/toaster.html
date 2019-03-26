@@ -1,7 +1,7 @@
 <section class="toggle-buttons" ng-class="{ hide: !hasSelectedUsers() }">
     <div class="toggle block-container">
         <div class="row">
-            <button translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreNotActivated()"></button>
+            <button translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreActivated()"></button>
             <button ng-click="openLightbox('admin/actions/block')" ng-if="selectedUsersAreNotBlocked()" translate
                 content="admin.block">
             </button>
@@ -10,6 +10,9 @@
             </button>
             <button ng-if="canRemoveSelection()" ng-click="openLightbox('admin/actions/delete')">
                 <i18n>remove</i18n>
+            </button>
+            <button ng-click="goToExport(true)">
+                <i18n>classAdmin.export.toaster</i18n>
             </button>
         </div>
     </div>
