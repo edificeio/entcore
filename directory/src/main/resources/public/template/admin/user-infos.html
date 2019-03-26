@@ -1,5 +1,5 @@
 <div class="content">
-	<article class="grid cell twelve horizontal-spacing-twice">
+	<article class="grid cell twelve horizontal-spacing-twice no-border">
 		<div class="flex-row vertical-spacing-four justify-between">
 			<a class="vertical-spacing-four" ng-disabled="!canSwitchToPreviousUser()" ng-click="switchToPreviousUser()">
 				<i class="back"></i>
@@ -83,17 +83,19 @@
 				<div class="row">
 					<label translate content="userBook.profile.birthdate" class="four cell"><span class="no-style"></span></label>
 					<em>
-						<inputdate class="eight cell inline-editing" ng-model="selectedUser.birthDate" on-success="saveUserInfoChanges()"
-						 ng-model-options="{ updateOn: 'blur' }" />
+						<div class="eight text-flow">
+							<inputdate class="twelve cell inline-editing no-border" ng-model="selectedUser.birthDate" on-success="saveUserInfoChanges()"
+							ng-model-options="{ updateOn: 'blur' }" />
+						</div>
 					</em>
 				</div>
 			</form>
 		</div>
 		<!--END FORM-->
 		<!--BUTTONS-->
-		<div class="row twelve bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+		<div class="row twelve bottom-spacing-three">
 			<a ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
-			<a ng-if="selectedUser.activationCode" class="button" href="#" translate content="classAdmin.userInfos.connectInfos"></a>
+			<a class="button" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></a>
 		</div>
 		<!--END BUTTON-->
 		<!--MOOD-->
@@ -129,20 +131,26 @@
 			</div>
 		</div>
 		<!--END MOOD-->
+		<div class="reduce-block-six">
 		<!--SCHOOLS-->
-		<div class="row twelve bottom-spacing-three" ng-repeat="school in selectedUser.attachedStructures">
+		<article class="row twelve bottom-spacing-three reduce-block-six" ng-repeat="school in selectedUser.attachedStructures">
 			<h2 translate content="userBook.profile.schools"></h2>
 			<strong class="multiline-ellipsis-three block ng-binding" tooltip="[[school.name]]" tooltip-check-content>[[school.name]]</strong>
 			<span class="no-style" translate content="classAdmin.userInfos.classes"></span>
 			<ul ng-if="school.classes && school.classes.length" class="list no-padding overflow-vertical-height-list bottom-spacing">
 				<li ng-repeat="class in school.classes | orderBy:'name'">[[class.name]]</li>
 			</ul>
-		</div>
+		</article>
 		<!--END SCHOOLS-->
 		<!--RELATIVES-->
-		<div class="row bottom-spacing-three" ng-if="userInfosDisplayRelative()">
+		<article class="row bottom-spacing-three" ng-if="userInfosDisplayRelative()">
 			<h2 content="userBook.profile.relatives"><span class="no-style" translate key="userBook.profile.relatives"></span></h2>
 			<div class="reduce-block-eight">
+				<div class="flex-row align-center top-spacing-twice">
+						<a class="cell-ellipsis small-text block left-text" ng-click="userInfoExportFamily(selectedUser)">
+							<i18n>classAdmin.report.family</i18n>
+						</a>
+				</div>
 				<div class="flex-row align-center top-spacing-twice" ng-repeat="relative in selectedUser.relatives | orderBy:'displayName'">
 					<div class="cell round bg-white square-medium right-spacing">
 						<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100">
@@ -152,10 +160,10 @@
 					</div>
 				</div>
 			</div>
-		</div>
+		</article>
 		<!--END RELATIVES-->
 		<!--CHILDREN-->
-		<div class="row bottom-spacing-three" ng-if="userInfosDisplayChildren()">
+		<article class="row bottom-spacing-three" ng-if="userInfosDisplayChildren()">
 			<h2 translate content="userBook.profile.children"></h2>
 			<content-divider ng-model="selectedUser.childrenStructure" order="structureName">
 				<div>
@@ -173,9 +181,9 @@
 					</div>
 				</div>
 			</content-divider>
-		</div>
+		</article>
 		<!--END CHILDREN-->
-		<div class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+		<article class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
 			<h2 translate key="classAdmin.userInfos.hobbies"></h2>
 			<div class="row" ng-repeat="hobby in selectedUser.hobbies">
 				<div class="three cell reduce-block-six"><span>[[hobby.displayName]]</span></div>
@@ -183,15 +191,16 @@
 					<input class="twelve cell inline-editing" type="text" complete-change="saveUserBookChanges()" ng-model="hobby.values">
 				</div>
 			</div>
-		</div>
+		</article>
 
-		<div class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
+		<article class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
 			<h2>
 				<i18n>userBook.profile.health</i18n>
 			</h2>
 			<div class="row medium-text">
 				<textarea data-ng-model="selectedUser.health" complete-change="saveUserBookChanges()"></textarea>
 			</div>
-		</div>
+		</article>
 	</article>
+	</div>
 </div>

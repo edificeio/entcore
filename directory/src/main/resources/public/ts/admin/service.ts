@@ -4,7 +4,7 @@ import { ClassRoom, User, UserTypes, Network, School, SchoolApiResult, Group, En
 export type ClassAdminPreferences = { selectedClassId?: string }
 
 let preferences: ClassAdminPreferences = null;
-
+export type ReportType = "pdf" | "simplePdf" | "mail" | "csv";
 const cleanObject = (obj) => {
     for (let i in obj) {
         if (obj[i] == null || obj[i] == undefined) {
@@ -34,7 +34,7 @@ export const directoryService = {
                 hobbies: user.hobbies || [],
                 picture: user.picture || "",
                 motto: user.motto || "",
-                mood: user.moodObj ? user.moodObj.id : "" || ""
+                mood: user.moodObj ? user.moodObj.id : "default" || "default"
             }));
         }
         if (withInfos) {
@@ -188,14 +188,14 @@ export const directoryService = {
                 || testFullName.indexOf(searchTerm) !== -1 || testFullNameReversed.indexOf(searchTerm) !== -1;
         });
     },
-    async importFile(file: File, oType: UserTypes, classId: string): Promise<ClassRoom> {
+    async importFile(file: File, oType: UserTypes, clazz: ClassRoom): Promise<ClassRoom> {
         const type = oType.toLowerCase()
         //
         const form = new FormData();
         form.append(type.replace(/(\w)(\w*)/g, function (g0, g1, g2) { return g1.toUpperCase() + g2.toLowerCase(); }), file);
-        form.append('classExternalId', this.externalId);
+        form.append('classExternalId', clazz.externalId);
         try {
-            await http.post(`/directory/import/${type}/class/${classId}`, form, {
+            await http.post(`/directory/import/${type}/class/${clazz.id}`, form, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -244,11 +244,64 @@ export const directoryService = {
     async resetPassword(users: User[]) {
         //TODO do it in single request
         const promises = users.map((user) => {
-            return http.post('/auth/sendResetPassword', {
-                login: user.login,
-                email: model.me.email //SEND TO TEACHER EMAIL
-            });
+            const bodyFormData = new FormData();
+            bodyFormData.set('login', user.originalLogin || user.login);
+            bodyFormData.set('email', model.me.email);//SEND TO TEACHER EMAIL
+            return http.post('/auth/sendResetPassword', bodyFormData, { headers: { 'Content-Type': 'multipart/form-data' } });
         });
         return Promise.all(promises);
+    },
+    async getTheme() {
+        const res = await http.get("/userbook/preference/theme");
+        return res.data ? (res.data.preference || "") : ""
+    },
+    async sendMassMailing({ type, structureId, ids }: { type: ReportType, structureId: string, ids: string[] }) {
+        if (ids.length == 0) {
+            notify.info(lang.translate("classAdmin.email.nousers"));
+            return;
+        }
+        const theme = await directoryService.getTheme();
+        return http.post(`/directory/class-admin/massmail`, {
+            type,
+            structureId,
+            theme,
+            ids
+        }, { responseType: "json" })
+    },
+    async generateReport({ type, structureId, ids }: { type: ReportType, structureId: string, ids: string[] }) {
+        if (ids.length == 0) {
+            notify.info(lang.translate("classAdmin.report.nousers"));
+            return;
+        }
+        const theme = await directoryService.getTheme();
+        const res = await http.post(`/directory/class-admin/massmail`, {
+            type,
+            structureId,
+            theme,
+            ids
+        }, {
+                responseType: "blob"
+            });
+        const fileName = lang.translate(`classAdmin.${type}`).replace("[[date]]", new Date().toISOString());
+        const fileType = type == "csv" ? "text/csv" : "application/pdf";
+        downloadBlob(fileName, fileType, res.data)
     }
 }
+function downloadBlob(name: string, type: string, content: any) {
+    const blobData = new Blob([content], { type });
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) { // for IE
+        window.navigator.msSaveOrOpenBlob(blobData, name);
+    } else { // for Non-IE (chrome, firefox etc.)
+        const a = document.createElement("a");
+        document.body.appendChild(a);
+        (a as any).style = "display: none";
+        const fileUrl = URL.createObjectURL(blobData);
+        a.href = fileUrl;
+        a.download = name;
+        a.click();
+        setTimeout(() => {
+            URL.revokeObjectURL(a.href)
+            a.remove();
+        }, 1000)
+    }
+};

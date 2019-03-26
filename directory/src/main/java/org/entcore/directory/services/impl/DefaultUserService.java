@@ -674,7 +674,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class)-[:BELONGS]->(s) WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
 				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c}) as schools, motto, health, mood, hobbies, u " +
 				"OPTIONAL MATCH u-[:RELATED]-(u2: User) WITH COLLECT(distinct {relatedName: u2.displayName, relatedId: u2.id, relatedType: u2.profiles}) as relativeList, schools, motto, health, mood, hobbies, u " +
-				"RETURN DISTINCT u.profiles as type, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
+				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
 				"motto, health, mood, " +
 				"CASE WHEN hobbies IS NULL THEN [] ELSE hobbies END as hobbies, " +
