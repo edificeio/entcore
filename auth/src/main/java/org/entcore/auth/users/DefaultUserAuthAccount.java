@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.wseduc.webutils.Either;
+
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 
@@ -248,11 +249,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		boolean setFirstname = firstName != null && !firstName.trim().isEmpty();
 		boolean setStructure = structure != null && !structure.trim().isEmpty();
 
-		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.email =~ {mail} " +
+		String query = "MATCH (u:User)-[:IN]->(sg:Group)-[:DEPENDS]->(s:Structure) WHERE u.email = {mail} " +
 				(setFirstname ? " AND u.firstName =~ {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
 				" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
-		JsonObject params = new JsonObject().put("mail", "(?i)"+email);
+		JsonObject params = new JsonObject().put("mail", email);
 		if(setFirstname)
 			params.put("firstName", "(?i)"+firstName);
 		if(setStructure)
