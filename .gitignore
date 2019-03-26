@@ -78,3 +78,4 @@ workspace/src/main/resources/view/*
 tests/.cache-main
 tests/.cache-tests
 package-lock.json
+infra/src/main/resources/public/js/pixi.min.js

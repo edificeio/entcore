@@ -21,10 +21,12 @@ package org.entcore.directory.controllers;
 
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
@@ -291,7 +293,7 @@ public class StructureController extends BaseController {
 				    filter.put("date", request.params().get("date"));
                 }
 
-				structureService.massmailUsers(structureId, filter, true, true, filterMail, infos, arrayResponseHandler(request));
+				structureService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, arrayResponseHandler(request));
 			}
 		});
 	}
@@ -341,7 +343,7 @@ public class StructureController extends BaseController {
 								return;
 							}
 
-							massMailTypePdf(request, templatePath, baseUrl, filename, result.right().getValue());
+							massMailTypePdf(request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
 
 						}
 					});
@@ -412,20 +414,20 @@ public class StructureController extends BaseController {
 
 				//PDF
 				if("pdf".equals(type)){
-					structureService.massmailUsers(structureId, filter, groupClasses, false, filterMail, infos, new Handler<Either<String,JsonArray>>() {
+					structureService.massmailUsers(structureId, filter, groupClasses, false, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
 								return;
 							}
 
-							massMailTypePdf(request, templatePath, baseUrl, filename, result.right().getValue());
+							massMailTypePdf(request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
 						}
 					});
 				}
 				//Mail
 				else if("mail".equals(type)){
-					structureService.massmailUsers(structureId, filter, true, true, filterMail, infos, new Handler<Either<String,JsonArray>>() {
+					structureService.massmailUsers(structureId, filter, true, true, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(final Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
@@ -443,11 +445,98 @@ public class StructureController extends BaseController {
 		});
 	}
 
-	private void massMailTypePdf(final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final JsonArray users){
+	@Post("/class-admin/massmail")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void classAdminMassMail(final HttpServerRequest request){
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
 
-		final JsonObject templateProps = new JsonObject().put("users", users);
+				JsonArray userIds = body.getJsonArray("ids");
+				//String theme = body.getString("theme");
+				String type = body.getString("type");
+				String schoolId = body.getString("structureId");
 
-		vertx.fileSystem().readFile(templatePath + "massmail.pdf.xhtml", new Handler<AsyncResult<Buffer>>() {
+				if (userIds == null || userIds.isEmpty() || type == null || schoolId == null) {
+					badRequest(request);
+				}
+
+				final String host = Renders.getHost(request);
+				// We ignore the theme parameter for now and rather take the domain's default theme
+				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+				String theme = skins.get(host);
+
+				final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
+						"/assets/themes/" + theme;
+				final String templatePath = assetsPath + "/template/directory/";
+				final String baseUrl = getScheme(request) + "://" + host + "/assets/themes/" + theme + "/img/";
+
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					public void handle(final UserInfos infos) {
+
+						JsonObject filterObj = new JsonObject();
+						filterObj.put("userIds",userIds);
+						// We set neither true or false to get both activated and non-activated users
+						filterObj.put("activated","both");
+						filterObj.put("sort",new JsonArray().add("displayName"));
+
+						final boolean isNotPdf = !type.equals("pdf");
+						structureService.massmailNoCheck(schoolId, filterObj, isNotPdf, infos, new Handler<Either<String, JsonArray>>() {
+							@Override
+							public void handle(Either<String, JsonArray> result) {
+								if (result.isLeft()) {
+									forbidden(request);
+									return;
+								}
+								JsonArray users = result.right().getValue();
+								switch (type) {
+									case "pdf":
+									case "simplePdf":
+										massMailTypePdf(request, templatePath, baseUrl, "massmail", type, users);
+										break;
+									case "mail":
+										massMailTypeMail(request, templatePath, users);
+										break;
+									case "csv":
+										massMailTypeCSV(request, users);
+										break;
+									default:
+										badRequest(request);
+								}
+							}
+						});
+					}
+				});
+			}
+		});
+	}
+
+
+	private void massMailTypePdf(final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users){
+
+		final JsonObject templateProps = new JsonObject().put("hostname",Renders.getHost(request));
+
+		final String templateName;
+		if ("pdf".equals(type)) {
+			templateName = "massmail.pdf.xhtml";
+			templateProps.put("users", users);
+		} else if ("simplePdf".equals(type)) {
+			templateName = "massmail_simple.pdf.xhtml";
+			List list = users.getList();
+			JsonArray blocks = new JsonArray();
+			for (int i = 0; i < list.size(); i+=8) {
+				blocks.add(new JsonObject().put("users",new JsonArray(list.subList(i,Math.min((i+8),list.size())))));
+			}
+			if (!blocks.isEmpty()) {
+				blocks.getJsonObject(blocks.size()-1).put("end", true);
+			}
+			templateProps.put("blocks", blocks);
+		} else {
+			badRequest(request);
+			return;
+		}
+
+		vertx.fileSystem().readFile(templatePath + templateName, new Handler<AsyncResult<Buffer>>() {
 
 			@Override
 			public void handle(AsyncResult<Buffer> result) {
@@ -458,7 +547,7 @@ public class StructureController extends BaseController {
 
 				StringReader reader = new StringReader(result.result().toString("UTF-8"));
 
-				processTemplate(request, templateProps, "massmail.pdf.xhtml", reader, new Handler<Writer>(){
+				processTemplate(request, templateProps, templateName, reader, new Handler<Writer>(){
 					public void handle(Writer writer) {
 						String processedTemplate = ((StringWriter) writer).getBuffer().toString();
 
@@ -559,6 +648,36 @@ public class StructureController extends BaseController {
 			}
 		});
 	}
+
+	private void massMailTypeCSV(final HttpServerRequest request, JsonArray users){
+		String path = FileResolver.absolutePath("view/text/export.txt");
+
+		vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
+			@Override
+			public void handle(AsyncResult<Buffer> result) {
+				if(!result.succeeded()){
+					badRequest(request);
+					return;
+				}
+				processTemplate(request,"text/export.txt", new JsonObject().put("list", users), new Handler<String>() {
+					@Override
+					public void handle(final String export) {
+						if (export != null) {
+							request.response().putHeader("Content-Type", "application/csv");
+							request.response().putHeader("Content-Disposition", "attachment; filename.csv");
+							request.response().end('\ufeff' + export);
+						} else {
+							renderError(request);
+						}
+					}
+				});
+
+			}
+		});
+
+
+	}
+
 
 	@Get("/structure/:structureId/metrics")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)

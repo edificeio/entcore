@@ -262,12 +262,16 @@ public class DefaultSchoolService implements SchoolService {
     }
 
     @Override
+	public void massmailNoCheck(String structureId, JsonObject filterObj, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+		this.massmailUsers(structureId, filterObj, true, groupChildren, null, false, userInfos, results);
+	}
+    @Override
 	public void massmailUsers(String structureId, JsonObject filterObj, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
-		this.massmailUsers(structureId, filterObj, true, true, null, userInfos, results);
+		this.massmailUsers(structureId, filterObj, true, true, null, true, userInfos, results);
 	}
 	@Override
 	public void massmailUsers(String structureId, JsonObject filterObj, boolean groupClasses,
-			boolean groupChildren, Boolean hasMail, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
+			boolean groupChildren, Boolean hasMail, boolean performCheck, UserInfos userInfos, Handler<Either<String, JsonArray>> results) {
 
 		String filter =
 				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), "+
@@ -294,19 +298,19 @@ public class DefaultSchoolService implements SchoolService {
 		}
 
 		//Profiles
-		if(filterObj.getJsonArray("profiles").size() > 0){
+		if(filterObj.containsKey("profiles") && filterObj.getJsonArray("profiles").size() > 0){
 			condition += "AND p.name IN {profilesArray} ";
 			params.put("profilesArray", filterObj.getJsonArray("profiles"));
 		}
 
 		//Levels
-		if(filterObj.getJsonArray("levels").size() > 0){
+		if(filterObj.containsKey("levels") && filterObj.getJsonArray("levels").size() > 0){
 			condition += " AND u.level IN {levelsArray} ";
 			params.put("levelsArray", filterObj.getJsonArray("levels"));
 		}
 
 		//Classes
-		if(filterObj.getJsonArray("classes").size() > 0){
+		if(filterObj.containsKey("classes") && filterObj.getJsonArray("classes").size() > 0){
 			filter += ", (c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) ";
 			optional = "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
 			condition += " AND c.id IN {classesArray} ";
@@ -346,8 +350,14 @@ public class DefaultSchoolService implements SchoolService {
             }
 		}
 
+		// List of users (from class-admin)
+		if (filterObj.containsKey("userIds")) {
+			condition += " AND u.id IN {userIds} ";
+			params.put("userIds", filterObj.getJsonArray("userIds"));
+		}
+
 		//Admin check
-		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
+		if (performCheck && !userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
 				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
 			results.handle(new Either.Left<String, JsonArray>("forbidden"));
@@ -380,8 +390,8 @@ public class DefaultSchoolService implements SchoolService {
 		//Return clause
 		String returnStr =
 				"RETURN distinct collect(p.name)[0] as profile, " +
-				"u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-				"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as activationCode, u.created as creationDate ";
+				"u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
+				"u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.login as originalLogin, u.activationCode as activationCode, u.created as creationDate ";
 
 		if(groupClasses){
 			withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
@@ -392,8 +402,8 @@ public class DefaultSchoolService implements SchoolService {
 		}
 
 		if(groupChildren){
-			withStr += ", CASE count(child) WHEN 0 THEN null ELSE collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name}) END as children ";
-			returnStr += ", filter(c IN children WHERE not(c.firstName is null)) as children ";
+			withStr += ", CASE count(child) WHEN 0 THEN null ELSE filter(c IN (collect(distinct {firstName: child.firstName, lastName: child.lastName, classname: c.name})) WHERE not(c.firstName is null)) END as children ";
+			returnStr += ", children, CASE count(children) WHEN 0 THEN null ELSE head(children) END as firstChild, CASE WHEN size(children) < 2 THEN null ELSE tail(children) END as otherChildren ";
 		} else {
 			if(groupClasses) {
 				withStr =
@@ -409,9 +419,11 @@ public class DefaultSchoolService implements SchoolService {
 
 		//Order by
 		String sort = "ORDER BY ";
-		for(Object sortObj: filterObj.getJsonArray("sort")){
-			String sortstr = (String) sortObj;
-			sort += sortstr + ",";
+		if (filterObj.containsKey("sort")) {
+			for (Object sortObj : filterObj.getJsonArray("sort")) {
+				String sortstr = (String) sortObj;
+				sort += "LOWER(" + sortstr + "),";
+			}
 		}
 		sort += "lastName";
 

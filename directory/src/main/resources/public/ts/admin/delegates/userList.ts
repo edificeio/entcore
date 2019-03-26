@@ -192,6 +192,11 @@ export async function UserListDelegate($scope: UserListDelegateScope) {
         $scope.onSelectionChanged.next(getSelectedUsers());
     };
     $scope.onUserSelected = function () {
+        if (getSelectedUsers().length < $scope.usersForType().length) {
+            $scope.userList.selectAll = false;
+        } else {
+            $scope.userList.selectAll = true;
+        }
         $scope.onSelectionChanged.next(getSelectedUsers());
     }
     $scope.displayCode = function (user) {
