@@ -10,7 +10,8 @@ export interface MenuDelegateScope extends EventDelegateScope {
     reloadClassroom(classroom: ClassRoom): void;
     selectedSchoolName(classroom: ClassRoom): string;
     selectedSchoolId(classroom: ClassRoom): string;
-    openClassList(): void;
+    openClassList($event: any): void;
+    closeClassList(): void;
     saveClassInfos(): void;
     belongsToMultipleSchools(): boolean;
     hasSelectedClass(): boolean;
@@ -60,13 +61,17 @@ export function MenuDelegate($scope: MenuDelegateScope) {
         $scope.selectedClass = fetched;
         $scope.onClassRefreshed.next(fetched);
     }
-    const selectedSchool = function (classroom) {
+    const selectedSchool = function (classroom: ClassRoom) {
         return classroom && schools.find(sc => !!sc.classrooms.find(clazz => clazz.id == classroom.id));
     }
     // === Init attributes
     $scope.classrooms = [];
     let schools: School[] = [];
     // === Init listener : listen network changes to load my class
+    $scope.queryClassRefresh.subscribe(clazz => {
+        refreshClass();
+        $scope.safeApply();
+    });
     $scope.onSchoolLoaded.subscribe(async loaded => {
         schools = loaded;
         myClasses = schools.map(sc => sc.classrooms).reduce((a1, a2) => a1.concat(a2), [])
@@ -100,8 +105,12 @@ export function MenuDelegate($scope: MenuDelegateScope) {
     $scope.reloadClassroom = function (classroom) {
         classroom && setSelectedClassById(classroom.id, false, true);
     }
-    $scope.openClassList = function () {
+    $scope.openClassList = function ($event) {
+        $event.stopPropagation();
         $scope.listOpened = !$scope.listOpened;
+    }
+    $scope.closeClassList = function () {
+        $scope.listOpened = false;
     }
     $scope.saveClassInfos = function () {
         directoryService.saveClassInfos($scope.selectedClass);
