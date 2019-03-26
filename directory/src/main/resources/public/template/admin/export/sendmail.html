@@ -1,0 +1,19 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <h2 class="bottom-spacing-four">
+        <i class="back" ng-click="userExportGoBack()" ng-if="userExportCanBack()"></i>&nbsp;
+        <i18n>classAdmin.export.mail.confirm</i18n>
+    </h2>
+    <p class="vertical-spacing-four flex-row">
+        <span class="vertical-spacing-four">
+            <i18n>classAdmin.export.mail.confirm.info</i18n>
+        </span>
+    </p>
+    <div class="twelve flex-row justify-end top-spacing-four">
+        <button class="" ng-click="userExportCancel()">
+            <i18n>cancel</i18n>
+        </button>
+        <button class="left-spacing-twice" ng-click="userExportSend(true)">
+            <i18n>directory.send</i18n>
+        </button>
+    </div>
+</section>

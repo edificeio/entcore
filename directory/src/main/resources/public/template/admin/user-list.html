@@ -13,9 +13,9 @@
                 <table class="row" id="searchUser">
                     <thead>
                         <tr>
-                            <th class="align-checkbox zero-mobile-fat-mobile">
+                            <th class="align-checkbox zero-mobile-fat-mobile relative">
                                 <div class="check-col">
-                                  <label class="wrapping-checkbox relative">
+                                  <label class="wrapping-checkbox relative fix-checkbox">
                                     <input type="checkbox" ng-model="userList.selectAll" ng-change="switchAll()" />
                                     <i18n></i18n>
                                   </label>
@@ -88,7 +88,6 @@
                     </tbody>
                 </table>
             </article>
-            <a translate content="classAdmin.exportFile" ng-href="[[exportActivationUri()]]"></a>
         </div>
     </section>
 </section>

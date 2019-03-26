@@ -95,9 +95,13 @@ export class User extends Model {
     health: string;
     picture: string;
     address: string;
+    hasEmail: boolean;
     //
     constructor(data?: Partial<User>) {
         super(data);
+    }
+    get safeHasEmail() {
+        return this.hasEmail || !!this.email;
     }
     get firstClassName(): string {
         try {
@@ -289,6 +293,7 @@ export class ClassRoom extends Model {
     name: string;
     level: string;
     users: User[] = [];
+    externalId: string;
     constructor(data?: Partial<ClassRoom>) {
         super(data);
     }
@@ -365,7 +370,7 @@ export class Mood {
     text: string;
     id: string;
     constructor(mood: string) {
-        if (mood === null || mood === undefined || mood === 'default') {
+        if (!mood || mood === 'default') {
             this.icon = 'none';
             this.text = lang.translate('userBook.mood.default');
             this.id = 'default';

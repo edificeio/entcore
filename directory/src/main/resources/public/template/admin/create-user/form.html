@@ -1,7 +1,7 @@
 <section class="vertical-spacing-twice ng-scope flex-row f-column align-center">
     <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreate()">
         <h2 class="top-spacing-four bottom-spacing-three">
-            <i18n>classAdmin.create.title</i18n>
+            <i18n>directory.admin.create-user</i18n>
         </h2>
         <div class="flex-row justify-end twelve">
             <small class="warning-color">
@@ -77,7 +77,7 @@
                     ng-model="userCreate.select">
                 </drop-down>
             </div>
-            <div class="flex-row">
+            <div class="flex-row f-wrap">
                 <contact-chip class="block relative removable" ng-model="user" action="onUserCreateRemoveChild(user)"
                     ng-repeat="user in userCreate.form.relatives">
                 </contact-chip>

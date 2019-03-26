@@ -6,10 +6,11 @@ import { directoryService } from './service';
 import { ActionsDelegate, ActionsDelegateScope } from './delegates/actions';
 import { UserInfosDelegate, UserInfosDelegateScope } from './delegates/userInfos';
 import { UserCreateDelegateScope, UserCreateDelegate } from './delegates/userCreate';
+import { ExportDelegateScope, ExportDelegate } from './delegates/userExport';
 import { User } from './model';
 
 
-export interface ClassAdminControllerScope extends UserListDelegateScope, UserInfosDelegateScope, MenuDelegateScope, ActionsDelegateScope, UserCreateDelegateScope {
+export interface ClassAdminControllerScope extends UserListDelegateScope, UserInfosDelegateScope, MenuDelegateScope, ActionsDelegateScope, UserCreateDelegateScope, ExportDelegateScope {
 	safeApply(a?);
 	closeLightbox(): void;
 	openLightbox(path: string): void;
@@ -32,6 +33,7 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	ActionsDelegate($scope);
 	UserInfosDelegate($scope);
 	UserCreateDelegate($scope);
+	ExportDelegate($scope);
 	// === Init
 	const init = async function () {
 		const networkPromise = directoryService.getSchoolsForUser(model.me.userId);
@@ -74,13 +76,17 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 	}
 	$scope.import = { csv: [] };
 	$scope.resetPasswords = async function (user) {
+		if (!model.me.email) {
+			notify.error("classAdmin.reset.error");
+			return;
+		}
 		try {
 			if (user) {
 				await directoryService.resetPassword([user])
 			} else {
 				await directoryService.resetPassword(_selection)
 			}
-			notify.info("directory.admin.reset.code.sent")
+			notify.success("directory.admin.reset.code.sent")
 		} catch (e) {
 			notify.error("directory.admin.reset.code.send.error");
 		}
@@ -92,8 +98,8 @@ export const classAdminController = ng.controller('ClassAdminController', ['$sco
 		if ($scope.display.importing) return;
 		try {
 			$scope.display.importing = true;
-			await directoryService.importFile($scope.import.csv[0], $scope.userList.selectedTab, $scope.selectedClass.id);
-			$scope.onClassRefreshed.next($scope.selectedClass);
+			await directoryService.importFile($scope.import.csv[0], $scope.userList.selectedTab, $scope.selectedClass);
+			$scope.queryClassRefresh.next($scope.selectedClass);
 			$scope.closeLightbox();
 		} finally {
 			$scope.display.importing = false;

@@ -1,5 +1,5 @@
 import { EventDelegateScope } from "./events";
-import { User, UserTypes, Mood } from "../model";
+import { User, UserTypes, Mood, ClassRoom, School } from "../model";
 import { notify } from "entcore";
 import { directoryService } from "../service";
 
@@ -21,6 +21,8 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     userInfosDisplayChildren(): boolean
     userInfosDisplayRelative(): boolean
     userInfosDisplayUserbook(): boolean
+    userInfoExport(user: User): void;
+    userInfoExportFamily(user: User): void;
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
@@ -35,9 +37,26 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     //init
     $scope.mottoShouldPublish = false;
     $scope.showLoginInput = false;
+    // === Private attributs
+    let _classroom: ClassRoom;
+    let _schools: School[] = [];
     let list = [];
     let index = -1;
-    //private methods
+    //=== Listeners
+    $scope.onClassLoaded.subscribe((s) => {
+        _classroom = s;
+    })
+    $scope.onSchoolLoaded.subscribe(loaded => {
+        _schools = loaded;
+    });
+    //=== Private methods
+    const getSchool = function () {
+        const school = _classroom && _schools.find(sc => !!sc.classrooms.find(clazz => clazz.id == _classroom.id));
+        if (!school) {
+            console.warn("[Directory][UserInfos.getSchool] school should not be undefined", _classroom, school)
+        }
+        return school;
+    }
     const setSelectedUser = async (user: User) => {
         $scope.mottoShouldPublish = false;
         $scope.showLoginInput = false;
@@ -65,7 +84,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         await setSelectedUser(prev);
         return prev;
     }
-    //
+    // === Public methods
     $scope.openUserInfos = async function (user: User) {
         try {
             await selectFirstUser(user);
@@ -116,6 +135,21 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     $scope.openLoginInput = function () {
         $scope.selectedUser.tempLoginAlias = $scope.selectedUser.login;
         $scope.showLoginInput = true;
+    }
+    $scope.userInfoExport = function (user) {
+        directoryService.generateReport({
+            ids: [user.id],
+            structureId: getSchool().id,
+            type: "pdf"
+        })
+    }
+    $scope.userInfoExportFamily = function (user) {
+        const userIds = $scope.selectedUser.relatives.map(u => u.id);
+        directoryService.generateReport({
+            ids: [...userIds, user.id],
+            structureId: getSchool().id,
+            type: "simplePdf"
+        })
     }
     let savingLogin = false;
     $scope.saveAndCloseLoginInput = async function () {

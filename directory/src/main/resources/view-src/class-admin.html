@@ -9,7 +9,7 @@
 	<script type="text/ng-template" id="empty"></script>
 </head>
 
-<body class="account class-admin">
+<body class="account class-admin" ng-click="closeClassList()">
 	<portal>
 		<!--HEADER-->
 		<h1 data-reload class="flex-row"><i class="settings-class"></i> <span class="horizontal-spacing" translate content="classAdmin.title"></span></h1>
@@ -20,7 +20,7 @@
 			<div class="class-admin__class-list" ng-if="classrooms.length !== 0">
 				<input type="text" class="right-spacing active class-admin__input twelve" ng-model="selectedClass.name" complete-change="saveClassInfos()">
 				<p class="italic-text left-spacing class-admin__school" ng-if="belongsToMultipleSchools()">[[selectedSchoolName(selectedClass)]]</p>
-				<i class="sort horizontal-margin-twice absolute-magnet" ng-class="{ double: belongsToMultipleSchools() }" ng-click="openClassList()" ng-if="classrooms.length > 1"></i>
+				<i class="sort horizontal-margin-twice absolute-magnet" ng-class="{ double: belongsToMultipleSchools() }" ng-click="openClassList($event)" ng-if="classrooms.length > 1"></i>
 				<div class="clear"></div>
 			</div>
 			<div class="row" ng-if="classrooms.length === 0">
@@ -28,7 +28,7 @@
 			</div>
 			<div class="found-users-list" ng-if="listOpened">
 				<div ng-repeat="classroom in classrooms" ng-if="classroom.id !== selectedClass.id" class="row temp">
-					<div ng-click="selectClassroom(classroom)" class="row">
+					<div ng-click="selectClassroom(classroom)" class="row found-users-list__item">
 						<a class="cell right-spacing">
 							<span>[[classroom.name]]</span>
 							<span class="italic-text class-admin__school" ng-if="belongsToMultipleSchools()">- [[selectedSchoolName(classroom)]]</span>
@@ -43,7 +43,7 @@
 				<i18n>classAdmin.add.users</i18n>
 				<i class="users"></i>
 			</a>
-			<a class="button-big three" ng-class="{ disabled: classrooms.length === 0 }" href="#" ng-click="openLightbox('admin/massmailing')">
+			<a class="button-big three" ng-class="{ disabled: classrooms.length === 0 }" href="#" ng-click="goToExport()">
 				<i18n>classAdmin.massmailing</i18n>
 				<i class="file-solid"></i>
 			</a>

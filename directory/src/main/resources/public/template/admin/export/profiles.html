@@ -1,0 +1,62 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <h2>
+        <i18n>[[userExport.title]]</i18n>
+    </h2>
+    <p>
+        <i18n>classAdmin.export.create.profile</i18n>
+    </p>
+    <div class="flex-row">        
+        <a class="button-big no-padding justify-center flex-row" href="#" ng-click="userExportProfilToggle(kinds.Student)">
+            <div class="flex-row align-center vertical-spacing-four horizontal-spacing-twice">
+                <label class="wrapping-checkbox relative no-padding no-margin">
+                    <input type="checkbox" ng-checked="userExportProfilSelected(kinds.Student)" />
+                    <span></span>
+                </label>
+                <span class="medium-text left-spacing top-spacing">
+                    <i18n>directory.students</i18n>
+                </span>
+            </div>
+        </a>
+        <a class="button-big no-padding justify-center flex-row" href="#" ng-click="userExportProfilToggle(kinds.Relative)" style="margin-left:0">
+            <div class="flex-row align-center vertical-spacing-four horizontal-spacing-twice">
+                <label class="wrapping-checkbox relative no-padding no-margin">
+                    <input type="checkbox" ng-checked="userExportProfilSelected(kinds.Relative)" />
+                    <span></span>
+                </label>
+                <span class="medium-text left-spacing top-spacing">
+                    <i18n>directory.relatives</i18n>
+                </span>
+            </div>
+        </a>
+        <a class="button-big no-padding justify-center flex-row" href="#" ng-click="userExportProfilToggle(kinds.Teacher)">
+            <div class="flex-row align-center vertical-spacing-four horizontal-spacing-twice">
+                <label class="wrapping-checkbox relative no-padding no-margin">
+                    <input type="checkbox" ng-checked="userExportProfilSelected(kinds.Teacher)" />
+                    <span></span>
+                </label>
+                <span class="medium-text left-spacing top-spacing">
+                    <i18n>directory.teachers</i18n>
+                </span>
+            </div>
+        </a>
+        <a class="button-big no-padding justify-center flex-row" href="#" ng-click="userExportProfilToggle(kinds.Personnel)">
+            <div class="flex-row align-center vertical-spacing-four horizontal-spacing-twice">
+                <label class="wrapping-checkbox relative no-padding no-margin">
+                    <input type="checkbox" ng-checked="userExportProfilSelected(kinds.Personnel)" />
+                    <span></span>
+                </label>
+                <span class="medium-text left-spacing top-spacing">
+                    <i18n>directory.personnels</i18n>
+                </span>
+            </div>
+        </a>
+    </div>
+    <div class="twelve flex-row justify-end top-spacing-three">
+        <button class="" ng-click="userExportCancel()">
+            <i18n>cancel</i18n>
+        </button>
+        <button class="left-spacing-twice" ng-click="userExportSubmitProfile()" ng-disabled="!userExportCanSubmitProfile()">
+            <i18n>classAdmin.export.create.submit</i18n>
+        </button>
+    </div>
+</section>

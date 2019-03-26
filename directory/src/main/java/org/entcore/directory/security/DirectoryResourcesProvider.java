@@ -134,6 +134,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				case "metrics":
 					isAdminOfStructure(request, user, handler);
+				case "classAdminMassMail" :
+					isClassTeacher3(request, user, handler);
+					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(GroupController.class.getName())) {
@@ -526,6 +529,45 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 						"ok".equals(r.body().getString("status")) &&
 								res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
 				);
+			}
+		});
+	}
+
+	private void isClassTeacher3(final HttpServerRequest request, UserInfos user,
+											   final Handler<Boolean> handler) {
+		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
+			request.resume();
+			handler.handle(true);
+			return;
+		}
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject json) {
+				request.pause();
+				JsonArray userIds = json.getJsonArray("ids");
+				if (userIds == null || userIds.isEmpty()) {
+					handler.handle(false);
+					return;
+				}
+				String query = "MATCH (s:Structure)<-[:DEPENDS]-(Group)<-[:IN]-(User { id : {teacherId}}) " +
+						"WITH s MATCH (u:User)-[:IN]->(Group)-[:DEPENDS]->(s) " +
+						"WHERE u.id in {ids} " +
+						"RETURN count(distinct u) = {size} as exists";
+				JsonObject params = new JsonObject()
+						.put("teacherId", user.getUserId())
+						.put("ids", userIds)
+						.put("size", userIds.size());
+				neo.execute(query, params, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> r) {
+						JsonArray res = r.body().getJsonArray("result");
+						request.resume();
+						handler.handle(
+								"ok".equals(r.body().getString("status")) &&
+										res.size() == 1 && (res.getJsonObject(0)).getBoolean("exists", false)
+						);
+					}
+				});
 			}
 		});
 	}

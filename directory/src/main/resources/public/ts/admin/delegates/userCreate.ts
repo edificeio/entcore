@@ -109,9 +109,11 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
                 $scope.userCreate.results = [];
                 $scope.userCreate.searching = true;
                 const founded = await directoryService.searchInDirectory(query, {
-                    profiles: ["Student"],
+                    structures: [$scope.selectedSchoolId($scope.selectedClass)]
                 });
-                $scope.userCreate.results = founded.map(f => ({
+                //#24229 we cant use background filter
+                const filtered = founded.filter(f => (f as User).profile == "Student");
+                $scope.userCreate.results = filtered.map(f => ({
                     innerObject: f as User,
                     profile: "Student" as UserTypes,
                     toString() {
@@ -147,7 +149,7 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         }
     }
     // === Add listeners
-    (onSearchChange as Observable<string>).distinctUntilChanged().debounceTime(250).subscribe(value => {
+    (onSearchChange as Observable<string>).distinctUntilChanged().debounceTime(450).subscribe(value => {
         search(value);
     });
     $scope.onClassLoaded.subscribe(c => {
@@ -235,16 +237,17 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
             const { lastName, type } = $scope.userCreate.form;
             if (type === "Student") {
                 const params = {
-                    structures: [$scope.selectedSchoolId($scope.selectedClass)],
-                    profiles: [type]
+                    structures: [$scope.selectedSchoolId($scope.selectedClass)]
                 };
                 // === check wether the user exists
                 const founded = await directoryService.searchInDirectory(lastName, params);
+                //#24057 we cant use background filter because it does not include students not attached to any classes
+                const filtered = founded.filter(f => (f as User).profile == type);
                 // === if it exists => display duplicate modal
-                if (founded.length) {
+                if (filtered.length) {
                     // there is no more than 2 users most of the time
-                    await Promise.all((founded as User[]).map(u => u.open({ withChildren: false })));
-                    $scope.userCreate.duplicates = founded as User[];
+                    await Promise.all((filtered as User[]).map(u => u.open({ withChildren: false })));
+                    $scope.userCreate.duplicates = filtered as User[];
                     $scope.userCreate.userToAttach = $scope.userCreate.duplicates[0];
                     $scope.goToDuplicateUserForm();
                     return;
@@ -302,7 +305,7 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
             return lang.translate("classAdmin.duplicate.label.one").replace("[[className]]", classes[0]);
         }
         // There are at least two classes
-        return lang.translate("classAdmin.duplicate.label.several").replace("[[classNames]]", classes.join(", ")); 
+        return lang.translate("classAdmin.duplicate.label.several").replace("[[classNames]]", classes.join(", "));
     }
     $scope.isUserAttachSelected = function (user: User) {
         return $scope.userCreate.userToAttach == user;
