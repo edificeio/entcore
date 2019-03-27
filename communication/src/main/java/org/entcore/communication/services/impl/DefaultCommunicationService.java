@@ -21,15 +21,15 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.communication.services.CommunicationService;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.communication.services.CommunicationService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -626,28 +626,88 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
-	@Override
-	public void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results) {
-		String query = ""
-				+ "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
-				+ "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
-				+ "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
-				+ "WITH COALESCE(sg, sc) as s, c, g "
-				+ "WITH s, c, g, "
-				+ "collect( distinct {name: c.name, id: c.id}) as classes, "
-				+ "collect( distinct {name: s.name, id: s.id}) as structures, "
-				+ "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
-				+ "RETURN DISTINCT "
-				+ "g.id as id, "
-				+ "g.name as name, "
-				+ "g.filter as filter, "
-				+ "g.displayName as displayName, "
-				+ "g.users as internalCommunicationRule, "
-				+ "type, "
-				+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
-				+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
-		JsonObject params = new JsonObject().put("id", id);
-		neo4j.execute(query, params, validResultHandler(results));
-	}
+    @Override
+    public void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results) {
+        String query = "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
+                + "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
+                + "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
+                + "WITH COALESCE(sg, sc) as s, c, g "
+                + "WITH s, c, g, "
+                + "collect( distinct {name: c.name, id: c.id}) as classes, "
+                + "collect( distinct {name: s.name, id: s.id}) as structures, "
+                + "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
+                + "RETURN DISTINCT "
+                + "g.id as id, "
+                + "g.name as name, "
+                + "g.filter as filter, "
+                + "g.displayName as displayName, "
+                + "g.users as internalCommunicationRule, "
+                + "type, "
+                + "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
+                + "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
+                + "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
+        JsonObject params = new JsonObject().put("id", id);
+        neo4j.execute(query, params, validResultHandler(results));
+    }
+
+    @Override
+    public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
+        String query = "MATCH (ug: Group { id: {id} }) "
+                + "OPTIONAL MATCH (ug)<-[:COMMUNIQUE]-(sg:Group) "
+                + "WITH ug, count(sg) as csg "
+
+                + "RETURN csg as numberOfSendingGroups, size(coalesce(ug.communiqueWith, [])) as numberOfReceivingGroups";
+        JsonObject params = new JsonObject().put("id", groupId);
+        neo4j.execute(query, params, message -> {
+            Either<String, JsonObject> either = validUniqueResult(message);
+            if (either.isLeft()) {
+                handler.handle(either);
+            } else {
+                JsonObject result = either.right().getValue();
+                int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
+                int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
+
+				Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
+
+                if (directionToRemove == null) {
+                    handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+                } else {
+                    Direction nextDirection = computeNextDirection(directionToRemove);
+                    removeLinkWithUsers(groupId, directionToRemove,
+                            t -> handler.handle(new Either.Right<>(new JsonObject().put("users", nextDirection))));
+                }
+            }
+        });
+    }
+
+    public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
+        if (hasIncomingRelationship && hasOutgoingRelationship) {
+            return null;
+        }
+
+        if (hasIncomingRelationship) {
+            return Direction.INCOMING;
+        }
+
+        if (hasOutgoingRelationship) {
+            return Direction.OUTGOING;
+        }
+
+        return Direction.BOTH;
+    }
+
+    public Direction computeNextDirection(Direction directionToRemove) {
+        if (directionToRemove == null) {
+            return Direction.BOTH;
+        }
+
+        if (directionToRemove.equals(Direction.INCOMING)) {
+            return Direction.OUTGOING;
+        }
+
+        if (directionToRemove.equals(Direction.OUTGOING)) {
+            return Direction.INCOMING;
+        }
+        return null;
+    }
 }
