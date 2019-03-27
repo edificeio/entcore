@@ -171,10 +171,10 @@ const appsTarget = {
     'stats-large': '1D',
     'rbs-large': '2D',
     'schoolbook': '1D',
-    'scrap-book-large': '1D',
+    'scrap-book-large': '1D-2D',
     'searchengine-large': '1D',
     'poll-large': '2D',
-    'actualites-large': '2D',
+    'actualites-large': '1D-2D',
     'mindmap-large': '1D-2D',
     'pages-large': '2D',
     'support-large': '1D-2D',
@@ -185,10 +185,13 @@ const appsTarget = {
     'community-large': '2D',
     'Maxicours-large': '2D',
     'calendar-large': '2D',
-    'pad-large': '2D',
+    'pad-large': '1D-2D',
     'cns-large': '2D',
     'forum-large': '2D',
     'sharebigfiles-large': '2D',
     'cahier-de-texte-large': '1D',
-    'userbook-large': '1D-2D'
+    'userbook-large': '1D-2D',
+    'settings-class-large': '1D',
+    'competences': '2D',
+    'parametrage': '2D'
 };
