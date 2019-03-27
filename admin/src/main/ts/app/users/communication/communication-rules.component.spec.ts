@@ -11,18 +11,31 @@ import {
 } from './communication-rules.component';
 import { generateGroup } from './communication-test-utils';
 import { GroupModel } from '../../core/store/models';
+import { CommunicationRulesService } from "./communication-rules.service";
+import { NotifyService } from "../../core/services";
+import { GroupNameService } from "./group-name.service";
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;
+    let notifyService: NotifyService;
+    let groupNameService: GroupNameService;
+    let communicationRulesService: CommunicationRulesService;
     let fixture: ComponentFixture<CommunicationRulesComponent>;
 
     beforeEach(async(() => {
+        communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['removeCommunication']);
+        notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
+        groupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         TestBed.configureTestingModule({
             declarations: [
                 CommunicationRulesComponent,
                 MockGroupCard
             ],
-            providers: [],
+            providers: [
+                {useValue: notifyService, provide: NotifyService},
+                {useValue: groupNameService, provide: GroupNameService},
+                {useValue: communicationRulesService, provide: CommunicationRulesService}
+            ],
             imports: [
                 SijilModule.forRoot(),
                 UxModule.forRoot(null)
@@ -202,6 +215,25 @@ describe('CommunicationRulesComponent', () => {
                     generateCommunicationRule('group2', ['group3'])
                 ])
             ).toBe(false);
+        });
+    });
+
+    describe('removeCommunication', () => {
+        it('should ask for confirmation', () => {
+            component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
+            expect(component.confirmationDisplayed).toBe(true);
+        });
+        it('should close the lightbox if the user cancel', () => {
+            component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
+            component.confirmationClicked.next('cancel');
+            expect(communicationRulesService.removeCommunication).not.toHaveBeenCalled();
+            expect(component.confirmationDisplayed).toBe(false);
+        });
+        it('should call the communicationRulesService.removeCommunication if the user confirms', () => {
+            component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
+            component.confirmationClicked.next('confirm');
+            expect(communicationRulesService.removeCommunication).toHaveBeenCalled();
+            expect(component.confirmationDisplayed).toBe(false);
         });
     });
 });
