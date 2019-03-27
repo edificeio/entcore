@@ -2,6 +2,8 @@ import { RoleModel } from '.';
 
 import { Mix, Model } from 'entcore-toolkit';
 
+export type AppType = 'END_USER' | 'SYSTEM' | 'WIDGET';
+
 export class ApplicationModel extends Model<ApplicationModel> {
 
     constructor() {
@@ -30,5 +32,5 @@ export class ApplicationModel extends Model<ApplicationModel> {
     roles: RoleModel[];
     levelsOfEducation: number[];
     name: string;
-    appType: string;
+    appType: AppType;
 }

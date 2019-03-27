@@ -3,12 +3,14 @@ import { UserModel } from './user.model';
 
 export type InternalCommunicationRule = 'BOTH' | 'INCOMING' | 'OUTGOING' | 'NONE';
 
+export type GroupType = 'ProfileGroup' | 'FunctionalGroup' | 'ManualGroup' | 'CommunityGroup' | 'FunctionGroup' | 'DisciplineGroup' | 'HTGroup';
+
 export class GroupModel extends Model<GroupModel> {
 
     id?: string;
     name?: string;
     displayName?: string;
-    type?: string;
+    type?: GroupType;
     subType?: string;
     classes?: { id: string, name: string }[];
     structures?: { id: string, name: string }[];

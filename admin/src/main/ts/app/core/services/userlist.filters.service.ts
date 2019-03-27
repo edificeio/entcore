@@ -117,7 +117,7 @@ class FunctionalGroupsFilter extends UserFilter<string> {
 
 class ManualGroupsFilter extends UserFilter<string> {
     type = 'manualGroups'
-    label = 'manualGroups.multi.combo.title'
+    label = 'ManualGroup'
     comboModel = []
     order = '+'
     filterProp = 'this'

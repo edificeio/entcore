@@ -14,6 +14,8 @@ import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { NotifyService } from '../../core/services';
 import { GroupNameService } from './group-name.service';
+import { UsersStore } from '../users.store';
+import { GroupCollection } from '../../core/store';
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;
@@ -21,9 +23,26 @@ describe('CommunicationRulesComponent', () => {
     let groupNameService: GroupNameService;
     let communicationRulesService: CommunicationRulesService;
     let fixture: ComponentFixture<CommunicationRulesComponent>;
+    let usersStoreMock: UsersStore;
+    let communicationRuleServiceMock: CommunicationRulesService;
+
+    beforeEach(() => {
+        usersStoreMock = {
+            structure: {
+                id: 'myStructure',
+                groups: {
+                    data: [
+                        {id: 'myGroup1', name: 'myGroup1'},
+                        {id: 'myGroup2', name: 'myGroup2'},
+                        {id: 'myGroup3', name: 'myGroup3'}
+                    ]
+                }
+            }
+        } as UsersStore;
+    });
 
     beforeEach(async(() => {
-        communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['removeCommunication']);
+        communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['removeCommunication', 'createRule']);
         notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         groupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         TestBed.configureTestingModule({
@@ -34,7 +53,8 @@ describe('CommunicationRulesComponent', () => {
             providers: [
                 {useValue: notifyService, provide: NotifyService},
                 {useValue: groupNameService, provide: GroupNameService},
-                {useValue: communicationRulesService, provide: CommunicationRulesService}
+                {useValue: communicationRulesService, provide: CommunicationRulesService},
+                {provide: UsersStore, useValue: usersStoreMock}
             ],
             imports: [
                 SijilModule.forRoot(),
@@ -249,19 +269,19 @@ describe('CommunicationRulesComponent', () => {
     describe('removeCommunication', () => {
         it('should ask for confirmation', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
-            expect(component.confirmationDisplayed).toBe(true);
+            expect(component.removeConfirmationDisplayed).toBe(true);
         });
         it('should close the lightbox if the user cancel', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
             component.confirmationClicked.next('cancel');
             expect(communicationRulesService.removeCommunication).not.toHaveBeenCalled();
-            expect(component.confirmationDisplayed).toBe(false);
+            expect(component.removeConfirmationDisplayed).toBe(false);
         });
         it('should call the communicationRulesService.removeCommunication if the user confirms', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
             component.confirmationClicked.next('confirm');
             expect(communicationRulesService.removeCommunication).toHaveBeenCalled();
-            expect(component.confirmationDisplayed).toBe(false);
+            expect(component.removeConfirmationDisplayed).toBe(false);
         });
     });
 });
