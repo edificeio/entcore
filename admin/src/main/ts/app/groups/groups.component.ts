@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, 
-    OnDestroy, OnInit } from '@angular/core'
-import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router'
-import { Subscription } from 'rxjs/Subscription'
+    OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Data, Router, NavigationEnd } from '@angular/router';
+import { Subscription } from 'rxjs/Subscription';
 
-import { SpinnerService, routing } from '../core/services'
-import { GroupsStore } from './groups.store'
+import { SpinnerService, routing } from '../core/services';
+import { GroupsStore } from './groups.store';
+import { CommunicationRulesService } from '../users/communication/communication-rules.service';
 
 @Component({
     selector: 'groups-root',
@@ -29,6 +30,7 @@ import { GroupsStore } from './groups.store'
 
         <router-outlet></router-outlet>
     `,
+    providers: [CommunicationRulesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupsComponent implements OnInit, OnDestroy {

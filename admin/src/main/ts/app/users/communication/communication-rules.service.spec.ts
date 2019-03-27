@@ -36,38 +36,29 @@ describe('CommunicationRulesService', () => {
     });
 
     describe('toggleInternalCommunicationRule', () => {
-        it(`should call the backend DELETE /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'BOTH'`, () => {
+        it(`should call DELETE /communication/group/myGroupId/users given group id 'myGroupId' and internal communication rule 'BOTH'`, () => {
             const group: GroupModel = generateGroup('myGroupId', 'BOTH');
             communicationRulesService.toggleInternalCommunicationRule(group).subscribe();
-            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroupId');
+            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroupId/users');
             expect(communicationGroupRequest.request.method).toBe('DELETE');
-            expect(communicationGroupRequest.request.body).toEqual({
-                direction: 'BOTH'
-            });
         });
 
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'NONE'`, () => {
+        it(`should call POST /communication/group/myGroupId/users given group id 'myGroupId' and internal communication rule 'NONE'`, () => {
             const group: GroupModel = generateGroup('myGroupId', 'NONE');
             communicationRulesService.toggleInternalCommunicationRule(group).subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
+            expect(httpController.expectOne('/communication/group/myGroupId/users').request.method).toEqual('POST');
         });
 
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'INCOMING'`, () => {
+        it(`should call POST /communication/group/myGroupId given group id 'myGroupId' and internal communication rule 'INCOMING'`, () => {
             const group: GroupModel = generateGroup('myGroupId', 'INCOMING');
             communicationRulesService.toggleInternalCommunicationRule(group).subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
+            expect(httpController.expectOne('/communication/group/myGroupId/users').request.method).toEqual('POST');
         });
 
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'OUTGOING'`, () => {
+        it(`should call POST /communication/group/myGroupId/users with direction BOTH given group id 'myGroupId' and internal communication rule 'OUTGOING'`, () => {
             const group: GroupModel = generateGroup('myGroupId', 'OUTGOING');
             communicationRulesService.toggleInternalCommunicationRule(group).subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
+            expect(httpController.expectOne('/communication/group/myGroupId/users').request.method).toBe('POST');
         });
 
         it(`should emit a new communication rules if the given group is part of the current communication rules as sender`, () => {
@@ -83,7 +74,7 @@ describe('CommunicationRulesService', () => {
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
             httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
             communicationRulesService.toggleInternalCommunicationRule(group1).subscribe();
-            httpController.expectOne('/communication/group/group1').flush('');
+            httpController.expectOne('/communication/group/group1/users').flush({users: null});
             expect(rules[0].sender.internalCommunicationRule).toBe('NONE');
         });
 
@@ -100,7 +91,7 @@ describe('CommunicationRulesService', () => {
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
             httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
             communicationRulesService.toggleInternalCommunicationRule(group3).subscribe();
-            httpController.expectOne('/communication/group/group3').flush('');
+            httpController.expectOne('/communication/group/group3/users').flush({users: null});
             expect(rules[1].receivers[0].internalCommunicationRule).toBe('NONE');
         });
 
@@ -117,7 +108,7 @@ describe('CommunicationRulesService', () => {
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
             httpController.expectOne('/communication/group/group2/outgoing').flush([]);
             communicationRulesService.toggleInternalCommunicationRule(group3).subscribe();
-            httpController.expectOne('/communication/group/group3').flush('');
+            httpController.expectOne('/communication/group/group3/users').flush({users: null});
             expect(emitted).toBe(false);
         });
     });

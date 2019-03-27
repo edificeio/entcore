@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
+import { CommunicationRule } from './communication-rules.component';
+import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
-import { CommunicationRule } from './communication-rules.component';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/forkJoin';
-import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
-import { HttpClient } from '@angular/common/http';
 
 @Injectable()
 export class CommunicationRulesService {
@@ -28,25 +28,27 @@ export class CommunicationRulesService {
             .subscribe((communicationRules: CommunicationRule[]) => this.rulesSubject.next(communicationRules));
     }
 
-    public toggleInternalCommunicationRule(group: GroupModel): Observable<void> {
-        let request: Observable<void>;
+    public toggleInternalCommunicationRule(group: GroupModel): Observable<InternalCommunicationRule> {
+        let request: Observable<{ users: InternalCommunicationRule | null }>;
         const direction: InternalCommunicationRule = group.internalCommunicationRule === 'BOTH' ? 'NONE' : 'BOTH';
 
         if (direction === 'BOTH') {
-            request = this.http.post<void>(`/communication/group/${group.id}`, {direction});
+            request = this.http.post<{ users: InternalCommunicationRule | null }>(`/communication/group/${group.id}/users`, null);
         } else {
-            request = this.http.request<void>('delete', `/communication/group/${group.id}`, {body: {direction: 'BOTH'}});
+            request = this.http.delete<{ users: InternalCommunicationRule | null }>(`/communication/group/${group.id}/users`);
         }
 
-        return request.do(() => {
-            if (this.currentRules) {
-                const groupInCommunicationRules = this.findGroup(this.currentRules, group.id);
-                if (!!groupInCommunicationRules) {
-                    groupInCommunicationRules.internalCommunicationRule = direction;
-                    this.rulesSubject.next(this.clone(this.currentRules));
+        return request
+            .map(resp => resp.users ? resp.users : 'NONE')
+            .do((internalCommunicationRule) => {
+                if (this.currentRules) {
+                    const groupInCommunicationRules = this.findGroup(this.currentRules, group.id);
+                    if (!!groupInCommunicationRules) {
+                        groupInCommunicationRules.internalCommunicationRule = internalCommunicationRule;
+                        this.rulesSubject.next(this.clone(this.currentRules));
+                    }
                 }
-            }
-        });
+            });
     }
 
     private getCommunicationRulesOfGroup(sender: GroupModel): Observable<CommunicationRule> {

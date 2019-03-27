@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute } from '@angular/router';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SijilModule } from 'sijil';
@@ -10,6 +9,9 @@ import { GroupDetails } from './group-details.component';
 import { GroupModel, StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
+import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
+import { NotifyService } from '../../core/services';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 
 describe('GroupDetails', () => {
@@ -18,13 +20,16 @@ describe('GroupDetails', () => {
 
     let mockGroupStore: GroupsStore;
     let mockStructure: StructureModel;
+    let mockCommunicationRulesService: CommunicationRulesService;
+    let mockNotifyService: NotifyService;
     let mockChangeDetectorRef: ChangeDetectorRef;
-    let httpController: HttpTestingController;
     let paramsController: BehaviorSubject<{ [key: string]: string }>;
     let dataController: BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>;
 
     beforeEach(() => {
         mockStructure = {} as StructureModel;
+        mockCommunicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
+        mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockStructure.groups = {
             data: [
                 generateMockGroupModel('groupId1', 'ManualGroup'),
@@ -52,6 +57,8 @@ describe('GroupDetails', () => {
             providers: [
                 {provide: GroupsStore, useValue: mockGroupStore},
                 {provide: ChangeDetectorRef, useValue: mockChangeDetectorRef},
+                {provide: CommunicationRulesService, useValue: mockCommunicationRulesService},
+                {provide: NotifyService, useValue: mockNotifyService},
                 {
                     provide: ActivatedRoute, useValue: {
                         data: dataController.asObservable(),
@@ -60,13 +67,11 @@ describe('GroupDetails', () => {
                 }
             ],
             imports: [
-                HttpClientTestingModule,
                 SijilModule.forRoot(),
                 UxModule.forRoot(null)
             ]
         }).compileComponents();
         fixture = TestBed.createComponent(GroupDetails);
-        httpController = TestBed.get(HttpTestingController);
         component = fixture.debugElement.componentInstance;
         fixture.detectChanges();
     }));
@@ -101,70 +106,11 @@ describe('GroupDetails', () => {
         expect(fixture.nativeElement.querySelectorAll('.lct-communication-rule__can-communicate').length).toBe(0);
     });
 
-    describe('toggleCommunicationBetweenMembers', () => {
-        it(`should call the backend DELETE /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'BOTH'`, () => {
-            component.toggleCommunicationBetweenMembers('myGroupId', 'BOTH').subscribe();
-            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroupId');
-            expect(communicationGroupRequest.request.method).toBe('DELETE');
-            expect(communicationGroupRequest.request.body).toEqual({
-                direction: 'BOTH'
-            });
-        });
-
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'NONE'`, () => {
-            component.toggleCommunicationBetweenMembers('myGroupId', 'NONE').subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
-        });
-
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'INCOMING'`, () => {
-            component.toggleCommunicationBetweenMembers('myGroupId', 'INCOMING').subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
-        });
-
-        it(`should call the backend /communication/group/myGroupId with direction BOTH given group id 'myGroupId' and internal communication rule 'OUTGOING'`, () => {
-            component.toggleCommunicationBetweenMembers('myGroupId', 'OUTGOING').subscribe();
-            expect(httpController.expectOne('/communication/group/myGroupId').request.body).toEqual({
-                direction: 'BOTH'
-            });
-        });
-    });
-
-    it(`should set the internalCommunicationRule of the group to 'NONE'
-        when clicking on the communication rule toggle button and given the current group has the 'BOTH' rule`, () => {
+    it(`should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch and confirming the change`, () => {
         fixture.nativeElement.querySelector('.lct-communication-rule').click();
-        httpController.expectOne('/communication/group/groupId1').flush({number: 1});
-        expect(component.internalCommunicationRule).toBe('NONE');
-    });
-
-    it(`should set the internalCommunicationRule of the group to 'BOTH'
-        when clicking on the communication rule toggle button and given the current group has the 'NONE' rule`, () => {
-        dataController.next({rule: {groupId: 'groupId1', internalCommunicationRule: 'NONE'}});
-        fixture.detectChanges();
-        fixture.nativeElement.querySelector('.lct-communication-rule').click();
-        httpController.expectOne('/communication/group/groupId1').flush({number: 1});
-        expect(component.internalCommunicationRule).toBe('BOTH');
-    });
-
-    it(`should set the internalCommunicationRule of the group to 'BOTH'
-        when clicking on the communication rule toggle button and given the current group has the 'INCOMING' rule`, () => {
-        dataController.next({rule: {groupId: 'groupId1', internalCommunicationRule: 'INCOMING'}});
-        fixture.detectChanges();
-        fixture.nativeElement.querySelector('.lct-communication-rule').click();
-        httpController.expectOne('/communication/group/groupId1').flush({number: 1});
-        expect(component.internalCommunicationRule).toBe('BOTH');
-    });
-
-    it(`should set the internalCommunicationRule of the group to 'BOTH'
-        when clicking on the communication rule toggle button and given the current group has the 'OUTGOING' rule`, () => {
-        dataController.next({rule: {groupId: 'groupId1', internalCommunicationRule: 'OUTGOING'}});
-        fixture.detectChanges();
-        fixture.nativeElement.querySelector('.lct-communication-rule').click();
-        httpController.expectOne('/communication/group/groupId1').flush({number: 1});
-        expect(component.internalCommunicationRule).toBe('BOTH');
+        (mockCommunicationRulesService.toggleInternalCommunicationRule as jasmine.Spy).and.returnValue(Observable.of({}));
+        component.confirmationClicked.next('confirm');
+        expect(mockCommunicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     });
 });
 
