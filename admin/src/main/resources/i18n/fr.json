@@ -236,7 +236,7 @@
     "import.report": "Rapport intermédiaires",
     "import.parameters" : "Paramètre de l'import",
     "import.step1.deleteAccountOption" :  "Pré-supprimer les comptes des utilisateurs absents des fichiers",
-    "import.step1.transitionOption" : "Changement d'année scolaire",  
+    "import.step1.transitionOption" : "Changement d'année scolaire",
 
     "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
 
@@ -363,7 +363,7 @@
     "notify.user.dissociate.success.title": "Dissociation des comptes effectuée",
     "notify.user.dissociate.success.content": "Les comptes ont été dissociés avec succès",
     "notify.user.dissociate.error.title": "Erreur lors de la dissociation des comptes",
-    "notify.user.dissociate.error.content": "Vous n'avez pas les droits d'administration sur les utilisateurs concernés, veuillez contacter l'assistance",    
+    "notify.user.dissociate.error.content": "Vous n'avez pas les droits d'administration sur les utilisateurs concernés, veuillez contacter l'assistance",
 
     "notify.user.quota.update.title": "Modification effectuée",
     "notify.user.quota.update.content": "Le quota de l'utilisateur {{user}} a bien été mis à jour.",
@@ -464,6 +464,12 @@
     "group.card.class.Student": "Élèves de la classe {{name}}",
     "group.card.class.Teacher": "Enseignants de la classe {{name}}",
     "group.card.class.Guest": "Invités de la classe {{name}}",
+
+    "group.internal-communication-rule.change.success": "La règle de communication que vous avez changée pour le groupe {{groupName}} sera appliquée à tous les membres de ce groupe.",
+    "group.internal-communication-rule.change.conflict.title": "Impossible de modifier la règle.",
+    "group.internal-communication-rule.change.conflict.content": "La règle de communication que vous souhaitez changer pour le groupe {{groupName}} implique des suppressions de droits en cascade. Pour effectuer cette modification vous devez contacter le service d'assistance.",
+    "group.internal-communication-rule.change.error.title": "Une erreur est survenue.",
+    "group.internal-communication-rule.change.error.content": "Une erreur est survenue pendant la modification de la règle de communication pour le groupe {{groupName}}.",
 
     "quota.byte": "Octet(s)",
     "quota.kilobyte": "KiloOctet(s)",

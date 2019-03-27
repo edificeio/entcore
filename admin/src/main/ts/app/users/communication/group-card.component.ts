@@ -2,8 +2,9 @@ import { Component, Input } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { BundlesService } from 'sijil';
-import { SpinnerService } from '../../core/services';
 import { ActivatedRoute } from '@angular/router';
+import { NotifyService, SpinnerService } from '../../core/services';
+import { HttpErrorResponse } from '@angular/common/http';
 
 const css = {
     title: 'lct-group-card-title',
@@ -194,6 +195,7 @@ export class GroupCardComponent {
     constructor(
         private spinner: SpinnerService,
         private route: ActivatedRoute,
+        private notifyService: NotifyService,
         private communicationRulesService: CommunicationRulesService,
         private bundlesService: BundlesService) {
     }
@@ -201,7 +203,24 @@ export class GroupCardComponent {
     public toggleInternalCommunicationRule() {
         this.communicationRulesService
             .toggleInternalCommunicationRule(this.group)
-            .subscribe();
+            .subscribe(
+                () => this.notifyService.success({
+                    key: 'group.internal-communication-rule.change.success',
+                    parameters: {groupName: this.getGroupName(this.group)}
+                }),
+                (error: HttpErrorResponse) => {
+                    if (error.status === 409) {
+                        this.notifyService.error({
+                            key: 'group.internal-communication-rule.change.conflict.content',
+                            parameters: {groupName: this.getGroupName(this.group)}
+                        }, 'group.internal-communication-rule.change.conflict.title')
+                    } else {
+                        this.notifyService.error({
+                            key: 'group.internal-communication-rule.change.error.content',
+                            parameters: {groupName: this.getGroupName(this.group)}
+                        }, 'group.internal-communication-rule.change.error.title')
+                    }
+                });
     }
 
     public getGroupName(group: GroupModel): string {
