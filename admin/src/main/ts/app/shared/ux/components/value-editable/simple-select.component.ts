@@ -7,7 +7,7 @@ import { BundlesService } from 'sijil'
     template: `
     <select [(ngModel)]="model[selected]">
         <option *ngFor="let option of options" [ngValue]="option">
-            {{option}}
+            {{option | translate}}
         </option>
     </select>
     `,
