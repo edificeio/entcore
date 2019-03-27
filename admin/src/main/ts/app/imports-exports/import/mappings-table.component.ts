@@ -25,7 +25,7 @@ import { SimpleSelectComponent } from '../../shared/ux/components'
                 <td>{{value}}</td>
                 <td (click)="loadAvailables(value, i)">
                     <span *ngIf="!isEmpty(mappings[value]); else elseBlock" [hidden]="selectIsLoaded(i)">
-                        {{mappings[value]}}
+                        {{mappings[value] | translate}}
                     </span>
                     <ng-template #elseBlock>
                         <span [hidden]="selectIsLoaded(i)">
