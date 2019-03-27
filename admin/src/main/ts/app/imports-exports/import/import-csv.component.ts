@@ -141,7 +141,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             <table class="report">
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>{{ 'line' | translate }}</th>
                         <th>{{ 'operation' | translate }}</th>
                         <th>{{ 'lastName' | translate }}</th>
                         <th>{{ 'firstName' | translate }}</th>
