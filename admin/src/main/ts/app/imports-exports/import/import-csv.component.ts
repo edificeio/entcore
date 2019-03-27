@@ -414,7 +414,7 @@ export class ImportCSV implements OnInit, OnDestroy {
     * In @mappings you wiil find for each profile classe's mapping'.
     * Notes that student's classes are always map to dbClasses. 
     * - If you upload just 1 profile's file, it will be directly map against dbClasses.
-    * - If the uploaded profile's file don't have any "classes" field class mappind is ignore for it
+    * - If the uploaded profile's file don't have any "classes" field class mapping is ignore for it
     * Finaly we populate @availableClasses, for each profile, by concat mappings[profile] and dbClasses
     */
     classes = {
@@ -426,24 +426,23 @@ export class ImportCSV implements OnInit, OnDestroy {
             this.availableClasses = {};
             this.profiles = [];    
             for (let p of Object.keys(classesMapping)) {
+                let availables = [''];
                 if (p != 'dbClasses') {
                     this.profiles.push(p);
                     this.mappings[p] = classesMapping[p];
-                    let availables = [''];
-                    Object.values(this.mappings[p]).forEach(el => {
+                    Object.keys(this.mappings[p]).forEach(el => {
                         if (el.trim().length > 0) {
                             availables.push(el);
                         }
                     });
-                    if (classesMapping.dbClasses != null) {
-                        classesMapping.dbClasses.forEach(el => {
-                            if (availables.indexOf(el) == -1) {
-                                availables.push(el);
-                            }
-                        });
-                    }
-                    this.availableClasses[p] = availables;
+                } else {
+                    classesMapping.dbClasses.forEach(el => {
+                        if (availables.indexOf(el) == -1) {
+                            availables.push(el);
+                        }
+                    });
                 }
+                this.availableClasses[p] = availables;
             }
         },
         hasWarning(profile?:Profile) {
