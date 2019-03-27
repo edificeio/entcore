@@ -40,7 +40,7 @@ import { NotifyService } from "../../../../core/services";
                                 </option>
                             </select>
 
-                            <input type="number" 
+                            <input type="text" 
                                 name="newQuotaValue"
                                 [(ngModel)]="newQuotaValue" 
                                 class="quota-form-body__input" />
