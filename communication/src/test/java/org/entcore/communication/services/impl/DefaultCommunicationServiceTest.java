@@ -38,25 +38,25 @@ public class DefaultCommunicationServiceTest {
     }
 
     @Test
-    public void computeDirectionToRemove_shouldReturnNull_GivenDirectionBoth() {
+    public void computeNextDirection_shouldReturnNull_GivenDirectionBoth() {
         Assert.assertEquals(null,
                 service.computeNextDirection(DefaultCommunicationService.Direction.BOTH));
     }
 
     @Test
-    public void computeDirectionToRemove_shouldReturnIncoming_GivenDirectionOutgoing() {
+    public void computeNextDirection_shouldReturnIncoming_GivenDirectionOutgoing() {
         Assert.assertEquals(CommunicationService.Direction.INCOMING,
                 service.computeNextDirection(DefaultCommunicationService.Direction.OUTGOING));
     }
 
     @Test
-    public void computeDirectionToRemove_shouldReturnOutgoing_GivenDirectionIncoming() {
+    public void computeNextDirection_shouldReturnOutgoing_GivenDirectionIncoming() {
         Assert.assertEquals(CommunicationService.Direction.OUTGOING,
                 service.computeNextDirection(DefaultCommunicationService.Direction.INCOMING));
     }
 
     @Test
-    public void computeDirectionToRemove_shouldReturnBoth_GivenNull() {
+    public void computeNextDirection_shouldReturnBoth_GivenNull() {
         Assert.assertEquals(CommunicationService.Direction.BOTH,
                 service.computeNextDirection(null));
     }

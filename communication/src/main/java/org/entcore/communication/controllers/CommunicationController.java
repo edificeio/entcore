@@ -526,7 +526,7 @@ public class CommunicationController extends BaseController {
         communicationService.safelyRemoveLinkWithUsers(groupId, event -> {
             if (event.isLeft()) {
                 String error = event.left().getValue();
-                if (error.equals(communicationService.impossibleToChangeDirection)) {
+                if (error.equals(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION)) {
                     Renders.renderJson(request, new JsonObject().put("error", error), 409);
                 } else {
                     Renders.renderJson(request, new JsonObject().put("error", error), 500);

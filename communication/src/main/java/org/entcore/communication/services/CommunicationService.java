@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public interface CommunicationService {
-	String impossibleToChangeDirection = "impossible to change direction";
+	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
 
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup");

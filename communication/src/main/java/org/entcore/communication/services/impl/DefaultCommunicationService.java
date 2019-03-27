@@ -628,8 +628,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
     @Override
     public void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results) {
-        String query = ""
-                + "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
+        String query = "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
                 + "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
                 + "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
                 + "WITH COALESCE(sg, sc) as s, c, g "
@@ -653,8 +652,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
     @Override
     public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
-        String query = ""
-                + "MATCH (ug: Group { id: {id} }) "
+        String query = "MATCH (ug: Group { id: {id} }) "
                 + "OPTIONAL MATCH (ug)<-[:COMMUNIQUE]-(sg:Group) "
                 + "WITH ug, count(sg) as csg "
 
@@ -670,11 +668,11 @@ public class DefaultCommunicationService implements CommunicationService {
                 int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
 
                 Direction directionToRemove = computeDirectionToRemove(numberOfReceivingGroups > 0, numberOfSendingGroups > 0);
-                Direction nextDirection = computeNextDirection(directionToRemove);
 
                 if (directionToRemove == null) {
-                    handler.handle(new Either.Left<>(impossibleToChangeDirection));
+                    handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
                 } else {
+                    Direction nextDirection = computeNextDirection(directionToRemove);
                     removeLinkWithUsers(groupId, directionToRemove,
                             t -> handler.handle(new Either.Right<>(new JsonObject().put("users", nextDirection))));
                 }
