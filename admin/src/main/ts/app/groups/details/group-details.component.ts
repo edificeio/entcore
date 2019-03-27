@@ -1,17 +1,20 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
-import { Subject } from 'rxjs';
+import { GroupsStore } from '../groups.store';
+import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
+import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
+import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
+import { NotifyService } from '../../core/services';
+
+import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/observable/merge';
-
-import { GroupsStore } from '../groups.store';
-import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
-import { InternalCommunicationRule } from '../../core/store/models';
 
 @Component({
     selector: 'group-detail',
@@ -33,7 +36,7 @@ import { InternalCommunicationRule } from '../../core/store/models';
             <group-users-list [users]="groupsStore.group?.users">
                 <span class="lct-communication-rule"
                       *ngIf="internalCommunicationRule && groupsStore.group?.type === 'ManualGroup'"
-                      (click)="toggleCommunicationRuleClicked.next({groupId: groupsStore.group.id, internalCommunicationRule: internalCommunicationRule})">
+                      (click)="toggleCommunicationRuleClicked.next(groupsStore.group)">
                     <span class="lct-communication-rule__can-communicate"
                           *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
                         <s5l class="lct-communication-rule__text">group.details.members.can.communicate</s5l> <i
@@ -62,13 +65,14 @@ import { InternalCommunicationRule } from '../../core/store/models';
 export class GroupDetails implements OnInit, OnDestroy {
     public internalCommunicationRule: InternalCommunicationRule | undefined;
     public showAddUsersLightBox = false;
-    public toggleCommunicationRuleClicked: Subject<GroupIdAndInternalCommunicationRule> = new Subject();
+    public toggleCommunicationRuleClicked: Subject<GroupModel> = new Subject();
 
     private changesSubscription: Subscription;
 
     constructor(public groupsStore: GroupsStore,
-                private http: HttpClient,
                 private route: ActivatedRoute,
+                private notifyService: NotifyService,
+                private communicationRulesService: CommunicationRulesService,
                 private cdRef: ChangeDetectorRef) {
     }
 
@@ -77,7 +81,7 @@ export class GroupDetails implements OnInit, OnDestroy {
             this.route.data
                 .map((data: { rule: GroupIdAndInternalCommunicationRule }) => data.rule),
             this.toggleCommunicationRuleClicked
-                .switchMap(data => this.toggleCommunicationBetweenMembers(data.groupId, data.internalCommunicationRule))
+                .switchMap(group => this.toggleCommunicationBetweenMembers(group))
                 .filter(res => res.groupId === this.groupsStore.group.id) // don't affect the UI if we changed the current group
         )
             .map((data: GroupIdAndInternalCommunicationRule) => data.internalCommunicationRule)
@@ -110,16 +114,27 @@ export class GroupDetails implements OnInit, OnDestroy {
         document.body.style.overflowY = 'auto';
     }
 
-    toggleCommunicationBetweenMembers(groupId: string, internalCommunicationRule: InternalCommunicationRule): Observable<GroupIdAndInternalCommunicationRule> {
-        let request: Observable<{ number: number }>;
-        const direction: InternalCommunicationRule = internalCommunicationRule === 'BOTH' ? 'NONE' : 'BOTH';
-
-        if (direction === 'BOTH') {
-            request = this.http.post<{ number: number }>(`/communication/group/${groupId}`, {direction});
-        } else {
-            request = this.http.request<{ number: number }>('delete', `/communication/group/${groupId}`, {body: {direction: 'BOTH'}});
-        }
-
-        return request.map(() => ({groupId, internalCommunicationRule: direction}));
+    toggleCommunicationBetweenMembers(group: GroupModel): Observable<GroupIdAndInternalCommunicationRule> {
+        return this.communicationRulesService
+            .toggleInternalCommunicationRule(group)
+            .do(
+                () => this.notifyService.success({
+                    key: 'group.internal-communication-rule.change.success',
+                    parameters: {groupName: group.name}
+                }),
+                (error: HttpErrorResponse) => {
+                    if (error.status === 409) {
+                        this.notifyService.error({
+                            key: 'group.internal-communication-rule.change.conflict.content',
+                            parameters: {groupName: group.name}
+                        }, 'group.internal-communication-rule.change.conflict.title')
+                    } else {
+                        this.notifyService.error({
+                            key: 'group.internal-communication-rule.change.error.content',
+                            parameters: {groupName: group.name}
+                        }, 'group.internal-communication-rule.change.error.title')
+                    }
+                })
+            .map(internalCommunicationRule => ({groupId: group.id, internalCommunicationRule}));
     }
 }
