@@ -1,12 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { CommunicationRulesService } from './communication-rules.service';
-import { CommunicationRule } from './communication-rules.component';
 import { generateGroup } from './communication-test-utils';
-import { GroupModel } from '../../core/store/models';
+import { GroupNameService } from './group-name.service';
+import { BundlesService, SijilModule } from 'sijil';
 import 'rxjs/add/operator/skip';
-import { GroupNameService } from "./group-name.service";
-import { BundlesService, SijilModule } from "sijil";
 
 describe('GroupNameService', () => {
     let groupNameService: GroupNameService;

@@ -56,10 +56,9 @@ export const communicationRulesLocators = {
             </div>
         </div>
         <lightbox-confirm title="user.communication.remove-communication.confirm.title"
-                                  [show]="confirmationDisplayed"
-                                  (onCancel)="confirmationClicked.next('cancel')"
-                                  (onConfirm)="confirmationClicked.next('confirm')"
-                >
+                          [show]="confirmationDisplayed"
+                          (onCancel)="confirmationClicked.next('cancel')"
+                          (onConfirm)="confirmationClicked.next('confirm')">
             <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate"></span>
         </lightbox-confirm>`,
     styles: [`

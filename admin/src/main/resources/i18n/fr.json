@@ -450,8 +450,8 @@
     "user.communication.section.title.sending-rules": "Avec qui l'utilisateur peut-il communiquer",
     "user.communication.section.title.receiving-rules": "Qui peut communiquer avec l'utilisateur",
     "user.communication.remove-communication.confirm.title": "Confirmation requise",
-    "user.communication.remove-communication.confirm.content": "Êtes-vous sûr de vouloir supprimer le droit de communication?",
-    "user.communication.remove-communication.success": "Le droit de communication que vous avez supprimée pour le groupe {{groupName}} sera appliquée à tous les membres de ce groupe.",
+    "user.communication.remove-communication.confirm.content": "Êtes-vous sûr de vouloir supprimer le droit de communication ?",
+    "user.communication.remove-communication.success": "Le droit de communication que vous avez supprimé pour le groupe {{groupName}} sera appliqué à tous les membres de ce groupe.",
     "user.communication.remove-communication.error.title": "Une erreur est survenue.",
     "user.communication.remove-communication.error.content": "Une erreur est survenue pendant la suppression du droit de communication pour le groupe {{groupName}}.",
 

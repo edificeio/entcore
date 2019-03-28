@@ -11,9 +11,9 @@ import {
 } from './communication-rules.component';
 import { generateGroup } from './communication-test-utils';
 import { GroupModel } from '../../core/store/models';
-import { CommunicationRulesService } from "./communication-rules.service";
-import { NotifyService } from "../../core/services";
-import { GroupNameService } from "./group-name.service";
+import { CommunicationRulesService } from './communication-rules.service';
+import { NotifyService } from '../../core/services';
+import { GroupNameService } from './group-name.service';
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;

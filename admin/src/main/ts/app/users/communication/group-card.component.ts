@@ -1,11 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { BundlesService } from 'sijil';
 import { ActivatedRoute } from '@angular/router';
 import { NotifyService, SpinnerService } from '../../core/services';
 import { HttpErrorResponse } from '@angular/common/http';
-import { GroupNameService } from "./group-name.service";
+import { GroupNameService } from './group-name.service';
 
 const css = {
     title: 'lct-group-card-title',
