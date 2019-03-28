@@ -8,11 +8,13 @@ import { By } from '@angular/platform-browser';
 import { CommunicationRulesService } from './communication-rules.service';
 import { ActivatedRoute } from '@angular/router';
 import { NotifyService, SpinnerService } from '../../core/services';
+import { GroupNameService } from "./group-name.service";
 
 describe('GroupCardComponent', () => {
     let component: GroupCardComponent;
     let communicationRulesService: CommunicationRulesService;
     let notifyService: NotifyService;
+    let groupNameService: GroupNameService;
     let spinnerService: SpinnerService;
     let activatedRoute: ActivatedRoute;
     let fixture: ComponentFixture<GroupCardComponent>;
@@ -20,6 +22,7 @@ describe('GroupCardComponent', () => {
     beforeEach(async(() => {
         communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
         notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
+        groupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         spinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
         activatedRoute = {root: {firstChild: {firstChild: {}}}} as ActivatedRoute;
         TestBed.configureTestingModule({
@@ -30,6 +33,7 @@ describe('GroupCardComponent', () => {
                 {useValue: communicationRulesService, provide: CommunicationRulesService},
                 {useValue: spinnerService, provide: SpinnerService},
                 {useValue: notifyService, provide: NotifyService},
+                {useValue: groupNameService, provide: GroupNameService},
                 {useValue: activatedRoute, provide: ActivatedRoute}
             ],
             imports: [
@@ -39,20 +43,8 @@ describe('GroupCardComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(GroupCardComponent);
         component = fixture.debugElement.componentInstance;
-        const bundlesService = TestBed.get(BundlesService);
-        bundlesService.addToBundle({
-            "group.card.structure.Personnel": "Personnels de {{name}}",
-            "group.card.structure.Relative": "Parents de {{name}}",
-            "group.card.structure.Student": "Élèves de {{name}}",
-            "group.card.structure.Teacher": "Enseignants de {{name}}",
-            "group.card.structure.Guest": "Invités de {{name}}",
-            "group.card.class.Personnel": "Personnels de la classe {{name}}",
-            "group.card.class.Relative": "Parents de la classe {{name}}",
-            "group.card.class.Student": "Élèves de la classe {{name}}",
-            "group.card.class.Teacher": "Enseignants de la classe {{name}}",
-            "group.card.class.Guest": "Invités de la classe {{name}}"
-        });
         component.group = generateGroup('Elèves du Lycée Paul Martin');
+        (groupNameService.getGroupName as jasmine.Spy).and.returnValue('Elèves du Lycée Paul Martin');
         component.active = true;
         fixture.detectChanges();
     }));
@@ -61,12 +53,13 @@ describe('GroupCardComponent', () => {
         expect(component).toBeTruthy();
     }));
 
-    it('should display the name of the given group "Elèves du Lycée Paul Martin"', async(() => {
+    it('should display the name of the given group "Elèves du Lycée Paul Martin" using the groupNameService', async(() => {
         expect(getText(getTitle(fixture))).toBe('Elèves du Lycée Paul Martin');
     }));
 
-    it('should display the name of the given group "test"', async(() => {
+    it('should display the name of the given group "test" using the groupNameService', async(() => {
         component.group = generateGroup('test');
+        (groupNameService.getGroupName as jasmine.Spy).and.returnValue('test');
         fixture.detectChanges();
         expect(getText(getTitle(fixture))).toBe('test');
     }));
@@ -79,29 +72,12 @@ describe('GroupCardComponent', () => {
         expect(communicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     }));
 
-    describe('getGroupName', () => {
-        it(`should return 'test' if the group is a manual group named 'test'`, () => {
-            expect(component.getGroupName(generateGroup('test', 'BOTH', 'ManualGroup'))).toBe('test');
-        });
-
-        it('should return a nice label for a ProfileGroup of a class (6emeA)', () => {
-            expect(component.getGroupName(generateGroup('test', 'BOTH',
-                'ProfileGroup', null,
-                [{
-                    id: '6A',
-                    name: '6emeA'
-                }], null, 'Student'))).toBe('Élèves de la classe 6emeA');
-        });
-
-        it('should return a nice label for a ProfileGroup of a structure (Emile Zola)', () => {
-            expect(component.getGroupName(generateGroup('test', 'BOTH',
-                'ProfileGroup', 'StructureGroup',
-                null, [{
-                    id: 'emilezola',
-                    name: 'Emile Zola'
-                }], 'Student'))).toBe('Élèves de Emile Zola');
-        });
-    });
+    it('should emit a clickOnRemoveCommunication event when clicking on the remove communication button', async(() => {
+        let emitted = false;
+        component.clickOnRemoveCommunication.subscribe(() => emitted = true);
+        clickOn(getRemoveCommunicationButton(fixture));
+        expect(emitted).toBe(true);
+    }));
 
     describe('viewMembers', () => {
         it(`should navigate to /admin/myStructure/groups/manual/groupId given a manual group with id groupId and structure id myStructure`, () => {
@@ -125,4 +101,8 @@ function getTitle(fixture: ComponentFixture<GroupCardComponent>): DebugElement {
 
 function getInternalCommunicationSwitch(fixture: ComponentFixture<GroupCardComponent>): DebugElement {
     return fixture.debugElement.query(By.css(locators.internalCommunicationSwitch));
+}
+
+function getRemoveCommunicationButton(fixture: ComponentFixture<GroupCardComponent>): DebugElement {
+    return fixture.debugElement.query(By.css(locators.removeCommunicationButton));
 }

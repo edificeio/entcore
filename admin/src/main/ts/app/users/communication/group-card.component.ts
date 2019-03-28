@@ -1,7 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { BundlesService } from 'sijil';
 import { ActivatedRoute } from '@angular/router';
 import { NotifyService, SpinnerService } from '../../core/services';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -9,6 +8,7 @@ import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/mergeMap';
+import { GroupNameService } from './group-name.service';
 
 const css = {
     title: 'lct-group-card-title',
@@ -43,7 +43,7 @@ export const groupCardLocators = {
                 </button>
                 <button
                     class="group-card__action-remove-communication ${css.removeCommunicationButton}"
-                    (click)="$event.stopPropagation();">
+                    (click)="clickOnRemoveCommunication.emit(); $event.stopPropagation();">
                     {{ 'group.card.remove-communication-button' | translate }} <i class="fa fa-minus"></i>
                 </button>
             </div>
@@ -209,13 +209,16 @@ export class GroupCardComponent {
         .set('ManualGroup', 'manual')
         .set('ProfileGroup', 'profile')
         .set('FunctionalGroup', 'functional');
+        
+    @Output()
+    clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
 
     constructor(
         private spinner: SpinnerService,
         private route: ActivatedRoute,
         private notifyService: NotifyService,
         private communicationRulesService: CommunicationRulesService,
-        private bundlesService: BundlesService) {
+        public groupNameService: GroupNameService) {
     }
 
     public toggleInternalCommunicationRule() {
@@ -230,36 +233,15 @@ export class GroupCardComponent {
                     if (error.status === 409) {
                         this.notifyService.error({
                             key: 'group.internal-communication-rule.change.conflict.content',
-                            parameters: {groupName: this.getGroupName(this.group)}
+                            parameters: {groupName: this.groupNameService.getGroupName(this.group)}
                         }, 'group.internal-communication-rule.change.conflict.title')
                     } else {
                         this.notifyService.error({
                             key: 'group.internal-communication-rule.change.error.content',
-                            parameters: {groupName: this.getGroupName(this.group)}
+                            parameters: {groupName: this.groupNameService.getGroupName(this.group)}
                         }, 'group.internal-communication-rule.change.error.title')
                     }
                 });
-    }
-
-    public getGroupName(group: GroupModel): string {
-        if (group.type === 'ManualGroup') {
-            return group.name;
-        }
-
-        if (group.type === 'ProfileGroup') {
-            if (group.filter && group.classes && group.classes.length > 0) {
-                return this.bundlesService.translate(`group.card.class.${group.filter}`, {name: group.classes[0].name});
-            } else if (group.filter && group.structures && group.structures.length > 0) {
-                return this.bundlesService.translate(`group.card.structure.${group.filter}`, {name: group.structures[0].name});
-            }
-        }
-
-        // Defaulting to the console v1 behaviour
-        const indexOfSeparation = group.name.lastIndexOf('-');
-        if (indexOfSeparation < 0) {
-            return group.name;
-        }
-        return `${this.bundlesService.translate(group.name.slice(0, indexOfSeparation))}-${this.bundlesService.translate(group.name.slice(indexOfSeparation + 1))}`;
     }
 
     public viewMembers(group: GroupModel) {
