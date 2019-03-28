@@ -55,11 +55,11 @@ export const communicationRulesLocators = {
                 </div>
             </div>
         </div>
-        <lightbox-confirm title="user.communication.remove-communication.confirm.title"
+        <lightbox-confirm *ngIf="!!selected" title="user.communication.remove-communication.confirm.title"
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">
-            <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate"></span>
+            <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
         </lightbox-confirm>`,
     styles: [`
         .communication-rules__header {
@@ -104,7 +104,7 @@ export class CommunicationRulesComponent {
 
     constructor(private communicationRulesService: CommunicationRulesService,
                 private notifyService: NotifyService,
-                private groupNameService: GroupNameService) {
+                public groupNameService: GroupNameService) {
     }
 
     public select(column: Column, group: GroupModel): void {

@@ -37,6 +37,7 @@ import { SmartUserCommunicationComponent } from './communication/smart-user-comm
 import { GroupCardComponent } from './communication/group-card.component';
 import { CommunicationRulesComponent } from './communication/communication-rules.component';
 import { UserGroupsResolver } from './communication/user-groups.resolver';
+import { GroupNameService } from './communication/group-name.service';
 
 @NgModule({
     imports: [
@@ -77,7 +78,8 @@ import { UserGroupsResolver } from './communication/user-groups.resolver';
         UserGroupsResolver,
         UserlistFiltersService,
         UserInfoService,
-        globalStoreProvider
+        globalStoreProvider,
+        GroupNameService
     ],
     exports: [
         RouterModule
