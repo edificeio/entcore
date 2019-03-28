@@ -460,7 +460,12 @@
     "user.communication.groups-that-user-can-communicate-with": "Groupes que l'utilisateur peut voir",
     "user.communication.section.title.sending-rules": "Avec qui l'utilisateur peut-il communiquer",
     "user.communication.section.title.receiving-rules": "Qui peut communiquer avec l'utilisateur",
-
+    "user.communication.remove-communication.confirm.title": "Confirmation requise",
+    "user.communication.remove-communication.confirm.content": "Le droit de communication que vous avez supprimé pour le groupe {{groupName}} sera appliqué à tous les membres de ce groupe.",
+    "user.communication.remove-communication.success": "Le droit de communication a bien été supprimé.",
+    "user.communication.remove-communication.error.title": "Une erreur est survenue.",
+    "user.communication.remove-communication.error.content": "Une erreur est survenue pendant la suppression du droit de communication pour le groupe {{groupName}}.",
+    
     "group.card.add-communication-button": "Ajouter un droit de communication",
     "group.card.remove-communication-button": "Supprimer le droit de communication",
     "group.card.view-members-button": "Voir la composition du groupe",
