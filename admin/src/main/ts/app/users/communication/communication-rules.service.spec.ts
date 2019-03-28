@@ -112,4 +112,31 @@ describe('CommunicationRulesService', () => {
             expect(emitted).toBe(false);
         });
     });
+
+    describe('removeCommunication', () => {
+        it(`should call DELETE /communication/group/myGroup1/communique/myGroup2 given groups myGroup1, myGroup2`, () => {
+            const group1: GroupModel = generateGroup('myGroup1');
+            const group2: GroupModel = generateGroup('myGroup2');
+            communicationRulesService.removeCommunication(group1, group2).subscribe();
+            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroup1/communique/myGroup2');
+            expect(communicationGroupRequest.request.method).toBe('DELETE');
+        });
+
+        it(`should emit a new communication rules (without the receiver) if communication rule was in the monitored communication rules`, () => {
+            const group1: GroupModel = generateGroup('group1');
+            const group2: GroupModel = generateGroup('group2');
+            const group3: GroupModel = generateGroup('group3');
+            let rules: CommunicationRule[] = [];
+            communicationRulesService
+                .changes()
+                .skip(1)
+                .subscribe(cr => rules = cr);
+            communicationRulesService.setGroups([group1, group2]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+            httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
+            communicationRulesService.removeCommunication(group2, group3).subscribe();
+            httpController.expectOne('/communication/group/group2/communique/group3').flush(null);
+            expect(rules[1].receivers.length).toBe(0);
+        });
+    });
 });

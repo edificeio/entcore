@@ -1,5 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
+import { CommunicationRulesService } from './communication-rules.service';
+import { NotifyService } from '../../core/services';
+import { GroupNameService } from './group-name.service';
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/first';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/mergeMap';
 
 const css = {
     group: 'lct-user-communication-group',
@@ -16,7 +23,6 @@ export const communicationRulesLocators = {
 @Component({
     selector: 'communication-rules',
     template: `
-
         <div class="communication-rules__headers">
                 <span class="communication-rules__header communication-rules__header--sending">{{ 'user.communication.groups-of-user' | translate }}</span>
                 <span class="communication-rules__header communication-rules__header--receiving">{{ 'user.communication.groups-that-user-can-communicate-with' | translate }}</span>
@@ -26,6 +32,7 @@ export const communicationRulesLocators = {
                 <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
                     <group-card
                     (click)="select('sending', group)"
+                    (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
                     (mouseenter)="highlight('sending', group, selected)"
                     (mouseleave)="resetHighlight()"
                     [group]="group"
@@ -38,6 +45,7 @@ export const communicationRulesLocators = {
                 <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
                     <group-card
                     (click)="select('receiving', group)"
+                    (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
                     (mouseenter)="highlight('receiving', group, selected)"
                     (mouseleave)="resetHighlight()"
                     [group]="group"
@@ -46,7 +54,13 @@ export const communicationRulesLocators = {
                     [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"></group-card>
                 </div>
             </div>
-        </div>`,
+        </div>
+        <lightbox-confirm *ngIf="!!selected" title="user.communication.remove-communication.confirm.title"
+                          [show]="confirmationDisplayed"
+                          (onCancel)="confirmationClicked.next('cancel')"
+                          (onConfirm)="confirmationClicked.next('confirm')">
+            <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
+        </lightbox-confirm>`,
     styles: [`
         .communication-rules__header {
             color: #2a9cc8;
@@ -80,10 +94,18 @@ export const communicationRulesLocators = {
 export class CommunicationRulesComponent {
 
     @Input()
-    communicationRules: CommunicationRule[];
+    public communicationRules: CommunicationRule[];
 
-    selected: Cell;
-    highlighted: Cell;
+    public selected: Cell;
+    public highlighted: Cell;
+
+    public confirmationDisplayed = false;
+    public confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+
+    constructor(private communicationRulesService: CommunicationRulesService,
+                private notifyService: NotifyService,
+                public groupNameService: GroupNameService) {
+    }
 
     public select(column: Column, group: GroupModel): void {
         this.selected = {column, group};
@@ -91,7 +113,7 @@ export class CommunicationRulesComponent {
     }
 
     public highlight(column: Column, group: GroupModel, selected: Cell): void {
-        if (!selected || column !== selected.column || group.id !== selected.group.id) {
+        if (!selected || column !== selected.column || group.id !== selected.group.id) {
             this.highlighted = {column, group};
         }
     }
@@ -134,6 +156,22 @@ export class CommunicationRulesComponent {
         return communicationRules
             .filter(cr => (cr.sender.id === cell.group.id) || cr.receivers.some(g => g.id === cell.group.id))
             .some(cr => (cr.sender.id === group.id) || cr.receivers.some(g => g.id === group.id));
+    }
+
+    public removeCommunication(sender: GroupModel, receiver: GroupModel) {
+        this.confirmationDisplayed = true;
+        this.confirmationClicked.asObservable()
+            .first()
+            .do(() => this.confirmationDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .mergeMap(() => this.communicationRulesService.removeCommunication(sender, receiver))
+            .subscribe(() => this.notifyService.success({
+                key: 'user.communication.remove-communication.success',
+                parameters: {groupName: this.groupNameService.getGroupName(sender)}
+            }), () => this.notifyService.error({
+                key: 'user.communication.remove-communication.error.content',
+                parameters: {groupName: this.groupNameService.getGroupName(sender)}
+            }, 'user.communication.remove-communication.error.title'));
     }
 }
 
