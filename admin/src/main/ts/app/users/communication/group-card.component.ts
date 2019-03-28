@@ -29,7 +29,7 @@ export const groupCardLocators = {
         [ngClass]="{'group-card--active': active, 'group-card--selected': selected, 'group-card--highlighted': highlighted}">
             <div class="group-card__title ${css.title}">
                 <span class="group-card__title-label">{{groupNameService.getGroupName(group)}}</span>
-                <i (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-users" [title]="'group.card.view-members-button' | translate"></i>
+                <i *ngIf="groupTypeRouteMapping.has(group.type)" (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-users" [title]="'group.card.view-members-button' | translate"></i>
             </div>
             <div class="group-card__actions">
                 <button
@@ -195,6 +195,11 @@ export class GroupCardComponent {
     @Output()
     clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
 
+    groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
+        .set('ManualGroup', 'manual')
+        .set('ProfileGroup', 'profile')
+        .set('FunctionalGroup', 'functional');
+
     constructor(
         private spinner: SpinnerService,
         private route: ActivatedRoute,
@@ -226,11 +231,6 @@ export class GroupCardComponent {
     }
 
     public viewMembers(group: GroupModel) {
-        window.open(`/admin/${group.structures[0].id}/groups/${groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
+        window.open(`/admin/${group.structures[0].id}/groups/${this.groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
     }
 }
-
-const groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
-    .set('ManualGroup', 'manual')
-    .set('ProfileGroup', 'profile')
-    .set('FunctionalGroup', 'functional');
