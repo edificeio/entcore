@@ -51,6 +51,20 @@ export class CommunicationRulesService {
             });
     }
 
+    public removeCommunication(sender: GroupModel, receiver: GroupModel): Observable<void> {
+        return this.http.delete<void>(`/communication/group/${sender.id}/communique/${receiver.id}`)
+            .do(() => {
+                if (this.currentRules) {
+                    const communicationRuleOfSender = this.currentRules.find(cr => cr.sender.id === sender.id);
+                    if (!!communicationRuleOfSender) {
+                        communicationRuleOfSender.receivers = communicationRuleOfSender.receivers
+                            .filter(r => r.id !== receiver.id);
+                        this.rulesSubject.next(this.clone(this.currentRules));
+                    }
+                }
+            });
+    }
+
     private getCommunicationRulesOfGroup(sender: GroupModel): Observable<CommunicationRule> {
         return this.http.get<GroupModel[]>(`/communication/group/${sender.id}/outgoing`)
             .map(receivers => ({sender, receivers}));
