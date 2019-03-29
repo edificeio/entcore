@@ -11,6 +11,7 @@ import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
 import { NotifyService } from '../../core/services';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 
 describe('GroupDetails', () => {
@@ -105,8 +106,10 @@ describe('GroupDetails', () => {
         expect(fixture.nativeElement.querySelectorAll('.lct-communication-rule__can-communicate').length).toBe(0);
     });
 
-    it(`should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch`, () => {
+    it(`should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch and confirming the change`, () => {
         fixture.nativeElement.querySelector('.lct-communication-rule').click();
+        (mockCommunicationRulesService.toggleInternalCommunicationRule as jasmine.Spy).and.returnValue(Observable.of({}));
+        component.confirmationClicked.next('confirm');
         expect(mockCommunicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     });
 });

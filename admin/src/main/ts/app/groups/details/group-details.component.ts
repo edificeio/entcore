@@ -13,6 +13,8 @@ import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/observable/merge';
 
@@ -51,6 +53,12 @@ import 'rxjs/add/observable/merge';
                 </span>
             </group-users-list>
         </div>
+        <lightbox-confirm *ngIf="groupsStore && groupsStore.group" title="group.internal-communication-rule.change.confirm.title"
+                          [show]="confirmationDisplayed"
+                          (onCancel)="confirmationClicked.next('cancel')"
+                          (onConfirm)="confirmationClicked.next('confirm')">
+            <span [innerHTML]="'group.internal-communication-rule.change.confirm.content' | translate: {groupName: groupsStore.group.name}"></span>
+        </lightbox-confirm>
     `,
     styles: [
         '.lct-communication-rule {cursor: pointer;}',
@@ -66,6 +74,8 @@ export class GroupDetails implements OnInit, OnDestroy {
     public internalCommunicationRule: InternalCommunicationRule | undefined;
     public showAddUsersLightBox = false;
     public toggleCommunicationRuleClicked: Subject<GroupModel> = new Subject();
+    public confirmationDisplayed = false;
+    public confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
     private changesSubscription: Subscription;
 
@@ -115,8 +125,12 @@ export class GroupDetails implements OnInit, OnDestroy {
     }
 
     toggleCommunicationBetweenMembers(group: GroupModel): Observable<GroupIdAndInternalCommunicationRule> {
-        return this.communicationRulesService
-            .toggleInternalCommunicationRule(group)
+        this.confirmationDisplayed = true;
+        return this.confirmationClicked.asObservable()
+            .first()
+            .do(() => this.confirmationDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .mergeMap(() => this.communicationRulesService.toggleInternalCommunicationRule({id: group.id, internalCommunicationRule: this.internalCommunicationRule} as GroupModel))
             .do(
                 () => this.notifyService.success({
                     key: 'group.internal-communication-rule.change.success',

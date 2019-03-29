@@ -64,10 +64,11 @@ describe('GroupCardComponent', () => {
         expect(getText(getTitle(fixture))).toBe('test');
     }));
 
-    it('should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch', async(() => {
+    it('should call the communicationRulesService.toggleInternalCommunicationRule when clicking on the communication rules switch and confirming the change', async(() => {
         component.group = generateGroup('test');
         fixture.detectChanges();
         clickOn(getInternalCommunicationSwitch(fixture));
+        component.confirmationClicked.next('confirm');
         expect(communicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     }));
 

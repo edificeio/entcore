@@ -5,6 +5,10 @@ import { ActivatedRoute } from '@angular/router';
 import { NotifyService, SpinnerService } from '../../core/services';
 import { HttpErrorResponse } from '@angular/common/http';
 import { GroupNameService } from './group-name.service';
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/first';
+import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/mergeMap';
 
 const css = {
     title: 'lct-group-card-title',
@@ -57,7 +61,13 @@ export const groupCardLocators = {
                         (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
                 </span>
             </ng-template>
-        </div>`,
+        </div>
+        <lightbox-confirm title="group.internal-communication-rule.change.confirm.title"
+                          [show]="confirmationDisplayed"
+                          (onCancel)="confirmationClicked.next('cancel')"
+                          (onConfirm)="confirmationClicked.next('confirm')">
+            <span [innerHTML]="'group.internal-communication-rule.change.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+        </lightbox-confirm>`,
     styles: [`
         .group-card {
             background-color: #c0c0c0;
@@ -195,6 +205,9 @@ export class GroupCardComponent {
     @Output()
     clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
 
+    confirmationDisplayed = false;
+    confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+
     groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
         .set('ManualGroup', 'manual')
         .set('ProfileGroup', 'profile')
@@ -209,12 +222,13 @@ export class GroupCardComponent {
     }
 
     public toggleInternalCommunicationRule() {
-        this.communicationRulesService
-            .toggleInternalCommunicationRule(this.group)
-            .subscribe(() => this.notifyService.success({
-                    key: 'group.internal-communication-rule.change.success',
-                    parameters: {groupName: this.groupNameService.getGroupName(this.group)}
-                }),
+        this.confirmationDisplayed = true;
+        this.confirmationClicked.asObservable()
+            .first()
+            .do(() => this.confirmationDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .mergeMap(() => this.communicationRulesService.toggleInternalCommunicationRule(this.group))
+            .subscribe(() => this.notifyService.success('group.internal-communication-rule.change.success'),
                 (error: HttpErrorResponse) => {
                     if (error.status === 409) {
                         this.notifyService.error({
