@@ -667,7 +667,7 @@ public class DefaultCommunicationService implements CommunicationService {
                 int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
                 int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
 
-                Direction directionToRemove = computeDirectionToRemove(numberOfReceivingGroups > 0, numberOfSendingGroups > 0);
+				Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
 
                 if (directionToRemove == null) {
                     handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
