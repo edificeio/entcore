@@ -32,6 +32,12 @@ $success: $validate;
 $warning: $contrast;
 $danger: darken($contrast, 5%);
 
+$cyan:    #46afe6;
+$green:   #6fbe2e;
+$orange:  #ff8500;
+$purple:  #a348c0;
+$pink:    #ff3a55;
+
 /* Elements */
 body {
     padding: 0;
@@ -1004,21 +1010,21 @@ user-list, group-users-list, group-input-users, group-output-users {
                     padding: 5px;
                     min-width: 80px;
                     text-align: center;
-
+                    color: white;
                     &.Student {
-                        background-color: rgba(0, 0, 0, 0.2);
+                        background-color: $orange;
                     }
                     &.Teacher {
-                        background-color: rgba(250, 0, 0, 0.2);
+                        background-color: $green;
                     }
                     &.Relative {
-                        background-color: rgba(255, 165, 0, 0.2);
+                        background-color: $cyan;
                     }
                     &.Personnel {
-                        background-color: rgba(0, 128, 128, 0.2);
+                        background-color: $purple;
                     }
                     &.Guest {
-                        background-color: rgba(30, 144, 255, 0.2);
+                        background-color: $pink;
                     }
                 }
 
