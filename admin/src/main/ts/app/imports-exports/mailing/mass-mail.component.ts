@@ -87,6 +87,17 @@ import { FilterPipe } from '../../shared/ux/pipes'
                     </div>
                     <div class="mailing__notice"><s5l>massmail.notice</s5l></div>
                 </div>
+                <div class="mailing__sort">
+                    <p><s5l>massmail.modeltitle</s5l></p>
+                    <select [(ngModel)]="templateModel">
+                        <option value="pdf">
+                            <s5l>massmail.pdf.one</s5l>
+                        </option>
+                        <option value="simplePdf">
+                            <s5l>massmail.pdf.eight</s5l>
+                        </option>
+                    </select>
+                </div>
                 <div  class="mailing__publish">
                     <p><s5l>process.massmail</s5l></p>
                     <div>
@@ -194,6 +205,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     public firstSort: "none" | "profile" | "classname" = 'none';
     public secondSort: "none" | "profile" | "classname" = 'none';
+    public templateModel: "pdf" | "simplePdf" = 'pdf';
 
     translate = (...args) => { return (<any>this.bundles.translate)(...args) }
 
@@ -265,6 +277,9 @@ export class MassMailComponent implements OnInit, OnDestroy {
                 sorts.push(this.secondSort);
             }
         }
+        if (type === 'pdf') {
+            type = this.templateModel;
+        }
 
         let params: any = {
             p: outputModels['type'],
@@ -298,7 +313,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
             return
         }
         
-        if (type.indexOf("pdf") > -1) {
+        if (type.indexOf("pdf") > -1 || type.indexOf("simplePdf") > -1) {
             this.ajaxDownload(blob, this.translate("massmail.filename") + ".pdf");
             this.ns.success("massmail.pdf.done");
         } else {
