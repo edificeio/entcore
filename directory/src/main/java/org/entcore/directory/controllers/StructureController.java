@@ -413,7 +413,7 @@ public class StructureController extends BaseController {
 			public void handle(final UserInfos infos) {
 
 				//PDF
-				if("pdf".equals(type)){
+				if("pdf".equals(type) || "simplePdf".equals(type)){
 					structureService.massmailUsers(structureId, filter, groupClasses, false, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
@@ -421,7 +421,7 @@ public class StructureController extends BaseController {
 								return;
 							}
 
-							massMailTypePdf(request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
+							massMailTypePdf(request, templatePath, baseUrl, filename, type, result.right().getValue());
 						}
 					});
 				}

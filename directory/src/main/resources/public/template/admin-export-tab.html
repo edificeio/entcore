@@ -199,6 +199,19 @@
                 </select>
             </div>
         </div>
+        <div class="six cell">
+            <hr />
+            <h3 class="subtitle"><i18n>directory.admin.model.options</i18n></h3>
+
+            <div class="row vertical-spacing-twice">
+                <span class="two cell"><i18n>directory.admin.model</i18n> :</span>
+                <select class="four cell"
+                    ng-model="massmail.templateModel">
+                    <option value="pdf" selected>[[lang.translate("directory.massmail.pdf.one")]]</option>
+                    <option value="simplePdf" selected>[[lang.translate("directory.massmail.pdf.eight")]]</option>
+                </select>
+            </div>
+        </div>
     </div>
     <hr/>
     <h3 class="subtitle"><i18n>directory.admin.launch.massmail</i18n></h3>
