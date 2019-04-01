@@ -407,21 +407,21 @@ public class StructureController extends BaseController {
 		final String templatePath = assetsPath + "/template/directory/";
 		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + this.skins.get(Renders.getHost(request)) + "/img/";
 
-		final boolean groupClasses = !filter.getJsonArray("sort").contains("classname");
+		final boolean isSimplePdf = "simplePdf".equals(type);
 
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			public void handle(final UserInfos infos) {
 
 				//PDF
-				if("pdf".equals(type)){
-					structureService.massmailUsers(structureId, filter, groupClasses, false, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+				if("pdf".equals(type) || isSimplePdf){
+					structureService.massmailUsers(structureId, filter, true, isSimplePdf, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
 								forbidden(request);
 								return;
 							}
 
-							massMailTypePdf(request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
+							massMailTypePdf(request, templatePath, baseUrl, filename, type, result.right().getValue());
 						}
 					});
 				}

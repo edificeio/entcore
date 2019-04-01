@@ -422,10 +422,10 @@ public class DefaultSchoolService implements SchoolService {
 		if (filterObj.containsKey("sort")) {
 			for (Object sortObj : filterObj.getJsonArray("sort")) {
 				String sortstr = (String) sortObj;
-				sort += "LOWER(" + sortstr + "),";
+				sort += "TOLOWER(TOSTRING(" + sortstr + ")), ";
 			}
 		}
-		sort += "lastName";
+		sort += "TOLOWER(lastName) ";
 
 		String query = filter + condition + optional + withStr + returnStr + sort;
 

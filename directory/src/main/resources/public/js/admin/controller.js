@@ -1218,6 +1218,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 		],
 		sort1: "",
 		sort2: "",
+		templateModel: "pdf",
 		filtermethod2: function(item){
 			return $scope.massmail.sort1 !== item.label
 		},
@@ -1350,10 +1351,10 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 				that.date.setHours(0,0,0,0)
 				params.date = that.date ? that.date.getTime() : 0
 			}
-			if(type === 'pdf'){
+			if(type === 'pdf' || type === 'simplePdf'){
 				params.s = sortArray
 				if(that.email) params.mail = that.email
-				$http.get('/directory/structure/' + that.getStructure().id + '/massMail/process/pdf', {
+				$http.get('/directory/structure/' + that.getStructure().id + '/massMail/process/' + that.templateModel, {
 					params: params,
 					responseType: 'blob'
 				}).success(function(blob){
