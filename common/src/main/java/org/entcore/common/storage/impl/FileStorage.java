@@ -129,6 +129,7 @@ public class FileStorage implements Storage {
 								} catch (FileNotFoundException e) {
 									log.error(e.getMessage(), e);
 								}
+								return;
 							}
 						}
 						handler.handle(res.put("_id", id)
