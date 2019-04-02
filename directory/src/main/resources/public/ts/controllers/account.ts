@@ -42,11 +42,14 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 			template.open('account/main', 'account/default-view');
 			directory.account = new directory.User({ id: model.me.userId, edit: { userbook: true, visibility: true } });
 			await init();
+			lang.addBundle('/auth/i18n', function () {
+				$scope.cguUrl = lang.translate("auth.charter");
+			});
 			if(model.me.type !== 'ELEVE'){
 				directory.account.edit.infos = true;
 				$scope.openView('user-edit', 'user');
 			}
-			else{
+			else {
 				$scope.openView('user-view', 'user');
 			}
 			$scope.openView('userbook-edit', 'userbook');
