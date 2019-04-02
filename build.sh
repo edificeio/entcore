@@ -44,10 +44,10 @@ clean () {
 buildNode () {
   case `uname -s` in
     MINGW*)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update entcore && node_modules/gulp/bin/gulp.js build" 
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links && npm update --no-save entcore && node_modules/gulp/bin/gulp.js build" 
       ;;
     *)
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
+      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update --no-save entcore && node_modules/gulp/bin/gulp.js build --springboard=/home/node/$SPRINGBOARD"
   esac
 }
 
@@ -84,19 +84,19 @@ adminV2GradleInstall () {
 }
 
 adminV2NodeClean () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-clean"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update --no-save entcore && node_modules/gulp/bin/gulp.js adminV2-clean"
 }
 
 adminV2NodeBuildDev () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-build-dev"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update --no-save entcore && node_modules/gulp/bin/gulp.js adminV2-build-dev"
 }
 
 adminV2NodeBuildProd () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-build"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update --no-save entcore && node_modules/gulp/bin/gulp.js adminV2-build"
 }
 
 adminV2NodeDevServer () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update entcore && node_modules/gulp/bin/gulp.js adminV2-dev-server"
+  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm update --no-save entcore && node_modules/gulp/bin/gulp.js adminV2-dev-server"
 }
 
 adminV2NodeWatch () {
