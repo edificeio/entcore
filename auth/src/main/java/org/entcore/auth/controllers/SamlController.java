@@ -71,6 +71,7 @@ import java.util.Base64;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.Inflater;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -217,12 +218,23 @@ public class SamlController extends AbstractFederateController {
 			@Override
 			public void handle(final UserInfos user) {
 				final String serviceProviderId = request.params().get("providerId");
-				ssoGenerateSAML(user, serviceProviderId, request);
+                String relayState = null;
+                JsonObject relayStateMap = config.getJsonObject("relay-state");
+                if(relayStateMap != null) {
+                    relayState = relayStateMap.getString(serviceProviderId);
+                    if(relayState == null) {
+                        log.error("Error loading relay-state for providerId : " + serviceProviderId);
+                    }
+                } else {
+                    log.error("Error loading relay-state properties.");
+                }
+
+				ssoGenerateSAML(user, serviceProviderId, relayState,  request);
 			}
 		});
 	}
 
-	private void ssoGenerateSAML(UserInfos user, String serviceProviderId, HttpServerRequest request) {
+	private void ssoGenerateSAML(UserInfos user, String serviceProviderId, String relayState, HttpServerRequest request) {
 		if (serviceProviderId == null || serviceProviderId.trim().isEmpty()) {
             forbidden(request, "invalid.provider");
             return;
@@ -253,7 +265,7 @@ public class SamlController extends AbstractFederateController {
                 // If generation succeed, an HTML auto-submit FORM is created
                 String error = event.body().getString("error");
                 if (isNotEmpty(samlResponse) && isNotEmpty(destination) && (error == null || error.isEmpty())) {
-                    renderSamlResponse(user,samlResponse,serviceProviderId,destination,request);
+                    renderSamlResponse(user,samlResponse,serviceProviderId,destination,relayState, request);
                 } else {
                     // Else redirect to the login page
                     redirect(request, "");
@@ -266,7 +278,47 @@ public class SamlController extends AbstractFederateController {
 	@Get("/saml/redirect/sso/")
 	public void ssoredirectGet ( final HttpServerRequest request){
 		log.info("ssoredirect GET called");
-		ssoRedirect(request.params().get("SAMLRequest"), request);
+		try{
+            String SAMLrequestEnflatedEncoded = request.params().get("SAMLRequest");
+            String SAMLAuthnRequest = base64decodedInflated(SAMLrequestEnflatedEncoded);
+            String relayState = request.params().get("RelayState");
+            ssoRedirect(SAMLAuthnRequest, relayState, request);
+        } catch (Exception e) {
+            log.error("ssoRedirect decode base64 and inflate xml FAILED ", e);
+            redirect(request, "");
+
+        }
+
+	}
+
+
+	/**
+	 * Returns String Base64 decoded and inflated
+	 *
+	 * @param input	String input
+	 *
+	 * @return the base64 decoded and inflated string
+	 */
+	private static String base64decodedInflated(String input) throws Exception {
+		if (input.isEmpty()) {
+			return input;
+		}
+		// Base64 decoder
+		byte[] decoded = Base64.getDecoder().decode(input);
+
+		// Inflater
+        Inflater decompresser = new Inflater(true);
+        decompresser.setInput(decoded);
+        byte[] result = new byte[1024];
+        String inflated = "";
+        long limit = 0;
+        while(!decompresser.finished() && limit < 150) {
+            int resultLength = decompresser.inflate(result);
+            limit += 1;
+            inflated += new String(result, 0, resultLength, "UTF-8");
+        }
+        decompresser.end();
+        return inflated;
 	}
 
 	@Post("/saml/post/sso/")
@@ -277,7 +329,16 @@ public class SamlController extends AbstractFederateController {
 		request.endHandler(new Handler<Void>() {
 			@Override
 			public void handle(Void v) {
-			ssoRedirect(request.formAttributes().get("SAMLRequest"), request);
+				try {
+                    String SAMLRequestEncoded = request.formAttributes().get("SAMLRequest");
+                    String xmlStr = new String(Base64.getDecoder().decode(SAMLRequestEncoded));
+                    String relayState = request.formAttributes().get("RelayState");
+                    ssoRedirect(xmlStr, relayState, request);
+				} catch (Exception e) {
+					log.error("ssoRedirect decode base64 xml FAILED ", e);
+					redirect(request, "");
+				}
+
 		}});
 		request.resume();
 
@@ -298,22 +359,16 @@ public class SamlController extends AbstractFederateController {
 
 	/**
 	 * Generate SAML response from saml Issuer
-	 * @param xmlStrBase64 (issuer name inside)
+	 * @param SAMLAuthnRequest (issuer name inside)
 	 * @param request
 	 */
-	private void ssoRedirect(String xmlStrBase64, HttpServerRequest request) {
-		String xmlStr = "";
-		try {
-			xmlStr = new String(Base64.getDecoder().decode(xmlStrBase64));
-		} catch (Exception e) {
-			log.error("ssoRedirect decode base64 xml FAILED ", e);
-			redirect(request, "");
-		}
+	private void ssoRedirect(String SAMLAuthnRequest, String relayState, HttpServerRequest request) {
+
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder;
 		try {
 			builder = factory.newDocumentBuilder();
-			Document doc = builder.parse(new InputSource(new StringReader(xmlStr)));
+			Document doc = builder.parse(new InputSource(new StringReader(SAMLAuthnRequest)));
 			XPathFactory xpf = XPathFactory.newInstance();
 			XPath path = xpf.newXPath();
 			String expression = "/AuthnRequest/Issuer";
@@ -321,17 +376,18 @@ public class SamlController extends AbstractFederateController {
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
-					ssoGenerateSAML(user, serviceProviderId, request);
+					ssoGenerateSAML(user, serviceProviderId, relayState,  request);
 				}
 			});
 		} catch (Exception e) {
-
 			log.info("Provider not available");
-			log.info("XML Provider ------------------------------");
-			log.info(xmlStr);
-			log.info("END XML Provider ------------------------------");
+			log.info("SAMLAuthnRequest ------------------------------");
+			log.info(SAMLAuthnRequest);
+			log.info("END SAMLAuthnRequest ------------------------------");
+			log.info("relayState:" + relayState);
 			redirect(request,"");
 			log.error("Can't generate SAML response from provider ", e);
+
 		}
 	}
 
@@ -340,21 +396,13 @@ public class SamlController extends AbstractFederateController {
 	 * @param samlResponse64 base64 SAMLResponse
 	 * @param destination the recipient (SP acs)
 	 */
-	private void renderSamlResponse(UserInfos user,String samlResponse64,String providerId, String destination,HttpServerRequest request) {
+	private void renderSamlResponse(UserInfos user,String samlResponse64,String providerId, String destination,String relayState, HttpServerRequest request) {
 		JsonObject paramsFED = new JsonObject();
 		paramsFED.put("SAMLResponse",samlResponse64);
-		JsonObject relayStateMap = config.getJsonObject("relay-state");
-		if(relayStateMap != null) {
-			String relayState = relayStateMap.getString(providerId);
-			if(relayState != null) {
-				paramsFED.put("RelayState",relayState);
-			} else {
-				log.error("Error loading relay-state for providerId : " + providerId);
-			}
-		} else {
-			log.error("Error loading relay-state properties.");
+		if (relayState != null) {
+			paramsFED.put("RelayState", relayState);
 		}
-		paramsFED.put("Destination", destination);
+        paramsFED.put("Destination", destination);
 		renderView(request, paramsFED, "fed.html", null);
 	}
 
