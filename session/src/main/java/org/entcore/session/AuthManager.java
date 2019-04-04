@@ -629,7 +629,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"RETURN distinct " +
 				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
-				"n.birthDate as birthDate, n.changePw as forceChangePassword, " +
+				"n.birthDate as birthDate, n.changePw as forceChangePassword, n.needRevalidateTerms as needRevalidateTerms,HAS(n.deleteDate) as deletePending, " +
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
 				"COLLECT(distinct [s.id, s.name, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.UAI) as uai, " +

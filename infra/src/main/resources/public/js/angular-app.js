@@ -6518,6 +6518,7 @@ $(document).ready(function() {
                 lang.addBundle('/i18n', function() {
                     lang.addBundle('/' + appPrefix + '/i18n', function() {
                         angular.bootstrap($('html'), ['app']);
+                        model.trigger("bootstrap")
                         model.sync();
                     });
                 });
@@ -7118,3 +7119,72 @@ function MediaLibrary($scope) {
         $scope.documents = filteredDocuments($scope.openedFolder);
     }
 }
+//===angular injector
+function injectIntoSelector(selector, domString) {
+    $(document).ready(function () {
+        var parent = angular.element(selector);
+        parent.injector().invoke(['$compile', function ($compile) {
+            var scope = parent.scope();
+            var compiled = $compile(domString)(scope);
+            parent.append(compiled);
+        }]);
+    })
+}
+//=== ensure User has validated terms
+module.directive('cguLightbox', [function () {
+    return {
+        restrict: 'E',
+        scope: true,
+        templateUrl: '/' + infraPrefix + '/public/template/cgu-lightbox.html',
+        link: function (scope, element, attributes) {
+            scope.show = false;
+            if (model.me.needRevalidateTerms && !model.me.deletePending) {
+                var _readyCguLightbox = function () {
+                    //create lightbox
+                    scope.model = {
+                        accept: false
+                    }
+                    scope.title = idiom.translate("cgu.revalidate.title");
+                    scope.content = idiom.translate("cgu.revalidate.content");
+                    scope.linkUrl = idiom.translate("auth.charter");
+                    scope.linkText = idiom.translate("cgu.revalidate.link.text");
+                    scope.link = idiom.translate("cgu.revalidate.accept").replace("[[linkStart]]", "<a href='"+scope.linkUrl+"'>").replace("[[linkEnd]]", "</a>")
+                    scope.actionText = idiom.translate("cgu.revalidate.action");
+                    scope.show = true;
+                    scope.isDisabled = function () {
+                        return !scope.model.accept;
+                    }
+                    scope.logout = function () {
+                        window.location.href = '/auth/logout?callback=' + skin.logoutCallback;
+                    }
+                    scope.validate = function () {
+                        model.me.revalidateTerms(function () {
+                            scope.show = false;
+                            scope.$apply();
+                        });
+                    }
+                    scope.$apply();
+                }
+                // we need to wait portal bundle
+                idiom.addBundlePromise("/i18n").then(function () {
+                    idiom.addBundlePromise("/auth/i18n").then(_readyCguLightbox)
+                })
+            } else {
+                scope.show = false;
+            }
+        }
+    }
+}]);
+function shouldRevalidateTerms() {
+    var _shouldRevalidateTermsCB = function () {
+        if (model.me.needRevalidateTerms) {
+            injectIntoSelector("body", "<cgu-lightbox></cgu-lightbox>");
+        }
+    }
+    if (model.me && model.me.userId) {
+        _shouldRevalidateTermsCB()
+    } else {
+        model.one("userinfo-loaded", _shouldRevalidateTermsCB)
+    }
+}
+model.one("bootstrap",shouldRevalidateTerms);
