@@ -37,7 +37,6 @@
   "calendar.mode.day": "Jour",
   "calendar.mode.week": "Semaine",
   "calendar.mode.month": "Mois",
-  "calendar.mode.month": "Mois",
   "calendar.display.quarterHours": "Afficher les quarts d'heure",
   "calendar.display.saturday": "Afficher le samedi",
   "calendar.display.sunday": "Afficher le dimanche",
@@ -377,5 +376,12 @@
   "smartbanner.android.store": "Google Play",
   "smartbanner.android.uri": "",
   "smartbanner.ios.store": "App Store",
-  "smartbanner.ios.uri": ""
+  "smartbanner.ios.uri": "",
+  "cgu.revalidate.title": "Mise à jour des Conditions Générales d'Utilisation",
+  "cgu.revalidate.content": "Pour poursuivre la navigation sur l'ENT vous devez accepter les nouvelles Conditions Générales d'Utilisation.",
+  "cgu.revalidate.link.text": "Consulter les nouvelles Conditions Générales d'Utilisation.",
+  "cgu.revalidate.action": "J'accepte",
+  "cgu.revalidate.logout": "Se déconnecter",
+  "cgu.revalidate.accept": "J'ai lu les nouvelles <a href=\"[[linkUrl]]\" target=\"_blank\">Conditions Générales d'Utilisation.</a>",
+  "cgu.revalidate.failed": "Une erreur est survenue, veuillez réessayer ultérieurement."
 }
