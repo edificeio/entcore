@@ -99,13 +99,29 @@ window.idiom = (function(){
 	];
 
 	return {
+		promises: {},
 		translate: function(key){
 			if(key === undefined){
 				key = '';
 			}
 			return bundle[key] === undefined ? key : bundle[key];
 		},
+		addBundlePromise: function (path) {
+			idiom.addBundle(path);
+			return idiom.promises[path];
+		},
 		addBundle: function(path, callback){
+			// load bundle only once
+			var oldPromise = idiom.promises[path];
+			if (oldPromise) {
+				if (callback) {
+					oldPromise.then(callback).catch(callback);
+				}
+				return;
+			}
+			var deferred = jQuery.Deferred();
+			idiom.promises[path] = deferred.promise()
+			//
 			var request = new XMLHttpRequest();
 			request.open('GET', path);
 			if(xsrfCookie){
@@ -124,6 +140,7 @@ window.idiom = (function(){
 					if(typeof callback === "function"){
 						callback(this.status === 200);
 					}
+					deferred.resolve();
 				}
 			};
 			request.send();

@@ -2106,8 +2106,17 @@ function bootstrap(func) {
 				model.trigger('preferences-updated');
 			}
 		};
+		model.me.revalidateTerms = function(cb){
+			http().put("/auth/cgu/revalidate").done(function(){
+				model.me.needRevalidateTerms = false;
+				cb && cb();
+			}).error(function(){
+				notify.error(idiom.translate("cgu.revalidate.failed"))
+			})
+		}
 		model.trigger('preferences-updated');
-
+		model.trigger("userinfo-loaded")
+		
 		model.me.hasWorkflow = function(workflow){
 			return _.find(model.me.authorizedActions, function(workflowRight){
 				return workflowRight.name === workflow;

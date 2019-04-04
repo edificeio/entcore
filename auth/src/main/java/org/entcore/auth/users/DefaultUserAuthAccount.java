@@ -42,6 +42,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 
 import fr.wseduc.webutils.Server;
@@ -59,13 +60,14 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final JsonObject config;
 	private final EmailSender notification;
 	private final Renders render;
+	private final EventBus eb;
 
 	private String smsProvider;
 	private final String smsAddress;
 	private final JsonArray allowActivateDuplicateProfiles;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config) {
-		EventBus eb = Server.getEventBus(vertx);
+		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
 		this.config = config;
@@ -169,7 +171,23 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			}
 		});
 	}
-
+	
+	@Override
+	@SuppressWarnings("deprecation")
+	public void revalidateCgu(String userId, Handler<Boolean> handler) {
+		String query = "MATCH(u:User{id:{userId}}) SET u.needRevalidateTerms=false RETURN u";
+		JsonObject params = new JsonObject().put("userId", userId);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
+			if(res.isRight()) {
+				UserUtils.deleteCacheSession(eb, userId, false, session -> {
+					handler.handle(session);
+				});
+			}else {
+				handler.handle(false);
+			}
+		}));
+	}
+	
 	@Override
 	public void matchActivationCode(final String login, String potentialActivationCode,
 			final Handler<Boolean> handler) {

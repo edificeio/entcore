@@ -1,0 +1,35 @@
+<section class="lightbox" style="display: block;" ng-if="show">
+    <div class="background"></div>
+    <div class="content top-spacing-25vh">
+        <div class="twelve cell">
+            <div class="reduce-block-eight">
+                <div class="block-container">
+                    <h1 class="centered-text">
+                        <span class="no-style">[[title]]</span>
+                    </h1>
+                    <p class="">
+                        <span class="no-style">[[content]]</span>
+                    </p>
+                    <!--a href="[[linkUrl]]" target="_blank" style="display: inline">
+                        <span class="no-style ng-scope">[[linkText]]</span>
+                    </a-->
+                    <p>
+                        <input type="checkbox" ng-model="model.accept">&nbsp;&nbsp;
+                        <i18n>cgu.revalidate.accept</i18n>
+                    </p>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="right-magnet">
+                        <button class="right-magnet" ng-click="validate()" ng-disabled="isDisabled()">
+                            <span class="no-style">[[actionText]]</span>
+                        </button>
+                        <button class="right-magnet cancel" ng-click="logout()">
+                            <i18n>cgu.revalidate.logout</i18n>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
