@@ -154,8 +154,8 @@ export class CommunicationRulesComponent {
         }
 
         return communicationRules
-            .filter(cr => (cr.sender.id === cell.group.id) || cr.receivers.some(g => g.id === cell.group.id))
-            .some(cr => (cr.sender.id === group.id) || cr.receivers.some(g => g.id === group.id));
+            .filter(cr => cell.column === 'sending' ? (cr.sender.id === cell.group.id) : cr.receivers.some(g => g.id === cell.group.id))
+            .some(cr => cell.column === 'sending' ? cr.receivers.some(g => g.id === group.id) : (cr.sender.id === group.id));
     }
 
     public removeCommunication(sender: GroupModel, receiver: GroupModel) {
