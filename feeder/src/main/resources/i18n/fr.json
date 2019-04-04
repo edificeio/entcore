@@ -29,7 +29,6 @@
   "invalid.student.line" : "Le parent ligne {0} contient un élève invalide : {1}.",
   "structure.error" : "Erreur sur l'établissement",
   "file.error" : "Erreur lors du traitement du fichier {0}.",
-  "error.find.preDelete" : "Erreur lors de la recherche des utilisateurs en pré-suppression.",
   "validation.error" : "Erreur lors de la validation des fichiers.",
   "import.error" : "Erreur lors de l'import.",
   "init.importer.error" : "Erreur lors de l'initialisation de l'importeur.",
