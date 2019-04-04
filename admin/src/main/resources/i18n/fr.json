@@ -13,6 +13,7 @@
     "Personnel": "Personnel",
     "Relative": "Parent",
     "Guest": "Invité",
+    "AdminLocal": "Administrateurs locaux",
 
     "create.user": "Créer un utilisateur",
     "create.user.classe": "Classe",
@@ -480,7 +481,6 @@
     "group.internal-communication-rule.change.error.content": "Une erreur est survenue pendant la modification du droit de communication pour le groupe {{groupName}}.",
     "group.internal-communication-rule.change.confirm.title": "Confirmation requise",
     "group.internal-communication-rule.change.confirm.content": "Le droit de communication que vous avez changé pour le groupe {{groupName}} sera appliqué à tous les membres de ce groupe.",
-
 
     "quota.byte": "Octet(s)",
     "quota.kilobyte": "KiloOctet(s)",

@@ -216,6 +216,34 @@ describe('CommunicationRulesComponent', () => {
                 ])
             ).toBe(false);
         });
+
+        describe('related to issue CAV2-416', () => {
+            it('should check the column of the given cell, ', () => {
+                expect(component.isRelatedWithCell(
+                    'receiving',
+                    generateGroup('group1'),
+                    {column: 'sending', group: generateGroup('group2')},
+                    [
+                        generateCommunicationRule('group0', ['group1', 'group2']),
+                        generateCommunicationRule('group1', []),
+                        generateCommunicationRule('group2', [])
+                    ])
+                ).toBe(false);
+            });
+
+            it('should not highlight the given sending group in the receiving column', () => {
+                expect(component.isRelatedWithCell(
+                    'receiving',
+                    generateGroup('group1'),
+                    {column: 'sending', group: generateGroup('group1')},
+                    [
+                        generateCommunicationRule('group0', ['group1', 'group2']),
+                        generateCommunicationRule('group1', []),
+                        generateCommunicationRule('group2', [])
+                    ])
+                ).toBe(false);
+            });
+        });
     });
 
     describe('removeCommunication', () => {
