@@ -1237,6 +1237,25 @@ public class AuthController extends BaseController {
 			}
 		});
 	}
+	
+	@Put("/cgu/revalidate")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void revalidateCgu(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user==null) {
+				unauthorized(request,"cgu.accept.unauthorized");
+			}else {
+				String userId = user.getUserId();
+				this.userAuthAccount.revalidateCgu(userId, ok->{
+					if(ok) {
+						noContent(request);	
+					}else {
+						badRequest(request,"cgu.accept.failed");
+					}
+				});
+			}
+		});
+	}
 
 	@Delete("/sessions")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)

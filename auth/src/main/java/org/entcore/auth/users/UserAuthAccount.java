@@ -49,6 +49,8 @@ public interface UserAuthAccount {
 
 	void blockUsers(JsonArray ids, boolean block, Handler<Boolean> handler);
 
+	void revalidateCgu(String userId, Handler<Boolean> handler);
+	
 	void matchActivationCode(String login, String potentialActivationCode,
 			Handler<Boolean> handler);
 
