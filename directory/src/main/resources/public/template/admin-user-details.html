@@ -109,7 +109,7 @@
     <div class="row" ng-if="!targetUser.code">
         <label  class="five cell" style="margin-bottom: 10px; padding-top: 2"><span>[[lang.translate("directory.sendActivationCode")]]</span></label>
         <input  class="four cell" style="height: 28px; border-radius: 15px; padding: 5;" placeholder="[[lang.translate('directory.mail')]]" ng-model="resetEmail"/>
-        <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="targetUser.sendResetPassword(resetEmail)" ng-disabled="!resetEmail">[[lang.translate("directory.send")]]</button>
+        <button class="two right-magnet" style="margin: 0; padding: 2" ng-click="targetUser.sendResetPassword(resetEmail)" ng-disabled="!resetEmail || targetUser.isSendingResetPasswordMail()">[[lang.translate("directory.send")]]</button>
     </div>
 </form>
 <!-- Aaf Functions -->
