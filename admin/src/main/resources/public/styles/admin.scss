@@ -1,19 +1,16 @@
-/* Google Font */
-@import url('https://fonts.googleapis.com/css?family=Oxygen');
 @import "icons";
+/* Google Font */
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
 /* Variables */
-// $main: rgb(0, 200, 248);
 $main: rgb(42, 156, 200);
-// $main-light: rgb(99, 218, 247);
-// $main-dark: darken($main, 5%);
-$main-light: lighten($main, 15%);
+$main-light: lighten($main, 10%);
 $main-lighter: lighten($main, 40%);
-$main-dark: darken($main, 10%);
+$main-dark: darken($main, 5%);
 
 $accent: rgb(255, 131, 82);
-$accent-light: lighten($accent, 20%);
-$accent-dark: darken($accent, 10%);
+$accent-light: lighten($accent, 10%);
+$accent-dark: darken($accent, 5%);
 
 $nuance: rgba(255, 255, 255, 0.9);
 $contrast: indianred;
@@ -38,12 +35,19 @@ $orange:  #ff8500;
 $purple:  #a348c0;
 $pink:    #ff3a55;
 
+$shadow-light: rgba(0,0,0,0.1);
+
+$white-translucide: rgba(255,255,255,0.75);
+$grey-light: #eaedf2;
+$grey-dark: #5b6472;
+
 /* Elements */
 body {
     padding: 0;
     margin: 0;
-    font-family: 'Oxygen', sans-serif;
-    background-color: #F2F2F2;
+    font-family: "Open Sans", sans-serif;
+    background-color: $grey-light;
+    color: $grey-dark;
 }
 
 a {
@@ -56,8 +60,9 @@ a:hover { color: initial; }
 
 h1 {
     margin: 0;
-    padding: 1em 0;
+    padding: 50px 20px 20px;
     color: $main-dark;
+    font-size: 30px;
     font-weight: normal;
 }
 
@@ -69,13 +74,13 @@ h2 {
 
 button {
     text-align: left;
-    padding: 10px 10px;
-    background-color: $button-bg;
-    border: 1px solid $button-bg;
+    padding: 10px 15px;
+    background-color: white;
+    border: 1px solid $grey-light;
     border-radius: 3px;
     transition: background 0.25s, color 0.25s;
     line-height: 1.5em;
-
+    color: $grey-dark;
     &.input-inline {
         margin-left: 10px;
     }
@@ -86,6 +91,7 @@ button {
     }
 
     &[disabled] {
+      opacity: .5;
         i {
             color: grey;
         }
@@ -94,20 +100,18 @@ button {
     &.active, &:hover:not(:disabled) {
         background-color: $accent;
         color: white;
-
-        i { color: white; }
+        border-color: $accent;
+        i { color: white!important; }
     }
 
     &.selected {
         background-color: $accent-dark;
         color: white;
-
         &:hover {
             background-color: $accent-dark;
         }
-
-        i {
-            color: white;
+        i::before {
+            color: white!important;
         }
     }
 
@@ -144,7 +148,7 @@ input[type="search"] {
     background: none;
     outline: none;
     border: none;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid $shadow-light;
     transition: border-color 0.25s;
 
     &:focus {
@@ -159,13 +163,13 @@ input[type="search"] {
 
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     border: none;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid $grey-light;
     background-color: white;
     outline: none;
     transition: border-color 0.25s;
     padding: 5px;
     font-size: 1em;
-    font-family: 'Oxygen', sans-serif;
+    font-family: 'Open Sans', sans-serif;
 
     &:focus { border-color: $accent; }
 
@@ -287,18 +291,16 @@ i.group_add {
     padding: 10px 10px;
     border-radius: 3px;
     transition: background 0.25s, color 0.25s, border 0.25s;
-    font-family: 'Arial', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 0.85rem;
 
-    &.is-primary { 
-        color: $accent; 
-        background-color: $button-bg; 
-        border: 1px solid $button-bg;
+    &.is-primary {
+        color: $accent;
+        border: 1px solid $accent;
 
         &:hover {
             color: white;
-            background-color: $accent; 
-            border: 1px solid $accent;
+            background-color: $accent;
         }
     }
     &.is-link {}
@@ -307,11 +309,10 @@ i.group_add {
     &.is-warning {}
     &.is-danger {}
 
-    &.is-active { 
-        color: white; 
+    &.is-active {
+        color: white;
         background-color: $accent;
-        box-shadow: 0 0 10px red;
-        border-color: #ff8352;
+        box-shadow: 0 0 10px rgba($accent, 0.25);
     }
 }
 
@@ -324,7 +325,7 @@ i.group_add {
 
 .message {
     border-radius: 3px;
-    margin: 15px 0px;
+    margin: 15px;
 
     p { margin : 0px ;}
     .message-header {
@@ -336,7 +337,7 @@ i.group_add {
     }
 
     .message-body {
-        padding: .5em;
+        padding: 20px;
         font-size: 0.9em;
         font-weight: initial;
     }
@@ -423,18 +424,23 @@ i.group_add {
         background-color: white;
         color: $main;
         transition: all 0.25s;
-        border-bottom: 3px solid $main;
+        border: 1px solid $grey-light;
+        border-bottom: 5px solid $main;
         margin: 0px;
         outline: none;
-        box-shadow: 2px 2px 1px #CCC;
+        box-shadow: 1px 1px 5px $shadow-light;
 
         &:first-child{
-            border-left: 1px solid #DDD;
+            border-radius: 5px 0 0 0;
+        }
+        &:last-child {
+          border-radius: 0 5px 0 0;
         }
 
         &:hover {
-            background-color: $main-light;
+            background-color: $accent;
             color: white;
+            border-bottom-color: white;
         }
 
         &.active {
@@ -445,16 +451,16 @@ i.group_add {
         }
 
         &[disabled] {
-            background-color: #eee;
-            color: graytext;
+            opacity: .5;
+            color: $grey-dark;
             cursor: not-allowed;
-            border-bottom-color: grey;
+            border-bottom-color: $grey-light;
         }
     }
 }
 
 .card {
-    box-shadow: 1px 1px 5px #AAA;
+    box-shadow: 5px 5px 10px $shadow-light;
 }
 
 button.card-button {
@@ -483,6 +489,10 @@ button.card-button {
     font-size: 0.9em;
 
     > * {
+        @extend .card;
+        margin: 20px;
+        padding: 10px 20px 0px 20px;
+        box-sizing: border-box;
         flex: 0.5 0 calc(33% - 40px);
         display: flex;
         flex-wrap: wrap;
@@ -490,11 +500,9 @@ button.card-button {
         &.align-start {
             align-content: flex-start;
         }
-
-        @extend .card;
-        margin: 20px;
-        padding: 10px 20px 0px 20px;
-        box-sizing: border-box;
+        @media screen and (max-width: 860px) {
+          flex: 100%;
+        }
     }
 
     .card-header {
@@ -678,7 +686,7 @@ lightbox {
         & > i {
             &::after {
                 content: '\f00d';
-                font-family: FontAwesome;
+                font-family: "FontAwesome";
                 float: right;
                 margin: 20px;
                 font-style: normal;
@@ -764,7 +772,7 @@ item-tree {
 
             > a {
                 color: white;
-                padding: 10px 5px;
+                padding: 15px 10px 15px 20px;
                 display: block;
                 text-decoration: none;
                 transition: all 0.25s;
@@ -842,7 +850,6 @@ spinner-cube.button-spinner {
 
 /* Two panels - list & companion */
 .side-layout {
-
     .side-card {
         @extend .card;
         background-color: white;
@@ -857,7 +864,7 @@ spinner-cube.button-spinner {
         .panel-header {
             font-size: 1.6em;
             color: $main-dark;
-            padding: 10px 15px;
+            padding: 20px;
 
             div {
                 padding: 5px 0;
@@ -965,12 +972,15 @@ div.panel-message {
 list {
     li {
         &:hover {
-            background-color: $accent-light;
+            background-color: $grey-light;
         }
 
         &.selected {
             background-color: $accent;
             color: white;
+            i {
+              color: $grey-dark;
+            }
         }
 
         &.disabled {
@@ -1138,7 +1148,7 @@ portal {
         padding: 15px;
         box-sizing: border-box;
         height: 50px;
-        box-shadow: 0px 0px 2px black;
+        box-shadow: 0px 0px 2px $shadow-light;
         padding-right: 0px;
 
         span {
@@ -1152,12 +1162,11 @@ portal {
             width: 400px !important;
             top: 50px !important;
             height: calc(100% - 50px);
-            border-right: 2px solid #AAA;
+            box-shadow: 1px 1px 25px $shadow-light;
             box-sizing: border-box;
         }
 
         input[type="search"] {
-            border-bottom: 1px solid white;
             color: white;
 
             &::-webkit-input-placeholder{ color:rgba(250,250,250,0.4); }
@@ -1211,6 +1220,8 @@ portal {
     }
     div[section] div.portal-body {
         padding: 0px 5%;
+        max-width: 1600px;
+        margin: 0 auto;
     }
 
     div[section] div.welcome-message {
@@ -1655,7 +1666,7 @@ group-manage-users {
             display: flex;
             flex-flow: row wrap;
             align-items: center;
-            
+
             list {
                 min-height: 60vh;
                 max-height: 60vh;
@@ -1837,10 +1848,6 @@ multi-combo {
         min-width: 210px !important;
         outline: none;
 
-        &:not([disabled]) {
-            background-color: $button-bg;
-        }
-
         &::after {
             content: '▼';
             float: right;
@@ -1862,7 +1869,7 @@ multi-combo {
         margin-top: -2px;
 
         &:not(.hidden) {
-            border: 1px solid #ddd !important;
+            border: 1px solid $shadow-light!important;
         }
 
         >div.options {
@@ -2038,9 +2045,9 @@ i.fa {
 }
 
 .message {
-  border: 1px solid black;
+  border: 2px solid black;
   font-weight: bold;
-  box-shadow: 1px 1px 2px 1px #CCC; // TODO: use a color variable
+  box-shadow: 5px 5px 10px $shadow-light;
 
   p { margin : 0px ;}
   .message-header {
@@ -2066,4 +2073,12 @@ i.fa {
   &.is-info .message-header { background: blue;}
   &.is-danger .message-header { background: red;}
   &.is-warning .message-header { background: orange;}
+}
+@media screen and (max-width: 860px) {
+  .card-layout > *,
+  .side-companion,
+  .side-card,
+  {
+    flex: 100%;
+  }
 }
