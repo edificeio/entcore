@@ -93,6 +93,7 @@
     "auth.notify.no.match.login": "Utilisateur inconnu, veuillez vérifier la saisie de votre identifiant.",
     "auth.notify.invalid.mail.login": "Aucune adresse courriel renseignée pour cet utilisateur. Veuillez contacter l'administrateur ENT de votre établissement.",
     "auth.notify.no.match.mail": "Adresse courriel inconnue. Veuillez contacter votre administrateur ENT.",
+    "auth.notify.no.match.mail.laststep": "Le prénom ne correspond pas à l'adresse connu. Veuillez contacter votre administrateur ENT.",
     "auth.notify.non.unique.result.mail": "L'adresse courriel correspond à plusieurs utilisateurs à la fois. Veuillez contacter votre administrateur ENT.",
     "auth.notify.invalid.receivers.all.login": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
     "auth.notify.invalid.receivers.all.mail": "Echec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",

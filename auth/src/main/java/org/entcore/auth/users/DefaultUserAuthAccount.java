@@ -275,7 +275,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		//Feat #20790 match only lowercases values
 		JsonObject params = new JsonObject().put("mail", email.toLowerCase());
 		if(setFirstname)
-			params.put("firstName", "(?i)"+firstName);
+			params.put("firstName", StringValidation.sanitize(firstName));
 		if(setStructure)
 			params.put("structure", structure);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
