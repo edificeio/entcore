@@ -274,7 +274,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
 		JsonObject params = new JsonObject().put("mail", email);
 		if(setFirstname)
-			params.put("firstName", "(?i)"+firstName);
+			params.put("firstName", StringValidation.sanitize(firstName));
 		if(setStructure)
 			params.put("structure", structure);
 		neo.execute(query, params, Neo4jResult.validResultHandler(handler));
