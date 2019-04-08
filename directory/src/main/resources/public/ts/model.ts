@@ -395,7 +395,14 @@ export const directory = {
 				}
 			},
 			getSearchCriteria: async function() {
-				return (await http.get('/userbook/search/criteria')).data;
+				return (await http.get('/userbook/search/criteria?getClassesMonoStructureOnly=true')).data;
+			},
+			getSearchClasses: async function(structureId) {
+				let res = await http.get(`/userbook/search/criteria/${structureId}/classes`);
+				if (res && res.data) {
+					return res.data.classes;
+				}
+				return null;
 			}
 		}),
 		this.collection(directory.Group, {

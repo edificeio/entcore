@@ -50,14 +50,17 @@
                         ng-model="create.favorite.filters.structures"
                         options="create.favorite.options.structures"
                         title-all="[[lang.translate('directory.allStructures')]]"
-                        title="[[lang.translate('directory.structures')]]">
+                        title="[[lang.translate('directory.structures')]]"
+                        check="onCheck(option)">
                     </multi-comboboxes>
                     <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
                         ng-model="create.favorite.filters.classes"
                         options="create.favorite.options.classes"
+                        order="classesOrder"
                         title-all="[[lang.translate('directory.allClasses')]]"
                         title="[[lang.translate('directory.classes')]]"
-                        ng-disabled="!testClassFilterAvailable(create.favorite.filters.types)">
+                        ng-disabled="!testClassFilterAvailable(create.favorite.filters.types) || (isMultiStructure() && noStructureSelected(search.index))"
+                        title-disabled="[[ getDisabledClassTitle(search.index) ]]">
                     </multi-comboboxes>
                     <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length < 2 }"
                         ng-model="create.favorite.filters.profiles"

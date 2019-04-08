@@ -147,6 +147,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			};
 			$scope.create.favorite.options = $scope.generateCriteriaOptions($scope.create.favorite.filters);
 
+			$scope.classesOrder = ['structId', 'label'];
+
 			template.open('page', 'directory');
 			template.close('list');
 			template.open('list', 'dominos');
@@ -213,7 +215,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			structures: $scope.criteria.structures.map((element) => {
 				return { label: element.name, type: element.id };
 			}),
-			classes: $scope.criteria.classes.map((element) => {
+			classes: $scope.criteria.classes && $scope.criteria.classes.map((element) => {
 				return { label: element.name, type: element.id };
 			}),
 			profiles: $scope.criteria.profiles.map((element) => {
@@ -251,6 +253,41 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				return { label: lang.translate("directory." + element), type: element };
 			})
 		};
+	}
+
+	$scope.onCheck = async function(option) {
+		if (option.checked === true) {
+			let filterClasses = await directory.directory.users.getSearchClasses(option.type);
+			filterClasses.map(classe => {
+				classe.structId = option.type;
+				classe.type = classe.id;
+			});
+	
+			if ($scope.search.index === 0) {
+				$scope.filtersOptions.users.classes = $scope.filtersOptions.users.classes || [];
+				$scope.filtersOptions.users.classes.push(...filterClasses);
+			} else if ($scope.search.index === 1) {
+				$scope.filtersOptions.groups.classes = $scope.filtersOptions.groups.classes || [];
+				$scope.filtersOptions.groups.classes.push(...filterClasses);
+			} else if ($scope.search.index === 2) {
+				$scope.create.favorite.options.classes = $scope.create.favorite.options.classes || [];
+				$scope.create.favorite.options.classes.push(...filterClasses);
+			}
+		} else {
+			if ($scope.search.index === 0) {
+				$scope.filtersOptions.users.classes = $scope.filtersOptions.users.classes.filter(classe => classe.structId != option.type);
+				$scope.filters.users.classes = $scope.filters.users.classes.filter(
+					filterModel => $scope.filtersOptions.users.classes.find(filterOption => filterModel === filterOption.type));
+			} else if ($scope.search.index === 1) {
+				$scope.filtersOptions.groups.classes = $scope.filtersOptions.groups.classes.filter(classe => classe.structId != option.type);
+				$scope.filters.groups.classes = $scope.filters.groups.classes.filter(
+					filterModel => $scope.filtersOptions.groups.classes.find(filterOption => filterModel === filterOption.type));
+			} else if ($scope.search.index === 2) {
+				$scope.create.favorite.options.classes = $scope.create.favorite.options.classes.filter(classe => classe.structId != option.type);
+				$scope.create.favorite.filters.classes = $scope.create.favorite.filters.classes.filter(
+					filterModel => $scope.create.favorite.options.classes.find(filterOption => filterModel === filterOption.type));
+			}			
+		}
 	}
 
 	$scope.showSchool = function(school){
@@ -701,6 +738,46 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 		ui.scrollToTop();
 	};
+
+	$scope.isMultiStructure = function() {
+		return $scope.criteria.structures.length > 1;
+	};
+
+	$scope.noStructureSelected = function(searchIndex) {
+		switch (searchIndex) {
+			case 0:
+				return !$scope.filters.users.structures || !$scope.filters.users.structures.length;
+			case 1:
+				return !$scope.filters.groups.structures || !$scope.filters.groups.structures.length;
+			case 2:
+				return !$scope.create.favorite.filters.structures || !$scope.create.favorite.filters.structures.length;
+			default:
+				return false;
+		}
+	};
+
+	$scope.getDisabledClassTitle = function(searchIndex) {
+		let res = lang.translate('directory.classes');
+		switch (searchIndex) {
+			case 0:
+				if ($scope.isMultiStructure() && $scope.noStructureSelected(searchIndex)) {
+					res = lang.translate('directory.classes.disabled.pick.structure');
+				}
+			case 1:
+				if ($scope.isMultiStructure() && $scope.noStructureSelected(searchIndex) 
+					&& $scope.testClassFilterAvailable($scope.filters.groups.types, $scope.filters.groups.functions)) {
+					res = lang.translate('directory.classes.disabled.pick.structure');
+				}
+			case 2:
+				if ($scope.isMultiStructure() && $scope.noStructureSelected(searchIndex) 
+					&& $scope.testClassFilterAvailable($scope.create.favorite.filters.types)) {
+					res = lang.translate('directory.classes.disabled.pick.structure');
+				}
+			default:
+				break;
+		}
+		return res;
+	}
 
 	$scope.testClassFilterAvailable = function(groups, functions) {
 		return !groups.length && (!functions || (functions && !functions.length));
