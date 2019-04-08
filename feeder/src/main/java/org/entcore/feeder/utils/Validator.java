@@ -518,4 +518,12 @@ public class Validator {
 		});
 	}
 
+	public static void removeLogins(Set<String> oldLogins) {
+		if (logins != null && oldLogins != null) {
+			for (String l: oldLogins) {
+				logins.remove(l);
+			}
+		}
+	}
+
 }

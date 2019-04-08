@@ -43,6 +43,24 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class User {
 
+	private static final String GET_DELETE_OPTIONS =
+			"OPTIONAL MATCH (fgroup:FunctionalGroup) " +
+			"WHERE fgroup.externalId IN u.groups " +
+			"OPTIONAL MATCH (mgroup:ManualGroup) " +
+			"WHERE mgroup.id IN b.IN_OUTGOING " +
+			"OPTIONAL MATCH (c:Class) " +
+			"WHERE c.externalId IN u.classes " +
+			"OPTIONAL MATCH (s:Structure) " +
+			"WHERE s.externalId IN u.structures " +
+			"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, " +
+			"u.deleteDate as deleteDate, u.birthDate as birthDate," +
+			"u.externalId as externalId, u.displayName as displayName, " +
+			"HEAD(u.profiles) as type, " +
+			"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
+			"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
+			"CASE WHEN mgroup IS NULL THEN [] ELSE collect(distinct mgroup.id) END as manualGroupsIds, " +
+			"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds ";
+
 	public static class DeleteTask implements Handler<Long> {
 
 		private static final Logger log = LoggerFactory.getLogger(DeleteTask.class);
@@ -89,12 +107,7 @@ public class User {
 										@Override
 										public void handle(Message<JsonObject> m2) {
 											if ("ok".equals(m2.body().getString("status"))) {
-												log.info("Delete users : " + r.encode());
-												eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
-														.put("action", "delete-users")
-														.put("old-users", r));
-												eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
-														(UserInfos) null, new JsonObject().put("old-users", cleanDeleteEvent(r)));
+												publishDeleteUsers(eb, eventStore, r);
 												if (r.size() == LIMIT) {
 													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
 														@Override
@@ -127,7 +140,16 @@ public class User {
 			}
 		}
 
-		private JsonArray cleanDeleteEvent(JsonArray r) {
+		public static void publishDeleteUsers(EventBus eb, EventStore eventStore, JsonArray r) {
+			log.info("Delete users : " + r.encode());
+			eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+					.put("action", "delete-users")
+					.put("old-users", r));
+			eventStore.createAndStoreEvent(Feeder.FeederEvent.DELETE_USER.name(),
+					(UserInfos) null, new JsonObject().put("old-users", cleanDeleteEvent(r)));
+		}
+
+		private static JsonArray cleanDeleteEvent(JsonArray r) {
 			final JsonArray result = r.copy();
 			for (Object o : result) {
 				if (o instanceof JsonObject) {
@@ -414,23 +436,17 @@ public class User {
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
 				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
-				"OPTIONAL MATCH (fgroup:FunctionalGroup) " +
-				"WHERE fgroup.externalId IN u.groups " +
-				"OPTIONAL MATCH (mgroup:ManualGroup) " +
-				"WHERE mgroup.id IN b.IN_OUTGOING " +
-				"OPTIONAL MATCH (c:Class) " +
-				"WHERE c.externalId IN u.classes " +
-				"OPTIONAL MATCH (s:Structure) " +
-				"WHERE s.externalId IN u.structures " +
-				"RETURN DISTINCT u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-				"u.deleteDate as deleteDate, u.birthDate as birthDate," +
-				"u.externalId as externalId, u.displayName as displayName, " +
-				"HEAD(u.profiles) as type, " +
-				"CASE WHEN c IS NULL THEN [] ELSE collect(distinct c.id) END as classIds, " +
-				"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
-				"CASE WHEN mgroup IS NULL THEN [] ELSE collect(distinct mgroup.id) END as manualGroupsIds, " +
-				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds " +
+				 GET_DELETE_OPTIONS +
 				"LIMIT {limit} ";
+		transactionHelper.add(query, params);
+	}
+
+	public static void getDelete(JsonArray deleteUsers, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject().put("deleteUsers", deleteUsers);
+		String query =
+				"MATCH (:DeleteGroup)<-[:IN]-(u:User)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"WHERE HAS(u.deleteDate) AND u.id IN {deleteUsers} " +
+				GET_DELETE_OPTIONS;
 		transactionHelper.add(query, params);
 	}
 
