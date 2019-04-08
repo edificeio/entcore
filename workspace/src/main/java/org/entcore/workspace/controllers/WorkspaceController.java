@@ -501,8 +501,9 @@ public class WorkspaceController extends BaseController {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null && user.getUserId() != null) {
 				String ids = request.params().get("ids");
+				boolean includeDeleted = "true".equals(request.params().get("deleted"));
 				List<String> idLists = StringUtils.split(ids, ",");
-				workspaceService.downloadFiles(idLists, user, request);
+				workspaceService.downloadFiles(idLists, user, includeDeleted, request);
 			} else {
 				unauthorized(request);
 			}

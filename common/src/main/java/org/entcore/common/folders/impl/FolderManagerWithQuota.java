@@ -280,9 +280,9 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
-	public void downloadFiles(Collection<String> ids, UserInfos user, HttpServerRequest request) {
+	public void downloadFiles(Collection<String> ids, UserInfos user, boolean includeDeleted, HttpServerRequest request) {
 		// dont need to check
-		this.folderManager.downloadFiles(ids, user, request);
+		this.folderManager.downloadFiles(ids, user, includeDeleted, request);
 	}
 
 	@Override

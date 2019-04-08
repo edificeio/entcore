@@ -82,8 +82,8 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 			final String locale, String host, final Handler<Boolean> handler) {
 
 		QueryBuilder findByOwner = QueryBuilder.start("owner").is(userId);
-		QueryBuilder findByShared = QueryBuilder.start().or(QueryBuilder.start("shared.userId").is(userId).get(),
-				QueryBuilder.start("shared.groupId").in(groupIds).get());
+		QueryBuilder findByShared = QueryBuilder.start().or(QueryBuilder.start("inheritedShares.userId").is(userId).get(),
+				QueryBuilder.start("inheritedShares.groupId").in(groupIds).get());
 		QueryBuilder findByOwnerOrShared = QueryBuilder.start().or(findByOwner.get(),
 				findByShared.get());
 
@@ -97,9 +97,9 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 				QueryBuilder.start("deleted").exists(false).get(),QueryBuilder.start("deleted").is(false).get());
 
 		QueryBuilder myDocs = QueryBuilder.start().and(isNotShared.get(),isNotProtected.get(),isNotPublic.get(),isNotDeleted.get());
-		QueryBuilder sharedDocs = QueryBuilder.start("isShared").is(true);
-		QueryBuilder protectedDocs = QueryBuilder.start("protected").is(true);
-		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true);
+		QueryBuilder sharedDocs = QueryBuilder.start("isShared").is(true).and(isNotDeleted.get(),isNotProtected.get(),isNotPublic.get());
+		QueryBuilder protectedDocs = QueryBuilder.start("protected").is(true).and(isNotDeleted.get());
+		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true).and("trasher").is(userId);
 
 		final JsonObject queryMyDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),myDocs.get()));
 		final JsonObject querySharedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),sharedDocs.get()));
