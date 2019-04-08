@@ -864,11 +864,25 @@ public class UserBookController extends BaseController {
 	public void searchCriteria(HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
-				schoolService.searchCriteria(user.getStructures(), defaultResponseHandler(request));
+				schoolService.searchCriteria(user.getStructures()
+						, Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"))
+						, defaultResponseHandler(request));
 			} else {
 				badRequest(request, "invalid.user");
 			}
 		});
+	}
+
+	@Get("/search/criteria/:structureId/classes")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getClasses(HttpServerRequest request) {
+		String structureId = request.getParam("structureId");
+		if (structureId != null) {
+			schoolService.getClasses(structureId, defaultResponseHandler(request));
+		} else {
+			badRequest(request, "structureId is empty");
+			return;
+		}
 	}
 
 	public void setSchoolService(SchoolService schoolService) {

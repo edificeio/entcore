@@ -627,19 +627,41 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void searchCriteria(List<String> structures, Handler<Either<String, JsonObject>> handler) {
-		final String query =
-				"MATCH (s:Structure) " +
-				"WHERE s.id IN {structures} " +
-				"OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class) " +
-				"OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) " +
-				"OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) " +
-				"RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, " +
-				"FILTER(c IN COLLECT(DISTINCT { id: c.id, name: c.name}) WHERE NOT(c.id IS NULL)) as classes, " +
-				"CASE WHEN LENGTH(COLLECT(distinct htg)) = 0 THEN COLLECT(DISTINCT fg.filter) ELSE COLLECT(DISTINCT fg.filter) + 'HeadTeacher' END as functions, " +
-				"['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, " +
-				"['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes";
-		neo.execute(query, new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
+	public void searchCriteria(List<String> structures, boolean getClassesForMonoEtabOnly, Handler<Either<String, JsonObject>> handler) {
+		final StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure) WHERE s.id IN {structures} ");
+
+		if (getClassesForMonoEtabOnly) {
+			if(structures != null && structures.size() == 1) {
+				query.append("OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class) ");
+			}
+		} else {
+			query.append("OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class) ");
+		}
+
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(fg:FunctionGroup) ");
+		query.append("OPTIONAL MATCH (s)<-[:DEPENDS]-(htg:HTGroup) ");
+		query.append("RETURN COLLECT(DISTINCT { id: s.id, name: s.name}) as structures, ");
+
+		if (getClassesForMonoEtabOnly) {
+			if (structures != null && structures.size() == 1) {
+				query.append("FILTER(c IN COLLECT(DISTINCT { id: c.id, name: c.name}) WHERE NOT(c.id IS NULL)) as classes, ");
+			}
+		} else {
+			query.append("FILTER(c IN COLLECT(DISTINCT { id: c.id, name: c.name}) WHERE NOT(c.id IS NULL)) as classes, ");
+		}
+
+		query.append("CASE WHEN LENGTH(COLLECT(distinct htg)) = 0 THEN COLLECT(DISTINCT fg.filter) ELSE COLLECT(DISTINCT fg.filter) + 'HeadTeacher' END as functions, ");
+		query.append("['Teacher', 'Personnel', 'Student', 'Relative', 'Guest'] as profiles, ");
+		query.append("['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes");
+
+		neo.execute(query.toString(), new JsonObject().put("structures", new JsonArray(structures)), validUniqueResultHandler(handler));
 	}
 
+	@Override
+	public void getClasses(String structureId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (s: Structure {id: {structureId}})<-[:BELONGS]-(c:Class) " +
+				"RETURN FILTER(c IN COLLECT(DISTINCT { id: c.id, label: c.name }) WHERE NOT(c.id IS NULL)) as classes";
+		neo.execute(query, new JsonObject().put("structureId", structureId), validUniqueResultHandler(handler));
+	}
 }

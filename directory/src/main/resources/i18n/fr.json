@@ -229,6 +229,7 @@
     "directory.allGroupsTypes": "Tous types de groupes",
     "directory.allProfiles": "Tous profils",
     "directory.allStructures": "Tous établissements",
+    "directory.classes.disabled.pick.structure": "Classes : sélectionner un établissement",
     "directory.birthdate": "Date de naissance",
     "directory.bit": "Bit(s)",
     "directory.byte": "Octet(s)",
