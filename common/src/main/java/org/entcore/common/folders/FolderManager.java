@@ -142,7 +142,7 @@ public interface FolderManager {
 	 * @param user    the user to check wich files he is able to see
 	 * @param request
 	 */
-	void downloadFiles(Collection<String> ids, UserInfos user, HttpServerRequest request);
+	void downloadFiles(Collection<String> ids, UserInfos user, boolean includeDeleted, HttpServerRequest request);
 
 	/**
 	 * 
