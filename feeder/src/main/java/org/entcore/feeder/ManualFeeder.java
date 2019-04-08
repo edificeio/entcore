@@ -19,6 +19,7 @@
 
 package org.entcore.feeder;
 
+import io.vertx.core.eventbus.EventBus;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -35,11 +36,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import org.vertx.java.busmods.BusModBase;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
 public class ManualFeeder extends BusModBase {
@@ -62,8 +62,9 @@ public class ManualFeeder extends BusModBase {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public ManualFeeder(Neo4j neo4j) {
+	public ManualFeeder(Neo4j neo4j, EventBus eb) {
 		this.neo4j = neo4j;
+		this.eb = eb;
 	}
 
 	public void createStructure(final Message<JsonObject> message) {
@@ -499,22 +500,46 @@ public class ManualFeeder extends BusModBase {
 		String query =
 				"MATCH (u:User)" +
 				"WHERE u.id IN {users} AND (u.source IN ['MANUAL', 'CSV', 'CLASS_PARAM', 'BE1D'] OR HAS(u.disappearanceDate)) " +
-				"return count(*) as count ";
+				"return u.id as id, u.login as login, u.loginAlias as loginAlias, has(u.activationCode) as inactive ";
 		neo4j.execute(query, new JsonObject().put("users", users), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				JsonArray res = event.body().getJsonArray("result");
-				if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
-					JsonObject j = res.getJsonObject(0);
-					if (users.size() == j.getInteger("count", 0)) {
-						executeTransaction(message, new VoidFunction<TransactionHelper>() {
-							@Override
-							public void apply(TransactionHelper tx) {
-								for (Object o : users) {
-									User.backupRelationship(o.toString(), tx);
-									User.preDelete(o.toString(), tx);
+				if ("ok".equals(event.body().getString("status")) && res != null) {
+					if (users.size() == res.size()) {
+						final Set<String> oldLogins = new HashSet<>();
+						final JsonArray deleteUsers = new JsonArray();
+						executeTransaction(message, tx -> {
+							for (Object o : res) {
+								if (!(o instanceof JsonObject)) continue;
+								final JsonObject j = (JsonObject) o;
+								final String id = j.getString("id");
+								if (isNotEmpty(id)) {
+									User.backupRelationship(id, tx);
+									User.preDelete(id, tx);
+									if (j.getBoolean("inactive", false)) {
+										oldLogins.add(j.getString("login"));
+										if (isNotEmpty(j.getString("loginAlias"))) {
+											oldLogins.add(j.getString("loginAlias"));
+										}
+										deleteUsers.add(id);
+									}
 								}
 							}
+							if (deleteUsers.size() > 0) {
+								User.getDelete(deleteUsers, tx);
+								User.delete(deleteUsers, tx);
+							}
+						},
+						m -> {
+							final JsonArray results = m.body().getJsonArray("results");
+							if ("ok".equals(m.body().getString("status")) && deleteUsers.size() > 0 && results != null &&
+									(results.size() - 2) > 0) {
+								final JsonArray r = results.getJsonArray(results.size() - 2);
+								User.DeleteTask.publishDeleteUsers(eb, eventStore, r);
+								Validator.removeLogins(oldLogins);
+							}
+							message.reply(m.body());
 						});
 					} else {
 						sendError(message, "unauthorized.user");
@@ -559,16 +584,15 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f) {
+		executeTransaction(message, f, event -> message.reply(event.body()));
+	}
+
+	private void executeTransaction(final Message<JsonObject> message, VoidFunction<TransactionHelper> f, Handler<Message<JsonObject>> h) {
 		TransactionHelper tx;
 		try {
 			tx = TransactionManager.getInstance().begin();
 			f.apply(tx);
-			tx.commit(new Handler<Message<JsonObject>>() {
-				@Override
-				public void handle(Message<JsonObject> event) {
-					message.reply(event.body());
-				}
-			});
+			tx.commit(h);
 		} catch (TransactionException | ValidationException e) {
 			sendError(message, e.getMessage(), e);
 		}
