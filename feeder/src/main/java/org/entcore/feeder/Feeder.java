@@ -142,7 +142,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			return;
 		}
 		Validator.initLogin(neo4j, vertx);
-		manual = new ManualFeeder(neo4j);
+		manual = new ManualFeeder(neo4j, eb);
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);
