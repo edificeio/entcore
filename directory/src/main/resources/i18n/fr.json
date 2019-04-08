@@ -89,7 +89,7 @@
     "classAdmin.export.detail": "Fiches de connexions détaillées .PDF",
     "classAdmin.export.detail.info": "Si vous choisissez cette option, un PDF avec une fiche de connexion détaillée (avec un tutoriel de première connexion) sera généré pour l'ensemble des utilisateurs sélectionnés.",
     "classAdmin.export.simple": "Fiches de connexions simplifiées .PDF",
-    "classAdmin.export.simple.info": "Si vous choisissez cette option, un PDF avec des fiches de connexion simplifiées sera généré (6 fiche par feuille A4) pour l'ensemble des utilisateurs sélectionnés.",
+    "classAdmin.export.simple.info": "Si vous choisissez cette option, un PDF avec des fiches de connexion simplifiées sera généré (8 fiches par feuille A4) pour l'ensemble des utilisateurs sélectionnés.",
     "classAdmin.export.mail": "Fiches de connexions détaillées par mail",
     "classAdmin.export.mail.info": "Si vous choisissez cette option, un mail avec une fiche de connexion détaillée sera envoyé à l'ensemble des utilisateurs sélectionnés.",
     "classAdmin.export.mail.warning": " Attention, les utilisateurs suivants <b>ne pourront pas recevoir leur fiche de connexion</b> car leur adresse mail n'est pas renseignée. Les utilisateurs non-listés ci-dessous recevront bien leur fiche de connexion détaillée.",
