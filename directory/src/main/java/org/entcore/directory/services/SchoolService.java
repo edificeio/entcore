@@ -80,6 +80,8 @@ public interface SchoolService {
 
 	void blockUsers(String structureId, String profile, boolean block, Handler<JsonObject> handler);
 
-	void searchCriteria(List<String> structures, Handler<Either<String, JsonObject>> handler);
+	void searchCriteria(List<String> structures, boolean getClassesForMonoEtabOnly, Handler<Either<String, JsonObject>> handler);
+
+	void getClasses(String structureId, Handler<Either<String, JsonObject>> handler);
 
 }
