@@ -21,7 +21,7 @@ $validate-hover: darkgreen;
 $button-bg: #f2f2f2;
 $button-bg-hover: darken($button-bg, 5%);
 $user-li-hover: #ffccb8;
-$user-profile-img-width: 200px;
+$user-profile-img-width: 220px;
 $fontawesome-size: 1.5em;
 
 $info: $main;
@@ -75,7 +75,7 @@ h2 {
 button {
     text-align: left;
     padding: 10px 15px;
-    background-color: white;
+    background-color: rgba($grey-light, 0.1);
     border: 1px solid $grey-light;
     border-radius: 3px;
     transition: background 0.25s, color 0.25s;
@@ -92,6 +92,9 @@ button {
 
     &[disabled] {
       opacity: .5;
+      &:hover {
+        opacity: .25;
+      }
         i {
             color: grey;
         }
@@ -378,7 +381,7 @@ i.group_add {
 }
 
 .has-shadow {
-    box-shadow: 1px 1px 5px #AAA;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .is-pulled-left {
@@ -455,12 +458,16 @@ i.group_add {
             color: $grey-dark;
             cursor: not-allowed;
             border-bottom-color: $grey-light;
+            &:hover {
+              background-color: white;
+              opacity: .25;
+            }
         }
     }
 }
 
 .card {
-    box-shadow: 5px 5px 10px $shadow-light;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 button.card-button {
@@ -526,13 +533,13 @@ button.card-button {
             margin: 10px 0px;
 
             &[disabled]:hover {
-                background-color: $button-bg;
+                opacity: .25;
                 cursor: not-allowed;
             }
         }
 
         .card-list {
-            max-height: 160px;
+            max-height: 170px;
             overflow-y: auto;
 
             ul {
@@ -626,7 +633,7 @@ i.fa-times {
     font-size: 25px;
     line-height: 37px;
     text-align: center;
-    box-shadow: 0px 0px 5px #444;
+    box-shadow: 0px 0px 5px $shadow-light;
     cursor: pointer;
     background: $nuance;
     color: $accent;
@@ -639,13 +646,13 @@ i.fa-times {
 
     &:hover {
         background: $accent-light;
-        box-shadow: 0px 0px 3px #444;
+        box-shadow: 0px 0px 3px $shadow-light;
     }
 
     &.selected {
         background: $accent-dark;
         color: $nuance;
-        box-shadow: 0px 0px 1px #444;
+        box-shadow: 0px 0px 1px $shadow-light;
     }
 }
 
@@ -679,8 +686,8 @@ a.old-console {
 lightbox {
     div[content] {
         border-radius: 3px;
-        box-shadow: 0px 0px 5px white;
-        max-height: 90% !important;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        max-height: 1600px !important;
         overflow: auto !important;
 
         & > i {
@@ -872,6 +879,7 @@ spinner-cube.button-spinner {
 
             img {
                 width: $user-profile-img-width;
+                border: 1px solid $grey-light;
             }
         }
     }
@@ -882,7 +890,6 @@ div.panel-message {
     display: flex;
     align-items: center;
     justify-content: center;
-
     background-color: $contrast;
     padding: 5px 5px;
     color: white;
@@ -910,12 +917,14 @@ div.panel-message {
         color: $contrast;
         transition: none;
         text-decoration: none;
+        background-color: white;
+        border-color: $contrast;
         &:hover {
-            background-color: #f2f2f2;
-            color: $accent;
+            background-color: $contrast-hover;
+            color: white;
 
             i {
-                color: $accent;
+                color: white;
             }
         }
 
@@ -1156,7 +1165,7 @@ portal {
         padding: 15px;
         box-sizing: border-box;
         height: 50px;
-        box-shadow: 0px 0px 2px $shadow-light;
+        box-shadow: 0px 0px 20px $shadow-light;
         padding-right: 0px;
 
         span {
@@ -1290,6 +1299,7 @@ users-root {
         align-items: baseline;
 
         button {
+          border-color: $accent;
             background-color: $accent;
             color: white;
             padding: 10px 10px;
@@ -1297,6 +1307,7 @@ users-root {
             align-items: center;
 
             &:hover {
+                border-color: $accent-dark;
                 background-color: $accent-dark;
             }
 
@@ -1332,7 +1343,7 @@ user-detail {
         div.login-date {
             font-size: 0.6em;
             font-style: italic;
-            color: #000;
+            color: $grey-dark;
         }
 
         .panel-header-content {
@@ -1601,11 +1612,11 @@ group-users-list {
 
         span.structures {
             ul {
-                border: 1px solid #DDD;
+                border: 1px solid $grey-light;
                 border-radius: 3px;
                 padding: 5px 5px;
                 margin: 0 5px;
-                background-color: rgba(240, 240, 240, 0.6);
+                background-color: $white-translucide;
                 min-width: 160px;
 
                 li:hover {
@@ -1748,7 +1759,7 @@ group-manage-users {
                     background: white;
                     padding: 15px 15px;
                     min-width: 550px;
-                    box-shadow: 0px 0px 20px #AAA;
+                    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
                 }
             }
         }
@@ -1827,7 +1838,7 @@ mass-mail{
         background: white;
         padding: 15px 15px;
         min-width: 550px;
-        box-shadow: 0px 0px 20px #AAA;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     }
 
     .close{
@@ -1842,10 +1853,13 @@ mass-mail{
 export {
     button.action{
         background-color: $accent;
+        border-color: $accent;
+        padding: 10px 20px;
         color: white ! important;
-
+        text-decoration: none;
         &:hover {
             background-color: $accent-dark;
+            border-color: $accent-dark;
         }
     }
 }
@@ -1872,10 +1886,11 @@ multi-combo {
         }
     }
 
-    >div {
+    > div {
         padding: 0px 10px;
         margin-top: -2px;
-
+        min-width: 300px;
+        max-width: 1000px;
         &:not(.hidden) {
             border: 1px solid $shadow-light!important;
         }
