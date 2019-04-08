@@ -99,7 +99,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 		QueryBuilder myDocs = QueryBuilder.start().and(isNotShared.get(),isNotProtected.get(),isNotPublic.get(),isNotDeleted.get());
 		QueryBuilder sharedDocs = QueryBuilder.start("isShared").is(true);
 		QueryBuilder protectedDocs = QueryBuilder.start("protected").is(true);
-		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true);
+		QueryBuilder trashDocs = QueryBuilder.start("deleted").is(true).and("trasher").is(userId);
 
 		final JsonObject queryMyDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),myDocs.get()));
 		final JsonObject querySharedDocs = MongoQueryBuilder.build(QueryBuilder.start().and(findByOwnerOrShared.get(),sharedDocs.get()));
