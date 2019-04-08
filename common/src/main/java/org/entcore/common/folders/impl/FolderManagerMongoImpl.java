@@ -442,10 +442,14 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
-	public void downloadFiles(Collection<String> ids, UserInfos user, HttpServerRequest request) {
+	public void downloadFiles(Collection<String> ids, UserInfos user, boolean includeDeleted, HttpServerRequest request) {
 		DocumentQueryBuilder parentFilter = queryHelper.queryBuilder().filterByInheritShareAndOwner(user)
 				.withExcludeDeleted().withIds(ids);
 		DocumentQueryBuilder childFilter = queryHelper.queryBuilder().withExcludeDeleted();
+		if(includeDeleted){
+			parentFilter = queryHelper.queryBuilder().filterByInheritShareAndOwner(user).withIds(ids);
+			childFilter = queryHelper.queryBuilder();
+		}
 		queryHelper.getChildrenRecursively(parentFilter, Optional.ofNullable(childFilter), true).setHandler(msg -> {
 			if (msg.succeeded() && msg.result().size() > 0) {
 				// download ONE file

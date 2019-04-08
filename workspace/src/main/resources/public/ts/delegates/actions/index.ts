@@ -52,7 +52,7 @@ export function ActionDelegate($scope: ActionDelegateScope) {
     }
 
     $scope.downloadFile = function () {
-        workspaceService.downloadFiles($scope.selectedItems())
+        workspaceService.downloadFiles($scope.selectedItems(),$scope.currentTree.filter=="trash")
     };
 }
 
