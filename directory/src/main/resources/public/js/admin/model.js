@@ -189,7 +189,7 @@ User.prototype.sendResetPassword = function(mail){
     })
 }
 
-User.prototype.isSendingResetPasswordMail = function(){
+User.prototype.isSendingMailAndWaitingFeedback = function(){
     return this.sendingMailAndWaitingFeedback;
 }
 

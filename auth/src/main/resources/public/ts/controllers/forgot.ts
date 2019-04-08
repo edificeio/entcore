@@ -85,6 +85,10 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			})
 	}
 
+	$scope.canSubmitForgotForm = function(isInputValid : boolean) {
+		return isInputValid && !$scope.sendingMailAndWaitingFeedback;
+	}
+
 	$scope.forgotId = function(mail, firstName, structureId, service){
 		http().postJson('/auth/forgot-id', {mail: mail, firstName: firstName, structureId: structureId, service: service})
             .done(function(data){
