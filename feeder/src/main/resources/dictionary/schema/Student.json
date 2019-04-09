@@ -175,7 +175,8 @@
 		"created" : { "generator" : "nowDate", "args":[]},
 		"modified" : { "generator" : "nowDate", "args":[]},
 		"firstNameSearchField" : { "generator" : "sanitize", "args" : ["firstName"]},
-		"lastNameSearchField" : { "generator" : "sanitize", "args" : ["lastName"]}
+		"lastNameSearchField" : { "generator" : "sanitize", "args" : ["lastName"]},
+		"emailSearchField" : { "generator" : "lower", "args" : ["email"]}
 	},
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName", "birthDate"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",

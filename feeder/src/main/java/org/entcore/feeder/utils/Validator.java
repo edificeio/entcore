@@ -218,6 +218,22 @@ public class Validator {
 						generatedAttributes.put(attr + SEARCH_FIELD, removeAccents(value.toString()).toLowerCase());
 					}
 				}
+				if (value != null && generate.containsKey(attr + SEARCH_FIELD)) {
+					// FIX: enable update of sanitized and lower fields
+					JsonObject g = generate.getJsonObject(attr + SEARCH_FIELD);
+					if (g != null && "lower".equals(g.getString("generator"))) {
+						if (generatedAttributes == null) {
+							generatedAttributes = new JsonObject();
+						}
+						generatedAttributes.put(attr + SEARCH_FIELD, value.toString().toLowerCase());
+					}
+					if (g != null && "sanitize".equals(g.getString("generator"))) {
+						if (generatedAttributes == null) {
+							generatedAttributes = new JsonObject();
+						}
+						generatedAttributes.put(attr + SEARCH_FIELD, sanitize(value.toString()));
+					}
+				}
 			}
 		}
 		if (generatedAttributes != null) {
@@ -271,6 +287,9 @@ public class Validator {
 					break;
 				case "sanitize" :
 					sanitizeGenerator(attr, object, getParameter(object, j));
+					break;
+				case "lower" :
+					lowerGenerator(attr, object, getParameter(object, j));
 					break;
 				default:
 			}
@@ -354,6 +373,17 @@ public class Validator {
 					}
 				}
 				object.put(attr, l);
+			}
+		}
+	}
+
+
+
+	private void lowerGenerator(String attr, JsonObject object, String... in) {
+		if (in != null && in.length == 1) {
+			String value = in[0];
+			if (value != null) {
+				object.put(attr, value.toLowerCase());
 			}
 		}
 	}
