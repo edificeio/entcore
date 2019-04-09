@@ -121,4 +121,14 @@ export let resetController = ng.controller('ResetController', ['$scope', ($scope
 		});
 	};
 
+	$scope.noSpace = function(event) {
+		if (event.keyCode === 32) {
+			event.preventDefault();
+		}
+	}
+
+	$scope.noUpperCase = function() {
+		$scope.user.login = $scope.user.login.toLowerCase();
+	}
+
 }]);
