@@ -1412,4 +1412,8 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	$scope.alreadyAttached = function(structure, potentialChild){
 		return potentialChild.children && potentialChild.children.some(function(child){ return child.id === structure.id })
 	}
+
+	$scope.canSubmitResetPassword = function(resetEmail) {
+		return resetEmail && !$scope.targetUser.isSendingMailAndWaitingFeedback();
+	}
 }

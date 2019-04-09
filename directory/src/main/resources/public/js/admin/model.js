@@ -172,15 +172,25 @@ User.prototype.removeCentralAdmin = function(){
 //Send an email containing a new activation code.
 //An error will be thrown server side if the code is not empty (neo4j side)
 User.prototype.sendResetPassword = function(mail){
+
     var that = this
+    that.sendingMailAndWaitingFeedback = true;
+
     $.post("/auth/sendResetPassword", {
         login: that.login,
         email: mail
     }).success(function(){
         notify.info(lang.translate("directory.notify.mailSent"))
+        that.sendingMailAndWaitingFeedback = false;
+
     }).error(function(){
         notify.error(lang.translate("directory.notify.mailError"))
+        that.sendingMailAndWaitingFeedback = false;
     })
+}
+
+User.prototype.isSendingMailAndWaitingFeedback = function(){
+    return this.sendingMailAndWaitingFeedback;
 }
 
 User.prototype.block = function(hook){
