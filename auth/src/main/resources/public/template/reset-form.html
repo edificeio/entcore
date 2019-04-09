@@ -6,7 +6,7 @@
 			<form method="post" ng-submit="reset()" name="resetForm">
 				<p>
 					<label><i18n>auth.email</i18n></label>
-					<input type="text" class="large-input" name="login" ng-model="user.login" name="login" tabindex="1" required/>
+					<input type="text" class="large-input" name="login" ng-model="user.login" ng-keydown="noSpace($event)" ng-change="noUpperCase()" name="login" tabindex="1" required/>
 					<p class="input-errors" ng-if="resetForm.login.$invalid && resetForm.login.$dirty">
 						<span ng-repeat="(key, value) in resetForm.login.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>
