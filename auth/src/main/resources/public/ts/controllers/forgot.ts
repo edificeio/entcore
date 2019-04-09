@@ -69,19 +69,27 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 	}
 
 	$scope.forgotPassword = function(login, service){
+		$scope.showWhat=null;
+		$scope.sendingMailAndWaitingFeedback = true;
 		http().postJson('/auth/forgot-password', {login: login, service: service})
 			.done(function(data){
 				notify.info("auth.notify."+service+".sent")
 				$scope.user.channels = {}
+				$scope.sendingMailAndWaitingFeedback = false;
 				$scope.$apply()
 			})
 			.e400(function(data){
+				$scope.sendingMailAndWaitingFeedback = false;
 				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.login'
 				$scope.$apply()
 			})
 	}
 
-	$scope.forgotId = function(mail, firstName, structureId, service){
+	$scope.canSubmitForgotForm = function(isInputValid : boolean) {
+		return isInputValid && !$scope.sendingMailAndWaitingFeedback;
+	}
+
+	$scope.forgotId = function({mail, firstName, structureId}, service){
 		http().postJson('/auth/forgot-id', {mail: mail, firstName: firstName, structureId: structureId, service: service})
             .done(function(data){
 				if(data.structures){
