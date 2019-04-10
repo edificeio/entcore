@@ -42,7 +42,27 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 	$scope.user = {};
 
 	$scope.welcome = {};
-
+	//===Private methods
+	let _promise:Promise<any> = Promise.resolve();
+	const resetError = () => {
+		//reset message if exists and wait 1seconds #21699
+		if ($scope.error) {
+			$scope.error = "";
+			_promise = new Promise(function (resolve) {
+				setTimeout(resolve, 1000);
+			});
+			$scope.$apply();
+		} else {
+			return _promise;
+		}
+	}
+	const setError = async (text: string) => {
+		//reset message if exists and wait 2seconds #21699
+		await resetError();
+		$scope.error = text;
+		$scope.$apply();
+	}
+	//===Init
 	http().get('/auth/configure/welcome').done(function (d) {
 	    $scope.welcome.content = d.welcomeMessage;
 	    if (!d.enabled) {
@@ -63,7 +83,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			$scope.activationCode = window.location.href.split('activationCode=')[1].split('&')[0];
 		}
 	}
-
+	//===Routes
 	route({
 		actionId: function(params){
 			$scope.user.mode = "id"
@@ -72,7 +92,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			$scope.user.mode = "password"
 		}
 	})
-
+	//===Public methods
 	$scope.initUser = function(){
 		$scope.user = {}
 	}
@@ -113,8 +133,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 				$scope.$apply()
 			})
 			.e400(function(data){
-				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.login'
-				$scope.$apply()
+				setError('auth.notify.' + JSON.parse(data.responseText).error + '.login');
 			})
 	}
 
@@ -130,8 +149,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			})
 			.e400(function(data){
 				$scope.sendingMailAndWaitingFeedback = false;
-				$scope.error = 'auth.notify.' + JSON.parse(data.responseText).error + '.login'
-				$scope.$apply()
+				setError('auth.notify.' + JSON.parse(data.responseText).error + '.login');
 			})
 	}
 
@@ -140,6 +158,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 	}
 
 	$scope.forgotId = function({mail, firstName, structureId}, service){
+		resetError();
 		http().postJson('/auth/forgot-id', {mail: mail, firstName: firstName, structureId: structureId, service: service})
             .done(function(data){
 				if(data.structures){
@@ -148,7 +167,7 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 						$scope.user.mode = 'idExtras'
 					}else{
 						$scope.user.mode = 'notFound';
-						$scope.error = 'auth.notify.non.unique.result.mail';
+						setError('auth.notify.non.unique.result.mail');
 					}
 				}else {
 					notify.info("auth.notify." + service + ".sent")
@@ -165,9 +184,9 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
             .e400(function(data){
 				const err = JSON.parse(data.responseText);
 				if(err.error=="no.match" && $scope.user.mode=="idExtras"){
-					$scope.error = 'auth.notify.no.match.mail.laststep';
+					setError('auth.notify.no.match.mail.laststep');
 				}else{
-					$scope.error = 'auth.notify.' + err.error + '.mail';
+					setError('auth.notify.' + err.error + '.mail');
 				}
 				$scope.$apply()
 			})
