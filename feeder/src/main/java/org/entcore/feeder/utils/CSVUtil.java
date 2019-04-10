@@ -30,6 +30,7 @@ import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.mozilla.universalchardet.UniversalDetector;
 
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
@@ -76,7 +77,7 @@ public class CSVUtil {
 							if (ar.succeeded() && ar.result().toString("UTF-8").startsWith(UTF8_BOM)) {
 								handler.handle("UTF-8");
 							} else {
-								handler.handle("ISO-8859-1");
+								handler.handle(detectCharset(path));
 							}
 						}
 					});
@@ -105,6 +106,33 @@ public class CSVUtil {
 			}
 		}
 		return "ISO-8859-1";
+	}
+
+	private static String detectCharset(String path) {
+		FileInputStream fis = null;
+		try {
+			final byte[] buf = new byte[4096];
+			final UniversalDetector detector = new UniversalDetector(null);
+			fis = new FileInputStream(path);
+			int nread;
+			while ((nread = fis.read(buf)) > 0 && !detector.isDone()) {
+				detector.handleData(buf, 0, nread);
+			}
+			detector.dataEnd();
+			final String charset = detector.getDetectedCharset();
+			return charset != null ? charset : "ISO-8859-1";
+		} catch (IOException e) {
+			log.error("Error when detect charset", e);
+			return "ISO-8859-1";
+		} finally {
+			if (fis != null) {
+				try {
+					fis.close();
+				} catch (IOException e) {
+					log.error("Error close file to detect charset", e);
+				}
+			}
+		}
 	}
 
 	public static CSVReader getCsvReader(String file, String charset)
