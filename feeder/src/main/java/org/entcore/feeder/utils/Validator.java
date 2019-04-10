@@ -378,7 +378,7 @@ public class Validator {
 		if (in != null && in.length == 1) {
 			String value = in[0];
 			if (value != null) {
-				object.put(attr + SEARCH_FIELD, value.toLowerCase());
+				object.put(attr, value.toLowerCase());
 			}
 		}
 	}
