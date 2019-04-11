@@ -424,7 +424,7 @@ public class Report {
 	protected int cleanAttributeKeys(JsonObject attribute) {
 		int count = 0;
 		if (attribute != null) {
-			for (String attr : attribute.fieldNames()) {
+			for (String attr : attribute.copy().fieldNames()) {
 				Object j = attribute.getValue(attr);
 				if (j != null){
 					if (j instanceof JsonObject) {

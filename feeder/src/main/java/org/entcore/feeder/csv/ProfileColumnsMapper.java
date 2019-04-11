@@ -31,8 +31,6 @@ import java.util.*;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 
-import static fr.wseduc.webutils.Utils.isEmpty;
-
 public class ProfileColumnsMapper {
 
 	private final Map<String, Map<String, Object>> profilesNamesMapping = new HashMap<>();
@@ -271,8 +269,15 @@ public class ProfileColumnsMapper {
 	}
 
 	private static String cleanKey(String columnName) {
-		return Validator.removeAccents(columnName.trim().toLowerCase())
-				.replaceAll("\\s+", "").replaceAll("\\*", "").replaceAll("'", "").replaceFirst(CSVUtil.UTF8_BOM, "");
+		String cleanKey = Validator.removeAccents(columnName.trim().toLowerCase())
+				.replaceAll("\\s+", "").replaceAll("\\*", "").replaceAll("'", "")
+				.replaceFirst(CSVUtil.UTF8_BOM, "");
+		final byte[] bytes = cleanKey.getBytes();
+		if (bytes.length > 3 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF) {
+			cleanKey = new String(Arrays.copyOfRange(bytes, 3, bytes.length));
+		}
+		return cleanKey;
+
 	}
 
 	public JsonObject getColumsMapping(String profile, String[] strings) {
