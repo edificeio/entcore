@@ -458,6 +458,7 @@ public class CsvFeeder implements Feed {
 									} else {
 										childClasses = user.getValue("childClasses");
 									}
+									//TODO refactor duplicated code between csvfeeder and csvvalidator?
 									if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
 											childFirstName instanceof JsonArray && childClasses instanceof JsonArray &&
 											((JsonArray) childClasses).size() == ((JsonArray) childLastName).size() &&
@@ -479,6 +480,23 @@ public class CsvFeeder implements Feed {
 												childClasses.toString().trim() +
 												defaultStudentSeed;
 										relativeStudentMapping(linkStudents, mapping);
+									} else if (childUsername instanceof JsonArray && childLastName instanceof JsonArray &&
+											childFirstName instanceof JsonArray && childClasses instanceof String &&
+											!((String)childClasses).trim().isEmpty() &&
+											((JsonArray) childFirstName).size() == ((JsonArray) childUsername).size() &&
+											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
+										//ONDE files have children array foreach parent row but
+										//in case of paramclass => childClasses is aalways String => structure.getOverrideClass() is defined as string
+										// see ImportInfos.setOverrideClass and CSVUtil.getStructure
+										for (int j = 0; j < ((JsonArray) childUsername).size(); j++) {
+											String mapping = structure.getExternalId() +
+													((JsonArray) childUsername).getString(j).trim() +
+													((JsonArray) childLastName).getString(j).trim() +
+													((JsonArray) childFirstName).getString(j).trim() +
+													((String)childClasses).trim() +
+													defaultStudentSeed;
+											relativeStudentMapping(linkStudents, mapping);
+										}
 									} else {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
 										return;
@@ -510,6 +528,20 @@ public class CsvFeeder implements Feed {
 													childFirstName.toString().trim() +
 													childClasses.toString().trim() + defaultStudentSeed;
 											relativeStudentMapping(linkStudents, mapping);
+									} else if (childLastName instanceof JsonArray && childFirstName instanceof JsonArray
+											&& childClasses instanceof String && !((String)childClasses).trim().isEmpty() &&
+											((JsonArray) childFirstName).size() == ((JsonArray) childLastName).size()) {
+										//ONDE files have children array foreach parent row but
+										//in case of paramclass => childClasses is aalways String => structure.getOverrideClass() is defined as string
+										// see ImportInfos.setOverrideClass and CSVUtil.getStructure
+										for (int j = 0; j < ((JsonArray) childLastName).size(); j++) {
+											String mapping = structure.getExternalId() +
+													((JsonArray) childLastName).getString(j).trim() +
+													((JsonArray) childFirstName).getString(j).trim() +
+													((String)childClasses).trim() +
+													defaultStudentSeed;
+											relativeStudentMapping(linkStudents, mapping);
+										}
 									} else {
 										handler.handle(new ResultMessage().error("invalid.child.mapping"));
 										return;
