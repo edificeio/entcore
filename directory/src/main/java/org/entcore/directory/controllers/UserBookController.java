@@ -26,6 +26,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
+import static org.entcore.common.user.SessionAttributes.BIRTHDAYS_ATTRIBUTE;
 import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 import java.io.File;
@@ -644,23 +645,41 @@ public class UserBookController extends BaseController {
 	@Get("/person/birthday")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void personBirthday(final HttpServerRequest request) {
-		Calendar c = Calendar.getInstance();
-		int month = c.get(Calendar.MONTH);
-		String [] monthRegex = {"12|01|02", "01|02|03", "02|03|04", "03|04|05", "04|05|06", "05|06|07",
-				"06|07|08", "07|08|09", "08|09|10", "09|10|11", "10|11|12", "11|12|01"};
-		String query =
-				"MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-				"WITH DISTINCT c, profile, visibles " +
-				"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
-				"WHERE profile.name = 'Student' AND visibles.birthDate=~{regex} " +
-				"RETURN distinct visibles.id as id, visibles.displayName as username, " +
-				"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
-		JsonObject params = new JsonObject();
-		params.put("regex", "^[0-9]{4}-(" + monthRegex[month] + ")-(3[01]|[12][0-9]|0[1-9])$");
-		UserUtils.findVisibleUsers(eb, request, true, true, query, params, new Handler<JsonArray>() {
+		UserUtils.getUserInfos(eb, request,new Handler<UserInfos>() {
 			@Override
-			public void handle(JsonArray users) {
-				renderJson(request, users);
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					Object birthdays = user.getAttribute(BIRTHDAYS_ATTRIBUTE);
+					if (birthdays != null) {
+						renderJson(request, new JsonArray(birthdays.toString()));
+						return;
+					}
+
+					Calendar c = Calendar.getInstance();
+					int month = c.get(Calendar.MONTH);
+					String[] monthRegex = {"01", "02", "03", "04", "05", "06",
+							"07", "08", "09", "10", "11", "12"};
+
+					final String preFilter = "AND HEAD(m.profiles) = 'Student' AND m.birthDate=~{regex} ";
+
+					String query =
+							"MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+									"WITH DISTINCT c, profile, visibles " +
+									"MATCH visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
+									"RETURN distinct visibles.id as id, visibles.displayName as username, " +
+									"visibles.birthDate as birthDate, COLLECT(distinct [c.id, c.name]) as classes ";
+					JsonObject params = new JsonObject();
+					params.put("regex", "^[0-9]{4}-" + monthRegex[month] + "-(3[01]|[12][0-9]|0[1-9])$");
+					UserUtils.findVisibleUsers(eb, request, true, true, preFilter, query, params, new Handler<JsonArray>() {
+						@Override
+						public void handle(JsonArray users) {
+							UserUtils.addSessionAttribute(eb, user.getUserId(), BIRTHDAYS_ATTRIBUTE, users.encode(), null);
+							renderJson(request, users);
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
 			}
 		});
 	}
