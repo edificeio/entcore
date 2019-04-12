@@ -231,7 +231,12 @@ public class UserUtils {
 		String arg = name.substring(0, idx);
 		String type = name.substring(idx + 1);
 		String displayName = groupDisplayName != null ? groupDisplayName : "group." + type;
-		return i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
+		String translatedName = i18n.translate(displayName, I18n.DEFAULT_DOMAIN, acceptLanguage, arg);
+		if(!translatedName.equals(displayName)) {
+			return translatedName;
+		} else {
+			return groupDisplayName != null ? groupDisplayName : name;
+		}
 	}
 
 	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage) {
