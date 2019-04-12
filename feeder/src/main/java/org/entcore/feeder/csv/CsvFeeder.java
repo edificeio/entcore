@@ -454,7 +454,16 @@ public class CsvFeeder implements Feed {
 									Object childFirstName = user.getValue("childFirstName");
 									Object childClasses;
 									if (isNotEmpty(structure.getOverrideClass())) {
-										childClasses = structure.getOverrideClass();
+										//in case of classAdmin=> OverrideClass is always a string
+										//in case of ONDE import => childFirstName is always a JSONArray
+										if (childFirstName instanceof JsonArray) {
+											childClasses = new JsonArray();
+											for (int j = 0; j < ((JsonArray) childFirstName).size(); j++) {
+												((JsonArray)childClasses).add(structure.getOverrideClass());
+											}
+										} else {
+											childClasses = structure.getOverrideClass();
+										}
 									} else {
 										childClasses = user.getValue("childClasses");
 									}
@@ -488,7 +497,16 @@ public class CsvFeeder implements Feed {
 									Object childFirstName = user.getValue("childFirstName");
 									Object childClasses;
 									if (isNotEmpty(structure.getOverrideClass())) {
-										childClasses = structure.getOverrideClass();
+										//in case of classAdmin=> OverrideClass is always a string
+										//in case of ONDE import => childFirstName is always a JSONArray
+										if (childFirstName instanceof JsonArray) {
+											childClasses = new JsonArray();
+											for (int j = 0; j < ((JsonArray) childFirstName).size(); j++) {
+												((JsonArray)childClasses).add(structure.getOverrideClass());
+											}
+										} else {
+											childClasses = structure.getOverrideClass();
+										}
 									} else {
 										childClasses = user.getValue("childClasses");
 									}
