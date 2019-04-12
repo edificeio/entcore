@@ -25,6 +25,8 @@ public final class SessionAttributes {
 
 	public static final String PERSON_ATTRIBUTE = "person";
 
+	public static final String BIRTHDAYS_ATTRIBUTE = "birthdays";
+
 	public static final String THEME_ATTRIBUTE = "theme";
 
 }
