@@ -242,7 +242,7 @@ public class UserInfos {
 			this.structureExternalIds = structureExternalIds;
 		}
 	}
-
+	private Boolean hasApp;
 	private String userId;
 	private String externalId;
 	private String firstName;
@@ -271,6 +271,14 @@ public class UserInfos {
 	public Map<String, Child> getChildren() { return children; }
 
 	public void setChildren(Map<String, Child> children) { this.children = children; }
+
+	public Boolean getHasApp(){
+		return this.hasApp;
+	}
+
+	public void setHasApp(Boolean hasApp){
+		this.hasApp = hasApp;
+	}
 
 	public Map<String, Function> getFunctions() {
 		return functions;
