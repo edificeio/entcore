@@ -30,8 +30,6 @@ import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.UserInfos;
@@ -44,8 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -381,14 +377,18 @@ public class PortalController extends BaseController {
 	@Get("/conf/smartBanner")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void getSmartBannerConf(final HttpServerRequest request){
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			@Override
-			public void handle(UserInfos user) {
-				if (user != null) {
-					renderJson(request, config.getJsonObject("smartBanner", new JsonObject()));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				JsonObject json = config.getJsonObject("smartBanner", new JsonObject());
+				boolean canAccessApp = user.getHasApp() != null && user.getHasApp();
+				boolean isExcluded = json.getJsonArray("excludeUserTypes", new JsonArray()).contains(user.getType());
+				if (canAccessApp && !isExcluded) {
+					renderJson(request, json);
 				} else {
-					unauthorized(request);
+					forbidden(request);
 				}
+			} else {
+				unauthorized(request);
 			}
 		});
 	}

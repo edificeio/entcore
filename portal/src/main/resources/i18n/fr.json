@@ -369,6 +369,13 @@
   "encoding.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "missing.buffer.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "folderpicker.folder.edit": "Créer un nouveau dossier",
-  "upload.forbidden":"Vous ne pouvez pas importer de fichiers pour le moment"
-
+  "upload.forbidden":"Vous ne pouvez pas importer de fichiers pour le moment",
+  "smartbanner.name": "ENT Mobile",
+  "smartbanner.description": "Téléchargez l'application mobile",
+  "smartbanner.action": "Télécharger",
+  "smartbanner.icon.uri": "/assets/img/illustrations/logo.png",
+  "smartbanner.android.store": "Google Play",
+  "smartbanner.android.uri": "",
+  "smartbanner.ios.store": "App Store",
+  "smartbanner.ios.uri": ""
 }
