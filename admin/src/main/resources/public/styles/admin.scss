@@ -153,7 +153,7 @@ input[type="search"] {
     border: none;
     border-bottom: 1px solid $shadow-light;
     transition: border-color 0.25s;
-
+    -webkit-appearance: textfield;
     &:focus {
         border-color: $accent;
     }
@@ -173,7 +173,7 @@ input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     padding: 5px;
     font-size: 1em;
     font-family: 'Open Sans', sans-serif;
-
+    -webkit-appearance: textfield;
     &:focus { border-color: $accent; }
 
     &.ng-invalid.ng-dirty {
