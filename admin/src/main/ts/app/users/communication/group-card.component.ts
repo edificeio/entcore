@@ -38,7 +38,7 @@ export const groupCardLocators = {
             <div class="group-card__actions">
                 <button
                     class="group-card__action-add-communication ${css.addCommunicationButton}"
-                    (click)="$event.stopPropagation();">
+                    (click)="clickAddCommunication.emit(group);">
                     {{ 'group.card.add-communication-button' | translate }} <i class="fa fa-plus"></i>
                 </button>
                 <button
@@ -204,6 +204,8 @@ export class GroupCardComponent {
 
     confirmationDisplayed = false;
     confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+    @Output()
+    clickAddCommunication: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
 
     groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
         .set('ManualGroup', 'manual')
@@ -212,6 +214,7 @@ export class GroupCardComponent {
         
     @Output()
     clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
+
 
     constructor(
         private spinner: SpinnerService,

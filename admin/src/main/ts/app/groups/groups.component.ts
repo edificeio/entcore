@@ -40,9 +40,9 @@ export class GroupsComponent implements OnInit, OnDestroy {
 
     // Tabs
     tabs = [
-        { label: "manual.groups", view: "manual" },
-        { label: "profile.groups", view: "profile" },
-        { label: "functional.groups", view: "functional" }
+        { label: "ManualGroup", view: "manual" },
+        { label: "ProfileGroup", view: "profile" },
+        { label: "FunctionalGroup", view: "functional" }
     ]
 
     private routerSubscriber : Subscription

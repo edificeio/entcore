@@ -1,6 +1,5 @@
-import { Component, Input, Output, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, 
+import { Component, Input, Output, EventEmitter, 
     TemplateRef, ContentChild } from '@angular/core'
-import { Subject } from 'rxjs/Subject'
 
 @Component({
     selector: 'list',
@@ -19,7 +18,8 @@ import { Subject } from 'rxjs/Subject'
                     (click)="onSelect.emit(item)"
                     [class.selected]="isSelected(item)"
                     [class.disabled]="isDisabled(item)"
-                    [ngClass]="ngClass(item)">
+                    [ngClass]="ngClass(item)"
+                    class="lct-list-item">
                     <ng-template [ngTemplateOutlet]="templateRef" [ngOutletContext]="{$implicit: item}">
                     </ng-template>
                 </li>
@@ -45,17 +45,13 @@ import { Subject } from 'rxjs/Subject'
         ul li.disabled {
             pointer-events: none;
         }
-    `],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    `]
 })
 export class ListComponent {
 
     /* Store pipe */
     self = this
     _storedElements = []
-
-    constructor(
-        public cdRef: ChangeDetectorRef){}
 
     @Input() model = []
     @Input() filters

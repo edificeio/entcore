@@ -37,11 +37,11 @@ import { BundlesService } from 'sijil'
 
         <services-role-attribution
             [show]="showLightbox"
-            (onClose)="showLightbox = false"
+            (close)="showLightbox = false"
             sort="name"
             searchPlaceholder="search.group"
             noResultsLabel="list.results.no.groups"
-            (onAdd)="addGroupToSelectedRole($event)"
+            (add)="addGroupToSelectedRole($event)"
             [selectedRole]="selectedRole"
         >
         </services-role-attribution>

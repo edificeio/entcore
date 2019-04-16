@@ -29,9 +29,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
@@ -40,7 +44,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	private final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
-
+	
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
@@ -90,6 +94,39 @@ public class DefaultCommunicationService implements CommunicationService {
 				"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void addLinkWithUsers(Map<String, Direction> params, Handler<Either<String, JsonObject>> handler) {
+		if (params != null) {
+			StatementsBuilder sb = new StatementsBuilder();
+
+			params.forEach((groupId, direction) -> {
+				String createRelationship;
+
+				switch (direction) {
+					case INCOMING:
+						createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u ";
+						break;
+					case OUTGOING:
+						createRelationship = "g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+						break;
+					default:
+						createRelationship = "g<-[:COMMUNIQUE { source: 'MANUAL'}]-u, g-[:COMMUNIQUE { source: 'MANUAL'}]->u ";
+				}
+				String query =
+						"MATCH (g:Group { id : {groupId}}) " +
+								"SET g.users = {direction} " +
+								"WITH g " +
+								"MATCH g<-[:IN]-(u:User) " +
+								"CREATE UNIQUE " + createRelationship;
+				sb.add(query, new JsonObject().put("groupId", groupId).put("direction", direction.name()));
+			});
+
+			neo4j.executeTransaction(sb.build(), null, true, validUniqueResultHandler(handler));
+		} else {
+			handler.handle(new Either.Left<>("Error addLinkWithUsers: params can't be null"));
+		}
 	}
 
 	@Override
@@ -645,7 +682,7 @@ public class DefaultCommunicationService implements CommunicationService {
                 + "type, "
                 + "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
                 + "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-                + "CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
+                + "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
         JsonObject params = new JsonObject().put("id", id);
         neo4j.execute(query, params, validResultHandler(results));
     }
@@ -680,6 +717,112 @@ public class DefaultCommunicationService implements CommunicationService {
         });
     }
 
+    @Override
+    public void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
+    	String query = "MATCH (startGroup: Group {id: {startGroupId}}), (endGroup: Group {id: {endGroupId}}) " +
+    			"RETURN startGroup.users as startDirection, endGroup.users as endDirection";
+    	
+    	JsonObject params = new JsonObject()
+    			.put("startGroupId", startGroupId)
+    			.put("endGroupId", endGroupId);
+    	
+    	neo4j.execute(query, params, validUniqueResultHandler(handler));
+    }
+
+    @Override
+	public void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler) {
+		this.getDirections(startGroupId, endGroupId, getDirectionsRes -> {
+			if (getDirectionsRes.isLeft()) {
+				handler.handle(getDirectionsRes);
+			} else {
+				String warningMessage = this.computeWarningMessageForAddLinkCheck(
+						this.formatDirection(getDirectionsRes.right().getValue().getString("startDirection"))
+						, this.formatDirection(getDirectionsRes.right().getValue().getString("endDirection")));
+
+				if (CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
+					this.getGroupFilterAndSubType(startGroupId, res -> {
+						if (res.isLeft()) {
+							handler.handle(res);
+						} else {
+							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
+									, res.right().getValue().getString("subType"), userInfos)) {
+								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+							} else {
+								handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
+							}
+						}
+					});
+				} else if (CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
+					this.getGroupFilterAndSubType(endGroupId, res -> {
+						if (res.isLeft()) {
+							handler.handle(res);
+						} else {
+							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
+									, res.right().getValue().getString("subType"), userInfos)) {
+								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+							} else {
+								handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
+							}
+						}
+					});
+				} else if (CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE.equals(warningMessage)) {
+					this.getGroupFilterAndSubType(startGroupId, res -> {
+						if (res.isLeft()) {
+							handler.handle(res);
+						} else {
+							if (this.isImpossibleToChangeDirectionGroupForAddLink(res.right().getValue().getString("filter")
+									, res.right().getValue().getString("subType"), userInfos)) {
+								handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+							} else {
+								this.getGroupFilterAndSubType(endGroupId, e -> {
+									if (e.isLeft()) {
+										handler.handle(e);
+									} else {
+										if (this.isImpossibleToChangeDirectionGroupForAddLink(e.right().getValue().getString("filter")
+												, e.right().getValue().getString("subType"), userInfos)) {
+											handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+										} else {
+											handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
+										}
+									}
+								});
+							}
+						}
+					});
+				} else {
+					handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
+				}
+			}
+		});
+	}
+
+	@Override
+	public void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
+		this.getDirections(startGroupId, endGroupId, res -> {
+			if (res.isLeft()) {
+				handler.handle(res);
+			} else {
+				Map<String, Direction> newDirection = this.computeNewDirectionAfterAddingLink(startGroupId
+						, this.formatDirection(res.right().getValue().getString("startDirection"))
+						, endGroupId
+						, this.formatDirection(res.right().getValue().getString("endDirection")));
+				if (newDirection.isEmpty()) {
+					handler.handle(new Either.Right<String, JsonObject>(new JsonObject().put("ok", "no direction to change")));
+				} else {
+					this.addLinkWithUsers(newDirection, addLinkWithUsers -> {
+						if (addLinkWithUsers.isLeft()) {
+							handler.handle(addLinkWithUsers);
+						} else {
+							JsonObject response = new JsonObject();
+							newDirection.forEach((groupId, direction) -> response.put(groupId, direction));
+							handler.handle(new Either.Right<String, JsonObject>(response));
+						}
+					});
+				}
+			}			
+		});
+	}
+	
     public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
         if (hasIncomingRelationship && hasOutgoingRelationship) {
             return null;
@@ -710,4 +853,71 @@ public class DefaultCommunicationService implements CommunicationService {
         }
         return null;
     }
+
+    private CommunicationService.Direction formatDirection(String dbDirection) {
+		if ("".equals(dbDirection) || dbDirection == null) {
+			return CommunicationService.Direction.NONE;
+		} 
+		return CommunicationService.Direction.valueOf(dbDirection.toUpperCase());
+	}
+
+	public String computeWarningMessageForAddLinkCheck(Direction startDirection, Direction endDirection) {
+		if (startDirection.equals(Direction.OUTGOING) && endDirection.equals(Direction.INCOMING)) {
+			return CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
+		}
+
+		if (startDirection.equals(Direction.OUTGOING)) {
+			return CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
+		}
+
+		if (endDirection.equals(Direction.INCOMING)) {
+			return CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE;
+		}
+
+		return null;
+	}
+
+	private void getGroupFilterAndSubType(String groupId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (g:Group { id: {groupId} }) "
+				+ "RETURN g.filter as filter, "
+				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
+
+		JsonObject params = new JsonObject().put("groupId", groupId);
+
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	public boolean isImpossibleToChangeDirectionGroupForAddLink(String filter, String subType, UserInfos userInfos) {
+		if (userInfos.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN)) {
+			return false;
+		}
+
+		if (userInfos.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)) {
+			if ("StructureGroup".equals(subType) && ("Relative".equals(filter) || "Student".equals(filter) || "Guest".equals(filter))) {
+				return true;
+			} else if ("ClassGroup".equals(subType) && ("Relative".equals(filter) || "Guest".equals(filter))) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public Map<String, Direction> computeNewDirectionAfterAddingLink(String startGroupId, Direction startDirection, String endGroupId, Direction endDirection) {
+		Map<String, Direction> resDirectionMap = new HashMap<>();
+
+		if (startDirection.equals(Direction.NONE)) {
+			resDirectionMap.put(startGroupId, Direction.INCOMING);
+		} else if (startDirection.equals(Direction.OUTGOING)) {
+			resDirectionMap.put(startGroupId, Direction.BOTH);
+		}
+
+		if (endDirection.equals(Direction.NONE)) {
+			resDirectionMap.put(endGroupId, Direction.OUTGOING);
+		} else if (endDirection.equals(Direction.INCOMING)) {
+			resDirectionMap.put(endGroupId, Direction.BOTH);
+		}
+
+		return resDirectionMap;
+	}
 }
