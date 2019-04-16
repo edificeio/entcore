@@ -15,7 +15,7 @@ export interface MenuDelegateScope extends EventDelegateScope {
     saveClassInfos(): void;
     belongsToMultipleSchools(): boolean;
     hasSelectedClass(): boolean;
-    canOpenCreateUserModal(): boolean;
+    atLeastOneClass(): boolean;
     openCreateUserModal();
     listOpened: boolean;
     selectedClass: ClassRoom;
@@ -122,6 +122,6 @@ export function MenuDelegate($scope: MenuDelegateScope) {
     $scope.hasSelectedClass = function () {
         return !!$scope.selectedClass;
     }
-    $scope.canOpenCreateUserModal = () => $scope.classrooms.length > 0;
+    $scope.atLeastOneClass = () => $scope.classrooms.length > 0;
     $scope.openCreateUserModal = () => $scope.openLightbox('admin/create-user/menu');
 }
