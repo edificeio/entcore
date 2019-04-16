@@ -1,14 +1,14 @@
 <section class="toggle-buttons" ng-class="{ hide: !hasSelectedUsers() }">
     <div class="toggle block-container">
         <div class="row">
-            <button translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreActivated()"></button>
-            <button ng-click="openLightbox('admin/actions/block')" ng-if="selectedUsersAreNotBlocked()" translate
+            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreActivated()"></button>
+            <button workflow="directory.allowClassAdminBlockUsers" ng-click="openLightbox('admin/actions/block')" ng-if="selectedUsersAreNotBlocked()" translate
                 content="admin.block">
             </button>
-            <button ng-click="openLightbox('admin/actions/unblock')" ng-if="selectedUsersAreBlocked()" translate
+            <button workflow="directory.allowClassAdminBlockUsers" ng-click="openLightbox('admin/actions/unblock')" ng-if="selectedUsersAreBlocked()" translate
                 content="admin.unblock">
             </button>
-            <button ng-if="canRemoveSelection()" ng-click="openLightbox('admin/actions/delete')">
+            <button workflow="directory.allowClassAdminDeleteUsers" ng-if="canRemoveSelection()" ng-click="openLightbox('admin/actions/delete')">
                 <i18n>remove</i18n>
             </button>
             <button ng-click="goToExport(true)">

@@ -94,7 +94,7 @@
 		<!--END FORM-->
 		<!--BUTTONS-->
 		<div class="row twelve bottom-spacing-three">
-			<a ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
+			<a workflow="directory.allowClassAdminResetPassword" ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
 			<a class="button" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></a>
 		</div>
 		<!--END BUTTON-->
