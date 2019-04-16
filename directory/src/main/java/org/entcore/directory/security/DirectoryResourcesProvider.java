@@ -511,8 +511,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String query = "MATCH (n:User { id : {teacherId}}) " +
-				// add class-admin workflow when it is created with right name
-				//"-[:IN]->(Group)-[:AUTHORIZED]->(Role)-[:AUTHORIZE]->(aw:Action:WorkflowAction { name : ''}) " +
 				"WITH n MATCH (s:Structure)<-[:DEPENDS]-(Group)<-[:IN]-(n) " +
 				"WITH s MATCH (u:User { id : {userId}})-[:IN]->(Group)-[:DEPENDS]->(s) " +
 				"RETURN count(*) > 0 as exists";

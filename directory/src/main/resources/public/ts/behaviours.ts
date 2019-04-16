@@ -12,7 +12,11 @@ Behaviours.register('directory', {
             generateMergeKey: "org.entcore.directory.controllers.UserController|generateMergeKey",
 			mergeByKey: "org.entcore.directory.controllers.UserController|mergeByKey",
 			allowSharebookmarks: "org.entcore.directory.controllers.ShareBookmarkController|allowSharebookmarks",
-			allowLoginUpdate: "org.entcore.directory.controllers.UserController|allowLoginUpdate"
+			allowLoginUpdate: "org.entcore.directory.controllers.UserController|allowLoginUpdate",
+			allowClassAdminAddUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminAddUsers",
+			allowClassAdminResetPassword: "org.entcore.directory.controllers.DirectoryController|allowClassAdminResetPassword",
+			allowClassAdminBlockUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminBlockUsers",
+			allowClassAdminDeleteUsers: "org.entcore.directory.controllers.DirectoryController|allowClassAdminDeleteUsers"
 		}
 	},
 	sniplets: {

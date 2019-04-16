@@ -83,7 +83,7 @@ public class DirectoryController extends BaseController {
 	}
 
 	@Get("/class-admin")
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
+	@SecuredAction("classadmin.address")
 	public void classAdmin(HttpServerRequest request) {
 		renderView(request);
 	}
@@ -584,4 +584,18 @@ public class DirectoryController extends BaseController {
 	public void setSlotProfileService (SlotProfileService slotProfileService) {
 		this.slotProfileService = slotProfileService;
 	}
+
+	// Methods used to create Workflow rights
+
+	@SecuredAction("classadmin.add.users")
+	public void allowClassAdminAddUsers(){}
+
+	@SecuredAction("classadmin.reset.password")
+	public void allowClassAdminResetPassword(){}
+
+	@SecuredAction("classadmin.block.users")
+	public void allowClassAdminBlockUsers(){}
+
+	@SecuredAction("classadmin.delete.users")
+	public void allowClassAdminDeleteUsers(){}
 }
