@@ -39,11 +39,11 @@
 		</section>
 
 		<section class="class-admin__options">
-			<a workflow="directory.allowClassAdminAddUsers" class="button-big three" ng-class="{ disabled: !canOpenCreateUserModal() }" href="#" ng-click="openCreateUserModal()">
+			<a workflow="directory.allowClassAdminAddUsers" class="button-big three" ng-disabled="!atLeastOneClass()" href="#" ng-click="openCreateUserModal()">
 				<i18n>classAdmin.add.users</i18n>
 				<i class="users"></i>
 			</a>
-			<a class="button-big three" ng-class="{ disabled: classrooms.length === 0 }" href="#" ng-click="goToExport()">
+			<a class="button-big three" ng-disabled="!atLeastOneClass()" href="#" ng-click="goToExport()">
 				<i18n>classAdmin.massmailing</i18n>
 				<i class="file-solid"></i>
 			</a>
