@@ -38,6 +38,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
@@ -46,6 +48,7 @@ import org.entcore.communication.services.impl.DefaultCommunicationService;
 import java.util.List;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class CommunicationController extends BaseController {
@@ -536,4 +539,49 @@ public class CommunicationController extends BaseController {
             }
         });
     }
+
+    @Get("/v2/group/:startGroupId/communique/:endGroupId/check")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void addLinkCheckOnly(HttpServerRequest request) {
+		Params params = new Params(request).validate();
+		if (params.isInvalid()) return;
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			communicationService.addLinkCheckOnly(params.getStartGroupId(), params.getEndGroupId(), user, event -> {
+				if (event.isLeft()) {
+					String error = event.left().getValue();
+					if (CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION.equals(error)) {
+						Renders.renderJson(request, new JsonObject().put("error", error), 409);
+					} else {
+						Renders.renderJson(request, new JsonObject().put("error", error), 500);
+					}
+				} else {
+					Renders.renderJson(request, event.right().getValue(), 200);
+				}
+			});
+		});
+	}
+
+	@Post("/v2/group/:startGroupId/communique/:endGroupId")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void processAddLinkAndChangeDirection(HttpServerRequest request) {
+		Params params = new Params(request).validate();
+		if (params.isInvalid()) return;
+
+		communicationService.addLink(params.getStartGroupId(), params.getEndGroupId(), event -> {
+			if (event.isLeft()) {
+				Renders.renderJson(request, new JsonObject().put("error", event.left().getValue()), 500);
+			} else {
+				communicationService.processChangeDirectionAfterAddingLink(params.getStartGroupId(), params.getEndGroupId(), eventChange -> {
+					if (event.isLeft()) {
+						Renders.renderJson(request, new JsonObject().put("error", event.left().getValue()), 500);
+					} else {
+						Renders.renderJson(request, eventChange.right().getValue(), 200);
+					}
+				});
+			}
+		});
+	}
 }

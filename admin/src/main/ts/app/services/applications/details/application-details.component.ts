@@ -46,11 +46,11 @@ import { GroupModel, RoleModel, StructureModel } from '../../../core/store/model
             </div>
             <services-role-attribution
                     [show]="showRoleAttribution"
-                    (onClose)="showRoleAttribution = false"
+                    (close)="showRoleAttribution = false"
                     sort="name"
                     searchPlaceholder="search.group"
                     noResultsLabel="list.results.no.groups"
-                    (onAdd)="addGroupToSelectedRole($event)"
+                    (add)="addGroupToSelectedRole($event)"
                     [selectedRole]="selectedRole">
             </services-role-attribution>
         </div>

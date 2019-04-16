@@ -24,18 +24,23 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public interface CommunicationService {
 	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
-
+	String WARNING_ENDGROUP_USERS_CAN_COMMUNICATE = "endgroup-users-can-communicate";
+	String WARNING_STARTGROUP_USERS_CAN_COMMUNICATE = "startgroup-users-can-communicate";
+	String WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communicate";
+	
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup");
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
-	enum Direction { INCOMING, OUTGOING, BOTH }
+	enum Direction { INCOMING, OUTGOING, BOTH, NONE }
 
 	void addLink(String startGroupId, String endGroupId,
 			Handler<Either<String, JsonObject>> handler);
@@ -44,6 +49,9 @@ public interface CommunicationService {
 			Handler<Either<String, JsonObject>> handler);
 
 	void addLinkWithUsers(String groupId, Direction direction,
+						  Handler<Either<String, JsonObject>> handler);
+
+	void addLinkWithUsers(Map<String, Direction> params,
 						  Handler<Either<String, JsonObject>> handler);
 
 	void removeLinkWithUsers(String groupId, Direction direction,
@@ -86,4 +94,10 @@ public interface CommunicationService {
 	void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results);
 
 	void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler);
+
+	void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
+	
+	void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler);
+	
+	void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
 }

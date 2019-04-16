@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { UserModel } from '../../core/store/models';
+import { UserModel, GroupModel } from '../../core/store/models';
 import { CommunicationRule } from './communication-rules.component';
 
 const css = {
@@ -33,7 +33,9 @@ export const userCommunicationLocators = {
             </div>
 
             <div class="user-communication__content">
-                <communication-rules [communicationRules]="userSendingCommunicationRules"></communication-rules>
+                <communication-rules [communicationRules]="userSendingCommunicationRules"
+                    [addCommunicationPickableGroups]="addCommunicationPickableGroups">
+                </communication-rules>
             </div>
         </panel-section>
         
@@ -72,6 +74,9 @@ export class UserCommunicationComponent {
 
     @Input()
     public userSendingCommunicationRules: CommunicationRule[];
+
+    @Input()
+    public addCommunicationPickableGroups: GroupModel[];
 
     @Output()
     public close: EventEmitter<void> = new EventEmitter<void>();
