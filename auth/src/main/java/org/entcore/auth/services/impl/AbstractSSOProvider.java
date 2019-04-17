@@ -85,7 +85,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 		if (assertion.getAttributeStatements() != null) {
 			for (AttributeStatement statement : assertion.getAttributeStatements()) {
 				for (Attribute attribute : statement.getAttributes()) {
-					if (attr.equals(attribute.getName())) {
+					if (attr.equals(attribute.getName()) || attr.equals(attribute.getFriendlyName())) {
 						for (XMLObject o : attribute.getAttributeValues()) {
 							if (o.getDOM() != null) {
 								attributes.add(o.getDOM().getTextContent());
