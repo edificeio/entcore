@@ -623,7 +623,6 @@ i.top-right {
 .action {
     transition: color 0.25s;
     cursor: pointer;
-    text-decoration: underline;
     padding: 0 5px;
     color: $main-dark;
     &:hover {
@@ -1004,6 +1003,9 @@ div.panel-message {
 .panel-section-content {
     font-size: 0.9em;
     overflow: auto;
+    a.action {
+      text-decoration: underline;
+    }
 }
 
 /* Forms */
