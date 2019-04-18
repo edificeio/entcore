@@ -53,7 +53,7 @@ import 'rxjs/add/observable/merge';
                 </span>
             </group-users-list>
         </div>
-        <lightbox-confirm *ngIf="groupsStore && groupsStore.group" title="group.internal-communication-rule.change.confirm.title"
+        <lightbox-confirm *ngIf="groupsStore && groupsStore.group" lightboxTitle="group.internal-communication-rule.change.confirm.title"
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">

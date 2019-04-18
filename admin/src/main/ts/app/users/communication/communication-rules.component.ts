@@ -62,7 +62,7 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
                 </div>
             </div>
         </div>
-        <lightbox-confirm *ngIf="!!selected" title="user.communication.action.confirm.title"
+        <lightbox-confirm *ngIf="!!selected" lightboxTitle="user.communication.action.confirm.title"
                           [show]="removeConfirmationDisplayed"
                           (onCancel)="removeConfirmationClicked.next('cancel')"
                           (onConfirm)="removeConfirmationClicked.next('confirm')">
@@ -70,7 +70,7 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             <span [innerHTML]="'user.communication.remove-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
         </lightbox-confirm>
         
-        <group-picker title="services.roles.groups.add"
+        <group-picker lightboxTitle="services.roles.groups.add"
             [list]="addCommunicationPickableGroups"
             [filters]="filterGroupPicker"
             [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
@@ -82,7 +82,7 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             (close)="showGroupPicker = false;">
         </group-picker>
         
-        <lightbox-confirm *ngIf="!!selected" title="user.communication.action.confirm.title"
+        <lightbox-confirm *ngIf="!!selected" lightboxTitle="user.communication.action.confirm.title"
                           [show]="addConfirmationDisplayed"
                           (onCancel)="addConfirmationClicked.next('cancel')"
                           (onConfirm)="addConfirmationClicked.next('confirm')">

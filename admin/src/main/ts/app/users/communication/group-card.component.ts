@@ -62,7 +62,7 @@ export const groupCardLocators = {
                 </span>
             </ng-template>
         </div>
-        <lightbox-confirm title="group.internal-communication-rule.change.confirm.title"
+        <lightbox-confirm lightboxTitle="group.internal-communication-rule.change.confirm.title"
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">

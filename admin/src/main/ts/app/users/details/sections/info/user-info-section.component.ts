@@ -107,7 +107,7 @@ import { Config } from '../../Config';
                                 <div *ngIf="func[0] == 'ADMIN_LOCAL'">
                                     <lightbox-confirm
                                             [show]="showConfirmation"
-                                            [title]="'warning'"
+                                            [lightboxTitle]="'warning'"
                                             (onConfirm)="removeAdml()"
                                             (onCancel)="showConfirmation = false">
                                         <p>{{ 'user.remove.adml.disclaimer.info' | translate:{username: user.displayName} }}</p>
