@@ -584,4 +584,12 @@ public class CommunicationController extends BaseController {
 			}
 		});
 	}
+    
+	@Delete("/group/:startGroupId/relations/:endGroupId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void removeRelations(HttpServerRequest request) {
+		Params params = new Params(request).validate();
+		if (params.isInvalid()) return;
+		communicationService.removeRelations(params.getStartGroupId(), params.getEndGroupId(), notEmptyResponseHandler(request));
+	}
 }

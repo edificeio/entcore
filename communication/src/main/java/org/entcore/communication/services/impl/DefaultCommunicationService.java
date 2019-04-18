@@ -36,7 +36,11 @@ import org.entcore.communication.services.CommunicationService;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import static org.entcore.common.neo4j.Neo4jResult.*;
 
@@ -689,22 +693,14 @@ public class DefaultCommunicationService implements CommunicationService {
 
     @Override
     public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
-        String query = "MATCH (ug: Group { id: {id} }) "
-                + "OPTIONAL MATCH (ug)<-[:COMMUNIQUE]-(sg:Group) "
-                + "WITH ug, count(sg) as csg "
-
-                + "RETURN csg as numberOfSendingGroups, size(coalesce(ug.communiqueWith, [])) as numberOfReceivingGroups";
-        JsonObject params = new JsonObject().put("id", groupId);
-        neo4j.execute(query, params, message -> {
-            Either<String, JsonObject> either = validUniqueResult(message);
-            if (either.isLeft()) {
-                handler.handle(either);
+        getRelationsOfGroup(groupId).whenComplete((result, err) -> {
+            if (err != null) {
+                handler.handle(new Either.Left<>(err.getMessage()));
             } else {
-                JsonObject result = either.right().getValue();
                 int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
                 int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
 
-				Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
+                Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
 
                 if (directionToRemove == null) {
                     handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
@@ -792,6 +788,89 @@ public class DefaultCommunicationService implements CommunicationService {
 				} else {
 					handler.handle(new Either.Right<>(new JsonObject().put("warning", warningMessage)));
 				}
+			}
+		});
+	}
+
+	private CompletableFuture<JsonObject> getRelationsOfGroup(String groupId) {
+		CompletableFuture<JsonObject> result = new CompletableFuture<>();
+		String query = "MATCH (ug: Group { id: {id} }) "
+				+ "OPTIONAL MATCH (ug)<-[:COMMUNIQUE]-(sg:Group) "
+				+ "WITH ug, count(sg) as csg "
+				+ "RETURN ug.users as users, csg as numberOfSendingGroups, size(coalesce(ug.communiqueWith, [])) as numberOfReceivingGroups";
+		JsonObject params = new JsonObject().put("id", groupId);
+		neo4j.execute(query, params, message -> {
+			Either<String, JsonObject> either = validUniqueResult(message);
+			if (either.isLeft()) {
+				result.completeExceptionally(new RuntimeException(either.left().getValue()));
+			} else {
+				result.complete(either.right().getValue());
+			}
+		});
+		return result;
+	}
+
+	@Override
+	public void removeRelations(String sendingGroupId, String receivingGroupId, Handler<Either<String, JsonObject>> handler) {
+		this.removeLink(sendingGroupId, receivingGroupId, r -> {
+			if (r.isLeft()) {
+				handler.handle(r);
+			} else {
+				List<CompletableFuture<Direction>> futures = new ArrayList<>();
+				futures.add(getRelationsOfGroup(sendingGroupId)
+						.thenCompose(result -> {
+							CompletableFuture<Direction> future = new CompletableFuture<>();
+							Direction currentDirection = Direction.valueOf(result.getString("users"));
+							int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
+
+							if (currentDirection.equals(Direction.INCOMING) && numberOfReceivingGroups == 0) {
+								this.removeLinkWithUsers(sendingGroupId, currentDirection, either -> {
+									if (either.isLeft()) {
+										future.completeExceptionally(new RuntimeException(either.left().getValue()));
+									} else {
+										future.complete(null);
+									}
+								});
+							} else {
+								future.complete(currentDirection);
+							}
+							return future;
+						}));
+				futures.add(getRelationsOfGroup(receivingGroupId)
+						.thenCompose(result -> {
+							CompletableFuture<Direction> future = new CompletableFuture<>();
+							Direction currentDirection = Direction.valueOf(result.getString("users"));
+							int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
+
+							if (currentDirection.equals(Direction.OUTGOING) && numberOfSendingGroups == 0) {
+								this.removeLinkWithUsers(receivingGroupId, currentDirection, either -> {
+									if (either.isLeft()) {
+										future.completeExceptionally(new RuntimeException(either.left().getValue()));
+									} else {
+										future.complete(null);
+									}
+								});
+							} else {
+								future.complete(currentDirection);
+							}
+							return future;
+						}));
+
+				CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+						.thenApply(a -> futures.stream().map(CompletableFuture::join).collect(Collectors.toList()))
+						.whenComplete((re, err) -> {
+							if (err != null) {
+								handler.handle(new Either.Left<>(err.getMessage()));
+							} else {
+								Direction senderDirection = re.get(0);
+								Direction receiverDirection = re.get(1);
+
+								handler.handle(new Either.Right<>(new JsonObject()
+										.put("sender", senderDirection != null ? senderDirection.toString() : null)
+										.put("receiver", receiverDirection != null ? receiverDirection.toString() : null)
+								));
+							}
+						});
 			}
 		});
 	}

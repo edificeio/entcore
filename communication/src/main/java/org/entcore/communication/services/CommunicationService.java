@@ -100,4 +100,6 @@ public interface CommunicationService {
 	void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler);
 	
 	void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
+	
+	void removeRelations(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler);
 }
