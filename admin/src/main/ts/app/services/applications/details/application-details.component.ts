@@ -172,7 +172,7 @@ const appsTarget = {
     'rbs-large': '2D',
     'schoolbook': '1D',
     'scrap-book-large': '1D-2D',
-    'searchengine-large': '1D',
+    'searchengine-large': '2D',
     'poll-large': '2D',
     'actualites-large': '1D-2D',
     'mindmap-large': '1D-2D',
@@ -193,5 +193,8 @@ const appsTarget = {
     'userbook-large': '1D-2D',
     'settings-class-large': '1D',
     'competences': '2D',
-    'parametrage': '2D'
+    'parametrage': '2D',
+    'archive-large': '1D-2D',
+    'blog-large': '1D-2D',
+    'cahier-textes-large': '2D'
 };
