@@ -83,7 +83,7 @@ import { LabelsService } from '../services'
         :host > div>ul {
             list-style: none;
             padding: 0px;
-            overflow-y: scroll;
+            overflow-y: auto;
             max-height: 200px;
         }
 
