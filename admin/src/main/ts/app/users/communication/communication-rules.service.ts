@@ -58,7 +58,7 @@ export class CommunicationRulesService {
     }
 
     public removeCommunication(sender: GroupModel, receiver: GroupModel): Observable<void> {
-        return this.http.delete<void>(`/communication/group/${sender.id}/communique/${receiver.id}`)
+        return this.http.delete<void>(`/communication/group/${sender.id}/relations/${receiver.id}`)
             .do(() => {
                 if (this.currentRules) {
                     const communicationRuleOfSender = this.currentRules.find(cr => cr.sender.id === sender.id);

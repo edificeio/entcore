@@ -114,11 +114,11 @@ describe('CommunicationRulesService', () => {
     });
 
     describe('removeCommunication', () => {
-        it(`should call DELETE /communication/group/myGroup1/communique/myGroup2 given groups myGroup1, myGroup2`, () => {
+        it(`should call DELETE /communication/group/myGroup1/relations/myGroup2 given groups myGroup1, myGroup2`, () => {
             const group1: GroupModel = generateGroup('myGroup1');
             const group2: GroupModel = generateGroup('myGroup2');
             communicationRulesService.removeCommunication(group1, group2).subscribe();
-            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroup1/communique/myGroup2');
+            const communicationGroupRequest = httpController.expectOne('/communication/group/myGroup1/relations/myGroup2');
             expect(communicationGroupRequest.request.method).toBe('DELETE');
         });
 
@@ -135,7 +135,7 @@ describe('CommunicationRulesService', () => {
             httpController.expectOne('/communication/group/group1/outgoing').flush([]);
             httpController.expectOne('/communication/group/group2/outgoing').flush([group3]);
             communicationRulesService.removeCommunication(group2, group3).subscribe();
-            httpController.expectOne('/communication/group/group2/communique/group3').flush(null);
+            httpController.expectOne('/communication/group/group2/relations/group3').flush(null);
             expect(rules[1].receivers.length).toBe(0);
         });
     });
