@@ -55,7 +55,7 @@ export interface Assignment {
                 </button>
             </div>
         </form>
-        <lightbox-confirm title="services.mass-assignment.confirm.title"
+        <lightbox-confirm lightboxTitle="services.mass-assignment.confirm.title"
                           [show]="displayedLightbox === 'assignment'"
                           (onCancel)="displayedLightbox = 'none'"
                           (onConfirm)="displayedLightbox = 'none'; assignFromForm(assignmentForm);"
@@ -66,7 +66,7 @@ export interface Assignment {
                 profiles: translatedSelectedProfiles
             }"></span>
         </lightbox-confirm>
-        <lightbox-confirm title="services.mass-assignment.confirm.title"
+        <lightbox-confirm lightboxTitle="services.mass-assignment.confirm.title"
                           [show]="displayedLightbox === 'unassignment'"
                           (onCancel)="displayedLightbox = 'none'"
                           (onConfirm)="displayedLightbox = 'none'; unassignFromForm(assignmentForm);"

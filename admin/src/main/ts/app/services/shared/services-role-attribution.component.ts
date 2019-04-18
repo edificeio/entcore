@@ -12,7 +12,7 @@ import { ServicesStore } from '../../services/services.store';
 @Component({
     selector: 'services-role-attribution',
     template: `
-        <group-picker title="services.roles.groups.add"
+        <group-picker lightboxTitle="services.roles.groups.add"
             [list]="groupList"
             [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
             [show]="show"

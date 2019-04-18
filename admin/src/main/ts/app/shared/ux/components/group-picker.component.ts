@@ -14,7 +14,7 @@ export const groupPickerLocators = {
     template: `
         <lightbox [show]="show" (onClose)="onClose()" class="inner-list">
             <div class="padded">
-                <h3>{{ title | translate }}</h3>
+                <h3>{{ lightboxTitle | translate }}</h3>
 
                 <div class="filters">
                     <button *ngFor="let type of types; let last = last"
@@ -47,7 +47,7 @@ export const groupPickerLocators = {
 })
 export class GroupPickerComponent implements OnInit {
 
-    @Input() title: string;
+    @Input() lightboxTitle: string;
     @Input() list: GroupModel[];
     @Input() types: GroupType[];
     @Input() show: boolean;

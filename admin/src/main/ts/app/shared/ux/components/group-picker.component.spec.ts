@@ -27,7 +27,7 @@ describe('GroupPickerComponent', () => {
         fixture = TestBed.createComponent(GroupPickerComponent);
         
         component = fixture.debugElement.componentInstance;
-        component.title = '';
+        component.lightboxTitle = '';
         component.list = [];
         component.types = [];
         component.show = false;
