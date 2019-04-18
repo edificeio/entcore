@@ -252,9 +252,6 @@ input:invalid {
       }
       &:hover .form-select__list {
         display: block;
-        // .form-select__options--selected:after {
-        //   transform: rotate(90deg);
-        // }
       }
     }
   }
@@ -272,19 +269,19 @@ fieldset {
     border: none;
     margin: 0;
     padding: 0;
-
     &[disabled] {
         input {
             background: none;
         }
     }
-
     form-field:first-child div.form-field {
         margin-top: 5px;
     }
-
     form-field:last-child div.form-field {
         margin-bottom: 5px;
+    }
+    form-field div.form-field label {
+      font-weight: bold;
     }
 }
 
@@ -294,28 +291,23 @@ table{
     word-break: break-word;
     font-size: 0.9em;
     border-collapse: collapse;
-
     th {
         text-align: left;
-
         input {
             max-width: 100%;
             padding: 10px !important;
         }
     }
-
     tr {
         &:hover {
             cursor: pointer;
         }
     }
-
     tbody {
         tr {
             &:hover {
                 background-color: $accent-light;
             }
-
             td {
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -324,7 +316,6 @@ table{
         }
 
     }
-
     td {
         border: 1px solid #dbdbdb;
         border-width: 0 0 1px;
@@ -337,18 +328,16 @@ table{
 }
 
 ul {
-    list-style: none;
-    padding-left: 20px;
-
-    &.actions-list {
-        li {
-            padding: 5px 0;
-
-            i.action {
-                font-size: 1.5em;
-            }
-        }
+  list-style: none;
+  padding-left: 20px;
+  &.actions-list {
+    li {
+      padding: 5px 0;
+      i.action {
+        font-size: 1.5em;
+      }
     }
+  }
 }
 
 i.group_add {
@@ -1980,7 +1969,7 @@ export {
 /* Multi-combo component */
 multi-combo {
     >button {
-        min-width: 210px !important;
+        min-width: 250px !important;
         outline: none;
 
         &::after {
@@ -2002,8 +1991,8 @@ multi-combo {
     > div {
         padding: 0px 10px;
         margin-top: -2px;
-        min-width: 300px;
-        max-width: 1000px;
+        min-width: 400px;
+        max-width: 800px;
         &:not(.hidden) {
             border: 1px solid $shadow-light!important;
         }
@@ -2033,7 +2022,7 @@ multi-combo {
                 width: 100%;
                 line-height: 25px;
                 border: none;
-                border-bottom: 1px solid black;
+                border-bottom: 1px solid mix($grey-light, $grey-dark);
                 transition: border 0.25s ease-in-out;
                 outline: none;
                 padding: 0px 5px;
@@ -2044,27 +2033,26 @@ multi-combo {
             }
         }
 
-        >ul {
+        > ul {
             list-style: none;
             padding: 0px;
             margin-bottom: 10px;
-
-            >li {
+            > li {
                 line-height: 25px;
                 font-size: 13px;
                 transition: background-color 0.25s, color 0.25s;
                 margin-bottom: 5px;
                 padding: 0px 10px;
-
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 &.selected {
                     color: white;
                     background-color: $main-dark;
                 }
-
                 &:not(.selected):not([disabled]):hover {
                     background-color: transparentize($main, 0.5);
                 }
-
                 &:not(.selected)[disabled="true"] {
                     background-color: #CCC;
                 }
@@ -2197,7 +2185,7 @@ i.fa {
 
 .quota-bar {
     display: flex;
-    border: 1px solid #000;
+    border: 1px solid $grey-light;
     border-radius: 5px;
     height: 25px;
     margin: 10px 0px;
@@ -2214,7 +2202,7 @@ i.fa {
 .quota-form {
     margin-left: 20px;
     padding-left: 20px;
-    border-left: solid 1px #000;
+    border-left: solid 1px $grey-light;
 }
 
 .quota-form-title {
@@ -2224,4 +2212,8 @@ i.fa {
 .quota-form-body__input {
     width: 100px;
     margin: 0 10px;
+}
+
+.quota-form-footer {
+  font-size: 12px;
 }
