@@ -193,10 +193,76 @@ input:invalid {
   box-shadow: none
 }
 
+// STYLING SELECT
+.form-select {
+  background-color: white;
+  color: $grey-dark;
+  position: relative;
+  > ul {
+    margin: 0 0 0 -20px;
+  }
+  &__list {
+    display: none;
+    border: 1px solid $grey-light;
+    background-color: white;
+    margin: 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    box-shadow: 1px 1px 10px $shadow-light;
+  }
+  &__options {
+    padding: 10px 15px;
+    margin-left: -20px;
+    -webkit-transition: all 0.2s ease 0s;
+    -o-transition: all 0.2s ease 0s;
+    transition: all 0.2s ease 0s;
+    &:hover {
+      background-color: $grey-light;
+      -webkit-transition: all 0.2s ease 0s;
+      -o-transition: all 0.2s ease 0s;
+      transition: all 0.2s ease 0s;
+    }
+    &:active {
+      background-color: $accent;
+      color: white;
+      -webkit-transition: all 0.2s ease 0s;
+      -o-transition: all 0.2s ease 0s;
+      transition: all 0.2s ease 0s;
+    }
+    & + & {
+      border-top: 1px solid $shadow-light;
+    }
+    &--selected {
+      position: relative;
+      display: block;
+      border-radius: 3px;
+      padding: 15px 25px;
+      background-color: rgba($grey-light, 0.1);
+      border: 1px solid $grey-light;
+      &:after {
+        content: '▼';
+        color: mix($grey-light, $grey-dark);
+        font-size: 12px;
+        display: inline-block;
+        position: absolute;
+        top: 15px;
+        right: 15px;
+      }
+      &:hover .form-select__list {
+        display: block;
+        // .form-select__options--selected:after {
+        //   transform: rotate(90deg);
+        // }
+      }
+    }
+  }
+}
+
 form-errors {
     flex: none !important;
     line-height: 1.5em;
-
     > .form-errors {
         margin: 0 10px;
     }
