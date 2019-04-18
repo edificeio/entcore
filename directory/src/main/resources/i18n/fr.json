@@ -212,7 +212,7 @@
     "directory.admin.showCreatedSince": "N'afficher que les utilisateurs créés depuis le :",
     "directory.admin.structureGroup": "Groupe de structure",
     "directory.admin.functionalGroup": "Groupe d'enseignement",
-    "directory.admin.student": "Eleve",
+    "directory.admin.student": "Élève",
     "directory.admin.teacher": "Enseignant",
     "directory.admin.title": "Admin annuaire",
     "directory.admin.type": "Type",
