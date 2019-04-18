@@ -42,11 +42,17 @@ export class CommunicationRulesService {
             .map(resp => resp.users ? resp.users : 'NONE')
             .do((internalCommunicationRule) => {
                 if (this.currentRules) {
-                    const groupInCommunicationRules = this.findGroup(this.currentRules, group.id);
-                    if (!!groupInCommunicationRules) {
-                        groupInCommunicationRules.internalCommunicationRule = internalCommunicationRule;
-                        this.rulesSubject.next(this.clone(this.currentRules));
-                    }
+                    this.currentRules.forEach(currentRule => {
+                        if (currentRule.sender.id === group.id) {
+                            currentRule.sender.internalCommunicationRule = internalCommunicationRule;
+                        }
+
+                        const receiver = currentRule.receivers.find(receiver => receiver.id === group.id);
+                        if( receiver) {
+                            receiver.internalCommunicationRule = internalCommunicationRule;
+                        }
+                    });
+                    this.rulesSubject.next(this.clone(this.currentRules));
                 }
             });
     }
@@ -87,13 +93,6 @@ export class CommunicationRulesService {
     private getCommunicationRulesOfGroup(sender: GroupModel): Observable<CommunicationRule> {
         return this.http.get<GroupModel[]>(`/communication/group/${sender.id}/outgoing`)
             .map(receivers => ({sender, receivers}));
-    }
-
-    private findGroup(communicationRules: CommunicationRule[], groupId: string): GroupModel {
-        return communicationRules.reduce(
-            (arrayOfGroups: GroupModel[], communicationRule: CommunicationRule): GroupModel[] =>
-                [...arrayOfGroups, communicationRule.sender, ...communicationRule.receivers], [])
-            .find(group => group.id === groupId);
     }
 
     private clone(communicationRules: CommunicationRule[]): CommunicationRule[] {
