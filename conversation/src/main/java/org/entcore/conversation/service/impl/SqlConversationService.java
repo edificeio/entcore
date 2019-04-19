@@ -324,14 +324,20 @@ public class SqlConversationService implements ConversationService{
 
 		String query = "WITH element AS ( " +
 				" SELECT thread_id, date FROM "+messageTable+" WHERE id = ? ) " +
-				"SELECT "+messagesFields+", um.unread as unread FROM element, " +userMessageTable + " as um " +
+				" SELECT "+messagesFields+", um.unread as unread, " +
+				" CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
+				" FROM element, " +userMessageTable + " as um " +
 				" JOIN "+messageTable+" as m ON um.message_id = m.id " +
+				" LEFT JOIN " + userMessageAttachmentTable + " uma USING (user_id, message_id) " +
+				" LEFT JOIN " + attachmentTable + " att " +
+				" ON att.id = uma.attachment_id " +
 				" WHERE um.user_id = ? AND m.thread_id = element.thread_id " +
 				" AND " + condition +
 				" AND m.state = 'SENT' AND um.trashed = false " +
+				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC" + limit;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"));
 	}
 
 
