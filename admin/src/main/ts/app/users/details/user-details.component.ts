@@ -102,12 +102,27 @@ import { Config } from './Config';
                             <i class="fa fa-ban"></i>
                         </button>
                     </div>
-                    <div *ngIf="isRemovable()">
+                    <div *ngIf="isRemovable() && isActive()">
                         <button (click)="removeUser()"
                                 [disabled]="spinner.isLoading('portal-content')">
                             <s5l>predelete.account</s5l>
                             <i class="fa fa-times-circle"></i>
                         </button>
+                    </div>
+                    <div *ngIf="isRemovable() && !isActive()">
+                        <button (click)="showRemoveUserConfirmation = true"
+                                [disabled]="spinner.isLoading('portal-content')">
+                            <s5l>delete.account</s5l>
+                            <i class="fa fa-times-circle"></i>
+                        </button>
+                        <lightbox-confirm
+                                [show]="showRemoveUserConfirmation"
+                                [title]="'warning'"
+                                (onConfirm)="removeUser()"
+                                (onCancel)="showRemoveUserConfirmation = false">
+                            <p>{{ 'user.remove.disclaimer.info' | translate:{username: user.displayName} }}</p>
+                            <p>{{ 'user.remove.disclaimer.confirm' | translate }}</p>
+                        </lightbox-confirm>
                     </div>
                 </div>
 
@@ -348,6 +363,10 @@ export class UserDetails implements OnInit, OnDestroy {
             && !this.user.deleteDate);
     }
 
+    isActive() {
+        return !(this.details.activationCode && this.details.activationCode.length > 0);
+    }
+
     removeUser() {
         const parameters = {
             user: `${this.details.firstName} ${this.details.lastName}`,
@@ -362,16 +381,34 @@ export class UserDetails implements OnInit, OnDestroy {
                 this.userListService.updateSubject.next();
                 this.cdRef.markForCheck();
 
-                this.ns.success(
-                    {key: 'notify.user.predelete.content', parameters},
-                    {key: 'notify.user.predelete.title', parameters}
-                )
+                if (this.isActive()) {
+                    this.ns.success(
+                        {key: 'notify.user.predelete.content', parameters},
+                        {key: 'notify.user.predelete.title', parameters}
+                    );
+                } else {
+                    this.usersStore.structure.users.data.splice(
+                        this.usersStore.structure.users.data.findIndex(u => u.id == this.user.id), 1
+                    );
+                    this.router.navigate(['/admin', this.structure.id, 'users', 'filter']);
+                    this.ns.success(
+                        {key: 'notify.user.delete.content', parameters},
+                        {key: 'notify.user.delete.title', parameters}
+                    );
+                }
             })
             .catch(err => {
-                this.ns.error(
-                    {key: 'notify.user.predelete.error.content', parameters},
-                    {key: 'notify.user.predelete.error.title', parameters},
-                    err)
+                if (this.isActive()) {
+                    this.ns.error(
+                        {key: 'notify.user.predelete.error.content', parameters},
+                        {key: 'notify.user.predelete.error.title', parameters},
+                        err);
+                } else {
+                    this.ns.error(
+                        {key: 'notify.user.delete.error.content', parameters},
+                        {key: 'notify.user.delete.error.title', parameters},
+                        err);
+                }
             })
     }
 
