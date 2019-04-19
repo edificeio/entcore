@@ -1414,6 +1414,12 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 	}
 
 	$scope.canSubmitResetPassword = function(resetEmail) {
-		return resetEmail && !$scope.targetUser.isSendingMailAndWaitingFeedback();
+		return resetEmail && !$rootScope.targetUser.isSendingMailAndWaitingFeedback();
 	}
+
+	$scope.sendResetPassword =  function(resetEmail){
+        $rootScope.targetUser.sendResetPassword(resetEmail, function(){
+     		$scope.$apply();
+		});
+   } 
 }
