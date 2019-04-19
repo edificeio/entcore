@@ -58,7 +58,7 @@ body {
 }
 
 a {
-    color: black;
+    color: mix($grey-light, $grey-dark, 20%);
     text-decoration: none;
 }
 a:visited { color: initial; }
@@ -68,7 +68,7 @@ a:hover { color: initial; }
 h1 {
     margin: 0;
     padding: 50px 20px 20px;
-    color: $main-dark;
+    color: mix($grey-light, $grey-dark, 10%);
     font-size: 30px;
     font-weight: normal;
 }
@@ -152,7 +152,8 @@ button {
 
 input[type="search"] {
     width: 100%;
-    font-size: 0.8em;
+    color: $grey-dark;
+    font-size: 1em;
     display: block;
     padding: 20px 10px;
     background: none;
@@ -172,6 +173,7 @@ input[type="search"] {
 }
 
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
+    color: $grey-dark;
     border: none;
     border-bottom: 1px solid $grey-light;
     background-color: white;
@@ -526,10 +528,10 @@ i.group_add {
         padding: 1em 2em;
         font-size: 1em;
         background-color: white;
-        color: $main;
+        color: mix($grey-light, $grey-dark, 10%);
         transition: all 0.25s;
         border: 1px solid $grey-light;
-        border-bottom: 5px solid $main;
+        border-bottom: 5px solid mix($grey-light, $grey-dark, 10%);
         margin: 0px;
         outline: none;
         box-shadow: 1px 1px 5px $shadow-light;
@@ -722,6 +724,7 @@ i.opener {
 i.fa-times {
   color: $warning;
   text-decoration: none;
+  font-size: 16px!important;
 }
 
 .round-button {
@@ -860,7 +863,7 @@ body > div.tooltip.shown {
 
 side-panel {
     > div {
-        background-color: $main;
+        background-color: $grey-dark;
         overflow-y: auto !important;
     }
 
@@ -892,7 +895,7 @@ item-tree {
             &.root {
                 > a {
                     font-weight: bolder;
-                    border-bottom: 2px solid $main-light;
+                    border-bottom: 1px solid $shadow-light;
                 }
             }
 
@@ -958,24 +961,22 @@ spinner-cube.button-spinner {
 .side-layout {
     .side-card {
         @extend .card;
+        position: sticky!important;
+        top: 75px;
         background-color: white;
     }
 
     .side-companion {
         @extend .card;
         background-color: white;
-
         margin-bottom: 60px;
-
         .panel-header {
             font-size: 1.6em;
-            color: $main-dark;
+            color: mix($grey-light, $grey-dark, 10%);
             padding: 20px;
-
             div {
                 padding: 5px 0;
             }
-
             img {
                 width: $user-profile-img-width;
                 border: 1px solid $grey-light;
@@ -1050,8 +1051,8 @@ div.panel-message {
 /* Panel sections */
 .panel-section-header {
     color: white;
-    background: $main;
-    border-bottom: 1px solid $main-light;
+    background: $grey-dark;
+    border-bottom: 1px solid $shadow-light;
 
     i.opener{ font-size: 1.3em }
 }
@@ -1089,8 +1090,8 @@ list {
         &.selected {
             background-color: $accent;
             color: white;
-            i {
-              color: $grey-dark;
+            i::before {
+              color: white;
             }
         }
 
@@ -1207,6 +1208,7 @@ user-list {
 
         > i {
           @extend .action;
+          color: mix($grey-light, $grey-dark, 20%);
           padding-right: 5px;
           text-decoration: none;
         }
@@ -1228,7 +1230,7 @@ services-list-with-companion {
     }
 
     .side-card {
-        flex-basis: 200px !important;
+        flex-basis: 250px !important;
         .list-wrapper {
             max-height: 60vh;
             overflow-y: auto;
@@ -1262,14 +1264,12 @@ portal {
     > header {
         color: white;
         position: fixed !important;
-        z-index: 9;
-        background-color: $main;
-        padding: 15px;
+        z-index: 100;
+        background-color: $grey-dark;
+        padding: 15px 0;
         box-sizing: border-box;
         height: 50px;
         box-shadow: 0px 0px 20px $shadow-light;
-        padding-right: 0px;
-
         span {
             font-size: 1.5em;
         }
@@ -1308,7 +1308,7 @@ portal {
             cursor: pointer;
             padding: 13px 20px;
             transition: color 0.25s, background-color 0.25s;
-            min-width: 20px;
+            min-width: 15px;
             text-align: center;
 
             &:not([disabled]):hover {
@@ -2212,6 +2212,9 @@ i.fa {
 .quota-form-body__input {
     width: 100px;
     margin: 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .quota-form-footer {
