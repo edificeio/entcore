@@ -110,6 +110,7 @@
     "delete.image": "Supprimer la photo",
     "unblock": "Débloquer",
     "predelete.account": "Pré-supprimer le compte",
+    "delete.account": "Supprimer le compte",
     "restore.account": "Restaurer le compte",
     "restore": "Restaurer",
     "user.blocked": "Utilisateur bloqué",
@@ -263,6 +264,11 @@
     "notify.user.predelete.content": "L'utilisateur {{user}} a bien été pré-supprimé. Suppression effective dans {{numberOfDays}} jour(s).",
     "notify.user.predelete.error.title": "Erreur lors de la pré-suppression",
     "notify.user.predelete.error.content": "L'utilisateur {{user}} n'a pas pu être pré-supprimé.",
+
+    "notify.user.delete.title": "Suppression effectuée",
+    "notify.user.delete.content": "L'utilisateur {{user}} a bien été supprimé.",
+    "notify.user.delete.error.title": "Erreur lors de la suppression",
+    "notify.user.delete.error.content": "L'utilisateur {{user}} n'a pas pu être supprimé.",
 
     "notify.user.restore.title": "Restauration effectuée",
     "notify.user.restore.content": "L'utilisateur {{user}} a bien été restauré.",
@@ -437,5 +443,7 @@
     "confirm": "Confirmer",
     "warning": "Attention !",
     "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
-    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?"
+    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?",
+    "user.remove.disclaimer.info": "Vous allez définitivement supprimer l'utilisateur {{ username ? $username : null }}. Aucune restauration ne sera possible.",
+    "user.remove.disclaimer.confirm": "Confirmez vous cette action ?"
 }
