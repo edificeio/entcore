@@ -53,13 +53,12 @@ export const userCommunicationLocators = {
         }
     `, `
         .button.button--back:hover, .button.button--back:hover i {
-            color: #ff5e1f;
+            color: #ff5e1f !important;
         }
     `, `
         .button.button--back i {
             float: none;
             padding-left: 0;
-            transition: background 0.25s, color 0.25s, border 0.25s;
         }
     `, `
         .user-communication__content {

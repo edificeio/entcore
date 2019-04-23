@@ -101,7 +101,6 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
         </lightbox-confirm>`,
     styles: [`
         .communication-rules__header {
-            color: #2a9cc8;
             font-size: 20px;
         }
     `, `
@@ -121,11 +120,13 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
         .communication-rules__column.communication-rules__column--sending,
         .communication-rules__header.communication-rules__header--sending {
             margin-right: 10px;
+            margin-bottom: 10px;
         }
     `, `
         .communication-rules__column.communication-rules__column--receiving,
         .communication-rules__header.communication-rules__header--receiving {
             margin-left: 10px;
+            margin-bottom: 10px;
         }
     `]
 })

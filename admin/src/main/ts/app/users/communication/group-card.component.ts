@@ -70,8 +70,9 @@ export const groupCardLocators = {
         </lightbox-confirm>`,
     styles: [`
         .group-card {
-            background-color: #c0c0c0;
-            color: black;
+            color: #5b6472;
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
             font-size: 14px;
             padding: 10px;
             margin: 5px 0;
@@ -82,9 +83,9 @@ export const groupCardLocators = {
         }
 
         .group-card.group-card--active {
-            background-color: #2a9cc8;
-            color: white;
+            background-color: #f2f2f2;
             box-shadow: 1px 1px 5px #aaa;
+            border-color: #ff8352;
         }
 
         .group-card.group-card--active, .group-card.group-card--selected {
@@ -93,6 +94,8 @@ export const groupCardLocators = {
 
         .group-card.group-card--highlighted {
             box-shadow: 1px 1px 5px #aaa;
+            border-color: #ff8352;
+            color: #ff8352;
         }
 
         .group-card.group-card--active.group-card--highlighted {
@@ -136,13 +139,16 @@ export const groupCardLocators = {
         }
     `, `
         .group-card__action-remove-communication, .group-card__action-add-communication {
-            background: #ff6624;
+            background: #ff8352;
             height: 34px;
             line-height: 34px;
             padding: 0 10px;
-            border-radius: 0;
             border: 0;
             color: white;
+        }
+
+        .group-card__action-remove-communication:hover, .group-card__action-add-communication:hover {
+            background: #ff6624;
         }
 
         .group-card__action-add-communication, .group-card--selected .group-card__action-remove-communication {
@@ -158,8 +164,6 @@ export const groupCardLocators = {
         }
     `, `
         .group-card__separator {
-            color: white;
-            border-style: solid;
             margin: 15px 0;
         }
     `, `
@@ -180,11 +184,11 @@ export const groupCardLocators = {
         }
     `, `
         .group-card__actions-on-self.group-card__actions-on-self--can-communicate .group-card__switch {
-            color: green;
+            color: mediumseagreen;
         }
     `, `
         .group-card__actions-on-self.group-card__actions-on-self--cannot-communicate .group-card__switch {
-            color: red;
+            color: indianred;
         }
     `]
 })

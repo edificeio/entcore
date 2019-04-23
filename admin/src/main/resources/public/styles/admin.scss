@@ -76,7 +76,7 @@ h1 {
 h2 {
     font-size: 1.6em;
     font-weight: normal;
-    color: $main-dark;
+    color: $grey-dark;
 }
 
 button {
@@ -85,7 +85,7 @@ button {
     background-color: rgba($grey-light, 0.1);
     border: 1px solid $grey-light;
     border-radius: 3px;
-    transition: background 0.25s, color 0.25s;
+    transition: background 0.25s, color 0.25s, border 0.25s;
     line-height: 1.5em;
     color: $grey-dark;
     &.input-inline {
@@ -681,7 +681,7 @@ i.top-right {
     transition: color 0.25s;
     cursor: pointer;
     padding: 0 5px;
-    color: $main-dark;
+    color: $grey-dark;
     &:hover {
         color: $accent;
     }
@@ -1126,6 +1126,7 @@ user-list, group-users-list, group-input-users, group-output-users {
 
             i {
                 &.profile {
+                    color: $grey-dark;
                     border: 1px solid $shadow-light;
                     background-color: $white-translucide;
                     font-size: 1em;
@@ -1370,7 +1371,7 @@ app-home {
 
         i {
             padding: 5px;
-            background-color: $main;
+            background-color: $grey-dark;
             color: white;
         }
     }
@@ -1871,7 +1872,6 @@ group-manage-users {
                 flex: 1 100%;
 
                 font-size: 1.3em;
-                color: $main;
             }
 
             button.remove {
@@ -1976,7 +1976,7 @@ multi-combo {
             content: '▼';
             float: right;
             margin-left: 10px;
-            transition: transform 0.25s, color 0.25s;
+            transition: transform 0.25s;
         }
 
         &:hover::after {
@@ -2185,8 +2185,8 @@ i.fa {
 
 .quota-bar {
     display: flex;
-    border: 1px solid $grey-light;
-    border-radius: 5px;
+    border: 1px solid $grey-dark;
+    border-radius: 2px;
     height: 25px;
     margin: 10px 0px;
 }
