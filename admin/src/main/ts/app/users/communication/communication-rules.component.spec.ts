@@ -74,6 +74,7 @@ describe('CommunicationRulesComponent', () => {
             generateCommunicationRule('groupf2'),
             generateCommunicationRule('groupm1')
         ];
+        component.addCommunicationPickableGroups = [generateGroup('group1')];
         fixture.detectChanges();
     }));
 
@@ -273,13 +274,13 @@ describe('CommunicationRulesComponent', () => {
         });
         it('should close the lightbox if the user cancel', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
-            component.confirmationClicked.next('cancel');
+            component.removeConfirmationClicked.next('cancel');
             expect(communicationRulesService.removeCommunication).not.toHaveBeenCalled();
             expect(component.removeConfirmationDisplayed).toBe(false);
         });
         it('should call the communicationRulesService.removeCommunication if the user confirms', () => {
             component.removeCommunication(generateGroup('group1'), generateGroup('group2'));
-            component.confirmationClicked.next('confirm');
+            component.removeConfirmationClicked.next('confirm');
             expect(communicationRulesService.removeCommunication).toHaveBeenCalled();
             expect(component.removeConfirmationDisplayed).toBe(false);
         });
