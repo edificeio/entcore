@@ -8,6 +8,21 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/observable/forkJoin';
 
+interface CreateCommunicationResponseWithChange {
+    [groupId: number]: string;
+}
+
+
+interface CreateCommunicationResponseWithNoChange {
+    ok: 'no direction to change';
+}
+
+type CreateCommunicationResponse = CreateCommunicationResponseWithChange | CreateCommunicationResponseWithNoChange;
+
+function isNoDirectionChangeResponse(response: CreateCommunicationResponse): response is CreateCommunicationResponseWithNoChange {
+    return response['ok'] === 'no direction to change';
+}
+
 @Injectable()
 export class CommunicationRulesService {
 
@@ -65,15 +80,17 @@ export class CommunicationRulesService {
             });
     }
 
-    public checkAddLink(sender: GroupModel, receiver: GroupModel): Observable<{warning: string}> {
-        return this.http.get<{warning: string}>(`/communication/v2/group/${sender.id}/communique/${receiver.id}/check`);
+    public checkAddLink(sender: GroupModel, receiver: GroupModel): Observable<{ warning: string }> {
+        return this.http.get<{ warning: string }>(`/communication/v2/group/${sender.id}/communique/${receiver.id}/check`);
     }
-    
-    public createCommunication(sender: GroupModel, receiver: GroupModel): Observable<{groupId: number, internalCommunicationRule: string}> {
-        return this.http.post<{groupId: number, internalCommunicationRule: string}>(`/communication/v2/group/${sender.id}/communique/${receiver.id}`, {})
-            .do(res => {
-                sender.internalCommunicationRule = res[sender.id];
-                receiver.internalCommunicationRule = res[receiver.id];
+
+    public createCommunication(sender: GroupModel, receiver: GroupModel): Observable<{ groupId: number, internalCommunicationRule: string }> {
+        return this.http.post<CreateCommunicationResponse>(`/communication/v2/group/${sender.id}/communique/${receiver.id}`, {})
+            .do((createCommunicationResponse: CreateCommunicationResponse) => {
+                if (!isNoDirectionChangeResponse(createCommunicationResponse)) {
+                    sender.internalCommunicationRule = createCommunicationResponse[sender.id];
+                    receiver.internalCommunicationRule = createCommunicationResponse[receiver.id];
+                }
                 if (this.currentRules) {
                     const communicationRuleOfSender = this.currentRules.find(cr => cr.sender.id === sender.id);
                     if (!!communicationRuleOfSender) {
