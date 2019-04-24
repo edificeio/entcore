@@ -113,7 +113,7 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
                 this.usersStore.structure.users.data.splice(
                     this.usersStore.structure.users.data.findIndex(u => u.id == this.user.id), 1
                 );
-                this.router.navigate(['/admin', res['structure'], 'users', res.id]);
+                this.router.navigate(['/admin', res['structure'], 'users', res.id, 'details']);
                 this.userListService.updateSubject.next();
                 this.ns.success({
                     key: 'notify.user.merge.success.content',

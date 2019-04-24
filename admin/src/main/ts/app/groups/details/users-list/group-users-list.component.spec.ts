@@ -55,7 +55,7 @@ describe('GroupUsersList', () => {
     }));
 
     describe('selectUser', () => {
-        it('should navigate to /admin/firstStructureId/users/userId', () => {
+        it('should navigate to /admin/firstStructureId/users/userId/details', () => {
             const selectedUser = {
                 id: 'userId',
                 structures: [

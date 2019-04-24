@@ -35,7 +35,7 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
             <ul class="actions-list">
                 <li *ngFor="let parent of details.parents">
                     <div *ngIf="parent.id">
-                        <a class="action" [routerLink]="['..', parent.id]">
+                        <a class="action" [routerLink]="['/admin', structure.id ,'users', parent.id, 'details']">
                             {{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}
                         </a>
                         <i  class="fa fa-times action" (click)="removeRelative(parent)"
@@ -51,6 +51,8 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserRelativesSection extends AbstractSection implements OnInit, OnChanges {
+    public showRelativesLightbox = false;
+
     lightboxRelatives: UserModel[] = [];
 
     constructor(

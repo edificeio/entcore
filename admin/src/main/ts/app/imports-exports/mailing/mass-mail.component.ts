@@ -147,7 +147,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                     </thead>
                     <tbody>
                         <tr *ngFor="let user of (getFilteredUsers() | filter: inputFilters) | orderBy: userOrder "
-                            [routerLink]="'/admin/'+structureId+'/users/'+user.id" 
+                            [routerLink]="'/admin/'+structureId+'/users/'+user.id + '/details'"
                             routerLinkActive="active"
                             title="{{ 'massmail.link.user' | translate}}">
                             <td> 
