@@ -2,7 +2,7 @@ import { UserGroupsResolver } from './user-groups.resolver';
 import { ActivatedRouteSnapshot, convertToParamMap } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { generateGroup } from "./communication-test-utils";
+import { generateGroup } from "../../shared/utils";
 import { GroupModel } from "../../core/store/models";
 
 describe('UserGroupsResolver', () => {

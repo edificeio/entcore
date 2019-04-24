@@ -10,7 +10,7 @@ import { GroupsResolver } from './groups.resolver';
 import { GroupDetailsResolver } from './details/group-details.resolver';
 import { GroupInternalCommunicationRuleResolver } from './details/group-internal-communication-rule.resolver';
 import { GroupsStore } from './groups.store';
-import { UserlistFiltersService } from '../core/services';
+import { UserlistFiltersService, GroupNameService } from '../core/services';
 
 import { GroupsComponent } from './groups.component';
 import { GroupCreate } from './create/group-create.component';
@@ -46,7 +46,8 @@ import { GroupsTypeView } from './type-view/groups-type-view.component';
         GroupDetailsResolver,
         GroupInternalCommunicationRuleResolver,
         GroupsStore,
-        UserlistFiltersService
+        UserlistFiltersService,
+        GroupNameService
     ],
     exports: [
         RouterModule

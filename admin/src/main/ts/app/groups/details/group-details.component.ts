@@ -7,7 +7,7 @@ import { GroupsStore } from '../groups.store';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
 import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
-import { NotifyService } from '../../core/services';
+import { NotifyService, GroupNameService } from '../../core/services';
 
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/map';
@@ -57,16 +57,25 @@ import 'rxjs/add/observable/merge';
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">
-            <span [innerHTML]="'group.internal-communication-rule.change.confirm.content' | translate: {groupName: groupsStore.group.name}"></span>
+            <div class="has-margin-vertical-10">
+                <i class='fa fa-exclamation-triangle is-danger'></i>
+                <span *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage" 
+                    [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+                <ng-template #cannotCommunicateTogetherConfirmMessage>
+                    <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+                </ng-template>
+            </div>
         </lightbox-confirm>
     `,
     styles: [
         '.lct-communication-rule {cursor: pointer;}',
-        '.lct-communication-rule__can-communicate {color: green;}',
-        '.lct-communication-rule__cannot-communicate {color: red;}',
+        '.lct-communication-rule__can-communicate {color: mediumseagreen;}',
+        '.lct-communication-rule__cannot-communicate {color: indianred;}',
         '.lct-communication-rule__switch {font-size: 22px;}',
         '.lct-communication-rule__text {font-size: 0.8em;}',
         '.lct-communication-rule__switch, .lct-communication-rule__text {vertical-align: middle;}',
+        '.lct-communication-rule__can-communicate .lct-communication-rule__switch {color: mediumseagreen;}',
+        '.lct-communication-rule__cannot-communicate .lct-communication-rule__switch {color: indianred;}'
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -83,7 +92,8 @@ export class GroupDetails implements OnInit, OnDestroy {
                 private route: ActivatedRoute,
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
-                private cdRef: ChangeDetectorRef) {
+                private cdRef: ChangeDetectorRef,
+                public groupNameService: GroupNameService) {
     }
 
     ngOnInit(): void {

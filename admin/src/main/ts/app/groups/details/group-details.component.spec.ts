@@ -10,7 +10,7 @@ import { GroupModel, StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
-import { NotifyService } from '../../core/services';
+import { NotifyService, GroupNameService } from '../../core/services';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 
@@ -22,6 +22,7 @@ describe('GroupDetails', () => {
     let mockStructure: StructureModel;
     let mockCommunicationRulesService: CommunicationRulesService;
     let mockNotifyService: NotifyService;
+    let mockGroupNameService: GroupNameService;
     let mockChangeDetectorRef: ChangeDetectorRef;
     let paramsController: BehaviorSubject<{ [key: string]: string }>;
     let dataController: BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>;
@@ -30,6 +31,7 @@ describe('GroupDetails', () => {
         mockStructure = {} as StructureModel;
         mockCommunicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
+        mockGroupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         mockStructure.groups = {
             data: [
                 generateMockGroupModel('groupId1', 'ManualGroup'),
@@ -59,6 +61,7 @@ describe('GroupDetails', () => {
                 {provide: ChangeDetectorRef, useValue: mockChangeDetectorRef},
                 {provide: CommunicationRulesService, useValue: mockCommunicationRulesService},
                 {provide: NotifyService, useValue: mockNotifyService},
+                {provide: GroupNameService, useValue: mockGroupNameService},
                 {
                     provide: ActivatedRoute, useValue: {
                         data: dataController.asObservable(),
