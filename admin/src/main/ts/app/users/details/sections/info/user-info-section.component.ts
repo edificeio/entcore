@@ -96,13 +96,10 @@ import { Config } from '../../Config';
                             </div>
                             <div *ngFor="let func of details.functions">
                                 <div>
-                                    {{ func[0] | translate }}
-                                    <span *ngIf="func[1] && func[1].length > 0 && getStructure(func[1][0])">
-                                    ({{ getStructures(func[1]) }})
-                                </span>
-                                    <span *ngIf="func[1] && func[1].length > 0 && !getStructure(func[1][0])">
-                                    ({{ 'member.of.n.structures' | translate:{count: func[1].length} }})
-                                </span>
+                                    <span>{{ func[0] | translate }}</span>
+                                    <span *ngIf="func[1] && func[1].length > 0">
+                                        ({{ displayAdmlStructureNames(func[1]) }})
+                                    </span>
                                 </div>
                                 <div *ngIf="func[0] == 'ADMIN_LOCAL'">
                                     <lightbox-confirm
@@ -366,8 +363,24 @@ export class UserInfoSection extends AbstractSection implements OnInit {
         this.spinner.perform('portal-content', this.details.generateMergeKey());
     }
 
-    getStructures(fn): string {
-        return fn.map((id: string) => this.getStructure(id).name).join(', ');
+    displayAdmlStructureNames(structureIds: string[]): string {
+        let notInGlobalStoreStructure: boolean = false;
+        let structureNames: string[] = [];
+
+        structureIds.forEach((structureId: string) => {
+            const structure: StructureModel = this.getStructure(structureId);
+            if (!structure) {
+                notInGlobalStoreStructure = true;
+            } else {
+                structureNames.push(structure.name);
+            }
+        })
+
+        if (notInGlobalStoreStructure) {
+            return this.bundles.translate('member.of.n.structures', {count: structureIds.length});
+        } else {
+            return structureNames.join(', ')
+        }
     }
 
     updateLoginAlias() {
