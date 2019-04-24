@@ -261,6 +261,12 @@ public class TimelineHelper {
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String i18nDirectory = assetsDirectory + File.separator + "i18n" + File.separator + app[app.length - 1] +
 				File.separator + "timeline";
+		final String i18nDirectory2 = assetsDirectory + File.separator + "i18n" + File.separator + "Timeline";
+		loadAssetsTimelineDirectory(i18nDirectory);
+		loadAssetsTimelineDirectory(i18nDirectory2);
+	}
+
+	private void loadAssetsTimelineDirectory(String i18nDirectory) {
 		vertx.fileSystem().exists(i18nDirectory, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> ar) {
