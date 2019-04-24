@@ -37,6 +37,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 
 public class DefaultPushNotifService extends Renders implements TimelinePushNotifService {
 
@@ -143,7 +145,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                             notificationPreference.getString("restriction", notificationProperties.getString("restriction"))) &&
                     userPref.getJsonArray("tokens") != null && userPref.getJsonArray("tokens").size() > 0){
                 for(Object token : userPref.getJsonArray("tokens")){
-                    processMessage(notification, "fr", typeNotification, typeData, new Handler<JsonObject>() {
+                    processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, new Handler<JsonObject>() {
                         @Override
                         public void handle(final JsonObject message) {
                             try {
@@ -241,6 +243,16 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
     public void setEventsI18n(LocalMap<String,String> eventsI18n) {
         this.eventsI18n = eventsI18n;
+    }
+
+    public String getUserLanguage(JsonObject userPref) {
+        String mutableLanguage = "fr";
+        try {
+            mutableLanguage = getOrElse(new JsonObject(getOrElse(userPref.getString("language"), "{}", false)).getString("default-domain"), "fr", false);
+        } catch(Exception e) {
+            log.error("UserId [" + userPref.getString("userId", "") + "] - Bad language preferences format");
+        }
+        return mutableLanguage;
     }
 
 
