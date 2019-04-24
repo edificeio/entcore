@@ -42,17 +42,11 @@ export class CommunicationRulesService {
             .map(resp => resp.users ? resp.users : 'NONE')
             .do((internalCommunicationRule) => {
                 if (this.currentRules) {
-                    this.currentRules.forEach(currentRule => {
-                        if (currentRule.sender.id === group.id) {
-                            currentRule.sender.internalCommunicationRule = internalCommunicationRule;
-                        }
-
-                        const receiver = currentRule.receivers.find(receiver => receiver.id === group.id);
-                        if( receiver) {
-                            receiver.internalCommunicationRule = internalCommunicationRule;
-                        }
-                    });
-                    this.rulesSubject.next(this.clone(this.currentRules));
+                    const groupsInCommunicationRules = this.findGroups(this.currentRules, group.id);
+                    if (groupsInCommunicationRules.length > 0) {
+                        groupsInCommunicationRules.forEach(group => group.internalCommunicationRule = internalCommunicationRule);
+                        this.rulesSubject.next(this.clone(this.currentRules));
+                    }
                 }
             });
     }
@@ -100,6 +94,13 @@ export class CommunicationRulesService {
             sender: Object.assign({}, cr.sender),
             receivers: cr.receivers.map(re => Object.assign({}, re))
         }));
+    }
+
+    private findGroups(communicationRules: CommunicationRule[], groupId: string): GroupModel[] {
+        return communicationRules.reduce(
+            (arrayOfGroups: GroupModel[], communicationRule: CommunicationRule): GroupModel[] =>
+                [...arrayOfGroups, communicationRule.sender, ...communicationRule.receivers], [])
+            .filter(group => group.id === groupId);
     }
 }
 

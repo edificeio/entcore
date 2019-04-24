@@ -111,4 +111,7 @@ function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): D
 class MockCommunicationRulesComponent {
     @Input()
     communicationRules: CommunicationRule[];
+
+    @Input()
+    public addCommunicationPickableGroups: GroupModel[];
 }
