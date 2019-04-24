@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { generateGroup } from './communication-test-utils';
+import { generateGroup } from '../../shared/utils/testing';
 import { GroupNameService } from './group-name.service';
 import { BundlesService, SijilModule } from 'sijil';
 import 'rxjs/add/operator/skip';

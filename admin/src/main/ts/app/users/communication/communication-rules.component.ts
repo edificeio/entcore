@@ -1,8 +1,7 @@
 import { Component, Input, ChangeDetectorRef } from '@angular/core';
 import { GroupModel, SessionModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { NotifyService } from '../../core/services';
-import { GroupNameService } from './group-name.service';
+import { NotifyService, GroupNameService } from '../../core/services';
 import { Subject } from 'rxjs/Subject';
 import { BundlesService } from 'sijil';
 import 'rxjs/add/operator/first';

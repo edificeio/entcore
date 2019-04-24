@@ -9,11 +9,10 @@ import {
     communicationRulesLocators as locators,
     uniqueGroups
 } from './communication-rules.component';
-import { generateGroup } from './communication-test-utils';
+import { generateGroup } from '../../shared/utils';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { NotifyService } from '../../core/services';
-import { GroupNameService } from './group-name.service';
+import { NotifyService, GroupNameService } from '../../core/services';
 import { UsersStore } from '../users.store';
 import { GroupCollection } from '../../core/store';
 

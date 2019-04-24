@@ -6,7 +6,7 @@ import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
 import { UxModule } from '../../shared/ux/ux.module';
 import { CommunicationRule } from './communication-rules.component';
-import { clickOn, generateGroup, getText } from './communication-test-utils';
+import { clickOn, generateGroup, getText } from '../../shared/utils';
 
 describe('UserCommunicationComponent', () => {
     let component: UserCommunicationComponent;
@@ -50,6 +50,7 @@ describe('UserCommunicationComponent', () => {
 
         component.user = axellePotier.user;
         component.userSendingCommunicationRules = axellePotier.communicationRules;
+        component.addCommunicationPickableGroups = [generateGroup('group1')];
         fixture.detectChanges();
     }));
 

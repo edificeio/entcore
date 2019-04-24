@@ -2,13 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { ActivatedRoute } from '@angular/router';
-import { NotifyService, SpinnerService } from '../../core/services';
+import { NotifyService, SpinnerService, GroupNameService } from '../../core/services';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/mergeMap';
-import { GroupNameService } from './group-name.service';
 
 const css = {
     title: 'lct-group-card-title',
@@ -66,7 +65,14 @@ export const groupCardLocators = {
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">
-            <span [innerHTML]="'group.internal-communication-rule.change.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+            <div class="has-margin-vertical-10">
+                <i class='fa fa-exclamation-triangle is-danger'></i>
+                <span *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage" 
+                    [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+                <ng-template #cannotCommunicateTogetherConfirmMessage>
+                    <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
+                </ng-template>
+            </div>
         </lightbox-confirm>`,
     styles: [`
         .group-card {

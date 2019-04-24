@@ -6,3 +6,4 @@ export * from './routing.service';
 export { UserlistFiltersService } from './userlist.filters.service';
 export { ProfilesService } from './profiles.service';
 export { PlatformInfoService } from './platform-info.service';
+export { GroupNameService } from './group-name.service'
