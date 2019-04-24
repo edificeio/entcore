@@ -21,7 +21,7 @@ export class RoleModel extends Model<RoleModel> {
                 let groupIndex = this.groups.findIndex(g => {return g.id == group.id})
                 this.groups.splice(groupIndex,1);
             })
-            .catch(e => console.log(e)
+            .catch(e => console.error(e)
         );
     }
 
