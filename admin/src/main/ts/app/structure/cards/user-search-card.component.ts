@@ -30,7 +30,7 @@ import { StructureModel } from '../../core/store'
                 </div>
                 <ul *ngIf="foundUsers && foundUsers.length > 0">
                     <li *ngFor="let user of foundUsers">
-                        <a [routerLink]="['users', user.id]">
+                        <a [routerLink]="['users', user.id, 'details']">
                             {{ user.lastName | uppercase }} {{ user.firstName }}
                         </a>
                     </li>

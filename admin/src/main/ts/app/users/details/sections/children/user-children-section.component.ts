@@ -36,7 +36,7 @@ import { OnInit, OnChanges } from '@angular/core/src/metadata/lifecycle_hooks';
             <ul class="actions-list">
                 <li *ngFor="let child of details?.children">
                     <div *ngIf="child.id">
-                        <a class="action" [routerLink]="['..', child.id]">
+                        <a class="action" [routerLink]="['/admin', structure.id ,'users', child.id, 'details']">
                             {{ child.displayName?.split(' ')[1] | uppercase }} {{ child.displayName?.split(' ')[0] }}
                         </a>
                         <i  class="fa fa-times action" (click)="removeChild(child)"
@@ -53,6 +53,8 @@ import { OnInit, OnChanges } from '@angular/core/src/metadata/lifecycle_hooks';
 })
 export class UserChildrenSection extends AbstractSection implements OnInit, OnChanges {
     lightboxChildren: UserModel[] = [];
+
+    public showChildrenLightbox = false;
 
     constructor(
             private userListService: UserListService,
