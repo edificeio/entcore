@@ -92,7 +92,6 @@ export class UserChildrenSection extends AbstractSection implements OnInit, OnCh
     }
 
     addChild = (child) => {
-        console.log(child);
         this.spinner.perform('portal-content', this.details.addChild(child)
             .then(() => {
                 this.ns.success(
@@ -119,7 +118,6 @@ export class UserChildrenSection extends AbstractSection implements OnInit, OnCh
     }
 
     removeChild = (child) => {
-        console.log(child);
         this.spinner.perform('portal-content', this.details.removeChild(child)
             .then(() => {
                 this.ns.success(
