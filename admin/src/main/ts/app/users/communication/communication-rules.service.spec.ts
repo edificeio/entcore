@@ -139,4 +139,49 @@ describe('CommunicationRulesService', () => {
             expect(rules[1].receivers.length).toBe(0);
         });
     });
+
+    describe('createCommunication', () => {
+        it('it should call POST /communication/v2/group/group1/communique/group2 given group1 and group2', () => {
+            const group1: GroupModel = generateGroup('group1');
+            const group2: GroupModel = generateGroup('group2');
+            communicationRulesService.createCommunication(group1, group2).subscribe();
+            httpController.expectOne('/communication/v2/group/group1/communique/group2');
+        });
+
+        it('it should emit rules with updated receivers', () => {
+            const group1: GroupModel = generateGroup('group1', 'INCOMING');
+            const group2: GroupModel = generateGroup('group2');
+            let rules: CommunicationRule[] = [];
+            communicationRulesService
+                .changes()
+                .skip(1)
+                .subscribe(cr => rules = cr);
+            communicationRulesService.setGroups([group1]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+
+            communicationRulesService.createCommunication(group1, group2).subscribe();
+            httpController.expectOne('/communication/v2/group/group1/communique/group2').flush({'ok': 'no direction to change'});
+
+            expect(rules[0].sender.internalCommunicationRule).toBe('INCOMING');
+            expect(rules[0].receivers[0].id).toBe('group2');
+        });
+
+        it('it should emit rules with updated receivers and internal com rule if the new rule changed it', () => {
+            const group1: GroupModel = generateGroup('group1', 'INCOMING');
+            const group2: GroupModel = generateGroup('group2');
+            let rules: CommunicationRule[] = [];
+            communicationRulesService
+                .changes()
+                .skip(1)
+                .subscribe(cr => rules = cr);
+            communicationRulesService.setGroups([group1]);
+            httpController.expectOne('/communication/group/group1/outgoing').flush([]);
+
+            communicationRulesService.createCommunication(group1, group2).subscribe();
+            httpController.expectOne('/communication/v2/group/group1/communique/group2').flush({'group1': 'BOTH'});
+
+            expect(rules[0].sender.internalCommunicationRule).toBe('BOTH');
+            expect(rules[0].receivers[0].id).toBe('group2');
+        });
+    });
 });
