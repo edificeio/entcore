@@ -37,12 +37,6 @@ export const userCommunicationLocators = {
                     [addCommunicationPickableGroups]="addCommunicationPickableGroups">
                 </communication-rules>
             </div>
-        </panel-section>
-        
-        <panel-section section-title="user.communication.section.title.receiving-rules" [folded]="false">
-            <div panel-section-header-icons>
-                <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
-            </div>
         </panel-section>`,
     styles: [`
         .button.button--back {
