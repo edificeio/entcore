@@ -31,7 +31,8 @@ import { Config } from '../../Config';
                                    name="loginAlias"
                                    [pattern]="loginAliasPattern"
                                    #loginAliasInput="ngModel">
-                            <button (click)="updateLoginAlias()"
+                            <button type="button"
+                                    (click)="updateLoginAlias()"
                                     [disabled]="infoForm.pristine || infoForm.invalid || spinner.isLoading('portal-content')">
                                 <s5l>login.update</s5l>
                                 <i class="fa fa-floppy-o"></i>
@@ -41,7 +42,11 @@ import { Config } from '../../Config';
                             </form-errors>
                         </div>
                     </form-field>
+                </fieldset>
+            </form>
 
+            <form>
+                <fieldset>
                     <form-field label="activation.code" *ngIf="details.activationCode">
                         <span>{{ details.activationCode }}</span>
                     </form-field>
@@ -63,7 +68,8 @@ import { Config } from '../../Config';
                     <form-field label="mergeKey" *ngIf="user.type === 'Relative'">
                         <div>
                             <span *ngIf="details.mergeKey">{{ details.mergeKey }}</span>
-                            <button class="noflex"
+                            <button type="button"
+                                    class="noflex"
                                     *ngIf="!details.mergeKey"
                                     (click)="generateMergeKey()"
                                     [disabled]="user.deleteDate != null">
@@ -75,12 +81,14 @@ import { Config } from '../../Config';
                     <form-field label="functions" *ngIf="!user.deleteDate">
                         <div>
                             <div *ngIf="!details.isAdmc()">
-                                <button *ngIf="!details.isAdml(this.structure.id)"
+                                <button type="button"
+                                        *ngIf="!details.isAdml(this.structure.id)"
                                         (click)="addAdml()">
                                     <s5l>adml.add</s5l>
                                     <i class="fa fa-cog"></i>
                                 </button>
-                                <button *ngIf="details.isAdml(this.structure.id)"
+                                <button type="button" 
+                                        *ngIf="details.isAdml(this.structure.id)"
                                         (click)="showConfirmation = true">
                                     <s5l>adml.remove</s5l>
                                     <i class="fa fa-cog"></i>
@@ -109,13 +117,17 @@ import { Config } from '../../Config';
                             </div>
                         </div>
                     </form-field>
+                </fieldset>
+            </form>
+            <form>
+                <fieldset>
                     <form-field label="send.reset.password" *ngIf="!details.activationCode">
                         <div>
                             <div class="sendPassword">
                                 <input type="email" [(ngModel)]="passwordResetMail" name="passwordResetMail"
                                        [attr.placeholder]="'send.reset.password.email.placeholder' | translate"
                                        #passwordMailInput="ngModel" [pattern]="emailPattern">
-                                <button (click)="sendResetPasswordMail(passwordResetMail)"
+                                <button type="button" (click)="sendResetPasswordMail(passwordResetMail)"
                                         [disabled]="!passwordResetMail || passwordMailInput.errors">
                                     <span><s5l>send.reset.password.button</s5l></span>
                                     <i class="fa fa-envelope"></i>
@@ -126,7 +138,8 @@ import { Config } from '../../Config';
                                 <input type="tel" [(ngModel)]="passwordResetMobile" name="passwordResetMobile"
                                        [attr.placeholder]="'send.reset.password.mobile.placeholder' | translate"
                                        #passwordMobileInput="ngModel">
-                                <button class="mobile"
+                                <button type="button"
+                                        class="mobile"
                                         (click)="sendResetPasswordMobile(passwordResetMobile)"
                                         [disabled]="!passwordResetMobile || passwordMobileInput.errors">
                                     <span><s5l>send.reset.password.button</s5l></span>
@@ -138,7 +151,7 @@ import { Config } from '../../Config';
 
                     <form-field label="password.renewal.code" *ngIf="!details.activationCode">
                         <div>
-                            <button (click)="clickOnGenerateRenewalCode()">
+                            <button type="button" (click)="clickOnGenerateRenewalCode()">
                                 <span><s5l>generate.password.renewal.code</s5l></span>
                             </button>
                             <span *ngIf="renewalCode">
@@ -150,11 +163,11 @@ import { Config } from '../../Config';
 
                     <form-field label="massmail">
                         <div>
-                            <button (click)="sendIndividualMassMail('pdf')">
+                            <button type="button" (click)="sendIndividualMassMail('pdf')">
                                 <span><s5l>individual.massmail.pdf</s5l></span>
                                 <i class="fa fa-file-pdf-o"></i>
                             </button>
-                            <button (click)="sendIndividualMassMail('mail')" [disabled]="!details.email">
+                            <button type="button" (click)="sendIndividualMassMail('mail')" [disabled]="!details.email">
                                 <span><s5l>individual.massmail.mail</s5l></span>
                                 <i class="fa fa-envelope"></i>
                             </button>
