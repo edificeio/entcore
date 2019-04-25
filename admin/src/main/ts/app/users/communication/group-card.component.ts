@@ -46,18 +46,24 @@ export const groupCardLocators = {
                     {{ 'group.card.remove-communication-button' | translate }} <i class="fa fa-minus"></i>
                 </button>
             </div>
-            <hr class="group-card__separator" [hidden]="!active"/>
+            <hr class="group-card__separator"/>
             <span class="group-card__actions-on-self group-card__actions-on-self--can-communicate"
                       *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
-                <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l> <i
-                    class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
-                    (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l>
+                <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-on"
+                   *ngIf="active"
+                   (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
+                   *ngIf="!active"></i>
             </span>
             <ng-template #cannotCommunicateTogether>
                 <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
-                    <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l> <i
-                        class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
-                        (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                    <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l>
+                    <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-off"
+                       *ngIf="active"
+                       (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
+                    <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
+                       *ngIf="!active"></i>
                 </span>
             </ng-template>
         </div>
@@ -176,24 +182,22 @@ export const groupCardLocators = {
         .group-card__switch {
             font-size: 22px;
             padding-right: 15px;
+        }
+        .group-card__switch.group-card__switch--clickable {
             cursor: pointer;
         }
     `, `
         .group-card__actions-on-self {
-            display: none;
-        }
-
-        .group-card--active .group-card__actions-on-self {
             display: flex;
             align-items: center;
             padding-bottom: 10px;
         }
     `, `
-        .group-card__actions-on-self.group-card__actions-on-self--can-communicate .group-card__switch {
+        .group-card__actions-on-self.group-card__actions-on-self--can-communicate .group-card__switch.group-card__switch--clickable {
             color: mediumseagreen;
         }
     `, `
-        .group-card__actions-on-self.group-card__actions-on-self--cannot-communicate .group-card__switch {
+        .group-card__actions-on-self.group-card__actions-on-self--cannot-communicate .group-card__switch.group-card__switch--clickable {
             color: indianred;
         }
     `]
@@ -221,7 +225,7 @@ export class GroupCardComponent {
         .set('ManualGroup', 'manual')
         .set('ProfileGroup', 'profile')
         .set('FunctionalGroup', 'functional');
-        
+
     @Output()
     clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
 
