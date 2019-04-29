@@ -2193,15 +2193,22 @@ i.fa {
 
 .quota-bar {
     display: flex;
-    border: 1px solid $grey-dark;
+    border: 1px solid mix($grey-light, $grey-dark, 80%);
     border-radius: 2px;
     height: 25px;
     margin: 10px 0px;
 }
 
 .quota-bar__used-space {
-    background-color: $main;
+    background-color: $validate;
+    &--warning {
+      background-color: $accent;
+    }
+    &--full {
+      background-color: $contrast;
+    }
 }
+
 
 .quota-bar__unused-space {
     background-color: #fff;
