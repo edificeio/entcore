@@ -115,13 +115,13 @@ import { Config } from './Config';
                             <s5l>delete.account</s5l>
                             <i class="fa fa-times-circle"></i>
                         </button>
-                        <lightbox-confirm
+                        <lightbox-confirm lightboxTitle="warning"
                                 [show]="showRemoveUserConfirmation"
                                 [title]="'warning'"
                                 (onConfirm)="removeUser()"
                                 (onCancel)="showRemoveUserConfirmation = false">
-                            <p>{{ 'user.remove.disclaimer.info' | translate:{username: user.displayName} }}</p>
-                            <p>{{ 'user.remove.disclaimer.confirm' | translate }}</p>
+                            <p><s5l [s5l-params]="{ username: user.displayName }">user.remove.disclaimer.info</s5l></p>
+                            <strong>{{ 'user.remove.disclaimer.confirm' | translate }}</strong>
                         </lightbox-confirm>
                     </div>
                 </div>
