@@ -95,9 +95,9 @@ export const groupCardLocators = {
         }
 
         .group-card.group-card--active {
-            background-color: #f2f2f2;
+            background-color: #ffe6cc;
             box-shadow: 1px 1px 5px #aaa;
-            border-color: #ff8352;
+            border: none;
         }
 
         .group-card.group-card--active, .group-card.group-card--selected {
@@ -105,9 +105,8 @@ export const groupCardLocators = {
         }
 
         .group-card.group-card--highlighted {
-            box-shadow: 1px 1px 5px #aaa;
-            border-color: #ff8352;
-            color: #ff8352;
+            box-shadow: 3px 3px 8px 2px #aaa;
+            border: 1px solid #ff8352;
         }
 
         .group-card.group-card--active.group-card--highlighted {
