@@ -713,9 +713,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.checkOption = function(array, check) {
-		array.forEach(element => {
-			element.checked = check;
-		});
+		if(array) {
+			array.forEach(element => {
+				element.checked = check;
+			});
+		}
 	};
 
 	$scope.selectFirstFavorite = async function(noupdate) {
