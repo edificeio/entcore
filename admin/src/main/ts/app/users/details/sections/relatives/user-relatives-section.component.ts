@@ -35,10 +35,8 @@ import { OnChanges, OnInit } from '@angular/core/src/metadata/lifecycle_hooks';
             <ul class="actions-list">
                 <li *ngFor="let parent of details.parents">
                     <div *ngIf="parent.id">
-                        <a class="action" [routerLink]="['/admin', structure.id ,'users', parent.id, 'details']">
-                            {{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}
-                        </a>
-                        <i  class="fa fa-times action" (click)="removeRelative(parent)"
+                        <a class="action" [routerLink]="['/admin', structure.id ,'users', parent.id, 'details']">{{ parent.displayName?.split(' ')[1] | uppercase }} {{ parent.displayName?.split(' ')[0] }}</a>
+                        <i class="fa fa-times action" (click)="removeRelative(parent)"
                             [title]="'delete.this.relative' | translate"
                             [ngClass]="{ disabled: spinner.isLoading(parent.id) }"></i>
                     </div>
