@@ -451,9 +451,9 @@
     "confirm": "Confirmer",
     "warning": "Attention !",
     "user.remove.adml.disclaimer.info": "Vous allez retirer le droit d'Administration local à {{ username ? $username : null }} sur tous les établissements auxquels cet utilisateur est rattaché. ",
-    "user.remove.adml.disclaimer.confirm": "Confirmez vous cette action ?",
-    "user.remove.disclaimer.info": "Vous allez définitivement supprimer l'utilisateur {{ username ? $username : null }}. Aucune restauration ne sera possible.",
-    "user.remove.disclaimer.confirm": "Confirmez vous cette action ?",
+    "user.remove.adml.disclaimer.confirm": "Confirmez-vous cette action ?",
+    "user.remove.disclaimer.info": "Vous allez définitivement supprimer l'utilisateur <strong>{{ username ? $username : null }}</strong>. Aucune restauration ne sera possible.",
+    "user.remove.disclaimer.confirm": "Confirmez-vous cette action ?",
 
     "user.communication.title": "Communication de {{ lastName }} {{ firstName }}",
     "user.communication.back-to-user-details": "Retour à la fiche",
