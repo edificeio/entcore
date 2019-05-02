@@ -39,7 +39,7 @@ $white-transparent:       rgba(255,255,255,0.75);
 // STATUS COLOR
 $info:                    $main;
 $success:                 $validate;
-$warning:                 #ffd54a;
+$warning:                 #ffdf76;
 $danger:                  darken($contrast, 5%);
 
 // PROFIL COLOR
@@ -386,38 +386,57 @@ i.group_add {
   margin: 15px 0px;
   p {margin: 0px;}
   .message-header {
-    padding: .25em;
+    padding: 10px 20px;
     background: black;
     color:white;
     font-size: 1.1em;
     font-weight: bold;
   }
   .message-body {
-    padding: .5em !important;
+    padding: 10px 20px !important;
     font-size: 0.9em;
     font-weight: initial;
+    &::before {
+      font-family: "FontAwesome";
+      display: inline-block;
+      padding: 0 10px;
+      font-size: 20px;
+      vertical-align: middle;
+    }
   }
   &.is-success {
     color: $success;
-    background-color: lighten($success, 40%);
+    background-color: lighten($success, 45%);
     border-color: $success;
+    .message-body::before {
+      content: "\f058";
+    }
   }
   &.is-info {
     color: $info;
     background-color: lighten($info, 45%);
     border-color: $info;
+    .message-body::before {
+      content: "\f05a";
+    }
   }
   &.is-danger {
     color: $danger;
     background-color: lighten($danger, 40%);
     border-color: $danger;
+    .message-body::before {
+      content: "\f071";
+    }
   }
   &.is-warning {
-    color: $warning;
-    background-color: lighten($warning, 33%);
+    color: darken($warning, 40%);
+    background-color: lighten($warning, 20%);
     border-color: $warning;
+    .message-body::before {
+      content: "\f06a";
+    }
   }
-  &.is-success .message-header  {background: $success;}
+  &.is-success .message-header {background: $success;}
   &.is-info .message-header {background: $info;}
   &.is-danger .message-header {background: $danger;}
   &.is-warning .message-header {background: $warning;}
