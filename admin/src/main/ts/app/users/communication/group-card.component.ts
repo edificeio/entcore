@@ -107,6 +107,7 @@ export const groupCardLocators = {
         }
 
         .group-card.group-card--highlighted {
+            background-color: #fff2ed;
             box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
             border-color: #ff8352;
             color: #ff8352;
