@@ -586,7 +586,7 @@ public class DefaultSchoolService implements SchoolService {
 			"u.id as id, p.name as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, " +
-			"EXTRACT(function IN u.functions | last(split(function, \"$\"))) as aafFunctions," +
+			"EXTRACT(function IN u.functions | split(function, \"$\")) as aafFunctions," +
 			"CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes," +
 			"CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups, " +
 			"CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups, " +
