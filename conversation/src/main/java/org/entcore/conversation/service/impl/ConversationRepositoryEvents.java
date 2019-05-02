@@ -186,6 +186,10 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 	}
 
 	@Override
+	public void removeShareGroups(JsonArray oldGroups) {
+	}
+
+	@Override
 	public void deleteGroups(JsonArray groups) {
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
