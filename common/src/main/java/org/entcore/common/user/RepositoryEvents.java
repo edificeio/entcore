@@ -39,4 +39,8 @@ public interface RepositoryEvents {
 	default void mergeUsers(String keepedUserId, String deletedUserId) {
 	};
 
+	default void removeShareGroups(JsonArray oldGroups) {
+		deleteGroups(oldGroups);
+	}
+
 }

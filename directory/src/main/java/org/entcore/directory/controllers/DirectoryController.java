@@ -133,6 +133,10 @@ public class DirectoryController extends BaseController {
 	@IgnoreCsrf
 	public void launchTransition(final HttpServerRequest request) {
 		JsonObject t = new JsonObject().put("action", "transition");
+		callTransition(request, t);
+	}
+
+	private void callTransition(HttpServerRequest request, JsonObject t) {
 		String structureId = request.params().get("structureExternalId");
 		if (structureId != null) {
 			t.put("structureExternalId", structureId);
@@ -145,6 +149,14 @@ public class DirectoryController extends BaseController {
 				renderJson(request, event.body());
 			}
 		}));
+	}
+
+	@Post("/removeclassgroupshare/:structureExternalId")
+	@SecuredAction("directory.removeclassgroupshare")
+	@IgnoreCsrf
+	public void launchRemoveGroupShare(final HttpServerRequest request) {
+		JsonObject t = new JsonObject().put("action", "transition").put("onlyRemoveShare", true);
+		callTransition(request, t);
 	}
 
 	@Post("/duplicates/mark")

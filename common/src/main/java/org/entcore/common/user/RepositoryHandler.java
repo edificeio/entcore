@@ -92,6 +92,10 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				JsonObject body = message.body();
 				repositoryEvents.mergeUsers(body.getString("keepedUserId"), body.getString("deletedUserId"));
 				break;
+			case "remove-share-groups":
+				JsonArray oldGroups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
+				repositoryEvents.removeShareGroups(oldGroups);
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));

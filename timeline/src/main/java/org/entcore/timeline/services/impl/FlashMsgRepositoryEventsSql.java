@@ -40,6 +40,10 @@ public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 			Handler<Boolean> handler) {}
 
 	@Override
+	public void removeShareGroups(JsonArray oldGroups) {
+	}
+
+	@Override
 	public void deleteGroups(JsonArray groups) {
 		String query =
 			"DELETE FROM flashmsg.messages_read r "+
