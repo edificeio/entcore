@@ -283,7 +283,7 @@ public class Structure {
 		return externalId;
 	}
 
-	public void transition(final Handler<Message<JsonObject>> handler) {
+	public void transition(boolean onlyRemoveShare, final Handler<Message<JsonObject>> handler) {
 		final TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[:BELONGS]-(c:Class)" +
@@ -303,11 +303,13 @@ public class Structure {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
-								for (Object u : res.getJsonArray("users")) {
-									User.backupRelationship(u.toString(), tx);
-									User.transition(u.toString(), tx);
+								if (!onlyRemoveShare) {
+									for (Object u : res.getJsonArray("users")) {
+										User.backupRelationship(u.toString(), tx);
+										User.transition(u.toString(), tx);
+									}
+									transitionClassGroup();
 								}
-								transitionClassGroup();
 								handler.handle(event);
 							} else {
 								log.error("Structure " + id + " transition error - useringroups.");

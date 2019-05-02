@@ -43,10 +43,12 @@ public class Transition {
 	private static final String GRAPH_DATA_UPDATE = "GraphDataUpdate";
 	private final Vertx vertx;
 	private final long delayBetweenStructure;
+	private final boolean onlyRemoveShare;
 
-	public Transition(Vertx vertx, long delayBetweenStructure) {
+	public Transition(Vertx vertx, long delayBetweenStructure, boolean onlyRemoveShare) {
 		this.vertx = vertx;
 		this.delayBetweenStructure = delayBetweenStructure;
+		this.onlyRemoveShare = onlyRemoveShare;
 	}
 
 	public void launch(final String structureExternalId, final Handler<Message<JsonObject>> handler) {
@@ -88,7 +90,7 @@ public class Transition {
 			}
 			return;
 		}
-		structure.transition(commitHandler(handler, null, structure.getStruct()));
+		structure.transition(onlyRemoveShare, commitHandler(handler, null, structure.getStruct()));
 	}
 
 	private void transitionStructures(final Handler<Message<JsonObject>> handler) {
@@ -116,7 +118,7 @@ public class Transition {
 							}
 							return;
 						}
-						s.transition(commitHandler(handler, handlers[j+1], s.getStruct()));
+						s.transition(onlyRemoveShare, commitHandler(handler, handlers[j+1], s.getStruct()));
 					} else {
 						TransactionManager.getInstance().rollback(GRAPH_DATA_UPDATE);
 						log.error("Transition error");
@@ -147,7 +149,11 @@ public class Transition {
 									JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
 									publishTransition(structure, results.getJsonArray(1));
 									if (r.size() > 0) {
-										publishDeleteGroups(vertx.eventBus(), log, r);
+										if (onlyRemoveShare) {
+											publishRemoveShareGroups(r);
+										} else {
+											publishDeleteGroups(vertx.eventBus(), log, r);
+										}
 										if (handler != null) {
 											vertx.setTimer(delayBetweenStructure, eventTimer -> next(r));
 										} else {
@@ -209,7 +215,7 @@ public class Transition {
 	}
 
 	private void publishTransition(JsonObject struct, JsonArray classes) {
-		if (struct == null) return;
+		if (struct == null || onlyRemoveShare) return;
 		final JsonObject structure = struct.copy();
 		structure.put("classes", classes);
 		structure.remove("created");
@@ -225,6 +231,13 @@ public class Transition {
 		logger.info("Delete groups : " + groups.encode());
 		eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
 				.put("action", "delete-groups")
+				.put("old-groups", groups));
+	}
+
+	private void publishRemoveShareGroups(JsonArray groups) {
+		log.info("Remove share groups : " + groups.encode());
+		vertx.eventBus().publish(Feeder.USER_REPOSITORY, new JsonObject()
+				.put("action", "remove-share-groups")
 				.put("old-groups", groups));
 	}
 
