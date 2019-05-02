@@ -83,7 +83,8 @@ export const groupCardLocators = {
     styles: [`
         .group-card {
             color: #5b6472;
-            border: 1px solid rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(0, 0, 0, 0.25);
+            background-color: #eaedf2;
             border-radius: 5px;
             font-size: 14px;
             padding: 10px;
@@ -95,22 +96,24 @@ export const groupCardLocators = {
         }
 
         .group-card.group-card--active {
-            background-color: #ffe6cc;
-            box-shadow: 1px 1px 5px #aaa;
-            border: none;
+            background-color: white;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+            border-color: #ff8352;
         }
 
-        .group-card.group-card--active, .group-card.group-card--selected {
+        .group-card.group-card--active,
+        .group-card.group-card--selected {
             cursor: default;
         }
 
         .group-card.group-card--highlighted {
-            box-shadow: 3px 3px 8px 2px #aaa;
-            border: 1px solid #ff8352;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+            border-color: #ff8352;
+            color: #ff8352;
         }
 
         .group-card.group-card--active.group-card--highlighted {
-            box-shadow: 3px 3px 8px 2px #aaa;
+            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
         }
     `, `
         .group-card__title {
@@ -149,7 +152,8 @@ export const groupCardLocators = {
             display: initial;
         }
     `, `
-        .group-card__action-remove-communication, .group-card__action-add-communication {
+        .group-card__action-remove-communication,
+        .group-card__action-add-communication {
             background: #ff8352;
             height: 34px;
             line-height: 34px;
@@ -158,11 +162,13 @@ export const groupCardLocators = {
             color: white;
         }
 
-        .group-card__action-remove-communication:hover, .group-card__action-add-communication:hover {
+        .group-card__action-remove-communication:hover,
+        .group-card__action-add-communication:hover {
             background: #ff6624;
         }
 
-        .group-card__action-add-communication, .group-card--selected .group-card__action-remove-communication {
+        .group-card__action-add-communication,
+        .group-card--selected .group-card__action-remove-communication {
             display: none;
         }
 
@@ -170,7 +176,8 @@ export const groupCardLocators = {
             display: initial;
         }
     `, `
-        .group-card__action-remove-communication i, .group-card__action-add-communication i {
+        .group-card__action-remove-communication i,
+        .group-card__action-add-communication i {
             float: none;
         }
     `, `
