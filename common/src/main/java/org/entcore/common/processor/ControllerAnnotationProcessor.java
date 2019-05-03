@@ -25,6 +25,7 @@ import org.entcore.common.controller.RightsController;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.http.filter.Trace;
 
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
@@ -40,7 +41,8 @@ import java.util.*;
 @SupportedAnnotationTypes({"fr.wseduc.security.SecuredAction", "fr.wseduc.bus.BusAddress",
 		"fr.wseduc.rs.Get", "fr.wseduc.rs.Post", "fr.wseduc.rs.Delete", "fr.wseduc.rs.Put",
 		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc",
-		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf"})
+		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf",
+        "org.entcore.common.http.filter.Trace"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ControllerAnnotationProcessor extends fr.wseduc.processor.ControllerAnnotationProcessor {
 
@@ -49,8 +51,29 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 		super.process(annotations, roundEnv);
 		resourceFilter(roundEnv);
 		ignoreCsrf(roundEnv);
+		trace(roundEnv);
 		return false;
 	}
+
+	private void trace(RoundEnvironment roundEnv) {
+	    final Map<String, Set<String>> filtersMap = new HashMap<>();
+	    Set<String> filters = new TreeSet<>();
+	    filtersMap.put("Trace", filters);
+	    for (Element element : roundEnv.getElementsAnnotatedWith(Trace.class)) {
+	        Trace annotation = element.getAnnotation(Trace.class);
+	        TypeElement clazz = (TypeElement) element.getEnclosingElement();
+	        if (annotation == null || !isMethod(element) || clazz == null) {
+	            continue;
+            }
+	        filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" + element.getSimpleName().toString() +
+                    "\", \"value\" : \"" + annotation.value() +
+                    "\", \"body\" : " + annotation.body() + " }");
+        }
+
+        if (filters.size() > 0) {
+            writeFile("", "", filtersMap);
+        }
+    }
 
 	private void ignoreCsrf(RoundEnvironment roundEnv) {
 		final Map<String,Set<String>> filtersMap = new HashMap<>();
