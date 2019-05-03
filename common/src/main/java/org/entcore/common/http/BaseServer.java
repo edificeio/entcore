@@ -46,6 +46,7 @@ import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.trace.TraceFilter;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.UserUtils;
@@ -120,6 +121,7 @@ public abstract class BaseServer extends Server {
 		addFilter(new AccessLoggerFilter(accessLogger));
 		addFilter(new UserAuthFilter(new AppOAuthResourceProvider(
 				getEventBus(vertx), getPathPrefix(config)), new BasicFilter()));
+		addFilter(new TraceFilter(getEventBus(vertx), securedUriBinding));
 	}
 
 	@Override
