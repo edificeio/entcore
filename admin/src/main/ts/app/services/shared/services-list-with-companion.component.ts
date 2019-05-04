@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 import { ActivatedRoute, Data, Router } from '@angular/router';
 import { routing } from '../../core/services';
@@ -44,27 +44,18 @@ interface ServiceInfo {
                 <router-outlet></router-outlet>
             </div>
         </side-layout>
-    `,
-    styles: [`
-
-    `]
+    `
 })
-export class ServicesListWithCompanionComponent implements AfterViewInit {
+export class ServicesListWithCompanionComponent {
 
     /* Store pipe */
     self = this;
     _storedElements = [];
 
     constructor(
-        private cdRef: ChangeDetectorRef,
         public router: Router,
         public route: ActivatedRoute,
         private servicesStore: ServicesStore) {
-    }
-
-    ngAfterViewInit() {
-        this.cdRef.markForCheck();
-        this.cdRef.detectChanges();
     }
 
     // TODO extract from router 
@@ -100,7 +91,6 @@ export class ServicesListWithCompanionComponent implements AfterViewInit {
                             session.functions['SUPER_ADMIN'] != null
                         );
                     }
-                    this.cdRef.markForCheck();
                 }
             })
         });
