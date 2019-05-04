@@ -1750,13 +1750,34 @@ group-manage-users {
     }
   }
 }
+
 /* Services */
-app-details {
-  .flex-container {
-    display: flex;
-    >.flex-item {
-      flex: none;
-      margin: 5px 10px 5px 10px;
+services-root {
+  div.flex-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      button {
+          background-color: $accent;
+          color: white;
+          padding: 10px 10px;
+          display: flex;
+          align-items: center;
+
+          &:hover {
+              background-color: $accent-dark;
+          }
+      }
+  }
+
+  app-details {
+    .flex-container {
+      display: flex;
+      >.flex-item {
+        flex: none;
+        margin: 5px 10px 5px 10px;
+      }
     }
   }
 }
