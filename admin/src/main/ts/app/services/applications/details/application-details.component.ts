@@ -36,7 +36,7 @@ import { GroupModel, RoleModel, StructureModel } from '../../../core/store/model
                         {{ 'services.application.roles.list.empty' | translate }}
                     </div>
                 </div>
-                <div *ngFor="let role of app.roles" class="has-vertical-padding">
+                <div *ngFor="let role of app.roles" class="has-vertical-padding-10">
                     <services-role
                             [role]="role"
                             (openLightbox)="openRoleAttribution($event)"

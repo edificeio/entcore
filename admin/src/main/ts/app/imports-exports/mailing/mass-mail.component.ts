@@ -16,7 +16,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
         <div class="container has-shadow">
             <h2>{{ 'massmail.accounts' | translate }}</h2>
             
-            <div class="has-vertical-padding is-pulled-left">
+            <div class="has-vertical-padding-10 is-pulled-left">
                 <button (click)="toggleVisibility()"
                     class="button is-primary" 
                     [ngClass]="setFiltersOnStyle()" 
@@ -56,7 +56,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                     </div>
                 </div>
             </div>
-            <div class="has-vertical-padding flex is-pulled-right">
+            <div class="has-vertical-padding-10 flex is-pulled-right">
                 <div class="mailing__sort">
                     <p><s5l>massmail.sorttitle</s5l></p>
                     <div>
@@ -107,7 +107,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                 </div>
             </div>
             
-            <div class="has-vertical-padding is-clearfix">
+            <div class="has-vertical-padding-10 is-clearfix">
                 <div class="message is-info">
                     <div class="message-body has-text-centered">{{countUsers}} <s5l>massmail.users.total</s5l></div>
                 </div>
@@ -116,7 +116,7 @@ import { FilterPipe } from '../../shared/ux/pipes'
                 </div>
             </div>
 
-            <div class="has-vertical-padding">
+            <div class="has-vertical-padding-10">
                 <table>
                     <thead>
                         <tr>

@@ -4,8 +4,8 @@ import { Component, Input } from '@angular/core'
     selector: 'panel-section',
     template: `
         <section class="panel-section">
-            <div class="panel-section-header is-flex has-space-between" (click)="folded !== null ? folded=!folded : null" [class.foldable]="folded !== null">
-                <div class="is-flex">
+            <div class="panel-section-header is-display-flex has-space-between" (click)="folded !== null ? folded=!folded : null" [class.foldable]="folded !== null">
+                <div class="is-display-flex">
                     <s5l>{{ sectionTitle }}</s5l>
                     <div class="has-left-padding-10">
                         <ng-content select="[panel-section-header-icons]"></ng-content>

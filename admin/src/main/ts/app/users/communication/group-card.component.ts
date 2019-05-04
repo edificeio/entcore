@@ -71,7 +71,7 @@ export const groupCardLocators = {
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">
-            <div class="has-margin-vertical-10">
+            <div class="has-vertical-margin-10">
                 <i class='fa fa-exclamation-triangle is-danger'></i>
                 <span *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage" 
                     [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(this.group)}"></span>
