@@ -21,6 +21,7 @@ import { MassRoleAssignment } from './applications/details/mass-role-assignment.
 import { SmartMassRoleAssignment } from './applications/details/smart-mass-role-assignment.component';
 import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
 import { ServicesListWithCompanionComponent, ServicesRoleAttributionComponent, ServicesRoleComponent } from './shared/';
+import { ConnectorCreate } from './connectors/create/connector-create.component';
 
 @NgModule({
     imports: [
@@ -41,7 +42,8 @@ import { ServicesListWithCompanionComponent, ServicesRoleAttributionComponent, S
         ConnectorDetailsComponent,
         ServicesListWithCompanionComponent,
         ServicesRoleComponent,
-        ServicesRoleAttributionComponent
+        ServicesRoleAttributionComponent,
+        ConnectorCreate
     ],
     providers: [
         NgSwitch,

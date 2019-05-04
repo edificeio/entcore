@@ -1,6 +1,4 @@
 import { RoleModel } from '.';
-import { globalStore } from '..';
-
 import { Model, Mix } from 'entcore-toolkit';
 
 export class ConnectorModel extends Model<ConnectorModel> {
@@ -26,6 +24,21 @@ export class ConnectorModel extends Model<ConnectorModel> {
     }
 
     name: string;
+    displayName: string;
     icon: string;
+    url: string;
+    target: string;
+    inherits: boolean;
+    locked: boolean;
+
     roles: RoleModel[];
+    
+    hasCas: boolean;
+    casTypeId: string;
+    casPattern: string;
+    
+    oauthTransferSession: boolean;
+    oauthScope: string;
+    oauthSecret: string;
+    oauthGrantType: string;
 }

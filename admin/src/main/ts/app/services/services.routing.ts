@@ -7,6 +7,7 @@ import { ApplicationDetailsComponent } from './applications/details/application-
 
 import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
 import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
+import { ConnectorCreate } from './connectors/create/connector-create.component';
 
 import { ApplicationsResolver } from './applications/applications.resolver';
 import { ConnectorsResolver } from './connectors/connectors.resolver';
@@ -41,6 +42,7 @@ export let routes: Routes = [
                 component: ConnectorsListComponent,
                 resolve: {connectors: ConnectorsResolver},
                 children: [
+                    { path: 'create', component: ConnectorCreate },
                     {
                         path: ':connectorId',
                         component: ConnectorDetailsComponent,

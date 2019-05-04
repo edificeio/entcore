@@ -3,11 +3,20 @@ import { ActivatedRoute, Data, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ServicesStore } from './services.store';
 import { routing } from '../core/services';
+import { ServicesService } from './services.service';
 
 @Component({
     selector: 'services-root',
     template: `
-        <h1><i class="fa fa-th"></i> {{ 'services' | translate }}</h1>
+        <div class="flex-header">
+            <h1><i class="fa fa-th"></i> {{ 'services' | translate }}</h1>
+                
+            <button *ngIf="showCreateConnectorButton()" [routerLink]="['connectors', 'create']">
+                <s5l>services.connector.create.button</s5l>
+                <i class="fa fa-plug is-size-5"></i>
+            </button>
+        </div>
+
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
                     [disabled]="tab.disabled"
@@ -17,7 +26,8 @@ import { routing } from '../core/services';
             </button>
         </div>
         <router-outlet></router-outlet>
-    `
+    `,
+    providers: [ServicesService]
 })
 export class ServicesComponent implements OnInit, OnDestroy {
 
@@ -45,5 +55,9 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.structureSubscriber.unsubscribe();
+    }
+
+    public showCreateConnectorButton(): boolean {
+        return !this.router.isActive('/admin/' + this.servicesStore.structure.id + '/services/connectors/create', true);
     }
 }

@@ -140,8 +140,8 @@ export class ServicesListWithCompanionComponent {
         }
     };
 
-    private isIconWorkspaceImg(src: String) {
-        return src.startsWith('/workspace');
+    public isIconWorkspaceImg(src: String) {
+        return src && src.startsWith('/workspace');
     }
 }
 
