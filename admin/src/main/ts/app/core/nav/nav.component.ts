@@ -1,9 +1,7 @@
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input,
-    OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core'
-import { Location } from '@angular/common'
+import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core'
 import { Router, ActivatedRoute } from '@angular/router'
 
-import { Session, SessionModel, StructureModel, globalStore } from '../store'
+import { StructureModel, globalStore } from '../store'
 import { Subscription } from 'rxjs/Subscription'
 
 @Component({
@@ -93,12 +91,9 @@ import { Subscription } from 'rxjs/Subscription'
                     <router-outlet></router-outlet>
                 </div>
             </div>
-        </portal>`,
-    changeDetection: ChangeDetectionStrategy.OnPush
+        </portal>`
 })
 export class NavComponent implements OnInit, OnDestroy {
-
-    private session: Session
     private _currentStructure: StructureModel
     set currentStructure(struct: StructureModel){
         this._currentStructure = struct
@@ -118,30 +113,27 @@ export class NavComponent implements OnInit, OnDestroy {
     private structureSubscriber : Subscription
 
     constructor(
-        private cdRef: ChangeDetectorRef,
         public router: Router,
-        private location: Location,
         private route: ActivatedRoute) {}
 
     ngOnInit() {
-        this.session = this.route.snapshot.data['session']
-        this.structures = globalStore.structures.asTree()
+        this.structures = globalStore.structures.asTree();
 
         if (this.structures.length == 1 && !this.structures[0].children)
             this.currentStructure = this.structures[0];
 
         this.structureSubscriber = this.route.children[0].params.subscribe(params => {
-            let structureId = params['structureId']
+            let structureId = params['structureId'];
             if(structureId) {
                 this.currentStructure = globalStore.structures.data.find(
-                    s => s.id === structureId)
-                this.cdRef.markForCheck()
+                    s => s.id === structureId);
             }
-        })
+        });
     }
 
     ngOnDestroy() {
-        if(this.structureSubscriber)
-            this.structureSubscriber.unsubscribe()
+        if(this.structureSubscriber) {
+            this.structureSubscriber.unsubscribe();
+        }
     }
 }
