@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Data, NavigationEnd, Router } from '@angular/router';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Data, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { ServicesStore } from './services.store';
 import { routing } from '../core/services';
@@ -17,13 +17,11 @@ import { routing } from '../core/services';
             </button>
         </div>
         <router-outlet></router-outlet>
-    `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    `
 })
 export class ServicesComponent implements OnInit, OnDestroy {
 
     private structureSubscriber: Subscription;
-    private routerSubscriber: Subscription;
 
     tabs: Array<{ label: string, view: string, disabled: boolean }> = [
         {label: 'Applications', view: 'applications', disabled: false},
@@ -34,7 +32,6 @@ export class ServicesComponent implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private cdRef: ChangeDetectorRef,
         private servicesStore: ServicesStore) {
     }
 
@@ -42,19 +39,11 @@ export class ServicesComponent implements OnInit, OnDestroy {
         this.structureSubscriber = routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data['structure']) {
                 this.servicesStore.structure = data['structure'];
-                this.cdRef.markForCheck();
-            }
-        });
-
-        this.routerSubscriber = this.router.events.subscribe(event => {
-            if (event instanceof NavigationEnd) {
-                this.cdRef.markForCheck();
             }
         });
     }
 
     ngOnDestroy(): void {
         this.structureSubscriber.unsubscribe();
-        this.routerSubscriber.unsubscribe();
     }
 }
