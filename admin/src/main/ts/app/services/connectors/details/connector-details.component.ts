@@ -23,7 +23,7 @@ import { BundlesService } from 'sijil'
                 </div>
             </div>
             
-            <div *ngFor="let role of connector.roles" class="has-vertical-padding">
+            <div *ngFor="let role of connector.roles" class="has-vertical-padding-10">
                 <services-role
                     [role]="role"
                     (openLightbox)="openLightbox($event)"
