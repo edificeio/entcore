@@ -10,7 +10,7 @@ import { StructureModel } from '../../core/store'
         <div class="container has-shadow">
             <h2><s5l>export.configuration</s5l></h2>
 
-            <form class="has-vertical-padding">
+            <form class="has-vertical-padding-10">
 
                 <form-field label="export.type">
                     <select [(ngModel)]="type" name="type">
