@@ -1,10 +1,7 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy,
-    ChangeDetectorRef, Input, ViewChild } from "@angular/core";
-import { ActivatedRoute, Router,  Data } from '@angular/router';
+import { Component, OnInit, OnDestroy, ViewChild, ChangeDetectorRef } from "@angular/core";
+import { ActivatedRoute } from '@angular/router';
 
 import { Subscription } from 'rxjs/Subscription';
-import { SpinnerService, routing } from '../../../core/services';
-import { globalStore } from '../../../core/store';
 
 import { ServicesStore } from '../../services.store';
 import { ConnectorModel, RoleModel, GroupModel } from '../../../core/store/models';
@@ -45,8 +42,7 @@ import { BundlesService } from 'sijil'
             [selectedRole]="selectedRole"
         >
         </services-role-attribution>
-    `,
-    changeDetection: ChangeDetectionStrategy.OnPush
+    `
 })
 export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
     
@@ -60,9 +56,7 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router,
         private cdRef: ChangeDetectorRef,
-        private ls: SpinnerService,
         public servicesStore: ServicesStore,
         private bundles: BundlesService
     ) {}
@@ -73,7 +67,6 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
                 this.servicesStore.connector = this.servicesStore.structure
                     .connectors.data.find(a => a.id === params['connectorId']);
                 this.connector = this.servicesStore.connector;
-                this.cdRef.markForCheck();
             }
         })
         
@@ -84,7 +77,6 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
                 // Hack to gracful translate connector's role's name
                 this.connector.roles.forEach(
                     r => {r.name = this.connector.name + ' - ' + this.bundles.translate('services.connector.access')});
-                this.cdRef.markForCheck();
             }
         })
     }
@@ -100,7 +92,7 @@ export class ConnectorDetailsComponent  implements OnInit, OnDestroy {
     }
 
     async addGroupToSelectedRole(group:GroupModel) {
-        let res = await this.selectedRole.addGroup(group);
+        await this.selectedRole.addGroup(group);
         this.cdRef.markForCheck();
     }
 
