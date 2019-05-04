@@ -171,7 +171,7 @@ export class UserCreate implements OnInit, OnDestroy {
                 this.usersStore.structure.users.data.push(this.newUser);
                 this.usersStore.user = this.newUser
 
-                this.router.navigate(['..', res.data.id], {relativeTo: this.route, replaceUrl: false})
+                this.router.navigate(['/admin', this.usersStore.structure.id, 'users', res.data.id, 'details'], {relativeTo: this.route, replaceUrl: false})
             }).catch(err => {
                 this.ns.error({
                         key: 'notify.user.create.error.content',
