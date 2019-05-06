@@ -26,11 +26,16 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.appregistry.ApplicationUtils;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.directory.security.AdmlOfStructureOrClassOrTeachOfUser;
+import org.entcore.directory.security.TeacherInAllStructure;
 import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserService;
@@ -48,6 +53,7 @@ import java.util.List;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.user.UserUtils.getUserInfos;
 
 public class ClassController extends BaseController {
 
@@ -122,6 +128,7 @@ public class ClassController extends BaseController {
 	public void findUsers(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
 		JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("type"));
+		boolean collectRelative = "true".equals(request.params().get("collectRelative"));
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
 			handler = new Handler<Either<String, JsonArray>>() {
@@ -160,7 +167,7 @@ public class ClassController extends BaseController {
 		} else {
 			handler = arrayResponseHandler(request);
 		}
-		classService.findUsers(classId, types, handler);
+		classService.findUsers(classId, types, collectRelative, handler);
 	}
 
 	@Put("/class/:classId/add/:userId")
@@ -257,6 +264,7 @@ public class ClassController extends BaseController {
 	}
 
 	@Put("/class/:classId/link/:userId")
+	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void linkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -278,7 +286,64 @@ public class ClassController extends BaseController {
 		});
 	}
 
+	@Put("/class/:classId/link")
+	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void linkUsers(final HttpServerRequest request) {
+		bodyToJson(request, json ->{
+			final JsonArray userIds = json.getJsonArray("ids");
+			final String classId = request.params().get("classId");
+			classService.link(classId, userIds, either -> {
+					if (either.isRight()) {
+						if (either.right().getValue() != null && either.right().getValue().size() > 0) {
+							initPostCreate(classId, userIds);
+							renderJson(request, either.right().getValue());
+						} else {
+							notFound(request);
+						}
+					} else {
+						renderJson(request, new JsonObject().put("error", either.left().getValue()), 400);
+					}
+			});
+		});
+	}
+
+	@Put("/class/:classId/unlink")
+	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void unlinkUsers(final HttpServerRequest request) {
+		bodyToJson(request, json ->{
+			final String classId = request.getParam("classId");
+			final JsonArray userIds = json.getJsonArray("ids");
+			final JsonArray classIds =new JsonArray();
+			for(int i = 0 ; i < userIds.size(); i ++){
+				classIds.add(classId);
+			}
+			classService.unlink(classIds, userIds, arrayResponseHandler(request));
+		});
+	}
+
+	@Put("/class/:classId/change")
+	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	public void changeUserClasses(final HttpServerRequest request) {
+		bodyToJson(request, json ->{
+			final String classId = request.params().get("classId");
+			final JsonArray userIds = json.getJsonArray("ids");
+			final JsonArray classIds =json.getJsonArray("classIds");
+			classService.link(classId, userIds, event->{
+				if (event.isRight()) {
+					classService.unlink(classIds, userIds, arrayResponseHandler(request));
+				} else {
+					JsonObject error = new JsonObject().put("error", event.left().getValue());
+					Renders.renderJson(request, error, 400);
+				}
+			});
+		});
+	}
+
 	@Delete("/class/:classId/unlink/:userId")
+	@ResourceFilter(AdmlOfStructureOrClassOrTeachOfUser.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void unlinkUser(final HttpServerRequest request) {
 		final String classId = request.params().get("classId");
@@ -298,6 +363,37 @@ public class ClassController extends BaseController {
 				} else {
 					unauthorized(request);
 				}
+			}
+		});
+	}
+
+	@Get("/class/users/detached")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getDetachedUsers(HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user != null) {
+				List<String> structureIds = request.params().getAll("structureId");
+				classService.listDetachedUsers(new JsonArray(structureIds), user, res -> {
+					renderJson(request, res);
+				});
+			} else {
+				unauthorized(request);
+			}
+		});
+	}
+
+	@Get("/class/users/visibles")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void visibleUsers(final HttpServerRequest request) {
+		getUserInfos(eb, request, user -> {
+			if (user != null) {
+				String classId = request.params().get("classId");
+				boolean collectRelative = "true".equals(request.params().get("collectRelative"));
+				classService.findVisibles(user, classId, collectRelative, res->{
+					renderJson(request,res);
+				});
+			} else {
+				unauthorized(request);
 			}
 		});
 	}

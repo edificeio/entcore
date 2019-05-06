@@ -1,0 +1,47 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+    <h2 ng-click="userFindBack()"><i class="back"></i>
+        <i18n>classAdmin.userFind.confirmTitle</i18n>
+    </h2>
+    <div class="row">
+        <span>
+            <i18n>classAdmin.userFind.confirmText</i18n>
+        </span>
+        <hr />
+        <a class="vertical-spacing-twice block" ng-click="userFindModel.closeList=!userFindModel.closeList">
+            <i class="up-open" ng-if="userFindModel.closeList"></i>
+            <i class="down-open" ng-if="!userFindModel.closeList"></i>
+            <i18n>classAdmin.userFind.confirmList</i18n>
+        </a>
+        <div class="class-admin__limit-height" ng-if="!userFindModel.closeList">
+          <div class="class-admin__group" ng-repeat="selection in userFindModel.selectedUserHavingClass">
+              <div class="flex-row twelve align-center">
+                  <div class="round bg-white square-normal right-spacing no-shrink">
+                      <img ng-src="[[selection.user.avatarUri]]">
+                  </div>
+                  <div class="circle square-mini right-spacing" ng-class="getProfileColor(selection.user)"></div>
+                  <a href="[[selection.user.directoryUri]]" target="_blank" class="cell-ellipsis bold block left-text right-spacing">[[selection.user.displayName]]</a>
+                  <span ng-repeat="className in selection.classNames" class="cell-ellipsis medium-importance italic-text block left-text">[[className]]</span>
+              </div>
+              <!-- Mettre une condition - seulement si il y a un / des responsable -->
+              <div class="class-admin__indent flex-row twelve align-center" ng-repeat="(key,value) in selection.relatives">
+                <div class="round bg-white square-normal right-spacing no-shrink">
+                    <img ng-src="[[value.avatarUri]]">
+                </div>
+                <div class="circle square-mini right-spacing" ng-class="getProfileColor(value)"></div>
+                <a href="[[value.directoryUri]]" target="_blank" class="cell-ellipsis bold block left-text right-spacing">
+                    [[value.displayName]]
+                </a>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="lightbox-buttons fluid">
+        <button class="top-spacing-three right-magnet" ng-click="userFindChangeClass()">
+            <i18n>classAdmin.userFind.confirm.change</i18n>
+        </button>
+        <button class="top-spacing-three right-magnet" ng-click="userFindOnlyAddToClass()"
+            workflow="directory.allowClassAdminUnlinkUsers">
+            <i18n>classAdmin.userFind.confirm.keep</i18n>
+        </button>
+    </div>
+</section>

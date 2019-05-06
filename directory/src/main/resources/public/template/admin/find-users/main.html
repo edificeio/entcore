@@ -1,0 +1,116 @@
+<section class="horizontal-margin-twice vertical-spacing-twice">
+  <h2>
+    <i18n>classAdmin.search.users</i18n>
+  </h2>
+  <div class="clearfix">
+    <button class="right-magnet" ng-disabled="!userFindCanSubmit()" ng-click="userFindSubmit()">
+      <i18n>classAdmin.add.myClass</i18n>
+    </button>
+  </div>
+  <div class="class-admin__find-users">
+    <div class="class-admin__find-users--to-add">
+      <h3 class="class-admin__find-users--title">
+        <i18n>classAdmin.userFind.userAvailable</i18n>
+      </h3>
+      <select class="vertical-spacing-twice" ng-model="userFindModel.selectedClassId">
+        <option value="-1">
+          <i18n>classAdmin.userFind.userWithoutClass</i18n>
+        </option>
+        <option ng-repeat="classroom in userFindModel.classrooms" value="[[classroom.id]]"
+          ng-selected="[[userFindModel.selectedClassId==classroom.id]]">[[classroom.name]]</option>
+      </select>
+      <div class="search-pagination relative twelve vertical-spacing-twice">
+        <input class="twelve" type="text" i18n-placeholder="classAdmin.search.users" ng-model="userFindModel.search"
+          style="padding-left: 15px !important;"><i class="search"></i>
+      </div>
+      <!--Students-->
+      <div class="class-admin__find-users--link block">
+        <a class="vertical-spacing-twice block" href="#"
+          ng-click="userFindModel.closeFilter=!userFindModel.closeFilter">
+          <i class="up-open" ng-if="userFindModel.closeFilter"></i>
+          <i class="down-open" ng-if="!userFindModel.closeFilter"></i>
+          <i18n>classAdmin.userFind.profileFilter</i18n>
+        </a>
+        <!-- Différentes classes pour le type : .parent, .teacher, .student, .staff et .guest -->
+        <label ng-repeat="(type, filter) in userFindModel.typefilter"
+          class="chip type [[isUserTypeSelected(type) ? filter.className : '']]"
+          ng-class="{ selected: filter.selected }" ng-if="!userFindModel.closeFilter">
+          <span>[[ type ]]</span>
+          <input type="checkbox" ng-model="userFindModel.typefilter[type].selected"
+            ng-change="userFindModel.toggleTypeFilter()" />
+        </label>
+      </div>
+      <div class="class-admin__find-users--link clearfix bottom-spacing-twice">
+        <a class="right-magnet" href="#" ng-click="userFindSelectAll()">
+          <i18n>classAdmin.userFind.addAll</i18n><i class="right-arrow"></i>
+        </a>
+      </div>
+      <div class="class-admin__find-users--list">
+        <!--Students-->
+        <contact-chip ng-if="isUserTypeSelected('Student')" ng-model="user" class="block relative movable"
+          action="userFindSelect(user)" ng-repeat="user in userFindModel.students">
+        </contact-chip>
+        <!--Relatives-->
+        <contact-chip ng-if="isUserTypeSelected('Relative')" ng-model="user" class="block relative movable"
+          action="userFindSelect(user)" ng-repeat="user in userFindModel.relatives">
+        </contact-chip>
+        <!--Personnels-->
+        <contact-chip ng-if="isUserTypeSelected('Personnel')" ng-model="user" class="block relative movable"
+          action="userFindSelect(user)" ng-repeat="user in userFindModel.personnels">
+        </contact-chip>
+        <!--Teacher-->
+        <contact-chip ng-if="isUserTypeSelected('Teacher')" ng-model="user" class="block relative movable"
+          action="userFindSelect(user)" ng-repeat="user in userFindModel.teachers">
+        </contact-chip>
+        <!--Guest-->
+        <contact-chip ng-if="isUserTypeSelected('Guest')" ng-model="user" class="block relative movable"
+          action="userFindSelect(user)" ng-repeat="user in userFindModel.guests">
+        </contact-chip>
+      </div>
+    </div>
+
+    <div class="class-admin__find-users--add">
+      <h3 class="class-admin__find-users--title">
+        <i18n>classAdmin.userFind.userSelected</i18n>
+      </h3>
+      <p class="info">
+        <i18n>classAdmin.userFind.parentWillFollow</i18n>
+      </p>
+      <div class="class-admin__find-users--link clearfix bottom-spacing-twice">
+        <span>[[userFindModel.countSelectedUsers]] <i18n>classAdmin.userFind.userAdded</i18n></span>
+        <a class="right-magnet" href="#" ng-click="userFindUnSelectAll()"><i class="back"></i>
+          <i18n>classAdmin.userFind.removeAll</i18n>
+        </a>
+        <div class="class-admin__find-users--list">
+          <!--Students-->
+          <div ng-repeat="selection in userFindModel.selectedStudents">
+            <contact-chip ng-model="selection.user" class="block relative removable"
+              action="userFindUnSelect(selection.user)">
+            </contact-chip>
+            <div ng-repeat="(key,value) in selection.relatives" style="margin-left:25px" class="inner-parent">
+              <contact-chip ng-model="value" class="block relative removable"
+                action="userFindUnSelect(value)">
+              </contact-chip>
+            </div>
+          </div>
+          <!--Relatives-->
+          <contact-chip ng-model="selection.user" class="block relative removable" action="userFindUnSelect(selection.user)"
+            ng-repeat="selection in userFindModel.selectedRelatives">
+          </contact-chip>
+          <!--Personnels-->
+          <contact-chip ng-model="selection.user" class="block relative removable" action="userFindUnSelect(selection.user)"
+            ng-repeat="selection in userFindModel.selectedPersonnels">
+          </contact-chip>
+          <!--Teacher-->
+          <contact-chip ng-model="selection.user" class="block relative removable" action="userFindUnSelect(selection.user)"
+            ng-repeat="selection in userFindModel.selectedTeachers">
+          </contact-chip>
+          <!--Guest-->
+          <contact-chip ng-model="selection.user" class="block relative removable" action="userFindUnSelect(selection.user)"
+            ng-repeat="selection in userFindModel.selectedGuests">
+          </contact-chip>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,6 +1,6 @@
 import { User, ClassRoom } from "../model";
 import { EventDelegateScope } from "./events";
-import { template, notify } from "entcore";
+import { template, notify, idiom } from "entcore";
 import { directoryService } from '../service';
 
 export interface ActionsDelegateScope extends EventDelegateScope {
@@ -13,6 +13,9 @@ export interface ActionsDelegateScope extends EventDelegateScope {
     canRemoveSelection(): boolean
     blockUsers(): void;
     unblockUsers(): void;
+    unlinkSelectedUsers(): void;
+    unlinkTextAction(): string;
+    deleteTextAction(): string;
     // from others
     selectedClass: ClassRoom;
     reloadClassroom(classroom: ClassRoom): void;
@@ -71,5 +74,26 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
             notify.info('classAdmin.unblock.success');
         }).catch(() => notify.error('classAdmin.unblock.error'));
         template.close('lightbox');
+    }
+    $scope.deleteTextAction = () => {
+        const text = idiom.translate("classAdmin.delete.text") as string;
+        return text.replace("[[selectionCount]]", selection.length + "").replace("[[currentClass]]", $scope.selectedClass.name);
+    }
+    $scope.unlinkTextAction = () => {
+        const text = idiom.translate("classAdmin.unlink.text") as string;
+        return text.replace("[[selectionCount]]", selection.length + "").replace("[[currentClass]]", $scope.selectedClass.name);
+    }
+    $scope.unlinkSelectedUsers = async () => {
+        try {
+            const classid = $scope.selectedClass.id;
+            const promise = directoryService.unlinkUsersFromClass(selection, classid, { withRelative: true });
+            template.close('lightbox');
+            await promise;
+            notify.info('classAdmin.unlink.success');
+            $scope.queryClassRefresh.next($scope.selectedClass);
+        } catch (e) {
+            notify.info('classAdmin.unlink.error');
+        } finally {
+        }
     }
 }

@@ -20,6 +20,7 @@
 package org.entcore.feeder;
 
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.Json;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -251,6 +252,24 @@ public class ManualFeeder extends BusModBase {
 		sendError(message, "structureId or classId must be specified");
 	}
 
+
+	public void addUsers(final Message<JsonObject> message) {
+		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
+		if (userIds.isEmpty()) return;
+
+		final String structureId = message.body().getString("structureId");
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			addUsersInStructure(message, userIds, structureId);
+			return;
+		}
+		final String classId = message.body().getString("classId");
+		if (classId != null && !classId.trim().isEmpty()) {
+			addUsersInClass(message, userIds, classId);
+			return;
+		}
+		sendError(message, "structureId or classId must be specified");
+	}
+
 	private void addUserInStructure(final Message<JsonObject> message,
 			String userId, String structureId) {
 		JsonObject params = new JsonObject()
@@ -272,6 +291,28 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	private void addUsersInStructure(final Message<JsonObject> message,
+									JsonArray userIds, String structureId) {
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		for(Object userId : userIds.getList()){
+			JsonObject params = new JsonObject()
+					.put("structureId", structureId)
+					.put("userId", userId.toString());
+			String query =
+					"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+							"WITH u, p " +
+							"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p) " +
+							"MERGE (pg)<-[:IN {source:'MANUAL'}]-(u) " +
+							"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
+							"u.structures ELSE coalesce(u.structures, []) + s.externalId END " +
+							"RETURN DISTINCT u.id as id";
+			statementsBuilder.add(query,params);
+		}
+		neo4j.executeTransaction(statementsBuilder.build(), null, true, res-> {
+				message.reply(res.body());
+		});
+	}
+
 	public void removeUser(final Message<JsonObject> message) {
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
@@ -287,6 +328,27 @@ public class ManualFeeder extends BusModBase {
 			return;
 		}
 		sendError(message, "structureId or classId must be specified");
+	}
+
+	public void removeUsers(final Message<JsonObject> message) {
+		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
+		if (userIds.isEmpty()) return;
+
+		final String structureId = message.body().getString("structureId");
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			removeUsersFromStructure(message, userIds, structureId);
+			return;
+		}
+		final JsonArray classIds = message.body().getJsonArray("classIds", new JsonArray());
+		if (!classIds.isEmpty()) {
+			if(classIds.size()!=userIds.size()){
+				sendError(message, "userIds and classIds Array must have same number of elements");
+				return;
+			}
+			removeUsersFromClass(message, userIds, classIds);
+			return;
+		}
+		sendError(message, "structureId or classIds must be specified");
 	}
 
 	private void removeUserFromStructure(final Message<JsonObject> message,
@@ -318,6 +380,54 @@ public class ManualFeeder extends BusModBase {
 			tx.add(query, params);
 			tx.add(removeFunctions, params);
 			tx.add(removeFunctionGroups, params);
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+					} else {
+						message.reply(event.body());
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when remove user from structure", e);
+			sendError(message, "transaction.error");
+		}
+	}
+
+	private void removeUsersFromStructure(final Message<JsonObject> message,
+										 JsonArray userIds, String structureId) {
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+			for(Object userIdObj: userIds) {
+				JsonObject params = new JsonObject()
+						.put("structureId", structureId)
+						.put("userId", userIdObj.toString());
+				final String query =
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS*0..1]->" +
+								"(pg:ProfileGroup)-[:DEPENDS]->(s:Structure { id : {structureId}}), " +
+								"pg-[:HAS_PROFILE]->(p:Profile), p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+								"CREATE UNIQUE dpg<-[:IN]-u " +
+								"SET u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
+								"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
+								"DELETE r " +
+								"RETURN DISTINCT u.id as id";
+				final String removeFunctions =
+						"MATCH (u:User { id : {userId}})-[r:HAS_FUNCTION]->() " +
+								"WHERE {structureId} IN r.scope " +
+								"SET r.scope = FILTER(sId IN r.scope WHERE sId <> {structureId}) " +
+								"WITH r " +
+								"WHERE LENGTH(r.scope) = 0 " +
+								"DELETE r";
+				final String removeFunctionGroups =
+						"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(:Group)-[:DEPENDS]->(s:Structure { id : {structureId}})" +
+								"DELETE r";
+				tx.add(query, params);
+				tx.add(removeFunctions, params);
+				tx.add(removeFunctionGroups, params);
+			}
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {
@@ -372,21 +482,21 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void addUserInClass(final Message<JsonObject> message,
-			String userId, String classId) {
+								String userId, String classId) {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", userId);
 		String query =
 				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WITH u, p " +
-				"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-				"(pg:ProfileGroup)-[:HAS_PROFILE]->p, s-[:BELONGS]->(struct:Structure) " +
-				"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u, cpg<-[:IN {source:'MANUAL'}]-u " +
-				"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
-				"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
-				"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
-				"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
-				"RETURN DISTINCT u.id as id";
+						"WITH u, p " +
+						"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+						"(pg:ProfileGroup)-[:HAS_PROFILE]->p, s-[:BELONGS]->(struct:Structure) " +
+						"CREATE UNIQUE pg<-[:IN {source:'MANUAL'}]-u, cpg<-[:IN {source:'MANUAL'}]-u " +
+						"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
+						"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
+						"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
+						"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
+						"RETURN DISTINCT u.id as id";
 		neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> m) {
@@ -395,8 +505,33 @@ public class ManualFeeder extends BusModBase {
 		});
 	}
 
+	private void addUsersInClass(final Message<JsonObject> message,
+								JsonArray userIds, String classId) {
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		for(Object userId : userIds.getList()) {
+			JsonObject params = new JsonObject()
+					.put("classId", classId)
+					.put("userId", userId);
+			String query =
+					"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
+							"WITH u, p " +
+							"MATCH (s:Class { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+							"(pg:ProfileGroup)-[:HAS_PROFILE]->(p), (s)-[:BELONGS]->(struct:Structure) " +
+							"MERGE (pg)<-[:IN {source:'MANUAL'}]-(u)-[:IN {source:'MANUAL'}]->(cpg) " +
+							"SET u.classes = CASE WHEN s.externalId IN u.classes THEN " +
+							"u.classes ELSE coalesce(u.classes, []) + s.externalId END, " +
+							"u.structures = CASE WHEN struct.externalId IN u.structures THEN " +
+							"u.structures ELSE coalesce(u.structures, []) + struct.externalId END " +
+							"RETURN DISTINCT u.id as id";
+			statementsBuilder.add(query, params);
+		}
+		neo4j.executeTransaction(statementsBuilder.build(), null,true, res-> {
+				message.reply(res.body());
+		});
+	}
+
 	private void removeUserFromClass(final Message<JsonObject> message,
-								String userId, String classId) {
+									 String userId, String classId) {
 		try {
 			TransactionHelper tx = TransactionManager.getTransaction();
 
@@ -405,29 +540,84 @@ public class ManualFeeder extends BusModBase {
 					.put("userId", userId);
 			String query =
 					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
-					"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-					"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
-					"CREATE UNIQUE dpg<-[:IN]-u " +
-					"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
-					"DELETE r " +
-					"RETURN DISTINCT u.id as id";
+							"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+							"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+							"CREATE UNIQUE dpg<-[:IN]-u " +
+							"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
+							"DELETE r " +
+							"RETURN DISTINCT u.id as id";
 
 			tx.add(query, params);
 
 			String query2 =
 					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
-					"DELETE r ";
+							"DELETE r ";
 
 			tx.add(query2, params);
 
 			String query3 =
 					"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure)<-[b:BELONGS]-(c:Class {id : {classId}}) " +
-					"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
-					"DELETE r " +
-					"RETURN DISTINCT u.id as id";
+							"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+							"DELETE r " +
+							"RETURN DISTINCT u.id as id";
 
 			tx.add(query3, params);
 
+			tx.commit(new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+					} else {
+						message.reply(event.body());
+					}
+				}
+			});
+		} catch (TransactionException e) {
+			logger.error("Error in transaction when remove user from structure", e);
+			sendError(message, "transaction.error");
+		}
+	}
+
+	private void removeUsersFromClass(final Message<JsonObject> message,
+									 JsonArray userIds, JsonArray classIds) {
+		try {
+			TransactionHelper tx = TransactionManager.getTransaction();
+			for(int i=0; i < userIds.size(); i++) {
+				String userId = userIds.getString(i);
+				Object classIdsForUserId = classIds.getValue(i);
+				JsonArray currentClassIds = classIdsForUserId instanceof JsonArray? (JsonArray) classIdsForUserId: new JsonArray().add(classIdsForUserId.toString());
+				for(Object classIdObj : currentClassIds) {
+					JsonObject params = new JsonObject()
+							.put("classId", classIdObj.toString())
+							.put("userId", userId);
+					String query =
+							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]-(cpg:ProfileGroup)-[:DEPENDS]->" +
+									"(c:Class  {id : {classId}}), cpg-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+									"p<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) " +
+									"CREATE UNIQUE dpg<-[:IN]-u " +
+									"SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) , u.headTeacherManual = FILTER(x IN u.headTeacherManual WHERE x <> c.externalId) " +
+									"DELETE r " +
+									"RETURN DISTINCT u.id as id";
+
+					tx.add(query, params);
+
+					String query2 =
+							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(c:Class {id : {classId}}) " +
+									"DELETE r ";
+
+					tx.add(query2, params);
+
+					String query3 =
+							"MATCH (u:User { id : {userId}})-[r:IN|COMMUNIQUE]->(g:Group:HTGroup)-[:DEPENDS]->(s:Structure)<-[b:BELONGS]-(c:Class {id : {classId}}) " +
+									"WHERE length(u.headTeacherManual) = 0 AND (u.headTeacher IS NULL OR length(u.headTeacher) = 0) " +
+									"DELETE r " +
+									"RETURN DISTINCT u.id as id";
+
+					tx.add(query3, params);
+				}
+			}
 			tx.commit(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> event) {

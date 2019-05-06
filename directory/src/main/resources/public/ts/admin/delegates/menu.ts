@@ -62,7 +62,7 @@ export function MenuDelegate($scope: MenuDelegateScope) {
         $scope.onClassRefreshed.next(fetched);
     }
     const selectedSchool = function (classroom: ClassRoom) {
-        return classroom && schools.find(sc => !!sc.classrooms.find(clazz => clazz.id == classroom.id));
+        return directoryService.schoolOfClassroom(schools, classroom);
     }
     // === Init attributes
     $scope.classrooms = [];
