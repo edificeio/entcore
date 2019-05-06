@@ -21,17 +21,17 @@ package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
-import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
 
 
-public class TeacherOfUser implements ResourcesProvider {
+public class TeacherOfUserFromDifferentClass implements ResourcesProvider {
 
 	private final Neo4j neo = Neo4j.getInstance();
 
@@ -51,15 +51,13 @@ public class TeacherOfUser implements ResourcesProvider {
 					handler.handle(false);
 					return;
 				}
-				String query =
-						"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-								"WITH c " +
-								"MATCH c<-[:DEPENDS]-(og:ProfileGroup)<-[:IN]-(u:User) " +
-								"WHERE u.id IN {userIds} " +
-								"RETURN count(distinct u) = {size} as exists ";
+				String query = "MATCH (s:Structure)<-[:DEPENDS]-(Group)<-[:IN]-(User { id : {teacherId}}) " +
+						"WITH s MATCH (u:User)-[:IN]->(Group)-[:DEPENDS]->(s) " +
+						"WHERE u.id in {ids} " +
+						"RETURN count(distinct u) = {size} as exists";
 				JsonObject params = new JsonObject()
-						.put("userIds", userIds)
 						.put("teacherId", user.getUserId())
+						.put("ids", userIds)
 						.put("size", userIds.size());
 				validateQuery(resourceRequest, handler, query, params);
 			} else {

@@ -81,6 +81,17 @@ export const directoryService = {
         const resUser = new User({ ...user, ...res.data });
         return resUser;
     },
+    async getDetachedUsers(structureIds: string[]): Promise<User[]> {
+        if (structureIds.length == 0) {
+            return [];
+        }
+        const data: Partial<User>[] = (await http.get(`/directory/class/users/detached?${structureIds.map(a => `structureId=${a}`).join("&")}`)).data;
+        return data.map(a => new User(a));
+    },
+    async findVisible(classId: string, { collectRelative } = { collectRelative: true }): Promise<User[]> {
+        const data: Partial<User>[] = (await http.get(`/directory/class/users/visibles?classId=${classId}&=collectRelative=${collectRelative}`)).data;
+        return data.map(a => new User(a));
+    },
     async searchInDirectory(search: string,
         filters: { structures?: string[], classes?: string[], profiles?: UserTypes[], functions?: string[], types?: EntityType[] } = {},
         allTypes: boolean = false) {
@@ -147,8 +158,8 @@ export const directoryService = {
         }
         return schoolClass;
     },
-    async fetchUsersForClass(classId: string): Promise<User[]> {
-        const resHttp = await http.get(`/directory/class/${classId}/users`);
+    async fetchUsersForClass(classId: string, { collectRelative } = { collectRelative: true }): Promise<User[]> {
+        const resHttp = await http.get(`/directory/class/${classId}/users?collectRelative=${collectRelative}`);
         const res: User[] = resHttp.data;
         const sorted = res.map(r => new User(r)).sort(User.sortByLastname());
         return sorted;
@@ -226,17 +237,77 @@ export const directoryService = {
         const res = await http.put(`/directory/class/${classId}/add/${user.id}`);
         return res.data;
     },
-    async changeUserClass(user: User, args: { fromClasses: string[], toClass: string }) {
+    async changeUserClass(user: User, args: { fromClasses: string[], toClass: string, withRelative: boolean }) {
+        //+++ OLD Way
         //LINK before unlink
-        await http.put(`/directory/class/${args.toClass}/link/${user.id}`);
-        const promises: Promise<any>[] = [];
-        for (let from of args.fromClasses) {
-            //DONT Unlink previously linked
-            if (from != args.toClass)
-                promises.push(http.delete(`/directory/class/${from}/unlink/${user.id}`))
-        }
-        await Promise.all(promises);
+        //await http.put(`/directory/class/${args.toClass}/link/${user.id}`);
+        //const promises: Promise<any>[] = [];
+        //for (let from of args.fromClasses) {
+        //DONT Unlink previously linked
+        //    if (from != args.toClass)
+        //        promises.push(http.delete(`/directory/class/${from}/unlink/${user.id}`))
+        //}
+        //await Promise.all(promises);
+        //+++NEW Way
+        const { withRelative, fromClasses, toClass } = args;
+        await directoryService.changeUsersClass([user], [fromClasses], {
+            toClass, withRelative
+        })
         return user;
+    },
+    async changeUsersClass(users: User[], fromClasses: Array<string | string[]>, args: { withRelative: boolean, toClass: string }) {
+        const ids = users.map(u => u.id);
+        fromClasses = [...fromClasses];//clone
+        //Unlink parent with children
+        if (args.withRelative) {
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+                const clazz = fromClasses[i];
+                if (user.safeRelativeIds && user.safeRelativeIds.length > 0) {
+                    for (let relative of user.safeRelativeIds) {
+                        ids.push(relative);
+                        fromClasses.push(clazz)
+                    }
+                }
+            }
+        }
+        //unlink all
+        await http.put(`/directory/class/${args.toClass}/change`, { ids, classIds: fromClasses });
+        return users;
+    },
+    async linkUsersToClass(users: User[], args: { withRelative: boolean, toClass: string }) {
+        const ids = users.map(u => u.id);
+        //link parent with children
+        if (args.withRelative) {
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+                if (user.safeRelativeIds && user.safeRelativeIds.length > 0) {
+                    for (let relative of user.safeRelativeIds) {
+                        ids.push(relative);
+                    }
+                }
+            }
+        }
+        //link all
+        await http.put(`/directory/class/${args.toClass}/link`, { ids });
+        return users;
+    },
+    async unlinkUsersFromClass(users: User[], fromClass: string, args: { withRelative: boolean }) {
+        const ids = users.map(u => u.id);
+        //Unlink parent with children
+        if (args.withRelative) {
+            for (let i = 0; i < users.length; i++) {
+                const user = users[i];
+                if (user.safeRelativeIds && user.safeRelativeIds.length > 0) {
+                    for (let relative of user.safeRelativeIds) {
+                        ids.push(relative);
+                    }
+                }
+            }
+        }
+        //unlink all
+        await http.put(`/directory/class/${fromClass}/unlink`, { ids });
+        return users;
     },
     async blockUsers(value: boolean, users: User[]) {
         return await http.put('/auth/users/block', { users: users.map(u => u.id), block: value });
@@ -285,6 +356,9 @@ export const directoryService = {
         const fileName = lang.translate(`classAdmin.${type}`).replace("[[date]]", new Date().toISOString());
         const fileType = type == "csv" ? "text/csv" : "application/pdf";
         downloadBlob(fileName, fileType, res.data)
+    },
+    schoolOfClassroom: function (schools: School[], classroom: ClassRoom) {
+        return classroom && schools.find(sc => !!sc.classrooms.find(clazz => clazz.id == classroom.id));
     }
 }
 function downloadBlob(name: string, type: string, content: any) {
@@ -305,3 +379,4 @@ function downloadBlob(name: string, type: string, content: any) {
         }, 1000)
     }
 };
+(window as any).directoryService = directoryService;

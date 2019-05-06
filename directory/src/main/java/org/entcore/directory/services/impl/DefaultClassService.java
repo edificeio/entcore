@@ -36,8 +36,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.List;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.CLASS_ADMIN;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
@@ -70,26 +69,51 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
-	public void findUsers(String classId, JsonArray expectedTypes,
+	public void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative,
 						  Handler<Either<String, JsonArray>> results) {
-		String filter;
 		JsonObject params = new JsonObject().put("classId", classId);
-		if (expectedTypes == null || expectedTypes.size() < 1) {
-			filter = "";
-		} else {
-			filter = "WHERE p.name IN {expected} ";
+		//=== Filter by type
+		String filterPart = "";
+		if (expectedTypes != null && expectedTypes.size()  >= 1) {
+			filterPart = " WHERE p.name IN {expected} ";
 			params.put("expected", expectedTypes);
 		}
+		//=== Collect relative
+		String collectPart = " WITH m, p, [] as relativeList ";
+		if(collectRelative){
+			collectPart = " WITH m, p OPTIONAL MATCH (m)-[:RELATED]->(relative) WITH m, p, "+
+					"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList ";
+		}
+		//=== Make query
 		String query =
 				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
 				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
-				filter +
+						filterPart + collectPart +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"(LENGTH(m.email)>0 AND EXISTS(m.email)) as hasEmail, " +
 				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.birthDate as birthDate, " +
-				"p.name as type, m.blocked as blocked, m.source as source " +
+				"p.name as type, m.blocked as blocked, m.source as source, relativeList " +
 				"ORDER BY type, lastName ";
 		neo.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void findVisibles(UserInfos user, String classId, boolean collectRelative, Handler<JsonArray> handler) {
+		JsonObject params = new JsonObject().put("classId", classId);
+		//=== Collect relative
+		String collectPart = " WITH visibles, p, [] as relativeList ";
+		if(collectRelative){
+			collectPart = " WITH visibles, p OPTIONAL MATCH (visibles)-[:RELATED]->(relative) WITH visibles, p, "+
+					"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList ";
+		}
+		//=== Make query
+		String customReturn =
+				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), (cpg)<-[:IN]-(visibles:User) " +
+					collectPart +
+					"RETURN distinct visibles.displayName as displayName, visibles.lastName as lastName, visibles.firstName as firstName, " +
+					"visibles.id as id, p.name as type, relativeList " +
+					"ORDER BY type, lastName ";
+		UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params, handler);
 	}
 
 	@Override
@@ -178,12 +202,30 @@ public class DefaultClassService implements ClassService {
 	}
 
 	@Override
+	public void link(String classId, JsonArray userIds, Handler<Either<String, JsonArray>> result) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-add-users")
+				.put("classId", classId)
+				.put("userIds", userIds);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(result)));
+	}
+
+	@Override
 	public void unlink( String classId, String userId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-remove-user")
 				.put("classId", classId)
 				.put("userId", userId);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+	}
+
+	@Override
+	public void unlink(JsonArray classIds, JsonArray userIds, Handler<Either<String, JsonArray>> handler) {
+		JsonObject action = new JsonObject()
+				.put("action", "manual-remove-users")
+				.put("classIds", classIds)
+				.put("userIds", userIds);
+		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validResultsHandler(handler)));
 	}
 
 	@Override
@@ -237,4 +279,18 @@ public class DefaultClassService implements ClassService {
 		return false;
 	}
 
+	public void listDetachedUsers(JsonArray structureIds, UserInfos user, Handler<JsonArray> handler){
+		JsonObject params = new JsonObject();
+		params.put("structureIds",structureIds);
+		//=== Make query
+		String customReturn =
+				"MATCH (p:Profile)<-[:HAS_PROFILE]-(g:ProfileGroup)<-[:IN]-(visibles:User)-[:IN]->()-[:DEPENDS]->(s:Structure) " +
+						"WHERE s.id IN {structureIds} AND NOT (visibles)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(:Class) "+
+						" WITH visibles, p, s " +
+						"OPTIONAL MATCH (visibles)-[:RELATED]->(relative) WITH visibles, p, s, relative "+
+						"RETURN distinct visibles.displayName as displayName, visibles.lastName as lastName, visibles.firstName as firstName, visibles.login as login, " +
+						"CASE WHEN relative IS NOT NULL THEN COLLECT(distinct {relatedName: relative.displayName, relatedId: relative.id, relatedType: relative.profiles}) ELSE [] END as relativeList, "+
+						"visibles.id as id, p.name as type, s.id as structureId, s.name as structureName ";
+		UserUtils.findVisibleUsers(eb, user.getUserId(), false, customReturn, params, handler);
+	}
 }

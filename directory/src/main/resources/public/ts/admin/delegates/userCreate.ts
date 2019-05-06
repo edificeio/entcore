@@ -285,7 +285,8 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         }
         await directoryService.changeUserClass(user, {
             fromClasses: user.classIds,
-            toClass: classroom.id
+            toClass: classroom.id,
+            withRelative: true
         });
         afterSubmit(user);
     }

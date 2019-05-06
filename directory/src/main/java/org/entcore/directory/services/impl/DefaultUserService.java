@@ -704,5 +704,4 @@ public class DefaultUserService implements UserService {
 		params.put("userId", userId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
-
 }

@@ -5,7 +5,7 @@ import http from 'axios';
 type Hobby = { visibility: string, values: string, category: string, displayName: string };
 type Structure = { classes: string[], name: string, id: string };
 type StructureV2 = { classes: Array<{ name: string, id: string }>, name: string, id: string };
-export type UserTypes = "Student" | "Relative" | "Teacher" | "Personnel";
+export type UserTypes = "Student" | "Relative" | "Teacher" | "Personnel" | "Guest";
 export type EntityType = "User" | "Group";
 
 // Person API result
@@ -72,6 +72,8 @@ export class User extends Model {
     profile: UserTypes;
     resetCode: string;
     activationCode: string;
+    relativeIds: string[] = []
+    relativeList: Array<{ relatedId: string, relatedName: string }> = [];
     source: "MANUAL" | "CLASS_PARAM" | "BE1D" | "CSV"
     //mood: "default" = 'default';
     motto: string;
@@ -98,7 +100,9 @@ export class User extends Model {
     hasEmail: boolean;
     //
     constructor(data?: Partial<User>) {
-        super(data);
+        super({});
+        //init overrides fields, so updatedata after props init (relativeIds for example)
+        this.updateData(data);
     }
     get safeHasEmail() {
         return this.hasEmail || !!this.email;
@@ -190,6 +194,9 @@ export class User extends Model {
     get editUserInfosUri() {
         return `/userbook/mon-compte#edit-user-infos/${this.id}`;
     }
+    get directoryUri() {
+        return `/userbook/annuaire#${this.id}`;
+    }
     get isDisabled() {
         return this.blocked || this.isMe;
     }
@@ -198,9 +205,11 @@ export class User extends Model {
             data.mood = data.mood || 'default'
         }*/
         super.updateData(data);
+        if (!this.profile) {
+            this.type && (this.profile = this.type);
+        }
     }
-    async open({ withChildren = false }) {
-        const data: PersonApiResult = (await http.get('/directory/class-admin/' + this.id)).data;
+    async setPersonApiData(data: PersonApiResult, { withChildren = false }) {
         const hobbies = data.hobbies.filter(u => u.category).map(u => {
             const displayName = lang.translate('userBook.hobby.' + u.category) || u.category;
             return { ...u, displayName }
@@ -228,6 +237,20 @@ export class User extends Model {
         }
         //
         this.updateData({ ...data, hobbies, relatives, attachedStructures, classIds });
+        return this;
+    }
+    async open({ withChildren = false }) {
+        const data: PersonApiResult = (await http.get('/directory/class-admin/' + this.id)).data;
+        await this.setPersonApiData(data, { withChildren });
+    }
+    get safeRelativeIds(): string[] {
+        if (this.relativeIds && this.relativeIds.length > 0) {
+            return this.relativeIds;
+        } else if (this.relativeList && this.relativeList.length > 0) {
+            return this.relativeList.map(r => r.relatedId);
+        } else {
+            return [];
+        }
     }
     get nonEmptyHobbies() { return this._hobbies.filter(hobby => hobby.values) }
     get hobbies() { return this._hobbies; }

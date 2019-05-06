@@ -26,22 +26,32 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+
 public interface ClassService {
 
 	void create(String schoolId, JsonObject c, Handler<Either<String, JsonObject>> result);
 
 	void update(String classId, JsonObject c, Handler<Either<String, JsonObject>> result);
 
-	void findUsers(String classId, JsonArray expectedTypes, Handler<Either<String, JsonArray>> results);
+	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, Handler<Either<String, JsonArray>> results);
 
 	void get(String classId, Handler<Either<String, JsonObject>> result);
 
 	void addUser(String classId, String userId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
+	void link(String classId, JsonArray userIds, Handler<Either<String, JsonArray>> result);
+
 	void link(String classId, String userId, Handler<Either<String, JsonObject>> result);
 
 	void unlink(String classId, String userId, Handler<Either<String, JsonObject>> result);
 
+	void unlink(JsonArray classIds, JsonArray userIds, Handler<Either<String, JsonArray>> result);
+
 	void listAdmin(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
+	void listDetachedUsers(JsonArray structureIds, UserInfos user, Handler<JsonArray> handler);
+
+	void findVisibles(UserInfos user, String classId, boolean collectRelative, Handler<JsonArray> handler);
 
 }

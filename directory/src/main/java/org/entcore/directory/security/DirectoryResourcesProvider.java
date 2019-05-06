@@ -69,16 +69,6 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "listAdmin" :
 					isAdmin(user, true, handler);
 					break;
-				case "unlinkUser" :
-				case "linkUser" :
-					isAdminOfStructureOrClass4(request, user, res->{
-						if(res) {
-							handler.handle(res);
-						}else {
-							isClassTeacher2(request, user, handler);
-						}
-					});
-					break;
 				default: handler.handle(false);
 			}
 		} else if (serviceMethod != null && serviceMethod.startsWith(UserController.class.getName())) {
@@ -135,7 +125,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "metrics":
 					isAdminOfStructure(request, user, handler);
 				case "classAdminMassMail" :
-					isClassTeacher3(request, user, handler);
+					isClassTeacherForUserIds(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}
@@ -169,7 +159,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					isAdminOfStructureOrClass3(request, user, handler);
 					break;
 				case "classAdminUsers" :
-					isClassTeacher2(request, user, handler);
+					isClassTeacherForUserId(request, user, handler);
 					break;
 				default: handler.handle(false);
 			}
@@ -497,8 +487,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
-	private void isClassTeacher2(final HttpServerRequest request, UserInfos user,
-								 final Handler<Boolean> handler) {
+	private void isClassTeacherForUserId(final HttpServerRequest request, UserInfos user,
+										 final Handler<Boolean> handler) {
 		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
 			request.resume();
 			handler.handle(true);
@@ -531,8 +521,8 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		});
 	}
 
-	private void isClassTeacher3(final HttpServerRequest request, UserInfos user,
-											   final Handler<Boolean> handler) {
+	private void isClassTeacherForUserIds(final HttpServerRequest request, UserInfos user,
+										  final Handler<Boolean> handler) {
 		if (user.getFunctions() != null && user.getFunctions().containsKey("SUPER_ADMIN")) {
 			request.resume();
 			handler.handle(true);

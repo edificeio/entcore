@@ -234,7 +234,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-add-user" : manual.addUser(message);
 				break;
+			case "manual-add-users" : manual.addUsers(message);
+				break;
 			case "manual-remove-user" : manual.removeUser(message);
+				break;
+			case "manual-remove-users" : manual.removeUsers(message);
 				break;
 			case "manual-delete-user" : manual.deleteUser(message);
 				break;
