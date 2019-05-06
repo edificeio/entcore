@@ -610,4 +610,7 @@ public class DirectoryController extends BaseController {
 
 	@SecuredAction("classadmin.delete.users")
 	public void allowClassAdminDeleteUsers(){}
+
+	@SecuredAction("classadmin.unlink.users")
+	public void allowClassAdminUnlinkUsers(){}
 }

@@ -1,11 +1,12 @@
-<div class="horizontal-spacing-twice">
-    <h2 translate content="classAdmin.delete"></h2>
+<div class="top-spacing-twice horizontal-spacing-twice">
+    <h2 translate content="classAdmin.delete.title"></h2>
     <div class="row">
-        <span translate content="classAdmin.confirm.delete"></span>
+        <span ng-bind-html="deleteTextAction()"></span>
         <hr />
     </div>
     <div class="lightbox-buttons fluid">
-        <button class="right-magnet" ng-click="confirmRemove()"><i18n>confirm</i18n></button>
+        <button class="right-magnet" ng-click="confirmRemove()"><i18n>remove</i18n></button>
+        <button class="right-magnet" ng-click="unlinkSelectedUsers()" workflow="directory.allowClassAdminUnlinkUsers"><i18n>classAdmin.unlink.class</i18n></button>
         <button class="cancel right-magnet" ng-click="template.close('lightbox')"><i18n>cancel</i18n></button>
     </div>
 </div>
