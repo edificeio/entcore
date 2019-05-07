@@ -14,12 +14,21 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                 res.data.forEach(connector => {
                     connectors.push({
                         id: connector.data.id,
-                        name: connector.data.displayName,
-                        icon: connector.data.icon
+                        name: connector.data.name,
+                        displayName: connector.data.displayName,
+                        icon: connector.data.icon,
+                        url: connector.data.address,
+                        target: connector.data.target,
+                        inherits: connector.data.inherits,
+                        locked: connector.data.appLocked,
+                        casTypeId: connector.data.casType,
+                        casPattern: connector.data.pattern,
+                        oauthScope: connector.data.scope,
+                        oauthSecret: connector.data.secret,
+                        oauthGrantType: connector.data.grantType
                     })
                 });
                 this.data = Mix.castArrayAs(ConnectorModel, connectors);
-
             })
     }
     

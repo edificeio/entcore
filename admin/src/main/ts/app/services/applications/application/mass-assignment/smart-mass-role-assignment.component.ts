@@ -3,9 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Assignment, Profile, Role, Structure } from './mass-role-assignment.component';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
-import { RoleModel } from '../../../core/store/models';
-import { ServicesStore } from '../../services.store';
-import { NotifyService } from '../../../core/services';
+import { RoleModel } from '../../../../core/store/models';
+import { ServicesStore } from '../../../services.store';
+import { NotifyService } from '../../../../core/services';
 
 @Component({
     selector: 'smart-mass-role-assignment',
