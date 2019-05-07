@@ -1,8 +1,4 @@
-import { Component, ChangeDetectorRef, Input, Output,
-    ContentChild, TemplateRef, EventEmitter, AfterViewInit } from "@angular/core";
-
-import { ActivatedRoute, Router } from '@angular/router';
-
+import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { RoleModel, GroupModel } from '../../core/store/models';
 
 @Component({
@@ -21,7 +17,9 @@ import { RoleModel, GroupModel } from '../../core/store/models';
             </div>
 
             <div>
-                <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">{{ 'groups.local' | translate }}</h4>
+                <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">
+                    {{ 'groups.local' | translate }}
+                </h4>
                 <ul class="actions-list">
                     <li *ngFor="let group of role.groups">
                         <span>{{ group.name }}</span>
@@ -42,12 +40,8 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     `
 })
 export class ServicesRoleComponent {
-    
     @Input() role: RoleModel;
 
     @Output("openLightbox") openLightbox: EventEmitter<{}> = new EventEmitter();
     @Output("onRemove") onRemove: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
-
-    constructor(public cdRef: ChangeDetectorRef){}
-
 }

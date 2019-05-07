@@ -5,15 +5,12 @@ import { globalStore} from '../../../core/store';
 import { RoleModel } from '../../../core/store/models';
 import { SpinnerService, routing, NotifyService } from '../../../core/services';
 
-import { ServicesStore } from '../../services.store';
-
 @Injectable()
 export class ConnectorRolesResolver implements Resolve<RoleModel[]|Boolean> {
 
     constructor(
         private spinner: SpinnerService, 
         private router: Router,
-        private servicesStore: ServicesStore,
         private ns: NotifyService
     ) { }
 

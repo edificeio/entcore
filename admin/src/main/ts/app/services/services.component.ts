@@ -58,6 +58,14 @@ export class ServicesComponent implements OnInit, OnDestroy {
     }
 
     public showCreateConnectorButton(): boolean {
-        return !this.router.isActive('/admin/' + this.servicesStore.structure.id + '/services/connectors/create', true);
+        if (this.router.isActive(`/admin/${this.servicesStore.structure.id}/services/connectors`, true)) {
+            return true;
+        }
+        if (this.servicesStore.connector) {
+            return this.router.isActive(
+                `/admin/${this.servicesStore.structure.id}/services/connectors/${this.servicesStore.connector.id}`, 
+                true);
+        }
+        return false;
     }
 }

@@ -1,18 +1,16 @@
 import { Routes } from '@angular/router';
 
 import { ServicesComponent } from './services.component';
-
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
-import { ApplicationDetailsComponent } from './applications/details/application-details.component';
-
+import { ApplicationAssignmentComponent } from './applications/application/assignment/application-assignment.component';
 import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
-import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
-import { ConnectorCreate } from './connectors/create/connector-create.component';
+import { SmartConnectorComponent } from './connectors/connector/smart-connector.component';
 
-import { ApplicationsResolver } from './applications/applications.resolver';
-import { ConnectorsResolver } from './connectors/connectors.resolver';
-import { ApplicationRolesResolver } from './applications/details/roles.resolver';
-import { ConnectorRolesResolver } from './connectors/details/roles.resolver';
+import { ApplicationsResolver } from './applications/list/applications.resolver';
+import { ConnectorsResolver } from './connectors/list/connectors.resolver';
+import { ApplicationRolesResolver } from './applications/application/application-roles.resolver';
+import { ConnectorRolesResolver } from './connectors/connector/connector-roles.resolver';
+import { SmartApplicationComponent } from './applications/application/smart-application.component';
 
 export let routes: Routes = [
     {
@@ -30,7 +28,7 @@ export let routes: Routes = [
                 children: [
                     {
                         path: ':appId',
-                        component: ApplicationDetailsComponent,
+                        component: SmartApplicationComponent,
                         resolve: {
                             roles: ApplicationRolesResolver
                         }
@@ -42,10 +40,10 @@ export let routes: Routes = [
                 component: ConnectorsListComponent,
                 resolve: {connectors: ConnectorsResolver},
                 children: [
-                    { path: 'create', component: ConnectorCreate },
+                    { path: 'create', component: SmartConnectorComponent },
                     {
                         path: ':connectorId',
-                        component: ConnectorDetailsComponent,
+                        component: SmartConnectorComponent,
                         resolve: {
                             roles: ConnectorRolesResolver
                         }

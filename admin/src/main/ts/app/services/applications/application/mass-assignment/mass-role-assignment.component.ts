@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BundlesService } from 'sijil';
-import { MultiSelectOption } from '../../../shared/ux/components/multi-select.component';
+import { MultiSelectOption } from '../../../../shared/ux/components/multi-select.component';
 
 export interface Role {
     id: string;
@@ -79,7 +79,7 @@ export interface Assignment {
         </lightbox-confirm>`,
     styles: [`
         form {
-            padding: 15px;
+            padding: 0 15px 15px 15px;
             margin: 0;
         }`, `
         .submit {

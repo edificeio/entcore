@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 
-import { SessionModel, Session, globalStore, ApplicationCollection } from '../../core/store';
-import { ApplicationModel } from '../../core/store/models';
-import { SpinnerService, routing } from '../../core/services';
+import { globalStore } from '../../../core/store';
+import { ApplicationModel } from '../../../core/store/models';
+import { SpinnerService, routing } from '../../../core/services';
 
 @Injectable()
 export class ApplicationsResolver implements Resolve<ApplicationModel[]> {

@@ -4,11 +4,11 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Assignment, Profile, Role, Structure } from './mass-role-assignment.component';
 import { By } from '@angular/platform-browser';
-import { ServicesStore } from '../../services.store';
+import { ServicesStore } from '../../../services.store';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
-import { NotifyService } from '../../../core/services';
+import { NotifyService } from '../../../../core/services';
 
 describe('SmartMassRoleAssignment', () => {
     let component: SmartMassRoleAssignment;

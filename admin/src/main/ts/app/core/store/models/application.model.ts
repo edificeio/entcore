@@ -29,8 +29,19 @@ export class ApplicationModel extends Model<ApplicationModel> {
             );
     };
 
+    private _name: string;
+    get name() {
+        return this._name;
+    }
+    set name(name) {
+        this._name = name;
+        this.displayName = name;
+    }
+
+    displayName: string;
     roles: RoleModel[];
     levelsOfEducation: number[];
-    name: string;
     appType: AppType;
+    icon: string;
+    isExternal: boolean;
 }

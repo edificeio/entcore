@@ -1,10 +1,10 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { ConnectorModel } from "../core/store";
-import { CasType } from "./connectors/CasType";
+import { ConnectorModel, GroupModel, RoleModel } from "../core/store";
+import { CasType } from "./connectors/connector/CasType";
 
-import 'rxjs/add/operator/share';
+import 'rxjs/add/operator/do';
 
 @Injectable()
 export class ServicesService {
@@ -34,6 +34,12 @@ export class ServicesService {
                 secret: connector.oauthSecret || '',
                 grantType: connector.oauthGrantType || '',
             })
+    }
+
+    public saveConnector(connectorId: string, structureId: string, fields: any): Observable<{id: string}>{
+        return this.httpClient.put<{id: string}>(
+            `/appregistry/application/conf/${connectorId}?structureId=${structureId}`
+            , fields);
     }
 
     public getCasTypes(): Observable<CasType[]> {

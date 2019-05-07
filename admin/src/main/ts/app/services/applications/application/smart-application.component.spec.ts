@@ -1,5 +1,5 @@
 import { RoleModel } from '../../../core/store/models';
-import { filterRolesByDistributions } from './application-details.component';
+import { filterRolesByDistributions } from './smart-application.component';
 
 describe('filterRolesByDistributions', () => {
     let roles: RoleModel[];

@@ -8,20 +8,25 @@ import { UxModule } from '../shared/ux/ux.module';
 import { routes } from './services.routing';
 
 import { ServicesStore } from './services.store';
-import { ApplicationsResolver } from './applications/applications.resolver';
-import { ConnectorsResolver } from './connectors/connectors.resolver';
-import { ApplicationRolesResolver } from './applications/details/roles.resolver';
-import { ConnectorRolesResolver } from './connectors/details/roles.resolver';
+
+import { ApplicationsResolver } from './applications/list/applications.resolver';
+import { ConnectorsResolver } from './connectors/list/connectors.resolver';
+import { ApplicationRolesResolver } from './applications/application/application-roles.resolver';
+import { ConnectorRolesResolver } from './connectors/connector/connector-roles.resolver';
 
 import { ServicesComponent } from './services.component';
+import { ServicesListComponent, ServicesRoleAttributionComponent, ServicesRoleComponent } from './shared/';
+
 import { ApplicationsListComponent } from './applications/list/applications-list.component';
+import { SmartApplicationComponent } from './applications/application/smart-application.component'
+import { ApplicationAssignmentComponent } from './applications/application/assignment/application-assignment.component';
+import { SmartMassRoleAssignment } from './applications/application/mass-assignment/smart-mass-role-assignment.component';
+import { MassRoleAssignment } from './applications/application/mass-assignment/mass-role-assignment.component';
+
 import { ConnectorsListComponent } from './connectors/list/connectors-list.component';
-import { ApplicationDetailsComponent } from './applications/details/application-details.component';
-import { MassRoleAssignment } from './applications/details/mass-role-assignment.component';
-import { SmartMassRoleAssignment } from './applications/details/smart-mass-role-assignment.component';
-import { ConnectorDetailsComponent } from './connectors/details/connector-details.component';
-import { ServicesListWithCompanionComponent, ServicesRoleAttributionComponent, ServicesRoleComponent } from './shared/';
-import { ConnectorCreate } from './connectors/create/connector-create.component';
+import { SmartConnectorComponent } from './connectors/connector/smart-connector.component'
+import { ConnectorPropertiesComponent } from './connectors/connector/properties/connector-properties.component';
+import { ConnectorAssignmentComponent } from './connectors/connector/assignment/connector-assignment.component';
 
 @NgModule({
     imports: [
@@ -34,16 +39,18 @@ import { ConnectorCreate } from './connectors/create/connector-create.component'
     ],
     declarations: [
         ServicesComponent,
+        SmartApplicationComponent,
         ApplicationsListComponent,
-        ApplicationDetailsComponent,
+        ApplicationAssignmentComponent,
         MassRoleAssignment,
         SmartMassRoleAssignment,
         ConnectorsListComponent,
-        ConnectorDetailsComponent,
-        ServicesListWithCompanionComponent,
+        ConnectorAssignmentComponent,
+        ServicesListComponent,
         ServicesRoleComponent,
         ServicesRoleAttributionComponent,
-        ConnectorCreate
+        SmartConnectorComponent,
+        ConnectorPropertiesComponent
     ],
     providers: [
         NgSwitch,
