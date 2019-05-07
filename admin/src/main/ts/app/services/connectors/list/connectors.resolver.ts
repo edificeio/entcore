@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot } from '@angular/router';
 
-import { globalStore } from '../../core/store';
-import { ConnectorModel } from '../../core/store/models';
-import { SpinnerService, routing } from '../../core/services';
+import { globalStore } from '../../../core/store';
+import { ConnectorModel } from '../../../core/store/models';
+import { SpinnerService, routing } from '../../../core/services';
 
 @Injectable()
 export class ConnectorsResolver implements Resolve<ConnectorModel[]> {
