@@ -500,6 +500,7 @@ i.group_add {
 .has-space-between {justify-content: space-between;}
 .has-flex-end {justify-content: flex-end;}
 .has-align-items-baseline {align-items: baseline;}
+.has-align-items-center {align-items: center;}
 .is-flex-none {flex: none !important;}
 
 /* UX */
@@ -1157,7 +1158,7 @@ user-list {
   }
 }
 
-services-list-with-companion {
+services-list {
   .panel-section {
       min-height: 50px;
   }

@@ -1,5 +1,5 @@
 import { ApplicationModel } from '../../core/store/models';
-import { filterApplicationsByLevelsOfEducation } from './services-list-with-companion.component';
+import { filterApplicationsByLevelsOfEducation } from './services-list.component';
 
 describe('filterApplicationsByLevelsOfEducation', () => {
     let apps: ApplicationModel[];
