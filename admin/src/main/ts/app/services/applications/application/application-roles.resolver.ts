@@ -6,15 +6,12 @@ import { RoleModel } from '../../../core/store/models/role.model';
 import { ApplicationModel } from '../../../core/store/models/application.model';
 import { NotifyService, routing, SpinnerService } from '../../../core/services';
 
-import { ServicesStore } from '../../services.store';
-
 @Injectable()
 export class ApplicationRolesResolver implements Resolve<RoleModel[] | Boolean> {
 
     constructor(
         private spinner: SpinnerService,
         private router: Router,
-        private servicesStore: ServicesStore,
         private ns: NotifyService
     ) {
     }

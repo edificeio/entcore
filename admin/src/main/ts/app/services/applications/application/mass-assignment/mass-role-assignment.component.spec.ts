@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { SijilModule } from 'sijil';
-import { MultiSelectComponent } from '../../../shared/ux/components';
+import { MultiSelectComponent } from '../../../../shared/ux/components';
 
 describe('MassRoleAssignment', () => {
     let component: MassRoleAssignment;
