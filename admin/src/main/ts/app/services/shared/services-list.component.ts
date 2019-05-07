@@ -5,7 +5,7 @@ import { routing } from '../../core/services';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from '../services.store';
-import { ApplicationModel, SessionModel } from '../../core/store';
+import { ApplicationModel, SessionModel, ConnectorModel } from '../../core/store';
 
 interface ServiceInfo {
     collection: any[],
@@ -16,13 +16,13 @@ interface ServiceInfo {
 }
 
 @Component({
-    selector: 'services-list-with-companion',
+    selector: 'services-list',
     template: `
         <side-layout (closeCompanion)="closePanel()" [showCompanion]="showCompanion">
             <div side-card>
                 <list
                         [model]="collectionRef[serviceName].collection"
-                        sort="name"
+                        sort="displayName"
                         [inputFilter]="filterByInput"
                         [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
                         [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
@@ -35,7 +35,7 @@ interface ServiceInfo {
                             <i [ngClass]="item.icon" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
                         </div>
                         <div class="service-name">
-                            {{ item.name }}
+                            {{ item.displayName }}
                         </div>
                     </ng-template>
                 </list>
@@ -46,30 +46,21 @@ interface ServiceInfo {
         </side-layout>
     `
 })
-export class ServicesListWithCompanionComponent {
-
-    /* Store pipe */
-    self = this;
-    _storedElements = [];
+export class ServicesListComponent {
+    // TODO extract from router 
+    @Input() 
+    serviceName: 'applications' | 'connectors' | 'widgets';
+    @Input() 
+    selectedItem: ApplicationModel | ConnectorModel;
+    
+    private routeSubscriber: Subscription;
+    public collectionRef: { [serviceName: string]: ServiceInfo };
 
     constructor(
         public router: Router,
         public route: ActivatedRoute,
         private servicesStore: ServicesStore) {
     }
-
-    // TODO extract from router 
-    @Input() serviceName: 'applications' | 'connectors' | 'widgets';
-
-    collectionRef: { [serviceName: string]: ServiceInfo };
-
-    @Input() selectedItem;
-
-    closePanel(): void {
-        this.router.navigate(['..'], {relativeTo: this.route});
-    }
-
-    private routeSubscriber: Subscription;
 
     ngOnInit(): void {
         SessionModel.getSession().then(session => {
@@ -120,6 +111,9 @@ export class ServicesListWithCompanionComponent {
         this.routeSubscriber.unsubscribe();
     }
 
+    closePanel(): void {
+        this.router.navigate(['..'], {relativeTo: this.route});
+    }
 
     itemInputFilter: string;
     filterByInput = (item: any): boolean => {
