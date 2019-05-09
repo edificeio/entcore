@@ -422,7 +422,6 @@
 
     "services.connector.properties.title": "Paramètres du lien",
     "services.connector.properties.inherits": "Partager le connecteur avec les sous-structures",
-    "services.connector.properties.locked": "Interdire aux sous-structures l'attribution du connecteur",
     "services.connector.properties.id": "Identifiant",
     "services.connector.properties.displayName": "Nom d'affichage",
     "services.connector.properties.icon": "Icône",
@@ -437,7 +436,7 @@
     "services.connector.cas.title": "Champs spécifiques CAS",
     "services.connector.cas.hasCas": "Activer le champs spécifique CAS",
     "services.connector.cas.type": "Cible",
-    "services.connector.cas.pattern": "URL",
+    "services.connector.cas.pattern": "Pattern",
 
     "services.connector.oauth.title": "Champs spécifiques OAuth",
     "services.connector.oauth.transferSession": "Transmettre la session de l'utilisateur courant à l'application",
@@ -471,6 +470,23 @@
     "services.connector.delete.success.content": "Le connecteur {{connector}} a bien été supprimé.",
     "services.connector.delete.error.title": "Erreur lors de la suppression",
     "services.connector.delete.error.content": "Le connecteur {{connector}} n'a pas pu être supprimé.",
+
+    "services.connector.locked": "Le connecteur est verrouillé",
+    "services.connector.locked.warning.properties": "Connecteur verrouillé - vous ne pouvez pas modifier ses propriétés",
+    "services.connector.locked.warning.assignment": "Connecteur verrouillé - vous ne pouvez pas modifier son attribution",
+    "services.connector.lock.button": "Verrouiller",
+    "services.connector.lock.success.title": "Verrouillage effectué",
+    "services.connector.lock.success.content": "Le connecteur {{connector}} a bien été verrouillé.",
+    "services.connector.lock.error.title": "Erreur lors du verrouillage",
+    "services.connector.lock.error.content": "Le connecteur {{connector}} n'a pas pu être verrouillé.",
+    "services.connector.unlock.button": "Déverrouiller",
+    "services.connector.unlock.success.title": "Déverrouillage effectué",
+    "services.connector.unlock.success.content": "Le connecteur {{connector}} a bien été déverrouillé.",
+    "services.connector.unlock.error.title": "Erreur lors du déverrouillage",
+    "services.connector.unlock.error.content": "Le connecteur {{connector}} n'a pas pu être déverrouillé.",
+
+    "services.connector.inherited": "Le connecteur est hérité",
+    "services.connector.inherited.warning.properties": "Connecteur hérité - vous ne pouvez pas modifier ses propriétés",
 
     "services.tab.properties": "Propriétés",
     "services.tab.assignment": "Attribution",
