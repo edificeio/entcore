@@ -12,7 +12,6 @@ import { BundlesService } from "sijil";
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
-import { HttpClient } from "@angular/common/http";
 
 @Component({
     selector: 'smart-connector',
@@ -23,6 +22,10 @@ import { HttpClient } from "@angular/common/http";
             </span>
             <ng-template #isEditionMode>
                 <span>{{ servicesStore.connector.displayName }}</span>
+
+                <button type="button" class="is-pulled-right" (click)="showDeleteConfirmation = true;">
+                    <s5l>services.connector.delete.button</s5l>
+                </button>
             </ng-template>
         </div>
     
@@ -56,6 +59,15 @@ import { HttpClient } from "@angular/common/http";
             (remove)="onRemoveAssignment($event)"
             (add)="onAddAssignment($event)">
         </connector-assignment>
+
+        <lightbox-confirm lightboxTitle="services.connector.delete.confirm.title"
+                          [show]="showDeleteConfirmation"
+                          (onCancel)="showDeleteConfirmation = false;"
+                          (onConfirm)="onConfirmDeletion()">
+            <div class="has-vertical-margin-10">
+                <span [innerHTML]="'services.connector.delete.confirm.content' | translate: {connector: servicesStore.connector.displayName}"></span>
+            </div>
+        </lightbox-confirm>
     `,
     styles: [`
         button.tab {
@@ -81,6 +93,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     private rolesSubscription: Subscription;
     private casTypesSubscription: Subscription;
     public admc: boolean;
+    public showDeleteConfirmation: boolean;
     
     public PROPERTIES_TAB = 'properties';
     public ASSIGNMENT_TAB = 'assignment';
@@ -94,8 +107,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                 private notifyService: NotifyService,
                 private router: Router,
                 private location: Location,
-                private bundles: BundlesService,
-                private httpClient: HttpClient) {
+                private bundles: BundlesService) {
     }
 
     ngOnInit() {
@@ -236,6 +248,34 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                 })
                 .toPromise()
             );
+    }
+
+    public onConfirmDeletion() {
+        this.spinnerService.perform('portal-content'
+            , this.servicesService.deleteConnector(this.servicesStore.connector)
+                .do(() => {
+                    this.servicesStore.structure.connectors.data.splice(
+                        this.servicesStore.structure.connectors.data.findIndex(c => c == this.servicesStore.connector)
+                        , 1);
+
+                    this.notifyService.success({
+                        key: 'services.connector.delete.success.content',
+                        parameters: {connector: this.servicesStore.connector.displayName}
+                    }, 'services.connector.delete.success.title');
+
+                    this.router.navigate(['..'], {relativeTo: this.activatedRoute, replaceUrl: false});
+                })
+                .catch(error => {
+                    this.notifyService.error({
+                        key: 'services.connector.delete.error.content'
+                        , parameters: {connector: this.servicesStore.connector.displayName}
+                    }, 'services.connector.delete.error.title'
+                    , error);
+
+                    throw error;
+                })
+                .toPromise()
+        );
     }
 
     public onAddAssignment($event: {group: GroupModel, role: RoleModel}) {
