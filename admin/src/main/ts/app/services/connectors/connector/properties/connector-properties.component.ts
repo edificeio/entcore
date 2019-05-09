@@ -7,76 +7,70 @@ import { CasType } from "../CasType";
     template: `
         <form #propertiesForm="ngForm">
             <panel-section section-title="services.connector.properties.title">
-                <div *ngIf="hasChildren"
-                    class="has-vertical-padding-5">
-                    <input type="checkbox" 
-                        [(ngModel)]="connector.inherits" 
-                        name="inherits" 
-                        class="has-no-margin">
-                    <s5l>services.connector.properties.inherits</s5l>
-                </div>
+                <fieldset [disabled]="disabled">
+                    <div *ngIf="structureChildren"
+                        class="has-vertical-padding-5">
+                        <input type="checkbox" 
+                            [(ngModel)]="connector.inherits" 
+                            name="inherits" 
+                            class="has-no-margin">
+                        <s5l>services.connector.properties.inherits</s5l>
+                    </div>
+                            
+                    <form-field label="services.connector.properties.id">
+                        <input type="text" 
+                            [(ngModel)]="connector.name" 
+                            name="name" 
+                            required 
+                            #nameInput="ngModel">
+                        <form-errors [control]="nameInput"></form-errors>
+                    </form-field>
 
-                <div *ngIf="connector.inherits == true && isAdmc" class="has-vertical-padding-5">
-                    <input type="checkbox" 
-                        [(ngModel)]="connector.locked" 
-                        name="locked" 
-                        class="has-no-margin">
-                    <s5l>services.connector.properties.locked</s5l>
-                </div>
-                        
-                <form-field label="services.connector.properties.id">
-                    <input type="text" 
-                        [(ngModel)]="connector.name" 
-                        name="name" 
-                        required 
-                        #nameInput="ngModel">
-                    <form-errors [control]="nameInput"></form-errors>
-                </form-field>
+                    <form-field label="services.connector.properties.displayName">
+                        <input type="text" 
+                            [(ngModel)]="connector.displayName" 
+                            name="displayName" 
+                            required 
+                            #displayNameInput="ngModel">
+                        <form-errors [control]="displayNameInput"></form-errors>
+                    </form-field>
 
-                <form-field label="services.connector.properties.displayName">
-                    <input type="text" 
-                        [(ngModel)]="connector.displayName" 
-                        name="displayName" 
-                        required 
-                        #displayNameInput="ngModel">
-                    <form-errors [control]="displayNameInput"></form-errors>
-                </form-field>
+                    <form-field label="services.connector.properties.icon">
+                        <input type="text" [(ngModel)]="connector.icon" name="icon">
+                    </form-field>
 
-                <form-field label="services.connector.properties.icon">
-                    <input type="text" [(ngModel)]="connector.icon" name="icon">
-                </form-field>
+                    <form-field label="services.connector.properties.url">
+                        <input type="text" 
+                            [(ngModel)]="connector.url" 
+                            name="url" 
+                            required 
+                            #urlInput="ngModel">
+                        <form-errors [control]="urlInput"></form-errors>
+                    </form-field>
 
-                <form-field label="services.connector.properties.url">
-                    <input type="text" 
-                        [(ngModel)]="connector.url" 
-                        name="url" 
-                        required 
-                        #urlInput="ngModel">
-                    <form-errors [control]="urlInput"></form-errors>
-                </form-field>
+                    <form-field label="services.connector.properties.target">
+                        <select [(ngModel)]="connector.target" name="target" class="is-flex-none">
+                            <option [value]="LINKPARAMS_TARGET_PORTAL">
+                                {{ 'services.connector.properties.target.portal' | translate }}
+                            </option>
+                            <option [value]="LINKPARAMS_TARGET_NEWPAGE">
+                                {{ 'services.connector.properties.target.newPage' | translate }}
+                            </option>
+                            <option [value]="LINKPARAMS_TARGET_ADAPTOR">
+                                {{ 'services.connector.properties.target.adaptor' | translate }}
+                            </option>
+                        </select>
+                    </form-field>
 
-                <form-field label="services.connector.properties.target">
-                    <select [(ngModel)]="connector.target" name="target" class="is-flex-none">
-                        <option [value]="LINKPARAMS_TARGET_PORTAL">
-                            {{ 'services.connector.properties.target.portal' | translate }}
-                        </option>
-                        <option [value]="LINKPARAMS_TARGET_NEWPAGE">
-                            {{ 'services.connector.properties.target.newPage' | translate }}
-                        </option>
-                        <option [value]="LINKPARAMS_TARGET_ADAPTOR">
-                            {{ 'services.connector.properties.target.adaptor' | translate }}
-                        </option>
-                    </select>
-                </form-field>
-
-                <button 
-                    *ngIf="!isCreationMode"
-                    (click)="save.emit('parameters')"
-                    type="button" 
-                    class="is-pulled-right">
-                        <s5l>save.modifications</s5l>
-                        <i class="fa fa-floppy-o is-size-5"></i>
-                </button>
+                    <button 
+                        *ngIf="!creationMode"
+                        (click)="save.emit('parameters')"
+                        type="button" 
+                        class="is-pulled-right">
+                            <s5l>save.modifications</s5l>
+                            <i class="fa fa-floppy-o is-size-5"></i>
+                    </button>
+                </fieldset>
             </panel-section>
             
             <hr>
@@ -90,100 +84,104 @@ import { CasType } from "../CasType";
             </div>
             
             <panel-section section-title="services.connector.cas.title" [folded]="true">
-                <div>
-                    <input type="checkbox" 
-                        [(ngModel)]="connector.hasCas" 
-                        name="hasCas" 
-                        class="has-no-margin"
-                        (change)="toggleCasType()">
-                    <s5l>services.connector.cas.hasCas</s5l>
-                </div>
-                
-                <div *ngIf="connector.hasCas && connector.casTypeId" 
-                    class="connector-properties-cas-casType__description"
-                    [innerHtml]="getCasTypeDescription()">
-                </div>
+                <fieldset [disabled]="disabled">
+                    <div>
+                        <input type="checkbox" 
+                            [(ngModel)]="connector.hasCas" 
+                            name="hasCas" 
+                            class="has-no-margin"
+                            (change)="toggleCasType()">
+                        <s5l>services.connector.cas.hasCas</s5l>
+                    </div>
+                    
+                    <div *ngIf="connector.hasCas && connector.casTypeId" 
+                        class="connector-properties-cas-casType__description"
+                        [innerHtml]="getCasTypeDescription()">
+                    </div>
 
-                <form-field label="services.connector.cas.type">
-                    <select [(ngModel)]="connector.casTypeId" 
-                        name="casTypeId" 
-                        [disabled]="!connector.hasCas" 
-                        class="is-flex-none">
-                        <option *ngFor="let casType of casTypes" [value]="casType.id">
-                            {{ casType.name }}
-                        </option>
-                    </select>
-                </form-field>
+                    <form-field label="services.connector.cas.type">
+                        <select [(ngModel)]="connector.casTypeId" 
+                            name="casTypeId" 
+                            [disabled]="!connector.hasCas" 
+                            class="is-flex-none">
+                            <option *ngFor="let casType of casTypes" [value]="casType.id">
+                                {{ casType.name }}
+                            </option>
+                        </select>
+                    </form-field>
 
-                <form-field label="services.connector.cas.pattern">
-                    <input type="text" 
-                        [(ngModel)]="connector.casPattern" 
-                        name="casPattern" 
-                        [placeholder]="'form.optional' | translate">
-                </form-field>
+                    <form-field label="services.connector.cas.pattern">
+                        <input type="text" 
+                            [(ngModel)]="connector.casPattern" 
+                            name="casPattern" 
+                            [placeholder]="'form.optional' | translate">
+                    </form-field>
 
-                <button 
-                    *ngIf="!isCreationMode"
-                    (click)="save.emit('cas')"
-                    type="button" 
-                    class="is-pulled-right">
-                        <s5l>save.modifications</s5l>
-                        <i class="fa fa-floppy-o is-size-5"></i>
-                </button>
+                    <button 
+                        *ngIf="!creationMode"
+                        (click)="save.emit('cas')"
+                        type="button" 
+                        class="is-pulled-right">
+                            <s5l>save.modifications</s5l>
+                            <i class="fa fa-floppy-o is-size-5"></i>
+                    </button>
+                </fieldset>
             </panel-section>
 
             <panel-section section-title="services.connector.oauth.title" [folded]="true">
-                <div>
-                    <input type="checkbox" 
-                        [(ngModel)]="connector.oauthTransferSession" 
-                        name="transferSession" 
-                        (change)="setUserinfoInOAuthScope()"
-                        class="has-no-margin">
-                    <s5l>services.connector.oauth.transferSession</s5l>
-                </div>
-                
-                <form-field label="services.connector.oauth.clientId">
-                    <span>{{ connector.name }}</span>
-                </form-field>
+                <fieldset [disabled]="disabled">
+                    <div>
+                        <input type="checkbox" 
+                            [(ngModel)]="connector.oauthTransferSession" 
+                            name="transferSession" 
+                            (change)="setUserinfoInOAuthScope()"
+                            class="has-no-margin">
+                        <s5l>services.connector.oauth.transferSession</s5l>
+                    </div>
+                    
+                    <form-field label="services.connector.oauth.clientId">
+                        <span>{{ connector.name }}</span>
+                    </form-field>
 
-                <form-field label="services.connector.oauth.scope">
-                    <input type="text" [(ngModel)]="connector.oauthScope" name="scope">
-                </form-field>
+                    <form-field label="services.connector.oauth.scope">
+                        <input type="text" [(ngModel)]="connector.oauthScope" name="scope">
+                    </form-field>
 
-                <form-field label="services.connector.oauth.secret">
-                    <input type="text" [(ngModel)]="connector.oauthSecret" name="secret">
-                </form-field>
+                    <form-field label="services.connector.oauth.secret">
+                        <input type="text" [(ngModel)]="connector.oauthSecret" name="secret">
+                    </form-field>
 
-                <form-field label="services.connector.oauth.grantType">
-                    <select [(ngModel)]="connector.oauthGrantType" 
-                        name="grantType" 
-                        class="is-flex-none">
-                        <option [value]="OAUTH_GRANTTYPE_AUTHORIZATION_CODE">
-                            {{ 'services.connector.oauth.grantType.authorizationCode' | translate }}
-                        </option>
-                        <option [value]="OAUTH_GRANTTYPE_CLIENT_CREDENTIALS">
-                            {{ 'services.connector.oauth.grantType.clientCredentials' | translate }}
-                        </option>
-                        <option [value]="OAUTH_GRANTTYPE_PASSWORD">
-                            {{ 'services.connector.oauth.grantType.password' | translate }}
-                        </option>
-                        <option [value]="OAUTH_GRANTTYPE_BASIC">
-                            {{ 'services.connector.oauth.grantType.basic' | translate }}
-                        </option>
-                    </select>
-                </form-field>
+                    <form-field label="services.connector.oauth.grantType">
+                        <select [(ngModel)]="connector.oauthGrantType" 
+                            name="grantType" 
+                            class="is-flex-none">
+                            <option [value]="OAUTH_GRANTTYPE_AUTHORIZATION_CODE">
+                                {{ 'services.connector.oauth.grantType.authorizationCode' | translate }}
+                            </option>
+                            <option [value]="OAUTH_GRANTTYPE_CLIENT_CREDENTIALS">
+                                {{ 'services.connector.oauth.grantType.clientCredentials' | translate }}
+                            </option>
+                            <option [value]="OAUTH_GRANTTYPE_PASSWORD">
+                                {{ 'services.connector.oauth.grantType.password' | translate }}
+                            </option>
+                            <option [value]="OAUTH_GRANTTYPE_BASIC">
+                                {{ 'services.connector.oauth.grantType.basic' | translate }}
+                            </option>
+                        </select>
+                    </form-field>
 
-                <button 
-                    *ngIf="!isCreationMode"
-                    (click)="save.emit('oauth')"
-                    type="button" 
-                    class="is-pulled-right">
-                        <s5l>save.modifications</s5l>
-                        <i class="fa fa-floppy-o is-size-5"></i>
-                </button>
+                    <button 
+                        *ngIf="!creationMode"
+                        (click)="save.emit('oauth')"
+                        type="button" 
+                        class="is-pulled-right">
+                            <s5l>save.modifications</s5l>
+                            <i class="fa fa-floppy-o is-size-5"></i>
+                    </button>
+                </fieldset>
             </panel-section>
 
-            <div *ngIf="isCreationMode" 
+            <div *ngIf="creationMode" 
                 class="connector-properties__action">
                 <button type="button" (click)="create.emit('cancel')">
                     <s5l>services.connector.create.button.cancel</s5l>
@@ -235,9 +233,11 @@ export class ConnectorPropertiesComponent {
     @Input()
     casTypes: CasType[];
     @Input()
-    hasChildren: boolean;
+    structureChildren: boolean;
     @Input()
-    isCreationMode: boolean;
+    creationMode: boolean;
+    @Input()
+    disabled: boolean;
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();

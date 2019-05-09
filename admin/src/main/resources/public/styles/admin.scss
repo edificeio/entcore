@@ -42,6 +42,11 @@ $success:                 $validate;
 $warning:                 #ffdf76;
 $danger:                  darken($contrast, 5%);
 
+$info-dark:               darken($info, 5%);
+$success-dark:            darken($success, 5%);
+$warning-dark:            darken($warning, 5%);
+$danger-dark:             darken($danger, 5%);
+
 // PROFIL COLOR
 $cyan:                    #46afe6;      // PARENT
 $green:                   #6fbe2e;      // TEACHER
@@ -100,14 +105,9 @@ button {
     cursor: pointer;
     color: $accent;
   }
-  &[disabled] {
+  &:disabled {
     opacity: .5;
-    &:hover {
-      opacity: .25;
-    }
-    i {
-      color: grey;
-    }
+    cursor: not-allowed;
   }
   &.active, &:hover:not(:disabled) {
     background-color: $accent;
@@ -143,6 +143,41 @@ button {
   i {
     padding-left: 10px;
     float: right;
+  }
+
+  &.is-info {
+    background-color: $info;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $info-dark;
+      border-color: $info-dark;
+    }
+  }
+
+  &.is-success {
+    background-color: $success;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $success-dark;
+      border-color: $success-dark;
+    }
+  }
+
+  &.is-warning {
+    background-color: $warning;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $warning-dark;
+      border-color: $warning-dark;
+    }
+  }
+  &.is-danger {
+    background-color: $danger;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $danger-dark;
+      border-color: $danger-dark;
+    }
   }
 }
 
@@ -183,6 +218,18 @@ input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
     border-color: $contrast;
     background-color: rgba($contrast,0.1);
   }
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+select:disabled {
+  cursor: not-allowed;
 }
 
 input:invalid {box-shadow: none}
@@ -267,11 +314,7 @@ fieldset {
   border: none;
   margin: 0;
   padding: 0;
-  &[disabled] {
-    input {
-      background: none;
-    }
-  }
+
   form-field:first-child div.form-field {
     margin-top: 5px;
   }
@@ -358,7 +401,7 @@ i.group_add {
   &.is-primary {
     color: $accent;
     border: 1px solid $accent;
-    &:hover {
+    &:hover:not(:disabled) {
       color: white;
       background-color: $accent;
     }
@@ -368,11 +411,41 @@ i.group_add {
     background-color: $accent;
     box-shadow: 0 0 10px rgba($accent, 0.25);
   }
-  &.is-link {}
-  &.is-info {}
-  &.is-success {}
-  &.is-warning {}
-  &.is-danger {}
+
+  &.is-info {
+    background-color: $info;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $info-dark;
+      border-color: $info-dark;
+    }
+  }
+
+  &.is-success {
+    background-color: $success;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $success-dark;
+      border-color: $success-dark;
+    }
+  }
+
+  &.is-warning {
+    background-color: $warning;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $warning-dark;
+      border-color: $warning-dark;
+    }
+  }
+  &.is-danger {
+    background-color: $danger;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background-color: $danger-dark;
+      border-color: $danger-dark;
+    }
+  }
 }
 
 .container {
@@ -617,10 +690,6 @@ button.card-button {
       display: block;
       width: 100%;
       margin: 10px 0px;
-      &[disabled]:hover {
-        opacity: .25;
-        cursor: not-allowed;
-      }
     }
     .card-list {
       max-height: 170px;
@@ -1183,10 +1252,21 @@ services-list {
     }
   }
   .service-icon {
+    margin-bottom: 15px;
     img {
       height: 50px;
       width: 50px;
     }
+  }
+
+  .service-badges {
+    display: inherit;
+    margin-left: 194px;
+    font-size: 0.4em;
+  }
+
+  .service-badges__locked {
+    margin-left: 5px;
   }
 }
 
@@ -1393,11 +1473,6 @@ user-detail {
         font-size: 0.7em;
         margin: 5px;
         padding: 20px;
-        &[disabled] {
-          &:hover {
-            cursor: not-allowed;
-          }
-        }
       }
     }
   }

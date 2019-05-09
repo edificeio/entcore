@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
 import { ConnectorModel, Session, SessionModel, GroupModel, RoleModel } from "../../../core/store";
@@ -22,13 +22,55 @@ import 'rxjs/add/operator/toPromise';
             </span>
             <ng-template #isEditionMode>
                 <span>{{ servicesStore.connector.displayName }}</span>
+                <i *ngIf="isInherited()"
+                    class="fa fa-link has-left-margin-5"
+                    [title]="'services.connector.inherited' | translate">
+                </i>
+                <i *ngIf="isLocked()"
+                    class="fa fa-lock has-left-margin-5"
+                    [title]="'services.connector.locked' | translate">
+                </i>
 
-                <button type="button" class="is-pulled-right" (click)="showDeleteConfirmation = true;">
+                <button type="button" 
+                        class="is-danger is-pulled-right has-left-margin-5" 
+                        (click)="showDeleteConfirmation = true;"
+                        [disabled]="arePropertiesDisabled()">
                     <s5l>services.connector.delete.button</s5l>
+                    <i class="fa fa-trash is-size-5"></i>
+                </button>
+
+                <button type="button"
+                        class="is-pulled-right"
+                        *ngIf="admc"
+                        (click)="lockToggle();">
+                    <span *ngIf="isLocked() else isUnlocked">
+                        <s5l>services.connector.unlock.button</s5l>
+                        <i class="fa fa-unlock is-size-5"></i>
+                    </span>
+                    <ng-template #isUnlocked>
+                        <span>
+                            <s5l>services.connector.lock.button</s5l>
+                            <i class="fa fa-lock is-size-5"></i>
+                        </span>
+                    </ng-template>
                 </button>
             </ng-template>
         </div>
     
+        <div class="message is-warning" *ngIf="isLocked() && !isCreationMode()">
+            <div class="message-body">
+                <s5l *ngIf="currentTab === PROPERTIES_TAB">services.connector.locked.warning.properties</s5l>
+                <s5l *ngIf="currentTab === ASSIGNMENT_TAB">services.connector.locked.warning.assignment</s5l>
+            </div>
+        </div>
+
+        <div class="message is-warning" 
+            *ngIf="isInherited() && !isCreationMode() && currentTab === PROPERTIES_TAB">
+            <div class="message-body">
+                <s5l>services.connector.inherited.warning.properties</s5l>
+            </div>
+        </div>
+
         <div class="tabs" *ngIf="!isCreationMode()">
             <button class="tab"
                     [ngClass]="{active: currentTab === PROPERTIES_TAB}"
@@ -56,6 +98,7 @@ import 'rxjs/add/operator/toPromise';
         <connector-assignment
             *ngIf="currentTab === ASSIGNMENT_TAB"
             [connector]="servicesStore.connector"
+            [disabled]="isAssignmentDisabled()"
             (remove)="onRemoveAssignment($event)"
             (add)="onAddAssignment($event)">
         </connector-assignment>
@@ -93,6 +136,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     private rolesSubscription: Subscription;
     private casTypesSubscription: Subscription;
     public admc: boolean;
+    public admlOfConnectorStructure: boolean;
     public showDeleteConfirmation: boolean;
     
     public PROPERTIES_TAB = 'properties';
@@ -107,7 +151,8 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                 private notifyService: NotifyService,
                 private router: Router,
                 private location: Location,
-                private bundles: BundlesService) {
+                private bundles: BundlesService,
+                private changeDetectorRef: ChangeDetectorRef) {
     }
 
     ngOnInit() {
@@ -135,6 +180,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
             .subscribe((res:CasType[]) => this.casTypes = res);
 
         this.setAdmc();
+        this.setAdmlOfConnectorStructure();
     }
 
     ngOnDestroy() {
@@ -143,18 +189,46 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         this.casTypesSubscription.unsubscribe();
     }
 
+    public async setAdmlOfConnectorStructure() {
+        const session: Session = await SessionModel.getSession();
+        if (session.functions && session.functions['ADMIN_LOCAL'] && session.functions['ADMIN_LOCAL'].scope) {
+            this.admlOfConnectorStructure = session.functions['ADMIN_LOCAL'].scope.includes(this.servicesStore.connector.structureId);
+        }
+    }
+
     public async setAdmc() {
         const session: Session = await SessionModel.getSession();
         this.admc = session.functions && session.functions['SUPER_ADMIN'] != null;
     }
 
-    public hasChildren(): boolean {
+    public hasStructureChildren(): boolean {
         return this.servicesStore.structure.children 
             &&  this.servicesStore.structure.children.length > 0;
     }
 
     public isCreationMode(): boolean {
         return this.servicesStore.connector && !this.servicesStore.connector.id;
+    }
+
+    public arePropertiesDisabled(): boolean {
+        return (this.isLocked() 
+            || !(this.admc || this.admlOfConnectorStructure)
+            || this.isInherited())
+            && !this.isCreationMode();
+    }
+
+    public isAssignmentDisabled(): boolean {
+        return this.isLocked() || !(this.admc || this.admlOfConnectorStructure);
+    }
+
+    public isInherited(): boolean {
+        return this.servicesStore.connector 
+            && this.servicesStore.connector.inherits 
+            && this.servicesStore.connector.structureId !== this.servicesStore.structure.id;
+    }
+
+    public isLocked(): boolean {
+        return this.servicesStore.connector && this.servicesStore.connector.locked;
     }
 
     public onCreate($event): void {
@@ -271,7 +345,50 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                         , parameters: {connector: this.servicesStore.connector.displayName}
                     }, 'services.connector.delete.error.title'
                     , error);
+                    throw error;
+                })
+                .toPromise()
+        );
+    }
 
+    public lockToggle() {
+        this.spinnerService.perform('portal-content',
+            this.servicesService.toggleLockConnector(this.servicesStore.connector)
+                .do(() => {
+                    this.servicesStore.connector.locked = !this.servicesStore.connector.locked;
+
+                    let notifySuccessTitle: string = '';
+                    let notifySuccessContent: string = '';
+
+                    if (this.servicesStore.connector.locked) {
+                        notifySuccessTitle = 'services.connector.lock.success.title';
+                        notifySuccessContent = 'services.connector.lock.success.content';
+                    } else {
+                        notifySuccessTitle = 'services.connector.unlock.success.title';
+                        notifySuccessContent = 'services.connector.unlock.success.content';
+                    }
+
+                    this.notifyService.success({
+                        key: notifySuccessContent,
+                        parameters: {connector: this.servicesStore.connector.displayName}
+                    }, notifySuccessTitle);
+                })
+                .catch(error => {
+                    let notifyErrorTitle: string = '';
+                    let notifyErrorContent: string = '';
+
+                    if (this.servicesStore.connector.locked) {
+                        notifyErrorTitle = 'services.connector.lock.error.title';
+                        notifyErrorContent = 'services.connector.lock.error.content';
+                    } else {
+                        notifyErrorTitle = 'services.connector.unlock.error.title';
+                        notifyErrorContent = 'services.connector.unlock.error.content';
+                    }
+
+                    this.notifyService.error({
+                        key: notifyErrorContent
+                        , parameters: {connector: this.servicesStore.connector.displayName}
+                    }, notifyErrorTitle, error);
                     throw error;
                 })
                 .toPromise()

@@ -20,12 +20,13 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                         url: connector.data.address,
                         target: connector.data.target,
                         inherits: connector.data.inherits,
-                        locked: connector.data.appLocked,
+                        locked: connector.data.locked,
                         casTypeId: connector.data.casType,
                         casPattern: connector.data.pattern,
                         oauthScope: connector.data.scope,
                         oauthSecret: connector.data.secret,
-                        oauthGrantType: connector.data.grantType
+                        oauthGrantType: connector.data.grantType,
+                        structureId: connector.data.structureId
                     })
                 });
                 this.data = Mix.castArrayAs(ConnectorModel, connectors);

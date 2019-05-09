@@ -5,7 +5,7 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     selector: 'services-role',
     template: `
         <panel-section section-title="{{ role.name }}" [folded]="false">
-            <button (click)="openLightbox.emit(role)">
+            <button (click)="openLightbox.emit(role)" [disabled]="disabled">
                 {{ 'add.groups' | translate }}
                 <i class="fonticon group_add is-size-3"></i>
             </button>
@@ -41,6 +41,7 @@ import { RoleModel, GroupModel } from '../../core/store/models';
 })
 export class ServicesRoleComponent {
     @Input() role: RoleModel;
+    @Input() disabled: boolean;
 
     @Output("openLightbox") openLightbox: EventEmitter<{}> = new EventEmitter();
     @Output("onRemove") onRemove: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
