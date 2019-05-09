@@ -14,6 +14,7 @@ import { ConnectorModel, RoleModel, GroupModel } from '../../../../core/store/mo
             <div *ngFor="let role of connector.roles">
                 <services-role
                     [role]="role"
+                    [disabled]="disabled"
                     (openLightbox)="openRoleAttributionLightbox($event)"
                     (onRemove)="remove.emit({group: $event, role: role})">
                 </services-role>
@@ -34,6 +35,8 @@ import { ConnectorModel, RoleModel, GroupModel } from '../../../../core/store/mo
 export class ConnectorAssignmentComponent {
     @Input()
     connector: ConnectorModel;
+    @Input()
+    disabled: boolean;
 
     @Output()
     remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
