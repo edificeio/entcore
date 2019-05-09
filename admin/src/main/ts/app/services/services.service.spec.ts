@@ -32,4 +32,14 @@ describe('ServicesService', () => {
             `/appregistry/application/external?structureId=${structureId}`);
         expect(createConnectorRequest.request.method).toBe('POST');
     });
+
+    it('should delete connector', () => {
+        const connector:ConnectorModel = new ConnectorModel();
+        connector.id = 'connector1';
+
+        servicesService.deleteConnector(connector).subscribe();
+        const deleteConnectorRequest = httpTestingController.expectOne(
+            `/appregistry/application/external/${connector.id}`);
+        expect(deleteConnectorRequest.request.method).toBe('DELETE');
+    })
 })
