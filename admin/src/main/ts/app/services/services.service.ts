@@ -42,6 +42,10 @@ export class ServicesService {
             , fields);
     }
 
+    public deleteConnector(connector: ConnectorModel): Observable<void> {
+        return this.httpClient.delete<void>(`/appregistry/application/external/${connector.id}`);
+    }
+
     public getCasTypes(): Observable<CasType[]> {
         return this.httpClient.get<CasType[]>('/appregistry/cas-types');
     }
