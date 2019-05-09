@@ -30,12 +30,20 @@ interface ServiceInfo {
                         (inputChange)="itemInputFilter = $event"
                         (onSelect)="selectedItem = $event; router.navigate([$event.id], {relativeTo: route})">
                     <ng-template let-item>
+                        <div class="service-badges" *ngIf="serviceName === 'connectors'">
+                            <i *ngIf="isInherited(item)"
+                                class="fa fa-link service-badges__inherits"
+                                [title]="'services.connector.inherited' | translate"></i>
+                            <i *ngIf="item.locked"
+                                class="fa fa-lock service-badges__locked"
+                                [title]="'services.connector.locked' | translate"></i>
+                        </div>
                         <div class="service-icon">
                             <img [src]="item.icon" *ngIf="isIconWorkspaceImg(item.icon)"/>
                             <i [ngClass]="item.icon" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
                         </div>
                         <div class="service-name">
-                            {{ item.displayName }}
+                            <span>{{ item.displayName }}</span>
                         </div>
                     </ng-template>
                 </list>
@@ -136,6 +144,10 @@ export class ServicesListComponent {
 
     public isIconWorkspaceImg(src: String) {
         return src && src.startsWith('/workspace');
+    }
+
+    public isInherited(connector: ConnectorModel) {
+        return connector.inherits && connector.structureId != this.servicesStore.structure.id;
     }
 }
 
