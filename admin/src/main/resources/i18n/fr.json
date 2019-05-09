@@ -464,6 +464,14 @@
     "services.connector.save.error.title": "Erreur lors de la modification",
     "services.connector.save.error.content": "Le connecteur {{connector}} n'a pas pu être modifié.",
 
+    "services.connector.delete.button": "Supprimer",
+    "services.connector.delete.confirm.title": "Confirmation requise",
+    "services.connector.delete.confirm.content": "Veuillez confirmer la suppression définitive du connecteur <strong>{{connector}}</strong>.",
+    "services.connector.delete.success.title": "Suppression effectuée",
+    "services.connector.delete.success.content": "Le connecteur {{connector}} a bien été supprimé.",
+    "services.connector.delete.error.title": "Erreur lors de la suppression",
+    "services.connector.delete.error.content": "Le connecteur {{connector}} n'a pas pu être supprimé.",
+
     "services.tab.properties": "Propriétés",
     "services.tab.assignment": "Attribution",
     "services.tab.mass-assignment": "Attribution en masse",
