@@ -26,11 +26,16 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                         oauthScope: connector.data.scope,
                         oauthSecret: connector.data.secret,
                         oauthGrantType: connector.data.grantType,
-                        structureId: connector.data.structureId
+                        structureId: connector.data.structureId,
+                        oauthTransferSession: this.setOauthTransferSession(connector.data.scope)
                     })
                 });
                 this.data = Mix.castArrayAs(ConnectorModel, connectors);
             })
+    }
+
+    private setOauthTransferSession(scope: string): boolean {
+        return scope && scope.startsWith('userinfo');
     }
     
     public structureId : string;
