@@ -6,7 +6,7 @@ const changed = require('gulp-changed')
 const gutil = require('gulp-util')
 const del = require('del')
 
-const entCoreVersion = '3.5-adminv2-SNAPSHOT'
+const entCoreVersion = '3.6-adminv2-SNAPSHOT'
 const springboardPath = '../recette'
 const basePath = './admin/src/main'
 const target = springboardPath + '/mods/org.entcore~admin~' + entCoreVersion
@@ -69,5 +69,6 @@ const copymod = function() {
 gulp.task('copymod', copymod)
 
 gulp.task('watch', function() {
+    console.log('Destination folder', target);
     gulp.watch(basePath + '/resources/**/*', copymod)
 })
