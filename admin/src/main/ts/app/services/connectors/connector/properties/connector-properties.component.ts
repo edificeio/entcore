@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { ConnectorModel } from "../../../../core/store";
 import { CasType } from "../CasType";
+import { NgForm } from "@angular/forms";
 
 @Component({
     selector: 'connector-properties',
@@ -61,15 +62,6 @@ import { CasType } from "../CasType";
                             </option>
                         </select>
                     </form-field>
-
-                    <button 
-                        *ngIf="!creationMode"
-                        (click)="save.emit('parameters')"
-                        type="button" 
-                        class="is-pulled-right">
-                            <s5l>save.modifications</s5l>
-                            <i class="fa fa-floppy-o is-size-5"></i>
-                    </button>
                 </fieldset>
             </panel-section>
             
@@ -116,15 +108,6 @@ import { CasType } from "../CasType";
                             name="casPattern" 
                             [placeholder]="'form.optional' | translate">
                     </form-field>
-
-                    <button 
-                        *ngIf="!creationMode"
-                        (click)="save.emit('cas')"
-                        type="button" 
-                        class="is-pulled-right">
-                            <s5l>save.modifications</s5l>
-                            <i class="fa fa-floppy-o is-size-5"></i>
-                    </button>
                 </fieldset>
             </panel-section>
 
@@ -169,15 +152,6 @@ import { CasType } from "../CasType";
                             </option>
                         </select>
                     </form-field>
-
-                    <button 
-                        *ngIf="!creationMode"
-                        (click)="save.emit('oauth')"
-                        type="button" 
-                        class="is-pulled-right">
-                            <s5l>save.modifications</s5l>
-                            <i class="fa fa-floppy-o is-size-5"></i>
-                    </button>
                 </fieldset>
             </panel-section>
 
@@ -241,8 +215,6 @@ export class ConnectorPropertiesComponent {
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();
-    @Output()
-    save: EventEmitter<string> = new EventEmitter<string>();
 
     LINKPARAMS_TARGET_PORTAL = '';
     LINKPARAMS_TARGET_NEWPAGE = '_blank';
