@@ -39,8 +39,10 @@ interface ServiceInfo {
                                 [title]="'services.connector.locked' | translate"></i>
                         </div>
                         <div class="service-icon">
-                            <img [src]="item.icon" *ngIf="isIconWorkspaceImg(item.icon)"/>
-                            <i [ngClass]="item.icon" *ngIf="!isIconWorkspaceImg(item.icon)"></i>
+                            <img [src]="item.icon" *ngIf="isIconUrlImg(item.icon) else isIconClassSelector"/>
+                            <ng-template #isIconClassSelector>
+                                <i [ngClass]="item.icon"></i>
+                            </ng-template>
                         </div>
                         <div class="service-name">
                             <span>{{ item.displayName }}</span>
@@ -142,8 +144,8 @@ export class ServicesListComponent {
         }
     };
 
-    public isIconWorkspaceImg(src: String) {
-        return src && src.startsWith('/workspace');
+    public isIconUrlImg(src: String) {
+        return src && (src.startsWith('/workspace') || src.startsWith("http"));
     }
 
     public isInherited(connector: ConnectorModel) {
