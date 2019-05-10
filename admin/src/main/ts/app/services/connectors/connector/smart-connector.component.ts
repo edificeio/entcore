@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
 import { ConnectorModel, Session, SessionModel, GroupModel, RoleModel } from "../../../core/store";
@@ -12,6 +12,7 @@ import { BundlesService } from "sijil";
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
+import { NgForm } from "@angular/forms";
 
 @Component({
     selector: 'smart-connector',
@@ -37,6 +38,16 @@ import 'rxjs/add/operator/toPromise';
                         [disabled]="arePropertiesDisabled()">
                     <s5l>services.connector.delete.button</s5l>
                     <i class="fa fa-trash is-size-5"></i>
+                </button>
+
+                <button
+                    type="button" 
+                    class="is-pulled-right has-left-margin-5"
+                    (click)="save()"
+                    *ngIf="currentTab === PROPERTIES_TAB"
+                    [disabled]="arePropertiesDisabled()">
+                    <s5l>save.modifications</s5l>
+                    <i class="fa fa-floppy-o is-size-5"></i>
                 </button>
 
                 <button type="button"
@@ -91,8 +102,7 @@ import 'rxjs/add/operator/toPromise';
             [structureChildren]="hasStructureChildren()"
             [creationMode]="isCreationMode()"
             [disabled]="arePropertiesDisabled()"
-            (create)="onCreate($event)"
-            (save)="onSave($event)">
+            (create)="onCreate($event)">
         </connector-properties>
 
         <connector-assignment
@@ -151,8 +161,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                 private notifyService: NotifyService,
                 private router: Router,
                 private location: Location,
-                private bundles: BundlesService,
-                private changeDetectorRef: ChangeDetectorRef) {
+                private bundles: BundlesService) {
     }
 
     ngOnInit() {
@@ -270,36 +279,9 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         }
     }
 
-    public onSave($event): void {
-        let fieldsToSave = {};
-        if ($event === 'parameters') {
-            fieldsToSave = {
-                name: this.servicesStore.connector.name,
-                displayName: this.servicesStore.connector.displayName,
-                icon: this.servicesStore.connector.icon || '',
-                address: this.servicesStore.connector.url,
-                target: this.servicesStore.connector.target || '',
-                inherits: this.servicesStore.connector.inherits
-            }
-        } else if ($event === 'cas') {
-            fieldsToSave = {
-                appLocked: this.servicesStore.connector.locked,
-                casType: this.servicesStore.connector.casTypeId || '',
-                pattern: this.servicesStore.connector.casPattern || ''
-            }
-        } else if ($event === 'oauth') {
-            fieldsToSave = {
-                scope: this.servicesStore.connector.oauthScope || '',
-                secret: this.servicesStore.connector.oauthSecret || '',
-                grantType: this.servicesStore.connector.oauthGrantType || ''
-            }
-        } else {
-            console.error('unknown event from save EventEmitter');
-            return;
-        }
-
+    public save(): void {
         this.spinnerService.perform('portal-content'
-            , this.servicesService.saveConnector(this.servicesStore.connector.id, this.servicesStore.structure.id, fieldsToSave)
+            , this.servicesService.saveConnector(this.servicesStore.connector, this.servicesStore.structure.id)
                 .do(res => {
                     this.notifyService.success({
                         key: 'services.connector.save.success.content',
