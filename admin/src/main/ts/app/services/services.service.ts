@@ -32,14 +32,27 @@ export class ServicesService {
                 pattern: connector.casPattern || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
-                grantType: connector.oauthGrantType || '',
+                grantType: connector.oauthGrantType || ''
             })
     }
 
-    public saveConnector(connectorId: string, structureId: string, fields: any): Observable<{id: string}>{
+    public saveConnector(connector: ConnectorModel, structureId: string): Observable<{id: string}>{
         return this.httpClient.put<{id: string}>(
-            `/appregistry/application/conf/${connectorId}?structureId=${structureId}`
-            , fields);
+            `/appregistry/application/conf/${connector.id}?structureId=${structureId}`
+            , {
+                name: connector.name,
+                displayName: connector.displayName,
+                icon: connector.icon || '',
+                address: connector.url,
+                target: connector.target || '',
+                inherits: connector.inherits || false,
+                appLocked: connector.locked,
+                casType: connector.casTypeId || '',
+                pattern: connector.casPattern || '',
+                scope: connector.oauthScope || '',
+                secret: connector.oauthSecret || '',
+                grantType: connector.oauthGrantType || ''
+            });
     }
 
     public deleteConnector(connector: ConnectorModel): Observable<void> {
