@@ -11,15 +11,11 @@ import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
 import { ServicesService } from '../../services.service';
 import { Observable } from 'rxjs';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { By } from '@angular/platform-browser';
 import { CasType } from './CasType';
 
 describe('SmartConnector', () => {
     let component: SmartConnectorComponent;
     let fixture: ComponentFixture<SmartConnectorComponent>;
-
-    let mockConnectorPropertiesComponent: MockConnectorPropertiesComponent;
-    let mockConnectorAssignmentComponent: MockConnectorAssignmentComponent;
     let mockServicesService: ServicesService;
     let mockServicesStore: ServicesStore;
     let mockNotifyService: NotifyService;
@@ -27,16 +23,34 @@ describe('SmartConnector', () => {
     let mockRouter: Router;
     let mockLocation: Location;
     let mockBundle: BundlesService;
+    let mockActivatedRoute: ActivatedRoute;
     let connectorsDataPushSpy: jasmine.Spy;
+    let connectorsDataSpliceSpy: jasmine.Spy;
 
     beforeEach(() => {
-        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'getCasTypes', 'addGroupToRole', 'removeGroupFromRole']);
-        mockServicesStore = jasmine.createSpyObj('ServicesStore', ['onchange']);
+        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes']);
+        (mockServicesService.getCasTypes as jasmine.Spy).and.returnValue(Observable.of([
+            {id: 'casType1', name:'casType1', description: 'casType1s'}
+        ]));
+
+        mockActivatedRoute = {
+            data: Observable.of({
+                roles: [
+                    { id: 'myRole1', name: 'myRole1', transverse: false },
+                    { id: 'myRole2', name: 'myRole2', transverse: false },
+                    { id: 'myRole3', name: 'myRole3', transverse: true }
+                ]
+            }),
+            params: Observable.of({ connectorId: 'connector1' })
+        } as ActivatedRoute;
+
+        mockServicesStore = new ServicesStore();
         mockServicesStore.structure = new StructureModel();
+        mockServicesStore.structure.id = 'structure1';
         mockServicesStore.structure.connectors = new ConnectorCollection();
         mockServicesStore.connector = new ConnectorModel();
-        connectorsDataPushSpy = spyOn(mockServicesStore.structure.connectors.data, 'push');
-
+        mockServicesStore.connector.id = 'connector1';
+        mockServicesStore.structure.connectors.data = [mockServicesStore.connector];
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockSpinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
@@ -57,7 +71,7 @@ describe('SmartConnector', () => {
                {provide: NotifyService, useValue: mockNotifyService},
                {provide: SpinnerService, useValue: mockSpinnerService},
                {provide: Router, useValue: mockRouter},
-               {provide: ActivatedRoute, useValue: {params: convertToParamMap({})}},
+               {provide: ActivatedRoute, useValue: mockActivatedRoute},
                {provide: Location, useValue: mockLocation},
                {provide: BundlesService, useValue: mockBundle}
             ],
@@ -71,40 +85,83 @@ describe('SmartConnector', () => {
        fixture = TestBed.createComponent(SmartConnectorComponent);
        component = fixture.debugElement.componentInstance;
        fixture.detectChanges();
-       mockConnectorPropertiesComponent = fixture.debugElement.query(By.directive(MockConnectorPropertiesComponent)).componentInstance;
-       mockConnectorAssignmentComponent = fixture.debugElement.query(By.directive(MockConnectorAssignmentComponent)).componentInstance;
     }));
 
     it('should create the SmartConnectorComponent component', async(() => {
         expect(component).toBeTruthy();
     }));
 
-    describe('create', () => {
-        it('should create a new connector', () => {
-            const newConnector: ConnectorModel = new ConnectorModel();
-            newConnector.name = 'newConnector';
-
-            mockServicesStore.structure.id = 'structureId';
-            (mockServicesService.createConnector as jasmine.Spy).and.returnValue(Observable.of({id: 'connectorId', roleId: 'roleId'}));
+    describe('onCreate', () => {
+        it('should create a new connector when given sumbit event', () => {
+            (mockServicesService.createConnector as jasmine.Spy).and.returnValue(Observable.of({id: 'newConnectorId', roleId: 'newRoleId'}));
+            connectorsDataPushSpy = spyOn(mockServicesStore.structure.connectors.data, 'push');
 
             component.onCreate('submit');
             expect(mockSpinnerService.perform).toHaveBeenCalled();
             expect(mockServicesService.createConnector).toHaveBeenCalled();
-
+            expect(mockServicesStore.connector.id).toBe('newConnectorId');
+            expect(mockServicesStore.connector.structureId).toBe(mockServicesStore.structure.id);
             const pushedConnector: ConnectorModel = connectorsDataPushSpy.calls.mostRecent().args[0];
-            expect(pushedConnector.name).toBe('newConnector');
-            expect(pushedConnector.id).toBe('connectorId');
-
-            expect(mockRouter.navigate).toHaveBeenCalledWith(['..', pushedConnector.id]
-                        , {relativeTo: {params: convertToParamMap({})}, replaceUrl: false});
+            expect(pushedConnector.id).toBe('newConnectorId');
             expect(mockNotifyService.success).toHaveBeenCalled();
-        })
-    });
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['..', pushedConnector.id]
+                , {relativeTo: mockActivatedRoute, replaceUrl: false});
+        });
 
-    describe('onCreate with cancel event', () => {
-        it('should call navigation.back', () => {
+        it('should call navigation.back when given cancel event', () => {
             component.onCreate('cancel');
             expect(mockLocation.back).toHaveBeenCalled();
+        });
+    });
+
+    describe('save', () => {
+        it('should save connector', () => {
+            (mockServicesService.saveConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+            component.save();
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockNotifyService.success).toHaveBeenCalled();
+        });
+    });
+
+    describe('onConfirmDeletion', () => {
+        it('should delete connector', () => {
+            (mockServicesService.deleteConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+            connectorsDataSpliceSpy = spyOn(mockServicesStore.structure.connectors.data, 'splice');
+            const connectorToDelete: ConnectorModel = new ConnectorModel();
+            connectorToDelete.id = 'connectorToDeleteId';
+            mockServicesStore.structure.connectors.data.push(connectorToDelete);
+            mockServicesStore.connector = connectorToDelete;
+
+            component.onConfirmDeletion();
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            const splicedConnectorIndex: number = connectorsDataSpliceSpy.calls.mostRecent().args[0];
+            
+            expect(splicedConnectorIndex).toBe(mockServicesStore.structure.connectors.data.length - 1);
+            expect(mockNotifyService.success).toHaveBeenCalled();
+            expect(mockRouter.navigate).toHaveBeenCalledWith(['..']
+                , {relativeTo: mockActivatedRoute, replaceUrl: false});
+        });
+    });
+
+    describe('lockToggle', () => {
+        it('should lock connector', () => {
+            mockServicesStore.connector.locked = false;
+            (mockServicesService.toggleLockConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+
+            component.lockToggle();
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesStore.connector.locked).toBe(true);
+            expect(mockNotifyService.success).toHaveBeenCalled();
+        });
+
+        it('should unlock connector', () => {
+            mockServicesStore.connector.locked = true;
+            (mockServicesService.toggleLockConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+
+            component.lockToggle();
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesStore.connector.locked).toBe(false);
+            expect(mockNotifyService.success).toHaveBeenCalled();
         });
     });
 })
@@ -119,16 +176,14 @@ class MockConnectorPropertiesComponent {
     @Input()
     casTypes: CasType[] = [];
     @Input()
-    isAdmc: boolean = false;
+    structureChildren: boolean = false;
     @Input()
-    hasChildren: boolean = false;
+    creationMode: boolean = false;
     @Input()
-    isCreationMode: boolean = false;
+    disabled: boolean = false;
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();
-    @Output()
-    save: EventEmitter<string> = new EventEmitter<string>();
 }
 
 @Component({
@@ -138,9 +193,11 @@ class MockConnectorPropertiesComponent {
 class MockConnectorAssignmentComponent {
     @Input()
     connector: ConnectorModel = new ConnectorModel();
+    @Input()
+    disabled: boolean = false;
 
     @Output()
-    remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
+    remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
     @Output()
-    add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
+    add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
 }
