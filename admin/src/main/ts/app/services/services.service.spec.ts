@@ -6,6 +6,8 @@ import { HttpTestingController, HttpClientTestingModule } from "@angular/common/
 describe('ServicesService', () => {
     let servicesService: ServicesService;
     let httpTestingController: HttpTestingController;
+    let connector: ConnectorModel;
+    let structureId: string;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -16,30 +18,74 @@ describe('ServicesService', () => {
                 HttpClientTestingModule
             ]
         });
-        servicesService =TestBed.get(ServicesService);
+        servicesService = TestBed.get(ServicesService);
         httpTestingController = TestBed.get(HttpTestingController);
-    });
-
-    it('should create connector', () => {
-        const connector = new ConnectorModel();
+        connector = new ConnectorModel();
         connector.name = 'connector1';
         connector.displayName = 'connector1';
         connector.url = '/connector1';
-        const structureId = 'structure1';
+        structureId = 'structure1';
+    });
 
+    it('should create connector', () => {
         servicesService.createConnector(connector, structureId).subscribe();
-        const createConnectorRequest = httpTestingController.expectOne(
+        const request = httpTestingController.expectOne(
             `/appregistry/application/external?structureId=${structureId}`);
-        expect(createConnectorRequest.request.method).toBe('POST');
+        expect(request.request.method).toBe('POST');
+        expect(request.request.body).toEqual({
+            name: connector.name,
+            displayName: connector.displayName,
+            icon: connector.icon || '',
+            address: connector.url,
+            target: connector.target || '',
+            inherits: connector.inherits || false,
+            appLocked: connector.locked || false,
+            casType: connector.casTypeId || '',
+            pattern: connector.casPattern || '',
+            scope: connector.oauthScope || '',
+            secret: connector.oauthSecret || '',
+            grantType: connector.oauthGrantType || ''
+        });
+    });
+
+    it('should save connector', () => {
+        servicesService.saveConnector(connector, structureId).subscribe();
+        const request = httpTestingController.expectOne(
+            `/appregistry/application/conf/${connector.id}?structureId=${structureId}`);
+        expect(request.request.method).toBe('PUT');
+        expect(request.request.body).toEqual({
+            name: connector.name,
+            displayName: connector.displayName,
+            icon: connector.icon || '',
+            address: connector.url,
+            target: connector.target || '',
+            inherits: connector.inherits || false,
+            appLocked: connector.locked || false,
+            casType: connector.casTypeId || '',
+            pattern: connector.casPattern || '',
+            scope: connector.oauthScope || '',
+            secret: connector.oauthSecret || '',
+            grantType: connector.oauthGrantType || ''
+        });
     });
 
     it('should delete connector', () => {
-        const connector:ConnectorModel = new ConnectorModel();
-        connector.id = 'connector1';
-
         servicesService.deleteConnector(connector).subscribe();
-        const deleteConnectorRequest = httpTestingController.expectOne(
+        const request = httpTestingController.expectOne(
             `/appregistry/application/external/${connector.id}`);
-        expect(deleteConnectorRequest.request.method).toBe('DELETE');
-    })
+        expect(request.request.method).toBe('DELETE');
+    });
+
+    it('should toggle connector lock', () => {
+        servicesService.toggleLockConnector(connector).subscribe();
+        const request = httpTestingController.expectOne(
+            `/appregistry/application/external/${connector.id}/lock`);
+        expect(request.request.method).toBe('PUT');
+    });
+
+    it('should get CAS types', () => {
+        servicesService.getCasTypes().subscribe();
+        const request = httpTestingController.expectOne(`/appregistry/cas-types`);
+        expect(request.request.method).toBe('GET');
+    });
 })
