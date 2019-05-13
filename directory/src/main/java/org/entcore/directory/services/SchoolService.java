@@ -58,16 +58,6 @@ public interface SchoolService {
 
 	void setDistributions(String structureId, List<String> distributions, Handler<Either<String, JsonObject>> handler);
 
-	void massmailNoCheck(String structureId, JsonObject filter, boolean groupChildren, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-
-	void massmailUsers(String structureId, JsonObject filter, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-
-	void massmailUsers(String structureId, JsonObject filter, boolean groupClasses, boolean groupChildren,
-			Boolean hasMail, boolean performCheck, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-	void massMailAllUsersByStructure(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-
-	void massMailUser(String userId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
-
 	void getMetrics(String structureId, Handler<Either<String, JsonObject>> results);
 
 	void listSources(String structureId, Handler<Either<String, JsonArray>> result);
