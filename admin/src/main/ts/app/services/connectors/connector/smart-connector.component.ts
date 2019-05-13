@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
+import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
 import { ConnectorModel, Session, SessionModel, GroupModel, RoleModel } from "../../../core/store";
@@ -12,7 +12,7 @@ import { BundlesService } from "sijil";
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
-import { NgForm } from "@angular/forms";
+import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
 
 @Component({
     selector: 'smart-connector',
@@ -45,7 +45,7 @@ import { NgForm } from "@angular/forms";
                     class="is-pulled-right has-left-margin-5"
                     (click)="save()"
                     *ngIf="currentTab === PROPERTIES_TAB"
-                    [disabled]="arePropertiesDisabled()">
+                    [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
                     <s5l>save.modifications</s5l>
                     <i class="fa fa-floppy-o is-size-5"></i>
                 </button>
@@ -148,6 +148,9 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public admc: boolean;
     public admlOfConnectorStructure: boolean;
     public showDeleteConfirmation: boolean;
+
+    @ViewChild(ConnectorPropertiesComponent)
+    connectorPropertiesComponent: ConnectorPropertiesComponent;
     
     public PROPERTIES_TAB = 'properties';
     public ASSIGNMENT_TAB = 'assignment';
@@ -238,6 +241,11 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
     public isLocked(): boolean {
         return this.servicesStore.connector && this.servicesStore.connector.locked;
+    }
+
+    public isSaveFormPristineOrInvalid(): boolean {
+        return this.connectorPropertiesComponent.propertiesFormRef.pristine 
+            || this.connectorPropertiesComponent.propertiesFormRef.invalid;
     }
 
     public onCreate($event): void {
