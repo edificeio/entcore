@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ViewChild } from "@angular/core";
 import { ConnectorModel } from "../../../../core/store";
 import { CasType } from "../CasType";
 import { NgForm } from "@angular/forms";
@@ -215,6 +215,9 @@ export class ConnectorPropertiesComponent {
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();
+
+    @ViewChild('propertiesForm')
+    propertiesFormRef: NgForm;
 
     LINKPARAMS_TARGET_PORTAL = '';
     LINKPARAMS_TARGET_NEWPAGE = '_blank';
