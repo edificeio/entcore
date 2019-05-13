@@ -103,6 +103,7 @@ public class Directory extends BaseServer {
 		StructureController structureController = new StructureController();
 		structureController.setStructureService(schoolService);
 		structureController.setNotifHelper(emailSender);
+		structureController.setMassMailService(new DefaultMassMailService(vertx,eb,emailSender,config));
 		addController(structureController);
 
 		ClassController classController = new ClassController();
