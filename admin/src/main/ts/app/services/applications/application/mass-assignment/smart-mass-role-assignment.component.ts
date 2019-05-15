@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Assignment, Profile, Role, Structure } from './mass-role-assignment.component';
+import { MassAssignment, Profile, Role, Structure } from '../../../shared/assignment-types';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { RoleModel } from '../../../../core/store/models';
@@ -41,7 +41,7 @@ export class SmartMassRoleAssignment implements OnInit, OnDestroy {
         });
     }
 
-    public assign(assignment: Assignment): void {
+    public assign(assignment: MassAssignment): void {
         this.http.put<void>(`/appregistry/structures/${assignment.structure.id}/roles`, {
             roles: assignment.roles.map(role => role.id),
             profiles: assignment.profiles
@@ -61,7 +61,7 @@ export class SmartMassRoleAssignment implements OnInit, OnDestroy {
             });
     }
 
-    public unassign(assignment: Assignment): void {
+    public unassign(assignment: MassAssignment): void {
         const responseType: 'text' = 'text';
         const options = {
             responseType,

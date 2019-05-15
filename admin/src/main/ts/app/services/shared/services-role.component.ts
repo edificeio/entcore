@@ -16,25 +16,27 @@ import { RoleModel, GroupModel } from '../../core/store/models';
                 </div>
             </div>
 
-            <div>
-                <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">
-                    {{ 'groups.local' | translate }}
-                </h4>
-                <ul class="actions-list">
-                    <li *ngFor="let group of role.groups">
-                        <span>{{ group.name }}</span>
-                        <i class="fa fa-times action" (click)="onRemove.emit(group)"></i>
-                    </li>
-                </ul>
-            </div>
+            <div *ngIf="role.groups.length > 0">
+                <div>
+                    <h4 *ngIf="role.subStructures != null && role.subStructures.length > 0">
+                        {{ 'groups.local' | translate }}
+                    </h4>
+                    <ul class="actions-list">
+                        <li *ngFor="let group of role.groups">
+                            <span>{{ group.name }}</span>
+                            <i class="fa fa-times action" (click)="onRemove.emit(group)"></i>
+                        </li>
+                    </ul>
+                </div>
 
-            <div *ngIf="role.subStructures != null && role.subStructures.length > 0">
-                <h4>{{ 'role.substructure' | translate }}</h4>
-                <ul class="actions-list">
-                    <li *ngFor="let s of role.subStructures">
-                        <span>{{ s }}</span>
-                    </li>
-                </ul>
+                <div *ngIf="role.subStructures != null && role.subStructures.length > 0">
+                    <h4>{{ 'role.substructure' | translate }}</h4>
+                    <ul class="actions-list">
+                        <li *ngFor="let s of role.subStructures">
+                            <span>{{ s }}</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </panel-section>
     `

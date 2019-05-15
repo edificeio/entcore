@@ -1,4 +1,5 @@
-import { Assignment, MassRoleAssignment, Profile, Role } from './mass-role-assignment.component';
+import { MassRoleAssignment } from './mass-role-assignment.component';
+import { Profile, Role, MassAssignment } from '../../../shared/assignment-types';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
@@ -53,8 +54,8 @@ describe('MassRoleAssignment', () => {
 
     describe('assign', () => {
         it(`should emit a 'submitAssignment' event with the given roles, profiles and current structureId`, () => {
-            let result: Assignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
-            component.submitAssignment.subscribe((event: Assignment) => result = event);
+            let result: MassAssignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
+            component.submitAssignment.subscribe((event: MassAssignment) => result = event);
             component.assign([{id: 'role1', name: 'role1'}], ['Student', 'Guest']);
             expect(result.structure.id).toBe('myStructure');
             expect(result.roles).toEqual([{id: 'role1', name: 'role1'}]);
@@ -64,8 +65,8 @@ describe('MassRoleAssignment', () => {
 
     describe('unassign', () => {
         it(`should emit a 'submitUnassignment' event with the given roles, profiles and current structureId`, () => {
-            let result: Assignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
-            component.submitUnassignment.subscribe((event: Assignment) => result = event);
+            let result: MassAssignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
+            component.submitUnassignment.subscribe((event: MassAssignment) => result = event);
             component.unassign([{id: 'role1', name: 'role1'}], ['Student', 'Guest']);
             expect(result.structure.id).toBe('myStructure');
             expect(result.roles).toEqual([{id: 'role1', name: 'role1'}]);
@@ -74,8 +75,8 @@ describe('MassRoleAssignment', () => {
     });
 
     it(`should emit a 'submitAssignment' event, when clicking on the assign button and confirm tooltip`, () => {
-        let result: Assignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
-        component.submitAssignment.subscribe((event: Assignment) => result = event);
+        let result: MassAssignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
+        component.submitAssignment.subscribe((event: MassAssignment) => result = event);
         component.assignmentForm.get('roles').setValue([{id: 'role1', name: 'role1'}]);
         component.assignmentForm.get('profiles').setValue(['Student']);
         fixture.detectChanges();
@@ -88,8 +89,8 @@ describe('MassRoleAssignment', () => {
     });
 
     it(`should emit a 'submitUnassignment' event, when clicking on the unassign button and confirm tooltip`, () => {
-        let result: Assignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
-        component.submitUnassignment.subscribe((event: Assignment) => result = event);
+        let result: MassAssignment = {structure: {id: '', name: ''}, profiles: [], roles: []};
+        component.submitUnassignment.subscribe((event: MassAssignment) => result = event);
         component.assignmentForm.get('roles').setValue([{id: 'role1', name: 'role1'}]);
         component.assignmentForm.get('profiles').setValue(['Student']);
         fixture.detectChanges();

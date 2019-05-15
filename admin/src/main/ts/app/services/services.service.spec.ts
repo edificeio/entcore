@@ -2,6 +2,8 @@ import { ServicesService } from "./services.service";
 import { TestBed } from "@angular/core/testing";
 import { ConnectorModel } from "../core/store";
 import { HttpTestingController, HttpClientTestingModule } from "@angular/common/http/testing";
+import { Profile } from "./shared/assignment-types";
+import { ProfilesService } from "../core/services";
 
 describe('ServicesService', () => {
     let servicesService: ServicesService;
@@ -27,65 +29,97 @@ describe('ServicesService', () => {
         structureId = 'structure1';
     });
 
-    it('should create connector', () => {
-        servicesService.createConnector(connector, structureId).subscribe();
-        const request = httpTestingController.expectOne(
-            `/appregistry/application/external?structureId=${structureId}`);
-        expect(request.request.method).toBe('POST');
-        expect(request.request.body).toEqual({
-            name: connector.name,
-            displayName: connector.displayName,
-            icon: connector.icon || '',
-            address: connector.url,
-            target: connector.target || '',
-            inherits: connector.inherits || false,
-            appLocked: connector.locked || false,
-            casType: connector.casTypeId || '',
-            pattern: connector.casPattern || '',
-            scope: connector.oauthScope || '',
-            secret: connector.oauthSecret || '',
-            grantType: connector.oauthGrantType || ''
+    describe('createConnector', () => {
+        it('should call POST /appregistry/application/external?structureId=${structureId} with given structureId and given connector in request body', () => {
+            servicesService.createConnector(connector, structureId).subscribe();
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/external?structureId=${structureId}`);
+            expect(request.request.method).toBe('POST');
+            expect(request.request.body).toEqual({
+                name: connector.name,
+                displayName: connector.displayName,
+                icon: connector.icon || '',
+                address: connector.url,
+                target: connector.target || '',
+                inherits: connector.inherits || false,
+                casType: connector.casTypeId || '',
+                pattern: connector.casPattern || '',
+                scope: connector.oauthScope || '',
+                secret: connector.oauthSecret || '',
+                grantType: connector.oauthGrantType || ''
+            });
         });
     });
 
-    it('should save connector', () => {
-        servicesService.saveConnector(connector, structureId).subscribe();
-        const request = httpTestingController.expectOne(
-            `/appregistry/application/conf/${connector.id}?structureId=${structureId}`);
-        expect(request.request.method).toBe('PUT');
-        expect(request.request.body).toEqual({
-            name: connector.name,
-            displayName: connector.displayName,
-            icon: connector.icon || '',
-            address: connector.url,
-            target: connector.target || '',
-            inherits: connector.inherits || false,
-            appLocked: connector.locked || false,
-            casType: connector.casTypeId || '',
-            pattern: connector.casPattern || '',
-            scope: connector.oauthScope || '',
-            secret: connector.oauthSecret || '',
-            grantType: connector.oauthGrantType || ''
+    describe('saveConnector', () => {
+        it('should call PUT /appregistry/application/conf/${connector.id}?structureId=${structureId}with given structureId and given connector in request body', () => {
+            servicesService.saveConnector(connector, structureId).subscribe();
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/conf/${connector.id}?structureId=${structureId}`);
+            expect(request.request.method).toBe('PUT');
+            expect(request.request.body).toEqual({
+                name: connector.name,
+                displayName: connector.displayName,
+                icon: connector.icon || '',
+                address: connector.url,
+                target: connector.target || '',
+                inherits: connector.inherits || false,
+                casType: connector.casTypeId || '',
+                pattern: connector.casPattern || '',
+                scope: connector.oauthScope || '',
+                secret: connector.oauthSecret || '',
+                grantType: connector.oauthGrantType || ''
+            });
         });
     });
 
-    it('should delete connector', () => {
-        servicesService.deleteConnector(connector).subscribe();
-        const request = httpTestingController.expectOne(
-            `/appregistry/application/external/${connector.id}`);
-        expect(request.request.method).toBe('DELETE');
+    describe('deleteConnector', () => {
+        it('should call DELETE /appregistry/application/external/${connector.id} with given connector', () => {
+            servicesService.deleteConnector(connector).subscribe();
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/external/${connector.id}`);
+            expect(request.request.method).toBe('DELETE');
+        });
     });
 
-    it('should toggle connector lock', () => {
-        servicesService.toggleLockConnector(connector).subscribe();
-        const request = httpTestingController.expectOne(
-            `/appregistry/application/external/${connector.id}/lock`);
-        expect(request.request.method).toBe('PUT');
+    describe('toggleLockConnector', () => {
+        it('should call PUT /appregistry/application/external/${connector.id}/lock with given connectorId', () => {
+            servicesService.toggleLockConnector(connector).subscribe();
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/external/${connector.id}/lock`);
+            expect(request.request.method).toBe('PUT');
+        });
     });
 
-    it('should get CAS types', () => {
-        servicesService.getCasTypes().subscribe();
-        const request = httpTestingController.expectOne(`/appregistry/cas-types`);
-        expect(request.request.method).toBe('GET');
+    describe('gtCasTypes', () => {
+        it('should call GET /appregistry/cas-types', () => {
+            servicesService.getCasTypes().subscribe();
+            const request = httpTestingController.expectOne(`/appregistry/cas-types`);
+            expect(request.request.method).toBe('GET');
+        });
     });
+
+    describe('massAssignConnector', () => {
+        it('should call PUT /appregistry/application/external/${connector.id}/authorize?profile=Teacher with given connectorId and given profiles', () => {
+            const profiles: Profile[] = ['Teacher'];
+            servicesService.massAssignConnector(connector, profiles).subscribe();
+    
+            const expectedProfilesParams: string = '?profile=Teacher';
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/external/${connector.id}/authorize${expectedProfilesParams}`);
+            expect(request.request.method).toBe('PUT');
+        });
+    });
+
+    describe('massUnassignConnector', () => {
+        it('should call DELETE /appregistry/application/external/${connector.id}/authorize?profile=Teacher with given connectorId and given profiles', () => {
+            const profiles: Profile[] = ['Teacher'];
+            servicesService.massUnassignConnector(connector, profiles).subscribe();
+    
+            const expectedProfilesParams: string = '?profile=Teacher';
+            const request = httpTestingController.expectOne(
+                `/appregistry/application/external/${connector.id}/authorize${expectedProfilesParams}`);
+            expect(request.request.method).toBe('DELETE');
+        });
+    })
 })
