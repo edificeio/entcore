@@ -28,12 +28,17 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+
+import java.util.Arrays;
+import java.util.List;
+
 import static org.entcore.common.utils.Config.defaultDeleteUserDelay;
 import static org.entcore.common.utils.Config.defaultPreDeleteUserDelay;
 
 public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
+	private static final List<String> PROFILES = Arrays.asList("Personnel", "Teacher", "Student", "Relative", "Guest");
 
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
@@ -54,11 +59,29 @@ public class PlatformInfoController extends BaseController {
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
 	@ResourceFilter(AdminFilter.class)
 	public void readConfig(HttpServerRequest request) {
-		renderJson(request, new JsonObject()
-                .put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
-                .put("pre-delete-user-delay", config.getLong("pre-delete-user-delay", defaultPreDeleteUserDelay))
-                .put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
-                .put("distributions", config.getJsonArray("distributions", new JsonArray()))
-		);
+		final JsonObject preDelete = config.getJsonObject("pre-delete");
+		final JsonObject configuration =  new JsonObject()
+				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
+				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
+				.put("distributions", config.getJsonArray("distributions", new JsonArray()));
+
+		if (preDelete != null && preDelete.size() == PROFILES.size() &&
+				PROFILES.containsAll(preDelete.fieldNames())) {
+			for (String profile : preDelete.fieldNames()) {
+				final JsonObject profilePreDelete = preDelete.getJsonObject(profile);
+				if (profilePreDelete == null ||
+						profilePreDelete.getLong("delay") == null) {
+					configuration.put(profile.toLowerCase() + "-pre-delete-delay", defaultPreDeleteUserDelay);
+				} else {
+					configuration.put(profile.toLowerCase() + "-pre-delete-delay", profilePreDelete.getLong("delay"));
+				}
+			}
+		} else {
+			for (String profile : PROFILES) {
+				configuration.put(profile.toLowerCase() + "-pre-delete-delay", defaultPreDeleteUserDelay);
+			}
+		}
+
+		renderJson(request, configuration);
 	}
 }
