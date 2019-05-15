@@ -2,7 +2,7 @@ import { SmartMassRoleAssignment } from './smart-mass-role-assignment.component'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Assignment, Profile, Role, Structure } from './mass-role-assignment.component';
+import { Assignment, Profile, Role, Structure, MassAssignment } from '../../../shared/assignment-types';
 import { By } from '@angular/platform-browser';
 import { ServicesStore } from '../../../services.store';
 import { ActivatedRoute } from '@angular/router';
@@ -118,7 +118,7 @@ class MockMassRoleAssignment {
     @Input()
     public profiles: Array<Profile>;
     @Output()
-    public submitAssignment: EventEmitter<Assignment> = new EventEmitter<Assignment>();
+    public submitAssignment: EventEmitter<MassAssignment> = new EventEmitter<MassAssignment>();
     @Output()
-    public submitUnassignment: EventEmitter<Assignment> = new EventEmitter<Assignment>();
+    public submitUnassignment: EventEmitter<MassAssignment> = new EventEmitter<MassAssignment>();
 }

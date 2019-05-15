@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { RoleModel, ApplicationModel, GroupModel } from '../../../../core/store/models';
+import { Assignment } from '../../../shared/assignment-types';
 
 @Component({
     selector: 'application-assignment',
@@ -42,9 +43,9 @@ export class ApplicationAssignmentComponent {
     application: ApplicationModel;
 
     @Output()
-    remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
+    remove: EventEmitter<Assignment> = new EventEmitter();
     @Output()
-    add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
+    add: EventEmitter<Assignment> = new EventEmitter();
 
     selectedRole: RoleModel;
     showRoleAttributionLightbox:boolean = false;
