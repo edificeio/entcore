@@ -458,6 +458,7 @@
     "appregistry.failed.app": "Une autre application porte peut être ce nom.",
     "appregistry.failed.app.url": "L'URL saisie est invalide.",
     
+    "services.connector.save.button": "Enregistrer",
     "services.connector.save.success.title": "Modification effectuée",
     "services.connector.save.success.content": "Le connecteur {{connector}} a bien été modifié.",
     "services.connector.save.error.title": "Erreur lors de la modification",
