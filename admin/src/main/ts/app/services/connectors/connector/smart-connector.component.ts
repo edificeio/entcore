@@ -18,54 +18,56 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
 @Component({
     selector: 'smart-connector',
     template: `
-        <div class="panel-header">
+        <div class="panel-header is-display-flex has-align-items-center has-space-between">
             <span *ngIf="isCreationMode() else isEditionMode">
                 <s5l>services.connector.create.title</s5l>
             </span>
             <ng-template #isEditionMode>
-                <span>{{ servicesStore.connector.displayName }}</span>
-                <i *ngIf="isInherited()"
-                    class="fa fa-link has-left-margin-5"
-                    [title]="'services.connector.inherited' | translate">
-                </i>
-                <i *ngIf="isLocked()"
-                    class="fa fa-lock has-left-margin-5"
-                    [title]="'services.connector.locked' | translate">
-                </i>
+                <div>
+                    <span>{{ servicesStore.connector.displayName }}</span>
+                    <i *ngIf="isInherited()"
+                        class="fa fa-link has-left-margin-5"
+                        [title]="'services.connector.inherited' | translate">
+                    </i>
+                    <i *ngIf="isLocked()"
+                        class="fa fa-lock has-left-margin-5"
+                        [title]="'services.connector.locked' | translate">
+                    </i>
+                </div>
 
-                <button type="button" 
-                        class="is-danger is-pulled-right has-left-margin-5" 
-                        *ngIf="!isInherited()"
-                        (click)="showDeleteConfirmation = true;"
-                        [disabled]="arePropertiesDisabled()">
-                    <s5l>services.connector.delete.button</s5l>
-                    <i class="fa fa-trash is-size-5"></i>
-                </button>
+                <div>
+                    <button type="button"
+                            *ngIf="!isInherited()"
+                            (click)="showDeleteConfirmation = true;"
+                            [disabled]="arePropertiesDisabled()">
+                        <s5l>services.connector.delete.button</s5l>
+                        <i class="fa fa-trash is-size-5"></i>
+                    </button>
 
-                <button type="button"
-                        class="is-pulled-right has-left-margin-5"
-                        *ngIf="admc && !isInherited()"
-                        (click)="lockToggle()">
-                    <span *ngIf="isLocked() else isUnlocked">
-                        <s5l>services.connector.unlock.button</s5l>
-                        <i class="fa fa-unlock is-size-5"></i>
-                    </span>
-                    <ng-template #isUnlocked>
-                        <span>
-                            <s5l>services.connector.lock.button</s5l>
-                            <i class="fa fa-lock is-size-5"></i>
+                    <button type="button"
+                            *ngIf="admc && !isInherited()"
+                            (click)="lockToggle()">
+                        <span *ngIf="isLocked() else isUnlocked">
+                            <s5l>services.connector.unlock.button</s5l>
+                            <i class="fa fa-unlock is-size-5"></i>
                         </span>
-                    </ng-template>
-                </button>
-                
-                <button type="button" 
-                    class="is-pulled-right"
-                    (click)="save()"
-                    *ngIf="currentTab === PROPERTIES_TAB && !isInherited()"
-                    [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
-                    <s5l>save.modifications</s5l>
-                    <i class="fa fa-floppy-o is-size-5"></i>
-                </button>
+                        <ng-template #isUnlocked>
+                            <span>
+                                <s5l>services.connector.lock.button</s5l>
+                                <i class="fa fa-lock is-size-5"></i>
+                            </span>
+                        </ng-template>
+                    </button>
+
+                    <button type="button" 
+                        class="confirm"
+                        (click)="save()"
+                        *ngIf="currentTab === PROPERTIES_TAB && !isInherited()"
+                        [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
+                        <s5l>services.connector.save.button</s5l>
+                        <i class="fa fa-floppy-o is-size-5"></i>
+                    </button>
+                </div>
             </ng-template>
         </div>
     
@@ -314,6 +316,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         this.spinnerService.perform('portal-content'
             , this.servicesService.saveConnector(this.servicesStore.connector, this.servicesStore.structure.id)
                 .do(res => {
+                    this.connectorPropertiesComponent.propertiesFormRef.form.markAsPristine();
                     this.notifyService.success({
                         key: 'services.connector.save.success.content',
                         parameters: {connector: this.servicesStore.connector.displayName}

@@ -33,7 +33,7 @@ import 'rxjs/add/operator/toPromise';
                     <button type="button" class="cancel" (click)="cancel()">
                         <s5l>create.group.cancel</s5l>
                     </button>
-                    <button class="create"
+                    <button class="create confirm"
                             [disabled]="createForm.pristine || createForm.invalid">
                         <s5l>create.group.submit</s5l>
                     </button>

@@ -110,7 +110,7 @@ import { SpinnerService, NotifyService, UserListService, UserChildrenListService
                     <button type="button" class="cancel" (click)="cancel()">
                         <s5l>create.user.cancel</s5l>
                     </button>
-                    <button class="create" 
+                    <button class="create confirm" 
                         [disabled]="createForm.pristine || createForm.invalid">
                         <s5l>create.user.submit</s5l>
                     </button>
