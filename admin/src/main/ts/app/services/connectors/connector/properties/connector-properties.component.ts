@@ -157,13 +157,15 @@ import { NgForm } from "@angular/forms";
 
             <div *ngIf="creationMode" 
                 class="connector-properties__action">
-                <button type="button" (click)="create.emit('cancel')">
+                <button type="button" 
+                        class="connector-properties__action--cancel"
+                        (click)="create.emit('cancel')">
                     <s5l>services.connector.create.button.cancel</s5l>
                 </button>
                 <button type="button"
+                        class="connector-properties__action--submit confirm"
                         (click)="create.emit('submit')" 
-                        [disabled]="propertiesForm.pristine || propertiesForm.invalid" 
-                        class="connector-properties__action--submit">
+                        [disabled]="propertiesForm.pristine || propertiesForm.invalid">
                     <s5l>services.connector.create.button.submit</s5l>
                 </button>
             </div>
@@ -176,9 +178,15 @@ import { NgForm } from "@angular/forms";
             padding: 20px 10px 10px 10px;
         }
     `, `
+        .connector-properties__action--cancel {
+            min-width: 80px;
+            text-align: center;
+        }
+    `, `
         .connector-properties__action--submit {
             margin-left: 5px;
-            margin-right: 10px;
+            min-width: 80px;
+            text-align: center;
         }
     `, `
         .connector-properties-warning {
