@@ -13,7 +13,7 @@ import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
 import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
-import { Profile, Structure, Assignment, MassAssignment } from "../../shared/assignment-types";
+import { Profile, Structure, Assignment } from "../../shared/assignment-types";
 
 @Component({
     selector: 'smart-connector',
@@ -35,26 +35,17 @@ import { Profile, Structure, Assignment, MassAssignment } from "../../shared/ass
 
                 <button type="button" 
                         class="is-danger is-pulled-right has-left-margin-5" 
+                        *ngIf="!isInherited()"
                         (click)="showDeleteConfirmation = true;"
                         [disabled]="arePropertiesDisabled()">
                     <s5l>services.connector.delete.button</s5l>
                     <i class="fa fa-trash is-size-5"></i>
                 </button>
 
-                <button
-                    type="button" 
-                    class="is-pulled-right has-left-margin-5"
-                    (click)="save()"
-                    *ngIf="currentTab === PROPERTIES_TAB"
-                    [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
-                    <s5l>save.modifications</s5l>
-                    <i class="fa fa-floppy-o is-size-5"></i>
-                </button>
-
                 <button type="button"
-                        class="is-pulled-right"
-                        *ngIf="admc"
-                        (click)="lockToggle();">
+                        class="is-pulled-right has-left-margin-5"
+                        *ngIf="admc && !isInherited()"
+                        (click)="lockToggle()">
                     <span *ngIf="isLocked() else isUnlocked">
                         <s5l>services.connector.unlock.button</s5l>
                         <i class="fa fa-unlock is-size-5"></i>
@@ -66,10 +57,19 @@ import { Profile, Structure, Assignment, MassAssignment } from "../../shared/ass
                         </span>
                     </ng-template>
                 </button>
+                
+                <button type="button" 
+                    class="is-pulled-right"
+                    (click)="save()"
+                    *ngIf="currentTab === PROPERTIES_TAB && !isInherited()"
+                    [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
+                    <s5l>save.modifications</s5l>
+                    <i class="fa fa-floppy-o is-size-5"></i>
+                </button>
             </ng-template>
         </div>
     
-        <div class="message is-warning" *ngIf="isLocked() && !isCreationMode()">
+        <div class="message is-warning" *ngIf="isLocked() && !isCreationMode() && !isInherited()">
             <div class="message-body">
                 <s5l *ngIf="currentTab === PROPERTIES_TAB">services.connector.locked.warning.properties</s5l>
                 <s5l *ngIf="currentTab === ASSIGNMENT_TAB">services.connector.locked.warning.assignment</s5l>
