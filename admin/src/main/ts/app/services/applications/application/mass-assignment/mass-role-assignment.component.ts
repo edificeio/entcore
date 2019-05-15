@@ -2,24 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BundlesService } from 'sijil';
 import { MultiSelectOption } from '../../../../shared/ux/components/multi-select.component';
-
-export interface Role {
-    id: string;
-    name: string;
-}
-
-export type Profile = 'Teacher' | 'Student' | 'Relative' | 'Guest' | 'Personnel';
-
-export interface Structure {
-    id: string;
-    name: string;
-}
-
-export interface Assignment {
-    roles: Array<Role>;
-    profiles: Array<Profile>;
-    structure: Structure;
-}
+import { Structure, Role, Profile, MassAssignment } from '../../../shared/assignment-types';
 
 @Component({
     selector: 'mass-role-assignment',
@@ -119,9 +102,9 @@ export class MassRoleAssignment implements OnInit, OnChanges {
     @Input()
     public profiles: Array<Profile>;
     @Output()
-    public submitAssignment: EventEmitter<Assignment> = new EventEmitter<Assignment>();
+    public submitAssignment: EventEmitter<MassAssignment> = new EventEmitter<MassAssignment>();
     @Output()
-    public submitUnassignment: EventEmitter<Assignment> = new EventEmitter<Assignment>();
+    public submitUnassignment: EventEmitter<MassAssignment> = new EventEmitter<MassAssignment>();
 
     public roleOptions: Array<MultiSelectOption<Role>> = [];
     public roleTrackByFn = (r: Role) => r.id;
