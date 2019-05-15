@@ -5,6 +5,7 @@ import { ConnectorModel, GroupModel, RoleModel } from "../core/store";
 import { CasType } from "./connectors/connector/CasType";
 
 import 'rxjs/add/operator/do';
+import { MassAssignment, Profile } from "./shared/assignment-types";
 
 @Injectable()
 export class ServicesService {
@@ -65,5 +66,33 @@ export class ServicesService {
 
     public getCasTypes(): Observable<CasType[]> {
         return this.httpClient.get<CasType[]>('/appregistry/cas-types');
+    }
+
+    public massAssignConnector(connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
+        var profilesParams = "";
+
+        profiles.forEach(p => {
+            if (profilesParams) {
+                profilesParams += "&profile=" + p;
+            } else {
+                profilesParams += "?profile=" + p;
+            }
+        });
+
+        return this.httpClient.put<void>(`/appregistry/application/external/${connector.id}/authorize${profilesParams}`, {});
+    }
+
+    public massUnassignConnector(connector: ConnectorModel, profiles: Array<Profile>): Observable<void> {
+        var profilesParams = "";
+
+        profiles.forEach(p => {
+            if (profilesParams) {
+                profilesParams += "&profile=" + p;
+            } else {
+                profilesParams += "?profile=" + p;
+            }
+        });
+
+        return this.httpClient.delete<void>(`/appregistry/application/external/${connector.id}/authorize${profilesParams}`, {});
     }
 }

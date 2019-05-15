@@ -488,6 +488,18 @@
     "services.connector.inherited": "Le connecteur est hérité",
     "services.connector.inherited.warning.properties": "Connecteur hérité - vous ne pouvez pas modifier ses propriétés",
 
+    "services.connector.mass-assignment.description": "L'attribution en masse permet d'attribuer le droits d'accès au connecteur à tous les groupes de profil des structures sous-jacentes.",
+    "services.connector.mass-assignment.confirm.assignment": "Vous allez <b>ajouter</b> le droit d'accès au connecteur à tous les établissements qui sont rattachés à la structure <b>{{structure}}</b> pour les profiles : <b>{{profiles}}</b>",
+    "services.connector.mass-assignment.confirm.unassignment": "Vous allez <b>retirer</b> le droit d'accès au connecteur à tous les établissements qui sont rattachés à la structure <b>{{structure}}</b> pour les profiles : <b>{{profiles}}</b>",
+    "services.connector.mass-assignment.assign-success.title": "Attribution effectuée",
+    "services.connector.mass-assignment.assign-success.content": "L'attribution du droit d'accès au connecteur a été effectuée avec succès.",
+    "services.connector.mass-assignment.assign-error.title": "Une erreur est survenue",
+    "services.connector.mass-assignment.assign-error.content": "Une erreur est survenue pendant l'attribution du droit d'accès au connecteur.",
+    "services.connector.mass-assignment.unassign-success.title": "Désattribution effectuée",
+    "services.connector.mass-assignment.unassign-success.content": "La désattribution du droit d'accès a été effectuée avec succès.",
+    "services.connector.mass-assignment.unassign-error.title": "Une erreur est survenue",
+    "services.connector.mass-assignment.unassign-error.content": "Une erreur est survenue pendant la désattribution du droit d'accès.",
+
     "services.tab.properties": "Propriétés",
     "services.tab.assignment": "Attribution",
     "services.tab.mass-assignment": "Attribution en masse",

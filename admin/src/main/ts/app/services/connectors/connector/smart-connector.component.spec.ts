@@ -7,11 +7,12 @@ import { UxModule } from '../../../shared/ux/ux.module';
 import { ServicesStore } from '../../services.store';
 import { NotifyService, SpinnerService } from '../../../core/services';
 import { StructureModel, ConnectorModel, RoleModel, GroupModel, ConnectorCollection } from '../../../core/store';
-import { Router, ActivatedRoute, convertToParamMap } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ServicesService } from '../../services.service';
 import { Observable } from 'rxjs';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CasType } from './CasType';
+import { Structure, Profile } from '../../shared/assignment-types';
 
 describe('SmartConnector', () => {
     let component: SmartConnectorComponent;
@@ -28,7 +29,7 @@ describe('SmartConnector', () => {
     let connectorsDataSpliceSpy: jasmine.Spy;
 
     beforeEach(() => {
-        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes']);
+        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes', 'massAssignConnector', 'massUnassignConnector']);
         (mockServicesService.getCasTypes as jasmine.Spy).and.returnValue(Observable.of([
             {id: 'casType1', name:'casType1', description: 'casType1s'}
         ]));
@@ -50,12 +51,13 @@ describe('SmartConnector', () => {
         mockServicesStore.structure.connectors = new ConnectorCollection();
         mockServicesStore.connector = new ConnectorModel();
         mockServicesStore.connector.id = 'connector1';
+
         mockServicesStore.structure.connectors.data = [mockServicesStore.connector];
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockSpinnerService = jasmine.createSpyObj('SpinnerService', ['perform']);
         mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         mockLocation = jasmine.createSpyObj('Location', ['back']);
-        mockBundle = jasmine.createSpyObj('BundlesService', ['translate'])
+        mockBundle = jasmine.createSpyObj('BundlesService', ['translate']);
     });
 
     beforeEach(async(() => {
@@ -63,7 +65,8 @@ describe('SmartConnector', () => {
             declarations: [
                SmartConnectorComponent, 
                MockConnectorPropertiesComponent, 
-               MockConnectorAssignmentComponent
+               MockConnectorAssignmentComponent,
+               MockConnectorMassAssignmentComponent
             ],
             providers: [
                {provide: ServicesService, useValue: mockServicesService},
@@ -119,6 +122,7 @@ describe('SmartConnector', () => {
             (mockServicesService.saveConnector as jasmine.Spy).and.returnValue(Observable.of({}));
             component.save();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.saveConnector).toHaveBeenCalled();
             expect(mockNotifyService.success).toHaveBeenCalled();
         });
     });
@@ -134,6 +138,7 @@ describe('SmartConnector', () => {
 
             component.onConfirmDeletion();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.deleteConnector).toHaveBeenCalled();
             const splicedConnectorIndex: number = connectorsDataSpliceSpy.calls.mostRecent().args[0];
             
             expect(splicedConnectorIndex).toBe(mockServicesStore.structure.connectors.data.length - 1);
@@ -150,6 +155,7 @@ describe('SmartConnector', () => {
 
             component.lockToggle();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.toggleLockConnector).toHaveBeenCalled();
             expect(mockServicesStore.connector.locked).toBe(true);
             expect(mockNotifyService.success).toHaveBeenCalled();
         });
@@ -160,7 +166,40 @@ describe('SmartConnector', () => {
 
             component.lockToggle();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.toggleLockConnector).toHaveBeenCalled();
             expect(mockServicesStore.connector.locked).toBe(false);
+            expect(mockNotifyService.success).toHaveBeenCalled();
+        });
+    });
+
+    describe('onAddMassAssignment', () => {
+        it('should add mass assignment for given profiles', () => {
+            const profiles: Profile[] = ['Personnel'];
+            (mockServicesService.massAssignConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+            mockServicesStore.connector.syncRoles = (structureId: string, connectorId: string) => {
+                return new Promise<void>((res, err) => {});
+            }
+            
+            component.onAddMassAssignment(profiles);
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            // TODO expect servicesStore.connector.syncRoles haveBeenCalled
+            expect(mockServicesService.massAssignConnector).toHaveBeenCalled();
+            expect(mockNotifyService.success).toHaveBeenCalled();
+        });
+    });
+
+    describe('onRemoveMassAssignment', () => {
+        it('should remove mass assignment for given profiles', () => {
+            const profiles: Profile[] = ['Personnel'];
+            (mockServicesService.massUnassignConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+            mockServicesStore.connector.syncRoles = (structureId: string, connectorId: string) => {
+                return new Promise<void>((res, err) => {});
+            }
+
+            component.onRemoveMassAssignment(profiles);
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.massUnassignConnector).toHaveBeenCalled();
+            // TODO expect servicesStore.connector.syncRoles haveBeenCalled            
             expect(mockNotifyService.success).toHaveBeenCalled();
         });
     });
@@ -200,4 +239,20 @@ class MockConnectorAssignmentComponent {
     remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
     @Output()
     add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
+}
+
+@Component({
+    selector: 'connector-mass-assignment',
+    template: ''
+})
+class MockConnectorMassAssignmentComponent {
+    @Input()
+    structure: Structure;
+    @Input()
+    profiles: Array<Profile>;
+
+    @Output()
+    submitAssignment: EventEmitter<Array<Profile>> = new EventEmitter();
+    @Output()
+    submitUnassignment: EventEmitter<Array<Profile>> = new EventEmitter();
 }

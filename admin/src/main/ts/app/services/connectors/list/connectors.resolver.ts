@@ -13,16 +13,12 @@ export class ConnectorsResolver implements Resolve<ConnectorModel[]> {
     resolve(route: ActivatedRouteSnapshot): Promise<ConnectorModel[]> {
         let currentStructure = globalStore.structures.data.find(
             s => s.id === routing.getParam(route, 'structureId'));
-        if (currentStructure.connectors.data.length > 0) {
-            return Promise.resolve(currentStructure.connectors.data);
-        } else {
-            return this.spinner.perform('portal-content', currentStructure.connectors.syncConnectors()
-                .then(data => {
-                    return currentStructure.connectors.data;
-                })
-                .catch(e => console.error(e))
-            );
-        }
+        
+        return this.spinner.perform('portal-content', currentStructure.connectors.syncConnectors()
+            .then(data => {
+                return currentStructure.connectors.data;
+            })
+            .catch(e => console.error(e))
+        );
     }
-
 }
