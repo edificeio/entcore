@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
-import { ConnectorModel, Session, SessionModel, GroupModel, RoleModel } from "../../../core/store";
+import { ConnectorModel, Session, SessionModel } from "../../../core/store";
 import { ServicesService } from "../../services.service";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { ServicesStore } from "../../services.store";
@@ -13,6 +13,7 @@ import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
 import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
+import { Profile, Structure, Assignment, MassAssignment } from "../../shared/assignment-types";
 
 @Component({
     selector: 'smart-connector',
@@ -93,6 +94,12 @@ import { ConnectorPropertiesComponent } from "./properties/connector-properties.
                     (click)="currentTab = ASSIGNMENT_TAB">
                 {{ 'services.tab.assignment' | translate }}
             </button>
+            <button class="tab"
+                    *ngIf="hasStructureChildren() && !isAssignmentDisabled() && inherits()"
+                    [ngClass]="{active: currentTab === MASS_ASSIGNMENT_TAB}"
+                    (click)="currentTab = MASS_ASSIGNMENT_TAB">
+                {{ 'services.tab.mass-assignment' | translate }}
+            </button>
         </div>
 
         <connector-properties
@@ -112,6 +119,14 @@ import { ConnectorPropertiesComponent } from "./properties/connector-properties.
             (remove)="onRemoveAssignment($event)"
             (add)="onAddAssignment($event)">
         </connector-assignment>
+
+        <connector-mass-assignment
+            *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isAssignmentDisabled()"
+            [structure]="structure"
+            [profiles]="profiles"
+            (submitUnassignment)="onRemoveMassAssignment($event)"
+            (submitAssignment)="onAddMassAssignment($event)">
+        </connector-mass-assignment>
 
         <lightbox-confirm lightboxTitle="services.connector.delete.confirm.title"
                           [show]="showDeleteConfirmation"
@@ -148,13 +163,15 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public admc: boolean;
     public admlOfConnectorStructure: boolean;
     public showDeleteConfirmation: boolean;
+    public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher'];
+    public structure: Structure;
 
     @ViewChild(ConnectorPropertiesComponent)
     connectorPropertiesComponent: ConnectorPropertiesComponent;
     
-    public PROPERTIES_TAB = 'properties';
-    public ASSIGNMENT_TAB = 'assignment';
-    public MASS_ASSIGNEMENT_TAB = 'massAssignment';
+    public PROPERTIES_TAB: string = 'properties';
+    public ASSIGNMENT_TAB: string = 'assignment';
+    public MASS_ASSIGNMENT_TAB: string = 'massAssignment';
     public currentTab: string = this.PROPERTIES_TAB;
 
     constructor(private servicesService: ServicesService,
@@ -193,6 +210,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
         this.setAdmc();
         this.setAdmlOfConnectorStructure();
+        this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
     }
 
     ngOnDestroy() {
@@ -239,13 +257,18 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
             && this.servicesStore.connector.structureId !== this.servicesStore.structure.id;
     }
 
+    public inherits(): boolean {
+        return this.servicesStore.connector && this.servicesStore.connector.inherits;
+    }
+
     public isLocked(): boolean {
         return this.servicesStore.connector && this.servicesStore.connector.locked;
     }
 
     public isSaveFormPristineOrInvalid(): boolean {
-        return this.connectorPropertiesComponent.propertiesFormRef.pristine 
-            || this.connectorPropertiesComponent.propertiesFormRef.invalid;
+        return this.connectorPropertiesComponent 
+            && (this.connectorPropertiesComponent.propertiesFormRef.pristine 
+                || this.connectorPropertiesComponent.propertiesFormRef.invalid);
     }
 
     public onCreate($event): void {
@@ -385,11 +408,67 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         );
     }
 
-    public onAddAssignment($event: {group: GroupModel, role: RoleModel}) {
-        $event.role.addGroup($event.group);
+    public onAddAssignment(assignment: Assignment) {
+        assignment.role.addGroup(assignment.group);
     }
 
-    public onRemoveAssignment($event: {group: GroupModel, role: RoleModel}): void {
-        $event.role.removeGroup($event.group);
+    public onRemoveAssignment(assignment: Assignment): void {
+        assignment.role.removeGroup(assignment.group);
+    }
+
+    public onAddMassAssignment(profiles: Array<Profile>) {
+        this.spinnerService.perform('portal-content', 
+            this.servicesService.massAssignConnector(this.servicesStore.connector, profiles)
+                .do(() => {
+                    this.servicesStore.connector
+                        .syncRoles(this.servicesStore.structure.id, this.servicesStore.connector.id)
+                        .then(() => {
+                            this.servicesStore.connector.roles
+                                .forEach(r => {
+                                    r.name = `${this.servicesStore.connector.name} - ${this.bundles.translate('services.connector.access')}`;
+                                });
+                        });
+
+                    this.notifyService.success(
+                        'services.connector.mass-assignment.assign-success.content',
+                        'services.connector.mass-assignment.assign-success.title');
+                })
+                .catch(error => {
+                    this.notifyService.error(
+                        'services.connector.mass-assignment.assign-error.content',
+                        'services.connector.mass-assignment.assign-error.title'
+                        , error);
+                    throw error;
+                })
+                .toPromise()
+        );
+    }
+
+    public onRemoveMassAssignment(profiles: Array<Profile>) {
+        this.spinnerService.perform('portal-content', 
+            this.servicesService.massUnassignConnector(this.servicesStore.connector, profiles)
+                .do(() => {
+                    this.servicesStore.connector
+                        .syncRoles(this.servicesStore.structure.id, this.servicesStore.connector.id)
+                        .then(() => {
+                            this.servicesStore.connector.roles
+                                .forEach(r => {
+                                    r.name = `${this.servicesStore.connector.name} - ${this.bundles.translate('services.connector.access')}`;
+                                });
+                        });
+
+                    this.notifyService.success(
+                        'services.connector.mass-assignment.unassign-success.content',
+                        'services.connector.mass-assignment.unassign-success.title');
+                })
+                .catch(error => {
+                    this.notifyService.error(
+                        'services.connector.mass-assignment.unassign-error.content',
+                        'services.connector.mass-assignment.unassign-error.title'
+                        , error);
+                    throw error;
+                })
+                .toPromise()
+        );
     }
 }
