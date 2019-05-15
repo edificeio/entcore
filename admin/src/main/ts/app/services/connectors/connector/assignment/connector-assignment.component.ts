@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
 import { ConnectorModel, RoleModel, GroupModel } from '../../../../core/store/models';
+import { Assignment } from "../../../shared/assignment-types";
 
 @Component({
     selector: 'connector-assignment',
@@ -39,9 +40,9 @@ export class ConnectorAssignmentComponent {
     disabled: boolean;
 
     @Output()
-    remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter();
+    remove: EventEmitter<Assignment> = new EventEmitter();
     @Output()
-    add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter(); 
+    add: EventEmitter<Assignment> = new EventEmitter(); 
 
     selectedRole: RoleModel;
     showRoleAttributionLightbox: boolean = false;
