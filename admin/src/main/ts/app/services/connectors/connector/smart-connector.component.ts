@@ -71,19 +71,36 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
             </ng-template>
         </div>
     
-        <div class="message is-warning" *ngIf="isLocked() && !isCreationMode() && !isInherited()">
+        <div class="message is-warning" 
+            *ngIf="isLocked() 
+                && !isInherited() 
+                && !isCreationMode() 
+                && currentTab === PROPERTIES_TAB">
             <div class="message-body">
-                <s5l *ngIf="currentTab === PROPERTIES_TAB">services.connector.locked.warning.properties</s5l>
-                <s5l *ngIf="currentTab === ASSIGNMENT_TAB">services.connector.locked.warning.assignment</s5l>
+                <s5l>services.connector.locked.warning.properties</s5l>
             </div>
         </div>
-
+        
         <div class="message is-warning" 
-            *ngIf="isInherited() && !isCreationMode() && currentTab === PROPERTIES_TAB">
+            *ngIf="isInherited() 
+                && !isCreationMode() 
+                && currentTab === PROPERTIES_TAB">
             <div class="message-body">
                 <s5l>services.connector.inherited.warning.properties</s5l>
             </div>
         </div>
+
+        <div class="message is-warning"
+            *ngIf="isLocked()
+                && !isCreationMode()
+                && currentTab === ASSIGNMENT_TAB">
+            <div class="message-body">
+                <s5l *ngIf="currentTab === ASSIGNMENT_TAB">
+                    services.connector.locked.warning.assignment
+                </s5l>
+            </div>
+        </div>
+
 
         <div class="tabs" *ngIf="!isCreationMode()">
             <button class="tab"
