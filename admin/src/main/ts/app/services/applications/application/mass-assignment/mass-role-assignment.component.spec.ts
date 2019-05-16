@@ -1,5 +1,5 @@
 import { MassRoleAssignment } from './mass-role-assignment.component';
-import { Profile, Role, MassAssignment } from '../../../shared/assignment-types';
+import { Profile, Role, MassAssignment } from '../../../shared/services-types';
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
