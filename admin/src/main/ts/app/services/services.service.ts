@@ -1,11 +1,12 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { ConnectorModel, GroupModel, RoleModel } from "../core/store";
+import { ConnectorModel } from "../core/store";
 import { CasType } from "./connectors/connector/CasType";
+import { Profile } from "./shared/services-types";
+import { ExportFormat } from "./connectors/connector/export/connector-export";
 
 import 'rxjs/add/operator/do';
-import { MassAssignment, Profile } from "./shared/assignment-types";
 
 @Injectable()
 export class ServicesService {
@@ -92,5 +93,16 @@ export class ServicesService {
         });
 
         return this.httpClient.delete<void>(`/appregistry/application/external/${connector.id}/authorize${profilesParams}`, {});
+    }
+
+    public getExportConnectorUrl(exportFormat: ExportFormat, profile: string, structureId: string): string {
+        const query = '/directory/export/users';
+        let queryParams = `format=${exportFormat.format}&structureId=${structureId}&type=${exportFormat.value}`
+
+        if (profile !== 'all') {
+            queryParams = `${queryParams}&profile=${profile}`;
+        }
+
+        return `${query}?${queryParams}`;
     }
 }
