@@ -5,7 +5,8 @@ import { RoleModel, GroupModel } from '../../core/store/models';
     selector: 'services-role',
     template: `
         <panel-section section-title="{{ role.name }}" [folded]="false">
-            <button (click)="openLightbox.emit(role)" [disabled]="disabled">
+            <button *ngIf="!disabled"
+                    (click)="openLightbox.emit(role)">
                 {{ 'add.groups' | translate }}
                 <i class="fonticon group_add is-size-3"></i>
             </button>
@@ -24,7 +25,9 @@ import { RoleModel, GroupModel } from '../../core/store/models';
                     <ul class="actions-list">
                         <li *ngFor="let group of role.groups">
                             <span>{{ group.name }}</span>
-                            <i class="fa fa-times action" (click)="onRemove.emit(group)"></i>
+                            <i *ngIf="!disabled"
+                                class="fa fa-times action"
+                                (click)="onRemove.emit(group)"></i>
                         </li>
                     </ul>
                 </div>
