@@ -2,7 +2,7 @@ import { SmartMassRoleAssignment } from './smart-mass-role-assignment.component'
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Assignment, Profile, Role, Structure, MassAssignment } from '../../../shared/assignment-types';
+import { Profile, Role, Structure, MassAssignment } from '../../../shared/services-types';
 import { By } from '@angular/platform-browser';
 import { ServicesStore } from '../../../services.store';
 import { ActivatedRoute } from '@angular/router';

@@ -1,7 +1,7 @@
 import { SmartConnectorComponent } from './smart-connector.component';
 import { ComponentFixture, async, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm, FormBuilder, FormGroup } from '@angular/forms';
 import { SijilModule, BundlesService } from 'sijil';
 import { UxModule } from '../../../shared/ux/ux.module';
 import { ServicesStore } from '../../services.store';
@@ -10,9 +10,12 @@ import { StructureModel, ConnectorModel, RoleModel, GroupModel, ConnectorCollect
 import { Router, ActivatedRoute } from '@angular/router';
 import { ServicesService } from '../../services.service';
 import { Observable } from 'rxjs';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { CasType } from './CasType';
-import { Structure, Profile } from '../../shared/assignment-types';
+import { Structure, Profile } from '../../shared/services-types';
+import { ExportFormat } from './export/connector-export';
+import { By } from '@angular/platform-browser';
+import { ConnectorPropertiesComponent } from './properties/connector-properties.component';
 
 describe('SmartConnector', () => {
     let component: SmartConnectorComponent;
@@ -29,7 +32,7 @@ describe('SmartConnector', () => {
     let connectorsDataSpliceSpy: jasmine.Spy;
 
     beforeEach(() => {
-        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes', 'massAssignConnector', 'massUnassignConnector']);
+        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes', 'massAssignConnector', 'massUnassignConnector', 'getExportConnectorUrl']);
         (mockServicesService.getCasTypes as jasmine.Spy).and.returnValue(Observable.of([
             {id: 'casType1', name:'casType1', description: 'casType1s'}
         ]));
@@ -66,7 +69,8 @@ describe('SmartConnector', () => {
                SmartConnectorComponent, 
                MockConnectorPropertiesComponent, 
                MockConnectorAssignmentComponent,
-               MockConnectorMassAssignmentComponent
+               MockConnectorMassAssignmentComponent,
+               MockConnectorExport
             ],
             providers: [
                {provide: ServicesService, useValue: mockServicesService},
@@ -87,6 +91,7 @@ describe('SmartConnector', () => {
 
        fixture = TestBed.createComponent(SmartConnectorComponent);
        component = fixture.debugElement.componentInstance;
+       component.connectorPropertiesComponent = TestBed.createComponent(MockConnectorPropertiesComponent).componentInstance as ConnectorPropertiesComponent;
        fixture.detectChanges();
     }));
 
@@ -120,9 +125,15 @@ describe('SmartConnector', () => {
     describe('save', () => {
         it('should save connector', () => {
             (mockServicesService.saveConnector as jasmine.Spy).and.returnValue(Observable.of({}));
+
+            component.connectorPropertiesComponent.propertiesFormRef = <NgForm>{};
+            component.connectorPropertiesComponent.propertiesFormRef.form = new FormBuilder().group({});
+            spyOn(component.connectorPropertiesComponent.propertiesFormRef.form, 'markAsPristine');
+
             component.save();
             expect(mockSpinnerService.perform).toHaveBeenCalled();
             expect(mockServicesService.saveConnector).toHaveBeenCalled();
+            expect(component.connectorPropertiesComponent.propertiesFormRef.form.markAsPristine).toHaveBeenCalled();
             expect(mockNotifyService.success).toHaveBeenCalled();
         });
     });
@@ -203,6 +214,30 @@ describe('SmartConnector', () => {
             expect(mockNotifyService.success).toHaveBeenCalled();
         });
     });
+
+    describe('onExportSubmit', () => {
+        it('should call window.open with ServicesService.getExportConnectorUrl() with given exportFormat, profile and structureId', () => {
+            const givenExportFormat: ExportFormat = {
+                format: 'csv',
+                value: 'Gepi',
+                label: 'Gepi',
+                profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
+            };
+            const givenProfile: Profile = 'Teacher';
+            const givenStructureId: string = 'structure1';
+            const expectedUrl: string = `/directory/export/users?format=${givenExportFormat.format}&structureId=${givenStructureId}&type=${givenExportFormat.value}&profile=${givenProfile}`;
+            (mockServicesService.getExportConnectorUrl as jasmine.Spy).and.returnValue(expectedUrl);
+            spyOn(window, 'open');
+
+            component.onExportSubmit({
+                exportFormat: givenExportFormat,
+                profile: givenProfile
+            });
+
+            expect(mockServicesService.getExportConnectorUrl).toHaveBeenCalled();
+            expect(window.open).toHaveBeenCalledWith(expectedUrl, '_blank');
+        })
+    });
 })
 
 @Component({
@@ -255,4 +290,13 @@ class MockConnectorMassAssignmentComponent {
     submitAssignment: EventEmitter<Array<Profile>> = new EventEmitter();
     @Output()
     submitUnassignment: EventEmitter<Array<Profile>> = new EventEmitter();
+}
+
+@Component({
+    selector: 'connector-export',
+    template: ''
+})
+class MockConnectorExport {
+    @Output()
+    submit: EventEmitter<{exportFormat: ExportFormat, profile: string}> = new EventEmitter<{exportFormat: ExportFormat, profile: string}>();
 }

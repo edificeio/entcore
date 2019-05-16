@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { RoleModel, ApplicationModel, GroupModel } from '../../../../core/store/models';
-import { Assignment } from '../../../shared/assignment-types';
+import { RoleModel, ApplicationModel } from '../../../../core/store/models';
+import { Assignment } from '../../../shared/services-types';
 
 @Component({
     selector: 'application-assignment',

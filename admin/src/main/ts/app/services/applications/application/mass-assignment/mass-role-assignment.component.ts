@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BundlesService } from 'sijil';
 import { MultiSelectOption } from '../../../../shared/ux/components/multi-select.component';
-import { Structure, Role, Profile, MassAssignment } from '../../../shared/assignment-types';
+import { Structure, Role, Profile, MassAssignment } from '../../../shared/services-types';
 
 @Component({
     selector: 'mass-role-assignment',
