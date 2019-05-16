@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
-import { Profile, Structure } from "../../../shared/assignment-types";
+import { Profile, Structure } from "../../../shared/services-types";
 import { MultiSelectOption } from "../../../../shared/ux/components/multi-select.component";
 import { FormGroup, FormBuilder, Validators } from "@angular/forms";
 import { BundlesService } from "sijil";

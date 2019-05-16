@@ -8,12 +8,13 @@ import { ServicesStore } from "../../services.store";
 import { SpinnerService, NotifyService } from "../../../core/services";
 import { Location } from "@angular/common";
 import { BundlesService } from "sijil";
+import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
+import { Profile, Structure, Assignment } from "../../shared/services-types";
+import { ExportFormat } from "./export/connector-export";
 
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/toPromise';
-import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
-import { Profile, Structure, Assignment } from "../../shared/assignment-types";
 
 @Component({
     selector: 'smart-connector',
@@ -37,7 +38,7 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
 
                 <div>
                     <button type="button"
-                            *ngIf="!isInherited()"
+                            *ngIf="!isInherited() && !isLocked()"
                             (click)="showDeleteConfirmation = true;"
                             [disabled]="arePropertiesDisabled()">
                         <s5l>services.connector.delete.button</s5l>
@@ -62,7 +63,7 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
                     <button type="button" 
                         class="confirm"
                         (click)="save()"
-                        *ngIf="currentTab === PROPERTIES_TAB && !isInherited()"
+                        *ngIf="currentTab === PROPERTIES_TAB && !isInherited() && !isLocked()"
                         [disabled]="arePropertiesDisabled() || isSaveFormPristineOrInvalid()">
                         <s5l>services.connector.save.button</s5l>
                         <i class="fa fa-floppy-o is-size-5"></i>
@@ -119,6 +120,11 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
                     (click)="currentTab = MASS_ASSIGNMENT_TAB">
                 {{ 'services.tab.mass-assignment' | translate }}
             </button>
+            <button class="tab"
+                    [ngClass]="{active: currentTab === EXPORT_TAB}"
+                    (click)="currentTab = EXPORT_TAB">
+                {{ 'services.tab.export' | translate }}
+            </button>
         </div>
 
         <connector-properties
@@ -146,6 +152,11 @@ import { Profile, Structure, Assignment } from "../../shared/assignment-types";
             (submitUnassignment)="onRemoveMassAssignment($event)"
             (submitAssignment)="onAddMassAssignment($event)">
         </connector-mass-assignment>
+
+        <connector-export
+            *ngIf="currentTab === EXPORT_TAB"
+            (submit)="onExportSubmit($event)">
+        </connector-export>
 
         <lightbox-confirm lightboxTitle="services.connector.delete.confirm.title"
                           [show]="showDeleteConfirmation"
@@ -191,6 +202,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public PROPERTIES_TAB: string = 'properties';
     public ASSIGNMENT_TAB: string = 'assignment';
     public MASS_ASSIGNMENT_TAB: string = 'massAssignment';
+    public EXPORT_TAB: string = 'export';
     public currentTab: string = this.PROPERTIES_TAB;
 
     constructor(private servicesService: ServicesService,
@@ -357,7 +369,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
             );
     }
 
-    public onConfirmDeletion() {
+    public onConfirmDeletion(): void {
         this.spinnerService.perform('portal-content'
             , this.servicesService.deleteConnector(this.servicesStore.connector)
                 .do(() => {
@@ -384,7 +396,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         );
     }
 
-    public lockToggle() {
+    public lockToggle(): void {
         this.spinnerService.perform('portal-content',
             this.servicesService.toggleLockConnector(this.servicesStore.connector)
                 .do(() => {
@@ -428,7 +440,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         );
     }
 
-    public onAddAssignment(assignment: Assignment) {
+    public onAddAssignment(assignment: Assignment): void {
         assignment.role.addGroup(assignment.group);
     }
 
@@ -436,7 +448,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         assignment.role.removeGroup(assignment.group);
     }
 
-    public onAddMassAssignment(profiles: Array<Profile>) {
+    public onAddMassAssignment(profiles: Array<Profile>): void {
         this.spinnerService.perform('portal-content', 
             this.servicesService.massAssignConnector(this.servicesStore.connector, profiles)
                 .do(() => {
@@ -464,7 +476,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         );
     }
 
-    public onRemoveMassAssignment(profiles: Array<Profile>) {
+    public onRemoveMassAssignment(profiles: Array<Profile>): void {
         this.spinnerService.perform('portal-content', 
             this.servicesService.massUnassignConnector(this.servicesStore.connector, profiles)
                 .do(() => {
@@ -490,5 +502,12 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                 })
                 .toPromise()
         );
+    }
+
+    public onExportSubmit($event: {exportFormat: ExportFormat, profile: string}): void {
+        window.open(
+            this.servicesService.getExportConnectorUrl(
+                $event.exportFormat, $event.profile, this.servicesStore.structure.id)
+            , '_blank');
     }
 }

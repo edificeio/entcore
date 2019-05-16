@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from "@angular/core";
-import { ConnectorModel, RoleModel, GroupModel } from '../../../../core/store/models';
-import { Assignment } from "../../../shared/assignment-types";
+import { ConnectorModel, RoleModel } from '../../../../core/store/models';
+import { Assignment } from "../../../shared/services-types";
 
 @Component({
     selector: 'connector-assignment',
