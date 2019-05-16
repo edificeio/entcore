@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { MassAssignment, Profile, Role, Structure } from '../../../shared/assignment-types';
+import { MassAssignment, Profile, Role, Structure } from '../../../shared/services-types';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { RoleModel } from '../../../../core/store/models';

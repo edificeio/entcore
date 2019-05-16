@@ -2,8 +2,7 @@ import { ServicesService } from "./services.service";
 import { TestBed } from "@angular/core/testing";
 import { ConnectorModel } from "../core/store";
 import { HttpTestingController, HttpClientTestingModule } from "@angular/common/http/testing";
-import { Profile } from "./shared/assignment-types";
-import { ProfilesService } from "../core/services";
+import { Profile } from "./shared/services-types";
 
 describe('ServicesService', () => {
     let servicesService: ServicesService;
@@ -121,5 +120,27 @@ describe('ServicesService', () => {
                 `/appregistry/application/external/${connector.id}/authorize${expectedProfilesParams}`);
             expect(request.request.method).toBe('DELETE');
         });
-    })
+    });
+
+    describe('getExportConnectorUrl', () => {
+        it('should return /directory/export/users?format=csv&structureId=structure1&type=Gepi given format.format=csv, format.value=Gepi, profile=all and structureId=structure1', () => {
+            const res: string = servicesService.getExportConnectorUrl({
+                format: 'csv', 
+                value: 'Gepi', 
+                profiles: [], 
+                label: ''
+            }, 'Teacher', 'structure1');
+            expect(res).toBe('/directory/export/users?format=csv&structureId=structure1&type=Gepi&profile=Teacher');
+        });
+
+        it('should return /directory/export/users?format=csv&structureId=structure1&type=Gepi given format.format=csv, format.value=Gepi, profile=all and structureId structure1', () => {
+            const res: string = servicesService.getExportConnectorUrl({
+                format: 'csv', 
+                value: 'Gepi', 
+                profiles: [], 
+                label: ''
+            }, 'all', 'structure1');
+            expect(res).toBe('/directory/export/users?format=csv&structureId=structure1&type=Gepi');
+        });
+    });
 })

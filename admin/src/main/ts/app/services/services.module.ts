@@ -28,6 +28,7 @@ import { SmartConnectorComponent } from './connectors/connector/smart-connector.
 import { ConnectorPropertiesComponent } from './connectors/connector/properties/connector-properties.component';
 import { ConnectorAssignmentComponent } from './connectors/connector/assignment/connector-assignment.component';
 import { ConnectorMassAssignmentComponent } from './connectors/connector/mass-assignment/connector-mass-assignment.component';
+import { ConnectorExportComponent } from './connectors/connector/export/connector-export';
 
 @NgModule({
     imports: [
@@ -52,7 +53,8 @@ import { ConnectorMassAssignmentComponent } from './connectors/connector/mass-as
         ServicesRoleAttributionComponent,
         SmartConnectorComponent,
         ConnectorPropertiesComponent,
-        ConnectorMassAssignmentComponent
+        ConnectorMassAssignmentComponent,
+        ConnectorExportComponent
     ],
     providers: [
         NgSwitch,
