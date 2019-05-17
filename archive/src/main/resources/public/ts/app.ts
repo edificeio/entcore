@@ -7,7 +7,7 @@ const archiveController = ng.controller('ArchiveController', ['$scope', ($scope)
 	http.get('/archive/conf/public').then(function(exportApps){
 		http.get('/applications-list').then(function(myApps){
 			$scope.selectedApps = [];
-			$scope.availableApps = myApps.data.apps.map(app => app.prefix ? app.prefix.slice(1) : "undefined")
+			$scope.availableApps = myApps.data.apps.map(app => app.prefix ? app.prefix.slice(1) : app.displayName ? app.displayName : "undefined")
 			.filter(app => exportApps.data.apps.includes(app))
 			.sort(function(a, b) {
 				let a2 = lang.translate(a), b2 = lang.translate(b);
