@@ -261,22 +261,53 @@ public class PersEducNat extends AbstractUser {
 		}
 		final String query =
 				"MATCH (f:FieldOfStudy)<-[r:TEACHES_FOS]-(u:User {source : {source}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure" + filter + ") " +
-				"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '') " +
 				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
 				"ON CREATE SET sub.code = f.externalId, sub.label = f.name, sub.id = id(sub) + '-' + {now} " +
 				"SET sub.lastUpdated = {now}, sub.source = {source} " +
 				"WITH r, sub, u, s.externalId as sExternalId " +
 				"MERGE u-[r1:TEACHES]->sub " +
-				"SET r1.classes = FILTER(cId IN coalesce(r.classes, []) WHERE cId starts with sExternalId), " +
-				"r1.groups = FILTER(gId IN coalesce(r.groups, []) WHERE gId starts with sExternalId), " +
+				"SET r1.aafClasses = FILTER(cId IN coalesce(r.classes, []) WHERE cId starts with sExternalId), " +
+				"r1.aafGroups = FILTER(gId IN coalesce(r.groups, []) WHERE gId starts with sExternalId), " +
 				"r1.lastUpdated = {now}, r1.source = {source} ";
 		transactionHelper.add(query, params);
 		final String deleteOldSubjects =
 				"MATCH " + filter2 + "(sub:Subject {source : {source}}) WHERE sub.lastUpdated <> {now} detach delete sub";
 		transactionHelper.add(deleteOldSubjects, params);
 		final String deleteOldTeaches =
-				"MATCH " + filter2 + "(sub:Subject)<-[r1:TEACHES {source : {source}}]-(u:User) WHERE r1.lastUpdated <> {now} delete r1";
+				"MATCH " + filter2 + "(sub:Subject)<-[r1:TEACHES {source : {source}}]-(u:User) " +
+				"WHERE r1.lastUpdated <> {now} AND (NOT(HAS(r1.timetableClasses)) OR r1.timetableClasses = []) " +
+				"AND (NOT(HAS(r1.timetableGroups)) OR r1.timetableGroups = []) " +
+				"delete r1";
 		transactionHelper.add(deleteOldTeaches, params);
+		final String syncNotTimetableArrays =
+				"MATCH (s:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject)<-[r1:TEACHES {source : {source}}]-(u:User) " +
+				"WHERE (NOT(HAS(s.timetable)) OR s.timetable = '' OR s.timetable = 'NOP') " +
+				"SET r1.classes = r1.aafClasses, r1.groups = r1.aafGroups ";
+		transactionHelper.add(syncNotTimetableArrays, params);
+		mergeTeachesArrays(params, filter, transactionHelper);
+		deleteEmptyTeaches(params, filter, transactionHelper);
+	}
+
+	public static void mergeTeachesArrays(JsonObject params, String filter, TransactionHelper transactionHelper) {
+		final String syncTimetableArrays =
+				"MATCH (s:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject)<-[r1:TEACHES]-(u:User) " +
+				"WHERE (s.timetable = 'EDT' OR s.timetable = 'UDT') " +
+				"SET r1.tmpClasses = FILTER(gId IN coalesce(r1.classes, []) WHERE NOT(gId IN coalesce(r1.aafClasses, [])))" +
+				" + coalesce(r1.aafClasses, []), " +
+				"r1.classes = FILTER(gId IN coalesce(r1.tmpClasses, []) WHERE NOT(gId IN coalesce(r1.timetableClasses, [])))" +
+				" + coalesce(r1.timetableClasses, []), " +
+				"r1.groups = FILTER(gId IN coalesce(r1.groups, []) WHERE NOT(gId IN coalesce(r1.timetableGroups, [])))" +
+				" + coalesce(r1.timetableGroups, []) ";
+		transactionHelper.add(syncTimetableArrays, params);
+	}
+
+	public static void deleteEmptyTeaches(JsonObject params, String filter, TransactionHelper transactionHelper) {
+		final String query =
+				"MATCH (s:Structure" + filter + ")<-[:SUBJECT]-(sub:Subject)<-[r:TEACHES]-(:User) " +
+				"WHERE (not(has(r.groups)) OR r.groups = []) and (not(has(r.classes)) OR r.classes = []) and " +
+				"(NOT(HAS(r.source)) OR r.source <> 'MANUAL') " +
+				"DELETE r ";
+		transactionHelper.add(query, params);
 	}
 
 }

@@ -22,17 +22,15 @@ package org.entcore.feeder.timetable;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.feeder.utils.Report;
-import org.entcore.feeder.utils.TransactionHelper;
-import org.entcore.feeder.utils.TransactionManager;
-import org.entcore.feeder.utils.Validator;
+import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -51,25 +49,26 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractTimetableImporter.class);
+	protected static final JsonObject bcnSubjects = JsonUtil.loadFromResource("dictionary/bcn/n_matiere_enseignee.json");
 	private static final String CREATE_SUBJECT =
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
-			"MERGE (sub:Subject {externalId : {externalId}}) " +
-			"ON CREATE SET sub.code = {Code}, sub.label = {Libelle}, sub.id = {id} " +
+			"MERGE (sub:TimetableSubject {externalId : {externalId}}) " +
+			"ON CREATE SET sub.code = {Code}, sub.label = {Libelle}, sub.id = {id}, sub.mappingCode = {mappingCode} " +
 			"SET sub.lastUpdated = {now}, sub.source = {source} " +
 			"MERGE (sub)-[:SUBJECT]->(s) ";
 	private static final String LINK_SUBJECT =
-			"MATCH (s:Subject {id : {subjectId}}), (u:User) " +
+			"MATCH (s:TimetableSubject {id : {subjectId}}), (u:User) " +
 			"WHERE u.id IN {teacherIds} " +
 			"MERGE u-[r:TEACHES]->s " +
 			"SET r.classes = FILTER(c IN coalesce(r.classes, []) where NOT(c IN {classes})) + {classes}, " +
 			"r.groups = FILTER(g IN coalesce(r.groups, []) where NOT(g IN {groups})) + {groups}, " +
 			"r.lastUpdated = {now}, r.source = {source} ";
 	private static final String DELETE_SUBJECT =
-			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(sub:Subject {source: {source}}) " +
+			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(sub:TimetableSubject {source: {source}}) " +
 			"WHERE NOT(sub.id IN {subjects}) " +
 			"DETACH DELETE sub";
 	private static final String UNLINK_SUBJECT =
-			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(:Subject)<-[r:TEACHES {source: {source}}]-(:User) " +
+			"MATCH (s:Structure {externalId : {structureExternalId}})<-[:SUBJECT]-(:TimetableSubject)<-[r:TEACHES {source: {source}}]-(:User) " +
 			"WHERE r.lastUpdated <> {now} " +
 			"DELETE r";
 	protected static final String UNKNOWN_CLASSES =
@@ -171,7 +170,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		final String classesMappingQuery =
 				"MATCH (s:Structure {UAI : {UAI}})<-[:MAPPING]-(cm:ClassesMapping) " +
 				"return cm.mapping as mapping ";
-		final String subjectsMappingQuery = "MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject) return sub.code as code, sub.id as id";
+		final String subjectsMappingQuery = "MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:TimetableSubject) return sub.code as code, sub.id as id";
 		final String classesNameExternalIdQuery =
 				"MATCH (:Structure {UAI : {UAI}})<-[:BELONGS]-(c:Class) RETURN c.externalId as externalId, c.name as name";
 		final TransactionHelper tx = TransactionManager.getTransaction();
@@ -430,31 +429,8 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 		if (endHandler != null && countMongoQueries.get() == 0) {
 			final JsonObject baseQuery = new JsonObject().put("structureId", structureId);
 			if (txSuccess) {
-				mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
-						new JsonObject().put("$rename", new JsonObject().put("pending", "modified")),
-						false, true, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event) {
-								if ("ok".equals(event.body().getString("status"))) {
-									mongoDb.update(COURSES, baseQuery.copy()
-											.put("deleted", new JsonObject().put("$exists", false))
-											.put("modified", new JsonObject().put("$ne", importTimestamp)),
-									new JsonObject().put("$set", new JsonObject().put("deleted", importTimestamp)),
-									false, true, new Handler<Message<JsonObject>>() {
-										@Override
-										public void handle(Message<JsonObject> event) {
-											if (!"ok".equals(event.body().getString("status"))) {
-												report.addError("error.set.deleted.courses");
-											}
-											endHandler.handle(new DefaultAsyncResult<>(report));
-										}
-									});
-								} else {
-									report.addError("error.renaming.pending");
-									endHandler.handle(new DefaultAsyncResult<>(report));
-								}
-							}
-						});
+				CompositeFuture.all(updateMongoCourses(baseQuery), subjectAutoMapping())
+						.setHandler(ar -> endHandler.handle(new DefaultAsyncResult<>(report)));
 			} else {
 				mongoDb.delete(COURSES, baseQuery.copy()
 						.put("pending", importTimestamp)
@@ -482,6 +458,37 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				});
 			}
 		}
+	}
+
+	private Future<Void> updateMongoCourses(JsonObject baseQuery) {
+		Future<Void> future = Future.future();
+		mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
+				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")),
+				false, true, new Handler<Message<JsonObject>>() {
+					@Override
+					public void handle(Message<JsonObject> event) {
+						if ("ok".equals(event.body().getString("status"))) {
+							mongoDb.update(COURSES, baseQuery.copy()
+									.put("deleted", new JsonObject().put("$exists", false))
+									.put("modified", new JsonObject().put("$ne", importTimestamp)),
+							new JsonObject().put("$set", new JsonObject().put("deleted", importTimestamp)),
+							false, true, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event) {
+									if (!"ok".equals(event.body().getString("status"))) {
+										report.addError("error.set.deleted.courses");
+									}
+									future.complete();
+								}
+							});
+						} else {
+							report.addError("error.renaming.pending");
+							future.complete();
+							endHandler.handle(new DefaultAsyncResult<>(report));
+						}
+					}
+				});
+		return future;
 	}
 
 	protected void commit(final Handler<AsyncResult<Report>> handler) {
@@ -512,6 +519,116 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				});
 			}
 		});
+	}
+
+	private Future<Void> subjectAutoMapping() {
+		final Future<Void> future = Future.future();
+		final JsonObject params = new JsonObject().put("UAI", UAI);
+		final TransactionHelper tx1;
+		try {
+			tx1 = TransactionManager.getTransaction();
+			final String subjectsMappingQuery =
+					"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:TimetableSubject) " +
+					"OPTIONAL MATCH sub<-[r:TEACHES]-(u:User) " +
+					"RETURN sub.id as id, sub.mappingCode as mappingCode, COLLECT([r.classes, r.groups, u.id]) as teaches ";
+			tx1.add(subjectsMappingQuery, params);
+			final String subjectsQuery =
+					"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject) " +
+					"RETURN COLLECT(sub.code) as codes ";
+			tx1.add(subjectsQuery, params);
+		} catch (TransactionException e) {
+			log.error("Transaction1 error on subject auto mapping", e);
+			report.addError("error.tx1.subject.auto.mapping");
+			future.complete();
+			return future;
+		}
+		tx1.commit(r -> {
+			JsonArray a = r.body().getJsonArray("results");
+			if ("ok".equals(r.body().getString("status")) && a != null && a.size() == 2) {
+				JsonArray j = a.getJsonArray(0);
+				JsonArray subs = a.getJsonArray(1);
+				if (j != null && j.size() > 0 && subs != null && subs.size() == 1) {
+					try {
+						final JsonArray subjectsExists = subs.getJsonObject(0)
+								.getJsonArray("codes", new JsonArray());
+						final TransactionHelper tx2 = TransactionManager.getTransaction();
+						deleteTeachesTimetableAttributes(tx2);
+						for (Object o : j) {
+							if (!(o instanceof JsonObject)) continue;
+							final JsonObject s = (JsonObject) o;
+							final String mappingCode = s.getString("mappingCode");
+							if (mappingCode == null) continue;
+							String code = bcnSubjects.getString(mappingCode);
+							if (code != null && !subjectsExists.contains(code)) {
+								subjectsExists.add(code);
+								createSubject(code, true, tx2);
+							} else if (code == null) {
+								code = mappingCode;
+								if (!subjectsExists.contains(code)) {
+									createSubject(code, false, tx2);
+								}
+							}
+							updateTeaches(code, s, tx2);
+						}
+						PersEducNat.mergeTeachesArrays(params, " {UAI : {UAI}}", tx2);
+						PersEducNat.deleteEmptyTeaches(params, " {UAI : {UAI}}", tx2);
+						tx2.commit(tx2R -> {
+							if (!"ok".equals(tx2R.body().getString("status"))) {
+								report.addError(tx2R.body().getString("message"));
+							}
+							future.complete();
+						});
+					} catch (TransactionException e) {
+						log.error("Transaction2 error on subject auto mapping", e);
+						report.addError("error.tx2.subject.auto.mapping");
+						future.complete();
+					}
+				} else {
+					future.complete();
+				}
+			} else {
+				report.addError(r.body().getString("message"));
+				future.complete();
+			}
+		});
+		return future;
+	}
+
+	private void createSubject(String code, boolean bcnSubject, TransactionHelper tx) {
+		final String query = (bcnSubject ?
+				"MATCH (s:Structure {UAI : {UAI}}), (f:FieldOfStudy {externalId: {code}}) " +
+				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + f.externalId}) " +
+				"ON CREATE SET sub.label = f.name" :
+				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(ts:TimetableSubject {mappingCode:{code}}) " +
+				"MERGE s<-[:SUBJECT]-(sub:Subject {externalId: s.externalId + '$' + {code}}) " +
+				"ON CREATE SET sub.label = ts.label") +
+				", sub.code = {code}, sub.id = id(sub) + '-' + timestamp() SET sub.source = {source} ";
+		JsonObject params = new JsonObject().put("UAI", UAI).put("code", code).put("source", getSource());
+		tx.add(query, params);
+	}
+
+	private void updateTeaches(String code, JsonObject subject, TransactionHelper tx) {
+		final JsonArray teaches = subject.getJsonArray("teaches");
+		if (teaches == null || teaches.isEmpty()) {
+			return;
+		}
+		final String updateSubjects =
+				"MATCH (:Structure {UAI : {UAI}})<-[:SUBJECT]-(:Subject {code:{codeBCN}})<-[r:TEACHES]-(u:User {id:{userId}}) " +
+				"SET r.timetableClasses = {classes}, r.timetableGroups = {groups}, r.lastUpdated = {now} ";
+		final JsonObject p = new JsonObject().put("UAI", UAI).put("codeBCN", code).put("now", importTimestamp);
+		for (Object o : teaches) {
+			if (!(o instanceof JsonArray)) continue;
+			JsonArray j = (JsonArray) o;
+			tx.add(updateSubjects, p.copy().put("userId", j.getString(2))
+					.put("classes", j.getJsonArray(0)).put("groups", j.getJsonArray(1)));
+		}
+	}
+
+	private void deleteTeachesTimetableAttributes(TransactionHelper tx) {
+		final String query =
+				"MATCH (s:Structure {UAI : {UAI}})<-[:SUBJECT]-(sub:Subject)<-[r:TEACHES]-(:User) " +
+				"SET r.timetableClasses = null, r.timetableGroups = null ";
+		tx.add(query, new JsonObject().put("UAI", UAI));
 	}
 
 	protected abstract String getSource();
@@ -631,7 +748,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 								"WHERE NOT(HAS(s.timetable)) OR s.timetable <> {type} " +
 								"SET s.timetable = {typeUpdate} " +
 								"WITH s " +
-								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup), s<-[:SUBJECT]-(sub:Subject) " +
+								"MATCH s<-[:DEPENDS]-(fg:FunctionalGroup), s<-[:SUBJECT]-(sub:TimetableSubject) " +
 								"DETACH DELETE fg, sub ";
 						final String q3 =
 								"MATCH (s:Structure {id: {structureId}})<-[:MAPPING]-(cm:ClassesMapping) " +
