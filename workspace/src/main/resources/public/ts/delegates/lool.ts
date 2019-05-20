@@ -27,7 +27,7 @@ export function LoolDelegate($scope: LoolDelegateScope, $route) {
                        if ('folderId' in $route.current.params) {
                            response.folderId = $route.current.params.folderId;
                        }
-                       window.postMessage(JSON.stringify(response), window);
+                       window.postMessage(JSON.stringify(response), window.location.origin);
                    }
                    break;
                    case 'lool@resync': {
