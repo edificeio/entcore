@@ -295,7 +295,8 @@ public class UDTImporter extends AbstractTimetableImporter {
 
 	void addSubject(JsonObject s) {
 		final String code = s.getString(CODE);
-		super.addSubject(code, new JsonObject().put("Code", code).put("Libelle", s.getString("libelle")));
+		super.addSubject(code, new JsonObject().put("Code", code).put("Libelle", s.getString("libelle"))
+				.put("mappingCode", getOrElse(s.getString("code_gep1"), code, false)));
 	}
 
 	void addClasse(JsonObject currentEntity) {
