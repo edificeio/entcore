@@ -416,8 +416,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 					future.setHandler(result -> {
 						if (result.succeeded()) {
 							List<JsonObject> rows = result.result();
-							FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem);
-							zipBuilder.exportAndSendZip(bodyRoot, rows, request).setHandler(zipEvent -> {
+							FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
+							zipBuilder.exportAndSendZip(bodyRoot, rows, request, true).setHandler(zipEvent -> {
 								if (zipEvent.failed()) {
 									request.response().setStatusCode(500).end();
 								}
@@ -460,8 +460,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 					return;
 				}
 				// download multiple files
-				FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem);
-				zipBuilder.exportAndSendZip(all, request).setHandler(zipEvent -> {
+				FolderExporterZip zipBuilder = new FolderExporterZip(storage, fileSystem, false);
+				zipBuilder.exportAndSendZip(all, request, true).setHandler(zipEvent -> {
 					if (zipEvent.failed()) {
 						request.response().setStatusCode(500).end();
 					}
