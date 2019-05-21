@@ -88,6 +88,10 @@
 			"type" : "string",
 			"validator" : "email"
 		},
+		"emailInternal" : {
+			"type" : "string",
+			"validator" : "email"
+		},
 		"addressDiffusion" : {
 		  "type" : "boolean"
 		},
@@ -118,5 +122,5 @@
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
 		"otherNames", "address", "postbox", "zipCode", "city", "country", "homePhone",
-		"workPhone", "mobile", "email", "birthDate", "loginAlias"]
+		"workPhone", "mobile", "email", "birthDate", "loginAlias","emailInternal"]
 }

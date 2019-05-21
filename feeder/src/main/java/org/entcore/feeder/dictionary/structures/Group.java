@@ -22,6 +22,7 @@ package org.entcore.feeder.dictionary.structures;
 import java.util.UUID;
 
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.TransactionHelper;
 import org.entcore.feeder.utils.Validator;
@@ -111,5 +112,22 @@ public class Group {
 				.put("userIds", userIds);
 		
 		transactionHelper.add(query, params);
+	}
+
+	public static void updateEmail(String groupId, String emailInternal, TransactionHelper transactionHelper)
+			throws ValidationException{
+
+		if(!StringValidation.isEmail(emailInternal)) {
+			throw new ValidationException("invalid.email");
+		} else {
+			String query =  "MERGE (g:Group { id : {id}}) " +
+					"SET g.emailInternal = {email}";
+
+			JsonObject params = new JsonObject()
+					.put("id", groupId)
+					.put("email", emailInternal);
+
+			transactionHelper.add(query, params);
+		}
 	}
 }
