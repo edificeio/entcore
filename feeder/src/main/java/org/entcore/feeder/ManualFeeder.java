@@ -34,7 +34,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.LoggerFactory;
 import org.vertx.java.busmods.BusModBase;
 
 import java.util.*;
@@ -1003,6 +1002,17 @@ public class ManualFeeder extends BusModBase {
 			public void apply(TransactionHelper tx) {
 				Group.removeUsers(groupId, userIds, tx);
 			}
+		});
+	}
+
+	public void updateEmailGroup(Message<JsonObject> message) {
+		final String groupId = getMandatoryString("groupId", message);
+		final String email = getMandatoryString("email", message);
+
+		if (email == null || groupId == null) return;
+
+		executeTransaction(message, tx -> {
+				Group.updateEmail(groupId, email, tx);
 		});
 	}
 

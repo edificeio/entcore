@@ -81,8 +81,12 @@
 			"validator" : "email"
 		},
 		"emailAcademy" : {
-		  "type" : "string",
-		  "validator" : "email"
+			"type" : "string",
+			"validator" : "email"
+		},
+		"emailInternal" : {
+			"type" : "string",
+			"validator" : "email"
 		},
 		"birthDate" : {
 			"type" : "string",
@@ -153,5 +157,5 @@
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
 		"otherNames", "address", "postbox", "zipCode", "city", "country", "homePhone",
-		"workPhone", "mobile", "email", "birthDate", "loginAlias"]
+		"workPhone", "mobile", "email", "birthDate", "loginAlias","emailInternal"]
 }

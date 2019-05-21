@@ -80,6 +80,10 @@
 			"type" : "string",
 			"validator" : "email"
 		},
+		"emailInternal" : {
+			"type" : "string",
+			"validator" : "email"
+		},
 		"birthDate" : {
 			"type" : "string",
 			"validator" : "birthDate"
@@ -181,5 +185,5 @@
 	"required" : ["id", "externalId", "firstName", "lastName", "login", "displayName", "birthDate"],
 	"modifiable" : ["firstName", "lastName", "password", "displayName", "surname",
 		"otherNames", "address", "postbox", "zipCode", "city", "country", "homePhone",
-		"workPhone", "mobile", "email", "birthDate", "loginAlias"]
+		"workPhone", "mobile", "email", "birthDate", "loginAlias","emailInternal"]
 }
