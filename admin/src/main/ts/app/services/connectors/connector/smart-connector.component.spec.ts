@@ -8,13 +8,12 @@ import { ServicesStore } from '../../services.store';
 import { NotifyService, SpinnerService } from '../../../core/services';
 import { StructureModel, ConnectorModel, RoleModel, GroupModel, ConnectorCollection } from '../../../core/store';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ServicesService } from '../../services.service';
+import { ServicesService, Document } from '../../services.service';
 import { Observable } from 'rxjs';
 import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { CasType } from './CasType';
 import { Structure, Profile } from '../../shared/services-types';
 import { ExportFormat } from './export/connector-export';
-import { By } from '@angular/platform-browser';
 import { ConnectorPropertiesComponent } from './properties/connector-properties.component';
 
 describe('SmartConnector', () => {
@@ -32,7 +31,7 @@ describe('SmartConnector', () => {
     let connectorsDataSpliceSpy: jasmine.Spy;
 
     beforeEach(() => {
-        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes', 'massAssignConnector', 'massUnassignConnector', 'getExportConnectorUrl']);
+        mockServicesService = jasmine.createSpyObj('ServicesService', ['createConnector', 'saveConnector', 'deleteConnector', 'toggleLockConnector', 'getCasTypes', 'massAssignConnector', 'massUnassignConnector', 'getExportConnectorUrl', 'uploadPublicImage']);
         (mockServicesService.getCasTypes as jasmine.Spy).and.returnValue(Observable.of([
             {id: 'casType1', name:'casType1', description: 'casType1s'}
         ]));
@@ -238,6 +237,26 @@ describe('SmartConnector', () => {
             expect(window.open).toHaveBeenCalledWith(expectedUrl, '_blank');
         })
     });
+
+    describe('onIconFileChanged', () => {
+        it('should call ServicesService.uploadPublicImage', () => {
+            let file: File = {} as File;
+            const resId: string = 'idDoc1';
+            
+            (mockServicesService.uploadPublicImage as jasmine.Spy).and.returnValue(Observable.of({_id: resId}));
+            
+            component.connectorPropertiesComponent.propertiesFormRef = <NgForm>{};
+            component.connectorPropertiesComponent.propertiesFormRef.form = new FormBuilder().group({});
+            spyOn(component.connectorPropertiesComponent.propertiesFormRef.form, 'markAsDirty');
+
+            component.onIconFileChanged([file]);
+            expect(mockSpinnerService.perform).toHaveBeenCalled();
+            expect(mockServicesService.uploadPublicImage).toHaveBeenCalledWith(file);
+            expect(mockServicesStore.connector.icon).toBe(`/workspace/document/${resId}`);
+            expect(component.connectorPropertiesComponent.propertiesFormRef.form.markAsDirty).toHaveBeenCalled();
+            expect(mockNotifyService.success).toHaveBeenCalled();
+        });
+    })
 })
 
 @Component({

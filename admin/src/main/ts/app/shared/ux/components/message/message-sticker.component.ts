@@ -1,6 +1,5 @@
-import { Component, Input,ChangeDetectorRef, ViewChild, OnInit, EventEmitter } from '@angular/core'
+import { Component, Input, ViewChild, OnInit, EventEmitter } from '@angular/core'
 import { ComponentDescriptor, DynamicComponentDirective } from '../../directives'
-import { BundlesService } from 'sijil'
 import { MessageBoxComponent, MessageType, icons } from './message-box.component'
 
 @Component({
@@ -24,9 +23,6 @@ import { MessageBoxComponent, MessageType, icons } from './message-box.component
     `]
 })
 export class MessageStickerComponent implements OnInit {
-    constructor (
-        private cdRef:ChangeDetectorRef)  {}
-
     @Input() type: MessageType;
     @Input() header:string;
     @Input() messages:(string | [string,Object])[];

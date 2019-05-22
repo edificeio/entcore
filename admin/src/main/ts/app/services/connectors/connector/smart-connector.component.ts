@@ -134,7 +134,9 @@ import 'rxjs/add/operator/toPromise';
             [structureChildren]="hasStructureChildren()"
             [creationMode]="isCreationMode()"
             [disabled]="arePropertiesDisabled()"
-            (create)="onCreate($event)">
+            (create)="onCreate($event)"
+            (iconFileChanged)="onIconFileChanged($event)"
+            (iconFileInvalid)="onIconFileInvalid($event)">
         </connector-properties>
 
         <connector-assignment
@@ -509,5 +511,30 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
             this.servicesService.getExportConnectorUrl(
                 $event.exportFormat, $event.profile, this.servicesStore.structure.id)
             , '_blank');
+    }
+
+    public onIconFileChanged($event: File[]): void {
+        const file: Blob = $event[0];
+        
+        this.spinnerService.perform('portal-content', 
+            this.servicesService.uploadPublicImage(file)
+                .do(res => {
+                    this.servicesStore.connector.icon = `/workspace/document/${res._id}`;
+                    this.connectorPropertiesComponent.propertiesFormRef.form.markAsDirty();
+                })
+                .catch(error => {
+                    this.notifyService.error('services.connector.icon.upload.error.content'
+                        , 'services.connector.icon.upload.error.title'
+                        , error);
+                    throw error;
+                })
+                .toPromise()
+        );
+    }
+
+    public onIconFileInvalid($event: Error): void {
+        this.notifyService.error('services.connector.icon.upload.error.content'
+            , 'services.connector.icon.upload.error.title'
+            , $event);
     }
 }

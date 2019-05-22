@@ -88,3 +88,7 @@ export class NotifyService {
     }
 
 }
+
+export interface Error {
+    message: string;
+}
