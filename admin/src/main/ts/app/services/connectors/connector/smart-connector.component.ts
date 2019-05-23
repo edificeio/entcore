@@ -162,9 +162,7 @@ import 'rxjs/add/operator/toPromise';
                           [show]="showDeleteConfirmation"
                           (onCancel)="showDeleteConfirmation = false;"
                           (onConfirm)="onConfirmDeletion()">
-            <div class="has-vertical-margin-10">
-                <span [innerHTML]="'services.connector.delete.confirm.content' | translate: {connector: servicesStore.connector.displayName}"></span>
-            </div>
+            <span [innerHTML]="'services.connector.delete.confirm.content' | translate: {connector: servicesStore.connector.displayName}"></span>
         </lightbox-confirm>
     `,
     styles: [`

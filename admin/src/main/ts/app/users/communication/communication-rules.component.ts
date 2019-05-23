@@ -85,15 +85,15 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
                           [show]="addConfirmationDisplayed"
                           (onCancel)="addConfirmationClicked.next('cancel')"
                           (onConfirm)="addConfirmationClicked.next('confirm')">
-            <div class="has-vertical-margin-10">
+            <div>
                 <i class='fa fa-exclamation-triangle is-danger'></i> 
                 <span [innerHTML]="'user.communication.add-communication.confirm.content' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
             </div>
-            <div *ngIf="warningGroupSender" class="has-vertical-margin-10">
+            <div *ngIf="warningGroupSender" class="has-top-margin-10">
                 <i class='fa fa-exclamation-triangle is-danger'></i> 
                 <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(selected.group)}"></span>
             </div>
-            <div *ngIf="warningGroupReceiver" class="has-vertical-margin-10">
+            <div *ngIf="warningGroupReceiver" class="has-top-margin-10">
                 <i class='fa fa-exclamation-triangle is-danger'></i> 
                 <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(pickedReceiver)}"></span>
             </div>
