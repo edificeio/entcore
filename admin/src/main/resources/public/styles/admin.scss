@@ -869,22 +869,6 @@ lightbox {
   }
 }
 
-lightbox-confirm {
-  font-size: 16px;
-  div[content] {
-    padding: 20px 40px!important;
-  }
-  h2 {
-    margin-bottom: 0;
-  }
-  button {
-    float: right;
-    text-align: center;
-    margin-left: 25px;
-    margin-bottom: 20px;
-  }
-}
-
 /* Tooltips */
 body > div.tooltip {
   padding: 2px 10px;
