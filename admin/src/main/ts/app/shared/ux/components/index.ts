@@ -10,6 +10,7 @@ export { SimpleSelectComponent } from './value-editable/simple-select.component'
 export { MessageStickerComponent } from './message/message-sticker.component';
 export { MessageBoxComponent } from './message/message-box.component';
 export { GroupPickerComponent } from './group-picker.component';
+export { UploadFilesComponent } from './upload-files.component';
 
 // (Infra components historic)
 export { ItemTreeComponent } from './item-tree.component';

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild } from "@angular/core";
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from "@angular/core";
 import { ConnectorModel } from "../../../../core/store";
 import { CasType } from "../CasType";
 import { NgForm } from "@angular/forms";
@@ -7,6 +7,25 @@ import { NgForm } from "@angular/forms";
     selector: 'connector-properties',
     template: `
         <form #propertiesForm="ngForm">
+            <panel-section section-title="services.connector.icon.title">
+                <upload-files [fileSrc]="connector.icon"
+                            [allowedExtensions]="['jpeg', 'jpg', 'bmp', 'png']" 
+                            [maxFilesNumber]="1"
+                            (upload)="onUpload($event)"
+                            (invalidUpload)="onInvalidUpload($event)">
+                </upload-files>
+
+                <fieldset>
+                    <form-field label="services.connector.icon.url" 
+                                help="services.connector.icon.url.help">
+                        <input type="text" 
+                                [(ngModel)]="connector.icon" 
+                                name="icon"
+                                (change)="connector.iconFile = null">
+                    </form-field>
+                </fieldset>
+            </panel-section>
+
             <panel-section section-title="services.connector.properties.title">
                 <fieldset [disabled]="disabled">
                     <div *ngIf="structureChildren"
@@ -34,10 +53,6 @@ import { NgForm } from "@angular/forms";
                             required 
                             #displayNameInput="ngModel">
                         <form-errors [control]="displayNameInput"></form-errors>
-                    </form-field>
-
-                    <form-field label="services.connector.properties.icon">
-                        <input type="text" [(ngModel)]="connector.icon" name="icon">
                     </form-field>
 
                     <form-field label="services.connector.properties.url">
@@ -223,6 +238,10 @@ export class ConnectorPropertiesComponent {
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();
+    @Output()
+    iconFileChanged: EventEmitter<File[]> = new EventEmitter();
+    @Output()
+    iconFileInvalid: EventEmitter<string> = new EventEmitter();
 
     @ViewChild('propertiesForm')
     propertiesFormRef: NgForm;
@@ -237,7 +256,7 @@ export class ConnectorPropertiesComponent {
     OAUTH_GRANTTYPE_CLIENT_CREDENTIALS = 'client_credentials';
     OAUTH_GRANTTYPE_PASSWORD = 'password';
     OAUTH_GRANTTYPE_BASIC = 'Basic';
-    
+
     public toggleCasType(): void {
         if (this.connector.hasCas) {
             this.connector.casTypeId = this.CAS_DEFAULT_CAS_TYPE_ID;            
@@ -263,5 +282,13 @@ export class ConnectorPropertiesComponent {
             && this.connector.oauthScope && this.connector.oauthScope.indexOf('userinfo') !== -1){
                 this.connector.oauthScope = this.connector.oauthScope.replace('userinfo', '')
 		}
-	}
+    }
+
+    public onUpload($event: File[]): void {
+        this.iconFileChanged.emit($event);
+    }
+
+    public onInvalidUpload($event: string): void {
+        this.iconFileInvalid.emit($event);
+    }
 }

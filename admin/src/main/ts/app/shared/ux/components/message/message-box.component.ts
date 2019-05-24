@@ -1,4 +1,4 @@
-import { Component, Input, Output, ChangeDetectorRef, ElementRef, EventEmitter, OnInit, OnDestroy } from '@angular/core'
+import { Component, Input, Output, ChangeDetectorRef, ElementRef, EventEmitter, OnInit } from '@angular/core'
 
 export type MessageType = 'info' | 'success' | 'warning' | 'danger';
 

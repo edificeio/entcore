@@ -143,4 +143,24 @@ describe('ServicesService', () => {
             expect(res).toBe('/directory/export/users?format=csv&structureId=structure1&type=Gepi');
         });
     });
+
+    describe('uploadPublicImage', () => {
+        it('should call POST /workspace/document with given query params and form data body', () => {
+            const file: Blob = new Blob();
+            const expectedBody = new FormData();
+            expectedBody.append('file', file);
+            const params: string[] = [];
+            params.push('public=true');
+            params.push('application=admin');
+            params.push('quality=0.7');
+            params.push('thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381');
+            const expectedParams = params.join('&');
+
+            servicesService.uploadPublicImage(file).subscribe();
+    
+            const request = httpTestingController.expectOne(`/workspace/document?${expectedParams}`);
+            expect(request.request.method).toBe('POST');
+            expect(request.request.body).toEqual(expectedBody);
+        });
+    });
 })
