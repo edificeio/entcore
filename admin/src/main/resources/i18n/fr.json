@@ -420,11 +420,17 @@
     "services.connector.create.button": "Créer un connecteur",
     "services.connector.create.title": "Nouveau connecteur",
 
+    "services.connector.icon.title": "Icône",
+    "services.connector.icon.url": "Url de l'icône",
+    "services.connector.icon.url.help": "Le champ Url de l'icône peut être saisi avec :<ul><li>l'url d'une image d'un site web, sous la forme : http(s)://[lien-vers-image]</li><li>le nom d'une icône, par exemple : actualites-large</li><li>ou bien en utilisant le bouton 'Parcourir' ou le 'glisser/déposer' ci-dessus, l'url de l'image téléversée sera mise automatiquement dans ce champ</li></ul>",
+    "services.connector.icon.upload": "Importer un fichier",
+    "services.connector.icon.upload.error.title": "Erreur lors de l'import de l'icône",
+    "services.connector.icon.upload.error.content": "L'import de l'icône n'a pas pu aboutir",
+
     "services.connector.properties.title": "Paramètres du lien",
     "services.connector.properties.inherits": "Partager le connecteur avec les sous-structures",
     "services.connector.properties.id": "Identifiant",
     "services.connector.properties.displayName": "Nom d'affichage",
-    "services.connector.properties.icon": "Icône",
     "services.connector.properties.url": "URL",
     "services.connector.properties.target": "Cible",
     "services.connector.properties.target.portal": "Page",
@@ -609,5 +615,8 @@
     "quota.terabyte": "TeraOctet(s)",
     "quota.usedSpace": "utilisés.",
     "quota.form.title": "Modifier l'espace de stockage de l'utilisateur",
-    "quota.maxQuota": "Quota maximum autorisé pour ce profil :"
+    "quota.maxQuota": "Quota maximum autorisé pour ce profil :",
+    
+    "ux.upload-files.button.label": "Parcourir",
+    "ux.upload-files.button.help": "Glisser-déposer un fichier depuis votre appareil ou cliquez sur parcourir"
 }

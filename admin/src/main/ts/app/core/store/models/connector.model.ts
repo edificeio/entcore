@@ -24,6 +24,7 @@ export class ConnectorModel extends Model<ConnectorModel> {
     name: string;
     displayName: string;
     icon: string;
+    iconFile: File | Blob;
     url: string;
     target: string;
     inherits: boolean;
