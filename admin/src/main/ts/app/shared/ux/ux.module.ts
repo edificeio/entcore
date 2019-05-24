@@ -26,12 +26,11 @@ import { DatepickerComponent,
     SimpleSelectComponent,
     MessageStickerComponent,
     MessageBoxComponent,
-    GroupPickerComponent } from './components'
-import { AnchorDirective, 
-    DynamicTemplateDirective,
-    DynamicComponentDirective } from './directives'
+    GroupPickerComponent,
+    UploadFilesComponent } from './components'
+import { AnchorDirective, DynamicTemplateDirective, DynamicComponentDirective, DragAndDropFilesDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe, LocalizedDatePipe, BytesPipe } from './pipes'
-import { DynamicModuleImportsService, LabelsService } from './services';
+import { DynamicModuleImportsService, LabelsService, InputFileService } from './services';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
@@ -66,10 +65,12 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         MessageStickerComponent,
         MessageBoxComponent,
         GroupPickerComponent,
+        UploadFilesComponent,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
         DynamicComponentDirective,
+        DragAndDropFilesDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
@@ -103,10 +104,12 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         MessageStickerComponent,
         MessageBoxComponent,
         GroupPickerComponent,
+        UploadFilesComponent,
         // directives
         AnchorDirective,
         DynamicTemplateDirective,
         DynamicComponentDirective,
+        DragAndDropFilesDirective,
         // pipes
         FilterPipe,
         FlattenObjectArrayPipe,
@@ -125,7 +128,8 @@ export class UxModule {
             ngModule: UxModule,
             providers: [
                 DynamicModuleImportsService,
-                labelsProvider || LabelsService
+                labelsProvider || LabelsService,
+                InputFileService
             ]
         };
     }

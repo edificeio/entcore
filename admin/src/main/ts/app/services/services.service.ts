@@ -105,4 +105,37 @@ export class ServicesService {
 
         return `${query}?${queryParams}`;
     }
+
+    public uploadPublicImage(image: File | Blob): Observable<WorkspaceDocument> {
+        let formData: FormData = new FormData();
+        formData.append('file', image);
+        
+        let queryParams: string[] = [];
+        queryParams.push('public=true');
+        queryParams.push('application=admin');
+        queryParams.push('quality=0.7');
+        queryParams.push('thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381');
+
+        return this.httpClient.post<WorkspaceDocument>(`/workspace/document?${queryParams.join('&')}`, formData);
+    }
+}
+
+export interface WorkspaceDocument {
+    _id: string;
+    ancestors: Array<any>;
+    application: string;
+    created: Date;
+    eParent: any;
+    eType: string;
+    file: string;
+    inheritedShares: Array<any>;
+    isShared: boolean;
+    metadata: any;
+    modified: Date;
+    name: string;
+    nameSearch: string;
+    owner: string;
+    ownerName: string;
+    public: boolean;
+    shared: Array<any>;
 }
