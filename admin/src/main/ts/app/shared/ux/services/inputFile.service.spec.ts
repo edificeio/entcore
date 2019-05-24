@@ -22,8 +22,9 @@ describe('InputFileService', () => {
               item: (index: number) => file
             };
 
-            const files = inputFileService.validateFiles(fileList, 1, ['jpg']);
-            expect(files).toEqual([file]);
+            inputFileService
+                .validateFiles(fileList, 1, ['jpg'])
+                .subscribe(files => expect(files).toEqual([file]))
         });
 
         it('should return [file1, file2, file3] when given FileList file1.bmp, file2.jpg, file3.png, maxFilesNumber 3 and allowedExtensions jpg, png, bmp)', () => {
@@ -47,8 +48,9 @@ describe('InputFileService', () => {
               item: (index: number) => file1
             };
 
-            const files = inputFileService.validateFiles(fileList, 3, ['jpg', 'png', 'bmp']);
-            expect(files).toEqual([file1, file2, file3]);
+            inputFileService
+                .validateFiles(fileList, 3, ['jpg', 'png', 'bmp'])
+                .subscribe(files => expect(files).toEqual([file1, file2, file3]));
         });
 
         it('should throw "Only 1 file(s) allowed" error when given FileList file1.bmp, file2.jpg, maxFilesNumber 1 and allowedExtensions bmp, jpg, png)', () => {
@@ -69,11 +71,10 @@ describe('InputFileService', () => {
 
             const maxFilesNumber = 1;
 
-            try {
-                inputFileService.validateFiles(fileList, maxFilesNumber, ['jpg', 'png', 'bmp']);
-            } catch (e) {
-                expect(e).toBe(`Only ${maxFilesNumber} file(s) allowed`);
-            }
+            inputFileService
+                .validateFiles(fileList, maxFilesNumber, ['jpg', 'png', 'bmp'])
+                .subscribe(files => {}
+                    , error => expect(error).toBe(`Only ${maxFilesNumber} file(s) allowed`));
         });
 
         it('should throw "Extension not allowed. Allowed extensions: [jpg]" error when given FileList file1.bmp, maxFilesNumber 1 and allowedExtensions jpg)', () => {
@@ -89,11 +90,10 @@ describe('InputFileService', () => {
 
             const allowedExtensions = ['jpg'];
 
-            try {
-                inputFileService.validateFiles(fileList, 1, allowedExtensions);
-            } catch (e) {
-                expect(e).toBe(`Extension not allowed. Allowed extensions: ${allowedExtensions}`);
-            }
+            inputFileService
+                .validateFiles(fileList, 1, allowedExtensions)
+                .subscribe(files => {}
+                    , error => expect(error).toBe(`Extension not allowed. Allowed extensions: ${allowedExtensions}`));
         });
     });
 
