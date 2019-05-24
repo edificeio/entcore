@@ -119,15 +119,10 @@ export class UploadFilesComponent implements OnInit {
 
     public onChange($event): void {
         if ($event.target) {
-            let files: File[];
-            try {
-                files = this.inputFileService.validateFiles($event.target.files
-                    , this.maxFilesNumber
-                    , this.allowedExtensions);
-                this.upload.emit(files);
-            } catch(e) {
-                this.invalidUpload.emit(e);
-            }
+            this.inputFileService
+                .validateFiles($event.target.files, this.maxFilesNumber, this.allowedExtensions)
+                .subscribe(files => this.upload.emit(files)
+                    , error => this.invalidUpload.emit(error));
         }
     }
 

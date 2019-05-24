@@ -43,15 +43,10 @@ export class DragAndDropFilesDirective {
         event.stopPropagation();
 
         if (event.dataTransfer) {
-            let files: File[];
-            try {
-                files = this.inputFileService.validateFiles(event.dataTransfer.files
-                    , this.maxFilesNumber
-                    , this.allowedExtensions);
-                this.dragAndDrop.emit(files);
-            } catch(e) {
-                this.invalidDragAndDrop.emit(e);
-            }
+            this.inputFileService
+                .validateFiles(event.dataTransfer.files, this.maxFilesNumber, this.allowedExtensions)
+                .subscribe(files => this.dragAndDrop.emit(files)
+                    , error => this.invalidDragAndDrop.emit(error));
         }
 
         this.resetColors();
