@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter, Input, ViewChild, ElementRef, OnInit } from "@angular/core";
-import { Error } from "../../../core/services";
+import { InputFileService } from "../services/inputFile.service";
 
 @Component({
     selector: 'upload-files',
@@ -11,7 +11,7 @@ import { Error } from "../../../core/services";
             (dragAndDrop)="onDragAndDrop($event)" 
             (invalidDragAndDrop)="onInvalidDragAndDrop($event)">
             <div *ngIf="fileSrc" class="upload-files-dropzone-image">
-                <img *ngIf="isFileImage(fileSrc) else isFileIcon" 
+                <img *ngIf="inputFileService.isSrcUrl(fileSrc) else isFileIcon" 
                     src="{{ fileSrc }}" 
                     class="upload-files-dropzone-image__image">
                 <ng-template #isFileIcon>
@@ -103,53 +103,32 @@ export class UploadFilesComponent implements OnInit {
     @Output()
     upload: EventEmitter<File[]> = new EventEmitter();
     @Output()
-    invalidUpload: EventEmitter<Error> = new EventEmitter();
+    invalidUpload: EventEmitter<string> = new EventEmitter();
 
     @ViewChild('inputFileRef')
     inputFileRef: ElementRef;
 
     public multiple: boolean;
 
+    constructor(private inputFileService: InputFileService) {
+    }
+
     public ngOnInit(): void {
-        this.multiple = this.maxFilesNumber > 1 ? true : false;
+        this.multiple = this.maxFilesNumber > 1;
     }
 
     public onChange($event): void {
-        if ($event.target && $event.target.files) {
-            if ($event.target.files.length > this.maxFilesNumber) {
-                const error: Error = new Error();
-                error.message = `Only ${this.maxFilesNumber} file(s) allowed`;
-                console.error(error);
-                this.invalidUpload.emit(error);
-            } else {
-                let valid_files = [];
-                let invalid_files = [];
-                for (let i = 0; i < $event.target.files.length; i++) {
-                    let filenameSplit = $event.target.files[i].name.split('.');
-                    let ext = filenameSplit[filenameSplit.length - 1];
-                    if (this.allowedExtensions.lastIndexOf(ext) != -1) {
-                        valid_files.push($event.target.files[i]);
-                    } else {
-                        invalid_files.push($event.target.files[i]);
-                    }
-                }
-        
-                if (valid_files.length > 0) {
-                    this.upload.emit(valid_files);
-                }
-        
-                if (invalid_files.length > 0) {
-                    const error: Error = new Error();
-                    error.message = `Extension not allowed. Allowed extensions: ${this.allowedExtensions}`
-                    console.error(error);
-                    this.invalidUpload.emit(error);
-                }
+        if ($event.target) {
+            let files: File[];
+            try {
+                files = this.inputFileService.validateFiles($event.target.files
+                    , this.maxFilesNumber
+                    , this.allowedExtensions);
+                this.upload.emit(files);
+            } catch(e) {
+                this.invalidUpload.emit(e);
             }
         }
-    }
-
-    public isFileImage(fileSrc: string): boolean {
-        return fileSrc.startsWith('/workspace') || fileSrc.startsWith("http");
     }
 
     public onClickDropzoneInput($event: Event): void {
@@ -162,7 +141,7 @@ export class UploadFilesComponent implements OnInit {
         this.upload.emit($event);
     }
 
-    public onInvalidDragAndDrop($event: Error): void {
+    public onInvalidDragAndDrop($event: string): void {
         this.invalidUpload.emit($event);
     }
 }

@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from "@angular/core";
 import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
 import { ConnectorModel, Session, SessionModel } from "../../../core/store";
-import { ServicesService } from "../../services.service";
+import { ServicesService, WorkspaceDocument } from "../../services.service";
 import { ActivatedRoute, Params, Router } from "@angular/router";
 import { ServicesStore } from "../../services.store";
 import { SpinnerService, NotifyService } from "../../../core/services";
@@ -518,7 +518,7 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         
         this.spinnerService.perform('portal-content', 
             this.servicesService.uploadPublicImage(file)
-                .do(res => {
+                .do((res: WorkspaceDocument) => {
                     this.servicesStore.connector.icon = `/workspace/document/${res._id}`;
                     this.connectorPropertiesComponent.propertiesFormRef.form.markAsDirty();
                 })
@@ -532,9 +532,9 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
         );
     }
 
-    public onIconFileInvalid($event: Error): void {
+    public onIconFileInvalid($event: string): void {
         this.notifyService.error('services.connector.icon.upload.error.content'
             , 'services.connector.icon.upload.error.title'
-            , $event);
+            , { message: $event });
     }
 }

@@ -2,6 +2,7 @@ import { UploadFilesComponent } from './upload-files.component'
 import { ComponentFixture, async, TestBed } from '@angular/core/testing';
 import { Directive, Input } from '@angular/core';
 import { SijilModule } from 'sijil';
+import { InputFileService } from '../services/inputFile.service';
 
 describe('UploadFilesComponent', () => {
     let component: UploadFilesComponent;
@@ -10,7 +11,7 @@ describe('UploadFilesComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [UploadFilesComponent, MockDragAndDropFilesDirective],
-            providers: [],
+            providers: [InputFileService],
             imports: [SijilModule.forRoot()]
         }).compileComponents();
 

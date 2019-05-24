@@ -8,7 +8,7 @@ import { ServicesStore } from '../../services.store';
 import { NotifyService, SpinnerService } from '../../../core/services';
 import { StructureModel, ConnectorModel, RoleModel, GroupModel, ConnectorCollection } from '../../../core/store';
 import { Router, ActivatedRoute } from '@angular/router';
-import { ServicesService, Document } from '../../services.service';
+import { ServicesService } from '../../services.service';
 import { Observable } from 'rxjs';
 import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
 import { CasType } from './CasType';
@@ -254,7 +254,6 @@ describe('SmartConnector', () => {
             expect(mockServicesService.uploadPublicImage).toHaveBeenCalledWith(file);
             expect(mockServicesStore.connector.icon).toBe(`/workspace/document/${resId}`);
             expect(component.connectorPropertiesComponent.propertiesFormRef.form.markAsDirty).toHaveBeenCalled();
-            expect(mockNotifyService.success).toHaveBeenCalled();
         });
     })
 })

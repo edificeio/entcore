@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from '../services.store';
 import { ApplicationModel, SessionModel, ConnectorModel } from '../../core/store';
-import { ServicesService } from '../services.service';
+import { InputFileService } from '../../shared/ux/services';
 
 interface ServiceInfo {
     collection: any[],
@@ -40,7 +40,7 @@ interface ServiceInfo {
                                 [title]="'services.connector.locked' | translate"></i>
                         </div>
                         <div class="service-icon">
-                            <img [src]="item.icon" *ngIf="servicesService.isIconImage(item) else isIconClassSelector"/>
+                            <img [src]="item.icon" *ngIf="inputFileService.isSrcUrl(item.icon) else isIconClassSelector"/>
                             <ng-template #isIconClassSelector>
                                 <i [ngClass]="item.icon"></i>
                             </ng-template>
@@ -71,7 +71,7 @@ export class ServicesListComponent {
         public router: Router,
         public route: ActivatedRoute,
         private servicesStore: ServicesStore,
-        public servicesService: ServicesService
+        public inputFileService: InputFileService
         ) {
     }
 

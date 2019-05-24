@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, ViewChild, ElementRef } from "@
 import { ConnectorModel } from "../../../../core/store";
 import { CasType } from "../CasType";
 import { NgForm } from "@angular/forms";
-import { Error } from "../../../../core/services";
 
 @Component({
     selector: 'connector-properties',
@@ -242,7 +241,7 @@ export class ConnectorPropertiesComponent {
     @Output()
     iconFileChanged: EventEmitter<File[]> = new EventEmitter();
     @Output()
-    iconFileInvalid: EventEmitter<Error> = new EventEmitter();
+    iconFileInvalid: EventEmitter<string> = new EventEmitter();
 
     @ViewChild('propertiesForm')
     propertiesFormRef: NgForm;
@@ -289,7 +288,7 @@ export class ConnectorPropertiesComponent {
         this.iconFileChanged.emit($event);
     }
 
-    public onInvalidUpload($event: Error): void {
+    public onInvalidUpload($event: string): void {
         this.iconFileInvalid.emit($event);
     }
 }

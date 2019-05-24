@@ -144,29 +144,6 @@ describe('ServicesService', () => {
         });
     });
 
-    describe('isIconImage', () => {
-        it('should return true with connector.icon equals to /workspace/image1', () => {
-            const connector = new ConnectorModel();
-            connector.icon = '/workspace/image1';
-            const res = servicesService.isIconImage(connector);
-            expect(res).toBe(true);
-        });
-
-        it('should return true with connector.icon equals to http://image.com/image1', () => {
-            const connector = new ConnectorModel();
-            connector.icon = 'http://image.com/image1';
-            const res = servicesService.isIconImage(connector);
-            expect(res).toBe(true);
-        });
-
-        it('should return false with connector.icon equals to admin-large', () => {
-            const connector = new ConnectorModel();
-            connector.icon = 'admin-large';
-            const res = servicesService.isIconImage(connector);
-            expect(res).toBe(false);
-        });
-    });
-
     describe('uploadPublicImage', () => {
         it('should call POST /workspace/document with given query params and form data body', () => {
             const file: Blob = new Blob();

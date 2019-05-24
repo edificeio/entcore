@@ -30,7 +30,7 @@ import { DatepickerComponent,
     UploadFilesComponent } from './components'
 import { AnchorDirective, DynamicTemplateDirective, DynamicComponentDirective, DragAndDropFilesDirective } from './directives'
 import { FilterPipe, OrderPipe, StorePipe, LimitPipe, FlattenObjectArrayPipe, LocalizedDatePipe, BytesPipe } from './pipes'
-import { DynamicModuleImportsService, LabelsService } from './services';
+import { DynamicModuleImportsService, LabelsService, InputFileService } from './services';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
@@ -128,7 +128,8 @@ export class UxModule {
             ngModule: UxModule,
             providers: [
                 DynamicModuleImportsService,
-                labelsProvider || LabelsService
+                labelsProvider || LabelsService,
+                InputFileService
             ]
         };
     }
