@@ -457,7 +457,7 @@ i.group_add {
 
 .message {
   margin: 15px 0px;
-  p {margin: 0px;}
+  p {margin: 10px 0;}
   .message-header {
     padding: 10px 20px;
     background: black;
@@ -472,10 +472,11 @@ i.group_add {
     &::before {
       font-family: "FontAwesome";
       display: inline-block;
-      padding: 0 10px;
+      padding: 0;
       font-size: 20px;
       vertical-align: middle;
     }
+    ul {list-style: initial;}
   }
   &.is-success {
     color: $success;
