@@ -184,7 +184,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
+                <tr *ngFor="let user of report.users | filter: report.filter() | slice: report.page.offset:report.page.offset + report.page.limit | filter: report.columnFilter, index as i"
                     [ngClass]="{'state-delete':user.state == 'Supprimé'}"
                 >
                         <td>{{user.line}}</td>
@@ -468,6 +468,9 @@ export class ImportCSV implements OnInit, OnDestroy {
         getAvailableClasses() {
             let res:string[] = [];
             for (let p of Object.keys(this.availableClasses)) {
+                if (p === 'dbClasses'){
+                    continue;
+                }
                 this.availableClasses[p].forEach(el => {
                     if (el && el.length > 0 && res.indexOf(el) == -1) {
                         res.push(el);
