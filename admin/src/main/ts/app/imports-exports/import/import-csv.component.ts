@@ -87,7 +87,8 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     [messages]="messages.get('import.classesChecking.info')">
                 </message-sticker>
             </h2>
-            <message-box *ngIf="!classes.hasWarning()" [type]="'success'" [messages]="['import.classesChecking.success']"></message-box>
+            <message-box *ngIf="classes.noClassesMapping()" [type]="'success'" [messages]="['import.classesChecking.success.noClasses']"></message-box>
+            <message-box *ngIf="!classes.hasWarning() && !classes.noClassesMapping()" [type]="'success'" [messages]="['import.classesChecking.success']"></message-box>
             <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
             <message-box *ngIf="classes.hasWarning()" [type]="'warning'" [messages]="['import.file.warning']"></message-box>
             <panel-section *ngFor="let profile of classes.profiles" section-title="{{'import.file.'+ profile}}" [folded]="true"> 
@@ -422,6 +423,10 @@ export class ImportCSV implements OnInit, OnDestroy {
         availableClasses : {},
         profiles : [],
         init(classesMapping:ClassesMapping) : void {
+            // No classes found in DB and in files
+            if (classesMapping == null) {
+                return;
+            }
             this.mappings = {};
             this.availableClasses = {};
             this.profiles = [];    
@@ -455,6 +460,10 @@ export class ImportCSV implements OnInit, OnDestroy {
                 } 
             }
             return false;
+        },
+        // Use for Guest or Personnel profiles
+        noClassesMapping() {
+            return !this.hasWarning() && this.profiles.length === 0;
         },
         getAvailableClasses() {
             let res:string[] = [];
