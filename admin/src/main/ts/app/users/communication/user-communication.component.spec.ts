@@ -5,7 +5,7 @@ import { By } from '@angular/platform-browser';
 import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
 import { UxModule } from '../../shared/ux/ux.module';
-import { CommunicationRule } from './communication-rules.component';
+import { Column, CommunicationRule } from './communication-rules.component';
 import { clickOn, generateGroup, getText } from '../../shared/utils';
 
 describe('UserCommunicationComponent', () => {
@@ -111,8 +111,17 @@ function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): D
 })
 class MockCommunicationRulesComponent {
     @Input()
+    sendingHeaderLabel: string;
+
+    @Input()
+    receivingHeaderLabel: string;
+
+    @Input()
     communicationRules: CommunicationRule[];
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
+
+    @Input()
+    activeColumn: Column;
 }

@@ -1,14 +1,16 @@
-import { Component, Input, ChangeDetectorRef } from '@angular/core';
-import { GroupModel, SessionModel } from '../../core/store/models';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { NotifyService, GroupNameService } from '../../core/services';
+import { GroupNameService, NotifyService } from '../../core/services';
 import { Subject } from 'rxjs/Subject';
 import { BundlesService } from 'sijil';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/mergeMap';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Session } from '../../core/store';
+import { Observable } from 'rxjs/Observable';
 
 const css = {
     group: 'lct-user-communication-group',
@@ -30,14 +32,14 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
     selector: 'communication-rules',
     template: `
         <div class="communication-rules__headers">
-                <span class="communication-rules__header communication-rules__header--sending">{{ 'user.communication.groups-of-user' | translate }}</span>
-                <span class="communication-rules__header communication-rules__header--receiving">{{ 'user.communication.groups-that-user-can-communicate-with' | translate }}</span>
+                <span class="communication-rules__header communication-rules__header--sending">{{ sendingHeaderLabel }}</span>
+                <span class="communication-rules__header communication-rules__header--receiving">{{ receivingHeaderLabel }}</span>
         </div>
         <div class="communication-rules__columns">
             <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
                 <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
                     <group-card
-                    (click)="select('sending', group)"
+                    (click)="activeColumn === 'sending' ? select('sending', group) : $event.stopPropagation()"
                     (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
                     (mouseenter)="highlight('sending', group, selected)"
                     (mouseleave)="resetHighlight()"
@@ -51,13 +53,15 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
                 <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
                     <group-card
+                    (click)="activeColumn === 'receiving' ? select('receiving', group) : $event.stopPropagation()"
                     (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
                     (mouseenter)="highlight('receiving', group, selected)"
                     (mouseleave)="resetHighlight()"
                     [group]="group"
                     [selected]="isSelected('receiving', group, selected)"
                     [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
-                    [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"></group-card>
+                    [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"
+                    (clickAddCommunication)="openGroupPicker($event)"></group-card>
                 </div>
             </div>
         </div>
@@ -95,7 +99,7 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             </div>
             <div *ngIf="warningGroupReceiver" class="has-top-margin-10">
                 <i class='fa fa-exclamation-triangle is-danger'></i> 
-                <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(pickedReceiver)}"></span>
+                <span [innerHTML]="'user.communication.add-communication.confirm.users-can-communicate' | translate: {groupName: groupNameService.getGroupName(pickedGroup)}"></span>
             </div>
         </lightbox-confirm>`,
     styles: [`
@@ -130,12 +134,20 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
     `]
 })
 export class CommunicationRulesComponent {
+    @Input()
+    public sendingHeaderLabel: string = '';
+
+    @Input()
+    public receivingHeaderLabel: string = '';
 
     @Input()
     public communicationRules: CommunicationRule[];
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
+
+    @Input()
+    public activeColumn: Column;
 
     public selected: Cell;
     public highlighted: Cell;
@@ -148,7 +160,7 @@ export class CommunicationRulesComponent {
     public showGroupPicker: boolean = false;
     public warningGroupSender: boolean = false;
     public warningGroupReceiver: boolean = false;
-    public pickedReceiver: GroupModel;
+    public pickedGroup: GroupModel;
 
     constructor(private communicationRulesService: CommunicationRulesService,
                 private notifyService: NotifyService,
@@ -158,7 +170,7 @@ export class CommunicationRulesComponent {
     }
 
     public select(column: Column, group: GroupModel): void {
-        this.selected = { column, group };
+        this.selected = {column, group};
         this.resetHighlight();
     }
 
@@ -173,7 +185,9 @@ export class CommunicationRulesComponent {
     }
 
     public getSenders(): GroupModel[] {
-        return this.communicationRules.map(rule => rule.sender);
+        return this.communicationRules
+            .map(rule => rule.sender)
+            .filter(group => !!group);
     }
 
     public getReceivers(): GroupModel[] {
@@ -204,8 +218,8 @@ export class CommunicationRulesComponent {
         }
 
         return communicationRules
-            .filter(cr => cell.column === 'sending' ? (cr.sender.id === cell.group.id) : cr.receivers.some(g => g.id === cell.group.id))
-            .some(cr => cell.column === 'sending' ? cr.receivers.some(g => g.id === group.id) : (cr.sender.id === group.id));
+            .filter(cr => cell.column === 'sending' ? (cr.sender ? (cr.sender.id === cell.group.id) : false) : cr.receivers.some(g => g.id === cell.group.id))
+            .some(cr => cell.column === 'sending' ? cr.receivers.some(g => g.id === group.id) : (cr.sender ? (cr.sender.id === group.id) : false));
     }
 
     public removeCommunication(sender: GroupModel, receiver: GroupModel) {
@@ -214,7 +228,7 @@ export class CommunicationRulesComponent {
             .first()
             .do(() => this.removeConfirmationDisplayed = false)
             .filter(choice => choice === 'confirm')
-            .mergeMap(() => this.communicationRulesService.removeCommunication(sender, receiver))
+            .mergeMap(() => this.communicationRulesService.removeCommunication(sender, receiver, this.activeColumn))
             .subscribe(() => this.notifyService.success({
                 key: 'user.communication.remove-communication.success',
                 parameters: {groupName: this.groupNameService.getGroupName(sender)}
@@ -224,49 +238,34 @@ export class CommunicationRulesComponent {
             }, 'user.communication.remove-communication.error.title'));
     }
 
-    public openGroupPicker(group: GroupModel): void {
+    public openGroupPicker(): void {
         this.showGroupPicker = true;
     }
 
     public filterGroupPicker = (group: GroupModel) => {
         if (this.selected) {
-            return !this.communicationRules
-                .find(commRule => commRule.sender.id == this.selected.group.id)
-                .receivers.find(receiver => receiver.id === group.id) 
-                && group.id != this.selected.group.id;
+            if (group.id === this.selected.group.id) {
+                return false;
+            }
+
+            if (this.activeColumn === 'sending') {
+                return !this.communicationRules
+                    .find(commRule => commRule.sender.id == this.selected.group.id).receivers
+                    .find(receiver => receiver.id === group.id);
+            } else {
+                return !this.communicationRules
+                    .filter(commRule => commRule.receivers.some(receiver => receiver.id === this.selected.group.id))
+                    .some(commRule => !!commRule.sender && (commRule.sender.id == group.id));
+            }
         }
         return true;
     };
 
-    public onGroupPick(receiver: GroupModel) {
-        this.communicationRulesService.checkAddLink(this.selected.group, receiver)
-            .subscribe(res => {
-                if (res.warning === WARNING_STARTGROUP_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupSender = true;
-                } else if (res.warning === WARNING_ENDGROUP_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupReceiver = true;
-                } else if (res.warning === WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE) {
-                    this.warningGroupSender = true;
-                    this.warningGroupReceiver = true;
-                }
-                this.pickedReceiver = receiver;
-
-                this.addConfirmationDisplayed = true;
-                this.changeDetectorRef.markForCheck();
-
-                this.addConfirmationClicked.asObservable()
-                    .first()
-                    .do(() => this.addConfirmationDisplayed = false)
-                    .filter(choice => choice === 'confirm')
-                    .mergeMap(() => this.communicationRulesService.createCommunication(this.selected.group, receiver))
-                    .subscribe(() => {
-                        this.notifyService.success('user.communication.add-communication.success')
-                        , () => this.notifyService.error({
-                            key: 'user.communication.add-communication.error.content',
-                            parameters: {groupName: this.selected.group.name}
-                        }, 'user.communication.add-communication.error.title');
-                    });
-            }, (error: HttpErrorResponse) => {
+    public onGroupPick(pickedGroup: GroupModel) {
+        const sender: GroupModel = this.activeColumn === 'sending' ? this.selected.group : pickedGroup;
+        const receiver: GroupModel = this.activeColumn === 'sending' ? pickedGroup : this.selected.group;
+        this.communicationRulesService.checkAddLink(sender, receiver)
+            .catch((error: HttpErrorResponse) => {
                 if (error.status === 409) {
                     this.notifyService.error('user.communication.add-communication.error.impossible.content'
                         , 'user.communication.add-communication.error.impossible.title')
@@ -276,7 +275,35 @@ export class CommunicationRulesComponent {
                         parameters: {groupName: this.groupNameService.getGroupName(this.selected.group)}
                     }, 'group.internal-communication-rule.change.error.title')
                 }
-            });
+                return Observable.throw({printed: true, original: error});
+            })
+            .do(res => {
+                if (res.warning === WARNING_STARTGROUP_USERS_CAN_COMMUNICATE) {
+                    this.warningGroupSender = true;
+                } else if (res.warning === WARNING_ENDGROUP_USERS_CAN_COMMUNICATE) {
+                    this.warningGroupReceiver = true;
+                } else if (res.warning === WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE) {
+                    this.warningGroupSender = true;
+                    this.warningGroupReceiver = true;
+                }
+                this.pickedGroup = pickedGroup;
+                this.addConfirmationDisplayed = true;
+                this.changeDetectorRef.markForCheck();
+            })
+            .mergeMap(() => this.addConfirmationClicked.asObservable())
+            .first()
+            .do(() => this.addConfirmationDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .mergeMap(() => this.communicationRulesService.createCommunication(sender, receiver, this.activeColumn))
+            .subscribe(() => this.notifyService.success('user.communication.add-communication.success'),
+                (err) => {
+                    if (!err.printed) {
+                        this.notifyService.error({
+                            key: 'user.communication.add-communication.error.content',
+                            parameters: {groupName: this.selected.group.name}
+                        }, 'user.communication.add-communication.error.title');
+                    }
+                });
     }
 }
 
@@ -295,7 +322,7 @@ export function uniqueGroups(groups: GroupModel[]): GroupModel[] {
     return uniqGroups;
 }
 
-type Column = 'sending' | 'receiving';
+export type Column = 'sending' | 'receiving';
 
 interface Cell {
     column: Column;
