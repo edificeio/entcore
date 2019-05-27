@@ -3,13 +3,13 @@ import { Subscription } from "rxjs";
 import { CasType } from "./CasType";
 import { ConnectorModel, Session, SessionModel } from "../../../core/store";
 import { ServicesService, WorkspaceDocument } from "../../services.service";
-import { ActivatedRoute, Params, Router } from "@angular/router";
+import { ActivatedRoute, Params, Router, Data } from "@angular/router";
 import { ServicesStore } from "../../services.store";
-import { SpinnerService, NotifyService } from "../../../core/services";
+import { SpinnerService, NotifyService, routing } from "../../../core/services";
 import { Location } from "@angular/common";
 import { BundlesService } from "sijil";
 import { ConnectorPropertiesComponent } from "./properties/connector-properties.component";
-import { Profile, Structure, Assignment } from "../../shared/services-types";
+import { Profile, Assignment } from "../../shared/services-types";
 import { ExportFormat } from "./export/connector-export";
 
 import 'rxjs/add/operator/do';
@@ -149,7 +149,7 @@ import 'rxjs/add/operator/toPromise';
 
         <connector-mass-assignment
             *ngIf="currentTab === MASS_ASSIGNMENT_TAB && !isAssignmentDisabled()"
-            [structure]="structure"
+            [structure]="{ id: this.servicesStore.structure.id, name: this.servicesStore.structure.name }"
             [profiles]="profiles"
             (submitUnassignment)="onRemoveMassAssignment($event)"
             (submitAssignment)="onAddMassAssignment($event)">
@@ -194,8 +194,8 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
     public admlOfConnectorStructure: boolean;
     public showDeleteConfirmation: boolean;
     public profiles: Array<Profile> = ['Guest', 'Personnel', 'Relative', 'Student', 'Teacher'];
-    public structure: Structure;
-
+    private structureSubscriber: Subscription;
+    
     @ViewChild(ConnectorPropertiesComponent)
     connectorPropertiesComponent: ConnectorPropertiesComponent;
     
@@ -233,7 +233,15 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
                     r.name = `${this.servicesStore.connector.name} - ${this.bundles.translate('services.connector.access')}`;
                 });
             }
-        })
+        });
+
+        this.structureSubscriber = routing.observe(this.activatedRoute, 'data').subscribe((data: Data) => {
+            if (data['structure']) {
+                if (!this.hasStructureChildren() && this.currentTab === this.MASS_ASSIGNMENT_TAB) {
+                    this.currentTab = this.PROPERTIES_TAB;
+                }
+            }
+        });
 
         this.casTypesSubscription = this.servicesService
             .getCasTypes()
@@ -241,13 +249,13 @@ export class SmartConnectorComponent implements OnInit, OnDestroy {
 
         this.setAdmc();
         this.setAdmlOfConnectorStructure();
-        this.structure = {id: this.servicesStore.structure.id, name: this.servicesStore.structure.name};
     }
 
     ngOnDestroy() {
         this.routeSubscription.unsubscribe();
         this.rolesSubscription.unsubscribe();
         this.casTypesSubscription.unsubscribe();
+        this.structureSubscriber.unsubscribe();
     }
 
     public async setAdmlOfConnectorStructure() {
