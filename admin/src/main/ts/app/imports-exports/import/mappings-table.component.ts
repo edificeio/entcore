@@ -85,10 +85,11 @@ export class MappingsTable implements OnInit, AfterViewInit {
         this.dComponents.toArray()[index].load({selected:value});
     }
     selectIsLoaded(index:number):boolean {
-        if (this.dComponents == undefined) 
+        if (this.dComponents == undefined || this.dComponents.toArray()[index] == undefined) 
             return false;
-        else
+        else {
             return this.dComponents.toArray()[index].isLoaded();
+        }
     }
 
     ngOnInit() {}
