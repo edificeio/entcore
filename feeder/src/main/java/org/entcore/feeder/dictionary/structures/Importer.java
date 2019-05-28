@@ -19,6 +19,8 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.feeder.dictionary.users.AbstractUser;
@@ -35,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Importer {
@@ -58,6 +61,7 @@ public class Importer {
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, String> fieldOfStudy= new ConcurrentHashMap<>();
+	private Set<String> blockedIne;
 	private Report report;
 
 	private Importer() {
@@ -78,7 +82,8 @@ public class Importer {
 		return StructuresHolder.instance;
 	}
 
-	public void init(final Neo4j neo4j, final String source, String acceptLanguage, final Handler<Message<JsonObject>> handler) {
+	public void init(final Neo4j neo4j, final String source, String acceptLanguage, boolean blockCreateByIne,
+			final Handler<Message<JsonObject>> handler) {
 		this.neo4j = neo4j;
 		this.currentSource = source;
 		this.report = new Report(acceptLanguage);
@@ -92,35 +97,72 @@ public class Importer {
 				externalIdMapping = GraphData.getExternalIdMapping();
 				profiles = GraphData.getProfiles();
 				persEducNat = new PersEducNat(transactionHelper, externalIdMapping, userImportedExternalId, report, currentSource);
-				if ("CSV".equals(source) && "ok".equals(event.body().getString("status"))) {
-					loadFieldOfStudy(handler);
-				} else {
-					if (handler != null) {
+				if ("ok".equals(event.body().getString("status"))) {
+					final List<Future> futures = new ArrayList<>();
+					if ("CSV".equals(source)) {
+						futures.add(loadFieldOfStudy());
+					}
+					if (blockCreateByIne) {
+						futures.add(loadUsedIne());
+					}
+					if (!futures.isEmpty()) {
+						CompositeFuture.all(futures).setHandler(ar -> {
+							if (handler != null) {
+								handler.handle(event);
+							}
+						});
+					} else if (handler != null) {
 						handler.handle(event);
 					}
+				} else if (handler != null) {
+					handler.handle(event);
 				}
 			}
 		});
 	}
 
-	private void loadFieldOfStudy(final Handler<Message<JsonObject>> handler) {
-		Neo4j.getInstance().execute("MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name", new JsonObject(),
-				new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray res = event.body().getJsonArray("result");
-				if ("ok".equals(event.body().getString("status")) && res != null) {
-					for (Object o : res) {
-						if (!(o instanceof JsonObject)) continue;
-						final JsonObject j = (JsonObject) o;
-						fieldOfStudy.putIfAbsent(j.getString("name"), j.getString("externalId"));
-					}
-				}
-				if (handler != null) {
-					handler.handle(event);
+	private Future<Void> loadFieldOfStudy() {
+		final Future<Void> f = Future.future();
+		final String query = "MATCH (f:FieldOfStudy) return f.externalId as externalId, f.name as name";
+		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
+			final JsonArray res = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status")) && res != null) {
+				for (Object o : res) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject j = (JsonObject) o;
+					fieldOfStudy.putIfAbsent(j.getString("name"), j.getString("externalId"));
 				}
 			}
+			f.complete();
 		});
+		return f;
+	}
+
+	private Future<Void> loadUsedIne() {
+		final Future<Void> f = Future.future();
+		final String query =
+				"MATCH (u:User) " +
+				"WHERE u.source IN {sources} AND HAS(u.ine) AND NOT(HAS(u.disappearanceDate)) AND NOT(HAS(u.deleteDate)) " +
+				"RETURN COLLECT(DISTINCT u.ine) ines";
+		final JsonArray sources = new JsonArray();
+		for (Object o: sources) {
+			if (currentSource.equals(o)) break;
+			sources.add(o);
+		}
+		if (sources.isEmpty()) {
+			f.complete();
+			return f;
+		}
+		final JsonObject params = new JsonObject().put("sources", sources);
+		Neo4j.getInstance().execute(query, params, event -> {
+			final JsonArray res = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status")) && res != null && res.size() == 1) {
+				final JsonArray a = getOrElse(res.getJsonObject(0).getJsonArray("ines"), new JsonArray());
+				blockedIne = new HashSet<>(a.getList());
+			}
+			f.complete();
+		});
+		return f;
 	}
 
 	public TransactionHelper getTransaction() {
@@ -893,6 +935,10 @@ public class Importer {
 
 	public ConcurrentMap<String, String> getFieldOfStudy() {
 		return fieldOfStudy;
+	}
+
+	public boolean blockedIne(JsonObject user) {
+		return blockedIne != null && user != null && blockedIne.contains(user.getString("ine"));
 	}
 
 }
