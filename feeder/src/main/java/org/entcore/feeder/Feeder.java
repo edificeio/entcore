@@ -549,7 +549,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final Importer importer = Importer.getInstance();
 		if (importer.isReady()) {
 			final long start = System.currentTimeMillis();
-			importer.init(neo4j, feed.getSource(), acceptLanguage, new Handler<Message<JsonObject>>() {
+			importer.init(neo4j, feed.getSource(), acceptLanguage, config.getBoolean("block-create-by-ine", false),
+					new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
 					if (!"ok".equals(res.body().getString("status"))) {

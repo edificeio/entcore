@@ -43,6 +43,13 @@ public class StudentImportProcessing1d2 extends StudentImportProcessing2 {
 	}
 
 	@Override
+	public void process(JsonObject object) {
+		if (!importer.blockedIne(object)) {
+			super.process(object);
+		}
+	}
+
+	@Override
 	public void start(final Handler<Message<JsonObject>> handler) {
 		initAcademyPrefix(path);
 		importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {

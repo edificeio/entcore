@@ -43,11 +43,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class DuplicateUsers {
 
@@ -86,6 +88,8 @@ public class DuplicateUsers {
 	private final boolean autoMergeOnlyInSameStructure;
 	private final EventBus eb;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
+	public static final JsonArray defaultSourcesOrder = new JsonArray()
+			.add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
 
 	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure, EventBus eb) {
 		this(null, updateCourses, autoMergeOnlyInSameStructure, eb);
@@ -94,7 +98,7 @@ public class DuplicateUsers {
 	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure,
 			EventBus eb) {
 		if (sourcesPriority == null) {
-			sourcesPriority = new fr.wseduc.webutils.collections.JsonArray().add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("MANUAL");
+			sourcesPriority = defaultSourcesOrder;
 		}
 		final int size = sourcesPriority.size();
 		for (int i = 0; i < size; i++) {
@@ -695,6 +699,292 @@ public class DuplicateUsers {
 		};
 		listDuplicates(new ResultMessage(duplicatesHandler).put("minScore", 5)
 				.put("inSameStructure", autoMergeOnlyInSameStructure).put("inherit", false));
+	}
+
+	void mergeSameINE(boolean execute, final Handler<AsyncResult<Void>> handler) {
+		if (!execute) {
+			handler.handle(new DefaultAsyncResult<>((Void) null));
+			return;
+		}
+		final String searchDuplicateIneUsers =
+				"MATCH (u:User) " +
+				"WHERE has(u.ine) " +
+				"WITH u.ine as ine, COLLECT(DISTINCT {id: u.id, source: u.source, disappearanceDate: u.disappearanceDate, " +
+				"deleteDate: u.deleteDate, activationCode: u.activationCode, created: u.created, " +
+				"login : u.login, externalId : u.externalId }) as users " +
+				"WHERE LENGTH(users) > 1 " +
+				"RETURN ine, users ";
+
+		TransactionManager.getNeo4jHelper().execute(searchDuplicateIneUsers, new JsonObject(), r -> {
+			if ("ok".equals(r.body().getString("status"))) {
+				final Comparator<JsonObject> userComparator = new UserComparator();
+				final long now = System.currentTimeMillis();
+				final TransactionHelper tx;
+				try {
+					tx = TransactionManager.getTransaction();
+				} catch (TransactionException e) {
+					log.error("Error beginning merge same INE transaction.", e);
+					handler.handle(new DefaultAsyncResult<>(e));
+					return;
+				}
+				for (Object o : getOrElse(r.body().getJsonArray("result"), new JsonArray())) {
+					if (!(o instanceof JsonObject)) continue;
+					final String ine = ((JsonObject) o).getString("ine");
+					final List<JsonObject> users = (List) getOrElse(((JsonObject) o).getJsonArray("users"), new JsonArray())
+							.stream().map(e -> (e instanceof Map) ? new JsonObject((Map) e) : e).collect(Collectors.toList());
+					if (users.isEmpty()) continue;
+					users.sort(userComparator);
+
+					final JsonObject principalUser = users.remove(0);
+					if (principalUser.getLong("disappearanceDate") != null ||
+							principalUser.getLong("deleteDate") != null) {
+						log.warn("All " + users.size() + " users with ine " + ine + " has disappearanceDate or deleteDate.");
+						continue;
+					}
+					final String principalSource = principalUser.getString("source");
+					final boolean principalActivated = isEmpty(principalUser.getString("activationCode"));
+					for (Object o2 :  users) {
+						if (!(o2 instanceof JsonObject)) continue;
+						final JsonObject oldUser = (JsonObject) o2;
+						if (!principalActivated && isEmpty(oldUser.getString("activationCode"))) {
+							mergeDuplicateIneUser(ine, now, principalUser, oldUser, false, tx);
+						} else if (!principalSource.equals(oldUser.getString("source")) ||
+								oldUser.getLong("disappearanceDate") != null ||
+								oldUser.getLong("deleteDate") != null) {
+							deleteDuplicateIneUser(oldUser, tx);
+						}
+					}
+				}
+				if (tx.isEmpty()) {
+					handler.handle(new DefaultAsyncResult<>((Void) null));
+				} else {
+					tx.commit(res -> {
+						if ("ok".equals(res.body().getString("status"))) {
+							mergeSameRelative(now, handler);
+							//handler.handle(new DefaultAsyncResult<>((Void) null));
+						} else {
+							final String err = res.body().getString("message");
+							log.error("Error when commit merge same INE transaction : " + err);
+							handler.handle(new DefaultAsyncResult<>(new TransactionException(err)));
+						}
+					});
+				}
+			} else {
+				log.error("Error searching user with same INE : " + r.body().getString("message"));
+				handler.handle(new DefaultAsyncResult<>(new TransactionException(r.body().getString("message"))));
+			}
+		});
+	}
+
+	private void mergeDuplicateIneUser(String ine, long now, JsonObject principalUser, JsonObject oldUser,
+			boolean relative, TransactionHelper tx) {
+		final JsonObject params = new JsonObject()
+				.put("id", principalUser.getString("id")).put("oldId", oldUser.getString("id"));
+		final String query1 =
+				"MATCH (old:User {id: {oldId}})-[r:USERBOOK]->(ub:UserBook), (u:User {id: {id}}) " +
+				"SET ub.theme = null " +
+				"CREATE UNIQUE u-[:USERBOOK]->ub " +
+				"DELETE r";
+		tx.add(query1, params);
+		final String query2 =
+				"MATCH (old:User {id: {oldId}})-[r:PREFERS]->(ub:UserAppConf), (u:User {id: {id}}) " +
+				"SET ub.theme = null " +
+				"CREATE UNIQUE u-[:PREFERS]->ub " +
+				"DELETE r";
+		tx.add(query2, params);
+		if (!relative) {
+			final String query3 =
+					"MATCH (old:User {id: {oldId}})-[r:RELATED]->(ub:User), (u:User {id: {id}}) " +
+					"SET u.mergeIneDate = {now} " +
+					"CREATE UNIQUE u-[:RELATED {source:'MERGE_INE'}]->ub " +
+					"DELETE r";
+			tx.add(query3, params.copy().put("now", now));
+		}
+		final String query4 =
+				"MATCH (old:User {id: {oldId}}) " +
+				"SET old.oldId = old.id, old.id = null, old.oldLogin = old.login, old.login = null " +
+				"WITH old " +
+				"MATCH (u:User {id: {id}}) " +
+				"SET u.oldId = u.id, u.id = old.oldId, u.oldLogin = u.login, u.login = old.oldLogin, " +
+				"u.activationCode = null, u.password = old.password, u.email = old.email " +
+				"WITH old " +
+				"OPTIONAL MATCH old-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH old-[r]-() " +
+				"DELETE r, rb, b, old ";
+		tx.add(query4, params);
+		log.info("Merge duplicate INE " + ine + ".\nOld user : " + oldUser.encode() + "\nNew user : " + principalUser.encode());
+	}
+
+	private void deleteDuplicateIneUser(JsonObject oldUser, TransactionHelper tx) {
+		final String query =
+				"MATCH (u:User {id: {id}}) " +
+				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH u-[r]-() " +
+				"DELETE r, rb, b, u ";
+		final JsonObject params = new JsonObject().put("id", oldUser.getString("id"));
+		log.info("Remove duplicate ine user : " + oldUser.encode());
+		tx.add(query, params);
+	}
+
+
+	private void mergeSameRelative(long now, Handler<AsyncResult<Void>> handler) {
+		final String query =
+				"MATCH (u:User {mergeIneDate:{now}})-[r:RELATED]->(p:User) " +
+				"OPTIONAL MATCH p<-[:RELATED]-(n:User) " +
+				"WHERE NOT(HAS(n.mergeIneDate)) " +
+				"WITH u, r, p, COUNT(DISTINCT n) as otherChildCount " +
+				"RETURN u.id as id, u.ine as ine, COLLECT(DISTINCT {id: p.id, source: p.source, " +
+				"disappearanceDate: p.disappearanceDate, deleteDate: p.deleteDate, activationCode: p.activationCode, " +
+				"created: p.created, name : p.lastNameSearchField + p.firstNameSearchField, login : p.login, " +
+				"externalId : p.externalId, relSource : r.source, otherChildCount : otherChildCount }) as relatives ";
+		TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("now", now), r -> {
+			if ("ok".equals(r.body().getString("status"))) {
+				final JsonArray a = getOrElse(r.body().getJsonArray("result"), new JsonArray());
+				final TransactionHelper tx;
+				try {
+					tx = TransactionManager.getTransaction();
+				} catch (TransactionException e) {
+					log.error("Error beginning merge same INE transaction.", e);
+					handler.handle(new DefaultAsyncResult<>(e));
+					return;
+				}
+				final Comparator<Object> comparator = new RelativeMergeSameRelativeComparator();
+				for (Object o : a) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject j = (JsonObject) o;
+					final JsonArray deleteRelatives = new JsonArray(j.getJsonArray("relatives").stream()
+							.filter(i -> ((JsonObject)i).getInteger("otherChildCount") == 0 &&
+									"MERGE_INE".equals(((JsonObject)i).getString("relSource")) &&
+									isNotEmpty(((JsonObject)i).getString("activationCode")))
+							.map(i -> ((JsonObject)i).getString("id"))
+							.collect(Collectors.toList()));
+					deleteOldRelativesUsers(deleteRelatives, tx);
+					final JsonArray removeLinks = new JsonArray(j.getJsonArray("relatives").stream()
+							.filter(i -> ((JsonObject)i).getInteger("otherChildCount") > 0)
+							.map(i -> ((JsonObject)i).getString("id"))
+							.collect(Collectors.toList()));
+					removeLinksMergeIne(j.getString("id"), removeLinks, tx);
+					final Map<String, List<Object>> map = j.getJsonArray("relatives").stream()
+							.filter(i -> !deleteRelatives.contains(((JsonObject)i).getString("id")) &&
+									((JsonObject)i).getInteger("otherChildCount") == 0)
+							.collect(Collectors.groupingBy(x -> ((JsonObject) x).getString("name")));
+					mergeDuplicateIneRelatives(map, comparator, tx);
+				}
+				if (tx.isEmpty()) {
+					handler.handle(new DefaultAsyncResult<>((Void) null));
+				} else {
+					tx.commit(res -> {
+						if ("ok".equals(res.body().getString("status"))) {
+							handler.handle(new DefaultAsyncResult<>((Void) null));
+						} else {
+							final String err = res.body().getString("message");
+							log.error("Error when commit merge relatives same INE transaction : " + err);
+							handler.handle(new DefaultAsyncResult<>(new TransactionException(err)));
+						}
+					});
+				}
+			} else {
+				log.error("Error searching relative with child same INE : " + r.body().getString("message"));
+				handler.handle(new DefaultAsyncResult<>(new TransactionException(r.body().getString("message"))));
+			}
+		});
+
+	}
+
+	private void mergeDuplicateIneRelatives(Map<String, List<Object>> map, Comparator<Object> c, TransactionHelper tx) {
+		for (Map.Entry<String, List<Object>> e : map.entrySet()) {
+			if (e.getValue().size() < 2) continue;
+			e.getValue().sort(c);
+			log.info("Sort details relatives : " + new JsonArray(e.getValue()).encode());
+			final JsonObject principalUser = (JsonObject) e.getValue().remove(0);
+			final boolean principalActivated = isEmpty(principalUser.getString("activationCode"));
+			final String principalSource = principalUser.getString("source");
+			for (Object o2 :  e.getValue()) {
+				if (!(o2 instanceof JsonObject)) continue;
+				final JsonObject oldUser = (JsonObject) o2;
+				if (!principalActivated && isEmpty(oldUser.getString("activationCode"))) {
+					mergeDuplicateIneUser("relative", 0, principalUser, oldUser, true, tx);
+				} else if (!principalSource.equals(oldUser.getString("source")) ||
+						oldUser.getLong("disappearanceDate") != null ||
+						oldUser.getLong("deleteDate") != null) {
+					deleteDuplicateIneUser(oldUser, tx);
+				}
+			}
+		}
+	}
+
+	private void removeLinksMergeIne(String id, JsonArray removeLinks, TransactionHelper tx) {
+		if (removeLinks == null || removeLinks.isEmpty()) return;
+		final String query =
+				"MATCH (u:User {id: {id}})-[r:RELATED {source: 'MERGE_INE'}]->(p:User) " +
+				"WHERE p.id IN {relatives} " +
+				"DELETE r ";
+		final JsonObject params = new JsonObject().put("id", id).put("relatives", removeLinks);
+		log.info("Remove link merge INE user relative : " + removeLinks.encode());
+		tx.add(query, params);
+	}
+
+	private void deleteOldRelativesUsers(JsonArray deleteRelatives, TransactionHelper tx) {
+		if (deleteRelatives == null || deleteRelatives.isEmpty()) return;
+		final String query =
+				"MATCH (u:User) " +
+				"WHERE u.id IN {relatives} " +
+				"OPTIONAL MATCH u-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
+				"OPTIONAL MATCH u-[r]-() " +
+				"DELETE r, rb, b, u ";
+		final JsonObject params = new JsonObject().put("relatives", deleteRelatives);
+		log.info("Remove duplicate ine user relatives : " + deleteRelatives.encode());
+		tx.add(query, params);
+	}
+
+	private class RelativeMergeSameRelativeComparator implements Comparator<Object> {
+
+		@Override
+		public int compare(Object o1, Object o2) {
+			final JsonObject j1 = (JsonObject) o1;
+			final JsonObject j2 = (JsonObject) o2;
+			if (isEmpty(j1.getString("relSource"))) {
+				if (isNotEmpty(j2.getString("relSource"))) {
+					return 1;
+				} else {
+					return j2.getString("created").compareTo(j1.getString("created"));
+				}
+			} else {
+				if (isEmpty(j2.getString("relSource"))) {
+					return -1;
+				} else {
+					return j2.getString("created").compareTo(j1.getString("created"));
+				}
+			}
+		}
+
+	}
+
+	private class UserComparator implements Comparator<JsonObject> {
+
+		@Override
+		public int compare(JsonObject o1, JsonObject o2) {
+			if (o1.getLong("disappearanceDate") == null && o1.getLong("deleteDate") == null) {
+				if (o2.getLong("disappearanceDate") == null && o2.getLong("deleteDate") == null) {
+					return compareSourceAndCreated(o1, o2);
+				} else {
+					return 1;
+				}
+			} else {
+				if (o2.getLong("disappearanceDate") == null && o2.getLong("deleteDate") == null) {
+					return -1;
+				} else {
+					return compareSourceAndCreated(o1, o2);
+				}
+			}
+		}
+
+		private int compareSourceAndCreated(JsonObject o1, JsonObject o2) {
+			final int c = sourcePriority.get(o2.getString("source"))
+					.compareTo(sourcePriority.get(o1.getString("source")));
+			return (c != 0) ? c : o2.getString("created").compareTo(o1.getString("created"));
+		}
+
 	}
 
 }

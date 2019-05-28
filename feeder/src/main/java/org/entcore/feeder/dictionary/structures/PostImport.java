@@ -70,17 +70,9 @@ public class PostImport {
 		storeImportedEvent();
 		if (source == null || config.getJsonArray("exclude-mark-duplicates-by-source") == null ||
 				!config.getJsonArray("exclude-mark-duplicates-by-source").contains(source)) {
-			duplicateUsers.markDuplicates(new Handler<JsonObject>() {
-				@Override
-				public void handle(final JsonObject event) {
-					duplicateUsers.autoMergeDuplicatesInStructure(new Handler<AsyncResult<JsonArray>>() {
-						@Override
-						public void handle(AsyncResult<JsonArray> mergedUsers) {
-							applyComRules(getFinalHandler(source));
-						}
-					});
-				}
-			});
+			duplicateUsers.mergeSameINE(config.getBoolean("execute-merge-ine", false), voidAsyncResult ->
+					duplicateUsers.markDuplicates(event ->
+							duplicateUsers.autoMergeDuplicatesInStructure(mergedUsers -> applyComRules(getFinalHandler(source)))));
 		} else {
 			applyComRules(getFinalHandler(source));
 		}
