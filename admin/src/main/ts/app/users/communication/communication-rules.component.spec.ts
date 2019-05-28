@@ -12,9 +12,8 @@ import {
 import { generateGroup } from '../../shared/utils';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { NotifyService, GroupNameService } from '../../core/services';
+import { GroupNameService, NotifyService } from '../../core/services';
 import { UsersStore } from '../users.store';
-import { GroupCollection } from '../../core/store';
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;
@@ -23,7 +22,6 @@ describe('CommunicationRulesComponent', () => {
     let communicationRulesService: CommunicationRulesService;
     let fixture: ComponentFixture<CommunicationRulesComponent>;
     let usersStoreMock: UsersStore;
-    let communicationRuleServiceMock: CommunicationRulesService;
 
     beforeEach(() => {
         usersStoreMock = {
@@ -282,6 +280,18 @@ describe('CommunicationRulesComponent', () => {
             component.removeConfirmationClicked.next('confirm');
             expect(communicationRulesService.removeCommunication).toHaveBeenCalled();
             expect(component.removeConfirmationDisplayed).toBe(false);
+        });
+    });
+
+    describe('getSenders', () => {
+        it('should filter null group', () => {
+            component.communicationRules = [
+                {sender: generateGroup('group1'), receivers: [generateGroup('group2')]},
+                {sender: null, receivers: [generateGroup('group3')]}
+            ];
+            const senders = component.getSenders();
+            expect(senders.length).toBe(1);
+            expect(senders[0].id).toBe('group1');
         });
     });
 });

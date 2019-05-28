@@ -33,9 +33,27 @@ export const userCommunicationLocators = {
             </div>
 
             <div class="user-communication__content">
-                <communication-rules [communicationRules]="userSendingCommunicationRules"
-                    [addCommunicationPickableGroups]="addCommunicationPickableGroups">
-                </communication-rules>
+                <communication-rules
+                [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
+                [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
+                [communicationRules]="userSendingCommunicationRules"
+                [activeColumn]="'sending'"
+                [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
+            </div>
+        </panel-section>
+        
+        <panel-section section-title="user.communication.section.title.receiving-rules" [folded]="false">
+            <div panel-section-header-icons>
+                <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
+            </div>
+            
+            <div class="user-communication__content">
+                <communication-rules
+                [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
+                [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
+                [communicationRules]="userReceivingCommunicationRules"
+                [activeColumn]="'receiving'"
+                [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
             </div>
         </panel-section>`,
     styles: [`
@@ -70,6 +88,9 @@ export class UserCommunicationComponent {
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
+
+    @Input()
+    public userReceivingCommunicationRules: CommunicationRule[];
 
     @Output()
     public close: EventEmitter<void> = new EventEmitter<void>();

@@ -14,6 +14,7 @@ import { UsersStore } from '../users.store'
         <user-communication *ngIf="user && userSendingCommunicationRules" 
                             [user]="user"
                             [userSendingCommunicationRules]="userSendingCommunicationRules"
+                            [userReceivingCommunicationRules]="userReceivingCommunicationRules"
                             [addCommunicationPickableGroups]="addCommunicationPickableGroups"
                             (close)="openUserDetails()">
         </user-communication>`
@@ -22,6 +23,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
 
     public user: UserModel;
     public userSendingCommunicationRules: CommunicationRule[];
+    public userReceivingCommunicationRules: CommunicationRule[];
     public addCommunicationPickableGroups: GroupModel[];
 
     private communicationRulesChangesSubscription: Subscription;
@@ -39,7 +41,8 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
 
     ngOnInit() {
         this.communicationRulesChangesSubscription = this.communicationRulesService.changes().subscribe(rules => {
-            this.userSendingCommunicationRules = rules;
+            this.userSendingCommunicationRules = rules.sending;
+            this.userReceivingCommunicationRules = rules.receiving;
             this.changeDetector.markForCheck();
         });
         this.routeSubscription = this.route.data.subscribe((data: Data) => {
