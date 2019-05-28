@@ -505,8 +505,10 @@ export class ImportCSV implements OnInit, OnDestroy {
                 }
                 // merge profile's softErrors list
                 if (data.softErrors && data.softErrors[p]) {
-                    this.softErrors.list.push(...data.softErrors[p]);
-                    this.markUserErrors(data.softErrors[p], p);
+                    // FIXME ignore displayName & login error => better to implement in serrver-side ?
+                    let errors = data.softErrors[p].filter(err => !['login','displayName'].includes(err.attribute));
+                    this.softErrors.list.push(...errors);
+                    this.markUserErrors(errors, p);
                 }
             }
             // Set report total user
@@ -544,7 +546,7 @@ export class ImportCSV implements OnInit, OnDestroy {
         },
         countByReason(r:string):number {
             return this.softErrors.list.reduce((count, item) => {
-                return count + (item.reason == r ? 1 : 0);
+                return count + (item.reason === r ? 1 : 0);
             }, 0);
         },
         markUserErrors(errors:Error[], p:Profile):void {

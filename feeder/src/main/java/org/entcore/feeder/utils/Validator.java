@@ -139,6 +139,9 @@ public class Validator {
 					default:
 						err = i18n.translate("missing.type.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, type);
 				}
+				if (errorsContext != null && errorsContext.size() > 0) {
+					continue;
+				}
 				if (err != null) {
 					if (required.contains(attr)) {
 						return err;
@@ -167,7 +170,14 @@ public class Validator {
 			return e.getMessage();
 		}
 		generate(object);
-		return required(object, acceptLanguage, errorsContext);
+		String err = required(object, acceptLanguage, errorsContext);
+		// TODO : Merge error (return of Validator.validate()) and errorContext
+		if (errorsContext != null && errorsContext.size() > 0) {
+			return errorsContext.getJsonObject(0).getString("reason");
+		}
+		else {
+			return err;
+		}
 	}
 
 	public String modifiableValidate(JsonObject object) {
@@ -267,21 +277,20 @@ public class Validator {
 
 	private String required(JsonObject object, String acceptLanguage, JsonArray errorsContext) {
 		Map<String, Object> m = object.getMap();
+		String res = null;
 		for (Object o : required) {
 			if (!m.containsKey(o.toString())) {
 				if (errorsContext != null) {
 					errorsContext.add(new JsonObject()
 							.put("reason", "missing.attribute")
-							.put("attribute", i18n.translate(o.toString(), I18n.DEFAULT_DOMAIN, acceptLanguage))
-
+							.put("attribute", o.toString())
 					);
 				}
-				return i18n.translate("missing.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage,
-						"", i18n.translate(o.toString(), I18n.DEFAULT_DOMAIN, acceptLanguage))
-						;
+				res = i18n.translate("missing.attribute", I18n.DEFAULT_DOMAIN, acceptLanguage,
+						"", i18n.translate(o.toString(), I18n.DEFAULT_DOMAIN, acceptLanguage));
 			}
 		}
-		return null;
+		return res;
 	}
 
 	private void generate(JsonObject object) {
