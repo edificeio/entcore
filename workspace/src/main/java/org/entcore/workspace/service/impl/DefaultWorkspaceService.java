@@ -686,4 +686,30 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			return recipientId;
 		});
 	}
+
+
+	@Override
+	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler) {
+		JsonObject jo = new JsonObject();
+		switch (visibility) {
+			case "protected":
+				jo.put("$set", new JsonObject().put("protected", true))
+					.put("$unset", new JsonObject().put("public", ""));
+				break;
+			case "public":
+				jo.put("$set", new JsonObject().put("public", true))
+					.put("$unset", new JsonObject().put("protected", ""));
+				break;
+			default:
+				handler.handle(null);
+		}
+		QueryBuilder qb = QueryBuilder.start().and(
+                QueryBuilder.start("_id").in(documentIds).get(),
+                QueryBuilder.start().or(
+                    QueryBuilder.start("protected").is(true).get(),
+                    QueryBuilder.start("public").is(true).get()).get()
+        );
+		JsonObject query = MongoQueryBuilder.build(qb);
+		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo, res -> handler.handle(res));
+	}
 }
