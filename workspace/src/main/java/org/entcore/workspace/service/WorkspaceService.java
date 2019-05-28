@@ -107,4 +107,6 @@ public interface WorkspaceService extends FolderManager {
 
 	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds);
 
+	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler);
+
 }
