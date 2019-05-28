@@ -6,9 +6,9 @@ import { BundlesService } from 'sijil'
     selector: 'pager',
     template: `
     <button (click)="previousPage()" class="button" [disabled]="offset - limit < 0">
-        {{'preious' | translate}}
+        {{'previous' | translate}}
     </button>
-    <span>{{"pager.position" | translate : {offset : offset,  offsetLimit:offsetLimit(), total:total} }}</span>
+    <span>{{"pager.position" | translate : {offset : offset+1,  offsetLimit:offsetLimit(), total:total} }}</span>
     <button (click)="nextPage()" class="button" [disabled]="offset + limit  > total">
         {{'next' | translate}}
     </button>
