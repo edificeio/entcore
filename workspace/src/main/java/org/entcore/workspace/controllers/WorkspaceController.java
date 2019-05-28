@@ -364,6 +364,18 @@ public class WorkspaceController extends BaseController {
         });
     }
 
+	private void changeVisibility(final Message<JsonObject> message) {
+        JsonArray fileIds = message.body().getJsonArray("documentIds");
+        String visibility = message.body().getString("visibility");
+        workspaceService.changeVisibility(fileIds, visibility, res -> {
+            if (res != null) {
+                message.reply(res.body());
+            } else {
+                message.fail(500, "Document could not be made " + visibility);
+            }
+        });
+    }
+
 	@SuppressWarnings("unchecked")
 	@Post("/documents/copy/:folder")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
@@ -1394,6 +1406,9 @@ public class WorkspaceController extends BaseController {
         case "moveDocument":
             moveDocumentFromBus(message);
             break;
+		case "changeVisibility":
+			changeVisibility(message);
+			break;
 		default:
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.action"));
 		}
