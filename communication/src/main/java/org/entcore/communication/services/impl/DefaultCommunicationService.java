@@ -48,7 +48,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	private final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
-	
+
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
@@ -667,29 +667,39 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
-    @Override
-    public void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results) {
-        String query = "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
-                + "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
-                + "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
-                + "WITH COALESCE(sg, sc) as s, c, g "
-                + "WITH s, c, g, "
-                + "collect( distinct {name: c.name, id: c.id}) as classes, "
-                + "collect( distinct {name: s.name, id: s.id}) as structures, "
-                + "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
-                + "RETURN DISTINCT "
-                + "g.id as id, "
-                + "g.name as name, "
-                + "g.filter as filter, "
-                + "g.displayName as displayName, "
-                + "g.users as internalCommunicationRule, "
-                + "type, "
-                + "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
-                + "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
-                + "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
-        JsonObject params = new JsonObject().put("id", id);
-        neo4j.execute(query, params, validResultHandler(results));
-    }
+	private static String relationQuery = "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
+			+ "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
+			+ "WITH COALESCE(sg, sc) as s, c, g "
+			+ "WITH s, c, g, "
+			+ "collect( distinct {name: c.name, id: c.id}) as classes, "
+			+ "collect( distinct {name: s.name, id: s.id}) as structures, "
+			+ "HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
+			+ "RETURN DISTINCT "
+			+ "g.id as id, "
+			+ "g.name as name, "
+			+ "g.filter as filter, "
+			+ "g.displayName as displayName, "
+			+ "g.users as internalCommunicationRule, "
+			+ "type, "
+			+ "CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes, "
+			+ "CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, "
+			+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' END as subType";
+
+	@Override
+	public void getOutgoingRelations(String id, Handler<Either<String, JsonArray>> results) {
+		String query = "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
+				+ relationQuery;
+		JsonObject params = new JsonObject().put("id", id);
+		neo4j.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public void getIncomingRelations(String id, Handler<Either<String, JsonArray>> results) {
+		String query = "MATCH (g:Group)-[:COMMUNIQUE]->(ug: Group { id: {id} }) WHERE exists(g.id) "
+				+ relationQuery;
+		JsonObject params = new JsonObject().put("id", id);
+		neo4j.execute(query, params, validResultHandler(results));
+	}
 
     @Override
     public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
@@ -717,11 +727,11 @@ public class DefaultCommunicationService implements CommunicationService {
     public void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
     	String query = "MATCH (startGroup: Group {id: {startGroupId}}), (endGroup: Group {id: {endGroupId}}) " +
     			"RETURN startGroup.users as startDirection, endGroup.users as endDirection";
-    	
+
     	JsonObject params = new JsonObject()
     			.put("startGroupId", startGroupId)
     			.put("endGroupId", endGroupId);
-    	
+
     	neo4j.execute(query, params, validUniqueResultHandler(handler));
     }
 
@@ -898,10 +908,10 @@ public class DefaultCommunicationService implements CommunicationService {
 						}
 					});
 				}
-			}			
+			}
 		});
 	}
-	
+
     public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
         if (hasIncomingRelationship && hasOutgoingRelationship) {
             return null;
@@ -936,7 +946,7 @@ public class DefaultCommunicationService implements CommunicationService {
     private CommunicationService.Direction formatDirection(String dbDirection) {
 		if ("".equals(dbDirection) || dbDirection == null) {
 			return CommunicationService.Direction.NONE;
-		} 
+		}
 		return CommunicationService.Direction.valueOf(dbDirection.toUpperCase());
 	}
 
