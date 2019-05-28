@@ -104,7 +104,7 @@ export class CommunicationRulesService {
         return this.http.get<{ warning: string }>(`/communication/v2/group/${sender.id}/communique/${receiver.id}/check`);
     }
 
-    public createCommunication(sender: GroupModel, receiver: GroupModel, positionOfUserGroup: Column): Observable<{ groupId: number, internalCommunicationRule: string }> {
+    public createCommunication(sender: GroupModel, receiver: GroupModel, positionOfUserGroup: Column): Observable<CreateCommunicationResponse> {
         return this.http.post<CreateCommunicationResponse>(`/communication/v2/group/${sender.id}/communique/${receiver.id}`, {})
             .do((createCommunicationResponse: CreateCommunicationResponse) => {
                 if (!isNoDirectionChangeResponse(createCommunicationResponse)) {
