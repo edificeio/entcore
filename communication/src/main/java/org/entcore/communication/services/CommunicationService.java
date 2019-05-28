@@ -91,7 +91,9 @@ public interface CommunicationService {
 	void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
 			Handler<Either<String, JsonArray>> handler);
 
-	void getGroupsReachableByGroup(String id, Handler<Either<String, JsonArray>> results);
+	void getOutgoingRelations(String id, Handler<Either<String, JsonArray>> results);
+
+	void getIncomingRelations(String id, Handler<Either<String, JsonArray>> results);
 
 	void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler);
 
