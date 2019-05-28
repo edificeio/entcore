@@ -136,7 +136,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                 <pager 
                     [(offset)]="report.page.offset"
                     [limit]="report.page.limit"
-                    [total]="report.users | filter: report.filter() | length">
+                    [total]="report.users | filter: report.filter() | filter: report.columnFilter | length">
                 </pager>
             </div>
             <table class="report">
@@ -184,7 +184,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                 </thead>
                 <tbody>
-                <tr *ngFor="let user of report.users | filter: report.filter() | slice: report.page.offset:report.page.offset + report.page.limit | filter: report.columnFilter, index as i"
+                <tr *ngFor="let user of report.users | filter: report.filter() | filter: report.columnFilter | slice: report.page.offset:report.page.offset + report.page.limit, index as i"
                     [ngClass]="{'state-delete':user.state == 'Supprimé'}"
                 >
                         <td>{{user.line}}</td>
