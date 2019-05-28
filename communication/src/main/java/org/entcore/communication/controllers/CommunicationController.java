@@ -107,9 +107,15 @@ public class CommunicationController extends BaseController {
 	}
 
 	@Get("/group/:groupId/outgoing")
-	public void getGroupsReachableByGroup(HttpServerRequest request) {
+	public void getOutgoingRelations(HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
-		communicationService.getGroupsReachableByGroup(groupId, arrayResponseHandler(request));
+		communicationService.getOutgoingRelations(groupId, arrayResponseHandler(request));
+	}
+
+	@Get("/group/:groupId/incoming")
+	public void getIncomingRelations(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		communicationService.getIncomingRelations(groupId, arrayResponseHandler(request));
 	}
 
 	@Post("/relative/:groupId")
