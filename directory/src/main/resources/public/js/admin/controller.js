@@ -876,6 +876,7 @@ function AdminDirectoryController($scope, $rootScope, $http, $route, template, m
 			}
             $rootScope.quotaUnit = $scope.DEFAULT_QUOTA_UNIT
 			$rootScope.quotaSize = user.quota / $scope.DEFAULT_QUOTA_UNIT
+			$rootScope.targetUser = user
             $scope.refreshScope()
         }, true)
     }
