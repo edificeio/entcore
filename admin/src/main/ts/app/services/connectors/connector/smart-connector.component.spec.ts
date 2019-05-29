@@ -1,18 +1,18 @@
 import { SmartConnectorComponent } from './smart-connector.component';
 import { ComponentFixture, async, TestBed } from '@angular/core/testing';
 import { Location } from '@angular/common';
-import { FormsModule, NgForm, FormBuilder, FormGroup } from '@angular/forms';
+import { FormsModule, NgForm, FormBuilder } from '@angular/forms';
 import { SijilModule, BundlesService } from 'sijil';
 import { UxModule } from '../../../shared/ux/ux.module';
 import { ServicesStore } from '../../services.store';
 import { NotifyService, SpinnerService } from '../../../core/services';
-import { StructureModel, ConnectorModel, RoleModel, GroupModel, ConnectorCollection } from '../../../core/store';
+import { StructureModel, ConnectorModel, ConnectorCollection } from '../../../core/store';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ServicesService } from '../../services.service';
 import { Observable } from 'rxjs';
-import { Component, Input, Output, EventEmitter, ViewChild } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CasType } from './CasType';
-import { Structure, Profile } from '../../shared/services-types';
+import { Structure, Profile, Assignment } from '../../shared/services-types';
 import { ExportFormat } from './export/connector-export';
 import { ConnectorPropertiesComponent } from './properties/connector-properties.component';
 
@@ -44,7 +44,12 @@ describe('SmartConnector', () => {
                     { id: 'myRole3', name: 'myRole3', transverse: true }
                 ]
             }),
-            params: Observable.of({ connectorId: 'connector1' })
+            params: Observable.of({ connectorId: 'connector1' }),
+            pathFromRoot: [{
+                data: Observable.of({
+                    structure: {children: []}
+                })
+            }]
         } as ActivatedRoute;
 
         mockServicesStore = new ServicesStore();
@@ -276,6 +281,10 @@ class MockConnectorPropertiesComponent {
 
     @Output()
     create: EventEmitter<string> = new EventEmitter<string>();
+    @Output()
+    iconFileChanged: EventEmitter<File[]> = new EventEmitter();
+    @Output()
+    iconFileInvalid: EventEmitter<string> = new EventEmitter();
 }
 
 @Component({
@@ -289,9 +298,9 @@ class MockConnectorAssignmentComponent {
     disabled: boolean = false;
 
     @Output()
-    remove: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
+    remove: EventEmitter<Assignment> = new EventEmitter();
     @Output()
-    add: EventEmitter<{group: GroupModel, role: RoleModel}> = new EventEmitter<{group: GroupModel, role: RoleModel}>();
+    add: EventEmitter<Assignment> = new EventEmitter(); 
 }
 
 @Component({
