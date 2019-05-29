@@ -123,19 +123,19 @@ describe('InputFileService', () => {
 
     describe('isSrcWorkspace', () => {
         it('should return false with src equals to http://image.com/image1', () => {
-            expect(inputFileService.isSrcExternalUrl('http://image.com/image1')).toBe(false);
+            expect(inputFileService.isSrcWorkspace('http://image.com/image1')).toBe(false);
         });
         
         it('should return false with src equals to https://securedimage.com/image1', () => {
-            expect(inputFileService.isSrcExternalUrl('https://securedimage.com/image1')).toBe(false);
+            expect(inputFileService.isSrcWorkspace('https://securedimage.com/image1')).toBe(false);
         });
 
         it('should return true with src equals to /workspace/image1', () => {
-            expect(inputFileService.isSrcExternalUrl('/workspace/image1')).toBe(true);
+            expect(inputFileService.isSrcWorkspace('/workspace/image1')).toBe(true);
         });
     
         it('should return false with src equals to admin-large', () => {
-            expect(inputFileService.isSrcExternalUrl('admin-large')).toBe(false);
+            expect(inputFileService.isSrcWorkspace('admin-large')).toBe(false);
         });
     });
 });
