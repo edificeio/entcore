@@ -19,15 +19,20 @@
 
 package org.entcore.directory.controllers;
 
+import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.directory.services.TenantService;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
 
 public class TenantController extends BaseController {
@@ -43,6 +48,18 @@ public class TenantController extends BaseController {
 				tenantService.create(event, notEmptyResponseHandler(request, 201));
 			}
 		});
+	}
+
+	@Get("/tenant/:id")
+	@SecuredAction("tenant.get")
+	@ResourceFilter(SuperAdminFilter.class)
+	public void get(HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if ("all".equals(id)) {
+			tenantService.list(arrayResponseHandler(request));
+		} else {
+			tenantService.get(id, defaultResponseHandler(request));
+		}
 	}
 
 	public void setTenantService(TenantService tenantService) {
