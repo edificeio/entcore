@@ -92,6 +92,9 @@ public class PostImport {
 						config.getJsonArray("publish-classes-update").contains(source)) {
 					publishClassesUpdate();
 				}
+				if (config.getBoolean("tenant-link-structure", true)) {
+					Tenant.linkStructures();
+				}
 			}
 		};
 	}

@@ -21,10 +21,15 @@ package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public interface TenantService {
 
 	void create(JsonObject tenant, Handler<Either<String, JsonObject>> handler);
+
+	void get(String id, Handler<Either<String, JsonObject>> handler);
+
+	void list(Handler<Either<String, JsonArray>> handler);
 
 }

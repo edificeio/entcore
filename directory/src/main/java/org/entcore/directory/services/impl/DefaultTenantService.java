@@ -20,8 +20,9 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.eventbus.Message;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.Directory;
-import org.entcore.directory.services.ProfileService;
 import org.entcore.directory.services.TenantService;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -29,12 +30,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultTenantService implements TenantService {
 
 	private final EventBus eb;
+	private final Neo4j neo4j = Neo4j.getInstance();
 
 	public DefaultTenantService(EventBus eb) {
 		this.eb = eb;
@@ -46,6 +48,25 @@ public class DefaultTenantService implements TenantService {
 				.put("action", "manual-create-tenant")
 				.put("data", tenant);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
+	}
+
+	@Override
+	public void get(String id, Handler<Either<String, JsonObject>> handler) {
+		final String filter = "WHERE t.id = {id} ";
+		getOrList(filter, new JsonObject().put("id", id), validUniqueResultHandler(handler));
+	}
+
+	private void getOrList(String filter, JsonObject params, Handler<Message<JsonObject>> h) {
+		final String query =
+				"MATCH (t:Tenant)<-[:HAS_STRUCT]-(s:Structure) " + filter +
+				"RETURN t.id as id, t.name as name, " +
+				"COLLECT(DISTINCT {id: s.id, UAI: s.UAI, externalId: s.externalId, name: s.name}) as structures ";
+		neo4j.execute(query, params, h);
+	}
+
+	@Override
+	public void list(Handler<Either<String, JsonArray>> handler) {
+		getOrList("", new JsonObject(), validResultHandler(handler));
 	}
 
 }
