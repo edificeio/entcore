@@ -23,11 +23,15 @@
 		"entUrl" : {
 			"type" : "string",
 			"validator" : "uri"
+		},
+		"linkRules" : {
+			"type": "array-string",
+			"validator":"notEmpty"
 		}
 	},
 	"generate" : {
 		"id" : {"generator":"uuid4", "args":[]}
 	},
 	"required" : ["id", "externalId", "name"],
-	"modifiable" : ["name", "shortName", "email", "url", "entUrl"]
+	"modifiable" : ["name", "shortName", "email", "url", "entUrl", "linkRules"]
 }

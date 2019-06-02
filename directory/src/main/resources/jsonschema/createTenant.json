@@ -20,7 +20,13 @@
 	},
 	"entUrl" : {
 	  "type": "string"
-	}
+	},
+    "linkRules" : {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   },
   "required": [
     "externalId",
