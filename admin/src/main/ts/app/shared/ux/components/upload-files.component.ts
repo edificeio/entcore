@@ -14,7 +14,7 @@ import { InputFileService } from "../services/inputFile.service";
                 <img src="{{ fileSrc }}" 
                     *ngIf="inputFileService.isSrcExternalUrl(fileSrc)"
                     class="upload-files-dropzone-image__image"/>
-                <img src="{{ fileSrc + '?thumbnail=120x120' }}" 
+                <img src="{{ fileSrc }}" 
                     *ngIf="inputFileService.isSrcWorkspace(fileSrc)"
                     class="upload-files-dropzone-image__image"/>
                 <i class="upload-files-dropzone-image__icon {{ fileSrc }}"
@@ -60,16 +60,18 @@ import { InputFileService } from "../services/inputFile.service";
             border-radius: 5px;
         }
         .upload-files-dropzone-image {
-
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            height: 120px;
         }
         .upload-files-dropzone-image__image {
-            max-height: 120px;
-            max-width: 120px;
-            margin: 20px 20px;
+            max-height: 90%;
+            max-width: 90%;
         }
         .upload-files-dropzone-image__icon {
-            font-size: 7em;
-            margin: 20px 20px;
+            font-size: 5em;
         }
         .upload-files-dropzone-input {
             display: flex;
