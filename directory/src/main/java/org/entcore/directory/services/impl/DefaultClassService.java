@@ -87,7 +87,7 @@ public class DefaultClassService implements ClassService {
 		//=== Make query
 		String query =
 				"MATCH (c:`Class` { id : {classId}})<-[:DEPENDS]-(cpg:ProfileGroup)" +
-				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User) " +
+				"-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), cpg<-[:IN]-(m:User)-[:IN]->spg " +
 						filterPart + collectPart +
 				"RETURN distinct m.lastName as lastName, m.firstName as firstName, m.id as id, " +
 				"(LENGTH(m.email)>0 AND EXISTS(m.email)) as hasEmail, " +

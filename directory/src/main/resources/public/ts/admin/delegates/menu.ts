@@ -64,6 +64,9 @@ export function MenuDelegate($scope: MenuDelegateScope) {
     const selectedSchool = function (classroom: ClassRoom) {
         return directoryService.schoolOfClassroom(schools, classroom);
     }
+    const isClassRoomMine = function (classroomId: string) {
+        return $scope.classrooms.some(classroom => classroom.id === classroomId);
+    }
     // === Init attributes
     $scope.classrooms = [];
     let schools: School[] = [];
@@ -78,7 +81,7 @@ export function MenuDelegate($scope: MenuDelegateScope) {
         $scope.classrooms = myClasses;
         let myClassId = await getPreferenceClassId();
         //
-        if (myClassId) {
+        if (myClassId && isClassRoomMine(myClassId)) {
             setSelectedClassById(myClassId, false);
         } else if ($scope.classrooms.length > 0 && !$scope.hasSelectedClass()) {
             setSelectedClass($scope.classrooms[0], false);
