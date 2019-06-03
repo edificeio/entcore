@@ -1237,10 +1237,16 @@ services-list {
     }
   }
   .service-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
     margin-bottom: 15px;
+
     img {
-      max-height: 48px;
-      max-width: 48px;
+      max-height: 100%;
+      max-width: 100%;
     }
   }
 

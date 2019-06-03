@@ -41,7 +41,7 @@ interface ServiceInfo {
                         </div>
                         <div class="service-icon">
                             <img [src]="item.icon" *ngIf="inputFileService.isSrcExternalUrl(item.icon)"/>
-                            <img src="{{ item.icon + '?thumbnail=48x48' }}" *ngIf="inputFileService.isSrcWorkspace(item.icon)"/>
+                            <img src="{{ item.icon }}" *ngIf="inputFileService.isSrcWorkspace(item.icon)"/>
                             <i [ngClass]="item.icon" 
                                 *ngIf="!inputFileService.isSrcExternalUrl(item.icon) 
                                     && !inputFileService.isSrcWorkspace(item.icon)"></i>
