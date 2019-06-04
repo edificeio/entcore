@@ -174,7 +174,8 @@ public class CommunicationController extends BaseController {
 										match = "MATCH ";
 										where = " WHERE ";
 									} else {
-										match += ", ";
+										// We use another MATCH here, because for users not attached to a class, a simple comma does some oddities
+										match += " MATCH ";
 										where += "AND ";
 									}
 									match += "(visibles)-[:IN*0..1]->()-[:DEPENDS]->(n) ";
@@ -198,7 +199,8 @@ public class CommunicationController extends BaseController {
 									match = "MATCH ";
 									where = " WHERE ";
 								} else {
-									match += ", ";
+									// We use another MATCH here, because for users not attached to a class, a simple comma does some oddities
+									match += " MATCH ";
 									where += "AND ";
 								}
 								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
