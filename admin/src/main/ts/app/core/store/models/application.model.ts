@@ -35,7 +35,6 @@ export class ApplicationModel extends Model<ApplicationModel> {
     }
     set name(name) {
         this._name = name;
-        this.displayName = name;
     }
 
     displayName: string;
