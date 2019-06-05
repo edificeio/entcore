@@ -691,8 +691,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	@Override
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
-		switch (visibility) {
+		switch (visibility.toLowerCase()) {
 			case "protected":
+			case "owner":
 				jo.put("$set", new JsonObject().put("protected", true))
 					.put("$unset", new JsonObject().put("public", ""));
 				break;
