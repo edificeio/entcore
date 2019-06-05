@@ -47,7 +47,7 @@ interface ServiceInfo {
                                     && !inputFileService.isSrcWorkspace(item.icon)"></i>
                         </div>
                         <div class="service-name">
-                            <span>{{ item.displayName }}</span>
+                            <span>{{ item.displayName | translate }}</span>
                         </div>
                     </ng-template>
                 </list>
