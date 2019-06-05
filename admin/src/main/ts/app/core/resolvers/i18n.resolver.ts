@@ -6,9 +6,13 @@ import { BundlesService } from 'sijil'
 @Injectable()
 export class I18nResolver implements Resolve<void> {
 
-    constructor(private bundles : BundlesService){}
+    constructor(private bundles: BundlesService) {
+    }
 
     resolve(): Promise<void> {
-        return this.bundles.loadBundle('/admin/i18n')
+        return this.bundles.loadBundles([
+            {where: '/admin/i18n', lang: null},
+            {where: '/i18n', lang: null}])
+            .then(() => void 0)
     }
 }

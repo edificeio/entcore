@@ -9,7 +9,7 @@ import { ServicesService } from "../../services.service";
     selector: 'smart-application',
     template: `
         <div class="panel-header">
-            <span>{{ servicesStore.application.displayName }}</span>
+            <span>{{ servicesStore.application.displayName | translate }}</span>
         </div>
 
         <div class="tabs" *ngIf="structureHasChildren(servicesStore.structure)">

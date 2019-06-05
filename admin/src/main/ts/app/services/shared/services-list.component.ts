@@ -5,8 +5,9 @@ import { routing } from '../../core/services';
 import { Subscription } from 'rxjs/Subscription';
 
 import { ServicesStore } from '../services.store';
-import { ApplicationModel, SessionModel, ConnectorModel } from '../../core/store';
+import { ApplicationModel, ConnectorModel, SessionModel } from '../../core/store';
 import { InputFileService } from '../../shared/ux/services';
+import { BundlesService } from 'sijil';
 
 interface ServiceInfo {
     collection: any[],
@@ -23,7 +24,7 @@ interface ServiceInfo {
             <div side-card>
                 <list
                         [model]="collectionRef[serviceName].collection"
-                        sort="displayName"
+                        [sort]="sortOnDisplayName? 'displayName' : null"
                         [inputFilter]="filterByInput"
                         [searchPlaceholder]="collectionRef[serviceName].searchPlaceholder"
                         [noResultsLabel]="collectionRef[serviceName].noResultsLabel"
@@ -33,21 +34,21 @@ interface ServiceInfo {
                     <ng-template let-item>
                         <div class="service-badges" *ngIf="serviceName === 'connectors'">
                             <i *ngIf="isInherited(item)"
-                                class="fa fa-link service-badges__inherits"
-                                [title]="'services.connector.inherited' | translate"></i>
+                               class="fa fa-link service-badges__inherits"
+                               [title]="'services.connector.inherited' | translate"></i>
                             <i *ngIf="item.locked"
-                                class="fa fa-lock service-badges__locked"
-                                [title]="'services.connector.locked' | translate"></i>
+                               class="fa fa-lock service-badges__locked"
+                               [title]="'services.connector.locked' | translate"></i>
                         </div>
                         <div class="service-icon">
                             <img [src]="item.icon" *ngIf="inputFileService.isSrcExternalUrl(item.icon)"/>
                             <img src="{{ item.icon }}" *ngIf="inputFileService.isSrcWorkspace(item.icon)"/>
-                            <i [ngClass]="item.icon" 
-                                *ngIf="!inputFileService.isSrcExternalUrl(item.icon) 
+                            <i [ngClass]="item.icon"
+                               *ngIf="!inputFileService.isSrcExternalUrl(item.icon)
                                     && !inputFileService.isSrcWorkspace(item.icon)"></i>
                         </div>
                         <div class="service-name">
-                            <span>{{ item.displayName }}</span>
+                            <span>{{ item.displayName | translate }}</span>
                         </div>
                     </ng-template>
                 </list>
@@ -60,11 +61,13 @@ interface ServiceInfo {
 })
 export class ServicesListComponent {
     // TODO extract from router 
-    @Input() 
+    @Input()
     serviceName: 'applications' | 'connectors' | 'widgets';
-    @Input() 
+    @Input()
     selectedItem: ApplicationModel | ConnectorModel;
-    
+
+    public sortOnDisplayName = true;
+
     private routeSubscriber: Subscription;
     public collectionRef: { [serviceName: string]: ServiceInfo };
 
@@ -72,11 +75,13 @@ export class ServicesListComponent {
         public router: Router,
         public route: ActivatedRoute,
         private servicesStore: ServicesStore,
-        public inputFileService: InputFileService
-        ) {
+        public inputFileService: InputFileService,
+        private bundlesService: BundlesService) {
     }
 
     ngOnInit(): void {
+        this.sortOnDisplayName = this.serviceName !== 'applications';
+
         SessionModel.getSession().then(session => {
             if (!this.serviceName) {
                 throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
@@ -86,6 +91,7 @@ export class ServicesListComponent {
                     this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData];
 
                     if (this.serviceName === 'applications') {
+
                         this.collectionRef[this.serviceName].collection = filterApplicationsByLevelsOfEducation(
                             this.collectionRef[this.serviceName].collection,
                             this.servicesStore.structure.levelsOfEducation
@@ -95,6 +101,10 @@ export class ServicesListComponent {
                             this.collectionRef[this.serviceName].collection,
                             session.functions['SUPER_ADMIN'] != null
                         );
+
+                        this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
+                            .sort((a, b) => this.bundlesService.translate(a.displayName)
+                                .localeCompare(this.bundlesService.translate(b.displayName)));
                     }
                 }
             })
