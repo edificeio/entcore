@@ -291,6 +291,7 @@
   "editor.templates.colfiller": "Vous pouvez entrer ici le texte de votre colonne",
   "editor.templates.illustration.textfiller": "Vous pouvez entrer ici votre texte. Pour changer l'image du modèle, cliquez sur l'image, puis sur le bouton \"Insérer une image\" dans la barre de boutons de l'éditeur.",
   "editor.b64.uploaded": "Votre image a été enregistrée dans votre espace documentaire",
+  "editor.edit": "Éditer",
   "recorder.filename": "Capture ",
   "record-me": "Dictaphone",
   "record": "Enregistrement audio",
