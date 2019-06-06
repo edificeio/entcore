@@ -330,6 +330,9 @@ class MockGroupCard {
     active: boolean = false;
 
     @Input()
+    selectable: boolean = false;
+
+    @Input()
     selected: boolean = false;
 
     @Input()
