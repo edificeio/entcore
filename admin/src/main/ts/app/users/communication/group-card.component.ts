@@ -29,7 +29,7 @@ export const groupCardLocators = {
     selector: 'group-card',
     template: `
         <div class="group-card"
-        [ngClass]="{'group-card--active': active, 'group-card--selected': selected, 'group-card--highlighted': highlighted}">
+        [ngClass]="{'group-card--active': active, 'group-card--selected': selected, 'group-card--highlighted': highlighted, 'group-card--selectable': selectable}">
             <div class="group-card__title ${css.title}">
                 <span class="group-card__title-label">{{groupNameService.getGroupName(group)}}</span>
                 <i *ngIf="groupTypeRouteMapping.has(group.type)" (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-users" [title]="'group.card.view-members-button' | translate"></i>
@@ -89,13 +89,16 @@ export const groupCardLocators = {
             margin: 5px 0;
             width: 340px;
             box-sizing: border-box;
-            cursor: pointer;
             transition: box-shadow 125ms ease;
+        }
+
+        .group-card.group-card--selectable {
+            cursor: pointer;
         }
 
         .group-card.group-card--active {
             background-color: white;
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
             border-color: #ff8352;
         }
 
@@ -106,13 +109,13 @@ export const groupCardLocators = {
 
         .group-card.group-card--highlighted {
             background-color: #fff2ed;
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
             border-color: #ff8352;
             color: #ff8352;
         }
 
         .group-card.group-card--active.group-card--highlighted {
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.25);
+            box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.25);
         }
     `, `
         .group-card__title {
@@ -188,6 +191,7 @@ export const groupCardLocators = {
             font-size: 22px;
             padding-right: 15px;
         }
+
         .group-card__switch.group-card__switch--clickable {
             cursor: pointer;
         }
@@ -211,6 +215,9 @@ export class GroupCardComponent {
 
     @Input()
     group: GroupModel;
+
+    @Input()
+    selectable: boolean = false;
 
     @Input()
     active: boolean = false;
