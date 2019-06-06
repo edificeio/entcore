@@ -711,6 +711,6 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
                     QueryBuilder.start("public").is(true).get()).get()
         );
 		JsonObject query = MongoQueryBuilder.build(qb);
-		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo, res -> handler.handle(res));
+		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo,false, true, (MongoDb.WriteConcern)null, res -> handler.handle(res));
 	}
 }
