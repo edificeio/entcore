@@ -583,7 +583,7 @@ i.group_add {
   padding: 0.2em 10px;
   border-radius: 5px;
   &.alert {
-    background-color: $warning;
+    background-color: $danger;
     color: white;
   }
   &.info {
