@@ -16,6 +16,7 @@ export { UploadFilesComponent } from './upload-files.component';
 export { ItemTreeComponent } from './item-tree.component';
 export { LightBoxComponent } from './lightbox.component';
 export { MultiSelectComponent } from './multi-select.component';
+export { MonoSelectComponent } from './mono-select.component';
 export { MultiComboComponent } from './multi-combo.component';
 export { PortalComponent } from './portal.component';
 export { PushPanelComponent } from './push-panel.component';

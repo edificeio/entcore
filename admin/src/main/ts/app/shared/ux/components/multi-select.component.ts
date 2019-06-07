@@ -4,7 +4,7 @@ import ClickEvent = JQuery.ClickEvent;
 
 /* MultiSelectComponent is a rewrite of MultiComboComponent to integrate it easily in angular forms */
 
-export interface MultiSelectOption<K> {
+export interface SelectOption<K> {
     label: string;
     value: K;
 }
@@ -182,7 +182,7 @@ export class MultiSelectComponent<K> implements ControlValueAccessor {
     public label = '';
 
     @Input()
-    public options: Array<MultiSelectOption<K>> = [];
+    public options: Array<SelectOption<K>> = [];
 
     @Input()
     public preview = false;
@@ -199,7 +199,7 @@ export class MultiSelectComponent<K> implements ControlValueAccessor {
     constructor(private elementRef: ElementRef) {
     }
 
-    public optionClicked(option: MultiSelectOption<K>) {
+    public optionClicked(option: SelectOption<K>) {
         if (this.model) {
             const index = this.getIndexOfOptionInModel(option);
             if (index < 0) {
@@ -222,7 +222,7 @@ export class MultiSelectComponent<K> implements ControlValueAccessor {
         this.isOptionsVisible = !this.isOptionsVisible;
     }
 
-    public isSelected(option: MultiSelectOption<K>): boolean {
+    public isSelected(option: SelectOption<K>): boolean {
         return this.model ? (this.getIndexOfOptionInModel(option) >= 0) : false;
     }
 
@@ -235,7 +235,7 @@ export class MultiSelectComponent<K> implements ControlValueAccessor {
         return true;
     }
 
-    private getIndexOfOptionInModel(option: MultiSelectOption<K>): number {
+    private getIndexOfOptionInModel(option: SelectOption<K>): number {
         return this.model.map(this.trackByFn).indexOf(this.trackByFn(option.value));
     }
 

@@ -235,7 +235,14 @@ select:disabled {
 input:invalid {box-shadow: none}
 
 // STYLING SELECT
+mono-select {
+  display: inline-block;
+  &.is-block .form-select__options--selected {
+    @extend .is-block;
+  }
+}
 .form-select {
+  font-size: 14px;
   background-color: white;
   color: $grey-dark;
   position: relative;
@@ -243,8 +250,8 @@ input:invalid {box-shadow: none}
     margin: 0 0 0 -20px;
   }
   &__list {
+    cursor: pointer;
     display: none;
-    border: 1px solid $grey-light;
     background-color: white;
     margin: 0;
     position: absolute;
@@ -261,7 +268,8 @@ input:invalid {box-shadow: none}
     -o-transition: all 0.2s ease 0s;
     transition: all 0.2s ease 0s;
     &:hover {
-      background-color: $grey-light;
+      background-color: rgba($accent, 0.85);
+      color: white;
       -webkit-transition: all 0.2s ease 0s;
       -o-transition: all 0.2s ease 0s;
       transition: all 0.2s ease 0s;
@@ -281,9 +289,9 @@ input:invalid {box-shadow: none}
     }
     &--selected {
       position: relative;
-      display: block;
+      display: inline-block;
       border-radius: 3px;
-      padding: 15px 25px;
+      padding: 10px 30px 10px 20px;
       background-color: rgba($grey-light, 0.1);
       border: 1px solid $grey-light;
       &:after {
@@ -292,12 +300,14 @@ input:invalid {box-shadow: none}
         font-size: 12px;
         display: inline-block;
         position: absolute;
-        top: 15px;
+        top: 12px;
         right: 15px;
       }
-      &:hover .form-select__list {
-        display: block;
-      }
+    }
+  }
+  &--opened {
+    .form-select__list {
+      display: block;
     }
   }
 }
@@ -452,7 +462,6 @@ i.group_add {
   background-color: white;
   padding: 10px 30px 40px 30px;
   margin-bottom: 40px;
-  overflow: auto;
 }
 
 .message {
@@ -567,8 +576,16 @@ i.group_add {
 
 .is-pulled-left {float: left;}
 .is-pulled-right {float: right;}
-.is-clearfix {clear: both;}
+.is-clearfix::after {
+  clear: both;
+  content: ".";
+  display: block;
+  height: 0;
+  line-height: 0;
+  visibility: hidden;
+}
 .is-hidden {display: none !important;}
+.is-block {display: block;}
 
 .is-display-flex {display: flex;}
 .has-space-between {justify-content: space-between;}
@@ -577,6 +594,22 @@ i.group_add {
 .has-align-items-center {align-items: center;}
 .is-flex-none {flex: none !important;}
 
+@mixin grid-cell-width($cell-size: 1) {
+	width: (100% / 12 * $cell-size);
+}
+
+.one{@include grid-cell-width(1);}
+.two{@include grid-cell-width(2);}
+.three{@include grid-cell-width(3);}
+.four{@include grid-cell-width(4);}
+.five{@include grid-cell-width(5);}
+.six{@include grid-cell-width(6);}
+.seven{@include grid-cell-width(7);}
+.eight{@include grid-cell-width(8);}
+.nine{@include grid-cell-width(9);}
+.ten{@include grid-cell-width(10);}
+.eleven{@include grid-cell-width(11);}
+.twelve{@include grid-cell-width(12);}
 /* UX */
 .badge {
   font-size: 0.8em;
@@ -1060,6 +1093,9 @@ div.panel-message {
 }
 
 /* Panel sections */
+.panel-section {
+  @extend .is-clearfix;
+}
 .panel-section-header {
   color: white;
   background: $grey-dark;
@@ -1068,7 +1104,6 @@ div.panel-message {
 }
 .panel-section-content {
   font-size: 0.9em;
-  overflow: auto;
   a.action {
     text-decoration: underline;
   }

@@ -617,7 +617,9 @@
     "quota.usedSpace": "utilisés.",
     "quota.form.title": "Modifier l'espace de stockage de l'utilisateur",
     "quota.maxQuota": "Quota maximum autorisé pour ce profil :",
-    
+
     "ux.upload-files.button.label": "Parcourir",
-    "ux.upload-files.button.help": "Glisser-déposer un fichier depuis votre appareil ou cliquez sur parcourir"
+    "ux.upload-files.button.help": "Glisser-déposer un fichier depuis votre appareil ou cliquez sur parcourir",
+
+    "monoselect.placeholder.default": "Choisir une option"
 }

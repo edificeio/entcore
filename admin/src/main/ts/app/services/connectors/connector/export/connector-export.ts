@@ -1,5 +1,6 @@
-import { Component, Output, EventEmitter } from "@angular/core";
-import { Profile } from "../../../shared/services-types";
+import { Component, EventEmitter, Output } from '@angular/core';
+import { Profile } from '../../../shared/services-types';
+import { SelectOption } from '../../../../shared/ux/components/multi-select.component';
 
 @Component({
     selector: 'connector-export',
@@ -8,16 +9,13 @@ import { Profile } from "../../../shared/services-types";
             <h4>
                 <s5l>services.connector.export.choose.type</s5l>
             </h4>
-            <select [(ngModel)]="format" name="format">
-                <option *ngFor="let format of formats" [ngValue]="format">
-                    <s5l>{{ format.label }}</s5l>
-                </option>
-            </select>
+            <mono-select [(ngModel)]="format" name="format" [options]="formatOptions">
+            </mono-select>
 
             <h4>
                 <s5l>services.connector.export.choose.profile</s5l>
             </h4>
-            
+
             <div class="connector-export-profile">
                 <button *ngFor="let profile of format.profiles"
                         class="connector-export-profile__button"
@@ -52,69 +50,70 @@ import { Profile } from "../../../shared/services-types";
 })
 export class ConnectorExportComponent {
     @Output()
-    submit: EventEmitter<{exportFormat: ExportFormat, profile: string}> = new EventEmitter<{exportFormat: ExportFormat, profile: string}>();
-    
+    submit: EventEmitter<{ exportFormat: ExportFormat, profile: string }> = new EventEmitter<{ exportFormat: ExportFormat, profile: string }>();
+
     format: ExportFormat;
-    formats: ExportFormat[];
+    formats: ExportFormat[] = [
+        {
+            value: '',
+            label: 'services.connector.export.type.default',
+            format: 'csv',
+            profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
+        },
+        {
+            value: 'Esidoc',
+            label: 'services.connector.export.type.esidoc',
+            profiles: ['Teacher', 'Student', 'Personnel'],
+            format: 'xml'
+        },
+        {
+            value: 'Cerise-teacher',
+            label: 'services.connector.export.type.cerise.teacher',
+            format: 'csv',
+            profiles: ['Teacher']
+        },
+        {
+            value: 'Cerise-student',
+            label: 'services.connector.export.type.cerise.student',
+            format: 'csv',
+            profiles: ['Student']
+        },
+        {
+            value: 'Sacoche',
+            label: 'services.connector.export.type.sacoche',
+            format: 'csv',
+            profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
+        },
+        {
+            value: 'Gepi',
+            label: 'services.connector.export.type.gepi',
+            filename: 'ENT-Identifiants.csv',
+            format: 'csv',
+            profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
+        },
+        {
+            value: 'ProEPS-student',
+            label: 'services.connector.export.type.proeps.student',
+            format: 'csv',
+            profiles: ['Student']
+        },
+        {
+            value: 'ProEPS-relative',
+            label: 'services.connector.export.type.proeps.relative',
+            format: 'csv',
+            profiles: ['Relative']
+        },
+        {
+            value: 'Transition',
+            label: 'services.connector.export.type.transition',
+            format: 'csv',
+            profiles: ['Teacher', 'Personnel', 'Relative', 'Student', 'Guest'],
+        }
+    ];
+
+    formatOptions: SelectOption<ExportFormat>[] = this.formats.map(f => ({value: f, label: f.label}));
 
     constructor() {
-        this.formats = [
-            {
-                value: '',
-                label: 'services.connector.export.type.default',
-                format: 'csv',
-                profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
-            },
-            {
-                value: 'Esidoc',
-                label: 'services.connector.export.type.esidoc',
-                profiles: ['Teacher', 'Student', 'Personnel'],
-                format: 'xml'
-            },
-            {
-                value: 'Cerise-teacher',
-                label: 'services.connector.export.type.cerise.teacher',
-                format: 'csv',
-                profiles: ['Teacher']
-            },
-            {
-                value: 'Cerise-student',
-                label: 'services.connector.export.type.cerise.student',
-                format: 'csv',
-                profiles: ['Student']
-            },
-            {
-                value: 'Sacoche',
-                label: 'services.connector.export.type.sacoche',
-                format: 'csv',
-                profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
-            },
-            {
-                value: 'Gepi',
-                label: 'services.connector.export.type.gepi',
-                filename: 'ENT-Identifiants.csv',
-                format: 'csv',
-                profiles: ['Teacher', 'Student', 'Relative', 'Guest', 'Personnel']
-            },
-            {
-                value: 'ProEPS-student',
-                label: 'services.connector.export.type.proeps.student',
-                format: 'csv',
-                profiles: ['Student']
-            },
-            {
-                value: 'ProEPS-relative',
-                label: 'services.connector.export.type.proeps.relative',
-                format: 'csv',
-                profiles: ['Relative']
-            },
-            {
-                value: 'Transition',
-                label: 'services.connector.export.type.transition',
-                format: 'csv',
-                profiles: ['Teacher','Personnel','Relative','Student','Guest'],
-            }
-        ];
 
         this.format = this.formats[0];
     }

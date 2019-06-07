@@ -1,8 +1,8 @@
-import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
-import { Profile, Structure } from "../../../shared/services-types";
-import { MultiSelectOption } from "../../../../shared/ux/components/multi-select.component";
-import { FormGroup, FormBuilder, Validators } from "@angular/forms";
-import { BundlesService } from "sijil";
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Profile, Structure } from '../../../shared/services-types';
+import { SelectOption } from '../../../../shared/ux/components/multi-select.component';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { BundlesService } from 'sijil';
 
 @Component({
     selector: 'connector-mass-assignment',
@@ -97,7 +97,7 @@ export class ConnectorMassAssignmentComponent implements OnInit {
     @Output()
     submitUnassignment: EventEmitter<Array<Profile>> = new EventEmitter();
 
-    public profileOptions: Array<MultiSelectOption<Profile>> = [];
+    public profileOptions: Array<SelectOption<Profile>> = [];
     public profileTrackByFn = (p: Profile) => p;
 
     public massAssignmentForm: FormGroup;

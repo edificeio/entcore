@@ -3,7 +3,7 @@ import {
     multiSelectClasses as classes,
     MultiSelectComponent,
     multiSelectLocators as locators,
-    MultiSelectOption
+    SelectOption
 } from './multi-select.component';
 import { Component, DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
@@ -231,7 +231,7 @@ function clickOn(el: DebugElement): void {
 })
 class MockFormComponent<K> {
     model: any;
-    options: Array<MultiSelectOption<K>> = [];
+    options: Array<SelectOption<K>> = [];
     trackByFn;
     label: string;
     preview = false;
