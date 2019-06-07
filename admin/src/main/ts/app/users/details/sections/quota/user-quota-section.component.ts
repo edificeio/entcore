@@ -32,13 +32,10 @@ import { NotifyService } from "../../../../core/services";
                     </div>
                     <div class="quota-form-body">
                         <form #quotaForm="ngForm">
-                            <select name="newQuotaUnitValue"
-                                [ngModel]="newQuotaUnitValue"
-                                (ngModelChange)="refreshNewQuotaValue($event)">
-                                <option *ngFor="let unit of units" [value]="unit.value">
-                                    {{ unit?.label | translate }}
-                                </option>
-                            </select>
+                            <mono-select name="newQuotaUnitValue" [ngModel]="newQuotaUnitValue"
+                                    (ngModelChange)="refreshNewQuotaValue($event)"
+                                    [options]="units">
+                            </mono-select>
 
                             <input type="text" 
                                 name="newQuotaValue"

@@ -1,5 +1,14 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core'
+import {
+    ChangeDetectionStrategy,
+    ChangeDetectorRef,
+    Component,
+    Input,
+    OnChanges,
+    OnInit,
+    SimpleChanges
+} from '@angular/core'
 import { BundlesService } from 'sijil'
+import { SelectOption } from "../../shared/ux/components/multi-select.component";
 
 
 @Component({
@@ -13,30 +22,38 @@ import { BundlesService } from 'sijil'
         <tr *ngFor="let value of mappingsKeys">
             <td>{{value}}</td>
             <td>
-            <select [(ngModel)]="mappings[value]" name="availables">
-                <option *ngFor="let available of availables" [ngValue]="available">
-                    {{available}}
-                </option>
-            </select>
+            <mono-select [(ngModel)]="mappings[value]" name="availables" [options]="availablesOptions">
+            </mono-select>
             </td>
         </tr>
     </table>
     `,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MappingsTable implements OnInit { 
+export class MappingsTable implements OnInit, OnChanges {
     constructor (
         private bundles: BundlesService,
         private cdRef : ChangeDetectorRef)  {}
     
-    translate = (...args) => { return (<any> this.bundles.translate)(...args) }
+    translate = (...args) => { return (<any> this.bundles.translate)(...args) };
 
     @Input() headers : Array<String>;
     @Input() mappings : Object; // TODO type with a Map<> when available in Typescript
     mappingsKeys : Array<String>
-    @Input() availables : Array<String>;
+    @Input() availables : Array<string>;
 
+    public availablesOptions: SelectOption<string>[] = [];
     ngOnInit() {
+        this.onChange();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        this.onChange();
+    }
+
+    private onChange() {
         this.mappingsKeys = Object.keys(this.mappings);
+        this.availablesOptions = this.availables.map(a => ({value: a, label: a}));
+        this.cdRef.detectChanges();
     }
 }

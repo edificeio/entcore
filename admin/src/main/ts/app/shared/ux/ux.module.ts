@@ -13,6 +13,7 @@ import { DatepickerComponent,
     ListComponent, 
     MultiComboComponent,
     MultiSelectComponent,
+    MonoSelectComponent,
     PanelSectionComponent, 
     PortalComponent,
     PushPanelComponent, 
@@ -49,6 +50,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         LightBoxComponent,
         LightboxConfirmComponent,
         ListComponent,
+        MonoSelectComponent,
         MultiSelectComponent,
         MultiComboComponent,
         PanelSectionComponent,
@@ -89,6 +91,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         LightBoxComponent,
         LightboxConfirmComponent,
         ListComponent,
+        MonoSelectComponent,
         MultiSelectComponent,
         MultiComboComponent,
         PanelSectionComponent,
@@ -119,7 +122,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
         LocalizedDatePipe,
         BytesPipe
     ],
-    providers: [],
+    providers: [OrderPipe],
     entryComponents: [SimpleSelectComponent, MessageBoxComponent]
 })
 export class UxModule {
