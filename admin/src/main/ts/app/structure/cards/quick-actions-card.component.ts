@@ -18,13 +18,9 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
                 <s5l>create.group</s5l>
                 <i class="fa fa-users"></i>
             </button>
-            <button disabled title="En construction">
+            <button routerLink="users/filter" [queryParams]="{duplicates: true}">
                 <s5l>manage.duplicates</s5l>
                 <i class="fa fa-user-times"></i>
-            </button>
-            <button disabled title="En construction">
-                <s5l>manage.reports</s5l>
-                <i class="fa fa-exclamation-circle"></i>
             </button>
         </div>
     `,
