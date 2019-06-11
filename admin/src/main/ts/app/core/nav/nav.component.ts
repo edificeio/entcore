@@ -26,10 +26,6 @@ import { Subscription } from 'rxjs/Subscription'
                     [title]="'logout' | translate">
                     <i class="fa fa-power-off" aria-hidden="true"></i>
                 </a>
-                <i class="fa fa-exclamation-triangle"
-                    *ngIf="currentStructure"
-                    title="En construction"
-                    disabled></i>
                 <i class="fa fa-exchange"
                     *ngIf="currentStructure"
                     [title]="'imports.exports' | translate"

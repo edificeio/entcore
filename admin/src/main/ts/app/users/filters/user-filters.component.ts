@@ -1,10 +1,11 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core'
-import { ActivatedRoute, Data } from '@angular/router'
+import { ActivatedRoute, Data, UrlSegment } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { BundlesService } from 'sijil'
 
 import { UserlistFiltersService, routing } from '../../core/services'
 import { UsersStore } from '../users.store';
+import { UserFilter } from '../../core/services/userlist.filters.service';
 
 @Component({
     selector: 'user-filters',
@@ -50,6 +51,7 @@ import { UsersStore } from '../users.store';
 export class UserFilters implements OnInit, OnDestroy {
 
     private structureSubscriber : Subscription;
+    private routeSubscriber: Subscription;
     dateFilter: string
 
     constructor(
@@ -68,10 +70,20 @@ export class UserFilters implements OnInit, OnDestroy {
             }
         });
         this.usersStore.user = null;
+
+        this.routeSubscriber = this.route.url.subscribe((urlSegment: UrlSegment[]) => {
+            if (urlSegment.length == 2 && urlSegment[1].path == 'duplicates') {
+                let filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'duplicates');
+                if (filter) {
+                    filter.outputModel = ['users.duplicated'];
+                }
+            }
+        });
     }
 
     ngOnDestroy() {
         this.structureSubscriber.unsubscribe();
+        this.routeSubscriber.unsubscribe();
     }
 
     private orderer(a){
