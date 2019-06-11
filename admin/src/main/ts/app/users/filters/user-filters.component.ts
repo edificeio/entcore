@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core'
-import { ActivatedRoute, Data, UrlSegment } from '@angular/router'
+import { ActivatedRoute, Data } from '@angular/router'
 import { Subscription } from 'rxjs/Subscription'
 import { BundlesService } from 'sijil'
 
