@@ -15,7 +15,6 @@ export let routes: Routes = [
         children: [
             {path: 'create', component: UserCreate},
             {path: 'filter', component: UserFilters},
-            {path: 'filter/duplicates', component: UserFilters},
             {
                 path: ':userId/details', component: UserDetails, resolve: {
                     config: ConfigResolver,

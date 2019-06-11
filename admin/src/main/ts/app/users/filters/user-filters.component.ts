@@ -71,8 +71,8 @@ export class UserFilters implements OnInit, OnDestroy {
         });
         this.usersStore.user = null;
 
-        this.routeSubscriber = this.route.url.subscribe((urlSegment: UrlSegment[]) => {
-            if (urlSegment.length == 2 && urlSegment[1].path == 'duplicates') {
+        this.routeSubscriber = this.route.queryParams.subscribe(params => {
+            if(params['duplicates']) {
                 let filter: UserFilter<string> = this.listFilters.filters.find(f => f.type === 'duplicates');
                 if (filter) {
                     filter.outputModel = ['users.duplicated'];

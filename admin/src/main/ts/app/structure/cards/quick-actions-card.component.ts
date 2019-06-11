@@ -18,7 +18,7 @@ import { Component, ChangeDetectionStrategy } from '@angular/core'
                 <s5l>create.group</s5l>
                 <i class="fa fa-users"></i>
             </button>
-            <button routerLink="users/filter/duplicates">
+            <button routerLink="users/filter" [queryParams]="{duplicates: true}">
                 <s5l>manage.duplicates</s5l>
                 <i class="fa fa-user-times"></i>
             </button>
