@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# usage:
+# ./adminv2-convert-cross-roles.py myNeo4jHost preview
+#
 
 import sys
 import os
@@ -18,7 +21,7 @@ if len(sys.argv) >= 2:
     
     neo4jHost = sys.argv[1]
     preview = False
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 3 and sys.argv[2] == "preview":
         preview = True
     
     gdb = GraphDatabase("http://%s:7474/db/data/" % neo4jHost)
