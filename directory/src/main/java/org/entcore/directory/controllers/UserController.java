@@ -41,6 +41,7 @@ import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
@@ -655,6 +656,31 @@ public class UserController extends BaseController {
 	public void allowLoginUpdate(final HttpServerRequest request) {
 		// This route is used to create user.allow.login.update Workflow right, nothing to do
 		request.response().end();
+	}
+
+	@Get("/user/level/list")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void listByLevel(HttpServerRequest request) {
+		final boolean stream = "application/x-ndjson".equals(request.headers().get("Accept"));
+		final Handler<Either<String, JsonArray>> h;
+		if (stream) {
+			h = r -> {
+				if (r.isRight()) {
+					if (!request.response().isChunked()) {
+						request.response().setChunked(true);
+					}
+					r.right().getValue().stream()
+							.forEach(o -> request.response().write(((JsonObject) o).encode() + "\n"));
+				} else {
+					request.response().end(r.left().getValue());
+				}
+			};
+		} else {
+			h = arrayResponseHandler(request);
+		}
+		userService.listByLevel(request.params().get("level"), request.params().get("notLevel"),
+				request.params().get("profile"), stream, h);
 	}
 
 	public void setUserService(UserService userService) {

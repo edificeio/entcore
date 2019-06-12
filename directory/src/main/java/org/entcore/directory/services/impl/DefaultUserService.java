@@ -43,11 +43,13 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultUserService implements UserService {
 
+	private static final int LIMIT = 1000;
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EmailSender notification;
 	private final EventBus eb;
@@ -704,4 +706,54 @@ public class DefaultUserService implements UserService {
 		params.put("userId", userId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
+
+	@Override
+	public void listByLevel(String levelContains, String levelNotContains, String profile, boolean stream,
+			Handler<Either<String, JsonArray>> handler) {
+		final JsonObject params = new JsonObject();
+		params.put("level", levelContains);
+		String levelFilter = "";
+		if (isNotEmpty(levelNotContains)) {
+			levelFilter = "AND NOT(u.level contains {notLevel}) ";
+			params.put("notLevel", levelNotContains);
+		}
+
+		String query;
+		if ("Student".equals(profile)) {
+			query = "MATCH (u:User) " +
+					"WHERE has(u.password) and u.level contains {level} " + levelFilter +
+					"RETURN u.id as id, u.ine as ine, head(u.profiles) as profile, u.lastName as lastName, u.firstName as firstName, " +
+					"u.login as login, u.loginAlias as loginAlias, u.email as email, u.password as password ";
+		} else if ("Relative".equals(profile)) {
+			query = "MATCH (u:User)-[:RELATED]->(r:User) " +
+					"WHERE has(r.password) and u.level contains {level} " + levelFilter +
+					"RETURN r.id as id, u.ine as ine, head(r.profiles) as profile, r.lastName as lastName, r.firstName as firstName, " +
+					"r.login as login, r.loginAlias as loginAlias, r.email as email, r.password as password ";
+		} else {
+			handler.handle(new Either.Right<>(new JsonArray()));
+			return;
+		}
+		if (stream) {
+			query += "ORDER BY login ASC SKIP {skip} LIMIT {limit} ";
+			params.put("limit", LIMIT);
+			streamList(query, params, 0, LIMIT, handler);
+		} else {
+			neo.execute(query, params, validResultHandler(handler));
+		}
+	}
+
+	private void streamList(String query, JsonObject params, int skip, int limit, Handler<Either<String, JsonArray>> handler) {
+		neo.execute(query, params.copy().put("skip", skip), res -> {
+			Either<String, JsonArray> r = validResult(res);
+			handler.handle(r);
+			if (r.isRight()) {
+				if (r.right().getValue().size() == limit) {
+					streamList(query, params, skip + limit, limit, handler);
+				} else {
+					handler.handle(new Either.Left<>(""));
+				}
+			}
+		});
+	}
+
 }
