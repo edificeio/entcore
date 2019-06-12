@@ -103,4 +103,7 @@ public interface UserService {
 
 	void getUserInfos(String userId, Handler<Either<String,JsonObject>> handler);
 
+	void listByLevel(String levelContains, String levelNotContains, String profile, boolean stream,
+					 Handler<Either<String, JsonArray>> handler);
+
 }
