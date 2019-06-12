@@ -187,9 +187,10 @@ export class CommunicationRulesComponent {
     }
 
     public getSenders(): GroupModel[] {
-        return this.communicationRules
+        const senders = this.communicationRules
             .map(rule => rule.sender)
             .filter(group => !!group);
+        return uniqueGroups(senders);
     }
 
     public getReceivers(): GroupModel[] {

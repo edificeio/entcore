@@ -293,6 +293,15 @@ describe('CommunicationRulesComponent', () => {
             expect(senders.length).toBe(1);
             expect(senders[0].id).toBe('group1');
         });
+
+        it('return unique senders', () => {
+            component.communicationRules = [
+                {sender: generateGroup('group1'), receivers : [generateGroup('group2')]},
+                {sender: generateGroup('group1'), receivers : [generateGroup('group3')]}
+            ];
+            const senders = component.getSenders();
+            expect(senders.length).toBe(1);
+        })
     });
 });
 
