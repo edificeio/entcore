@@ -859,7 +859,7 @@ a.old-console {
 lightbox {
   font-size: 16px;
   div[content] {
-    padding: 20px 40px;
+    padding: 20px 40px!important;
     border-radius: 3px;
     box-shadow: 2px 2px 10px $shadow-dark;
     max-height: 1600px !important;
