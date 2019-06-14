@@ -80,15 +80,17 @@ export class UserFunctionalGroupsSection extends AbstractSection implements OnIn
 
     private filterManageableGroups() {
         this.filteredGroups = !this.details ? [] :
-            this.details.functionalGroups
-                .filter(group => !!this.structure.groups.data
-                    .find(manageableGroup =>
-                        (manageableGroup.type === 'FunctionalGroup') && (manageableGroup.id === group.id)));
+            !this.details.functionalGroups ? [] :
+                this.details.functionalGroups
+                    .filter(group => !!this.structure.groups.data
+                        .find(manageableGroup =>
+                            (manageableGroup.type === 'FunctionalGroup') && (manageableGroup.id === group.id)));
     }
 
     private updateLightboxFunctionalGroups() {
         this.lightboxFunctionalGroups = this.structure.groups.data
             .filter(group => group.type === 'FunctionalGroup'
+                && this.details.functionalGroups
                 && !this.details.functionalGroups.find(functionalGroup => functionalGroup.id == group.id)
             );
     }

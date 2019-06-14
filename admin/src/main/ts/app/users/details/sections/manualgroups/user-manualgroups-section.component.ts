@@ -79,15 +79,17 @@ export class UserManualGroupsSection extends AbstractSection implements OnInit, 
 
     private filterManageableGroups() {
         this.filteredGroups = !this.details ? [] :
-            this.details.manualGroups
-                .filter(group => !!this.structure.groups.data
-                    .find(manageableGroup =>
-                        (manageableGroup.type === 'ManualGroup') && (manageableGroup.id === group.id)));
+            !this.details.manualGroups ? [] :
+                this.details.manualGroups
+                    .filter(group => !!this.structure.groups.data
+                        .find(manageableGroup =>
+                            (manageableGroup.type === 'ManualGroup') && (manageableGroup.id === group.id)));
     }
 
     private updateLightboxManualGroups() {
         this.lightboxManualGroups = this.structure.groups.data.filter(
             group => group.type === 'ManualGroup'
+                && this.details.manualGroups
                 && !this.details.manualGroups.find(manualGroup => manualGroup.id == group.id));
     }
 

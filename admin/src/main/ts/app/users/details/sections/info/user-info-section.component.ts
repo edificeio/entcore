@@ -231,6 +231,7 @@ export class UserInfoSection extends AbstractSection implements OnInit {
             this.passwordResetMail = this.details.email;
             this.passwordResetMobile = this.details.mobile;
         }
+        this.renewalCode = undefined;
     }
 
     addAdml() {
