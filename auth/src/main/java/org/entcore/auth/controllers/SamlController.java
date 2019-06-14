@@ -25,6 +25,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
@@ -73,9 +74,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Inflater;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class SamlController extends AbstractFederateController {
@@ -83,7 +82,7 @@ public class SamlController extends AbstractFederateController {
 	private SamlServiceProviderFactory spFactory;
 	private FederationService federationService;
 	private JsonObject samlWayfParams;
-	private JsonObject samlWayfMustacheFormat;
+	private JsonObject samlWayfMustacheFormat = new JsonObject();
 	private String ignoreCallBackPattern;
 	private boolean softSlo;
 	private boolean federatedAuthenticateError = false;
@@ -126,10 +125,13 @@ public class SamlController extends AbstractFederateController {
 	@Get("/saml/wayf")
 	public void wayf(HttpServerRequest request) {
 		if (samlWayfParams != null) {
-			if (samlWayfMustacheFormat == null) {
+			final String host = Renders.getHost(request);
+			if (samlWayfMustacheFormat.getJsonObject(host) == null) {
+				JsonObject wayfParams = samlWayfParams.getJsonObject(host);
+				wayfParams = (wayfParams == null) ? samlWayfParams : wayfParams;
 				final JsonArray wmf = new fr.wseduc.webutils.collections.JsonArray();
-				for (String attr : samlWayfParams.fieldNames()) {
-					JsonObject i = samlWayfParams.getJsonObject(attr);
+				for (String attr : wayfParams.fieldNames()) {
+					JsonObject i = wayfParams.getJsonObject(attr);
 					if (i == null) continue;
 					final String acs = i.getString("acs");
 					if (isEmpty(acs)) continue;
@@ -146,7 +148,7 @@ public class SamlController extends AbstractFederateController {
 									(attr.startsWith("login") ? "/auth/login" : "/auth/saml/authn/" + attr));
 					wmf.add(o);
 				}
-				samlWayfMustacheFormat = new JsonObject().put("providers", wmf);
+				samlWayfMustacheFormat.put(host, new JsonObject().put("providers", wmf));
 			}
 			String callBack = request.params().get("callBack");
 			final JsonObject swmf;
@@ -156,7 +158,8 @@ public class SamlController extends AbstractFederateController {
 				} catch (UnsupportedEncodingException e) {
 					log.error("Error encode wayf callback.", e);
 				}
-				swmf = samlWayfMustacheFormat.copy();
+				swmf = samlWayfMustacheFormat.copy().getJsonObject(host);
+
 				for (Object o: swmf.getJsonArray("providers")) {
 					if (!(o instanceof JsonObject)) continue;
 					final String uri = ((JsonObject) o).getString("uri");
@@ -165,7 +168,7 @@ public class SamlController extends AbstractFederateController {
 					}
 				}
 			} else {
-				swmf = samlWayfMustacheFormat;
+				swmf = samlWayfMustacheFormat.getJsonObject(host);
 			}
 			renderView(request, swmf, "wayf.html", null);
 		} else {
@@ -176,7 +179,10 @@ public class SamlController extends AbstractFederateController {
 
 	@Get("/saml/authn/:providerId")
 	public void auth(final HttpServerRequest request) {
-		final JsonObject item = samlWayfParams.getJsonObject(request.params().get("providerId"));
+		final String host = Renders.getHost(request);
+		JsonObject wayfParams = samlWayfParams.getJsonObject(host);
+		wayfParams = (wayfParams == null) ? samlWayfParams : wayfParams;
+		final JsonObject item = wayfParams.getJsonObject(request.params().get("providerId"));
 		if (item == null) {
 			forbidden(request, "invalid.provider");
 			return;
