@@ -43,7 +43,7 @@ export class UserModel extends Model<UserModel> {
     functions?: Array<[string, Array<string>]>;
     structures: { id: string, name: string }[];
     classes: Classe[];
-    duplicates: { id: string, firstName: string, lastName: string, code: string, structures: string[] }[];
+    duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[];
     deleteDate?: number;
     disappearanceDate?: number;
 
@@ -135,7 +135,7 @@ export class UserModel extends Model<UserModel> {
             });
     }
 
-    async mergeDuplicate(duplicateId: string): Promise<{ id: string } | { id: string, structure: string }> {
+    async mergeDuplicate(duplicateId: string): Promise<{ id: string, structure?: { id: string, name: string } }> {
         await this.http.put(`/directory/duplicate/merge/${this.id}/${duplicateId}`);
         let duplicate = this.duplicates.find(d => d.id === duplicateId);
         this.duplicates = this.duplicates.filter(d => d.id !== duplicateId);
@@ -151,7 +151,7 @@ export class UserModel extends Model<UserModel> {
         return this.http.delete(`/directory/duplicate/ignore/${this.id}/${duplicateId}`).then(() => {
             let duplicate = this.duplicates.find(d => d.id === duplicateId);
             duplicate.structures.forEach(duplicatedStructure => {
-                let structure = globalStore.structures.data.find(struct => struct.id === duplicatedStructure);
+                let structure = globalStore.structures.data.find(struct => struct.id === duplicatedStructure.id);
                 if (structure && structure.users.data.length > 0) {
                     let user = structure.users.data.find(user => user.id === duplicateId);
                     if (user) user.duplicates = user.duplicates.filter(d => d.id !== this.id);
