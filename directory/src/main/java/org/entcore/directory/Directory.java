@@ -19,6 +19,7 @@
 
 package org.entcore.directory;
 
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
@@ -26,6 +27,7 @@ import org.entcore.common.http.BasicFilter;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.remote.RemoteClient;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
@@ -34,11 +36,7 @@ import org.entcore.common.user.RepositoryHandler;
 import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
-import org.entcore.directory.services.ClassService;
-import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.UserBookService;
-import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
 
 import fr.wseduc.webutils.email.EmailSender;
@@ -153,6 +151,17 @@ public class Directory extends BaseServer {
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+
+        final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
+        if (remoteNodes != null) {
+			final RemoteClient remoteClient = new RemoteClient(vertx, remoteNodes);
+			final RemoteUserService remoteUserService = new DefaultRemoteUserService();
+			((DefaultRemoteUserService) remoteUserService).setRemoteClient(remoteClient);
+			final RemoteUserController remoteUserController = new RemoteUserController();
+			remoteUserController.setRemoteUserService(remoteUserService);
+			addController(remoteUserController);
+		}
+
 	}
 
 }
