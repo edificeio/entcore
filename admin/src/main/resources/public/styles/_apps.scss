@@ -3,25 +3,19 @@ i.bookmark-empty-large,
 i.type.bookmark-empty,
 i.bookmark-empty {
     @include fonticon;
-}
-
-i.bookmark-empty-large::before,
-i.type.bookmark-empty::before,
-i.bookmark-empty::before {
-    content: '\e888';
+    &::before {
+      content: '\e888';
+    }
 }
 
 i.suitcase-large,
 i.type.suitcase,
 i.suitcase {
     @include fonticon;
-}
-
-i.suitcase-large::before,
-i.type.suitcase::before,
-i.suitcase::before {
-    content: '\e88b';
-    color: $red;
+    &::before {
+      content: '\e88b';
+      color: $red;
+    }
 }
 
 //  APPS
@@ -29,133 +23,101 @@ i.cns-large,
 i.type.cns,
 i.cns {
     @include fonticon;
-}
-
-i.cns-large::before,
-i.type.cns::before,
-i.cns::before {
-    content: '\e88a';
-    color: $green;
+    &::before {
+      content: '\e88a';
+      color: $green;
+    }
 }
 
 i.chat-large,
 i.type.chat,
 i.chat {
     @include fonticon;
-}
-
-i.chat-large::before,
-i.type.chat::before,
-i.chat::before {
-    content: "\e817";
-    color: $red;
+    &::before {
+      content: "\e817";
+      color: $red;
+    }
 }
 
 i.pad-large,
 i.type.pad,
 i.pad {
     @include fonticon;
-}
-
-i.pad-large::before,
-i.type.pad::before,
-i.pad::before {
-    content: "\e829";
-    color: $cyan;
+    &::before {
+      content: "\e829";
+      color: $cyan;
+    }
 }
 
 i.collaborativeeditor-large,
 i.type.collaborativeeditor,
 i.collaborativeeditor {
     @include fonticon;
-}
-
-i.collaborativeeditor-large::before,
-i.type.collaborativeeditor::before,
-i.collaborativeeditor::before {
-    content: "\e829";
-    color: $cyan;
+    &::before {
+      content: "\e829";
+      color: $cyan;
+    }
 }
 
 i.exercizer-large,
 i.exercizer.cas,
 i.exercizer {
     @include fonticon;
+    &::before {
+      content: '\e833';
+      color: $purple;
+    }
 }
-
-i.exercizer-large::before,
-i.type.exercizer::before,
-i.exercizer::before {
-    content: '\e833';
-    color: $purple;
-}
-
 
 /* ico for main apps */
-
 i.sharebigfiles-large,
 i.type.sharebigfiles,
 i.sharebigfiles {
     @include fonticon;
-}
-
-i.sharebigfiles-large::before,
-i.type.sharebigfiles::before,
-i.sharebigfiles::before {
-    content: "\e8cb";
-    color: $purple;
+    &::before {
+      content: "\e8cb";
+      color: $purple;
+    }
 }
 
 i.workspace-large,
 i.type.workspace,
 i.workspace {
     @include fonticon;
-}
-
-i.workspace-large::before,
-i.type.workspace::before,
-i.workspace::before {
-    content: "\e81b";
-    color: $red;
+    &::before {
+      content: "\e81b";
+      color: $red;
+    }
 }
 
 i.actualites-large,
 i.type.news,
 i.actualites {
     @include fonticon;
-}
-
-i.actualites-large::before,
-i.type.news::before,
-i.actualites::before {
-    content: "\e85b";
-    color: $cyan;
+    &::before {
+      content: "\e85b";
+      color: $cyan;
+    }
 }
 
 i.wiki-large,
 i.type.wiki,
 i.wiki {
     @include fonticon;
-}
-
-i.wiki-large::before,
-i.type.wiki::before,
-i.wiki::before {
-    content: '\e813';
-    color: $purple;
+    &::before {
+      content: '\e813';
+      color: $purple;
+    }
 }
 
 i.support-large,
 i.type.support,
 i.support {
     @include fonticon;
-}
-
-i.support-large::before,
-i.type.support::before,
-i.support::before {
-    content: "\e835";
-    color: $green;
+    &::before {
+      content: "\e835";
+      color: $green;
+    }
 }
 
 i.userbook-large,
@@ -165,16 +127,10 @@ i.directory-large,
 i.type.directory,
 i.directory {
     @include fonticon;
-}
-
-i.userbook-large::before,
-i.type.userbook::before,
-i.userbook::before,
-i.directory-large::before,
-i.type.directory::before,
-i.directory::before {
-    content: '\e811';
-    color: $green;
+    &::before {
+      content: '\e811';
+      color: $green;
+    }
 }
 
 i.archive-large,
@@ -182,273 +138,213 @@ i.type.archives,
 i.archive,
 i.archives {
     @include fonticon;
-}
-
-i.archive-large::before,
-i.type.archives::before,
-i.archives::before,
-i.type.archive::before,
-i.archive::before {
-    content: "\e81d";
-    color: $yellow;
+    &::before {
+      content: "\e81d";
+      color: $yellow;
+    }
 }
 
 i.notes-large,
 i.type.notes,
 i.notes {
     @include fonticon;
-}
-
-i.notes-large::before,
-i.type.notes::before,
-i.notes::before {
-    content: '\e806';
-    color: $red;
+    &::before {
+      content: '\e806';
+      color: $red;
+    }
 }
 
 i.blog-large,
 i.type.blog,
 i.blog {
     @include fonticon;
-}
-
-i.blog-large::before,
-i.type.blog::before,
-i.blog::before {
-    content: "\e809";
-    color: $indigo;
+    &::before {
+      content: "\e809";
+      color: $indigo;
+    }
 }
 
 i.mindmap-large,
 i.type.mindmap,
 i.mindmap {
     @include fonticon;
-}
-
-i.mindmap-large::before,
-i.type.mindmap::before,
-i.mindmap::before {
-    content: "\e859";
-    color: $cyan;
+    &::before {
+      content: "\e859";
+      color: $cyan;
+    }
 }
 
 i.rack-large,
 i.type.rack,
 i.rack {
     @include fonticon;
-}
-
-i.rack-large::before,
-i.type.rack::before,
-i.rack::before {
-    content: "\e80d";
-    color: $red;
+    &::before {
+      content: "\e80d";
+      color: $red;
+    }
 }
 
 i.community-large,
 i.type.community,
 i.community {
     @include fonticon;
+    &::before {
+      content: '\e814';
+      color: $purple;
+    }
 }
 
-i.community-large::before,
-i.type.community::before,
-i.community::before {
-    content: '\e814';
-    color: $purple;
-}
 
 i.my-network-large,
 i.my-network {
     @include fonticon;
+    &::before {
+      content: '\e82e';
+      color: $indigo;
+    }
 }
 
-i.my-network-large::before,
-i.my-network::before {
-    content: '\e82e';
-    color: $indigo;
-}
 
 i.collaborative-wall-large,
 i.type.collaborativewall,
 i.collaborative-wall {
     @include fonticon;
-}
-
-i.collaborative-wall-large::before,
-i.type.collaborativewall::before,
-i.collaborative-wall::before {
-    content: "\e800";
-    color: $green;
+    &::before {
+      content: "\e800";
+      color: $green;
+    }
 }
 
 i.pages-large,
 i.type.pages,
 i.pages {
     @include fonticon;
-}
-
-i.pages-large::before,
-i.type.pages::before,
-i.pages::before {
-    content: "\e876";
-    color: $red;
+    &::before {
+      content: "\e876";
+      color: $red;
+    }
 }
 
 i.admin-large,
 i.admin {
     @include fonticon;
-}
-
-i.admin-large::before,
-i.admin::before {
-    content: '\e81a';
-    color: $yellow;
+    &::before {
+      content: '\e81a';
+      color: $yellow;
+    }
 }
 
 i.settings-class-large,
 i.settings-class {
     @include fonticon;
-}
-
-i.settings-class-large::before,
-i.settings-class::before {
-    content: '\e942';
-    color: $cyan;
+    &::before {
+      content: '\e942';
+      color: $cyan;
+    }
 }
 
 i.rbs-large,
 i.type.rbs,
 i.rbs {
     @include fonticon;
-}
-
-i.rbs-large::before,
-i.type.rbs::before,
-i.rbs::before {
-    content: '\e80e';
-    color: $pink;
+    &::before {
+      content: '\e80e';
+      color: $pink;
+    }
 }
 
 i.timelinegenerator-large,
 i.type.timelinegenerator,
 i.timelinegenerator {
     @include fonticon;
-}
-
-i.timelinegenerator-large::before,
-i.type.timelinegenerator::before,
-i.timelinegenerator::before {
-    content: '\e819';
-    color: $yellow;
+    &::before {
+      content: '\e819';
+      color: $yellow;
+    }
 }
 
 i.timeline-large,
 i.timeline.cas,
 i.timeline {
     @include fonticon;
+    &::before {content: '\e82b';}
 }
 
-i.timeline-large::before,
-i.timeline::before {
-    content: '\e82b';
-    // home icon
-}
-
-i.sticker.app.type.timeline::before,
-i.type.timeline::before {
+i.sticker.app.type.timeline,
+i.type.timeline {
+  @include fonticon;
+  &::before {
     content: '\e854';
-    // cog icon notif & filter
+  }
 }
 
 i.note-large,
 i.type.note,
 i.note {
     @include fonticon;
-}
-
-i.note-large::before,
-i.type.note::before,
-i.note::before {
-    content: '\e806';
-    color: $yellow;
+    &::before {
+      content: '\e806';
+      color: $yellow;
+    }
 }
 
 i.calendar-large,
 i.type.calendar,
 i.calendar {
     @include fonticon;
+    &::before {
+      content: '\e834';
+      color: $yellow;
+    }
 }
 
 i.type.calendar {
     height: 38px;
 }
 
-i.calendar-large::before,
-i.type.calendar::before,
-i.calendar::before {
-    content: '\e834';
-    color: $yellow;
-}
-
 i.forum-large,
 i.forum.cas,
 i.forum {
     @include fonticon;
-}
-
-i.forum-large::before,
-i.type.forum::before,
-i.forum::before {
-    content: '\e81e';
-    color: $cyan;
+    &::before {
+      content: '\e81e';
+      color: $cyan;
+    }
 }
 
 i.poll-large,
 i.poll.cas,
 i.poll {
     @include fonticon;
-}
-
-i.poll-large::before,
-i.type.poll::before,
-i.poll::before {
-    content: '\e832';
-    color: $cyan;
+    &::before {
+      content: '\e832';
+      color: $cyan;
+    }
 }
 
 i.conversation-large,
 i.type.messagerie,
 i.mail {
     @include fonticon;
-}
-
-i.conversation-large::before,
-i.type.messagerie::before,
-i.mail::before {
-    content: "\e804";
-    color: $yellow;
+    &::before {
+      content: "\e804";
+      color: $yellow;
+    }
 }
 
 // & also 1D APPS
 i.statistics-large,
 i.statistics.cas,
 i.statistics,
-i.statistics::before,
+i.statistics,
 i.stats-large,
 i.type.stats,
-i.stats::before {
+i.stats {
     @include fonticon;
-}
-
-i.statistics-large::before,
-i.type.statistics::before,
-i.statistics::before,
-i.stats-large::before,
-i.type.stats::before,
-i.stats::before {
-    content: '\e810';
-    color: $purple;
+    &::before {
+      content: '\e810';
+      color: $purple;
+    }
 }
 
 i.cahier-textes-large,
@@ -458,25 +354,15 @@ i.cahier-de-texte-large,
 i.type.cahier-de-texte,
 i.cahier-de-texte {
     @include fonticon;
-}
-
-i.cahier-textes-large::before,
-i.type.cahier-textes::before,
-i.cahier-textes::before,
-i.cahier-de-texte-large::before,
-i.type.cahier-de-texte::before,
-i.cahier-de-texte::before {
-    content: "\e86f";
-    color: $green;
+    &::before {
+      content: "\e86f";
+      color: $green;
+    }
 }
 
 i.type.homeworks {
     @include fonticon;
-}
-
-i.type.homeworks::before,
-i.homeworks::before {
-    content: '\e86f';
+    &::before {content: '\e86f';}
 }
 
 i.scrap-book-large,
@@ -486,53 +372,64 @@ i.scrapbook-large,
 i.type.scrapbook,
 i.scrapbook {
     @include fonticon;
-}
-
-i.scrap-book-large::before,
-i.type.scrap-book::before,
-i.scrap-book::before,
-i.scrapbook-large::before,
-i.type.scrapbook::before,
-i.scrapbook::before {
-    content: "\e8d4";
-    color: $green;
-}
-
-i.scrap-book-large,
-i.type.scrap-book,
-i.scrap-book {
-    @include fonticon;
-}
-
-i.scrap-book-large::before,
-i.type.scrap-book::before,
-i.scrap-book::before {
-    content: "\e8d4";
-    color: $green;
+    &::before {
+      content: "\e8d4";
+      color: $green;
+    }
 }
 
 i.schoolbook-large,
 i.type.schoolbook,
 i.schoolbook {
     @include fonticon;
-}
-
-i.schoolbook-large::before,
-i.type.schoolbook::before,
-i.schoolbook::before {
-    content: "\e91e";
-    color: $green;
+    &::before {
+      content: "\e91e";
+      color: $green;
+    }
 }
 
 i.competences-large,
 i.type.competences,
 i.competences {
     @include fonticon;
+    &::before {
+      content: "\e927";
+      color: $red;
+    }
 }
 
-i.competences-large::before,
-i.type.competences::before,
-i.competences::before {
-    content: "\e927";
+i.searchengine-large,
+i.searchengine.cas,
+i.type.searchengine,
+i.searchengine {
+  @include fonticon;
+  &:before{
+    content: '\e8d0';
+    color: $cyan;
+  }
+}
+
+i.moodle,
+i.moodle-large {
+  @include fonticon;
+  &::before {
+    content: "\e948";
+    color: $orange;
+  }
+}
+
+i.Mediacentre,
+i.Mediacentre-large,
+i.mediacentre,
+i.mediacentre-large {
+  @include fonticon;
+  &::before {
+    content: "\e863";
     color: $red;
+  }
+}
+
+i.system {
+  @include fonticon;
+  &::before {content: "\e854"}
 }
