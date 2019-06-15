@@ -82,6 +82,10 @@ public class PostImport {
 		return new Handler<Void>() {
 			@Override
 			public void handle(Void v) {
+				if (config.getJsonArray("active-user-from-old-platform") != null &&
+						config.getJsonArray("active-user-from-old-platform").contains(source)) {
+					User.searchUserFromOldPlatform(vertx);
+				}
 				if (config.getBoolean("notify-apps-after-import", true)) {
 					ApplicationUtils.afterImport(eb);
 				}
