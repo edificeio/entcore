@@ -19,8 +19,13 @@
 
 package org.entcore.feeder.dictionary.structures;
 
+import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.Server;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.feeder.Feeder;
@@ -34,15 +39,18 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.feeder.utils.Validator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class User {
 
+	private static final Logger log = LoggerFactory.getLogger(User.class);
 	private static final String GET_DELETE_OPTIONS =
 			"OPTIONAL MATCH (fgroup:FunctionalGroup) " +
 			"WHERE fgroup.externalId IN u.groups " +
@@ -60,6 +68,8 @@ public class User {
 			"CASE WHEN fgroup IS NULL THEN [] ELSE collect(distinct fgroup.id) END as functionalGroupsIds, " +
 			"CASE WHEN mgroup IS NULL THEN [] ELSE collect(distinct mgroup.id) END as manualGroupsIds, " +
 			"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds ";
+
+	private static final String OLD_PLATFORM_USERS = "oldplatformusers";
 
 	public static class DeleteTask implements Handler<Long> {
 
@@ -777,6 +787,69 @@ public class User {
 		}
 		final String query = "MATCH (g:" + type + filter + ")<-[:IN]-(u:User) WITH g, count(u) as cu SET g.nbUsers = cu;";
 		tx.add(query, params);
+	}
+
+	public static void searchUserFromOldPlatform(Vertx vertx) {
+		final JsonObject keys = new JsonObject().put("created", 0).put("modified", 0);
+		MongoDb.getInstance().find(OLD_PLATFORM_USERS, new JsonObject(), null, keys, m -> {
+			if ("ok".equals(m.body().getString("status"))) {
+				final JsonArray res = m.body().getJsonArray("results");
+				if (res != null) {
+					for (Object o : res) {
+						if (!(o instanceof JsonObject)) continue;
+						tryActivateUser(vertx, (JsonObject) o);
+					}
+				}
+			} else {
+				log.error("Error find user old platform : " + m.body().getString("message"));
+			}
+		});
+	}
+
+	private static void tryActivateUser(Vertx vertx, JsonObject j) {
+		j.copy().fieldNames().forEach(s -> {
+			if (isEmpty(j.getString(s))) {
+				j.remove(s);
+			} else if (("login".equals(s) || "loginAlias".equals(s)) &&
+					Validator.validLoginAlias(s, j.getString(s), "loginAlias", "fr", I18n.getInstance()) != null) {
+				j.remove(s);
+			}
+		});
+		String query;
+		if ("Relative".equals(j.getString("profile"))) {
+			query =
+					"MATCH (s:User {ine:{ine}})-[:RELATED]->(u:User) " +
+					"WHERE u.firstNameSearchField = {firstName} AND u.lastNameSearchField = {lastName} AND ";
+			j.put("firstName", Validator.sanitize((String) j.remove("firstName")));
+			j.put("lastName", Validator.sanitize((String) j.remove("lastName")));
+		} else {
+			query =
+					"MATCH (u:User {ine:{ine}}) " +
+					"WHERE ";
+		}
+		query +=
+				"HAS(u.activationCode) AND head(u.profiles) = {profile} " +
+				"AND NOT(HAS(u.deleteDate)) AND NOT(HAS(u.disappearanceDate)) " +
+				"WITH COLLECT(DISTINCT u) as users " +
+				"WHERE LENGTH(users) = 1 " +
+				"UNWIND users as u " +
+				"SET u.activationCode = null, " + Neo4jUtils.nodeSetPropertiesFromJson(
+						"u", j, "ine", "profile", "lastName", "firstName", "_id") +
+				"RETURN u.id as userId,  head(u.profiles) as profile";
+		Neo4j.getInstance().execute(query, j, r -> {
+			if ("ok".equals(r.body().getString("status"))) {
+				final JsonArray res = r.body().getJsonArray("result");
+				if (res.size() == 1) {
+					final JsonObject u = res.getJsonObject(0);
+					log.info("Activate user " + u.encode() + " : " + j.encode());
+					Server.getEventBus(vertx).publish("activation.ack", u);
+					MongoDb.getInstance().delete(OLD_PLATFORM_USERS, new JsonObject().put("_id", j.getString("_id")));
+				}
+			} else {
+				log.error("Error setting user attributes from old platform : " + r.body().getString("message"));
+			}
+		});
+
 	}
 
 }

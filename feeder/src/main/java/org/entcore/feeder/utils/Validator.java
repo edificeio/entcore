@@ -472,8 +472,12 @@ public class Validator {
 	private String validLoginAlias(String attr, Object value, String validator) {
 		return validLoginAlias(attr, value, validator, "fr");
 	}
-	
+
 	private String validLoginAlias(String attr, Object value, String validator, String acceptLanguage) {
+		return validLoginAlias(attr, value, validator, acceptLanguage, i18n);
+	}
+
+	public static String validLoginAlias(String attr, Object value, String validator, String acceptLanguage, I18n i18n) {
 		Pattern p = patterns.get(validator);
 		if (p == null) {
 			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
