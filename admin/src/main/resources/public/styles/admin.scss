@@ -767,7 +767,7 @@ i.top-right {
   }
 }
 
-i.disabled {
+i.disabled, tr.disabled {
   pointer-events: none;
   color: #AAA !important;
 }

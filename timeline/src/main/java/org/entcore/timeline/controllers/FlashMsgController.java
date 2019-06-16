@@ -20,6 +20,7 @@ package org.entcore.timeline.controllers;
 
 import java.util.Map;
 
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserInfos;
@@ -122,13 +123,13 @@ public class FlashMsgController extends BaseController {
 
 	@Delete("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void delete(final HttpServerRequest request) {
 		service.delete(request.params().get("id"), defaultResponseHandler(request));
 	}
 	@Delete("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void deleteMultiple(final HttpServerRequest request) {
 		service.deleteMultiple(request.params().getAll("id"), defaultResponseHandler(request));
 	}
@@ -149,6 +150,13 @@ public class FlashMsgController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	public void listAdmin(final HttpServerRequest request) {
 		service.list(getHost(request), arrayResponseHandler(request));
+	}
+
+	@Get("/flashmsg/listadmin/:structureId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void listAdminByStructureId(final HttpServerRequest request) {
+		service.listByStructureId(request.params().get("structureId"), arrayResponseHandler(request));
 	}
 
 }

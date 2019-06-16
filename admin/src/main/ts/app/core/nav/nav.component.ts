@@ -46,6 +46,11 @@ import { Subscription } from 'rxjs/Subscription'
                     [title]="'users' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"></i>
+                <i class="fa fa-exclamation-triangle" aria-hidden="true"
+                    *ngIf="currentStructure"
+                    [title]="'management.structure' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/management/message-flash'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)"></i>
                 <i class="fa fa-home" aria-hidden="true"
                     *ngIf="currentStructure"
                     [title]="'nav.structure' | translate"
