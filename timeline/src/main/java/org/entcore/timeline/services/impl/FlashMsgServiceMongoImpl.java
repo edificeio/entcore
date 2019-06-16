@@ -112,4 +112,9 @@ public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements Flas
 
 	}
 
+	@Override
+	public void listByStructureId(String structureId, Handler<Either<String, JsonArray>> handler) {
+		// Not implemented
+	}
+
 }

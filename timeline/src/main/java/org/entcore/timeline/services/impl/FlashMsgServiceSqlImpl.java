@@ -38,11 +38,13 @@ import fr.wseduc.webutils.Either;
 public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgService {
 
 	private final String JOIN_TABLE;
+	private final String STRUCT_JOIN_TABLE;
 	private final Logger log = LoggerFactory.getLogger(FlashMsgServiceSqlImpl.class);
 
 	public FlashMsgServiceSqlImpl(String schema, String table) {
 		super(schema, table);
 		JOIN_TABLE = schema + ".messages_read";
+		STRUCT_JOIN_TABLE = schema + ".messages_substructures";
 	}
 
 	@Override
@@ -91,9 +93,22 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void list(String domain, Handler<Either<String, JsonArray>> handler) {
 		String query =
 			"SELECT *, \"startDate\"::text, \"endDate\"::text "+
-			"FROM " + resourceTable + " m  WHERE domain = ? ORDER BY modified DESC";
+			"FROM " + resourceTable + " m  WHERE domain = ? AND \"structureId\" IS NULL ORDER BY modified DESC";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(domain);
+		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
+	}
+
+	@Override
+	public void listByStructureId(String structureId, Handler<Either<String, JsonArray>> handler) {
+		String query =
+				"SELECT DISTINCT m.*, m.\"startDate\"::text, m.\"endDate\"::text "+
+						"FROM " + resourceTable + " m " +
+						"LEFT JOIN " + STRUCT_JOIN_TABLE + " messStru ON m.id = messStru.message_id " +
+						"WHERE \"structureId\" = ? " +
+						"OR messStru.structure_id = ? ORDER BY modified DESC";
+
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(structureId).add(structureId);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 
