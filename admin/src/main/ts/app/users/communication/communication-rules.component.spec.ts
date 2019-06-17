@@ -7,6 +7,7 @@ import {
     CommunicationRule,
     CommunicationRulesComponent,
     communicationRulesLocators as locators,
+    sortGroups,
     uniqueGroups
 } from './communication-rules.component';
 import { generateGroup } from '../../shared/utils';
@@ -42,6 +43,7 @@ describe('CommunicationRulesComponent', () => {
         communicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['removeCommunication', 'createRule']);
         notifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         groupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
+        (groupNameService.getGroupName as jasmine.Spy).and.callFake((g: GroupModel) => g.name);
         TestBed.configureTestingModule({
             declarations: [
                 CommunicationRulesComponent,
@@ -72,10 +74,13 @@ describe('CommunicationRulesComponent', () => {
             generateCommunicationRule('groupm1')
         ];
         component.addCommunicationPickableGroups = [generateGroup('group1')];
+        component.activeColumn = 'sending';
+        component.activeStructureId = 'activeStructure';
+        component.manageableStructuresId = ['activeStructure'];
         fixture.detectChanges();
     }));
 
-    it('should create the UserCommunicationComponent component', async(() => {
+    it('should create the CommunicationRulesComponent component', async(() => {
         expect(component).toBeTruthy();
     }));
 
@@ -286,7 +291,7 @@ describe('CommunicationRulesComponent', () => {
     describe('getSenders', () => {
         it('should filter null group', () => {
             component.communicationRules = [
-                {sender: generateGroup('group1'), receivers: [generateGroup('group2')]},
+                generateCommunicationRule('group1', ['group2']),
                 {sender: null, receivers: [generateGroup('group3')]}
             ];
             const senders = component.getSenders();
@@ -294,14 +299,14 @@ describe('CommunicationRulesComponent', () => {
             expect(senders[0].id).toBe('group1');
         });
 
-        it('return unique senders', () => {
+        it('should return unique senders', () => {
             component.communicationRules = [
-                {sender: generateGroup('group1'), receivers : [generateGroup('group2')]},
-                {sender: generateGroup('group1'), receivers : [generateGroup('group3')]}
+                generateCommunicationRule('group1', ['group2']),
+                generateCommunicationRule('group1', ['group3'])
             ];
             const senders = component.getSenders();
             expect(senders.length).toBe(1);
-        })
+        });
     });
 });
 
@@ -312,6 +317,56 @@ describe('uniqueGroups', () => {
             generateGroup('jojo')];
         const filtered = uniqueGroups(nonUniqueGroups);
         expect(filtered.map(g => g.id)).toEqual(['jojo', 'titi']);
+    });
+});
+
+describe('sortGroups', () => {
+    const mockGetGroupNameFn = (g: GroupModel) => g.name;
+
+    it('should sort groups by structures (first active structure, then based on groups number by structure)', () => {
+        const groups = [
+            generateGroupForStructure('group1', 'structure1'),
+            generateGroupForStructure('group2', 'structure1'),
+            generateGroupForStructure('group3', 'structure1'),
+            generateGroupForStructure('group4', 'structure1'),
+            generateGroupForStructure('group5', 'activeStructure'),
+            generateGroupForStructure('group6', 'activeStructure'),
+            generateGroupForStructure('group7', 'structure2'),
+            generateGroupForStructure('group8', 'structure3'),
+            generateGroupForStructure('group9', 'structure3')
+        ];
+        const sortedGroups = sortGroups(groups, mockGetGroupNameFn, 'activeStructure');
+        expect(sortedGroups.map(s => s.id)).toEqual([
+            'group5',
+            'group6',
+            'group1',
+            'group2',
+            'group3',
+            'group4',
+            'group8',
+            'group9',
+            'group7'
+        ]);
+    });
+
+    it('should sort groups alphabetically in their structure group', () => {
+        const groups = [
+            generateGroupForStructure('dgroup1', 'structure1'),
+            generateGroupForStructure('agroup2', 'structure1'),
+            generateGroupForStructure('cgroup3', 'structure1'),
+            generateGroupForStructure('bgroup4', 'structure1'),
+            generateGroupForStructure('bgroup5', 'activeStructure'),
+            generateGroupForStructure('agroup6', 'activeStructure')
+        ];
+        const sortedGroups = sortGroups(groups, mockGetGroupNameFn, 'activeStructure');
+        expect(sortedGroups.map(s => s.id)).toEqual([
+            'agroup6',
+            'bgroup5',
+            'agroup2',
+            'bgroup4',
+            'cgroup3',
+            'dgroup1'
+        ]);
     });
 });
 
@@ -327,6 +382,13 @@ function generateCommunicationRule(senderName: string, receiversName: string[] =
     return {sender: generateGroup(senderName), receivers: receiversName.map(name => generateGroup(name))}
 }
 
+function generateGroupForStructure(groupName: string, structureId: string) {
+    return generateGroup(groupName, "BOTH",
+        null, null, null,
+        [{id: structureId, name: structureId}]);
+}
+
+
 @Component({
     selector: 'group-card',
     template: ''
@@ -334,6 +396,12 @@ function generateCommunicationRule(senderName: string, receiversName: string[] =
 class MockGroupCard {
     @Input()
     group: GroupModel;
+
+    @Input()
+    manageable: boolean = false;
+
+    @Input()
+    communicationRuleManageable: boolean = false;
 
     @Input()
     active: boolean = false;

@@ -45,6 +45,8 @@ describe('GroupCardComponent', () => {
         component.group = generateGroup('Elèves du Lycée Paul Martin');
         (groupNameService.getGroupName as jasmine.Spy).and.returnValue('Elèves du Lycée Paul Martin');
         component.active = true;
+        component.manageable = true;
+        component.communicationRuleManageable = true;
         fixture.detectChanges();
     }));
 
@@ -95,7 +97,7 @@ describe('GroupCardComponent', () => {
 });
 
 function getTitle(fixture: ComponentFixture<GroupCardComponent>): DebugElement {
-    return fixture.debugElement.query(By.css(locators.title));
+    return fixture.debugElement.query(By.css(locators.label));
 }
 
 function getInternalCommunicationSwitch(fixture: ComponentFixture<GroupCardComponent>): DebugElement {
