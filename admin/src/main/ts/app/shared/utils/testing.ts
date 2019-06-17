@@ -12,7 +12,7 @@ export function generateGroup(name: string,
                               internalCommunicationRule: InternalCommunicationRule = 'BOTH',
                               type: string = null, subType: string = null,
                               classes: { id: string, name: string }[] = null,
-                              structures: { id: string, name: string }[] = null,
+                              structures: { id: string, name: string }[] = [{id: 'structureId', name: 'structureName'}],
                               filter: string = null): GroupModel {
     return {name, id: name, internalCommunicationRule, type, subType, classes, structures, filter} as GroupModel;
 }

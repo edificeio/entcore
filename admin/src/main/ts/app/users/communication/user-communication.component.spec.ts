@@ -51,6 +51,8 @@ describe('UserCommunicationComponent', () => {
         component.user = axellePotier.user;
         component.userSendingCommunicationRules = axellePotier.communicationRules;
         component.addCommunicationPickableGroups = [generateGroup('group1')];
+        component.activeStructureId = 'activeStructure';
+        component.manageableStructuresId = ['activeStructure'];
         fixture.detectChanges();
     }));
 
@@ -110,6 +112,12 @@ function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): D
     template: ''
 })
 class MockCommunicationRulesComponent {
+    @Input()
+    public activeStructureId: string;
+
+    @Input()
+    public manageableStructuresId: string[];
+
     @Input()
     sendingHeaderLabel: string;
 

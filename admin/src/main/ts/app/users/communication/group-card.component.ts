@@ -1,9 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute } from '@angular/router';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { ActivatedRoute } from '@angular/router';
-import { NotifyService, SpinnerService, GroupNameService } from '../../core/services';
-import { HttpErrorResponse } from '@angular/common/http';
+import { GroupNameService, NotifyService, SpinnerService } from '../../core/services';
+import { getStructureIdOfGroup, getStructureOfGroup } from './communication-rules.component';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
@@ -11,14 +12,20 @@ import 'rxjs/add/operator/mergeMap';
 
 const css = {
     title: 'lct-group-card-title',
+    subtitle: 'lct-group-card-subtitle',
+    label: 'lct-group-card-label',
+    structure: 'lct-group-card-structure',
     viewMembersButton: 'lct-group-card-view-members-button',
-    addCommunicationButton: 'lct-group-card-add-communicaiton-button',
-    removeCommunicationButton: 'lct-group-card-remove-communicaiton-button',
+    addCommunicationButton: 'lct-group-card-add-communication-button',
+    removeCommunicationButton: 'lct-group-card-remove-communication-button',
     internalCommunicationSwitch: 'lct-group-card-internal-communication-switch'
 };
 
 export const groupCardLocators = {
     title: `.${css.title}`,
+    subtitle: `.${css.subtitle}`,
+    label: `.${css.label}`,
+    structure: `.${css.structure}`,
     viewMembersButton: `.${css.viewMembersButton}`,
     addCommunicationButton: `.${css.addCommunicationButton}`,
     removeCommunicationButton: `.${css.removeCommunicationButton}`,
@@ -29,10 +36,15 @@ export const groupCardLocators = {
     selector: 'group-card',
     template: `
         <div class="group-card"
-        [ngClass]="{'group-card--active': active, 'group-card--selected': selected, 'group-card--highlighted': highlighted, 'group-card--selectable': selectable}">
+        [ngClass]="{'group-card--active': active,'group-card--selected': selected,
+                    'group-card--highlighted': highlighted, 'group-card--selectable': selectable,
+                    'group-card--manageable': manageable, 'group-card--communication-rule-manageable': communicationRuleManageable}">
             <div class="group-card__title ${css.title}">
-                <span class="group-card__title-label">{{groupNameService.getGroupName(group)}}</span>
+                <span class="group-card__title-label ${css.label}">{{groupNameService.getGroupName(group)}}</span>
                 <i *ngIf="groupTypeRouteMapping.has(group.type)" (click)="viewMembers(group)" class="group-card__title-icon ${css.viewMembersButton} fa fa-users" [title]="'group.card.view-members-button' | translate"></i>
+            </div>
+            <div class="group-card__subtitle ${css.subtitle}">
+                <span class="group-card__title-structure ${css.structure}">{{getStructureNameOfGroup(group)}}</span>
             </div>
             <div class="group-card__actions">
                 <button
@@ -51,19 +63,23 @@ export const groupCardLocators = {
                       *ngIf="group.internalCommunicationRule === 'BOTH'; else cannotCommunicateTogether;">
                 <s5l class="group-card__switch-label">group.details.members.can.communicate</s5l>
                 <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-on"
-                   *ngIf="active"
+                   *ngIf="active && manageable"
                    (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
                 <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-on"
-                   *ngIf="!active"></i>
+                   *ngIf="!active && manageable"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+                   *ngIf="!manageable"></i>
             </span>
             <ng-template #cannotCommunicateTogether>
                 <span class="group-card__actions-on-self group-card__actions-on-self--cannot-communicate">
                     <s5l class="group-card__switch-label">group.details.members.cannot.communicate</s5l>
                     <i class="${css.internalCommunicationSwitch} group-card__switch group-card__switch--clickable fa fa-toggle-off"
-                       *ngIf="active"
+                       *ngIf="active && manageable"
                        (click)="toggleInternalCommunicationRule(); $event.stopPropagation();"></i>
                     <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-toggle-off"
-                       *ngIf="!active"></i>
+                       *ngIf="!active && manageable"></i>
+                <i class="${css.internalCommunicationSwitch} group-card__switch fa fa-lock"
+                   *ngIf="!manageable"></i>
                 </span>
             </ng-template>
         </div>
@@ -123,13 +139,18 @@ export const groupCardLocators = {
             display: flex;
             align-items: center;
         }
-
-        .group-card--active .group-card__title {
+    `, `
+        .group-card--active .group-card__subtitle {
             margin-bottom: 15px;
         }
     `, `
         .group-card__title-label {
             flex-grow: 1;
+        }
+    `, `
+        .group-card__title-structure {
+            font-size: 12px;
+            font-style: italic;
         }
     `, `
         .group-card__title-icon {
@@ -138,7 +159,7 @@ export const groupCardLocators = {
             transition: color 125ms ease;
         }
 
-        .group-card--active .group-card__title-icon {
+        .group-card--active.group-card--manageable .group-card__title-icon {
             display: initial;
         }
 
@@ -150,7 +171,8 @@ export const groupCardLocators = {
             display: none;
         }
 
-        .group-card--active .group-card__actions {
+        .group-card--active.group-card--communication-rule-manageable .group-card__actions,
+        .group-card--selected.group-card--manageable .group-card__actions {
             display: initial;
         }
     `, `
@@ -228,18 +250,25 @@ export class GroupCardComponent {
     @Input()
     highlighted: boolean = false;
 
-    confirmationDisplayed = false;
-    confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+    @Input()
+    manageable: boolean = false;
+
+    @Input()
+    communicationRuleManageable: boolean = false;
+
     @Output()
     clickAddCommunication: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
+
+    @Output()
+    clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
+
+    confirmationDisplayed = false;
+    confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
     groupTypeRouteMapping: Map<string, string> = new Map<string, string>()
         .set('ManualGroup', 'manual')
         .set('ProfileGroup', 'profile')
         .set('FunctionalGroup', 'functional');
-
-    @Output()
-    clickOnRemoveCommunication: EventEmitter<void> = new EventEmitter<void>();
 
 
     constructor(
@@ -274,6 +303,10 @@ export class GroupCardComponent {
     }
 
     public viewMembers(group: GroupModel) {
-        window.open(`/admin/${group.structures[0].id}/groups/${this.groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
+        window.open(`/admin/${getStructureIdOfGroup(group)}/groups/${this.groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
+    }
+
+    getStructureNameOfGroup(group: GroupModel): string {
+        return getStructureOfGroup(group).name;
     }
 }
