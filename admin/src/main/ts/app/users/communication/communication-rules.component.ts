@@ -1,16 +1,16 @@
 import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { BundlesService } from 'sijil';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { GroupNameService, NotifyService } from '../../core/services';
 import { Subject } from 'rxjs/Subject';
-import { BundlesService } from 'sijil';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/mergeMap';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 
 const css = {
     group: 'lct-user-communication-group',
@@ -44,6 +44,8 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
                     (mouseenter)="highlight('sending', group, selected)"
                     (mouseleave)="resetHighlight()"
                     [group]="group"
+                    [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                    [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
                     [selectable]="activeColumn === 'sending'"
                     [selected]="isSelected('sending', group, selected)"
                     [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
@@ -59,6 +61,8 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
                     (mouseenter)="highlight('receiving', group, selected)"
                     (mouseleave)="resetHighlight()"
                     [group]="group"
+                    [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                    [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
                     [selectable]="activeColumn === 'receiving'"
                     [selected]="isSelected('receiving', group, selected)"
                     [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
@@ -151,6 +155,12 @@ export class CommunicationRulesComponent {
     @Input()
     public activeColumn: Column;
 
+    @Input()
+    public activeStructureId: string;
+
+    @Input()
+    public manageableStructuresId: string[];
+
     public selected: Cell;
     public highlighted: Cell;
 
@@ -190,13 +200,13 @@ export class CommunicationRulesComponent {
         const senders = this.communicationRules
             .map(rule => rule.sender)
             .filter(group => !!group);
-        return uniqueGroups(senders);
+        return sortGroups(uniqueGroups(senders), (g) => this.groupNameService.getGroupName(g), this.activeStructureId);
     }
 
     public getReceivers(): GroupModel[] {
         const receivers: GroupModel[] = [];
         this.communicationRules.forEach(rule => receivers.push(...rule.receivers));
-        return uniqueGroups(receivers);
+        return sortGroups(uniqueGroups(receivers), (g) => this.groupNameService.getGroupName(g), this.activeStructureId);
     }
 
     public trackByGroupId(index: number, group: GroupModel): string {
@@ -264,6 +274,19 @@ export class CommunicationRulesComponent {
         return true;
     };
 
+    public isGroupInAManageableStructure(g: GroupModel, structuresId: string[]): boolean {
+        return structuresId.indexOf(getStructureIdOfGroup(g)) > -1;
+    }
+
+    public isCommunicationRuleManageable(group: GroupModel, cell: Cell, structuresId: string[]): boolean {
+        if (!group || !cell) {
+            return false;
+        }
+
+        return this.isGroupInAManageableStructure(group, structuresId)
+            && this.isGroupInAManageableStructure(cell.group, structuresId);
+    }
+
     public onGroupPick(pickedGroup: GroupModel) {
         const sender: GroupModel = this.activeColumn === 'sending' ? this.selected.group : pickedGroup;
         const receiver: GroupModel = this.activeColumn === 'sending' ? pickedGroup : this.selected.group;
@@ -323,6 +346,47 @@ export function uniqueGroups(groups: GroupModel[]): GroupModel[] {
         }
     });
     return uniqGroups;
+}
+
+export function sortGroups(groups: GroupModel[], getGroupNameFn: (GroupModel) => string, activeStructureId: string): GroupModel[] {
+    const alphabeticallySortedGroups = groups.sort((a, b) => getGroupNameFn(a).localeCompare(getGroupNameFn(b)));
+
+    const countByStructure = alphabeticallySortedGroups
+        .map(g => getStructureIdOfGroup(g))
+        .reduce((previousCounter, structureId) => {
+            const counter = Object.assign({}, previousCounter);
+            counter[structureId] = counter[structureId] ? counter[structureId] + 1 : 1;
+            return counter;
+        }, {});
+
+    alphabeticallySortedGroups.sort((a, b) => {
+        const structureOfA = getStructureIdOfGroup(a);
+        const structureOfB = getStructureIdOfGroup(b);
+        if (structureOfA === structureOfB) {
+            return 0;
+        }
+
+        if (structureOfA === activeStructureId) {
+            return -1;
+        }
+
+        if (structureOfB === activeStructureId) {
+            return 1;
+        }
+
+        return countByStructure[structureOfB] - countByStructure[structureOfA];
+    });
+
+
+    return alphabeticallySortedGroups;
+}
+
+export function getStructureOfGroup(group: GroupModel): { id: string, name: string } {
+    return group.structures[0];
+}
+
+export function getStructureIdOfGroup(group: GroupModel): string {
+    return group.structureId || getStructureOfGroup(group).id;
 }
 
 export type Column = 'sending' | 'receiving';

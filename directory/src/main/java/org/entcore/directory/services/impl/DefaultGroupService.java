@@ -83,10 +83,11 @@ public class DefaultGroupService implements GroupService {
 		String query =
 				"MATCH (s:Structure)<-[:BELONGS*0..1]-()<-[:DEPENDS]-(g) " + condition +
 				"OPTIONAL MATCH (s)<-[:BELONGS]-(c: Class)<-[:DEPENDS]-(g) " +
-				"WITH g, collect({name: c.name, id: c.id}) as classes, " +
+				"WITH g, collect({name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, type, g.users as internalCommunicationRule, "+
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
+				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
 				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' END as subType";
 		neo.execute(query, params, validResultHandler(results));
 	}
