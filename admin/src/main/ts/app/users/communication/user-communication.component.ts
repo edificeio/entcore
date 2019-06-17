@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { UserModel, GroupModel } from '../../core/store/models';
+import { GroupModel, UserModel } from '../../core/store/models';
 import { CommunicationRule } from './communication-rules.component';
 
 const css = {
@@ -34,10 +34,12 @@ export const userCommunicationLocators = {
 
             <div class="user-communication__content">
                 <communication-rules
+                [activeStructureId]="activeStructureId"
                 [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
                 [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
                 [communicationRules]="userSendingCommunicationRules"
                 [activeColumn]="'sending'"
+                [manageableStructuresId]="manageableStructuresId"
                 [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
             </div>
         </panel-section>
@@ -49,10 +51,12 @@ export const userCommunicationLocators = {
             
             <div class="user-communication__content">
                 <communication-rules
+                [activeStructureId]="activeStructureId"
                 [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
                 [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
                 [communicationRules]="userReceivingCommunicationRules"
                 [activeColumn]="'receiving'"
+                [manageableStructuresId]="manageableStructuresId"
                 [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
             </div>
         </panel-section>`,
@@ -79,6 +83,11 @@ export const userCommunicationLocators = {
     `]
 })
 export class UserCommunicationComponent {
+    @Input()
+    public activeStructureId: string;
+
+    @Input()
+    public manageableStructuresId: string[];
 
     @Input()
     public user: UserModel;
