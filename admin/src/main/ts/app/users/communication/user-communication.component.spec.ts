@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { UserCommunicationComponent, userCommunicationLocators as locators } from './user-communication.component';
-import { GroupModel, UserDetailsModel, UserModel } from '../../core/store/models';
+import { GroupModel, UserDetailsModel, UserModel, StructureModel } from '../../core/store/models';
 import { By } from '@angular/platform-browser';
 import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
@@ -51,8 +51,12 @@ describe('UserCommunicationComponent', () => {
         component.user = axellePotier.user;
         component.userSendingCommunicationRules = axellePotier.communicationRules;
         component.addCommunicationPickableGroups = [generateGroup('group1')];
-        component.activeStructureId = 'activeStructure';
         component.manageableStructuresId = ['activeStructure'];
+        component.activeStructure = {id: 'activeStructure', name: 'activeStructure'} as StructureModel;
+        component.structures = [
+            {id: 'activeStructure', name: 'activeStructure'} as StructureModel,
+            {id: 'structure2', name: 'structure2'} as StructureModel
+        ];
         fixture.detectChanges();
     }));
 
@@ -113,9 +117,6 @@ function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): D
 })
 class MockCommunicationRulesComponent {
     @Input()
-    public activeStructureId: string;
-
-    @Input()
     public manageableStructuresId: string[];
 
     @Input()
@@ -132,4 +133,10 @@ class MockCommunicationRulesComponent {
 
     @Input()
     activeColumn: Column;
+
+    @Input()
+    public structures: StructureModel[];
+
+    @Input()
+    public activeStructure: StructureModel;
 }
