@@ -18,52 +18,58 @@ import { Subscription } from 'rxjs/Subscription'
                 </span>
             </div>
             <div header-right>
-                <a class="old-console" href="/directory/admin-console"
-                    [title]="'switch.old.admin.console.tooltip' | translate">
-                    <i class="fa fa-step-backward"></i>
-                </a>
-                <a href="/auth/logout" 
-                    [title]="'logout' | translate">
-                    <i class="fa fa-power-off" aria-hidden="true"></i>
-                </a>
-                <i class="fa fa-exchange"
-                    *ngIf="currentStructure"
-                    [title]="'imports.exports' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)"></i>
-                <i class="fa fa-th"
-                    *ngIf="currentStructure"
-                    [title]="'services' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)"></i>
-                <i class="fa fa-users"
-                    *ngIf="currentStructure"
-                    [title]="'groups' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/groups/manual'"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)"></i>
-                <i class="fa fa-user" aria-hidden="true"
-                    *ngIf="currentStructure"
-                    [title]="'users' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)"></i>
-                <i class="fa fa-exclamation-triangle" aria-hidden="true"
-                    *ngIf="currentStructure"
-                    [title]="'management.structure' | translate"
-                    [routerLink]="'/admin/' + currentStructure?.id + '/management/message-flash'"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)"></i>
                 <i class="fa fa-home" aria-hidden="true"
                     *ngIf="currentStructure"
                     [title]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"
-                    [class.active]="router.isActive('/admin/' + currentStructure?.id, true)"></i>
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id, true)">
+                </i>
+                <i class="school" aria-hidden="true"
+                    *ngIf="currentStructure"
+                    [title]="'management.structure' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/management/message-flash'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/management', false)">
+                </i>
+                <i class="fa fa-user" aria-hidden="true"
+                    *ngIf="currentStructure"
+                    [title]="'users' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/users/filter'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/users', false)">
+                </i>
+                <i class="fa fa-users"
+                    *ngIf="currentStructure"
+                    [title]="'groups' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/groups/manual'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/groups', false)">
+                </i>
+                <i class="fa fa-th"
+                    *ngIf="currentStructure"
+                    [title]="'services' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/services/applications'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/services', false)">
+                </i>
+                <i class="fa fa-exchange"
+                    *ngIf="currentStructure"
+                    [title]="'imports.exports' | translate"
+                    [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
+                    [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)">
+                </i>
+                <a href="/auth/logout"
+                    [title]="'logout' | translate">
+                    <i class="fa fa-power-off" aria-hidden="true"></i>
+                </a>
+                <a class="old-console" href="/directory/admin-console"
+                    [title]="'switch.old.admin.console.tooltip' | translate">
+                    <i class="fa fa-step-backward"></i>
+                </a>
             </div>
             <div section>
-                <side-panel 
-                    [toggle]="openside" 
-                    (onClose)="openside = false" 
+                <side-panel
+                    [toggle]="openside"
+                    (onClose)="openside = false"
                     [opener]="sidePanelOpener">
                     <div class="side-search">
-                        <search-input (onChange)="structureFilter = $event" 
+                        <search-input (onChange)="structureFilter = $event"
                             [attr.placeholder]="'search.structure' | translate">
                         </search-input>
                     </div>

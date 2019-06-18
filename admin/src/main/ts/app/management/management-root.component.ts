@@ -7,9 +7,9 @@ import { routing } from '../core/services/routing.service'
     selector: 'management-root',
     template: `
         <div class="flex-header">
-            <h1><i class="fa fa-exclamation-triangle"></i> {{ 'management.structure' | translate }}</h1>
+            <h1><i class="school"></i> {{ 'management.structure' | translate }}</h1>
         </div>
-        
+
         <div class="tabs">
             <button class="tab" *ngFor="let tab of tabs"
                 [disabled]="tab.disabled"
