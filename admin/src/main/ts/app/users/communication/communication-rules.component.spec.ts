@@ -11,7 +11,7 @@ import {
     uniqueGroups
 } from './communication-rules.component';
 import { generateGroup } from '../../shared/utils';
-import { GroupModel } from '../../core/store/models';
+import { GroupModel, StructureModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { GroupNameService, NotifyService } from '../../core/services';
 import { UsersStore } from '../users.store';
@@ -77,6 +77,11 @@ describe('CommunicationRulesComponent', () => {
         component.activeColumn = 'sending';
         component.activeStructureId = 'activeStructure';
         component.manageableStructuresId = ['activeStructure'];
+        component.structure = {id: 'activeStructure', name: 'activeStructure'} as StructureModel;
+        component.structures = [
+            {id: 'activeStructure', name: 'activeStructure'} as StructureModel,
+            {id: 'structure2', name: 'structure2'} as StructureModel
+        ];
         fixture.detectChanges();
     }));
 

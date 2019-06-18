@@ -2,25 +2,36 @@ import { ComponentFixture, async, TestBed } from "@angular/core/testing";
 import { GroupPickerComponent } from "./group-picker.component";
 import { Component, Input, DebugElement, Output, EventEmitter } from "@angular/core";
 import { SijilModule } from "sijil";
-import { GroupModel } from "../../../core/store";
+import { GroupModel, StructureModel } from "../../../core/store";
 import { groupPickerLocators } from './group-picker.component';
 import { By } from "@angular/platform-browser";
+import { MonoSelectComponent } from './mono-select.component';
+import { LightBoxComponent } from './lightbox.component';
+import { FormsModule } from "@angular/forms";
+import { OrderPipe } from "../pipes";
 
-describe('GroupPickerComponent', () => {
+fdescribe('GroupPickerComponent', () => {
     let component: GroupPickerComponent;
     let fixture: ComponentFixture<GroupPickerComponent>;
     let mockListComponent: MockListComponent;
+    let mockOrderPipe: OrderPipe;
 
     beforeEach(async(() => {
+        mockOrderPipe = jasmine.createSpyObj('OrderPipe', ['transform'])
+
         TestBed.configureTestingModule({
             declarations: [
                 GroupPickerComponent,
-                MockLightboxComponent,
-                MockListComponent
+                MockListComponent,
+                MonoSelectComponent,
+                LightBoxComponent
             ],
-            providers: [],
+            providers: [
+                {useValue: mockOrderPipe, provide: OrderPipe}
+            ],
             imports: [
-                SijilModule.forRoot()
+                SijilModule.forRoot(),
+                FormsModule                
             ]
         }).compileComponents();
 
@@ -35,6 +46,13 @@ describe('GroupPickerComponent', () => {
         component.filters = () => {return true;}
         component.searchPlaceholder = '';
         component.noResultsLabel = '';
+        component.structure = {id: 'structure1', name: 'structure1'} as StructureModel;
+        component.structures = [
+            {id: 'structure1', name: 'structure1'} as StructureModel,
+            {id: 'structure2', name: 'structure2'} as StructureModel
+        ];
+        (mockOrderPipe.transform as jasmine.Spy).and.returnValue(component.structures);
+
         fixture.detectChanges();
 
         mockListComponent = fixture.debugElement.query(By.directive(MockListComponent)).componentInstance;
@@ -62,16 +80,6 @@ describe('GroupPickerComponent', () => {
 
 function getFilterButtons(fixture: ComponentFixture<GroupPickerComponent>): DebugElement[] {
     return fixture.debugElement.queryAll(By.css(groupPickerLocators.filterButton));
-}
-
-@Component({
-    selector: 'lightbox',
-    template: '<ng-content></ng-content>'
-})
-class MockLightboxComponent {
-    @Input()
-    show: boolean = false;
-    
 }
 
 @Component({
