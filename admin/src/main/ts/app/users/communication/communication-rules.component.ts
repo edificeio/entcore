@@ -352,7 +352,7 @@ export function sortGroups(groups: GroupModel[], getGroupNameFn: (GroupModel) =>
     const alphabeticallySortedGroups = groups.sort((a, b) => getGroupNameFn(a).localeCompare(getGroupNameFn(b)));
 
     const countByStructure = alphabeticallySortedGroups
-        .map(g => g.structures[0].id)
+        .map(g => getStructureIdOfGroup(g))
         .reduce((previousCounter, structureId) => {
             const counter = Object.assign({}, previousCounter);
             counter[structureId] = counter[structureId] ? counter[structureId] + 1 : 1;
@@ -386,7 +386,7 @@ export function getStructureOfGroup(group: GroupModel): { id: string, name: stri
 }
 
 export function getStructureIdOfGroup(group: GroupModel): string {
-    return getStructureOfGroup(group).id;
+    return group.structureId || getStructureOfGroup(group).id;
 }
 
 export type Column = 'sending' | 'receiving';

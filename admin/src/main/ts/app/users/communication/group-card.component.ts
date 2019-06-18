@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { GroupModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { GroupNameService, NotifyService, SpinnerService } from '../../core/services';
-import { getStructureOfGroup } from './communication-rules.component';
+import { getStructureIdOfGroup, getStructureOfGroup } from './communication-rules.component';
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
@@ -303,7 +303,7 @@ export class GroupCardComponent {
     }
 
     public viewMembers(group: GroupModel) {
-        window.open(`/admin/${group.structures[0].id}/groups/${this.groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
+        window.open(`/admin/${getStructureIdOfGroup(group)}/groups/${this.groupTypeRouteMapping.get(group.type)}/${group.id}`, '_blank');
     }
 
     getStructureNameOfGroup(group: GroupModel): string {
