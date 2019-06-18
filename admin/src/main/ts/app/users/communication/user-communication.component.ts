@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { GroupModel, UserModel } from '../../core/store/models';
+import { GroupModel, UserModel, StructureModel } from '../../core/store/models';
 import { CommunicationRule } from './communication-rules.component';
 
 const css = {
@@ -34,13 +34,16 @@ export const userCommunicationLocators = {
 
             <div class="user-communication__content">
                 <communication-rules
-                [activeStructureId]="activeStructureId"
-                [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
-                [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
-                [communicationRules]="userSendingCommunicationRules"
-                [activeColumn]="'sending'"
-                [manageableStructuresId]="manageableStructuresId"
-                [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
+                    [activeStructureId]="activeStructureId"
+                    [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
+                    [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
+                    [communicationRules]="userSendingCommunicationRules"
+                    [activeColumn]="'sending'"
+                    [manageableStructuresId]="manageableStructuresId"
+                    [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+                    [structures]="structures"
+                    [structure]="structure"
+                    (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></communication-rules>
             </div>
         </panel-section>
         
@@ -51,13 +54,16 @@ export const userCommunicationLocators = {
             
             <div class="user-communication__content">
                 <communication-rules
-                [activeStructureId]="activeStructureId"
-                [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
-                [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
-                [communicationRules]="userReceivingCommunicationRules"
-                [activeColumn]="'receiving'"
-                [manageableStructuresId]="manageableStructuresId"
-                [addCommunicationPickableGroups]="addCommunicationPickableGroups"></communication-rules>
+                    [activeStructureId]="activeStructureId"
+                    [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
+                    [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
+                    [communicationRules]="userReceivingCommunicationRules"
+                    [activeColumn]="'receiving'"
+                    [manageableStructuresId]="manageableStructuresId"
+                    [addCommunicationPickableGroups]="addCommunicationPickableGroups"
+                    [structures]="structures"
+                    [structure]="structure"
+                    (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></communication-rules>
             </div>
         </panel-section>`,
     styles: [`
@@ -101,6 +107,15 @@ export class UserCommunicationComponent {
     @Input()
     public userReceivingCommunicationRules: CommunicationRule[];
 
+    @Input()
+    public structures: StructureModel[];
+
+    @Input()
+    public structure: StructureModel;
+
     @Output()
     public close: EventEmitter<void> = new EventEmitter<void>();
+
+    @Output()
+    public groupPickerStructureChange: EventEmitter<StructureModel> = new EventEmitter<StructureModel>();
 }

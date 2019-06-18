@@ -1,11 +1,12 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BundlesService } from 'sijil';
-import { GroupModel } from '../../core/store/models';
+import { GroupModel, StructureModel } from '../../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
 import { GroupNameService, NotifyService } from '../../core/services';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
+
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/do';
 import 'rxjs/add/operator/catch';
@@ -84,11 +85,14 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             [filters]="filterGroupPicker"
             [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
             [show]="showGroupPicker"
+            [structures]="structures"
+            [structure]="structure"
             sort="name"
             searchPlaceholder="search.group"
             noResultsLabel="list.results.no.groups"
             (pick)="onGroupPick($event)"
-            (close)="showGroupPicker = false;">
+            (close)="showGroupPicker = false;"
+            (structureChange)="groupPickerStructureChange.emit($event)">
         </group-picker>
         
         <lightbox-confirm *ngIf="!!selected" lightboxTitle="user.communication.action.confirm.title"
@@ -160,6 +164,15 @@ export class CommunicationRulesComponent {
 
     @Input()
     public manageableStructuresId: string[];
+
+    @Input()
+    public structures: StructureModel[];
+
+    @Input()
+    public structure: StructureModel;
+
+    @Output()
+    public groupPickerStructureChange: EventEmitter<StructureModel> = new EventEmitter<StructureModel>();
 
     public selected: Cell;
     public highlighted: Cell;

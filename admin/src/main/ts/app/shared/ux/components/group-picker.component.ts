@@ -1,5 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
-import { GroupModel, GroupType } from "../../../core/store";
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges } from "@angular/core";
+import { GroupModel, GroupType, StructureModel } from "../../../core/store";
+import { SelectOption } from "./multi-select.component";
+import { OrderPipe } from "../pipes";
 
 const css = {
     filterButton: 'lct-filters'
@@ -15,6 +17,14 @@ export const groupPickerLocators = {
         <lightbox [show]="show" (onClose)="onClose()" class="inner-list">
             <div class="padded">
                 <h3>{{ lightboxTitle | translate }}</h3>
+
+                <div class="structures has-vertical-margin-10">
+                    <mono-select name="structure"
+                                 [ngModel]="selectedStructure" 
+                                 [options]="structureOptions"
+                                 (ngModelChange)="onStructureChange($event)">
+                    </mono-select>
+                </div>
 
                 <div class="filters">
                     <button *ngFor="let type of types; let last = last"
@@ -45,7 +55,7 @@ export const groupPickerLocators = {
         </lightbox>
     `
 })
-export class GroupPickerComponent implements OnInit {
+export class GroupPickerComponent implements OnInit, OnChanges {
 
     @Input() lightboxTitle: string;
     @Input() list: GroupModel[];
@@ -55,16 +65,32 @@ export class GroupPickerComponent implements OnInit {
     @Input() filters: () => boolean;
     @Input() searchPlaceholder: string;
     @Input() noResultsLabel: string;
+    @Input() structure: StructureModel;
+    @Input() structures: StructureModel[] = [];
 
     @Output() close: EventEmitter<any> = new EventEmitter();
     @Output() pick: EventEmitter<GroupModel> = new EventEmitter<GroupModel>();
     @Output() inputChange: EventEmitter<string> = new EventEmitter<string>();
+    @Output() structureChange: EventEmitter<StructureModel> = new EventEmitter<StructureModel>();
 
     initialList: GroupModel[];
     groupInputFilter: string;
     visibleGroupType: GroupType[] = [];
 
+    selectedStructure: StructureModel;
+    structureOptions: SelectOption<StructureModel>[] = [];
+
+    constructor(private orderPipe: OrderPipe) {
+    }
+
     ngOnInit(): void {
+        this.initialList = [...this.list];
+        this.selectedStructure = this.structure;
+        this.structureOptions = this.orderPipe.transform(this.structures, '+name')
+            .map(structure => ({value: structure, label: structure.name}));
+    }
+
+    ngOnChanges(): void {
         this.initialList = [...this.list];
     }
 
@@ -92,4 +118,9 @@ export class GroupPickerComponent implements OnInit {
         this.list = this.initialList;
         this.close.emit();
     };
+
+    public onStructureChange($event: StructureModel) {
+        this.structureChange.emit($event);
+        this.visibleGroupType = [];
+    }
 }
