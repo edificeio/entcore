@@ -95,14 +95,15 @@ export class UserClassesSection extends AbstractSection implements OnInit, OnCha
 
     private filterManageableGroups() {
         this.filteredClasses = !this.user ? [] :
-            this.user.classes
-                .filter(group => !!this.structure.classes
-                    .find(manageableClasse => manageableClasse.id === group.id));
+            !this.user.classes ? [] :
+                this.user.classes
+                    .filter(group => !!this.structure.classes
+                        .find(manageableClasse => manageableClasse.id === group.id));
     }
 
     private updateLightboxClasses() {
         this.lightboxClasses = this.structure.classes.filter(
-            c => !this.user.classes.find(uc => uc.id == c.id)
+            c => this.user.classes && !this.user.classes.find(uc => uc.id == c.id)
         );
     }
 
