@@ -10,7 +10,7 @@ import { LightBoxComponent } from './lightbox.component';
 import { FormsModule } from "@angular/forms";
 import { OrderPipe } from "../pipes";
 
-fdescribe('GroupPickerComponent', () => {
+describe('GroupPickerComponent', () => {
     let component: GroupPickerComponent;
     let fixture: ComponentFixture<GroupPickerComponent>;
     let mockListComponent: MockListComponent;
@@ -41,12 +41,12 @@ fdescribe('GroupPickerComponent', () => {
         component.lightboxTitle = '';
         component.list = [];
         component.types = [];
-        component.show = false;
+        component.show = true;
         component.sort = '';
         component.filters = () => {return true;}
         component.searchPlaceholder = '';
         component.noResultsLabel = '';
-        component.structure = {id: 'structure1', name: 'structure1'} as StructureModel;
+        component.activeStructure = {id: 'structure1', name: 'structure1'} as StructureModel;
         component.structures = [
             {id: 'structure1', name: 'structure1'} as StructureModel,
             {id: 'structure2', name: 'structure2'} as StructureModel

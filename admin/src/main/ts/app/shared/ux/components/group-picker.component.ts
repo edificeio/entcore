@@ -65,7 +65,7 @@ export class GroupPickerComponent implements OnInit, OnChanges {
     @Input() filters: () => boolean;
     @Input() searchPlaceholder: string;
     @Input() noResultsLabel: string;
-    @Input() structure: StructureModel;
+    @Input() activeStructure: StructureModel;
     @Input() structures: StructureModel[] = [];
 
     @Output() close: EventEmitter<any> = new EventEmitter();
@@ -85,7 +85,7 @@ export class GroupPickerComponent implements OnInit, OnChanges {
 
     ngOnInit(): void {
         this.initialList = [...this.list];
-        this.selectedStructure = this.structure;
+        this.selectedStructure = this.activeStructure;
         this.structureOptions = this.orderPipe.transform(this.structures, '+name')
             .map(structure => ({value: structure, label: structure.name}));
     }

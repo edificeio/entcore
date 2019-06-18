@@ -33,42 +33,42 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
     selector: 'communication-rules',
     template: `
         <div class="communication-rules__headers">
-                <span class="communication-rules__header communication-rules__header--sending">{{ sendingHeaderLabel }}</span>
-                <span class="communication-rules__header communication-rules__header--receiving">{{ receivingHeaderLabel }}</span>
+            <span class="communication-rules__header communication-rules__header--sending">{{ sendingHeaderLabel }}</span>
+            <span class="communication-rules__header communication-rules__header--receiving">{{ receivingHeaderLabel }}</span>
         </div>
         <div class="communication-rules__columns">
             <div class="communication-rules__column communication-rules__column--sending ${css.sendingColumn}">
                 <div class="group ${css.group}" *ngFor="let group of getSenders(); trackBy: trackByGroupId">
                     <group-card
-                    (click)="activeColumn === 'sending' ? select('sending', group) : $event.stopPropagation()"
-                    (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
-                    (mouseenter)="highlight('sending', group, selected)"
-                    (mouseleave)="resetHighlight()"
-                    [group]="group"
-                    [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
-                    [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
-                    [selectable]="activeColumn === 'sending'"
-                    [selected]="isSelected('sending', group, selected)"
-                    [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
-                    [active]="isRelatedWithCell('sending', group, selected, communicationRules)"
-                    (clickAddCommunication)="openGroupPicker($event)"></group-card>
+                        (click)="activeColumn === 'sending' ? select('sending', group) : $event.stopPropagation()"
+                        (clickOnRemoveCommunication)="removeCommunication(group, selected.group)"
+                        (mouseenter)="highlight('sending', group, selected)"
+                        (mouseleave)="resetHighlight()"
+                        [group]="group"
+                        [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                        [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
+                        [selectable]="activeColumn === 'sending'"
+                        [selected]="isSelected('sending', group, selected)"
+                        [highlighted]="isRelatedWithCell('sending', group, highlighted, communicationRules)"
+                        [active]="isRelatedWithCell('sending', group, selected, communicationRules)"
+                        (clickAddCommunication)="openGroupPicker($event)"></group-card>
                 </div>
             </div>
             <div class="communication-rules__column communication-rules__column--receiving ${css.receivingColumn}">
                 <div class="group ${css.group}" *ngFor="let group of getReceivers(); trackBy: trackByGroupId">
                     <group-card
-                    (click)="activeColumn === 'receiving' ? select('receiving', group) : $event.stopPropagation()"
-                    (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
-                    (mouseenter)="highlight('receiving', group, selected)"
-                    (mouseleave)="resetHighlight()"
-                    [group]="group"
-                    [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
-                    [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
-                    [selectable]="activeColumn === 'receiving'"
-                    [selected]="isSelected('receiving', group, selected)"
-                    [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
-                    [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"
-                    (clickAddCommunication)="openGroupPicker($event)"></group-card>
+                        (click)="activeColumn === 'receiving' ? select('receiving', group) : $event.stopPropagation()"
+                        (clickOnRemoveCommunication)="removeCommunication(selected.group, group)"
+                        (mouseenter)="highlight('receiving', group, selected)"
+                        (mouseleave)="resetHighlight()"
+                        [group]="group"
+                        [manageable]="isGroupInAManageableStructure(group, manageableStructuresId)"
+                        [communicationRuleManageable]="isCommunicationRuleManageable(group, selected, manageableStructuresId)"
+                        [selectable]="activeColumn === 'receiving'"
+                        [selected]="isSelected('receiving', group, selected)"
+                        [highlighted]="isRelatedWithCell('receiving', group, highlighted, communicationRules)"
+                        [active]="isRelatedWithCell('receiving', group, selected, communicationRules)"
+                        (clickAddCommunication)="openGroupPicker($event)"></group-card>
                 </div>
             </div>
         </div>
@@ -86,7 +86,7 @@ const WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE = "both-groups-users-can-communi
             [types]="['ProfileGroup', 'FunctionalGroup', 'ManualGroup']"
             [show]="showGroupPicker"
             [structures]="structures"
-            [structure]="structure"
+            [activeStructure]="activeStructure"
             sort="name"
             searchPlaceholder="search.group"
             noResultsLabel="list.results.no.groups"
@@ -160,16 +160,13 @@ export class CommunicationRulesComponent {
     public activeColumn: Column;
 
     @Input()
-    public activeStructureId: string;
+    public activeStructure: StructureModel;
 
     @Input()
     public manageableStructuresId: string[];
 
     @Input()
     public structures: StructureModel[];
-
-    @Input()
-    public structure: StructureModel;
 
     @Output()
     public groupPickerStructureChange: EventEmitter<StructureModel> = new EventEmitter<StructureModel>();
@@ -213,13 +210,13 @@ export class CommunicationRulesComponent {
         const senders = this.communicationRules
             .map(rule => rule.sender)
             .filter(group => !!group);
-        return sortGroups(uniqueGroups(senders), (g) => this.groupNameService.getGroupName(g), this.activeStructureId);
+        return sortGroups(uniqueGroups(senders), (g) => this.groupNameService.getGroupName(g), this.activeStructure.id);
     }
 
     public getReceivers(): GroupModel[] {
         const receivers: GroupModel[] = [];
         this.communicationRules.forEach(rule => receivers.push(...rule.receivers));
-        return sortGroups(uniqueGroups(receivers), (g) => this.groupNameService.getGroupName(g), this.activeStructureId);
+        return sortGroups(uniqueGroups(receivers), (g) => this.groupNameService.getGroupName(g), this.activeStructure.id);
     }
 
     public trackByGroupId(index: number, group: GroupModel): string {

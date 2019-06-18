@@ -5,7 +5,7 @@ import { routing, SpinnerService } from '../../core/services';
 import { CommunicationRulesService } from './communication-rules.service';
 import { CommunicationRule } from './communication-rules.component';
 import { UsersStore } from '../users.store';
-import { GlobalStore, globalStore } from '../../core/store';
+import { GlobalStore } from '../../core/store';
 import { Subscription } from 'rxjs/Subscription';
 
 @Component({
@@ -14,13 +14,12 @@ import { Subscription } from 'rxjs/Subscription';
     template: `
         <user-communication *ngIf="user && userSendingCommunicationRules"
                             [user]="user"
-                            [activeStructureId]="activeStructureId"
+                            [activeStructure]="activeStructure"
                             [manageableStructuresId]="manageableStructuresId"
                             [userSendingCommunicationRules]="userSendingCommunicationRules"
                             [userReceivingCommunicationRules]="userReceivingCommunicationRules"
                             [addCommunicationPickableGroups]="addCommunicationPickableGroups"
                             [structures]="globalStore.structures.data"
-                            [structure]="structure"
                             (close)="openUserDetails()"
                             (groupPickerStructureChange)="onGroupPickerStructureChange($event)">
         </user-communication>`
@@ -28,8 +27,7 @@ import { Subscription } from 'rxjs/Subscription';
 export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
 
     public user: UserModel;
-    public activeStructureId: string;
-    public structure: StructureModel;
+    public activeStructure: StructureModel;
     public manageableStructuresId: string[];
     public userSendingCommunicationRules: CommunicationRule[];
     public userReceivingCommunicationRules: CommunicationRule[];
@@ -45,7 +43,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
         private router: Router,
         private changeDetector: ChangeDetectorRef,
         private usersStore: UsersStore,
-        private globalStore: GlobalStore
+        public globalStore: GlobalStore
     ) {
     }
 
@@ -61,8 +59,8 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
             this.communicationRulesService.setGroups(data['groups']);
         });
         this.addCommunicationPickableGroups = this.usersStore.structure.groups.data;
-        this.activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
-        this.structure = globalStore.structures.data.find(s => s.id === this.activeStructureId);
+        let activeStructureId = routing.getParam(this.route.snapshot, 'structureId')
+        this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
     }
 
     public openUserDetails() {
@@ -81,7 +79,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
 
     public onGroupPickerStructureChange(structure: StructureModel) {
         structure.groups.sync().then(() => {
-            this.addCommunicationPickableGroups = structure.groups.data
+            this.addCommunicationPickableGroups = structure.groups.data;
             this.changeDetector.markForCheck();
         });
     }

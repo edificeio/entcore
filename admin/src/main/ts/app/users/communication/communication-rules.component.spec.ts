@@ -75,9 +75,8 @@ describe('CommunicationRulesComponent', () => {
         ];
         component.addCommunicationPickableGroups = [generateGroup('group1')];
         component.activeColumn = 'sending';
-        component.activeStructureId = 'activeStructure';
         component.manageableStructuresId = ['activeStructure'];
-        component.structure = {id: 'activeStructure', name: 'activeStructure'} as StructureModel;
+        component.activeStructure = {id: 'activeStructure', name: 'activeStructure'} as StructureModel;
         component.structures = [
             {id: 'activeStructure', name: 'activeStructure'} as StructureModel,
             {id: 'structure2', name: 'structure2'} as StructureModel

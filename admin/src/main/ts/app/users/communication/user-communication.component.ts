@@ -34,7 +34,7 @@ export const userCommunicationLocators = {
 
             <div class="user-communication__content">
                 <communication-rules
-                    [activeStructureId]="activeStructureId"
+                    [activeStructure]="activeStructure"
                     [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
                     [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
                     [communicationRules]="userSendingCommunicationRules"
@@ -42,7 +42,6 @@ export const userCommunicationLocators = {
                     [manageableStructuresId]="manageableStructuresId"
                     [addCommunicationPickableGroups]="addCommunicationPickableGroups"
                     [structures]="structures"
-                    [structure]="structure"
                     (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></communication-rules>
             </div>
         </panel-section>
@@ -54,7 +53,7 @@ export const userCommunicationLocators = {
             
             <div class="user-communication__content">
                 <communication-rules
-                    [activeStructureId]="activeStructureId"
+                    [activeStructure]="activeStructure"
                     [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
                     [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
                     [communicationRules]="userReceivingCommunicationRules"
@@ -62,7 +61,6 @@ export const userCommunicationLocators = {
                     [manageableStructuresId]="manageableStructuresId"
                     [addCommunicationPickableGroups]="addCommunicationPickableGroups"
                     [structures]="structures"
-                    [structure]="structure"
                     (groupPickerStructureChange)="groupPickerStructureChange.emit($event)"></communication-rules>
             </div>
         </panel-section>`,
@@ -90,7 +88,7 @@ export const userCommunicationLocators = {
 })
 export class UserCommunicationComponent {
     @Input()
-    public activeStructureId: string;
+    public activeStructure: StructureModel;
 
     @Input()
     public manageableStructuresId: string[];
@@ -109,9 +107,6 @@ export class UserCommunicationComponent {
 
     @Input()
     public structures: StructureModel[];
-
-    @Input()
-    public structure: StructureModel;
 
     @Output()
     public close: EventEmitter<void> = new EventEmitter<void>();
