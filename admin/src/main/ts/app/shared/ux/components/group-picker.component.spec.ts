@@ -17,7 +17,7 @@ describe('GroupPickerComponent', () => {
     let mockOrderPipe: OrderPipe;
 
     beforeEach(async(() => {
-        mockOrderPipe = jasmine.createSpyObj('OrderPipe', ['transform'])
+        mockOrderPipe = jasmine.createSpyObj('OrderPipe', ['transform']);
 
         TestBed.configureTestingModule({
             declarations: [

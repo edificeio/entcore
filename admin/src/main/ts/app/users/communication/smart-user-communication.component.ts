@@ -59,7 +59,7 @@ export class SmartUserCommunicationComponent implements OnInit, OnDestroy {
             this.communicationRulesService.setGroups(data['groups']);
         });
         this.addCommunicationPickableGroups = this.usersStore.structure.groups.data;
-        let activeStructureId = routing.getParam(this.route.snapshot, 'structureId')
+        const activeStructureId = routing.getParam(this.route.snapshot, 'structureId');
         this.activeStructure = this.globalStore.structures.data.find(s => s.id === activeStructureId);
     }
 
