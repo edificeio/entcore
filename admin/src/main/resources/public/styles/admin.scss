@@ -297,6 +297,7 @@ mono-select {
       padding: 10px 30px 10px 20px;
       background-color: rgba($grey-light, 0.1);
       border: 1px solid $grey-light;
+      cursor: pointer;
       &:after {
         content: '▼';
         color: mix($grey-light, $grey-dark);
@@ -586,6 +587,7 @@ i.group_add {
 .has-right-margin-40 {margin-right: 40px;}
 
 .has-left-margin-auto {margin-left: auto;}
+.has-min-width {min-width: 200px;}
 
 .is-pulled-left {float: left;}
 .is-pulled-right {float: right;}
