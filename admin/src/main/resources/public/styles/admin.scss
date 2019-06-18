@@ -38,13 +38,15 @@ $white-transparent:       rgba(255,255,255,0.75);
 
 // STATUS COLOR
 $info:                    $main;
-$success:                 $validate;
-$warning:                 #ffdf76;
-$danger:                  darken($contrast, 5%);
-
 $info-dark:               darken($info, 5%);
+
+$success:                 $validate;
 $success-dark:            darken($success, 5%);
+
+$warning:                 #ffdf76;
 $warning-dark:            darken($warning, 5%);
+
+$danger:                  darken($contrast, 5%);
 $danger-dark:             darken($danger, 5%);
 
 // PROFIL COLOR
