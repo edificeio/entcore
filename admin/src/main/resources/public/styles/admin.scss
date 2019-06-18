@@ -98,6 +98,9 @@ button {
   transition: background 0.25s, color 0.25s, border 0.25s;
   line-height: 1.5em;
   color: $grey-dark;
+  & ~ & {
+    margin: 0 10px;
+  }
   &.input-inline {
     margin-left: 10px;
   }
@@ -1337,10 +1340,11 @@ portal {
     }
     i {
       font-size: 1.5em;
+      height: 50px;
+      width: 60px;
+      line-height: 50px;
       cursor: pointer;
-      padding: 13px 20px;
       transition: color 0.25s, background-color 0.25s;
-      min-width: 15px;
       text-align: center;
       &:not([disabled]):hover {
         background-color: $main-light;

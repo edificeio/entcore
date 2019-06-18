@@ -14,26 +14,40 @@ import { BundlesService } from 'sijil'
     template: `
         <div class="container has-shadow">
             <div class="has-vertical-padding">
-                <div class="has-vertical-padding">
-                    <input type="radio" name="filter" value="all" [(ngModel)]="filter" (change)="updateData()"> <s5l>management.message.flash.all</s5l>
-                    <input type="radio" name="filter" value="current" [(ngModel)]="filter" (change)="updateData()"> <s5l>management.message.flash.current</s5l>
-                    <input type="radio" name="filter" value="future" [(ngModel)]="filter" (change)="updateData()"> <s5l>management.message.flash.future</s5l>
-                    <input type="radio" name="filter" value="obsolete" [(ngModel)]="filter" (change)="updateData()"> <s5l>management.message.flash.obsolete</s5l>
-                    <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()"><s5l>management.message.flash.copy</s5l></button>
-                    <button *ngIf="isSelectionRemovable()" (click)="showConfirmation = true"><s5l>management.message.flash.delete</s5l></button>
-                    <lightbox-confirm
-                        [show]="showConfirmation"
-                        [lightboxTitle]="'warning'"
-                        (onConfirm)="removeSelection()"
-                        (onCancel)="showConfirmation = false">
-                        <s5l>management.message.flash.confirm.delete</s5l>
-                    </lightbox-confirm>
-                    <button class="is-pulled-right" (click)="createMessage()"><s5l>management.message.flash.create.message</s5l></button>
+                <div class="has-vertical-padding is-display-flex has-space-between">
+                    <div class="checkbox__item">
+                        <input id="all" type="checkbox" name="filter" value="all" [(ngModel)]="filter" (change)="updateData()">
+                        <label for="all"><s5l>management.message.flash.all</s5l></label>
+                    </div>
+                    <div class="checkbox__item">
+                        <input id="in-progress" type="checkbox" name="filter" value="current" [(ngModel)]="filter" (change)="updateData()">
+                        <label for="in-progress"><s5l>management.message.flash.current</s5l></label>
+                    </div>
+                    <div class="checkbox__item">
+                        <input id="incoming" type="checkbox" name="filter" value="future" [(ngModel)]="filter" (change)="updateData()">
+                        <label for="incoming"><s5l>management.message.flash.future</s5l></label>
+                    </div>
+                    <div class="checkbox__item">
+                      <input id="obsolete" type="checkbox" name="filter" value="obsolete" [(ngModel)]="filter" (change)="updateData()">
+                      <label for="obsolete"><s5l>management.message.flash.obsolete</s5l></label>
+                    </div>
+                    <div>
+                      <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()"><s5l>management.message.flash.copy</s5l></button>
+                      <button *ngIf="isSelectionRemovable()" (click)="showConfirmation = true"><s5l>management.message.flash.delete</s5l></button>
+                      <lightbox-confirm
+                          [show]="showConfirmation"
+                          [lightboxTitle]="'warning'"
+                          (onConfirm)="removeSelection()"
+                          (onCancel)="showConfirmation = false">
+                          <s5l>management.message.flash.confirm.delete</s5l>
+                      </lightbox-confirm>
+                      <button class="is-pulled-right" (click)="createMessage()"><s5l>management.message.flash.create.message</s5l></button>
+                    </div>
                 </div>
-                <table>
+                <table class="table">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" [checked]="areAllChecked()" (click)="checkAll()" [disabled]="displayedMessages.length == 0">
+                            <th class="table__checkbox checkbox__item"><input type="checkbox" [checked]="areAllChecked()" (click)="checkAll()" [disabled]="displayedMessages.length == 0"><label></label></th>
                             <th><s5l>management.message.flash.title</s5l></th>
                             <th><s5l>management.message.flash.message</s5l></th>
                             <th><s5l>management.message.flash.startDate</s5l></th>
@@ -45,14 +59,14 @@ import { BundlesService } from 'sijil'
                     </thead>
                     <tbody>
                         <tr *ngFor="let message of displayedMessages" [ngClass]="{'disabled': isMessageFromParentStructure(message)}" (click)="editMessage(message.id)">
-                            <th><input type="checkbox" [(ngModel)]="checkboxes[message.id]" (click)="$event.stopPropagation()">
-                            <th>{{message.title}}</th>
-                            <th [innerHTML]="getContent(message.contents)"></th>
-                            <th>{{displayDate(message.startDate)}}</th>
-                            <th>{{displayDate(message.endDate)}}</th>
-                            <th>{{message.readCount}}</th>
-                            <th>{{message.author}}</th>
-                            <th>{{message.lastModifier}}</th>
+                            <td class="checkbox__item"><input type="checkbox" [(ngModel)]="checkboxes[message.id]" (click)="$event.stopPropagation()"></td>
+                            <td>{{message.title}}</td>
+                            <td [innerHTML]="getContent(message.contents)"></td>
+                            <td>{{displayDate(message.startDate)}}</td>
+                            <td>{{displayDate(message.endDate)}}</td>
+                            <td>{{message.readCount}}</td>
+                            <td>{{message.author}}</td>
+                            <td>{{message.lastModifier}}</td>
                         </tr>
                     </tbody>
                 </table>

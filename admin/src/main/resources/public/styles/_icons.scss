@@ -29,3 +29,10 @@ $indigo: #1a22a2;
 
 @import "_apps";
 @import "_apps-connectors";
+
+i.school {
+  @include fonticon;
+  &::before {
+    content:"\e949";
+  }
+}

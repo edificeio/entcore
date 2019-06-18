@@ -36,7 +36,7 @@ import { Component } from '@angular/core'
             justify-content: center;
         }
         header >>> > div[header-right] {
-            flex-direction: row-reverse;
+            justify-content: flex-end;
         }
         header >>> > div > *{
             display: inline-block;
