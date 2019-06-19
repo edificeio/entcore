@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { UxModule } from '../../shared/ux/ux.module';
 import { GroupsStore } from '../groups.store';
 import { GroupDetails } from './group-details.component';
-import { GroupModel, StructureModel } from '../../core/store/models';
+import { StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
@@ -14,6 +14,7 @@ import { NotifyService, GroupNameService } from '../../core/services';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { GroupsService } from '../groups.service';
+import { generateMockGroupModel } from '../../shared/utils';
 
 describe('GroupDetails', () => {
     let component: GroupDetails;
@@ -124,21 +125,11 @@ describe('GroupDetails', () => {
     });
 
     it('should call the groupsService.delete when clicking on the delete group button', () => {
-        const group1 = {id: 'group1'} as GroupModel;
-        const group2 = {id: 'group2'} as GroupModel;        
-        let groups = [group1, group2] as GroupModel[];
-        let groupsCollection = {data: groups} as GroupCollection;
-        mockGroupStore.structure = {id: 'structure1', groups: groupsCollection} as StructureModel;
-        mockGroupStore.group = group1;
-        component.groupsStore = mockGroupStore;
-
         fixture.nativeElement.querySelector('.lct-group-delete-button').click();
         (mockGroupsService.delete as jasmine.Spy).and.returnValue(Observable.of({}));
         component.deleteConfirmationClicked.next('confirm');
         expect(mockGroupsService.delete).toHaveBeenCalled();
-        fixture.detectChanges();
         expect(mockRouter.navigate).toHaveBeenCalled();
-        expect(mockGroupStore.structure.groups.data.length).toBe(1);
     });
 });
 
@@ -156,10 +147,4 @@ class MockGroupManageUsers {
 })
 class MockGroupUsersList {
     @Input() users;
-}
-
-function generateMockGroupModel(id: string, type: string): GroupModel {
-    const groupModel: GroupModel = {id, type} as GroupModel;
-    groupModel.users = [];
-    return groupModel;
 }

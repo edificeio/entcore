@@ -201,9 +201,6 @@ export class GroupDetails implements OnInit, OnDestroy {
                     key: 'group.delete.notify.success.content',
                     parameters: {groupName: group.name}
                 }, 'group.delete.notify.success.title');
-                this.groupsStore.structure.groups.data.splice(
-                    this.groupsStore.structure.groups.data.findIndex(g => g.id === group.id)
-                    , 1);
                 this.router.navigate(['..'], {relativeTo: this.activatedRoute, replaceUrl: false});
                 this.cdRef.markForCheck();
             }, (error: HttpErrorResponse) => {
