@@ -20,11 +20,13 @@
 package org.entcore.feeder.dictionary.structures;
 
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.feeder.Feeder;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.common.neo4j.Neo4j;
@@ -87,7 +89,7 @@ public class Tenant {
 		transactionHelper.add(query.toString(), params);
 	}
 
-	static void linkStructures() {
+	static void linkStructures(final EventBus eb) {
 		final String query =
 				"MATCH (t:Tenant) " +
 				"WHERE has(t.linkRules) " +
@@ -97,7 +99,10 @@ public class Tenant {
 				final JsonArray t = r.body().getJsonArray("result");
 				if (t != null) {
 					final String baseLink = "MATCH (t:Tenant {id:{id}}), (s:Structure) ";
-					final String mergeLink = "MERGE t<-[r:HAS_STRUCT]-s SET r.lastUpdated = {now} ";
+					final String mergeLink =
+							"MERGE t<-[r:HAS_STRUCT]-s " +
+							"ON CREATE SET r.created = {now} " +
+							"SET r.lastUpdated = {now} ";
 					final long now = System.currentTimeMillis();
 					final JsonObject params = new JsonObject().put("now", now);
 					try {
@@ -109,14 +114,31 @@ public class Tenant {
 								tx.add(baseLink + whereClause + mergeLink, p);
 							}
 						}
+						final String created =
+								"MATCH (t:Tenant)<-[r:HAS_STRUCT]-(s:Structure) " +
+								"WHERE r.created = {now} " +
+								"RETURN t.id as tenant, COLLECT(DISTINCT s.id) as structures";
+						tx.add(created, params);
 						final String deleteOld =
 								"MATCH (t:Tenant)<-[r:HAS_STRUCT]-(s:Structure) " +
 								"WHERE r.lastUpdated <> {now} " +
-								"DELETE r ";
+								"DELETE r " +
+								"RETURN t.id as tenant, COLLECT(DISTINCT s.id) as structures";
 						tx.add(deleteOld, params);
 						// TODO add structure tenant uniqueness
 						tx.commit(res -> {
-							if (!"ok".equals(res.body().getString("status"))) {
+							if ("ok".equals(res.body().getString("status"))) {
+								final JsonArray rt = res.body().getJsonArray("results");
+								if (rt != null && rt.size() > 2) {
+									final JsonArray c = rt.getJsonArray(rt.size() - 2);
+									final JsonArray d = rt.getJsonArray(rt.size() - 1);
+									eb.publish(Feeder.USER_REPOSITORY, new JsonObject()
+											.put("action", "tenants-structures-update")
+											.put("added", c)
+											.put("deleted", d)
+									);
+								}
+							} else {
 								log.error("Error when commit tenant link structures transaction : " +
 										res.body().getString("message"));
 							}
