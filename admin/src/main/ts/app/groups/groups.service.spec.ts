@@ -32,17 +32,16 @@ describe('GroupsService', () => {
         httpTestingController = TestBed.get(HttpTestingController);
     })
 
-    describe('delete', () => {
+    fdescribe('delete', () => {
         it('should call DELETE /directory/group/groupId1 when given group with id "groupId1" and remove "groupId1" from groupsStore', () => {
             groupsService.groupsStore = mockGroupStore;
             const groupToDelete: GroupModel = new GroupModel();
             groupToDelete.id = 'groupId1';
-            groupsService.delete(groupToDelete).subscribe(() => {
-                const request = httpTestingController.expectOne(`/directory/group/groupId1`);
-                expect(request.request.method).toBe('DELETE');
-                console.log(mockGroupStore.structure.groups.data);
-                expect(mockGroupStore.structure.groups.data.length).toBe(1);
-            });
+            groupsService.delete(groupToDelete).subscribe();
+            const request = httpTestingController.expectOne(`/directory/group/groupId1`);
+            request.flush({});
+            expect(request.request.method).toBe('DELETE');
+            expect(mockGroupStore.structure.groups.data.length).toBe(1);
         })
     })
 });
