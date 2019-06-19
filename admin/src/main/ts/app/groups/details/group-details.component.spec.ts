@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SijilModule } from 'sijil';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -13,6 +13,7 @@ import { CommunicationRulesService } from '../../users/communication/communicati
 import { NotifyService, GroupNameService } from '../../core/services';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
+import { GroupsService } from '../groups.service';
 
 describe('GroupDetails', () => {
     let component: GroupDetails;
@@ -23,6 +24,8 @@ describe('GroupDetails', () => {
     let mockCommunicationRulesService: CommunicationRulesService;
     let mockNotifyService: NotifyService;
     let mockGroupNameService: GroupNameService;
+    let mockGroupsService: GroupsService;
+    let mockRouter: Router;
     let mockChangeDetectorRef: ChangeDetectorRef;
     let paramsController: BehaviorSubject<{ [key: string]: string }>;
     let dataController: BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>;
@@ -30,6 +33,7 @@ describe('GroupDetails', () => {
     beforeEach(() => {
         mockStructure = {} as StructureModel;
         mockCommunicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
+        mockGroupsService = jasmine.createSpyObj('GroupsService', ['delete']);
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockGroupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         mockStructure.groups = {
@@ -40,6 +44,7 @@ describe('GroupDetails', () => {
         } as GroupCollection;
         mockGroupStore = {structure: mockStructure} as GroupsStore;
         mockChangeDetectorRef = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
+        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         paramsController = new BehaviorSubject({groupId: 'groupId1'});
         dataController = new BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>({
             rule: {
@@ -67,7 +72,9 @@ describe('GroupDetails', () => {
                         data: dataController.asObservable(),
                         params: paramsController.asObservable()
                     }
-                }
+                },
+                {provide: GroupsService, useValue: mockGroupsService},
+                {provide: Router, useValue: mockRouter}
             ],
             imports: [
                 SijilModule.forRoot(),
@@ -115,6 +122,24 @@ describe('GroupDetails', () => {
         component.confirmationClicked.next('confirm');
         expect(mockCommunicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     });
+
+    it('should call the groupsService.delete when clicking on the delete group button', () => {
+        const group1 = {id: 'group1'} as GroupModel;
+        const group2 = {id: 'group2'} as GroupModel;        
+        let groups = [group1, group2] as GroupModel[];
+        let groupsCollection = {data: groups} as GroupCollection;
+        mockGroupStore.structure = {id: 'structure1', groups: groupsCollection} as StructureModel;
+        mockGroupStore.group = group1;
+        component.groupsStore = mockGroupStore;
+
+        fixture.nativeElement.querySelector('.lct-group-delete-button').click();
+        (mockGroupsService.delete as jasmine.Spy).and.returnValue(Observable.of({}));
+        component.deleteConfirmationClicked.next('confirm');
+        expect(mockGroupsService.delete).toHaveBeenCalled();
+        fixture.detectChanges();
+        expect(mockRouter.navigate).toHaveBeenCalled();
+        expect(mockGroupStore.structure.groups.data.length).toBe(1);
+    })
 });
 
 @Component({

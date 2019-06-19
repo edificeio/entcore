@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
 import { Observable } from 'rxjs/Observable';
 import { GroupsStore } from '../groups.store';
@@ -17,13 +17,23 @@ import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/observable/merge';
+import { GroupsService } from '../groups.service';
 
 @Component({
     selector: 'group-detail',
     template: `
-        <div class="panel-header">
-            <span><s5l>members.of.group</s5l>
-                {{ groupsStore.group.name }}</span>
+        <div class="panel-header is-display-flex has-space-between">
+            <span>
+                <s5l>members.of.group</s5l>
+                {{ groupsStore.group.name }}
+            </span>
+            <button type="button"
+                    *ngIf="groupsStore.group?.type === 'ManualGroup'"
+                    (click)="deleteButtonClicked.next(groupsStore.group)"
+                    class="lct-group-delete-button">
+                <s5l>group.delete.button</s5l>
+                <i class="fa fa-trash is-size-5"></i>
+            </button>
         </div>
 
         <div class="padded">
@@ -64,6 +74,13 @@ import 'rxjs/add/observable/merge';
                 <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
             </ng-template>
         </lightbox-confirm>
+
+        <lightbox-confirm lightboxTitle="group.delete.confirm.title"
+                          [show]="deleteConfirmationDisplayed"
+                          (onCancel)="deleteConfirmationClicked.next('cancel')"
+                          (onConfirm)="deleteConfirmationClicked.next('confirm')">
+            <span [innerHTML]="'group.delete.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+        </lightbox-confirm>
     `,
     styles: [
         '.lct-communication-rule {cursor: pointer;}',
@@ -84,6 +101,11 @@ export class GroupDetails implements OnInit, OnDestroy {
     public confirmationDisplayed = false;
     public confirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
+    public deleteSubscription: Subscription;
+    public deleteButtonClicked: Subject<GroupModel> = new Subject();
+    public deleteConfirmationDisplayed: boolean = false;
+    public deleteConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+
     private changesSubscription: Subscription;
 
     constructor(public groupsStore: GroupsStore,
@@ -91,7 +113,10 @@ export class GroupDetails implements OnInit, OnDestroy {
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
                 private cdRef: ChangeDetectorRef,
-                public groupNameService: GroupNameService) {
+                public groupNameService: GroupNameService,
+                private groupsService: GroupsService,
+                private router: Router,
+                private activatedRoute: ActivatedRoute) {
     }
 
     ngOnInit(): void {
@@ -116,10 +141,14 @@ export class GroupDetails implements OnInit, OnDestroy {
             .merge(rulesChangesObserver, groupChangesObserver)
             .subscribe(() => this.cdRef.markForCheck());
 
+        this.deleteSubscription = this.deleteButtonClicked
+            .mergeMap((group: GroupModel) => this.deleteGroup(group))
+            .subscribe();
     }
 
     ngOnDestroy(): void {
         this.changesSubscription.unsubscribe();
+        this.deleteSubscription.unsubscribe();
     }
 
     showLightBox() {
@@ -158,5 +187,30 @@ export class GroupDetails implements OnInit, OnDestroy {
                     }
                 })
             .map(internalCommunicationRule => ({groupId: group.id, internalCommunicationRule}));
+    }
+
+    public deleteGroup(group: GroupModel): Observable<void> {
+        this.deleteConfirmationDisplayed = true;
+        return this.deleteConfirmationClicked.asObservable()
+            .first()
+            .do(() => this.deleteConfirmationDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .mergeMap(() => this.groupsService.delete(group))
+            .do(() => {
+                this.notifyService.success({
+                    key: 'group.delete.notify.success.content',
+                    parameters: {groupName: group.name}
+                }, 'group.delete.notify.success.title');
+                this.groupsStore.structure.groups.data.splice(
+                    this.groupsStore.structure.groups.data.findIndex(g => g.id === group.id)
+                    , 1);
+                this.router.navigate(['..'], {relativeTo: this.activatedRoute, replaceUrl: false});
+                this.cdRef.markForCheck();
+            }, (error: HttpErrorResponse) => {
+                this.notifyService.error({
+                    key: 'group.delete.notify.error.content',
+                    parameters: {groupName: group.name}
+                }, 'group.delete.notify.error.title');
+            });   
     }
 }
