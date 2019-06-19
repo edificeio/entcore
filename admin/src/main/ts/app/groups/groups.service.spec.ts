@@ -21,7 +21,7 @@ describe('GroupsService', () => {
             const groupToDelete: GroupModel = new GroupModel();
             groupToDelete.id = 'group1';
             groupsService.delete(groupToDelete).subscribe();
-            const request = httpTestingController.expectOne(`/directory/group/${groupToDelete.id}`);
+            const request = httpTestingController.expectOne(`/directory/group/group1`);
             expect(request.request.method).toBe('DELETE');
         })
     })
