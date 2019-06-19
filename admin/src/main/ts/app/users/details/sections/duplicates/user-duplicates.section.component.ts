@@ -48,8 +48,19 @@ import { UsersStore } from '../../../users.store';
                         <i class="fa fa-arrow-right"></i>
                         <i class="fa fa-arrow-left"></i>
                     </button>
+                    <button class="actions-list__button" (click)="compare(duplicate.id)"
+                            [disabled]="spinner.isLoading(duplicate.id)">
+                        <spinner-cube class="button-spinner"
+                                      waitingFor="duplicate.id"></spinner-cube>
+                        <s5l>compare</s5l>
+                    </button>
                 </li>
             </ul>
+            <lightbox [show]="!!comparedUserId" (onClose)="comparedUserId = null;">
+                <smart-users-comparison *ngIf="!!comparedUserId; else nothing" [user1]="user.id"
+                                        [user2]="comparedUserId"></smart-users-comparison>
+                <ng-template #nothing>&nbsp;</ng-template>
+            </lightbox>
         </panel-section>
     `,
     inputs: ['user', 'structure', 'open'],
@@ -85,6 +96,8 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
         super();
     }
 
+    public comparedUserId: string = null;
+
     private open = true;
     private session: Session;
 
@@ -113,6 +126,10 @@ export class UserDuplicatesSection extends AbstractSection implements OnInit {
 
     findVisibleStruct(structures: [{ id: string, name: string }]): { id: string, name: string } {
         return structures.find(structure => globalStore.structures.data.some(struct => struct.id == structure.id));
+    }
+
+    public compare(comparedId: string) {
+        this.comparedUserId = comparedId;
     }
 
     private merge = (dupId) => {

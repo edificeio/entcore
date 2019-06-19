@@ -150,6 +150,7 @@
     "email": "Courriel",
     "homePhone": "Téléphone",
     "mobilePhone": "Téléphone portable",
+    "structures": "Établissement(s)",
     "city": "Ville",
     "toggle.account": "{{ 0 ? Débloquer le compte : Bloquer le compte }}",
     "delete.image": "Supprimer la photo",
@@ -686,5 +687,9 @@
     "ux.upload-files.button.label": "Parcourir",
     "ux.upload-files.button.help": "Glisser-déposer un fichier depuis votre appareil ou cliquez sur parcourir",
 
-    "monoselect.placeholder.default": "Choisir une option"
+    "monoselect.placeholder.default": "Choisir une option",
+
+    "compare": "comparer",
+    "user.is.active": "Compte activé",
+    "user.is.inactive": "Compte non activé"
 }

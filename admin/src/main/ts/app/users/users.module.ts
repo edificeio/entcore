@@ -24,9 +24,9 @@ import {
     UserFunctionalGroupsSection,
     UserInfoSection,
     UserManualGroupsSection,
+    UserQuotaSection,
     UserRelativesSection,
-    UserStructuresSection,
-    UserQuotaSection
+    UserStructuresSection
 } from './details/sections';
 import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';
@@ -38,6 +38,10 @@ import { GroupCardComponent } from './communication/group-card.component';
 import { CommunicationRulesComponent } from './communication/communication-rules.component';
 import { UserGroupsResolver } from './communication/user-groups.resolver';
 import { GroupNameService } from '../core/services/group-name.service';
+import { UsersComparisonComponent } from './users-comparison.component';
+import { UserOverviewComponent } from './user-overview.component';
+import { SmartUsersComparisonComponent } from './smart-users-comparison.component';
+import { UserService } from "./user.service";
 
 @NgModule({
     imports: [
@@ -69,7 +73,10 @@ import { GroupNameService } from '../core/services/group-name.service';
         SmartUserCommunicationComponent,
         UserQuotaSection,
         GroupCardComponent,
-        CommunicationRulesComponent
+        CommunicationRulesComponent,
+        UsersComparisonComponent,
+        UserOverviewComponent,
+        SmartUsersComparisonComponent
     ],
     providers: [
         ConfigResolver,
@@ -79,7 +86,8 @@ import { GroupNameService } from '../core/services/group-name.service';
         UserlistFiltersService,
         UserInfoService,
         globalStoreProvider,
-        GroupNameService
+        GroupNameService,
+        UserService
     ],
     exports: [
         RouterModule
