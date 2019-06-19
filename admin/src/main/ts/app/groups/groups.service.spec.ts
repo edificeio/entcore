@@ -1,4 +1,4 @@
-import { GroupsService } from './groups.service'
+import { GroupsService } from './groups.service';
 import { TestBed } from '@angular/core/testing';
 import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing';
 import { GroupModel } from '../core/store';
@@ -17,7 +17,7 @@ describe('GroupsService', () => {
     })
 
     describe('delete', () => {
-        it('should call DELETE /directory/group/${groupId} with given group', () => {
+        it('should call DELETE /directory/group/group1 when given group with id "group1"', () => {
             const groupToDelete: GroupModel = new GroupModel();
             groupToDelete.id = 'group1';
             groupsService.delete(groupToDelete).subscribe();

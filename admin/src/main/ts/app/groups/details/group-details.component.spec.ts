@@ -139,7 +139,7 @@ describe('GroupDetails', () => {
         fixture.detectChanges();
         expect(mockRouter.navigate).toHaveBeenCalled();
         expect(mockGroupStore.structure.groups.data.length).toBe(1);
-    })
+    });
 });
 
 @Component({
