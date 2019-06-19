@@ -91,7 +91,6 @@ export class ServicesListComponent {
                     this.collectionRef[this.serviceName].collection = data[this.collectionRef[this.serviceName].routeData];
 
                     if (this.serviceName === 'applications') {
-
                         this.collectionRef[this.serviceName].collection = filterApplicationsByLevelsOfEducation(
                             this.collectionRef[this.serviceName].collection,
                             this.servicesStore.structure.levelsOfEducation
@@ -101,11 +100,11 @@ export class ServicesListComponent {
                             this.collectionRef[this.serviceName].collection,
                             session.functions['SUPER_ADMIN'] != null
                         );
-
-                        this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
-                            .sort((a, b) => this.bundlesService.translate(a.displayName)
-                                .localeCompare(this.bundlesService.translate(b.displayName)));
                     }
+
+                    this.collectionRef[this.serviceName].collection = this.collectionRef[this.serviceName].collection
+                        .sort((a, b) => this.bundlesService.translate(a.displayName)
+                            .localeCompare(this.bundlesService.translate(b.displayName)));
                 }
             })
         });
@@ -142,7 +141,8 @@ export class ServicesListComponent {
     itemInputFilter: string;
     filterByInput = (item: any): boolean => {
         return !!this.itemInputFilter ?
-            item.name.toLowerCase().indexOf(this.itemInputFilter.toLowerCase()) >= 0 : true;
+            this.bundlesService.translate(item.displayName).toLowerCase()
+                .indexOf(this.itemInputFilter.toLowerCase()) >= 0 : true;
     };
 
     isSelected = (item): boolean => {
