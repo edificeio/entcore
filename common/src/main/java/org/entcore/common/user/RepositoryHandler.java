@@ -96,6 +96,11 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				JsonArray oldGroups = message.body().getJsonArray("old-groups", new fr.wseduc.webutils.collections.JsonArray());
 				repositoryEvents.removeShareGroups(oldGroups);
 				break;
+			case "tenants-structures-update":
+				final JsonArray addedTenantsStructures = message.body().getJsonArray("added", new JsonArray());
+				final JsonArray deletedTenantsStructures = message.body().getJsonArray("deleted", new JsonArray());
+				repositoryEvents.tenantsStructuresUpdated(addedTenantsStructures, deletedTenantsStructures);
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "invalid.action"));

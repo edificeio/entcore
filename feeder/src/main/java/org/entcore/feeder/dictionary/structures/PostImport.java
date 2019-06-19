@@ -97,7 +97,7 @@ public class PostImport {
 					publishClassesUpdate();
 				}
 				if (config.getBoolean("tenant-link-structure", true)) {
-					Tenant.linkStructures();
+					Tenant.linkStructures(eb);
 				}
 			}
 		};

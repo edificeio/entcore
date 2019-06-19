@@ -43,4 +43,6 @@ public interface RepositoryEvents {
 		deleteGroups(oldGroups);
 	}
 
+	default void tenantsStructuresUpdated(JsonArray addedTenantsStructures, JsonArray deletedTenantsStructures) {}
+
 }
