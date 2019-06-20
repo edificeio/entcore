@@ -21,6 +21,7 @@ import { GroupInputFilters } from './details/manage-users/input/group-input-filt
 import { GroupOutputUsers } from './details/manage-users/output/group-output-users.component';
 import { GroupUsersList } from './details/users-list/group-users-list.component';
 import { GroupsTypeView } from './type-view/groups-type-view.component';
+import { GroupsService } from './groups.service';
 
 @NgModule({
     imports: [
@@ -47,7 +48,8 @@ import { GroupsTypeView } from './type-view/groups-type-view.component';
         GroupInternalCommunicationRuleResolver,
         GroupsStore,
         UserlistFiltersService,
-        GroupNameService
+        GroupNameService,
+        GroupsService
     ],
     exports: [
         RouterModule
