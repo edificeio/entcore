@@ -32,7 +32,7 @@ describe('GroupsService', () => {
         httpTestingController = TestBed.get(HttpTestingController);
     })
 
-    fdescribe('delete', () => {
+    describe('delete', () => {
         it('should call DELETE /directory/group/groupId1 when given group with id "groupId1" and remove "groupId1" from groupsStore', () => {
             groupsService.groupsStore = mockGroupStore;
             const groupToDelete: GroupModel = new GroupModel();
