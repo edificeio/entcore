@@ -279,6 +279,13 @@
     "group.manage.users.added": "Utilisateur(s) du groupe",
     "group.manage.users.button.add": "Ajouter au groupe les utilisateurs sélectionnés en orange",
     "group.manage.users.button.remove": "Retirer du groupe les utilisateurs sélectionnés en bleu",
+    "group.delete.button": "Supprimer",
+    "group.delete.confirm.content": "Veuillez confirmer la suppression définitive du groupe <strong>{{groupName}}</strong>.",
+    "group.delete.confirm.title": "Confirmation requise",
+    "group.delete.notify.success.title": "Suppression effectuée",
+    "group.delete.notify.success.content": "Le groupe {{groupName}} a bien été supprimé.",
+    "group.delete.notify.error.title": "Erreur lors de la suppression",
+    "group.delete.notify.error.content": "Le groupe {{groupName}} n'a pas pu être supprimé.",
 
     "import.files.deposit": "Dépôt des fichiers",
     "import.fields.checking": "Vérification des champs",

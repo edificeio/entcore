@@ -1,18 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { SijilModule } from 'sijil';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { UxModule } from '../../shared/ux/ux.module';
 import { GroupsStore } from '../groups.store';
 import { GroupDetails } from './group-details.component';
-import { GroupModel, StructureModel } from '../../core/store/models';
+import { StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
 import { NotifyService, GroupNameService } from '../../core/services';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
+import { GroupsService } from '../groups.service';
+import { generateMockGroupModel } from '../../shared/utils';
 
 describe('GroupDetails', () => {
     let component: GroupDetails;
@@ -23,6 +25,8 @@ describe('GroupDetails', () => {
     let mockCommunicationRulesService: CommunicationRulesService;
     let mockNotifyService: NotifyService;
     let mockGroupNameService: GroupNameService;
+    let mockGroupsService: GroupsService;
+    let mockRouter: Router;
     let mockChangeDetectorRef: ChangeDetectorRef;
     let paramsController: BehaviorSubject<{ [key: string]: string }>;
     let dataController: BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>;
@@ -30,6 +34,7 @@ describe('GroupDetails', () => {
     beforeEach(() => {
         mockStructure = {} as StructureModel;
         mockCommunicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
+        mockGroupsService = jasmine.createSpyObj('GroupsService', ['delete']);
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockGroupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         mockStructure.groups = {
@@ -40,6 +45,7 @@ describe('GroupDetails', () => {
         } as GroupCollection;
         mockGroupStore = {structure: mockStructure} as GroupsStore;
         mockChangeDetectorRef = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
+        mockRouter = jasmine.createSpyObj('Router', ['navigate']);
         paramsController = new BehaviorSubject({groupId: 'groupId1'});
         dataController = new BehaviorSubject<{ rule: GroupIdAndInternalCommunicationRule }>({
             rule: {
@@ -67,7 +73,9 @@ describe('GroupDetails', () => {
                         data: dataController.asObservable(),
                         params: paramsController.asObservable()
                     }
-                }
+                },
+                {provide: GroupsService, useValue: mockGroupsService},
+                {provide: Router, useValue: mockRouter}
             ],
             imports: [
                 SijilModule.forRoot(),
@@ -115,6 +123,14 @@ describe('GroupDetails', () => {
         component.confirmationClicked.next('confirm');
         expect(mockCommunicationRulesService.toggleInternalCommunicationRule).toHaveBeenCalled();
     });
+
+    it('should call the groupsService.delete when clicking on the delete group button', () => {
+        fixture.nativeElement.querySelector('.lct-group-delete-button').click();
+        (mockGroupsService.delete as jasmine.Spy).and.returnValue(Observable.of({}));
+        component.deleteConfirmationClicked.next('confirm');
+        expect(mockGroupsService.delete).toHaveBeenCalled();
+        expect(mockRouter.navigate).toHaveBeenCalled();
+    });
 });
 
 @Component({
@@ -131,10 +147,4 @@ class MockGroupManageUsers {
 })
 class MockGroupUsersList {
     @Input() users;
-}
-
-function generateMockGroupModel(id: string, type: string): GroupModel {
-    const groupModel: GroupModel = {id, type} as GroupModel;
-    groupModel.users = [];
-    return groupModel;
 }

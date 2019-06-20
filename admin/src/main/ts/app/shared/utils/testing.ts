@@ -16,3 +16,9 @@ export function generateGroup(name: string,
                               filter: string = null): GroupModel {
     return {name, id: name, internalCommunicationRule, type, subType, classes, structures, filter} as GroupModel;
 }
+
+export function generateMockGroupModel(id: string, type: string): GroupModel {
+    const groupModel: GroupModel = {id, type} as GroupModel;
+    groupModel.users = [];
+    return groupModel;
+}
