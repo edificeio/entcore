@@ -18,7 +18,7 @@ import { Subscription } from 'rxjs/Subscription'
                 </span>
             </div>
             <div header-right>
-                <i class="fa fa-home" aria-hidden="true"
+                <i class="fa fa-home" aria-hidden="true"    
                     *ngIf="currentStructure"
                     [title]="'nav.structure' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id"
@@ -53,6 +53,11 @@ import { Subscription } from 'rxjs/Subscription'
                     [title]="'imports.exports' | translate"
                     [routerLink]="'/admin/' + currentStructure?.id + '/imports-exports/export'"
                     [class.active]="router.isActive('/admin/' + currentStructure?.id + '/imports-exports', false)">
+                </i>
+                <i class="fa fa-exclamation-triangle"
+                    *ngIf="currentStructure"
+                    [title]="'reports' | translate"
+                    (click)="openReports()">
                 </i>
                 <a href="/auth/logout"
                     [title]="'logout' | translate">
@@ -142,5 +147,9 @@ export class NavComponent implements OnInit, OnDestroy {
         if(this.structureSubscriber) {
             this.structureSubscriber.unsubscribe();
         }
+    }
+
+    public openReports(): void {
+        window.open('/timeline/admin-history', '_blank');
     }
 }
