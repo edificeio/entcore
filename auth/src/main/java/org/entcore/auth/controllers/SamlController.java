@@ -38,6 +38,7 @@ import org.entcore.auth.services.impl.FederationServiceImpl;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
@@ -145,7 +146,8 @@ public class SamlController extends AbstractFederateController {
 					JsonObject o = new JsonObject()
 							.put("name", attr)
 							.put("uri", uri.getScheme() + "://" + uri.getHost() +
-									(attr.startsWith("login") ? "/auth/login" : "/auth/saml/authn/" + attr));
+									(attr.startsWith("login") ? "/auth/login" : attr.startsWith("other") ?
+											StringUtils.trimToBlank(uri.getPath()) : "/auth/saml/authn/" + attr));
 					wmf.add(o);
 				}
 				samlWayfMustacheFormat.put(host, new JsonObject().put("providers", wmf));
