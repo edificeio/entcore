@@ -6,7 +6,7 @@ then
 fi
 
 case `uname -s` in
-  MINGW*)
+  MINGW* | Darwin*)
     USER_UID=1000
     GROUP_UID=1000
     ;;
