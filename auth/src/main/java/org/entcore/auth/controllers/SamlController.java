@@ -714,7 +714,7 @@ public class SamlController extends AbstractFederateController {
 		request.endHandler(new Handler<Void>() {
 			@Override
 			public void handle(Void v) {
-				if (samlWayfParams != null) {
+				if (samlWayfParams != null && !config.getBoolean("idp-initiated", false)) {
 					final String state = CookieHelper.getInstance().getSigned("relaystate", request);
 					if (isEmpty(state) || (!state.equals(request.formAttributes().get("RelayState")) &&
 							!state.equals(SamlUtils.SIMPLE_RS))) {
