@@ -182,6 +182,7 @@ public class TimetableController extends BaseController {
 					public void handle(Void event) {
 						timetableService.importTimetable(request.params().get("structureId"), filename,
 								getHost(request), I18n.acceptLanguage(request),
+								"uai".equals(request.params().get("structAttr")),
 								reportResponseHandler(vertx, path, request));
 					}
 				});
