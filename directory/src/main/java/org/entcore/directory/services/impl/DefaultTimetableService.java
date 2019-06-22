@@ -234,8 +234,10 @@ public class DefaultTimetableService implements TimetableService {
 	}
 
 	@Override
-	public void importTimetable(String structureId, final String path, final String domain, final String acceptLanguage, final Handler<Either<JsonObject, JsonObject>> handler) {
-		final String query = "MATCH (s:Structure {id:{id}}) RETURN s.UAI as UAI, s.timetable as timetable";
+	public void importTimetable(String structureId, final String path, final String domain,
+			final String acceptLanguage, boolean uai, final Handler<Either<JsonObject, JsonObject>> handler) {
+		final String  structureAttr = uai ? "UAI" : "id";
+		final String query = "MATCH (s:Structure {" + structureAttr + ":{id}}) RETURN s.UAI as UAI, s.timetable as timetable";
 		neo4j.execute(query, new JsonObject().put("id", structureId),
 				validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
