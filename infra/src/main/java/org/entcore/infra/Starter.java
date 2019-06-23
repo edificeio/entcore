@@ -85,6 +85,10 @@ public class Starter extends BaseServer {
 			if (isNotEmpty(csp)) {
 				serverMap.put("contentSecurityPolicy", csp);
 			}
+			JsonObject nodePdfGenerator = config.getJsonObject("node-pdf-generator");
+			if (nodePdfGenerator != null) {
+				serverMap.put("node-pdf-generator", nodePdfGenerator.encode());
+			}
 			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
 			//initModulesHelpers(node);
 

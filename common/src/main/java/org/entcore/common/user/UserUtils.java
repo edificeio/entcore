@@ -21,10 +21,13 @@ package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -47,6 +50,7 @@ public class UserUtils {
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
 	.put("action", "visibleManualGroups");
 	private static final I18n i18n = I18n.getInstance();
+	private static final long JWT_TOKEN_EXPIRATION_TIME = 600L;
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
@@ -605,6 +609,21 @@ public class UserUtils {
 				}
 			}
 		});
+	}
+
+	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId, HttpServerRequest request) throws Exception {
+		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+		final JsonObject payload = new JsonObject();
+		final long iat = System.currentTimeMillis() / 1000;
+		if (request != null) {
+			payload.put("iss", Renders.getHost(request));
+		}
+		payload
+				.put("aud", clientId)
+				.put("sub", user.getUserId())
+				.put("iat", iat)
+				.put("exp", iat + JWT_TOKEN_EXPIRATION_TIME);
+		return jwt.encodeAndSignHmac(payload);
 	}
 
 }
