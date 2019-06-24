@@ -36,7 +36,7 @@ export class StructureModel extends Model<StructureModel> {
     connectors: ConnectorCollection;
     sources: string[] = [];
     profiles: { name: string, blocked: any }[] = [];
-    aafFunctions: string[] = [];
+    aafFunctions: Array<Array<Array<string>>> = [];
     levelsOfEducation: number[];
     distributions: string[];
 

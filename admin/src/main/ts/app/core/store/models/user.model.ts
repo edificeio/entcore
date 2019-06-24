@@ -37,7 +37,7 @@ export class UserModel extends Model<UserModel> {
     displayName: string;
     source: string;
     blocked: boolean;
-    aafFunctions: string[];
+    aafFunctions: Array<Array<string>>;
     functionalGroups: string[];
     manualGroups: string[];
     functions?: Array<[string, Array<string>]>;
