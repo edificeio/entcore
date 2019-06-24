@@ -10,9 +10,6 @@ import { MessageFlashResolver } from './message-flash/message-flash.resolver';
 export let routes : Routes = [
      { 
         path: '', component: ManagementRoot,
-        resolve: {
-            messages: MessageFlashResolver
-        },
         children: [
             {
                 path: '',
@@ -21,19 +18,31 @@ export let routes : Routes = [
             },
             { 
                 path: 'message-flash',
-                component: MessageFlashComponent
+                component: MessageFlashComponent,
+                resolve: {
+                    messages: MessageFlashResolver
+                }
             },
             {
                 path: 'message-flash-edit/:messageId',
-                component: EditMessageFlashComponent
+                component: EditMessageFlashComponent,
+                resolve: {
+                    messages: MessageFlashResolver
+                }
             },
             {
                 path: 'message-flash-duplicate/:messageId',
-                component: DuplicateMessageFlashComponent
+                component: DuplicateMessageFlashComponent,
+                resolve: {
+                    messages: MessageFlashResolver
+                }
             },
             {
                 path: 'message-flash-create',
-                component: CreateMessageFlashComponent
+                component: CreateMessageFlashComponent,
+                resolve: {
+                    messages: MessageFlashResolver
+                }
             }
         ]
      }  

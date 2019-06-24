@@ -20,11 +20,13 @@ package org.entcore.timeline.services.impl;
 
 import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
+import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 
 import java.util.List;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.timeline.services.FlashMsgService;
 import io.vertx.core.Handler;
@@ -49,7 +51,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 
 	@Override
 	public void create(JsonObject data, Handler<Either<String, JsonObject>> handler) {
-		sql.insert(resourceTable, data, validUniqueResultHandler(handler));
+		sql.insert(resourceTable, data, "id", validUniqueResultHandler(handler));
 	}
 
 	@Override
@@ -114,17 +116,54 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 
 	@Override
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
+		String myStructuresIds = "NULL";
+		String myADMLStructuresId = "NULL";
+		try {
+			myStructuresIds = String.join(",", user.getStructures().stream().map(id -> "'"+id+"'").toArray(String[]::new));
+			myADMLStructuresId = String.join(",", user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'"+id+"'").toArray(String[]::new));
+		}
+		catch(NullPointerException npe){}
 		String query = "SELECT id, contents, color, \"customColor\" FROM " + resourceTable + " m " +
 			"WHERE contents -> '"+ lang +"' IS NOT NULL " +
 			"AND trim(contents ->> '"+ lang +"') <> '' " +
-			"AND profiles ? '" + user.getType() + "' " +
+			"AND (profiles ? '" + user.getType() + "' " +
+				"OR (profiles ? 'AdminLocal' AND (" +
+				"\"structureId\" IN (" + myADMLStructuresId + ") " +
+				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + "))))) " +
 			"AND \"startDate\" <= now() " +
 			"AND \"endDate\" > now() " +
 			"AND domain = '" + domain + "' " +
+			"AND (\"structureId\" IS NULL " +
+				"OR (\"structureId\" IN (" + myStructuresIds + ")) " +
+				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myStructuresIds + "))) " +
 			"AND NOT EXISTS (SELECT * FROM " + JOIN_TABLE + " WHERE message_id = m.id AND user_id = '"+ user.getUserId() + "') " +
 			"ORDER BY modified DESC";
 
 		sql.raw(query, validResultHandler(handler, "contents"));
+	}
+
+	@Override
+	public void getSubstructuresByMessageId(String messageId, Handler<Either<String, JsonArray>> handler) {
+		String query = "SELECT structure_id FROM " + STRUCT_JOIN_TABLE + " m " +
+				"WHERE m.message_id = ?";
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(messageId);
+		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
+	}
+
+	@Override
+	public void setSubstructuresByMessageId(String messageId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler) {
+        final SqlStatementsBuilder s = new SqlStatementsBuilder();
+        s.raw("DELETE FROM " + STRUCT_JOIN_TABLE + " WHERE message_id = '" + messageId + "'");
+        JsonArray subs = subStructures.getJsonArray("subStructures");
+        if (subs != null && !subs.isEmpty()) {
+            String query = "INSERT INTO " + STRUCT_JOIN_TABLE + " VALUES ";
+            for (int i = 0; i < subs.size(); i++) {
+                String structure = subs.getString(i);
+                query += " ('"+messageId+"','"+structure+"'),";
+            }
+            s.raw(query.substring(0, query.length()-1));
+        }
+        sql.transaction(s.build(), validResultHandler(handler));
 	}
 
 	@Override

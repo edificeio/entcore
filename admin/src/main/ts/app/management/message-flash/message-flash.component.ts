@@ -14,24 +14,24 @@ import { BundlesService } from 'sijil'
     template: `
         <div class="container has-shadow">
             <div class="has-vertical-padding">
-                <div class="has-vertical-padding is-display-flex has-space-between">
+                <div class="has-vertical-padding is-display-flex">
                     <div class="checkbox__item">
-                        <input id="all" type="checkbox" name="filter" value="all" [(ngModel)]="filter" (change)="updateData()">
+                        <input id="all" type="checkbox" [checked]="filter.current && filter.future && filter.obsolete" (change)="checkAllCategories()">
                         <label for="all"><s5l>management.message.flash.all</s5l></label>
                     </div>
                     <div class="checkbox__item">
-                        <input id="in-progress" type="checkbox" name="filter" value="current" [(ngModel)]="filter" (change)="updateData()">
+                        <input id="in-progress" type="checkbox" name="filter" value="current" [(ngModel)]="filter.current" (change)="updateData()">
                         <label for="in-progress"><s5l>management.message.flash.current</s5l></label>
                     </div>
                     <div class="checkbox__item">
-                        <input id="incoming" type="checkbox" name="filter" value="future" [(ngModel)]="filter" (change)="updateData()">
+                        <input id="incoming" type="checkbox" name="filter" value="future" [(ngModel)]="filter.future" (change)="updateData()">
                         <label for="incoming"><s5l>management.message.flash.future</s5l></label>
                     </div>
                     <div class="checkbox__item">
-                      <input id="obsolete" type="checkbox" name="filter" value="obsolete" [(ngModel)]="filter" (change)="updateData()">
+                      <input id="obsolete" type="checkbox" name="filter" value="obsolete" [(ngModel)]="filter.obsolete" (change)="updateData()">
                       <label for="obsolete"><s5l>management.message.flash.obsolete</s5l></label>
                     </div>
-                    <div>
+                    <div class="has-left-margin-auto">
                       <button *ngIf="isSelectionCopyable()" (click)="duplicateMessage()"><s5l>management.message.flash.copy</s5l></button>
                       <button *ngIf="isSelectionRemovable()" (click)="showConfirmation = true"><s5l>management.message.flash.delete</s5l></button>
                       <lightbox-confirm
@@ -41,13 +41,13 @@ import { BundlesService } from 'sijil'
                           (onCancel)="showConfirmation = false">
                           <s5l>management.message.flash.confirm.delete</s5l>
                       </lightbox-confirm>
-                      <button class="is-pulled-right" (click)="createMessage()"><s5l>management.message.flash.create.message</s5l></button>
+                      <button (click)="createMessage()"><s5l>management.message.flash.create.message</s5l></button>
                     </div>
                 </div>
                 <table class="table">
                     <thead>
                         <tr>
-                            <th class="table__checkbox checkbox__item"><input type="checkbox" [checked]="areAllChecked()" (click)="checkAll()" [disabled]="displayedMessages.length == 0"><label></label></th>
+                            <th class="table__checkbox checkbox__item" (click)="checkAll()"><input type="checkbox" [checked]="areAllChecked()"  [disabled]="displayedMessages.length == 0"><label></label></th>
                             <th><s5l>management.message.flash.title</s5l></th>
                             <th><s5l>management.message.flash.message</s5l></th>
                             <th><s5l>management.message.flash.startDate</s5l></th>
@@ -59,7 +59,7 @@ import { BundlesService } from 'sijil'
                     </thead>
                     <tbody>
                         <tr *ngFor="let message of displayedMessages" [ngClass]="{'disabled': isMessageFromParentStructure(message)}" (click)="editMessage(message.id)">
-                            <td class="checkbox__item"><input type="checkbox" [(ngModel)]="checkboxes[message.id]" (click)="$event.stopPropagation()"></td>
+                            <td class="checkbox__item" (click)="checkboxes[message.id] = !checkboxes[message.id]; $event.stopPropagation()"><input type="checkbox" [(ngModel)]="checkboxes[message.id]"><label></label></td>
                             <td>{{message.title}}</td>
                             <td [innerHTML]="getContent(message.contents)"></td>
                             <td>{{displayDate(message.startDate)}}</td>
@@ -90,7 +90,11 @@ export class MessageFlashComponent implements OnInit{
     showConfirmation: boolean = false;
     showEditFrom: boolean = false;
 
-    public filter: "all" | "current" | "future" | "obsolete" = 'all';
+    public filter = {
+        current: true,
+        future: true,
+        obsolete: true
+    }
     
     constructor(
         public route: ActivatedRoute,
@@ -115,7 +119,9 @@ export class MessageFlashComponent implements OnInit{
             this.currentLanguage = this.bundles.currentLanguage;
             this.dateFormat = Intl.DateTimeFormat(this.currentLanguage);
             this.showConfirmation = false;
-            this.filter = 'all';
+            this.filter.current = true;
+            this.filter.future = true;
+            this.filter.obsolete = true;
             this.cdRef.detectChanges();
         })
 
@@ -124,23 +130,29 @@ export class MessageFlashComponent implements OnInit{
                 this.cdRef.markForCheck();
             }
         })
+
+    }
+
+    ngOnDestroy() {
+        if (!!this.dataSubscriber) {
+            this.dataSubscriber.unsubscribe();
+        }
+        if (!!this.routerSubscriber) {
+            this.routerSubscriber.unsubscribe();
+        }
     }
 
     updateData(): void {
         var now = Date.now();
         var res = this.messages ? this.messages.concat(this.messagesFromParentStructure) : [];
-        switch(this.filter) {
-            case "all":
-                break;
-            case "current":
-                res = res.filter(mess => new Date(mess.startDate).getTime() < now && new Date(mess.endDate).getTime() > now);
-                break;
-            case "future":
-                res = res.filter(mess => new Date(mess.startDate).getTime() > now);
-                break;
-            case "obsolete":
-                res = res.filter(mess => new Date(mess.endDate).getTime() < now);
-                break;
+        if (!this.filter.current) {
+            res = res.filter(mess => new Date(mess.startDate.split(' ')[0]).getTime() > now || new Date(mess.endDate.split(' ')[0]).getTime() < now);
+        }
+        if (!this.filter.future) {
+            res = res.filter(mess => new Date(mess.startDate.split(' ')[0]).getTime() < now);
+        }
+        if (!this.filter.obsolete) {
+            res = res.filter(mess => new Date(mess.endDate.split(' ')[0]).getTime() > now);
         }
         this.displayedMessages = res;
     }
@@ -170,12 +182,29 @@ export class MessageFlashComponent implements OnInit{
         this.displayedMessages.forEach(mess => this.checkboxes[mess.id] = !allChecked && !this.isMessageFromParentStructure(mess));
     }
 
-    getContent(contents: string): string {
-        return contents[this.currentLanguage];
+    checkAllCategories(): void {
+        var allChecked = this.filter.current && this.filter.future && this.filter.obsolete;
+        this.filter.current = !allChecked;
+        this.filter.future = !allChecked;
+        this.filter.obsolete = !allChecked;
+        this.updateData();
+    }
+
+    getContent(contents: Object): string {
+        if (contents[this.currentLanguage]) {
+            return contents[this.currentLanguage];
+        } else {
+            let keys: string[] = Object.keys(contents);
+            for (var i = 0; i < keys.length; i++ ) {
+                if (contents[keys[i]]) {
+                    return contents[keys[i]];
+                }
+            }
+        }
     }
 
     displayDate(date: string): string {
-        return this.dateFormat.format(new Date(date));
+        return new Date(date.split(" ")[0]).toLocaleDateString(this.currentLanguage);
     }
 
     removeSelection(): void {
@@ -183,6 +212,7 @@ export class MessageFlashComponent implements OnInit{
         MessageFlashService.deleteMessages(ids)
         .then(() => {
             this.messages = this.messages.filter(mess => !ids.includes(mess.id));
+            this.messageStore.messages = this.messageStore.messages.filter(mess => !ids.includes(mess.id));
             this.showConfirmation = false;
             this.updateData();
             this.cdRef.detectChanges();

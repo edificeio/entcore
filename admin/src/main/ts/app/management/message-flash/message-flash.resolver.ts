@@ -16,8 +16,12 @@ export class MessageFlashResolver implements Resolve<FlashMessageModel[]> {
     ) { }
 
     resolve(route: ActivatedRouteSnapshot): Promise<FlashMessageModel[]> | FlashMessageModel[] {
+        let forceReload: boolean = false;
+        if (route.queryParams['forceReload']) {
+            forceReload = true;
+        }
         let structureId: string = routing.getParam(route, 'structureId').toString();
-        if (!!this.messageStore.structure && !!this.messageStore.messages && this.messageStore.structure.id === structureId) {
+        if (!forceReload && !!this.messageStore.structure && !!this.messageStore.messages && this.messageStore.structure.id === structureId) {
             return this.messageStore.messages;
         }
         let currentStructure = globalStore.structures.data.find(s => s.id === structureId);

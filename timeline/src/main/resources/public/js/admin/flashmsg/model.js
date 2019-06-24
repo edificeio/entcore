@@ -8,6 +8,8 @@ function FlashMsg(){
     this.startDate = this.startDate ? moment(this.startDate).toDate() : new Date()
     this.endDate = this.endDate ? moment(this.endDate).toDate() : moment(new Date()).endOf('day').toDate()
     this.lang = this.lang || currentLanguage
+    this.author = this.author || ""
+    this.lastModifier = this.lastModifier || ""
 }
 FlashMsg.prototype.api = {
     post:   "/timeline/flashmsg",

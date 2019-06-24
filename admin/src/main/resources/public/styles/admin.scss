@@ -577,6 +577,16 @@ i.group_add {
 .has-left-margin-10 {margin-left: 10px;}
 .has-right-margin-10 {margin-right: 10px;}
 
+.has-margin-40 {margin: 40px;}
+.has-vertical-margin-40 {margin: 40px 0px;}
+.has-horizontal-margin-40 {margin: 0 40px;}
+.has-top-margin-40 {margin-top: 40px;}
+.has-bottom-margin-40 {margin-bottom: 40px;}
+.has-left-margin-40 {margin-left: 40px;}
+.has-right-margin-40 {margin-right: 40px;}
+
+.has-left-margin-auto {margin-left: auto;}
+
 .is-pulled-left {float: left;}
 .is-pulled-right {float: right;}
 .is-clearfix::after {
@@ -2241,4 +2251,30 @@ i.fa {
       transform: scale(1);
     }
   }
+}
+
+// SQUARE COMPONENT
+
+div.legend-square {
+  width: 30px;
+  height: 30px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
+  cursor: pointer;
+}
+div.legend-square.green {
+  background-color: green;
+}
+div.legend-square.red {
+  background-color: red;
+}
+div.legend-square.orange {
+  background-color: orange;
+}
+div.legend-square.blue {
+  background-color: blue;
+}
+div.legend-square.outlined, input.outlined {
+  box-shadow: 0px 0px 5px 3px #444;
 }

@@ -7,11 +7,18 @@ import { Component, Input, Output, EventEmitter,
     <ul [ngClass]="{ flattened: isFlattened() }">
         <li *ngFor="let item of (items | flattenObjArray: flatten | filter: filter | orderBy: order:reverse)"
             [ngClass]="{ selected: isSelected(item), unfolded: !isFolded(item), parent: hasChildren(item), root: _depth === 0 }">
-            <a href="javascript:void(0)" (click)="selectItem(item)">
+            <a href="javascript:void(0)" (click)="selectItem(item)" *ngIf="!checkboxMode">
                 <i class="opener" (click)="toggleFold($event, item)"
                     *ngIf="!isFlattened() && hasChildren(item) && !disableOpener"></i>
                 {{ display(item) }}
             </a>
+            <!--<div *ngIf="checkboxMode">
+                <input type="checkbox" [(ngModel)]="item.check" (click)="checkItem(item)">
+                {{ display(item) }}-->
+            <div class="checkbox__item">
+                <input id="all" type="checkbox" [(ngModel)]="item.check" ngDefaultControl>
+                <label for="all" (click)="checkItem(item)">{{display(item)}}</label>
+            </div>
             <item-tree
                 [items]="getChildren(item)"
                 [children]="childrenProperty"
@@ -22,8 +29,10 @@ import { Component, Input, Output, EventEmitter,
                 [lastSelected]="_lastSelectedItem"
                 [depth]="depth + 1"
                 [disableOpener]="disableOpener"
+                [checkboxMode]="checkboxMode"
                 (onSelect)="bubbleSelect($event)"
-                *ngIf="!isFlattened() && hasChildren(item) && !isFolded(item)">
+                (onCheck)="checkItem($event)"
+                *ngIf="(checkboxMode && hasChildren(item)) || (!isFlattened() && hasChildren(item) && !isFolded(item))">
             </item-tree>
         </li>
     </ul>
@@ -67,9 +76,14 @@ export class ItemTreeComponent<T> implements OnInit {
     // Disable the opener icon
     @Input() disableOpener : boolean = false
 
+    // Use checkboxes instead of selecting items
+    @Input() checkboxMode : boolean = false
+
     /**** Outputs ****/
 
     @Output() onSelect: EventEmitter<T> = new EventEmitter<T>()
+
+    @Output() onCheck: EventEmitter<T> = new EventEmitter<T>()
 
     /**** View ****/
 
@@ -95,6 +109,10 @@ export class ItemTreeComponent<T> implements OnInit {
             this.unfolded.push(item)
         }
         this.bubbleSelect(item)
+    }
+
+    private checkItem(item: T) {
+        this.onCheck.emit(item);
     }
 
     private bubbleSelect(item: T) {

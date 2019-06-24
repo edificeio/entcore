@@ -105,6 +105,7 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
         if (value !== this.innerValue && this.datePickerInst) {
             this.innerValue = value
             this.datePickerInst.setDate(value)
+            this.onChangeCallback(value)
         }
     }
 
