@@ -35,6 +35,8 @@ public interface FlashMsgService {
 	public void deleteMultiple(List<String> ids, Handler<Either<String, JsonObject>> handler);
 	public void list(String domain, Handler<Either<String, JsonArray>> handler);
 	public void listByStructureId(String structureId, Handler<Either<String, JsonArray>> handler);
+	public void getSubstructuresByMessageId(String messageId, Handler<Either<String, JsonArray>> handler);
+	public void setSubstructuresByMessageId(String messageId, JsonObject subStructures, Handler<Either<String, JsonArray>> handler);
 
 	//public void duplicate(String id, Handler<Either<String, JsonObject>> handler);
 

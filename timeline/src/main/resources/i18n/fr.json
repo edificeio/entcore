@@ -106,6 +106,8 @@
     "timeline.admin.startDate": "Date de début",
     "timeline.admin.endDate": "Date de fin",
     "timeline.admin.readCount": "Nombre de vues",
+    "timeline.admin.author": "Auteur",
+    "timeline.admin.lastModifier": "Dernière modification",
     "timeline.admin.profiles": "Profil(s)",
     "timeline.admin.create.message": "Créer un message",
     "timeline.admin.delete.message": "Supprimer",

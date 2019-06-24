@@ -105,18 +105,25 @@ public class FlashMsgController extends BaseController {
 
 	@Post("/flashmsg")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void create(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.create", new Handler<JsonObject>() {
-			public void handle(JsonObject body) {
-				if(body == null){
-					badRequest(request);
-					return;
-				}
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.create", new Handler<JsonObject>() {
+					public void handle(JsonObject body) {
+						if(body == null){
+							badRequest(request);
+							return;
+						}
 
-				body.put("domain", getHost(request));
+						body.put("domain", getHost(request));
+						body.put("author", user.getUsername());
+						body.put("lastModifier", user.getUsername());
 
-				service.create(body, defaultResponseHandler(request));
+						service.create(body, defaultResponseHandler(request));
+					}
+				});
 			}
 		});
 	}
@@ -136,11 +143,17 @@ public class FlashMsgController extends BaseController {
 
 	@Put("/flashmsg/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(SuperAdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void update(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", new Handler<JsonObject>() {
-			public void handle(JsonObject body) {
-				service.update(request.params().get("id"), body, defaultResponseHandler(request));
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				RequestUtils.bodyToJson(request, pathPrefix + "flashmsg.update", new Handler<JsonObject>() {
+					public void handle(JsonObject body) {
+						body.put("lastModifier", user.getUsername());
+						service.update(request.params().get("id"), body, defaultResponseHandler(request));
+					}
+				});
 			}
 		});
 	}
@@ -157,6 +170,24 @@ public class FlashMsgController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void listAdminByStructureId(final HttpServerRequest request) {
 		service.listByStructureId(request.params().get("structureId"), arrayResponseHandler(request));
+	}
+
+	@Get("/flashmsg/:messageId/substructures")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void getSubstructuresByMessageId(final HttpServerRequest request) {
+		service.getSubstructuresByMessageId(request.params().get("messageId"), arrayResponseHandler(request));
+	}
+
+	@Post("/flashmsg/:messageId/substructures")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void setSubstructuresByMessageId(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+			public void handle(JsonObject body) {
+				service.setSubstructuresByMessageId(request.params().get("messageId"), body, arrayResponseHandler(request));
+			}
+		});
 	}
 
 }

@@ -15,32 +15,76 @@ import { BundlesService } from 'sijil'
         <div class="container has-shadow">
             <h2><s5l>management.message.flash.{{action}}</s5l></h2>
 
+            <fieldset>
+                <form-field label="management.message.flash.title">
+                    <input type="text" [(ngModel)]="message.title" class="is-flex-none">
+                </form-field>
+                <form-field label="management.message.flash.startDate">
+                    <date-picker [(ngModel)]="message.startDate"></date-picker>
+                </form-field>
+                <form-field label="management.message.flash.endDate">
+                    <date-picker [(ngModel)]="message.endDate"></date-picker>
+                </form-field>
+                <form-field label="management.message.flash.profiles">
+                    <multi-combo
+                        [comboModel]="comboModel"
+                        [(outputModel)]="message.profiles"
+                        [title]="'management.message.flash.chose.profiles' | translate">
+                    </multi-combo>
+                </form-field>
+                <form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
+                label="management.message.flash.selected.etab">
+                    <span class="is-flex-none has-right-margin-40">{{message.subStructures.length}}</span>
+                    <button class="is-flex-none" (click)="openLightbox()"><s5l>management.message.flash.manage</s5l></button>
+                </form-field>
+                <form-field label="management.message.flash.language">
+                    <mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
+                    </mono-select>
+                </form-field>
+                <form-field label="management.message.flash.color">
+                    <span class="is-flex-none">
+                        <div class="legend-square red" [ngClass]="{ outlined: message.color == 'red' }" (click)="message.color = 'red'"></div>
+                        <div class="legend-square green" [ngClass]="{ outlined: message.color == 'green'}" (click)="message.color = 'green'"></div>
+                        <div class="legend-square blue" [ngClass]="{ outlined: message.color == 'blue' }" (click)="message.color = 'blue'"></div>
+                        <div class="legend-square orange" [ngClass]="{ outlined: message.color == 'orange' }" (click)="message.color = 'orange'"></div>
+                        <input type="color" ng-model="message.customColor" [ngClass]="{ outlined: !!message.customColor }" [(ngModel)]="message.customColor">
+                    </span>
+                </form-field>
+                <form-field label="management.message.flash.notification">
+                    <span class="is-flex-none">
+                        <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren()">
+                        <s5l>management.message.flash.notification.email</s5l>
+                        <input class="has-left-margin-40" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren()">
+                        <s5l>management.message.flash.notification.mobile</s5l>
+                    </span>
+                </form-field>
+            </fieldset>
+
+            <div class="has-top-margin-40">
+                <textarea rows="4" cols="50" [(ngModel)]="message.contents[selectedLanguage]">
+                </textarea>
             <div>
-                <s5l>management.message.flash.title</s5l>*
-                <input type="text" [(ngModel)]="message.title">
-            </div>
-            <div>
-                <s5l>management.message.flash.startDate</s5l>*
-                <date-picker [(ngModel)]="message.startDate"></date-picker>
-            </div>
-            <div>
-                <s5l>management.message.flash.endDate</s5l>*
-                <date-picker [(ngModel)]="message.endDate"></date-picker>
-            </div>
-            <div>
-                <s5l>management.message.flash.profiles</s5l>*
-                <multi-combo
-                    [comboModel]="comboModel"
-                    [(outputModel)]="message.profiles"
-                    [title]="'management.message.flash.chose.profiles' | translate">
-                </multi-combo>
+
+            <div class="has-top-margin-40">
+                <button (click)="goBack(false)"><s5l>management.message.flash.cancel</s5l></button>
+                <button [disabled]="!isUploadable()" (click)="upload()"><s5l>management.message.flash.upload</s5l></button>
             </div>
 
-            <div>
-                <s5l>management.message.flash.language</s5l>
-                <mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
-                </mono-select>
-            </div>
+            <lightbox *ngIf="structure"
+                [show]="showLightbox" (onClose)="closeLightbox()">
+                <h2><s5l>management.message.flash.lightbox.title</s5l></h2>
+                <p><s5l>management.message.flash.lightbox.explanation</s5l></p>
+                <item-tree
+                    [items]="getItems()"
+                    order="name"
+                    display="name"
+                    [checkboxMode]="true"
+                    (onCheck)="addOrRemoveChild($event)">
+                </item-tree>
+                <span><i class="fa fa-exclamation-circle"></i></span>
+                <s5l>management.message.flash.lightbox.warning</s5l>
+                <div><button class="is-pulled-right" (click)="saveAndClose()"><s5l>management.message.flash.lightbox.save</s5l></button></div>
+            </lightbox>
 
         </div>
     `,
@@ -54,11 +98,15 @@ export class MessageFlashFormComponent implements OnInit{
     routerSubscriber: Subscription;
     originalMessage: FlashMessageModel;
     message: FlashMessageModel = new FlashMessageModel();
+    messages: FlashMessageModel[] = [];
     loadedLanguages: string[] = [];
-    selectedLanguage: string;
+    selectedLanguage: string = this.bundles.currentLanguage;
     dateFormat: Intl.DateTimeFormat;
     comboModel = ['Teacher', 'Student', 'Relative', 'Personnel', 'Guest', 'AdminLocal'];
-    showConfirmation: boolean = false;
+    showLightbox: boolean = false;
+
+    mailNotification: boolean = false;
+    pushNotification: boolean = false;
 
     @Input() action: 'create' | 'edit' | 'duplicate';
     @Input() messageId: string = 'none';
@@ -76,25 +124,33 @@ export class MessageFlashFormComponent implements OnInit{
         this.dataSubscriber = routing.observe(this.route, "data").subscribe(async (data: Data) => {
             if (data['structure']) {
                 this.structure = data['structure'];
+                this.message.structureId = this.structure.id;
             }
             if (this.action !== 'create' && data['messages']) {
-                this.originalMessage = data['messages'].find(mess => mess.id == this.messageId);
-                if (!!this.originalMessage) {
-                    this.message.title = this.originalMessage.title;
-                    this.message.startDate = this.originalMessage.startDate;
-                    this.message.endDate = this.originalMessage.endDate;
-                    this.message.color = this.originalMessage.color;
-                    this.message.customColor = this.originalMessage.customColor;
-                    this.message.profiles = Object.assign([], this.originalMessage.profiles);
-                    this.message.contents = this.originalMessage.contents;
-                } else {
-                    this.router.navigate(["../.."], { relativeTo: this.route });
+                this.messages = data['messages'];
+                this.originalMessage = this.messages.find(mess => mess.id == this.messageId);
+                if (!this.originalMessage || this.originalMessage.structureId !== this.structure.id) {
+                    this.router.navigate(["/admin", this.structure.id, "management", "message-flash"]);
+                    return;
                 }
+                this.message.id = this.originalMessage.id;
+                this.message.title = this.originalMessage.title;
+                this.message.startDate = this.originalMessage.startDate ? this.originalMessage.startDate.split(" ")[0] : this.originalMessage.startDate;
+                this.message.endDate = this.originalMessage.endDate ? this.originalMessage.endDate.split(" ")[0] : this.originalMessage.endDate;
+                if (!!this.originalMessage.color) {
+                    this.message.color = this.originalMessage.color;
+                }
+                if (!! this.originalMessage.customColor) {
+                    this.message.customColor = this.originalMessage.customColor;
+                }
+                this.message.profiles = Object.assign([], this.originalMessage.profiles);
+                this.message.contents = JSON.parse(JSON.stringify(this.originalMessage.contents));
+                MessageFlashService.getSubStructuresByMessageId(this.originalMessage.id)
+                .then(data => {
+                    this.message.subStructures = data.map(item => item['structure_id']);
+                    this.cdRef.detectChanges();
+                });
             }
-            this.selectedLanguage = this.bundles.currentLanguage;
-            MessageFlashService.getLanguages()
-            .then(lang => this.loadedLanguages = lang)
-            .catch(() => this.loadedLanguages = [this.selectedLanguage]);
             this.cdRef.detectChanges();
         })
 
@@ -103,12 +159,143 @@ export class MessageFlashFormComponent implements OnInit{
                 this.cdRef.markForCheck();
             }
         })
+
+        MessageFlashService.getLanguages()
+            .then(lang => {
+                this.loadedLanguages = lang;
+                this.selectedLanguage = this.getSelectedLanguage();
+                this.cdRef.detectChanges();
+            })
+            .catch(() => {
+                this.loadedLanguages = [this.selectedLanguage];
+                this.cdRef.detectChanges();
+            });
+    }
+
+    ngOnDestroy() {
+        if (!!this.dataSubscriber) {
+            this.dataSubscriber.unsubscribe();
+        }
+        if (!!this.routeSubscriber) {
+            this.routeSubscriber.unsubscribe();
+        }
+        if (!!this.routerSubscriber) {
+            this.routerSubscriber.unsubscribe();
+        }
     }
 
     languageOptions(): {value: string, label: string}[] {
         return this.loadedLanguages.map(lang => {
             return { value: lang, label: ('management.message.flash.language.'+lang) }
         });
+    }
+
+    private getSelectedLanguage(): string {
+        let defaultLanguage = this.bundles.currentLanguage;
+        if (this.message.contents[defaultLanguage]) {
+            return defaultLanguage;
+        }
+        for (var i = 0; i < this.loadedLanguages.length; i++) {
+            if (this.message.contents[this.loadedLanguages[i]]) {
+                return this.loadedLanguages[i];
+            }
+        }
+        return defaultLanguage;
+    }
+
+    areSelectedChildren(): boolean {
+        return this.message.subStructures.length > 0;
+    }
+
+    // Lightbox methods
+
+    private lightboxSubStructures: string[];
+
+    openLightbox(): void {
+        this.lightboxSubStructures = Object.assign([], this.message.subStructures);
+        this.showLightbox = true;
+    }
+
+    saveAndClose(): void {
+        this.message.subStructures = this.lightboxSubStructures;
+        if (this.message.subStructures.length > 0) {
+            this.mailNotification = false;
+            this.pushNotification = false;
+        }
+        this.closeLightbox();
+    }
+
+    closeLightbox(): void {
+        this.showLightbox = false;
+        this.cdRef.detectChanges();
+    }
+
+    addOrRemoveChild(child: { name: string, id: string, check: boolean}): void {
+        let index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
+        if (index == -1) {
+            this.lightboxSubStructures.push(child.id);
+        } else {
+            this.lightboxSubStructures = this.lightboxSubStructures.slice(0,index).concat(this.lightboxSubStructures.slice(index+1,this.lightboxSubStructures.length));
+        }
+    }
+
+    private getItems(): { name: string, id: string, check: boolean}[] {
+        var that = this;
+        let myMap = function (child: StructureModel) {
+            return {
+                name: child.name,
+                id: child.id,
+                children: child.children && child.children.length > 0 ? child.children.map(myMap) : [],
+                check: !!that.lightboxSubStructures && !!that.lightboxSubStructures.find(subId => subId === child.id)
+            };
+        }
+        if (this.structure && this.structure.children) {
+            return this.structure.children.map(myMap);
+        } else {
+            return [];
+        }
+    }
+
+    //
+
+    isUploadable(): boolean {
+        return !!this.message && !!this.message.title && !!this.message.startDate && !!this.message.endDate
+        && !!this.message.profiles && this.message.profiles.length > 0 && (!!this.message.color || !!this.message.customColor)
+        && !!this.message.contents && Object.keys(this.message.contents).length > 0;
+    }
+
+    upload() {
+        let promise;
+        let key: string;
+        if (this.action === 'edit') {
+            promise = MessageFlashService.editMessage(this.message);
+            key = 'edit'
+        } else {
+            promise = MessageFlashService.createMessage(this.message);
+            key = 'create';
+        }
+        promise.then(() => {
+            this.goBack(true);
+            this.ns.success(
+                { key: 'notify.management.'+key+'.success.content', parameters: {} },
+                { key: 'notify.management.'+key+'.success.title', parameters: {} }
+            );
+        })
+        .catch((error) => {
+            this.ns.error(
+                { key: 'notify.management.'+key+'.error.content', parameters: {} },
+                { key: 'notify.management.'+key+'.error.title', parameters: {} }
+            );
+        });
+    }
+
+    goBack(forceReload: boolean): void {
+        if (forceReload) {
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash"], { queryParams: { forceReload: 'true' } });
+        } else {
+            this.router.navigate(["/admin", this.structure.id, "management", "message-flash"]);
+        }
+        return;
     }
 
 }

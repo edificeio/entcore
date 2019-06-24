@@ -47,6 +47,8 @@
             <th ng-click="orderBy('startDate')"><a><i18n>timeline.admin.startDate</i18n></a></th>
             <th ng-click="orderBy('endDate')"><a><i18n>timeline.admin.endDate</i18n></a></th>
             <th ng-click="orderBy('readCount')"><a><i18n>timeline.admin.readCount</i18n></a></th>
+            <th ng-click="orderBy('author')"><a><i18n>timeline.admin.author</i18n></a></th>
+            <th ng-click="orderBy('lastModifier')"><a><i18n>timeline.admin.lastModifier</i18n></a></th>
         </tr>
     </thead>
     <tbody>
@@ -59,6 +61,8 @@
             <td ng-click="editMessage(message)">[[ formatDate(message.startDate) ]]</td>
             <td ng-click="editMessage(message)">[[ formatDate(message.endDate) ]]</td>
             <td ng-click="editMessage(message)">[[ message.readCount ]]</td>
+            <td ng-click="editMessage(message)">[[ message.author ]]</td>
+            <td ng-click="editMessage(message)">[[ message.lastModifier ]]</td>
         </tr>
     </tbody>
 </table>
