@@ -83,7 +83,11 @@ export class GroupInputFilters implements OnChanges {
             this.cdRef.markForCheck()
         })
         this.structure.syncAafFunctions().then(() => {
-            this.listFilters.setFunctionsComboModel(this.structure.aafFunctions)
+            let aafFunctions: Array<Array<string>> = [];
+            this.structure.aafFunctions.forEach(f => {
+                f.forEach(f2 => aafFunctions.push([f2[2], f2[4]]))
+            });
+            this.listFilters.setFunctionsComboModel(aafFunctions);
             this.cdRef.markForCheck()
         })
         ProfilesService.getProfiles().then(p => {

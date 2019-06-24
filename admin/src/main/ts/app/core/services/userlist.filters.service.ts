@@ -81,20 +81,30 @@ class SourcesFilter extends UserFilter<string> {
     }
 }
 
-class FunctionsFilter extends UserFilter<string> {
+class FunctionsFilter extends UserFilter<Array<string>> {
     type = 'aafFunctions'
     label = 'functions.multi.combo.title'
-    comboModel = []
+    comboModel: Array<Array<string>> = []
     order = '+'
     filterProp = 'this'
 
-    filter = (functions: string[]) => {
-        let outputModel = this.outputModel
-        return outputModel.length === 0 || 
-            functions && functions.length > 0 &&
-            functions.some(f => {
-                return outputModel.some(o => o === f)
-            })
+    filter = (functions: Array<Array<string>>) => {
+        let outputModel = this.outputModel;
+        let res = false;
+
+        if (outputModel.length === 0) {
+            return true;
+        } else if(functions && functions.length > 0 && outputModel && outputModel.length > 0) {
+            functions.forEach(f => {
+                outputModel.forEach(o => {
+                    if (o.includes(f[2]) && o.includes(f[4])) {
+                        res = true;
+                    }
+                })
+            });
+        }
+
+        return res;
     }
 }
 
@@ -246,7 +256,7 @@ export class UserlistFiltersService {
         this.sourcesFilter.comboModel = combos
     }
 
-    setFunctionsComboModel(combos: string[]) {
+    setFunctionsComboModel(combos: Array<Array<string>>) {
         this.functionsFilter.comboModel = combos
     }
 

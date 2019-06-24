@@ -92,7 +92,13 @@ export class UsersComponent implements OnInit, OnDestroy {
 
         this.listFilters.setClassesComboModel(structure.classes);
         this.listFilters.setSourcesComboModel(structure.sources);
-        this.listFilters.setFunctionsComboModel(structure.aafFunctions);
+        
+        let aafFunctions: Array<Array<string>> = [];
+        structure.aafFunctions.forEach(f => {
+            f.forEach(f2 => aafFunctions.push([f2[2], f2[4]]))
+        });
+        this.listFilters.setFunctionsComboModel(aafFunctions);
+        
         this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));
         this.listFilters.setFunctionalGroupsComboModel(
             structure.groups.data.filter(g => g.type === 'FunctionalGroup').map(g => g.name));
