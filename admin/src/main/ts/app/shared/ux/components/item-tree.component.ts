@@ -12,10 +12,7 @@ import { Component, Input, Output, EventEmitter,
                     *ngIf="!isFlattened() && hasChildren(item) && !disableOpener"></i>
                 {{ display(item) }}
             </a>
-            <!--<div *ngIf="checkboxMode">
-                <input type="checkbox" [(ngModel)]="item.check" (click)="checkItem(item)">
-                {{ display(item) }}-->
-            <div class="checkbox__item">
+            <div class="checkbox__item" *ngIf="checkboxMode">
                 <input id="all" type="checkbox" [(ngModel)]="item.check" ngDefaultControl>
                 <label for="all" (click)="checkItem(item)">{{display(item)}}</label>
             </div>
