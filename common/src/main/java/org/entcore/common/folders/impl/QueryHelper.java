@@ -454,7 +454,8 @@ class QueryHelper {
 		AggregationsBuilder agg = AggregationsBuilder.startWithCollection(this.collection)//
 				.withMatch(parentFilter.build())//
 				.withGraphLookup("$_id", "_id", "eParent", "children", Optional.of(MAX_DEPTH), Optional.empty(), query)//
-				.withProjection(projection);
+				.withProjection(projection)//
+				.withAllowDiskUse(true);//#24499 allow disk use for big folder tree
 		JsonObject command = agg.getCommand();
 		Future<List<String>> future = Future.future();
 		mongo.aggregate(command, message -> {
