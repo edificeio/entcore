@@ -14,21 +14,6 @@ export interface UserOverview {
     structures: string[];
 }
 
-export const locators = {
-    displayName: '.lct-user-overview-display-name',
-    type: '.lct-user-overview-type',
-    activationCode: '.lct-user-overview-activation-code',
-    firstName: '.lct-user-overview-first-name',
-    lastName: '.lct-user-overview-last-name',
-    login: '.lct-user-overview-login',
-    birthDate: '.lct-user-overview-birth-date',
-    email: '.lct-user-overview-email',
-    source: '.lct-user-overview-source',
-    structures: '.lct-user-overview-structures',
-    label: '.lct-user-overview-label',
-    value: '.lct-user-overview-value',
-};
-
 @Component({
     selector: 'user-overview',
     template: `

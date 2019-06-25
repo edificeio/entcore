@@ -56,10 +56,9 @@ import { UsersStore } from '../../../users.store';
                     </button>
                 </li>
             </ul>
-            <lightbox [show]="!!comparedUserId" (onClose)="comparedUserId = null;">
-                <smart-users-comparison *ngIf="!!comparedUserId; else nothing" [user1]="user.id"
+            <lightbox *ngIf="!!comparedUserId" [show]="true" (onClose)="comparedUserId = null;">
+                <smart-users-comparison [user1]="user.id"
                                         [user2]="comparedUserId"></smart-users-comparison>
-                <ng-template #nothing>&nbsp;</ng-template>
             </lightbox>
         </panel-section>
     `,
