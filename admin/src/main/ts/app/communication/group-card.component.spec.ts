@@ -1,13 +1,13 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { UxModule } from '../../shared/ux/ux.module';
+import { UxModule } from '../shared/ux/ux.module';
 import { GroupCardComponent, groupCardLocators as locators } from './group-card.component';
 import { BundlesService, SijilModule } from 'sijil';
-import { clickOn, generateGroup, getText } from '../../shared/utils';
+import { clickOn, generateGroup, getText } from '../shared/utils';
 import { DebugElement } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { CommunicationRulesService } from './communication-rules.service';
 import { ActivatedRoute } from '@angular/router';
-import { NotifyService, SpinnerService, GroupNameService } from '../../core/services';
+import { NotifyService, SpinnerService, GroupNameService } from '../core/services';
 
 describe('GroupCardComponent', () => {
     let component: GroupCardComponent;
@@ -81,7 +81,7 @@ describe('GroupCardComponent', () => {
     }));
 
     describe('viewMembers', () => {
-        it(`should navigate to /admin/myStructure/groups/manual/groupId given a manual group with id groupId and structure id myStructure`, () => {
+        it(`should navigate to /admin/myStructure/groups/manual/groupId/details given a manual group with id groupId and structure id myStructure`, () => {
             spyOn(window, 'open');
             component.viewMembers(generateGroup('groupId',
                 'BOTH',
@@ -91,7 +91,7 @@ describe('GroupCardComponent', () => {
                     name: 'myStructureName'
                 }]));
             expect((window.open as jasmine.Spy).calls.mostRecent().args[0])
-                .toEqual('/admin/myStructure/groups/manual/groupId');
+                .toEqual('/admin/myStructure/groups/manual/groupId/details');
         });
     });
 });

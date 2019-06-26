@@ -9,7 +9,7 @@ import { GroupDetails } from './group-details.component';
 import { StructureModel } from '../../core/store/models';
 import { GroupCollection } from '../../core/store/collections';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
-import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
+import { CommunicationRulesService } from '../../communication/communication-rules.service';
 import { NotifyService, GroupNameService } from '../../core/services';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';

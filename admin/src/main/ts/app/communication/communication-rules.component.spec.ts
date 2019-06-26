@@ -2,7 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
-import { UxModule } from '../../shared/ux/ux.module';
+import { UxModule } from '../shared/ux/ux.module';
 import {
     CommunicationRule,
     CommunicationRulesComponent,
@@ -10,11 +10,11 @@ import {
     sortGroups,
     uniqueGroups
 } from './communication-rules.component';
-import { generateGroup } from '../../shared/utils';
-import { GroupModel, StructureModel } from '../../core/store/models';
+import { generateGroup } from '../shared/utils';
+import { GroupModel, StructureModel } from '../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { GroupNameService, NotifyService } from '../../core/services';
-import { UsersStore } from '../users.store';
+import { GroupNameService, NotifyService } from '../core/services';
+import { UsersStore } from '../users/users.store';
 
 describe('CommunicationRulesComponent', () => {
     let component: CommunicationRulesComponent;
