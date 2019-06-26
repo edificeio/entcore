@@ -118,18 +118,21 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
 		String myStructuresIds = "NULL";
 		String myADMLStructuresId = "NULL";
+		boolean isADMLOfOneStructure = false;
 		try {
 			myStructuresIds = String.join(",", user.getStructures().stream().map(id -> "'"+id+"'").toArray(String[]::new));
 			myADMLStructuresId = String.join(",", user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'"+id+"'").toArray(String[]::new));
+			isADMLOfOneStructure = !user.getFunctions().get(ADMIN_LOCAL).getScope().isEmpty();
 		}
 		catch(NullPointerException npe){}
 		String query = "SELECT id, contents, color, \"customColor\" FROM " + resourceTable + " m " +
 			"WHERE contents -> '"+ lang +"' IS NOT NULL " +
 			"AND trim(contents ->> '"+ lang +"') <> '' " +
 			"AND (profiles ? '" + user.getType() + "' " +
-				"OR (profiles ? 'AdminLocal' AND (" +
-				"\"structureId\" IN (" + myADMLStructuresId + ") " +
-				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + "))))) " +
+				"OR (profiles ? 'AdminLocal' AND ("+
+				"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "1=1" : "1=2") + ") " +
+				"OR (\"structureId\" IN (" + myADMLStructuresId + ") " +
+				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + ")))))) " +
 			"AND \"startDate\" <= now() " +
 			"AND \"endDate\" > now() " +
 			"AND domain = '" + domain + "' " +
