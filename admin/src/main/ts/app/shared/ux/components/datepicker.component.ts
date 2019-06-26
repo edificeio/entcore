@@ -15,6 +15,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 };
 
 import Flatpickr from 'flatpickr';
+import French from 'flatpickr/dist/l10n/fr.js';
 
 @Component({
     selector: 'date-picker',
@@ -81,6 +82,12 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
             this.model.control.disable()
         }
 
+        const navigatorLanguage = navigator.language.split('-')[0];
+        let datePickerLocale = {};
+        if (navigatorLanguage === 'fr') {
+            datePickerLocale = French.fr;
+        }
+
         // options for the flatpickr instance
         let options = {
             altInput: !this.disabled,
@@ -91,10 +98,11 @@ export class DatepickerComponent implements OnDestroy, AfterViewInit, ControlVal
             minDate: this.minDate,
             maxDate: this.maxDate,
             clickOpens: !this.disabled,
-            wrap: true // to add input decoration (calendar icon and delete icon)
+            wrap: true, // to add input decoration (calendar icon and delete icon)
+            locale: datePickerLocale
         }
 
-        this.datePickerInst = new Flatpickr(this.datePickerElement.nativeElement, options)
+        this.datePickerInst = new Flatpickr(this.datePickerElement.nativeElement, options);
     }
 
     ngOnDestroy(): void {
