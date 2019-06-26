@@ -116,7 +116,7 @@ function AdminFlashMsgController($scope) {
     }
 
     $scope.profiles = {
-        profileList: [ 'Teacher', 'Student', 'Relative', 'Personnel', 'Guest' ],
+        profileList: [ 'Teacher', 'Student', 'Relative', 'Personnel', 'Guest', 'AdminLocal' ],
         list: [],
         selected: [],
         deselect: function(item) {
