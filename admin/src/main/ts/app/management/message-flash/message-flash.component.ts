@@ -51,7 +51,7 @@ import { BundlesService } from 'sijil'
                             <th><s5l>management.message.flash.title</s5l></th>
                             <th><s5l>management.message.flash.message</s5l></th>
                             <th><s5l>management.message.flash.startDate</s5l></th>
-                            <th><s5l>management.message.flash.title</s5l></th>
+                            <th><s5l>management.message.flash.endDate</s5l></th>
                             <th><s5l>management.message.flash.viewCount</s5l></th>
                             <th><s5l>management.message.flash.author</s5l></th>
                             <th><s5l>management.message.flash.lastModified</s5l></th>
