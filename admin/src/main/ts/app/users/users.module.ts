@@ -32,16 +32,14 @@ import { UserlistFiltersService } from '../core/services';
 import { UserInfoService } from './details/sections/info/user-info.service';
 import { HttpClientModule } from '@angular/common/http';
 import { globalStoreProvider } from '../core/store';
-import { UserCommunicationComponent } from './communication/user-communication.component';
 import { SmartUserCommunicationComponent } from './communication/smart-user-communication.component';
-import { GroupCardComponent } from './communication/group-card.component';
-import { CommunicationRulesComponent } from './communication/communication-rules.component';
 import { UserGroupsResolver } from './communication/user-groups.resolver';
 import { GroupNameService } from '../core/services/group-name.service';
 import { UsersComparisonComponent } from './users-comparison.component';
 import { UserOverviewComponent } from './user-overview.component';
 import { SmartUsersComparisonComponent } from './smart-users-comparison.component';
-import { UserService } from "./user.service";
+import { UserService } from './user.service';
+import { CommunicationModule } from '../communication/communication.module';
 
 @NgModule({
     imports: [
@@ -51,6 +49,7 @@ import { UserService } from "./user.service";
         RouterModule.forChild(routes),
         SijilModule.forChild(),
         UxModule,
+        CommunicationModule,
         HttpClientModule
     ],
     declarations: [
@@ -69,11 +68,8 @@ import { UserService } from "./user.service";
         UserClassesSection,
         UserManualGroupsSection,
         UserFunctionalGroupsSection,
-        UserCommunicationComponent,
         SmartUserCommunicationComponent,
         UserQuotaSection,
-        GroupCardComponent,
-        CommunicationRulesComponent,
         UsersComparisonComponent,
         UserOverviewComponent,
         SmartUsersComparisonComponent

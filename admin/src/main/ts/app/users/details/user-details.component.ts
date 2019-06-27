@@ -200,6 +200,7 @@ export class UserDetails implements OnInit, OnDestroy {
     private userSubscriber: Subscription;
     private dataSubscriber: Subscription;
 
+    public showRemoveUserConfirmation = false;
     forceDuplicates: boolean;
     details: UserDetailsModel;
     structure: StructureModel = this.usersStore.structure;

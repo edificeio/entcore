@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Column, CommunicationRule } from './communication-rules.component';
-import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
+import { GroupModel, InternalCommunicationRule } from '../core/store/models';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';

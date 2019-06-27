@@ -1,23 +1,23 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserCommunicationComponent, userCommunicationLocators as locators } from './user-communication.component';
-import { GroupModel, UserDetailsModel, UserModel, StructureModel } from '../../core/store/models';
+import { GroupsCommunicationComponent, groupsCommunicationLocators as locators } from './groups-communication.component';
+import { GroupModel, UserDetailsModel, UserModel, StructureModel } from '../core/store/models';
 import { By } from '@angular/platform-browser';
 import { BundlesService, SijilModule } from 'sijil';
 import { Component, DebugElement, Input } from '@angular/core';
-import { UxModule } from '../../shared/ux/ux.module';
+import { UxModule } from '../shared/ux/ux.module';
 import { Column, CommunicationRule } from './communication-rules.component';
-import { clickOn, generateGroup, getText } from '../../shared/utils';
+import { clickOn, generateGroup, getText } from '../shared/utils';
 
-describe('UserCommunicationComponent', () => {
-    let component: UserCommunicationComponent;
-    let fixture: ComponentFixture<UserCommunicationComponent>;
+describe('GroupsCommunicationComponent', () => {
+    let component: GroupsCommunicationComponent;
+    let fixture: ComponentFixture<GroupsCommunicationComponent>;
     let axellePotier: UserCommunicationTestingData;
     let harryPotter: UserCommunicationTestingData;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [
-                UserCommunicationComponent,
+                GroupsCommunicationComponent,
                 MockCommunicationRulesComponent
             ],
             providers: [],
@@ -27,7 +27,7 @@ describe('UserCommunicationComponent', () => {
             ]
 
         }).compileComponents();
-        fixture = TestBed.createComponent(UserCommunicationComponent);
+        fixture = TestBed.createComponent(GroupsCommunicationComponent);
         component = fixture.debugElement.componentInstance;
         const bundlesService = TestBed.get(BundlesService);
         bundlesService.addToBundle({
@@ -48,8 +48,8 @@ describe('UserCommunicationComponent', () => {
             null,
             null);
 
-        component.user = axellePotier.user;
-        component.userSendingCommunicationRules = axellePotier.communicationRules;
+        component.title = "my title";
+        component.sendingCommunicationRules = axellePotier.communicationRules;
         component.addCommunicationPickableGroups = [generateGroup('group1')];
         component.manageableStructuresId = ['activeStructure'];
         component.activeStructure = {id: 'activeStructure', name: 'activeStructure'} as StructureModel;
@@ -60,17 +60,17 @@ describe('UserCommunicationComponent', () => {
         fixture.detectChanges();
     }));
 
-    it('should create the UserCommunicationComponent component', async(() => {
+    it('should create the GroupsCommunicationComponent component', async(() => {
         expect(component).toBeTruthy();
     }));
 
-    it('should have the title "Communication de POTIER Axelle" given user Axelle Potier', async(() => {
-        expect(getText(getTitle(fixture))).toBe('Communication de POTIER Axelle');
+    it('should have the title "my title" given the title "my title"', async(() => {
+        expect(getText(getTitle(fixture))).toBe('my title');
     }));
 
-    it('should have the title "Communication de POTTER Harry" given user Harry Potter', async(() => {
-        component.user = harryPotter.user;
-        component.userSendingCommunicationRules = harryPotter.communicationRules;
+    it('should have the title "Communication de POTTER Harry" given the title "Communication de POTTER Harry"', async(() => {
+        component.title = "Communication de POTTER Harry";
+        component.sendingCommunicationRules = harryPotter.communicationRules;
         fixture.detectChanges();
         expect(getText(getTitle(fixture))).toBe('Communication de POTTER Harry');
     }));
@@ -103,11 +103,11 @@ function generateTestingData(firstName: string, lastName: string, classes: Group
     return {user, communicationRules};
 }
 
-function getTitle(fixture: ComponentFixture<UserCommunicationComponent>): DebugElement {
+function getTitle(fixture: ComponentFixture<GroupsCommunicationComponent>): DebugElement {
     return fixture.debugElement.query(By.css(locators.title));
 }
 
-function getBackButton(fixture: ComponentFixture<UserCommunicationComponent>): DebugElement {
+function getBackButton(fixture: ComponentFixture<GroupsCommunicationComponent>): DebugElement {
     return fixture.debugElement.query(By.css(locators.backButton));
 }
 
