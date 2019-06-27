@@ -92,7 +92,7 @@ public class EDTUtils {
 		}
 		final Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.DECRYPT_MODE, privateKey);
-		final byte[] decryptedKey = cipher.doFinal(Base64.getDecoder().decode(encryptedKey));
+		final byte[] decryptedKey = cipher.doFinal(Base64.getDecoder().decode(encryptedKey.replace("\n","")));
 		final byte[] key = Arrays.copyOfRange(decryptedKey, 0, 16);
 		final byte[] iv = Arrays.copyOfRange(decryptedKey, 16, 32);
 		final byte[] sum = Arrays.copyOfRange(decryptedKey, 32, 48);
@@ -104,14 +104,22 @@ public class EDTUtils {
 		cipher2.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(iv));
 		final byte[] content = cipher2.doFinal(edtEncryptedExport.getCONTENU().getValue());
 
-		byte[] decompressedContent;
+		final byte[] decompressedContent;
 		if (edtEncryptedExport.getCONTENU().isCompresseAvantChiffrement()) {
 			decompressedContent = ZLib.decompress(content);
 		} else {
 			decompressedContent = content;
 		}
 
-		final String xmlContent = XML.format(new String(decompressedContent), 0, true);
+		final String decompressedContentString;
+		if (decompressedContent.length > 3 && decompressedContent[0] == (byte) 0xEF &&
+				decompressedContent[1] == (byte) 0xBB && decompressedContent[2] == (byte) 0xBF) {
+			decompressedContentString = new String(Arrays.copyOfRange(decompressedContent, 3, decompressedContent.length));
+		} else {
+			decompressedContentString = new String(decompressedContent);
+		}
+
+		final String xmlContent = XML.format(decompressedContentString, 0, true);
 
 		if (!Sha256.equality(content, edtEncryptedExport.getVERIFICATION())) {
 			throw new ValidationException("invalid.content.hash");

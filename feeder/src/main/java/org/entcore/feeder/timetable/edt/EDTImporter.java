@@ -206,7 +206,7 @@ public class EDTImporter extends AbstractTimetableImporter {
 
 	void addSubject(JsonObject currentEntity) {
 		super.addSubject(currentEntity.getString(IDENT),
-				currentEntity.put("mappingCode", currentEntity.getBoolean("Code")));
+				currentEntity.put("mappingCode", currentEntity.getString("Code")));
 	}
 
 	void addGroup(JsonObject currentEntity) {
