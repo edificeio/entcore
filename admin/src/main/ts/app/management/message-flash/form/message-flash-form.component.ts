@@ -74,13 +74,15 @@ import { BundlesService } from 'sijil'
                 [show]="showLightbox" (onClose)="closeLightbox()">
                 <h2><s5l>management.message.flash.lightbox.title</s5l></h2>
                 <p><s5l>management.message.flash.lightbox.explanation</s5l></p>
-                <item-tree
-                    [items]="getItems()"
-                    order="name"
-                    display="name"
-                    [checkboxMode]="true"
-                    (onCheck)="addOrRemoveChild($event)">
-                </item-tree>
+                <div style="overflow: auto; max-height: 50%" class="has-bottom-margin-40">
+                    <item-tree
+                        [items]="getItems()"
+                        order="name"
+                        display="name"
+                        [checkboxMode]="true"
+                        (onCheck)="addOrRemoveChild($event)">
+                    </item-tree>
+                </div>
                 <span><i class="fa fa-exclamation-circle"></i></span>
                 <s5l>management.message.flash.lightbox.warning</s5l>
                 <div><button class="is-pulled-right" (click)="saveAndClose()"><s5l>management.message.flash.lightbox.save</s5l></button></div>
@@ -230,16 +232,39 @@ export class MessageFlashFormComponent implements OnInit{
         this.cdRef.detectChanges();
     }
 
-    addOrRemoveChild(child: { name: string, id: string, check: boolean}): void {
+    addOrRemoveChild(child: { name: string, id: string, children: any[], check: boolean}): void {
         let index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
         if (index == -1) {
             this.lightboxSubStructures.push(child.id);
+            this.checkAllChildren(child.children);
         } else {
             this.lightboxSubStructures = this.lightboxSubStructures.slice(0,index).concat(this.lightboxSubStructures.slice(index+1,this.lightboxSubStructures.length));
+            this.uncheckAllChildren(child.children);
         }
     }
 
-    private getItems(): { name: string, id: string, check: boolean}[] {
+    private checkAllChildren(children: { name: string, id: string, children: any[], check: boolean}[]) {
+        children.forEach(child => {
+            child.check = true;
+            if (this.lightboxSubStructures.findIndex(subId => subId === child.id) == -1) {
+                this.lightboxSubStructures.push(child.id);
+            }
+            this.checkAllChildren(child.children);
+        })
+    }
+
+    private uncheckAllChildren(children: { name: string, id: string, children: any[], check: boolean}[]) {
+        children.forEach(child => {
+            child.check = false;
+            let index = this.lightboxSubStructures.findIndex(subId => subId === child.id);
+            if (index != -1) {
+                this.lightboxSubStructures = this.lightboxSubStructures.slice(0,index).concat(this.lightboxSubStructures.slice(index+1,this.lightboxSubStructures.length));
+            }
+            this.uncheckAllChildren(child.children);
+        })
+    }
+
+    private getItems(): { name: string, id: string, children: any[], check: boolean}[] {
         var that = this;
         let myMap = function (child: StructureModel) {
             return {
