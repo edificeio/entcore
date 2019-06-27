@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BundlesService } from 'sijil';
-import { GroupModel, StructureModel } from '../../core/store/models';
+import { GroupModel, StructureModel } from '../core/store/models';
 import { CommunicationRulesService } from './communication-rules.service';
-import { GroupNameService, NotifyService } from '../../core/services';
+import { GroupNameService, NotifyService } from '../core/services';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 

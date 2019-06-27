@@ -1,43 +1,43 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { GroupModel, UserModel, StructureModel } from '../../core/store/models';
+import { GroupModel, StructureModel } from '../core/store/models';
 import { CommunicationRule } from './communication-rules.component';
 
 const css = {
-    title: 'lct-user-communication-title',
-    backButton: 'lct-user-communication-back-button'
+    title: 'lct-groups-communication-title',
+    backButton: 'lct-groups-communication-back-button'
 };
 
-export const userCommunicationLocators = {
+export const groupsCommunicationLocators = {
     title: `.${css.title}`,
     backButton: `.${css.backButton}`
 };
 
 @Component({
-    selector: 'user-communication',
+    selector: 'groups-communication',
     template: `
         <div class="panel-header">
             <button type="button" class="${css.backButton} button button--back" (click)="close.emit();">
                 <i class="fa fa-arrow-left"></i>
-                <span>{{ 'user.communication.back-to-user-details' | translate }}</span>
+                <span>{{ backButtonLabel }}</span>
             </button>
             <div>
                 <i class="fa fa-podcast"></i>
-                <span class="${css.title} user-displayname">{{ 'user.communication.title' | translate:{firstName: user.firstName, lastName: user.lastName.toUpperCase()} }}</span>
+                <span class="${css.title}">{{ title }}</span>
                 <message-sticker class="is-pulled-right" [type]="'info'" [messages]="['user.communication.help']"></message-sticker>
             </div>
         </div>
         
-        <panel-section section-title="user.communication.section.title.sending-rules" [folded]="false">
+        <panel-section [section-title]="sendingSectionTitle" [folded]="false">
             <div panel-section-header-icons>
                 <i class='fa fa-user'></i> <i class='fa fa-arrow-right'></i> <strong>?</strong>
             </div>
 
-            <div class="user-communication__content">
+            <div class="groups-communication__content">
                 <communication-rules
                     [activeStructure]="activeStructure"
-                    [sendingHeaderLabel]="'user.communication.groups-of-user' | translate"
-                    [receivingHeaderLabel]="'user.communication.groups-that-user-can-communicate-with' | translate"
-                    [communicationRules]="userSendingCommunicationRules"
+                    [sendingHeaderLabel]="sendingSectionSendingColumnLabel"
+                    [receivingHeaderLabel]="sendingSectionReceivingColumnLabel"
+                    [communicationRules]="sendingCommunicationRules"
                     [activeColumn]="'sending'"
                     [manageableStructuresId]="manageableStructuresId"
                     [addCommunicationPickableGroups]="addCommunicationPickableGroups"
@@ -46,17 +46,17 @@ export const userCommunicationLocators = {
             </div>
         </panel-section>
         
-        <panel-section section-title="user.communication.section.title.receiving-rules" [folded]="false">
+        <panel-section [section-title]="receivingSectionTitle" [folded]="false">
             <div panel-section-header-icons>
                 <strong>?</strong> <i class='fa fa-arrow-right'></i> <i class='fa fa-user'></i>
             </div>
             
-            <div class="user-communication__content">
+            <div class="groups-communication__content">
                 <communication-rules
                     [activeStructure]="activeStructure"
-                    [sendingHeaderLabel]="'user.communication.groups-that-can-communicate-with-user' | translate"
-                    [receivingHeaderLabel]="'user.communication.groups-of-user' | translate"
-                    [communicationRules]="userReceivingCommunicationRules"
+                    [sendingHeaderLabel]="receivingSectionSendingColumnLabel"
+                    [receivingHeaderLabel]="receivingSectionReceivingColumnLabel"
+                    [communicationRules]="receivingCommunicationRules"
                     [activeColumn]="'receiving'"
                     [manageableStructuresId]="manageableStructuresId"
                     [addCommunicationPickableGroups]="addCommunicationPickableGroups"
@@ -81,12 +81,36 @@ export const userCommunicationLocators = {
             padding-left: 0;
         }
     `, `
-        .user-communication__content {
+        .groups-communication__content {
             padding: 10px 15px;
         }
     `]
 })
-export class UserCommunicationComponent {
+export class GroupsCommunicationComponent {
+    @Input()
+    public title: string = '';
+
+    @Input()
+    public backButtonLabel: string = '';
+
+    @Input()
+    public sendingSectionTitle: string = '';
+
+    @Input()
+    public sendingSectionSendingColumnLabel: string = '';
+
+    @Input()
+    public sendingSectionReceivingColumnLabel: string = '';
+
+    @Input()
+    public receivingSectionTitle: string = '';
+
+    @Input()
+    public receivingSectionSendingColumnLabel: string = '';
+
+    @Input()
+    public receivingSectionReceivingColumnLabel: string = '';
+
     @Input()
     public activeStructure: StructureModel;
 
@@ -94,16 +118,13 @@ export class UserCommunicationComponent {
     public manageableStructuresId: string[];
 
     @Input()
-    public user: UserModel;
-
-    @Input()
-    public userSendingCommunicationRules: CommunicationRule[];
+    public sendingCommunicationRules: CommunicationRule[];
 
     @Input()
     public addCommunicationPickableGroups: GroupModel[];
 
     @Input()
-    public userReceivingCommunicationRules: CommunicationRule[];
+    public receivingCommunicationRules: CommunicationRule[];
 
     @Input()
     public structures: StructureModel[];

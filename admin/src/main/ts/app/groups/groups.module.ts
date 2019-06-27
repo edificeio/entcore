@@ -10,7 +10,7 @@ import { GroupsResolver } from './groups.resolver';
 import { GroupDetailsResolver } from './details/group-details.resolver';
 import { GroupInternalCommunicationRuleResolver } from './details/group-internal-communication-rule.resolver';
 import { GroupsStore } from './groups.store';
-import { UserlistFiltersService, GroupNameService } from '../core/services';
+import { GroupNameService, UserlistFiltersService } from '../core/services';
 
 import { GroupsComponent } from './groups.component';
 import { GroupCreate } from './create/group-create.component';
@@ -22,12 +22,16 @@ import { GroupOutputUsers } from './details/manage-users/output/group-output-use
 import { GroupUsersList } from './details/users-list/group-users-list.component';
 import { GroupsTypeView } from './type-view/groups-type-view.component';
 import { GroupsService } from './groups.service';
+import { CommunicationModule } from '../communication/communication.module';
+import { SmartGroupCommunicationComponent } from './communication/smart-group-communication.component';
+import { globalStoreProvider } from '../core/store';
 
 @NgModule({
     imports: [
         CommonModule,
         FormsModule,
         UxModule,
+        CommunicationModule,
         SijilModule.forChild(),
         RouterModule.forChild(routes)
     ],
@@ -40,7 +44,8 @@ import { GroupsService } from './groups.service';
         GroupInputFilters,
         GroupOutputUsers,
         GroupUsersList,
-        GroupsTypeView
+        GroupsTypeView,
+        SmartGroupCommunicationComponent
     ],
     providers: [
         GroupsResolver,
@@ -49,7 +54,8 @@ import { GroupsService } from './groups.service';
         GroupsStore,
         UserlistFiltersService,
         GroupNameService,
-        GroupsService
+        GroupsService,
+        globalStoreProvider
     ],
     exports: [
         RouterModule

@@ -691,5 +691,14 @@
 
     "compare": "Comparer",
     "user.is.active": "Compte activé",
-    "user.is.inactive": "Compte non activé"
+    "user.is.inactive": "Compte non activé",
+
+    "group.communication.title": "Communication du groupe {{name}}",
+    "group.communication.back-to-group-details": "Retour à la fiche du groupe",
+    "group.communication.section.title.sending-rules": "Qui les membres du groupe peuvent-ils voir",
+    "group.communication.section.title.receiving-rules": "Qui peut voir le groupe",
+    "group.communication.groups-that-group-can-communicate-with": "Groupes visibles",
+    "group.communication.groups-that-can-communicate-with-group": "Groupes pouvant voir le groupe sélectionné",
+    "group.communication.current-group": "Groupe sélectionné",
+    "group.details.button.comm.rules": "Règles de communication du groupe"
 }

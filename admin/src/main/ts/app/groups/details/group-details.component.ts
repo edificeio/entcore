@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs/Subscription';
@@ -6,8 +6,8 @@ import { Observable } from 'rxjs/Observable';
 import { GroupsStore } from '../groups.store';
 import { GroupIdAndInternalCommunicationRule } from './group-internal-communication-rule.resolver';
 import { GroupModel, InternalCommunicationRule } from '../../core/store/models';
-import { CommunicationRulesService } from '../../users/communication/communication-rules.service';
-import { NotifyService, GroupNameService } from '../../core/services';
+import { CommunicationRulesService } from '../../communication/communication-rules.service';
+import { GroupNameService, NotifyService } from '../../core/services';
 
 import { Subject } from 'rxjs/Subject';
 import 'rxjs/add/operator/map';
@@ -44,6 +44,12 @@ import { GroupsService } from '../groups.service';
             <lightbox class="inner-list" [show]="showAddUsersLightBox" (onClose)="closeLightBox()">
                 <group-manage-users (close)="closeLightBox()"></group-manage-users>
             </lightbox>
+            
+            <button class="button--with-icon" (click)="openGroupCommunication(groupsStore.group)">
+                <s5l>group.details.button.comm.rules</s5l>
+                <i class="fa fa-podcast"></i>
+            </button>
+
 
             <group-users-list [users]="groupsStore.group?.users">
                 <span class="lct-communication-rule"
@@ -63,13 +69,14 @@ import { GroupsService } from '../groups.service';
                 </span>
             </group-users-list>
         </div>
-        <lightbox-confirm *ngIf="groupsStore && groupsStore.group" lightboxTitle="group.internal-communication-rule.change.confirm.title"
+        <lightbox-confirm *ngIf="groupsStore && groupsStore.group"
+                          lightboxTitle="group.internal-communication-rule.change.confirm.title"
                           [show]="confirmationDisplayed"
                           (onCancel)="confirmationClicked.next('cancel')"
                           (onConfirm)="confirmationClicked.next('confirm')">
             <i class='fa fa-exclamation-triangle is-danger'></i>
-            <span *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage" 
-                [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
+            <span *ngIf="internalCommunicationRule === 'BOTH'; else cannotCommunicateTogetherConfirmMessage"
+                  [innerHTML]="'group.internal-communication-rule.remove.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
             <ng-template #cannotCommunicateTogetherConfirmMessage>
                 <span [innerHTML]="'group.internal-communication-rule.add.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
             </ng-template>
@@ -90,7 +97,8 @@ import { GroupsService } from '../groups.service';
         '.lct-communication-rule__text {font-size: 0.8em;}',
         '.lct-communication-rule__switch, .lct-communication-rule__text {vertical-align: middle;}',
         '.lct-communication-rule__can-communicate .lct-communication-rule__switch {color: mediumseagreen;}',
-        '.lct-communication-rule__cannot-communicate .lct-communication-rule__switch {color: indianred;}'
+        '.lct-communication-rule__cannot-communicate .lct-communication-rule__switch {color: indianred;}',
+        '.button--with-icon {align-items: center; display: inline-flex;}'
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -167,7 +175,10 @@ export class GroupDetails implements OnInit, OnDestroy {
             .first()
             .do(() => this.confirmationDisplayed = false)
             .filter(choice => choice === 'confirm')
-            .mergeMap(() => this.communicationRulesService.toggleInternalCommunicationRule({id: group.id, internalCommunicationRule: this.internalCommunicationRule} as GroupModel))
+            .mergeMap(() => this.communicationRulesService.toggleInternalCommunicationRule({
+                id: group.id,
+                internalCommunicationRule: this.internalCommunicationRule
+            } as GroupModel))
             .do(
                 () => this.notifyService.success({
                     key: 'group.internal-communication-rule.change.success',
@@ -208,6 +219,10 @@ export class GroupDetails implements OnInit, OnDestroy {
                     key: 'group.delete.notify.error.content',
                     parameters: {groupName: group.name}
                 }, 'group.delete.notify.error.title');
-            });   
+            });
+    }
+
+    public openGroupCommunication(group: GroupModel) {
+        this.router.navigate([group.id, 'communication'], {relativeTo: this.activatedRoute.parent});
     }
 }

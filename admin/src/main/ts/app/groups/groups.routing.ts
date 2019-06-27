@@ -7,6 +7,7 @@ import { GroupsTypeView } from './type-view/groups-type-view.component';
 import { GroupsResolver } from './groups.resolver';
 import { GroupDetailsResolver } from './details/group-details.resolver';
 import { GroupInternalCommunicationRuleResolver } from './details/group-internal-communication-rule.resolver';
+import { SmartGroupCommunicationComponent } from './communication/smart-group-communication.component';
 
 export let routes: Routes = [
     {
@@ -20,11 +21,18 @@ export let routes: Routes = [
                         component: GroupCreate
                     },
                     {
-                        path: ':groupId',
+                        path: ':groupId/details',
                         component: GroupDetails,
                         resolve: {
-                            _: GroupDetailsResolver,
+                            group: GroupDetailsResolver,
                             rule: GroupInternalCommunicationRuleResolver
+                        }
+                    },
+                    {
+                        path: ':groupId/communication',
+                        component: SmartGroupCommunicationComponent,
+                        resolve: {
+                            group: GroupDetailsResolver
                         }
                     }
                 ]
