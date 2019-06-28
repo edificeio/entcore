@@ -11,6 +11,10 @@
 		"joinKey" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
+		},
+		"nationalSubject" : {
+			"type" : "string",
+			"validator" : "notEmpty"
 		}
 	},
 	"generate" : {

@@ -169,6 +169,14 @@
 		"loginAlias" : {
 			"type": "login-alias",
 			"validator": "loginAlias"
+		},
+		"startDate" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
+		},
+		"endDate" : {
+			"type" : "array-string",
+			"validator" : "notEmpty"
 		}
 	},
 	"generate" : {
