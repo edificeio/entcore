@@ -77,10 +77,10 @@
 					<a class="author" ng-if="canShowOwner()"><strong>[[document.ownerName]]</strong></a>
 				</legend>
 				<!--LEGEND MUST BE BEFORE container-->
-				<a class="[[document.metadata.role]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
-					<i class="[[document.metadata.role]]-large" ng-if="document.metadata.role !== 'img'">
+				<a class="[[document.role()]] container cell" ng-class="{'highlight-border-3s':isHighlighted(document)}">
+					<i class="[[document.role()]]-large" ng-if="document.role() !== 'img'">
 					</i>
-					<div ng-if="document.metadata.role === 'img'" class="twelve cell">
+					<div ng-if="document.role() === 'img'" class="twelve cell">
 						<div class="clip">
 							<img lazy-load-img="getImageUrl(document)" alt="thumbnail" />
 						</div>

@@ -81,7 +81,7 @@
 				<td class="icon"><input type="checkbox" data-ng-model="document.selected" ng-change="setAll()" ng-click="onSelectItem($event,document)" /></td>
 				<td class="icon zero-mobile">
 					<div class="twelve cell">
-						<i class="[[document.metadata.role]]"></i>
+						<i class="[[document.role()]]"></i>
 						<i ng-if="document.isShared && isSearchResult()" class="shared"></i>
 					</div>
 				</td>

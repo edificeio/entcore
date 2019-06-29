@@ -48,7 +48,17 @@ export function ActionDelegate($scope: ActionDelegateScope) {
      * Download
      */
     $scope.canDownload = function () {
-        return $scope.selectedItems().length > 0;
+        //cant download external ressources
+        if($scope.currentTree.filter=="external"){
+            return false;
+        }
+        //
+        const items = $scope.selectedItems();
+        if(!workspaceService.isActionAvailable("download",items)){
+            return false;
+        }
+        //
+        return items.length > 0;
     }
 
     $scope.downloadFile = function () {

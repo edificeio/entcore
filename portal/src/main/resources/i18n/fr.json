@@ -214,6 +214,7 @@
   "workspace.myDocuments": "Mes documents",
   "workspace.publicDocuments": "Documents publics",
   "workspace.sharedDocuments": "Documents partagés",
+  "workspace.externalDocs": "Mes ressources interactives",
   "personnel": "Personnel",
   "Teacher": "Enseignant",
   "Student": "Elève",
@@ -385,5 +386,11 @@
   "cgu.revalidate.action": "J'accepte",
   "cgu.revalidate.logout": "Se déconnecter",
   "cgu.revalidate.accept": "J'ai lu les nouvelles <a href=\"[[linkUrl]]\" target=\"_blank\">Conditions Générales d'Utilisation.</a>",
-  "cgu.revalidate.failed": "Une erreur est survenue, veuillez réessayer ultérieurement."
+  "cgu.revalidate.failed": "Une erreur est survenue, veuillez réessayer ultérieurement.",
+  "library.title.edumedia": "Ressources Edumedia",
+  "library.header.edumedia": "Parcourir les ressources edumedia",
+  "edumedia.loading": "Chargement en cours....",
+  "edumedia.theme": "Par matière",
+  "edumedia.choose": "Choisissez une matière...",
+  "worksapce.external.folder.notfound": "Les ressources intéractives sont inactives pour ce compte"
 }

@@ -102,7 +102,11 @@ export function CommentDelegate($scope: CommentDelegateScope) {
     }
 
     $scope.canComment = function () {
-        return $scope.selectedItems().length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
+        const items = $scope.selectedItems();
+        if(!workspaceService.isActionAvailable("comment",items)){
+            return false;
+        }
+        return items.length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
     }
 
     $scope.commentCount = function () {

@@ -59,7 +59,11 @@ export function RevisionDelegate($scope: RevisionDelegateScope) {
 
     }
     $scope.canShowRevision = function () {
-        return $scope.selectedFolders().length === 0 && $scope.selectedDocuments().length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
+        const items = $scope.selectedDocuments();
+        if(!workspaceService.isActionAvailable("history",items)){
+            return false;
+        }
+        return $scope.selectedFolders().length === 0 && items.length === 1 && ($scope.currentTree.filter === 'shared' || $scope.currentTree.filter === 'owner');
     }
     $scope.isDeletingRevision = function (r) {
         return $scope.deletingRevision === r;

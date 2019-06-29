@@ -28,6 +28,9 @@ routes.define(function ($routeProvider) {
 		.when('/apps', {
 			action: 'openApps'
 		})
+		.when('/external', {
+			action: 'openExternal'
+		})
 		.otherwise({
 			redirectTo: '/'
 		})
