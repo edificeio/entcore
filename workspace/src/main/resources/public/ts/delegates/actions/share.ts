@@ -129,7 +129,11 @@ export function ActionShareDelegate($scope: ShareDelegateScope) {
         }
     }
     $scope.canShareElements = function () {
-        return $scope.selectedItems().length > 0 && ($scope.currentTree.filter == "shared" || $scope.currentTree.filter == "owner")
+        const items = $scope.selectedItems()
+        if(!workspaceService.isActionAvailable("share",items)){
+            return false;
+        }
+        return items.length > 0 && ($scope.currentTree.filter == "shared" || $scope.currentTree.filter == "owner")
     };
     $scope.onCancelShare = function () {
         closeShareView()

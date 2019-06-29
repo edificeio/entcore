@@ -1,13 +1,6 @@
 package org.entcore.common.folders.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -634,6 +627,27 @@ class QueryHelper {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(file.put("_id", body.getString("_id")));
+			} else {
+				future.fail(toErrorStr(body));
+			}
+		});
+		return future;
+	}
+
+	Future<JsonObject> upsertFolder(JsonObject folder) {
+		Future<JsonObject> future = Future.future();
+		//findAndModify does not generate _id string
+		String genID = UUID.randomUUID().toString();
+		JsonObject matcher = new JsonObject().put("owner", DocumentHelper.getOwner(folder))
+												.put("externalId",DocumentHelper.getExternalId(folder));
+		JsonObject fields = new JsonObject().put("_id",1);
+		JsonObject cloneFolder = new JsonObject(new HashMap<>(folder.getMap()));
+		JsonObject update = new JsonObject().put("$setOnInsert", cloneFolder.put("_id",genID));
+		mongo.findAndModify(collection, matcher, update, null, fields, false, true, true,  message -> {
+			JsonObject body = message.body();
+			if (isOk(body)) {
+				JsonObject result = body.getJsonObject("result", new JsonObject());
+				future.complete(folder.put("_id", result.getString("_id")));
 			} else {
 				future.fail(toErrorStr(body));
 			}

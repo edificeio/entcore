@@ -1,15 +1,40 @@
 import { $, ng } from 'entcore';
-import { workspaceService } from "../services";
+import { workspaceService, Document } from "../services";
 
-export const fileViewer = ng.directive('fileViewer', () => {
+interface FileViewerScope {
+	contentType: string
+	htmlContent: string;
+	isFullscreen: boolean
+	ngModel: Document
+	download(): void;
+	canDownload():boolean
+	editImage(): void
+	fullscreen(allow: boolean): void
+	render?(): void
+	$apply: any
+	$parent: any
+}
+export const fileViewer = ng.directive('fileViewer', ['$sce',($sce) => {
 	return {
 		restrict: 'E',
 		scope: {
 			ngModel: '='
 		},
 		templateUrl: '/workspace/public/template/directives/file-viewer.html',
-		link: function (scope, element, attributes) {
-			scope.contentType = scope.ngModel.metadata.role;
+		link: function (scope: FileViewerScope, element, attributes) {
+			scope.contentType = scope.ngModel.previewRole();
+			if (scope.contentType == 'html') {
+				const call = async () => {
+					const a = await workspaceService.getDocumentBlob(scope.ngModel._id);
+					const reader = new FileReader();
+					reader.onload = function () {
+						scope.htmlContent = $sce.trustAsHtml(reader.result) as string;
+						scope.$apply();
+					}
+					reader.readAsText(a);
+				}
+				call();
+			}
 			scope.isFullscreen = false;
 
 			scope.download = function () {
@@ -17,7 +42,9 @@ export const fileViewer = ng.directive('fileViewer', () => {
 			};
 			let renderElement;
 			let renderParent;
-
+			scope.canDownload = ()=>{
+				return workspaceService.isActionAvailable("download",[scope.ngModel])
+			}
 			scope.editImage = () => {
 				//scope.$parent.openedFolder.content.forEach(d => d.selected = false);
 				scope.$parent.display.editedImage = scope.ngModel;
@@ -25,6 +52,10 @@ export const fileViewer = ng.directive('fileViewer', () => {
 			}
 
 			scope.fullscreen = (allow) => {
+				//is an external renderer managing the fullscreen? if so return
+				if(workspaceService.renderFullScreen(scope.ngModel)!=false){
+					return;
+				}
 				scope.isFullscreen = allow;
 				if (allow) {
 					let container = $('<div class="fullscreen-viewer"></div>');
@@ -64,4 +95,4 @@ export const fileViewer = ng.directive('fileViewer', () => {
 			}
 		}
 	}
-});
+}]);

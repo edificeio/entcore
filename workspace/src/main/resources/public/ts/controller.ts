@@ -26,6 +26,7 @@ import { RevisionDelegateScope, RevisionDelegate } from './delegates/revisions';
 import { KeyboardDelegate, KeyboardDelegateScope } from './delegates/keyboard';
 import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
 import { models, workspaceService } from "./services";
+import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
 
 
 declare var ENABLE_LOOL:boolean;
@@ -45,6 +46,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	setLightboxDelegateClose(f: () => boolean)
 	resetLightboxDelegateClose()
 	//
+	showCarousel():boolean
 	formatDocumentSize(size: number): string
 	shortDate(el: string | number): string
 	longDate(date: string): number
@@ -103,6 +105,12 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 				$scope.setCurrentTree("owner")
 			})
 		},
+		openExternal:function(params){
+			$scope.lastRoute = window.location.href;
+			$scope.onTreeInit(() => {
+				$scope.setCurrentTree("external")
+			})
+		},
 		openTrash: function (params) {
 			$scope.lastRoute = window.location.href;
 			$scope.onTreeInit(() => {
@@ -137,23 +145,32 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	/**
 	 * INIT
 	 */
+	const allowAction = (type : DocumentActionType) => ()=>{
+		const items = $scope.selectedItems();
+        if(!workspaceService.isActionAvailable(type,items)){
+            return false;
+		}
+		return true
+	}
 	$scope.trees = [{
 		name: lang.translate('documents'),
 		filter: 'owner',
 		hierarchical: true,
+		hidden: false,
 		children: [],
 		buttons: [
 			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() { return false } }
 		],
 		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager" },
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read" },
+			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow:allowAction("move") },
+			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
 	}, {
 		name: lang.translate('shared_tree'),
 		filter: 'shared',
 		hierarchical: true,
+		hidden: false,
 		buttons: [
 			{
 				text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() {
@@ -165,24 +182,44 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 		children: [],
 		helpbox: "workspace.help.2",
 		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager" },
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read" },
+			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow:allowAction("move") },
+			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow:allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
+		]
+	}, {
+		name: lang.translate('externalDocs'),
+		filter: 'external',
+		get hidden() {
+			const tree = $scope.trees.find(e=>e.filter=="external");
+			return !tree || tree.children.length == 0;
+		},
+		buttons: [],
+		hierarchical: true,
+		children: [],
+		contextualButtons: [
+			{
+				text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, allow(){
+					//trash only files
+					return $scope.selectedFolders().length==0;
+				}
+			}
 		]
 	}, {
 		name: lang.translate('appDocuments'),
 		filter: 'protected',
+		hidden: false,
 		buttons: [
 			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
 		],
 		hierarchical: true,
 		children: [],
 		contextualButtons: [
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read" },
+			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow:allowAction("copy") },
 			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
 		]
 	}, {
 		name: lang.translate('trash'),
+		hidden: false,
 		buttons: [
 			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
 		],
@@ -236,6 +273,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			return ['png', 'jpg', 'jpeg', 'bmp'].indexOf(ext) > -1
 		}) > -1;
 	};
+	$scope.showCarousel = () =>{
+		return $scope.currentTree.filter != "external";
+	}
 
 	$scope.translate = function (key) {
 		return lang.translate(key);

@@ -201,6 +201,12 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
+	public void createExternalFolder(JsonObject folder, UserInfos user, String externalId, Handler<AsyncResult<JsonObject>> handler) {
+		// dont need to check quota
+		this.folderManager.createExternalFolder(folder, user, externalId, handler);
+	}
+
+	@Override
 	public void createFolder(JsonObject folder, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
 		// dont need to check quota
 		this.folderManager.createFolder(folder, user, handler);

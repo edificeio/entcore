@@ -72,7 +72,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
     $scope.onInit(function () {
         //INIT
         $scope.wrapperTrees = [{
-            children: $scope.trees
+            get children() {
+                return $scope.trees.filter(t => !t.hidden);
+            }
         }]
         $scope.quota = quota;
         $scope.rolledFolders = []
@@ -191,11 +193,11 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
         return workspaceService.isInFoldersRecursively(folder, $scope.selectedFolders());
     }
     $scope.openFolderRoute = function (folder, forceReload = false) {
-        const doLocation=function(path){
+        const doLocation = function (path) {
             //close view file if needed
             $scope.closeViewFile();
-            if(forceReload){
-                if($location.path()==path){
+            if (forceReload) {
+                if ($location.path() == path) {
                     window.location.reload()
                 } else {
                     $location.path(path)
@@ -222,6 +224,9 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
                     break;
                 case "trash":
                     doLocation("/trash");
+                    break;
+                case "external":
+                    doLocation("/external");
                     break;
                 default:
                     $scope.openFolder(folder);

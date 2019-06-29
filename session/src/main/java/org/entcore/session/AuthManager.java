@@ -633,7 +633,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, " +
 				"COLLECT(distinct [s.id, s.name, s.hasApp]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"COLLECT(distinct s.UAI) as uai, " +
-				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions";
+				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
+				"REDUCE(acc=[], pRed IN COLLECT(COALESCE(s.optionEnabled, [])) | pRed+acc ) as optionEnabled";
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
 				"<-[:PROVIDE]-(app:Application) " +
@@ -806,6 +807,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 							results.getJsonArray(4).getJsonObject(0) != null) ? results.getJsonArray(4).getJsonObject(0) : new JsonObject();
 					j.put("cache", cache);
 					j.put("widgets", getOrElse(j3.getJsonArray("widgets"), new fr.wseduc.webutils.collections.JsonArray()));
+					//return unique options
+					Set<String> uniquOption = new HashSet<>(j.getJsonArray("optionEnabled", new JsonArray()).getList());
+					j.put("optionEnabled", new JsonArray(new ArrayList(uniquOption)));
+					//
 					handler.handle(j);
 				} else {
 					handler.handle(null);

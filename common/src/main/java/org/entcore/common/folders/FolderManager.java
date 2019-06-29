@@ -68,8 +68,17 @@ public interface FolderManager {
 	void updateFile(String id, Optional<String> parentId, JsonObject doc, Handler<AsyncResult<JsonObject>> handler);
 
 	/**
+	 * Create an external folder that will be displayed at the root of tree (edumedia for example)
+	 *
+	 * @param folder  informations
+	 * @param user    owner of the folder
+	 * @param externalId a virtual ID used to link document to the external folder
+	 * @param handler emit the folder informations with the DB id created
+	 */
+	void createExternalFolder(JsonObject folder, UserInfos user, String externalId, final Handler<AsyncResult<JsonObject>> handler);
+	/**
 	 * Create a folder as root folder
-	 * 
+	 *
 	 * @param folder  informations
 	 * @param user    owner of the folder
 	 * @param handler emit the folder informations with the DB id created

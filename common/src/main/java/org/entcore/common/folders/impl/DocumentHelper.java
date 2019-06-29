@@ -36,6 +36,10 @@ public class DocumentHelper {
 		return doc.getString("owner");
 	}
 
+	public static String getExternalId(JsonObject doc){
+		return doc.getString("externalId");
+	}
+
 	public static String getOwnerName(JsonObject doc) {
 		return doc.getString("ownerName");
 	}

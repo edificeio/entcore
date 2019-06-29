@@ -149,20 +149,24 @@ public class WorkspaceController extends BaseController {
 		request.setExpectMultipart(true);
 		request.endHandler(v -> {
 			final String name = request.formAttributes().get("name");
-			final String parentFolderId = request.formAttributes().get("parentFolderId");
+            final String parentFolderId = request.formAttributes().get("parentFolderId");
+            final String externalId = request.formAttributes().get("externalId");
 			if (name == null || name.trim().isEmpty()) {
 				badRequest(request);
 				return;
 			}
 			UserUtils.getUserInfos(eb, request, userInfos -> {
-
 				if (userInfos != null) {
 					JsonObject folder = new JsonObject().put("name", name).put("application", MEDIALIB_APP);
-					if (parentFolderId == null || parentFolderId.trim().isEmpty())
-						workspaceService.createFolder(folder, userInfos, asyncDefaultResponseHandler(request, 201));
-					else
-						workspaceService.createFolder(parentFolderId, userInfos, folder,
-								asyncDefaultResponseHandler(request, 201));
+                    if (externalId == null || externalId.trim().isEmpty()){
+						if (parentFolderId == null || parentFolderId.trim().isEmpty())
+							workspaceService.createFolder(folder, userInfos, asyncDefaultResponseHandler(request, 201));
+						else
+							workspaceService.createFolder(parentFolderId, userInfos, folder,
+									asyncDefaultResponseHandler(request, 201));
+                    }else {
+						workspaceService.createExternalFolder(folder, userInfos, externalId, asyncDefaultResponseHandler(request, 200));
+                    }
 				} else {
 					unauthorized(request);
 				}
@@ -620,6 +624,7 @@ public class WorkspaceController extends BaseController {
 				query.getProjection().add("application");
 				query.getProjection().add("trasher");
 				query.getProjection().add("ancestors");
+				query.getProjection().add("externalId");
 				workspaceService.findByQuery(query, userInfos, asyncArrayResponseHandler(request));
 			} else {
 				unauthorized(request);

@@ -268,6 +268,20 @@ public class FolderManagerMongoImpl implements FolderManager {
 	}
 
 	@Override
+	public void createExternalFolder(JsonObject folder, UserInfos user, String externalId, Handler<AsyncResult<JsonObject>> handler) {
+		folder.put("eType", FOLDER_TYPE);
+			String now = MongoDb.formatDate(new Date());
+			folder.put("created", now);
+			folder.put("modified", now);
+			folder.put("owner", user.getUserId());
+			folder.put("ownerName", user.getUsername());
+			folder.put("externalId", externalId);
+			String name = DocumentHelper.getName(folder);
+			folder.put("nameSearch", name != null ? StringUtils.stripAccentsToLowerCase(name) : "");
+			queryHelper.upsertFolder(folder).setHandler(handler);
+	}
+
+	@Override
 	public void createFolder(JsonObject folder, UserInfos user, Handler<AsyncResult<JsonObject>> handler) {
 		this.inheritShareComputer.compute(folder, false).compose(res -> {
 			folder.put("eType", FOLDER_TYPE);

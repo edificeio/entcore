@@ -115,7 +115,7 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         workspaceService.savePreference({ quickstart: "viewed" })
     }
     $scope.getImageUrl = function (document) {
-        return `${document.icon}?thumbnail=120x120&v=${document.version}`
+        return document.thumbUrl;
     }
     //order
     $scope.order = {
