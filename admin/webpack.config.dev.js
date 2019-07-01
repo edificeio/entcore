@@ -36,7 +36,18 @@ module.exports = webpackMerge(commonConfig, {
                 })
             },
             {
-                test: /\.(woff|svg)$/,
+                test: /\.woff$/,
+                use: [{
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'styles/',
+                        publicPath: './'
+                    }
+                }]
+            },
+            {
+                test: /\.svg$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
