@@ -191,16 +191,19 @@ export class MessageFlashComponent implements OnInit{
     }
 
     getContent(contents: Object): string {
+        var res: string;
         if (contents[this.currentLanguage]) {
-            return contents[this.currentLanguage];
+            res = contents[this.currentLanguage];
         } else {
             let keys: string[] = Object.keys(contents);
             for (var i = 0; i < keys.length; i++ ) {
                 if (contents[keys[i]]) {
-                    return contents[keys[i]];
+                    res = contents[keys[i]];
+                    break;
                 }
             }
         }
+        return !!res && res.replace(/<\/p>/g,' ').replace(/<[^>]*?>/g,'');
     }
 
     displayDate(date: string): string {

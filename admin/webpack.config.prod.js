@@ -40,7 +40,7 @@ module.exports = webpackMerge(commonConfig, {
                 })
             },
             {
-                test: /\.woff$/,
+                test: /\.(woff|svg)$/,
                 use: [{
                     loader: 'file-loader',
                     options: {
@@ -75,6 +75,10 @@ module.exports = webpackMerge(commonConfig, {
             filename:  (getPath) => {
                 return getPath('styles/admin.[hash].css');
             }
+        }),
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery"
         })
     ]
 })
