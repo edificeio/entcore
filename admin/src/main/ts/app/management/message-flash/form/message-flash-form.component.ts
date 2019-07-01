@@ -9,6 +9,13 @@ import { MessageFlashStore } from '../message-flash.store'
 import { BundlesService } from 'sijil'
 
 
+import 'trumbowyg'
+import 'trumbowyg/plugins/colors/trumbowyg.colors.js'
+import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js'
+import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js'
+import 'trumbowyg/plugins/history/trumbowyg.history.js'
+
+
 @Component({
     selector: 'message-flash-form',
     template: `
@@ -60,10 +67,9 @@ import { BundlesService } from 'sijil'
                 </form-field>
             </fieldset>
 
-            <div class="has-top-margin-40">
-                <textarea rows="4" cols="50" [(ngModel)]="message.contents[selectedLanguage]">
-                </textarea>
-            <div>
+            <div class="has-top-margin-40" style="width: 50%;">
+                <textarea id="trumbowyg-editor">{{ message.contents[selectedLanguage] }}</textarea>
+            </div>
 
             <div class="has-top-margin-40">
                 <button (click)="goBack(false)"><s5l>management.message.flash.cancel</s5l></button>
@@ -172,6 +178,21 @@ export class MessageFlashFormComponent implements OnInit{
                 this.loadedLanguages = [this.selectedLanguage];
                 this.cdRef.detectChanges();
             });
+    }
+
+    ngAfterViewInit() {
+        let jq = <any>jQuery;
+        jq.trumbowyg.svgPath = '/admin/public/styles/icons.svg';
+        let trumbowygEditor = jq("#trumbowyg-editor");
+        trumbowygEditor.trumbowyg({
+            lang: this.bundles.currentLanguage,
+            removeformatPasted: true,
+            semantic: false,
+            btns: [['historyUndo', 'historyRedo'], ['strong', 'em', 'underline'],
+                    ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+                    ['foreColor', 'fontfamily', 'fontsize'], ['link'], ['viewHTML']]
+        });
+        trumbowygEditor.on('tbwchange', () => this.message.contents[this.selectedLanguage] = trumbowygEditor.trumbowyg('html'));
     }
 
     ngOnDestroy() {
