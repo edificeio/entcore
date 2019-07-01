@@ -8,6 +8,7 @@ import { InputFileService } from "../services/inputFile.service";
             dragAndDropFiles 
             [allowedExtensions]="allowedExtensions" 
             [maxFilesNumber]="maxFilesNumber"
+            [disabled]="disabled"
             (dragAndDrop)="onDragAndDrop($event)" 
             (invalidDragAndDrop)="onInvalidDragAndDrop($event)">
             <div *ngIf="fileSrc" class="upload-files-dropzone-image">
@@ -22,7 +23,7 @@ import { InputFileService } from "../services/inputFile.service";
                         && !inputFileService.isSrcWorkspace(fileSrc)"></i>
             </div>
 
-            <div class="upload-files-dropzone-input">
+            <div class="upload-files-dropzone-input" *ngIf="!disabled">
                 <button class="confirm upload-files-dropzone-input__button" 
                     (click)="onClickDropzoneInput($event)">
                     <s5l>ux.upload-files.button.label</s5l>
@@ -104,6 +105,8 @@ export class UploadFilesComponent implements OnInit {
     allowedExtensions: Array<string>;
     @Input()
     maxFilesNumber: number;
+    @Input()
+    disabled: boolean;
     
     @Output()
     upload: EventEmitter<File[]> = new EventEmitter();

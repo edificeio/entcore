@@ -9,6 +9,8 @@ export class DragAndDropFilesDirective {
     allowedExtensions: Array<string> = [];
     @Input()
     maxFilesNumber: number = 1;
+    @Input()
+    disabled: boolean;
 
     @Output()
     dragAndDrop: EventEmitter<File[]> = new EventEmitter();
@@ -25,31 +27,37 @@ export class DragAndDropFilesDirective {
 
     @HostListener('dragover', ['$event'])
     public onDragOver(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        this.highlightColors();
+        if (!this.disabled) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.highlightColors();
+        }
     }
 
     @HostListener('dragleave', ['$event'])
     public onDragLeave(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        this.resetColors();
+        if (!this.disabled) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            this.resetColors();
+        }
     }
 
     @HostListener('drop', ['$event'])
     public onDrop(event) {
-        event.preventDefault();
-        event.stopPropagation();
+        if (!this.disabled) {
+            event.preventDefault();
+            event.stopPropagation();
 
-        if (event.dataTransfer) {
-            this.inputFileService
-                .validateFiles(event.dataTransfer.files, this.maxFilesNumber, this.allowedExtensions)
-                .subscribe(files => this.dragAndDrop.emit(files)
-                    , error => this.invalidDragAndDrop.emit(error));
+            if (event.dataTransfer) {
+                this.inputFileService
+                    .validateFiles(event.dataTransfer.files, this.maxFilesNumber, this.allowedExtensions)
+                    .subscribe(files => this.dragAndDrop.emit(files)
+                        , error => this.invalidDragAndDrop.emit(error));
+            }
+
+            this.resetColors();
         }
-
-        this.resetColors();
     }
 
     private resetColors() {

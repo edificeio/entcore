@@ -12,6 +12,7 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                 <upload-files [fileSrc]="connector.icon"
                               [allowedExtensions]="['jpeg', 'jpg', 'bmp', 'png']"
                               [maxFilesNumber]="1"
+                              [disabled]="disabled"
                               (upload)="onUpload($event)"
                               (invalidUpload)="onInvalidUpload($event)">
                 </upload-files>
@@ -22,7 +23,8 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                         <input type="text"
                                [(ngModel)]="connector.icon"
                                name="icon"
-                               (change)="connector.iconFile = null">
+                               (change)="connector.iconFile = null"
+                               [disabled]="disabled">
                     </form-field>
                 </fieldset>
             </panel-section>
