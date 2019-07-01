@@ -60,13 +60,17 @@ class QueryHelper {
 				// filters that belongs to user and shares
 				// search by share or owner
 				if (query.getVisibilitiesOr() != null && query.getVisibilitiesOr().size() > 0) {
-					if (query.getShared()) {
+					if (query.isDirectShared()){
+						builder.filterBySharedAndOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
+					} else if (query.getShared()) {
 						builder.filterByInheritShareAndOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
 					} else {
 						builder.filterByOwnerOrVisibilities(user.get(), query.getVisibilitiesOr());
 					}
 				} else {
-					if (query.getShared()) {
+					if (query.isDirectShared()){
+						builder.filterBySharedAndOwner(user.get());
+					} else if (query.getShared()) {
 						builder.filterByInheritShareAndOwner(user.get());
 					} else {
 						builder.filterByOwner(user.get());
@@ -262,7 +266,7 @@ class QueryHelper {
 		}
 
 		public DocumentQueryBuilder filterByInheritShareAndOwnerOrVisibilities(UserInfos user,
-				Collection<String> visibilities) {
+																			   Collection<String> visibilities) {
 			List<DBObject> ors = new ArrayList<>();
 			// owner
 			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
@@ -274,6 +278,28 @@ class QueryHelper {
 			}
 			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
 			ors.add(QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			//
+			for (String visibility : visibilities) {
+				ors.add(QueryBuilder.start(visibility).is(true).get());
+			}
+			//
+			builder.or(ors.toArray(new DBObject[ors.size()]));
+			return this;
+		}
+
+		public DocumentQueryBuilder filterBySharedAndOwnerOrVisibilities(UserInfos user,
+																			   Collection<String> visibilities) {
+			List<DBObject> ors = new ArrayList<>();
+			// owner
+			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			// shared
+			List<DBObject> groups = new ArrayList<>();
+			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			for (String gpId : user.getGroupsIds()) {
+				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+			}
+			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
+			ors.add(QueryBuilder.start("shared").elemMatch(subQuery).get());
 			//
 			for (String visibility : visibilities) {
 				ors.add(QueryBuilder.start(visibility).is(true).get());

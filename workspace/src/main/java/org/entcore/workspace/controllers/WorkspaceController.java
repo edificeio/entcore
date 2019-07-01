@@ -551,6 +551,7 @@ public class WorkspaceController extends BaseController {
 		final String application = getOrElse(request.params().get("application"), null, false);
 		final String search = request.params().get("search");
 		final String id = request.params().get("id");
+		final boolean directShared = "true".equals(request.params().get("directShared"));
 		//
 		ElementQuery query = new ElementQuery(false);
 		query.setHierarchical(hierarchical != null && hierarchical.equals("true"));
@@ -591,6 +592,11 @@ public class WorkspaceController extends BaseController {
 		case "shared":
 			query.setShared(true);
 			query.setHasBeenShared(true);
+			if(directShared){
+				//find doc with parent which are not visible because they are directly shared
+				query.setNoParent(null);
+				query.setDirectShared(true);
+			}
 			break;
 		case "protected":
 			query.setApplication(null);
