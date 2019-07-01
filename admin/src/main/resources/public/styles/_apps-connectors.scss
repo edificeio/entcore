@@ -714,3 +714,80 @@ i.connecteurgenerique2::before {
   content: '\e8ab';
   color: $cyan;
 }
+
+i.assistance-large,
+i.type.assistance,
+i.assistance {
+  @include fonticon;
+}
+
+i.assistance-large::before,
+i.type.assistance::before,
+i.assistance::before {
+  content:'\e93c';
+  color:$cyan;
+}
+
+i.charte-large,
+i.type.charte,
+i.charte {
+  @include fonticon;
+}
+
+i.charte-large::before,
+i.type.charte::before,
+i.charte::before {
+  content:'\e93b';
+  color:$yellow;
+}
+
+i.lsu-large,
+i.type.lsu,
+i.lsu {
+  @include fonticon;
+}
+
+i.lsu-large::before,
+i.type.lsu::before,
+i.lsu::before {
+  content:'\e93a';
+  color:$cyan;
+}
+
+i.qwant-junior-large,
+i.type.qwant-junior,
+i.qwant-juniors {
+  @include fonticon;
+}
+
+i.qwant-junior-large::before,
+i.type.qwant-junior::before,
+i.qwant-junior::before {
+  content:'\e93d';
+  color:$indigo;
+}
+
+i.pearltrees-large,
+i.type.pearltrees,
+i.pearltrees {
+  @include fonticon;
+}
+
+i.pearltrees-large::before,
+i.type.pearltrees::before,
+i.pearltrees::before {
+  content:'\e933';
+  color:$cyan;
+}
+
+i.public-large,
+i.type.public,
+i.public {
+  @include fonticon;
+}
+
+i.public-large::before,
+i.type.public::before,
+i.public::before {
+  content:'\e863';
+}
