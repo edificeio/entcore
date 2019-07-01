@@ -226,7 +226,7 @@ public class User {
 		}
 
 		private void notifyRemainingDays() {
-			JsonObject params = new JsonObject();
+			JsonObject params = new JsonObject().put("date", System.currentTimeMillis() - (24 * 3600 * 1000L));
 			String filter = "";
 			if (profile != null) {
 				params.put("profile", profile);
@@ -234,7 +234,7 @@ public class User {
 			}
 			String query =
 					"MATCH (u:User) " +
-					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) " +
+					"WHERE HAS(u.disappearanceDate) AND NOT(HAS(u.deleteDate)) AND u.disappearanceDate < {date} " +
 					filter +
 					"RETURN u.id as id, u.disappearanceDate as disappearanceDate ";
 			TransactionManager.getInstance().getNeo4j().execute(query, params, message -> {
