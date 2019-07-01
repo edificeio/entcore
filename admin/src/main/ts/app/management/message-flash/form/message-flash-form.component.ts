@@ -39,6 +39,13 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                         [title]="'management.message.flash.chose.profiles' | translate">
                     </multi-combo>
                 </form-field>
+                <div class="multi-combo-companion">
+                    <div *ngFor="let item of message.profiles"
+                        (click)="deselect(item)">
+                        <s5l>{{item}}</s5l>
+                        <i class="fa fa-trash is-size-5"></i>
+                    </div>
+                </div>
                 <form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
                 label="management.message.flash.selected.etab">
                     <span class="is-flex-none has-right-margin-40">{{message.subStructures.length}}</span>
@@ -61,8 +68,8 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     <span class="is-flex-none">
                         <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren()">
                         <s5l>management.message.flash.notification.email</s5l>
-                        <input class="has-left-margin-40" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren()">
-                        <s5l>management.message.flash.notification.mobile</s5l>
+                        <input class="has-left-margin-40 is-hidden" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren()">
+                        <s5l class="is-hidden">management.message.flash.notification.mobile</s5l>
                     </span>
                 </form-field>
             </fieldset>
@@ -205,6 +212,10 @@ export class MessageFlashFormComponent implements OnInit{
         if (!!this.routerSubscriber) {
             this.routerSubscriber.unsubscribe();
         }
+    }
+
+    private deselect(item) {
+        this.message.profiles.splice(this.message.profiles.indexOf(item), 1);
     }
 
     languageOptions(): {value: string, label: string}[] {
