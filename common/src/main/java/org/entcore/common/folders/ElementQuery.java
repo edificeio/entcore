@@ -21,6 +21,7 @@ public class ElementQuery {
 	private Integer skip;
 	private Integer limit;
 	private boolean shared;
+	private boolean directShared;
 	private Boolean trash;
 	private boolean favorites;
 	private String parentId;
@@ -42,6 +43,14 @@ public class ElementQuery {
 	private Boolean noParent;
 	private List<Map.Entry<String, ElementSort>> sort;
 	private Map<String, Object> params = new HashMap<String, Object>();
+
+	public boolean isDirectShared() {
+		return directShared;
+	}
+
+	public void setDirectShared(boolean directShared) {
+		this.directShared = directShared;
+	}
 
 	public Set<String> getVisibilitiesOr() {
 		return visibilitiesOr;

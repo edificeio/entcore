@@ -242,6 +242,8 @@ export function NavigationDelegate($scope: NavigationDelegateScope, $location, $
         if ($scope.openedFolder.folder && $scope.openedFolder.folder._id) {
             const parentId = $scope.openedFolder.folder._id;
             content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, parentId, hierarchical: false });
+        } else if($scope.currentTree.filter=="shared") {
+            content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false }, null, {directlyShared:true});
         } else {
             content = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: false });
         }
