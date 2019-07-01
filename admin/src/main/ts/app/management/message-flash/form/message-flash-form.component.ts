@@ -194,18 +194,16 @@ export class MessageFlashFormComponent implements OnInit{
         trumbowygEditor.trumbowyg({
             lang: this.bundles.currentLanguage,
             removeformatPasted: true,
-            semantic: {
-                'b': 'b',
-                'i': 'em',
-                's': 's',
-                'strike': 'strike',
-                'div': 'div'
-            },
+            semantic: false,
             btns: [['historyUndo', 'historyRedo'], ['strong', 'em', 'underline'],
                     ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
                     ['foreColor', 'fontfamily', 'fontsize'], ['link'], ['viewHTML']]
         });
-        trumbowygEditor.on('tbwchange', () => this.message.contents[this.selectedLanguage] = trumbowygEditor.trumbowyg('html'));
+        trumbowygEditor.on('tbwchange', () => {
+            var transform = trumbowygEditor.trumbowyg('html')
+            .replace(/<i>/g,'<em>').replace(/<\/i[^>]*>/g,'</em>');
+            this.message.contents[this.selectedLanguage] = transform;
+        });
     }
 
     ngOnDestroy() {
