@@ -756,7 +756,7 @@ i.lsu::before {
 
 i.qwant-junior-large,
 i.type.qwant-junior,
-i.qwant-juniors {
+i.qwant-junior {
   @include fonticon;
 }
 
@@ -790,4 +790,5 @@ i.public-large::before,
 i.type.public::before,
 i.public::before {
   content:'\e863';
+  color:$cyan;
 }
