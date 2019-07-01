@@ -194,7 +194,13 @@ export class MessageFlashFormComponent implements OnInit{
         trumbowygEditor.trumbowyg({
             lang: this.bundles.currentLanguage,
             removeformatPasted: true,
-            semantic: false,
+            semantic: {
+                'b': 'b',
+                'i': 'em',
+                's': 's',
+                'strike': 'strike',
+                'div': 'div'
+            },
             btns: [['historyUndo', 'historyRedo'], ['strong', 'em', 'underline'],
                     ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
                     ['foreColor', 'fontfamily', 'fontsize'], ['link'], ['viewHTML']]
