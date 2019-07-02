@@ -47,6 +47,7 @@
     "management.message.flash.lightbox.explanation": "Vous pouvez diffuser ce message sur vos autres établissements. Pour cela, cochez les établissements dans la liste ci-dessous.",
     "management.message.flash.lightbox.warning": "Si plusieurs établissements sont sélectionnés, il n'est pas possible de diffuser des notifications.",   
     "management.message.flash.lightbox.save": "Enregistrer",
+    "management.message.flash.lightbox.warning.notification": "Vous ne pouvez envoyer des notifications que pour les messages débutant aujourd'hui et diffusés sur un seul établissement.",
     "management.message.flash.language": "Langue",
     "management.message.flash.color": "Couleur du bandeau",
     "management.message.flash.notification": "Notification",

@@ -19,10 +19,12 @@
 package org.entcore.timeline.controllers;
 
 import java.util.Map;
+import java.util.ArrayList;
 
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.services.FlashMsgService;
@@ -30,6 +32,7 @@ import org.entcore.timeline.services.impl.FlashMsgServiceSqlImpl;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.rs.*;
@@ -46,10 +49,12 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 public class FlashMsgController extends BaseController {
 
 	private FlashMsgService service = new FlashMsgServiceSqlImpl("flashmsg", "messages");
+	private TimelineHelper notification;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
+		notification = new TimelineHelper(vertx, eb, config);
 	}
 
 	/* User part */
@@ -186,6 +191,51 @@ public class FlashMsgController extends BaseController {
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
 			public void handle(JsonObject body) {
 				service.setSubstructuresByMessageId(request.params().get("messageId"), body, arrayResponseHandler(request));
+			}
+		});
+	}
+
+	@Post("/flashmsg/notify")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void notify(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(UserInfos user) {
+				RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+					public void handle(JsonObject body) {
+						if(body == null){
+							badRequest(request);
+							return;
+						}
+
+						ArrayList<String> recipientIds = new ArrayList<>();
+						JsonArray ids = body.getJsonArray("recipientIds");
+						for (int i = 0; i < ids.size(); i++) {
+							recipientIds.add(ids.getString(i));
+						}
+
+						String content = body.getString("content");
+						boolean sendMailNotification = body.getBoolean("mailNotification");
+						boolean sendPushNotification = body.getBoolean("pushNotification");
+
+						final JsonObject params = new JsonObject()
+							.put("username", user.getUsername())
+							.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+							.put("content", content);
+
+						if (sendMailNotification && !recipientIds.isEmpty()) {
+							notification.notifyTimeline(request, "timeline.send-flash-message-mail", user,
+							recipientIds, params);
+						}
+
+						if (sendPushNotification && !recipientIds.isEmpty()) {
+							// TO DO: Send push notifications
+						}
+
+						request.response().setStatusCode(200).end();
+					}
+				});
 			}
 		});
 	}
