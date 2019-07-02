@@ -114,7 +114,7 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                         <mono-select [(ngModel)]="connector.casTypeId"
                                      name="casTypeId"
                                      [disabled]="!connector.hasCas"
-                                     class="is-flex-none" [options]="casTypesOptions">
+                                     class="is-flex-none has-min-width" [options]="casTypesOptions">
                             <option *ngFor="let casType of casTypes" [value]="casType.id">
                                 {{ casType.name }}
                             </option>

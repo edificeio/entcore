@@ -245,6 +245,9 @@ mono-select {
   &.is-block .form-select__options--selected {
     @extend .is-block;
   }
+  &.has-min-width .form-select__options--selected {
+    width: 100%;
+  }
 }
 .form-select {
   font-size: 14px;
@@ -289,9 +292,6 @@ mono-select {
     & + & {
       border-top: 1px solid $shadow-light;
     }
-    &--disabled {
-      opacity: 0.5;
-    }
     &--selected {
       position: relative;
       display: inline-block;
@@ -315,6 +315,10 @@ mono-select {
     .form-select__list {
       display: block;
     }
+  }
+
+  &--disabled {
+    opacity: 0.5;
   }
 }
 

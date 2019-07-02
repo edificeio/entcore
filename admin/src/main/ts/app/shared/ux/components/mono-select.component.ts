@@ -20,7 +20,7 @@ export const monoSelectLocators = {
 @Component({
     selector: 'mono-select',
     template: `
-        <div class="${css.select} lct-${css.select}" [ngClass]="{'form-select--opened': opened}">
+        <div class="${css.select} lct-${css.select}" [ngClass]="{'form-select--opened': opened, 'form-select--disabled': isDisabled}">
             <ul>
                 <li class="${css.selectedOption} lct-${css.selectedOption}">
                     <strong>{{(selectedOption? selectedOption.label : placeholder) | translate}}</strong>
@@ -80,8 +80,10 @@ export class MonoSelectComponent<K> implements ControlValueAccessor {
     }
 
     public onClickOnHost() {
-        if (!this.opened) {
+        if (!this.opened && !this.isDisabled) {
             this.opened = true;
+        } else {
+            this.opened = false;
         }
     }
 
