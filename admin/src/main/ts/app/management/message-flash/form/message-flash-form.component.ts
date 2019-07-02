@@ -66,12 +66,16 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                 </form-field>
                 <form-field label="management.message.flash.notification">
                     <span class="is-flex-none">
-                        <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren()">
+                        <input type="checkbox" [(ngModel)]="mailNotification" [disabled]="areSelectedChildren() || !isToday()">
                         <s5l>management.message.flash.notification.email</s5l>
-                        <input class="has-left-margin-40 is-hidden" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren()">
+                        <input class="has-left-margin-40 is-hidden" type="checkbox" [(ngModel)]="pushNotification" [disabled]="areSelectedChildren() || !isToday()">
                         <s5l class="is-hidden">management.message.flash.notification.mobile</s5l>
                     </span>
                 </form-field>
+                <div *ngIf="areSelectedChildren() || !isToday()">
+                    <i class="fa fa-exclamation-circle"></i>
+                    <s5l>management.message.flash.lightbox.warning.notification</s5l>
+                </div>
             </fieldset>
 
             <div class="has-top-margin-40" style="width: 50%;">
@@ -245,6 +249,19 @@ export class MessageFlashFormComponent implements OnInit{
         return this.message.subStructures.length > 0;
     }
 
+    isToday(): boolean {
+        var now: Date = new Date();
+        var startDate: Date = new Date(this.message.startDate);
+        var res = now.getDate() ==  startDate.getDate()
+        && now.getMonth() == startDate.getMonth()
+        && now.getFullYear() == startDate.getFullYear();
+        if (!res) {
+            this.mailNotification = false;
+            this.pushNotification = false;
+        }
+        return res;
+    }
+
     // Lightbox methods
 
     private lightboxSubStructures: string[];
@@ -336,6 +353,9 @@ export class MessageFlashFormComponent implements OnInit{
             key = 'create';
         }
         promise.then(() => {
+            if (this.mailNotification || this.pushNotification) {
+                MessageFlashService.sendNotifications(this.message, this.structure, this.selectedLanguage, this.mailNotification, this.pushNotification);
+            }
             this.goBack(true);
             this.ns.success(
                 { key: 'notify.management.'+key+'.success.content', parameters: {} },
