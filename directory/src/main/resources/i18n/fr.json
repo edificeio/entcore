@@ -60,7 +60,7 @@
     "classAdmin.fileHelp": "Vous pouvez obtenir un export de votre classe en faisant une demande auprès de votre directeur(trice).",
     "classAdmin.globalParams": "Paramétrages généraux",
     "classAdmin.import": "Importer",
-    "classAdmin.importFile": "importez un fichier d'utilisateurs",
+    "classAdmin.importFile": "Importez un fichier d'utilisateurs",
     "classAdmin.importType": "Le fichier CSV doit être un export ONDE.",
     "classAdmin.import.message": "Le fichier CSV doit être un export ONDE-classe. Le fichier choisi doit être du même type de profil que l'onglet actuellement sélectionné (Élèves, parents, enseignants ou personnels).",
     "classAdmin.manageUsers": "Gestion des utilisateurs",
