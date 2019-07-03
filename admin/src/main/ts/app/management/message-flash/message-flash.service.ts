@@ -132,12 +132,12 @@ export class MessageFlashService {
     private static startOfDay(startDate: string): string {
         let date: Date = new Date(startDate);
         date.setHours(0,0,0,0);
-        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )).toISOString();
+        return date.toISOString();
     }
 
     private static endOfDay(endDate: string): string {
         let date: Date = new Date(endDate);
         date.setHours(23,59,59,999);
-        return new Date(date.getTime() - (date.getTimezoneOffset() * 60000 )).toISOString();
+        return date.toISOString();
     }
 }

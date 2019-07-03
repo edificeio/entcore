@@ -207,7 +207,8 @@ export class MessageFlashComponent implements OnInit{
     }
 
     displayDate(date: string): string {
-        return new Date(date).toLocaleDateString(this.currentLanguage);
+        var _date: Date = new Date(date);
+        return new Date(_date.getTime() - (_date.getTimezoneOffset() * 60000 )).toLocaleDateString(this.currentLanguage);
     }
 
     removeSelection(): void {
