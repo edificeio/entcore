@@ -159,8 +159,10 @@ export class MessageFlashFormComponent implements OnInit{
                 }
                 this.message.id = this.originalMessage.id;
                 this.message.title = this.originalMessage.title;
-                this.message.startDate = this.originalMessage.startDate;
-                this.message.endDate = this.originalMessage.endDate;
+                var _startDate: Date = new Date(this.originalMessage.startDate);
+                this.message.startDate = new Date(_startDate.getTime() - (_startDate.getTimezoneOffset() * 60000 )).toISOString();
+                var _endDate: Date = new Date(this.originalMessage.endDate);
+                this.message.endDate = new Date(_endDate.getTime() - (_endDate.getTimezoneOffset() * 60000 )).toISOString();
                 if (!!this.originalMessage.color) {
                     this.message.color = this.originalMessage.color;
                 }
