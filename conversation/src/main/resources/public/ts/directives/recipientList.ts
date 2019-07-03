@@ -41,6 +41,26 @@ export const recipientList = ng.directive('recipientList', () => {
                     ng-model="currentReceiver">
                 </drop-down>
             </div>
+
+            <lightbox show="sharebookmark.excluded.length > 0" on-close="sharebookmark.excluded = []">
+                <h2><i18n>warning.title</i18n></h2>
+                <span class="bottom-spacing-twice">
+                    <i18n>warning.excluded</i18n>
+                </span>
+                <table class="twelve">
+                    <thead>
+                    <tr>
+                        <th class="" ng-click=""><i18n>name</i18n></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="e in sharebookmark.excluded">
+                        <td class="user">[[e.displayName || e.name]]</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="cancel right-magnet" ng-click="sharebookmark.excluded = []"><i18n>warning.close</i18n></button>
+            </lightbox>
         `,
 
         scope: {
@@ -61,6 +81,9 @@ export const recipientList = ng.directive('recipientList', () => {
             scope.itemsFound = [];
             scope.currentReceiver = 'undefined';
             scope.addedFavorites = [];
+            scope.sharebookmark = {
+                excluded: []
+            }
 
             element.find('input').on('focus', () => {
                 if (firstFocus)
@@ -147,13 +170,39 @@ export const recipientList = ng.directive('recipientList', () => {
                 }
                 if (scope.currentReceiver.type === 'sharebookmark') {
                     scope.loading = true;
+                    // get sharebookmark members
                     var response = await http.get('/directory/sharebookmark/' + scope.currentReceiver.id);
-                    response.data.groups.forEach(item => {
-                        scope.addOneItem(item);
+                    // check if sharebookmark members are visible
+                    let ids = [];
+                    response.data.groups.forEach(group => ids.push(group.id));
+                    response.data.users.forEach(user => ids.push(user.id));
+                    let visiblesRes = await http.post(`/conversation/visibles`, {ids: ids});
+                    // if visible add them to email recipients
+                    let visibleIds = visiblesRes.data.map(x => x['visibles.id'])
+                    response.data.groups.forEach(group => {
+                        if (visibleIds.includes(group.id)) {
+                            scope.addOneItem(group);
+                        }
                     });
-                    response.data.users.forEach(item => {
-                        scope.addOneItem(item);
+                    response.data.users.forEach(user => {
+                        if (visibleIds.includes(user.id)) {
+                            scope.addOneItem(user);
+                        }
                     });
+                    if (visibleIds.length < ids.length) {
+                        scope.search.text = '';
+                        scope.itemsFound = [];
+                        response.data.groups.forEach(g => {
+                            if (!visibleIds.includes(g.id)) {
+                                scope.sharebookmark.excluded.push(g);
+                            }
+                        });
+                        response.data.users.forEach(u => {
+                            if (!visibleIds.includes(u.id)) {
+                                scope.sharebookmark.excluded.push(u);
+                            }
+                        });
+                    }
                     scope.addedFavorites.push(scope.currentReceiver);
                     scope.loading = false;
                 }
@@ -166,12 +215,6 @@ export const recipientList = ng.directive('recipientList', () => {
                 }
                 scope.$apply('ngModel');
                 scope.$eval(scope.ngChange);
-                
-                if (scope.currentReceiver.type === 'sharebookmark') {
-                    setTimeout(async function () {
-                        await scope.doSearch();
-                    }, 0)
-                }
             };
 
             scope.deleteItem = async (item) => {

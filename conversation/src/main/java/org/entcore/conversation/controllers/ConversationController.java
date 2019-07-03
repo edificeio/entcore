@@ -758,6 +758,28 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	@Post("visibles")
+	@SecuredAction(value = "conversation.visibles", type = ActionType.AUTHENTICATED)
+	public void visibles(final HttpServerRequest request) {
+		final String customReturn = "WHERE visibles.id IN {ids} RETURN DISTINCT visibles.id";
+		final JsonObject params = new JsonObject();
+		final Set<String> ids = new HashSet<>();
+
+		RequestUtils.bodyToJson(request, message -> {
+			ids.addAll(message.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()).getList());
+			params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+			getUserInfos(eb, request, user -> {
+				if (user != null) {
+					UserUtils.findVisibles(eb, user.getUserId(), customReturn, params, true, true, false, visibles -> {
+						renderJson(request, visibles);
+					});
+				} else {
+					unauthorized(request);
+				}
+			});
+		});
+	}
+
 	@Get("message/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(MessageUserFilter.class)
