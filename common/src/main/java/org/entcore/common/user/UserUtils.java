@@ -25,9 +25,7 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -35,6 +33,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -624,6 +627,39 @@ public class UserUtils {
 				.put("iat", iat)
 				.put("exp", iat + JWT_TOKEN_EXPIRATION_TIME);
 		return jwt.encodeAndSignHmac(payload);
+	}
+
+	public static void getUserIdsForGroupIds(Set<String> groupsIds, String currentUserId, EventBus eb, Handler<AsyncResult<Set<String>>> h) {
+		List<Future> futures = (List)groupsIds.stream().map((groupId) -> {
+			Future<Set<String>> future = Future.future();
+			UserUtils.findUsersInProfilsGroups(groupId, eb, currentUserId, false, (ev) -> {
+				Set<String> ids = new HashSet();
+				if (ev != null) {
+					Iterator var3 = ev.iterator();
+
+					while(var3.hasNext()) {
+						Object o = var3.next();
+						if (o instanceof JsonObject) {
+							JsonObject j = (JsonObject)o;
+							String id = j.getString("id");
+							ids.add(id);
+						}
+					}
+				}
+
+				future.complete(ids);
+			});
+			return future;
+		}).collect(Collectors.toList());
+		CompositeFuture.all(futures).map((result) -> {
+			List<Set<String>> all = result.list();
+			return (Set)all.stream().reduce(new HashSet(), (a1, a2) -> {
+				a1.addAll(a2);
+				return a1;
+			});
+		}).map(e->{
+			return (Set<String>)e;
+		}).setHandler(h);
 	}
 
 }

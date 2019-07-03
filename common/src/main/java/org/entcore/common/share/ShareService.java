@@ -53,6 +53,10 @@ public interface ShareService {
 
 	void share(String userId, String resourceId, JsonObject share, Handler<Either<String, JsonObject>> handler);
 
+	default void findUserIdsForShare(String resourceId, String userId,
+							 Handler<AsyncResult<Set<String>>> h){
+		findUserIdsForShare(resourceId, userId, Optional.empty(), h);
+	}
 	/**
 	 * 
 	 * @param resourceId id of the resource

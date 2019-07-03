@@ -41,16 +41,22 @@ public interface Shareable {
 
 	TimelineHelper getNotification();
 
+	default void doShareSucceed(HttpServerRequest request, String id, UserInfos user,JsonObject sharePayload, JsonObject result, boolean sendNotification){
+		renderJson(request, result);
+	}
+
 	default void doShare(HttpServerRequest request,  final EventBus eb, String id, UserInfos user, final String notificationName,
 						 final JsonObject params, final String resourceNameAttribute) {
 		RequestUtils.bodyToJson(request, share -> {
 			getShareService().share(user.getUserId(), id, share, r -> {
 				if (r.isRight()) {
 					JsonArray nta = r.right().getValue().getJsonArray("notify-timeline-array");
+					boolean sendNotification = false;
 					if (nta != null && notificationName != null) {
+						sendNotification = true;
 						notifyShare(request, eb, id, user, nta,	notificationName, params, resourceNameAttribute);
 					}
-					renderJson(request, r.right().getValue());
+					doShareSucceed(request, id, user, share, r.right().getValue(), sendNotification);
 				} else {
 					JsonObject error = new JsonObject().put("error", r.left().getValue());
 					renderJson(request, error, 400);
