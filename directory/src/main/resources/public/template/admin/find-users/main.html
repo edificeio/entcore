@@ -13,9 +13,7 @@
         <i18n>classAdmin.userFind.userAvailable</i18n>
       </h3>
       <select class="vertical-spacing-twice" ng-model="userFindModel.selectedClassId">
-        <option value="-1">
-          <i18n>classAdmin.userFind.userWithoutClass</i18n>
-        </option>
+        <option value="-1" translate content="classAdmin.userFind.userWithoutClass"></option>
         <option ng-repeat="classroom in userFindModel.classrooms" value="[[classroom.id]]"
           ng-selected="[[userFindModel.selectedClassId==classroom.id]]">[[classroom.name]]</option>
       </select>
@@ -35,7 +33,7 @@
         <label ng-repeat="(type, filter) in userFindModel.typefilter"
           class="chip type [[isUserTypeSelected(type) ? filter.className : '']]"
           ng-class="{ selected: filter.selected }" ng-if="!userFindModel.closeFilter">
-          <span>[[ type ]]</span>
+          <span translate content="[[type]]"></span>
           <input type="checkbox" ng-model="userFindModel.typefilter[type].selected"
             ng-change="userFindModel.toggleTypeFilter()" />
         </label>
