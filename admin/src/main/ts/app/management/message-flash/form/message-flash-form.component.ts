@@ -9,7 +9,12 @@ import { MessageFlashStore } from '../message-flash.store'
 import { BundlesService } from 'sijil'
 
 
-import 'trumbowyg'
+import 'trumbowyg/dist/trumbowyg.js'
+import 'trumbowyg/dist/langs/fr.js'
+import 'trumbowyg/dist/langs/es.js'
+import 'trumbowyg/dist/langs/it.js'
+import 'trumbowyg/dist/langs/de.js'
+import 'trumbowyg/dist/langs/pt.js'
 import 'trumbowyg/plugins/colors/trumbowyg.colors.js'
 import 'trumbowyg/plugins/fontsize/trumbowyg.fontsize.js'
 import 'trumbowyg/plugins/fontfamily/trumbowyg.fontfamily.js'
@@ -52,7 +57,7 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     <button class="is-flex-none" (click)="openLightbox()"><s5l>management.message.flash.manage</s5l></button>
                 </form-field>
                 <form-field label="management.message.flash.language">
-                    <mono-select [(ngModel)]="selectedLanguage" [options]="languageOptions()">
+                    <mono-select [(ngModel)]="selectedLanguage" (ngModelChange)="updateEditor($event)" [options]="languageOptions()">
                     </mono-select>
                 </form-field>
                 <form-field label="management.message.flash.color">
@@ -154,8 +159,8 @@ export class MessageFlashFormComponent implements OnInit{
                 }
                 this.message.id = this.originalMessage.id;
                 this.message.title = this.originalMessage.title;
-                this.message.startDate = this.originalMessage.startDate ? this.originalMessage.startDate.split(" ")[0] : this.originalMessage.startDate;
-                this.message.endDate = this.originalMessage.endDate ? this.originalMessage.endDate.split(" ")[0] : this.originalMessage.endDate;
+                this.message.startDate = this.originalMessage.startDate;
+                this.message.endDate = this.originalMessage.endDate;
                 if (!!this.originalMessage.color) {
                     this.message.color = this.originalMessage.color;
                 }
@@ -207,8 +212,15 @@ export class MessageFlashFormComponent implements OnInit{
             var transform = trumbowygEditor.trumbowyg('html')
             .replace(/<i>/g,'<em>').replace(/<\/i[^>]*>/g,'</em>');
             this.message.contents[this.selectedLanguage] = transform;
+            this.cdRef.detectChanges();
         });
+        this.updateEditor = function (lang: string) {
+            trumbowygEditor.trumbowyg('html', this.message.contents[lang] ? this.message.contents[lang] : "");
+            this.cdRef.detectChanges();
+        }
     }
+
+    updateEditor: (lang: string) => void;
 
     ngOnDestroy() {
         if (!!this.dataSubscriber) {
@@ -339,7 +351,8 @@ export class MessageFlashFormComponent implements OnInit{
     isUploadable(): boolean {
         return !!this.message && !!this.message.title && !!this.message.startDate && !!this.message.endDate
         && !!this.message.profiles && this.message.profiles.length > 0 && (!!this.message.color || !!this.message.customColor)
-        && !!this.message.contents && Object.keys(this.message.contents).length > 0;
+        && !!this.message.contents && Object.keys(this.message.contents).length > 0
+        && Object.values(this.message.contents).findIndex(val => !!val) != -1;
     }
 
     upload() {
