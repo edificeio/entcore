@@ -19,12 +19,17 @@
 
 package org.entcore.auth.services.impl;
 
-		import fr.wseduc.webutils.Either;
-		import org.opensaml.saml2.core.Assertion;
-		import io.vertx.core.Handler;
-		import io.vertx.core.json.JsonObject;
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Vertx;
+import org.opensaml.saml2.core.Assertion;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class SSOUsers extends AbstractSSOProvider {
+
+	private final String prefix = getOrElse(Vertx.currentContext().config().getString("prefix-sso-users"), "");
 
 	@Override
 	public void execute(Assertion assertion, Handler<Either<String, Object>> handler) {
@@ -32,7 +37,7 @@ public class SSOUsers extends AbstractSSOProvider {
 
 		String joinKey = getAttribute(assertion, "FrEduIdENT");
 		if (joinKey != null && !joinKey.trim().isEmpty()) {
-			executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", joinKey),
+			executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", prefix + joinKey),
 					assertion, handler);
 		} else {
 			handler.handle(new Either.Left<String, Object>("invalid.joinKey"));
