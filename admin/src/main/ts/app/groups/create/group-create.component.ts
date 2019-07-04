@@ -76,7 +76,7 @@ export class GroupCreate {
                     parameters: {group: this.newGroup.name}
                 }, 'notify.group.create.title');
 
-                this.router.navigate(['..', groupIdHolder.id],
+                this.router.navigate(['..', groupIdHolder.id, 'details'],
                     {relativeTo: this.route, replaceUrl: false});
             }).catch(err => {
                 this.ns.error({

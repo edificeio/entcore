@@ -212,7 +212,7 @@ export class GroupDetails implements OnInit, OnDestroy {
                     key: 'group.delete.notify.success.content',
                     parameters: {groupName: group.name}
                 }, 'group.delete.notify.success.title');
-                this.router.navigate(['..'], {relativeTo: this.activatedRoute, replaceUrl: false});
+                this.router.navigate(['../..'], {relativeTo: this.activatedRoute, replaceUrl: false});
                 this.cdRef.markForCheck();
             }, (error: HttpErrorResponse) => {
                 this.notifyService.error({
