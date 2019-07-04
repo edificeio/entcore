@@ -6,4 +6,5 @@ export interface Config {
     "student-pre-delete-delay": number;
     "relative-pre-delete-delay": number;
     "guest-pre-delete-delay": number;
+    "hide-adminv1-link": boolean;
 }

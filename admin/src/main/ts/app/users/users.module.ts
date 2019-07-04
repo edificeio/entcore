@@ -8,7 +8,6 @@ import { SijilModule } from 'sijil';
 import { UxModule } from '../shared/ux/ux.module';
 import { routes } from './users.routing';
 import { UserDetailsResolver } from './details/user-details.resolver';
-import { ConfigResolver } from './details/config.resolver';
 import { UsersResolver } from './users.resolver';
 import { UsersComponent } from './users.component';
 import { UserCreate } from './create/user-create.component';
@@ -75,7 +74,6 @@ import { CommunicationModule } from '../communication/communication.module';
         SmartUsersComparisonComponent
     ],
     providers: [
-        ConfigResolver,
         UserDetailsResolver,
         UsersResolver,
         UserGroupsResolver,
