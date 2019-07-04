@@ -18,7 +18,7 @@ export const groupPickerLocators = {
             <div class="padded">
                 <h3>{{ lightboxTitle | translate }}</h3>
 
-                <div class="structures has-vertical-margin-10">
+                <div *ngIf="structureOptions && structureOptions.length > 1" class="structures has-vertical-margin-10">
                     <mono-select name="structure"
                                  [ngModel]="selectedStructure" 
                                  [options]="structureOptions"
