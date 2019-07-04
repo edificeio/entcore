@@ -104,7 +104,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void listByStructureId(String structureId, Handler<Either<String, JsonArray>> handler) {
 		String query =
-				"SELECT DISTINCT m.* " +
+				"SELECT DISTINCT m.*, m.\"startDate\" AT TIME ZONE 'utc' AS \"startDate\", m.\"endDate\" AT TIME ZONE 'utc' AS \"endDate\" "+
 						"FROM " + resourceTable + " m " +
 						"LEFT JOIN " + STRUCT_JOIN_TABLE + " messStru ON m.id = messStru.message_id " +
 						"WHERE \"structureId\" = ? " +
