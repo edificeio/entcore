@@ -9,7 +9,7 @@ import { AbstractSection } from '../abstract.section';
 import { NotifyService, PlatformInfoService, SpinnerService } from '../../../../core/services';
 import { UserInfoService } from './user-info.service';
 import { StructureModel, UserModel } from '../../../../core/store/models';
-import { Config } from '../../Config';
+import { Config } from '../../../../core/resolvers/Config';
 
 @Component({
     selector: 'user-info-section',

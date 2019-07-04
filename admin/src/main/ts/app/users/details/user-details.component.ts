@@ -9,7 +9,7 @@ import { NotifyService, SpinnerService, UserListService } from '../../core/servi
 import { globalStore } from '../../core/store';
 import { StructureModel, UserDetailsModel, UserModel } from '../../core/store/models';
 import { UsersStore } from '../users.store';
-import { Config } from './Config';
+import { Config } from '../../core/resolvers/Config';
 
 @Component({
     selector: 'user-detail',

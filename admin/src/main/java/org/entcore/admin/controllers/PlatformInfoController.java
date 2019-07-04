@@ -63,7 +63,8 @@ public class PlatformInfoController extends BaseController {
 		final JsonObject configuration =  new JsonObject()
 				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
 				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
-				.put("distributions", config.getJsonArray("distributions", new JsonArray()));
+				.put("distributions", config.getJsonArray("distributions", new JsonArray()))
+				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
 				PROFILES.containsAll(preDelete.fieldNames())) {

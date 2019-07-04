@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core'
-import { Router, ActivatedRoute } from '@angular/router'
+import { Router, ActivatedRoute, Data } from '@angular/router'
 
 import { StructureModel, globalStore } from '../store'
 import { Subscription } from 'rxjs/Subscription'
+import { Config } from '../resolvers/Config';
 
 @Component({
     selector: 'app-nav',
@@ -63,7 +64,8 @@ import { Subscription } from 'rxjs/Subscription'
                     [title]="'logout' | translate">
                     <i class="fa fa-power-off" aria-hidden="true"></i>
                 </a>
-                <a class="old-console" href="/directory/admin-console"
+                <a *ngIf="!config['hide-adminv1-link']"
+                    class="old-console" href="/directory/admin-console"
                     [title]="'switch.old.admin.console.tooltip' | translate">
                     <i class="fa fa-step-backward"></i>
                 </a>
@@ -122,7 +124,10 @@ export class NavComponent implements OnInit, OnDestroy {
 
     @ViewChild("sidePanelOpener") sidePanelOpener: ElementRef
 
-    private structureSubscriber : Subscription
+    private structureSubscriber : Subscription;
+    private routeSubscription: Subscription;
+
+    public config: Config;
 
     constructor(
         public router: Router,
@@ -141,11 +146,18 @@ export class NavComponent implements OnInit, OnDestroy {
                     s => s.id === structureId);
             }
         });
+
+        this.routeSubscription = this.route.data.subscribe((data: Data) => {
+            this.config = data['config'];
+        });
     }
 
     ngOnDestroy() {
-        if(this.structureSubscriber) {
+        if (this.structureSubscriber) {
             this.structureSubscriber.unsubscribe();
+        }
+        if (this.routeSubscription) {
+            this.routeSubscription.unsubscribe();
         }
     }
 

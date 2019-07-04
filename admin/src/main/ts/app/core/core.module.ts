@@ -13,6 +13,7 @@ import { I18nResolver } from './resolvers/i18n.resolver'
 import { SessionResolver } from './resolvers/session.resolver'
 import { StructuresResolver } from './resolvers/structures.resolver'
 import { throwIfAlreadyLoaded } from './module-import.guard'
+import { ConfigResolver } from './resolvers/config.resolver';
 
 @NgModule({
     imports: [
@@ -32,7 +33,8 @@ import { throwIfAlreadyLoaded } from './module-import.guard'
         I18nResolver,
         SijilLabelsService,
         NotifyService,
-        SpinnerService
+        SpinnerService,
+        ConfigResolver
     ],
 })
 export class CoreModule {
