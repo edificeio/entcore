@@ -93,7 +93,7 @@ import { Config } from '../resolvers/Config';
                 <spinner-cube waitingFor="portal-content" class="portal-spinner">
                 </spinner-cube>
                 
-                <div class="welcome-message" *ngIf="router.url === '/admin'">
+                <div class="welcome-message" *ngIf="router.url === '/admin' && !config['hide-adminv1-link']">
                     <s5l>message.new.console</s5l>
                     <a class="old-console" href="/directory/admin-console"
                         [title]="'switch.old.admin.console.tooltip' | translate">
