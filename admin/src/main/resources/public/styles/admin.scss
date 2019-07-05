@@ -210,7 +210,7 @@ input[type="search"] {
 input[type="text"], input[type="tel"], input[type="email"], input[type="date"] {
   color: $grey-dark;
   border: none;
-  border-bottom: 1px solid $grey-light;
+  border-bottom: 1px solid #bbb;
   background-color: white;
   outline: none;
   transition: border-color 0.25s;
