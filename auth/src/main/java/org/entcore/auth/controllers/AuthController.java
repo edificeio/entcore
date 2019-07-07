@@ -28,6 +28,7 @@ import static org.entcore.auth.oauth.OAuthAuthorizationResponse.invalidScope;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.serverError;
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.unauthorizedClient;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -1279,6 +1280,18 @@ public class AuthController extends BaseController {
 				} else {
 					unauthorized(request);
 				}
+			}
+		});
+	}
+
+	@Post("/generate/otp")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void generateOTP(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				userAuthAccount.generateOTP(user.getUserId(), defaultResponseHandler(request));
+			} else {
+				unauthorized(request, "invalid.user");
 			}
 		});
 	}

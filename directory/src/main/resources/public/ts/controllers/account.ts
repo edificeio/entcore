@@ -182,6 +182,18 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 		$scope.account.password = '';
 	};
 
+	$scope.openOTPDialog = function() {
+		directory.account.generateOTP(function(res) {
+			if (res && res.status == 200 && res.data.otp && res.data.otp.length == 8) {
+				$scope.account.otp = res.data;
+				let content = lang.translate("directory.otp.content").replace("[[login]]", model.me.login).replace("[[otp]]", res.data.otp);
+				$scope.account.otp.message = content;
+				$scope.display.otp = true;
+				$scope.$apply();
+			}
+		});
+	};
+
 	$scope.closePassword = function(){
 		$scope.display.password = false;
 	};
@@ -324,7 +336,11 @@ export const accountController = ng.controller('MyAccount', ['$scope', 'route', 
 	$scope.displayPassword = function(account, me) {
 		return account.id === me.userId && (!me.federated || (me.federated && account.federatedAddress));
 	}
-	
+
+	$scope.displayOTP = function(account, me) {
+		return account.id === me.userId && me.federated && me.hasApp && !me.hasPw;
+	}
+
 	$scope.displayChildren = function(currentUser) {
 		return currentUser && currentUser.childrenStructure && currentUser.childrenStructure.length && (model.me.type === 'PERSRELELEVE' || model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};

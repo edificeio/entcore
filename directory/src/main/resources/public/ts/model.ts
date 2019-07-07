@@ -81,6 +81,18 @@ export const directory = {
 			}
 			else
 				this.profiles[0];
+		};
+		this.generateOTP = function(callback) {
+			http.post('/auth/generate/otp').then(function(res) {
+				if(typeof callback === 'function') {
+					callback(res);
+				}
+			})
+			.catch(function(e){
+				if(typeof callback === 'function') {
+					callback(e.response);
+				}
+			});
 		}
 	},
 	Group: function(data?){

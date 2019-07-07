@@ -823,5 +823,10 @@
     "label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
     "cgu.title": "Conditions générales d'utilisation",
     "directory.blocked.label": "Bloqué",
-    "directory.resetted.label": "Code temporaire: [[resetCode]] (jusqu'au [[resetCodeDate]])"
+    "directory.resetted.label": "Code temporaire: [[resetCode]] (jusqu'au [[resetCodeDate]])",
+    "directory.otp.title": "Mot de passe à usage unique",
+    "directory.otp.content": "Vous pouvez à présent utiliser le login [[login]] et le mot de passe [[otp]] pour vous connecter à l'application mobile.",
+    "directory.otp.info" : "Le mot de passe est à usage unique et restera valide pendant 10 minutes.",
+    "directory.profile.otp" : "Mot de passe à usage unique",
+    "directory.generate.otp" : "Générer"
 }

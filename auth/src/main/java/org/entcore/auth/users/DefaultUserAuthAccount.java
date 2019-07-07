@@ -22,7 +22,6 @@ package org.entcore.auth.users;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.Either;
 
@@ -32,6 +31,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.neo4j.Neo4j;
 import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -596,7 +596,27 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
 			}
 		});
-	};
+	}
+
+	@Override
+	public void generateOTP(String id, Handler<Either<String, JsonObject>> handler) {
+		final String query =
+				"MATCH (u:User {id:{id}}) " +
+				"SET u.otp = {otp}, u.otpiat = {otpiat} ";
+		final String otp = StringValidation.generateRandomCode(8);
+		final long now = System.currentTimeMillis();
+		final JsonObject params = new JsonObject()
+				.put("id", id)
+				.put("otp", BCrypt.hashpw(otp, BCrypt.gensalt()))
+				.put("otpiat", now);
+		Neo4j.getInstance().execute(query, params, res -> {
+			if ("ok".equals(res.body().getString("status"))) {
+				handler.handle(new Either.Right<>(new JsonObject().put("otp", otp).put("otpiat", now)));
+			} else {
+				handler.handle(new Either.Left<>(res.body().getString("message")));
+			}
+		});
+	}
 
 	private void updatePassword(final Handler<Boolean> handler, String query, String password, Map<String, Object> params) {
 		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());

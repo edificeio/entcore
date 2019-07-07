@@ -47,6 +47,7 @@ import java.util.*;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OAuthDataHandler extends DataHandler {
+	private static final Long OTP_DELAY = 600000L;
 	private final Neo4j neo;
 	private final MongoDb mongo;
 	private final OpenIdConnectService openIdConnectService;
@@ -102,7 +103,7 @@ public class OAuthDataHandler extends DataHandler {
 				!username.trim().isEmpty() && !password.trim().isEmpty()) {
 			String query =
 					"MATCH (n:User) " +
-					"WHERE n.login={login} AND NOT(n.password IS NULL) " +
+					"WHERE n.login={login} AND NOT(HAS(n.activationCode)) " +
 					"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
 			if (checkFederatedLogin) {
 				query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
@@ -110,7 +111,8 @@ public class OAuthDataHandler extends DataHandler {
 			query +=
 					"OPTIONAL MATCH (p:Profile) " +
 					"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
-					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
+					"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
+					"n.otp as otp, n.otpiat as otpiat";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", username);
 			neo.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
@@ -134,7 +136,10 @@ public class OAuthDataHandler extends DataHandler {
 	private void checkPassword(JsonArray result, String password, String username, Handler<String> handler) {
 		JsonObject r = result.getJsonObject(0);
 		String dbPassword;
-		if (r != null && (dbPassword = r.getString("password")) != null && !getOrElse(r.getBoolean("blockedProfile"), false)) {
+		if (r != null && ((dbPassword = r.getString("password")) != null ||
+				(getOrElse(r.getLong("otpiat"), 0L) + OTP_DELAY > System.currentTimeMillis() &&
+						(dbPassword = r.getString("otp")) != null)) &&
+				!getOrElse(r.getBoolean("blockedProfile"), false)) {
 			boolean success = false;
 			String hash = null;
 			try {
@@ -154,6 +159,9 @@ public class OAuthDataHandler extends DataHandler {
 						upgradeOldPassword(username, password);
 					}
 				}
+				if (success && r.getString("otp") != null) {
+					removeOTP(username);
+				}
 			} catch (NoSuchAlgorithmException e) {
 				log.error(e.getMessage(), e);
 			}
@@ -165,6 +173,18 @@ public class OAuthDataHandler extends DataHandler {
 		} else {
 			handler.handle(null);
 		}
+	}
+
+	private void removeOTP(String username) {
+		final String query =
+				"MATCH (u:User {login: {login}}) " +
+				"SET u.otp = null, u.otpiat = null ";
+		final JsonObject params = new JsonObject().put("login", username);
+		neo.execute(query, params, event -> {
+			if (!"ok".equals(event.body().getString("status"))) {
+				log.error("Error removing otp for user " + username + " : " + event.body().getString("message"));
+			}
+		});
 	}
 
 	private void upgradeOldPassword(final String username, String password) {
@@ -526,13 +546,12 @@ public class OAuthDataHandler extends DataHandler {
 	private void getUserIdByLoginAlias(String username, String password, Handler<String> handler) {
 		String query =
 				"MATCH (n:User) " +
-						"WHERE n.loginAlias={loginAlias} AND NOT(n.password IS NULL) " +
-						"AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
-
-		query +=
+				"WHERE n.loginAlias={loginAlias} AND NOT(HAS(n.activationCode)) " +
+				"AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
 				"OPTIONAL MATCH (p:Profile) " +
-						"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
-						"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile";
+				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
+				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
+				"n.otp as otp, n.otpiat as otpiat";
 		Map<String, Object> params = new HashMap<>();
 		params.put("loginAlias", username);
 		neo.execute(query, params, res -> {

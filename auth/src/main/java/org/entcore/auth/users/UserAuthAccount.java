@@ -83,4 +83,6 @@ public interface UserAuthAccount {
 
 	void storeDomain(String id, String domain, String scheme, Handler<Boolean> handler);
 
+	void generateOTP(String id, Handler<Either<String, JsonObject>> handler);
+
 }
