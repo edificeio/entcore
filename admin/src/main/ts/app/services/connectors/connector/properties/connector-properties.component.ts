@@ -68,8 +68,11 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                     </form-field>
 
                     <form-field label="services.connector.properties.target">
-                        <mono-select [(ngModel)]="connector.target" name="target" class="is-flex-none"
-                                     [options]="targetOptions">
+                        <mono-select [(ngModel)]="connector.target" 
+                                    name="target" 
+                                    class="is-flex-none"
+                                    [options]="targetOptions"
+                                    [disabled]="disabled">
                             <option [value]="LINKPARAMS_TARGET_PORTAL">
                                 {{ 'services.connector.properties.target.portal' | translate }}
                             </option>
@@ -113,7 +116,7 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                     <form-field label="services.connector.cas.type">
                         <mono-select [(ngModel)]="connector.casTypeId"
                                      name="casTypeId"
-                                     [disabled]="!connector.hasCas"
+                                     [disabled]="!connector.hasCas || disabled"
                                      class="is-flex-none has-min-width" [options]="casTypesOptions">
                             <option *ngFor="let casType of casTypes" [value]="casType.id">
                                 {{ casType.name }}
@@ -156,7 +159,9 @@ import { SelectOption } from '../../../../shared/ux/components/multi-select.comp
                     <form-field label="services.connector.oauth.grantType">
                         <mono-select [(ngModel)]="connector.oauthGrantType"
                                      name="grantType"
-                                     class="is-flex-none" [options]="grantTypeOptions">
+                                     class="is-flex-none" 
+                                     [options]="grantTypeOptions"
+                                     [disabled]="disabled">
                         </mono-select>
                     </form-field>
                 </fieldset>
