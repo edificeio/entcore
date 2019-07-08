@@ -136,8 +136,8 @@ public class PersEducNat extends AbstractUser {
 				}
 				final JsonObject fosm = new JsonObject();
 				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonObject fcm = new JsonObject();
 				if (externalId != null && linkClasses != null) {
-					final JsonObject fcm = new JsonObject();
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
 							classes.add(structClass[1]);
@@ -167,13 +167,6 @@ public class PersEducNat extends AbstractUser {
 							.put("source", currentSource)
 							.put("classes", classes);
 					fosm.mergeIn(fcm);
-					for (String fos: fcm.fieldNames()) {
-						String q2 =
-								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
-								"MERGE u-[r:TEACHES_FOS]->f " +
-								"SET r.classes = {classes} ";
-						transactionHelper.add(q2, p.copy().put("classes", fcm.getJsonArray(fos)).put("feId", fos));
-					}
 				}
 				if (externalId != null) {
 					String q =
@@ -185,6 +178,18 @@ public class PersEducNat extends AbstractUser {
 							.put("source", currentSource)
 							.put("classes", classes);
 					transactionHelper.add(q, p);
+					final String removeOldFoslc =
+							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
+							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
+							"SET r.classes = null ";
+					transactionHelper.add(removeOldFoslc, p.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fcm.fieldNames()))));
+					for (String fos: fcm.fieldNames()) {
+						String q2 =
+								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
+								"MERGE u-[r:TEACHES_FOS]->f " +
+								"SET r.classes = {classes} ";
+						transactionHelper.add(q2, p.copy().put("classes", fcm.getJsonArray(fos)).put("feId", fos));
+					}
 				}
 				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 				final JsonObject fgm = new JsonObject();
