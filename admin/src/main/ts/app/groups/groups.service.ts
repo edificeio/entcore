@@ -21,7 +21,7 @@ export class GroupsService {
             });
     }
 
-    public update(group: GroupModel): Observable<void> {
+    public update(group: {id: string, name: string}): Observable<void> {
         return this.httpClient.put<void>(`/directory/group/${group.id}`, {name: group.name})
             .do(() => {
                 let sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === group.id);

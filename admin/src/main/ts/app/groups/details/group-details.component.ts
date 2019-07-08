@@ -279,7 +279,7 @@ export class GroupDetails implements OnInit, OnDestroy {
             .first()
             .do(() => this.renameLightboxDisplayed = false)
             .filter(choice => choice === 'confirm')
-            .mergeMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName} as GroupModel))
+            .mergeMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName}))
             .do(() => {
                 this.notifyService.success('group.rename.notify.success.content'
                     , 'group.rename.notify.success.title');

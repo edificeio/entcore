@@ -292,9 +292,9 @@
     "group.rename.lightbox.title": "Renommer le groupe",
     "group.rename.lightbox.name": "Nom",
     "group.rename.notify.success.title": "Renommage effectué",
-    "group.rename.notify.success.content": "Le groupe {{groupName}} a bien été renommé.",
+    "group.rename.notify.success.content": "Le groupe a bien été renommé.",
     "group.rename.notify.error.title": "Erreur lors du renommage",
-    "group.rename.notify.error.content": "Le groupe {{groupName}} n'a pas pu être renommé.",
+    "group.rename.notify.error.content": "Le groupe n'a pas pu être renommé.",
 
     "import.files.deposit": "Dépôt des fichiers",
     "import.fields.checking": "Vérification des champs",
