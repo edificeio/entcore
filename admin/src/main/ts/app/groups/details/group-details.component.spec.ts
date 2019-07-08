@@ -15,6 +15,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { GroupsService } from '../groups.service';
 import { generateMockGroupModel } from '../../shared/utils';
+import { FormsModule } from '@angular/forms';
 
 describe('GroupDetails', () => {
     let component: GroupDetails;
@@ -34,7 +35,7 @@ describe('GroupDetails', () => {
     beforeEach(() => {
         mockStructure = {} as StructureModel;
         mockCommunicationRulesService = jasmine.createSpyObj('CommunicationRulesService', ['toggleInternalCommunicationRule']);
-        mockGroupsService = jasmine.createSpyObj('GroupsService', ['delete']);
+        mockGroupsService = jasmine.createSpyObj('GroupsService', ['delete', 'update']);
         mockNotifyService = jasmine.createSpyObj('NotifyService', ['success', 'error']);
         mockGroupNameService = jasmine.createSpyObj('GroupNameService', ['getGroupName']);
         mockStructure.groups = {
@@ -79,6 +80,7 @@ describe('GroupDetails', () => {
             ],
             imports: [
                 SijilModule.forRoot(),
+                FormsModule,
                 UxModule.forRoot(null)
             ]
         }).compileComponents();
@@ -130,6 +132,13 @@ describe('GroupDetails', () => {
         component.deleteConfirmationClicked.next('confirm');
         expect(mockGroupsService.delete).toHaveBeenCalled();
         expect(mockRouter.navigate).toHaveBeenCalled();
+    });
+
+    it('should call the groupsService.update when clicking on the update group button', () => {
+        fixture.nativeElement.querySelector('.lct-group-update-button').click();
+        (mockGroupsService.update as jasmine.Spy).and.returnValue(Observable.of({}));
+        component.renameConfirmationClicked.next('confirm');
+        expect(mockGroupsService.update).toHaveBeenCalled();
     });
 });
 

@@ -33,7 +33,7 @@ import { trim } from '../../shared/utils/string';
                 <button type="button"
                         *ngIf="groupsStore.group?.type === 'ManualGroup'"
                         (click)="renameButtonClicked.next()"
-                        class="lct-group-edit-button">
+                        class="lct-group-update-button">
                     <s5l>group.rename.button</s5l>
                     <i class="fa fa-pencil is-size-5"></i>
                 </button>
@@ -60,7 +60,6 @@ import { trim } from '../../shared/utils/string';
                 <s5l>group.details.button.comm.rules</s5l>
                 <i class="fa fa-podcast"></i>
             </button>
-
 
             <group-users-list [users]="groupsStore.group?.users">
                 <span class="lct-communication-rule"
@@ -100,7 +99,7 @@ import { trim } from '../../shared/utils/string';
             <span [innerHTML]="'group.delete.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
         </lightbox-confirm>
         
-        <lightbox [show]="renameLightboxDisplayed" (onClose)="this.renameLightboxDisplayed = false">
+        <lightbox [show]="renameLightboxDisplayed" (onClose)="this.renameConfirmationClicked.next('cancel')">
             <h2><s5l>group.rename.lightbox.title</s5l></h2>
             <form #renameForm="ngForm">
                 <form-field label="group.rename.lightbox.name">
@@ -280,7 +279,7 @@ export class GroupDetails implements OnInit, OnDestroy {
             .first()
             .do(() => this.renameLightboxDisplayed = false)
             .filter(choice => choice === 'confirm')
-            .switchMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName} as GroupModel))
+            .mergeMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName} as GroupModel))
             .do(() => {
                 this.notifyService.success('group.rename.notify.success.content'
                     , 'group.rename.notify.success.title');

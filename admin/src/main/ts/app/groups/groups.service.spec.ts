@@ -20,6 +20,8 @@ describe('GroupsService', () => {
             ]
         } as GroupCollection;
         mockGroupStore = {structure: mockStructure} as GroupsStore;
+                generateMockGroupModel('groupId1', 'ManualGroup'),
+        mockGroupStore.group = generateMockGroupModel('groupId1', 'ManualGroup');
         
         TestBed.configureTestingModule({
             providers: [
@@ -29,12 +31,12 @@ describe('GroupsService', () => {
             imports: [HttpClientTestingModule]
         });
         groupsService = TestBed.get(GroupsService);
+        groupsService.groupsStore = mockGroupStore;
         httpTestingController = TestBed.get(HttpTestingController);
     })
 
     describe('delete', () => {
         it('should call DELETE /directory/group/groupId1 when given group with id "groupId1" and remove "groupId1" from groupsStore', () => {
-            groupsService.groupsStore = mockGroupStore;
             const groupToDelete: GroupModel = new GroupModel();
             groupToDelete.id = 'groupId1';
             groupsService.delete(groupToDelete).subscribe();
@@ -43,5 +45,16 @@ describe('GroupsService', () => {
             expect(request.request.method).toBe('DELETE');
             expect(mockGroupStore.structure.groups.data.length).toBe(1);
         })
+    })
+
+    describe('update', () => {
+        it('should call PUT /directory/group/groupId1 when given group with id "groupId1" and update group name with "group1" in groupsStore.group and groupsStore.structure.groups', () => {
+            groupsService.update({id: 'groupId1', name: 'newName'} as GroupModel).subscribe();
+            const request = httpTestingController.expectOne('/directory/group/groupId1');
+            request.flush({});
+            expect(request.request.method).toBe('PUT');
+            expect(mockGroupStore.group.name).toBe('newName');
+            expect(mockGroupStore.structure.groups.data.find(g => g.id === 'groupId1').name).toBe('newName');
+        });
     })
 });
