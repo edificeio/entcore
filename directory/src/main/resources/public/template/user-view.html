@@ -30,6 +30,13 @@
 		</form>
 	</lightbox>
 
+	<lightbox show="display.otp" on-close="display.otp = false">
+		<h2><i18n>directory.otp.title</i18n></h2>
+		<span ng-if="account.otp">[[account.otp.message]]</span>
+		<br />
+		<span ng-if="account.otp"><i18n>directory.otp.info</i18n></span>
+	</lightbox>
+
 	<article class="rigid-grid cell twelve">
 
 		<div class="cell four height-four reduce-block-six avatar">
@@ -65,13 +72,22 @@
 
 			</div>
 
-			<div class="row" ng-if="account.id === me.userId">
+			<div class="row" ng-if="displayPassword(account,me)">
 				<div class="four cell">
 					<i18n>userBook.profile.password</i18n>
 				</div>
 				<em class="seven cell">
-					<a ng-if="!me.federated" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
-					<a ng-if="me.federated" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
+					<a ng-if="(!me.federated || (me.federated && account.disabledFederatedAdress))" ng-click="openPasswordDialog()"><i18n>change.password</i18n></a>
+					<a ng-if="(me.federated && !account.disabledFederatedAdress)" target="_blank" ng-href="[[account.federatedAddress]]"><i18n>change.password</i18n></a>
+				</em>
+			</div>
+
+			<div class="row" ng-if="displayOTP(account,me)">
+				<div class="four cell">
+					<i18n>directory.profile.otp</i18n>
+				</div>
+				<em class="seven cell">
+					<a ng-click="openOTPDialog()"><i18n>directory.generate.otp</i18n></a>
 				</em>
 			</div>
 
