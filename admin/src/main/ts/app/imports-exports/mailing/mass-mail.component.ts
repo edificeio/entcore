@@ -66,7 +66,7 @@ import { SelectOption } from '../../shared/ux/components/multi-select.component'
                     </div>
                 </div>
             </div>
-            <div class="has-vertical-padding-10 flex is-pulled-right">
+            <div class="has-vertical-padding-10 flex has-flex-end">
                 <div class="mailing__sort">
                     <p>
                         <s5l>massmail.sorttitle</s5l>
