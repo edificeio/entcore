@@ -93,11 +93,11 @@
 		},
 		"module" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"moduleName" : {
 			"type" : "string",
-			"validator" : "notEmpty"
+			"validator" : "nop"
 		},
 		"level" : {
 			"type" : "string",
