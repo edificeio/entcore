@@ -20,4 +20,15 @@ export class GroupsService {
                     , 1);
             });
     }
+
+    public update(group: GroupModel): Observable<void> {
+        return this.httpClient.put<void>(`/directory/group/${group.id}`, {name: group.name})
+            .do(() => {
+                let sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === group.id);
+                if (sGroup) {
+                    sGroup.name = group.name;
+                }
+                this.groupsStore.group.name = group.name;
+            });
+    }
 }

@@ -18,22 +18,33 @@ import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/observable/merge';
 import { GroupsService } from '../groups.service';
+import { trim } from '../../shared/utils/string';
 
 @Component({
     selector: 'group-detail',
     template: `
         <div class="panel-header is-display-flex has-space-between">
-            <span>
-                <s5l>members.of.group</s5l>
-                {{ groupsStore.group.name }}
-            </span>
-            <button type="button"
-                    *ngIf="groupsStore.group?.type === 'ManualGroup'"
-                    (click)="deleteButtonClicked.next(groupsStore.group)"
-                    class="lct-group-delete-button">
-                <s5l>group.delete.button</s5l>
-                <i class="fa fa-trash is-size-5"></i>
-            </button>
+            <div>
+                <span>
+                    {{ groupsStore.group.name }}
+                </span>
+            </div>
+            <div>
+                <button type="button"
+                        *ngIf="groupsStore.group?.type === 'ManualGroup'"
+                        (click)="renameButtonClicked.next()"
+                        class="lct-group-edit-button">
+                    <s5l>group.rename.button</s5l>
+                    <i class="fa fa-pencil is-size-5"></i>
+                </button>
+                <button type="button"
+                        *ngIf="groupsStore.group?.type === 'ManualGroup'"
+                        (click)="deleteButtonClicked.next(groupsStore.group)"
+                        class="lct-group-delete-button">
+                    <s5l>group.delete.button</s5l>
+                    <i class="fa fa-trash is-size-5"></i>
+                </button>
+            </div>
         </div>
 
         <div class="padded">
@@ -88,6 +99,29 @@ import { GroupsService } from '../groups.service';
                           (onConfirm)="deleteConfirmationClicked.next('confirm')">
             <span [innerHTML]="'group.delete.confirm.content' | translate: {groupName: groupNameService.getGroupName(groupsStore.group)}"></span>
         </lightbox-confirm>
+        
+        <lightbox [show]="renameLightboxDisplayed" (onClose)="this.renameLightboxDisplayed = false">
+            <h2><s5l>group.rename.lightbox.title</s5l></h2>
+            <form #renameForm="ngForm">
+                <form-field label="group.rename.lightbox.name">
+                    <input type="text" [(ngModel)]="groupNewName" name="groupNewName"
+                            required pattern=".*\\S+.*" #groupNewNameInput="ngModel"
+                            (blur)="onGroupNameBlur(groupNewName)">
+                    <form-errors [control]="groupNewNameInput"></form-errors>
+                </form-field>
+                
+                <div class="is-display-flex has-flex-end">
+                    <button type="button" class="cancel" (click)="renameConfirmationClicked.next('cancel')">
+                        {{ 'cancel' | translate }}
+                    </button>
+                    <button type="button" class="confirm has-left-margin-10" 
+                        (click)="renameConfirmationClicked.next('confirm')"
+                        [disabled]="renameForm.pristine || renameForm.invalid">
+                        {{ 'confirm' | translate }}
+                    </button>
+                </div>
+            </form>
+        </lightbox>
     `,
     styles: [
         '.lct-communication-rule {cursor: pointer;}',
@@ -114,7 +148,14 @@ export class GroupDetails implements OnInit, OnDestroy {
     public deleteConfirmationDisplayed: boolean = false;
     public deleteConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
 
+    public renameSubscription: Subscription;
+    public renameButtonClicked: Subject<{}> = new Subject();
+    public renameLightboxDisplayed: boolean = false;
+    public renameConfirmationClicked: Subject<'confirm' | 'cancel'> = new Subject<'confirm' | 'cancel'>();
+
     private changesSubscription: Subscription;
+
+    public groupNewName: string;
 
     constructor(public groupsStore: GroupsStore,
                 private route: ActivatedRoute,
@@ -152,11 +193,18 @@ export class GroupDetails implements OnInit, OnDestroy {
         this.deleteSubscription = this.deleteButtonClicked
             .mergeMap((group: GroupModel) => this.deleteGroup(group))
             .subscribe();
+
+        this.renameSubscription = this.renameButtonClicked
+            .mergeMap(() => this.renameGroup())
+            .subscribe()
+        
+        this.groupNewName = this.groupsStore.group.name;
     }
 
     ngOnDestroy(): void {
         this.changesSubscription.unsubscribe();
         this.deleteSubscription.unsubscribe();
+        this.renameSubscription.unsubscribe();
     }
 
     showLightBox() {
@@ -224,5 +272,25 @@ export class GroupDetails implements OnInit, OnDestroy {
 
     public openGroupCommunication(group: GroupModel) {
         this.router.navigate([group.id, 'communication'], {relativeTo: this.activatedRoute.parent});
+    }
+
+    public renameGroup(): Observable<void> {
+        this.renameLightboxDisplayed = true;
+        return this.renameConfirmationClicked.asObservable()
+            .first()
+            .do(() => this.renameLightboxDisplayed = false)
+            .filter(choice => choice === 'confirm')
+            .switchMap(() => this.groupsService.update({id: this.groupsStore.group.id, name: this.groupNewName} as GroupModel))
+            .do(() => {
+                this.notifyService.success('group.rename.notify.success.content'
+                    , 'group.rename.notify.success.title');
+            }, (error: HttpErrorResponse) => {
+                this.notifyService.error('group.rename.notify.error.content'
+                    , 'group.rename.notify.error.title');
+            });
+    }
+
+    public onGroupNameBlur(name: string): void {
+        this.groupNewName = trim(name);
     }
 }
