@@ -32,4 +32,6 @@ export class MockDragAndDropFilesDirective {
     allowedExtensions: Array<string> = [];
     @Input()
     maxFilesNumber: number = 1;
+    @Input()
+    disabled: boolean = false;
 }

@@ -7,6 +7,8 @@ import { GroupsStore } from '../groups.store';
 import { GroupModel } from '../../core/store/models';
 import { NotifyService, SpinnerService } from '../../core/services';
 
+import { trim } from '../../shared/utils/string'
+
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/map';
@@ -25,7 +27,7 @@ import 'rxjs/add/operator/toPromise';
                 <form-field label="create.group.name">
                     <input type="text" [(ngModel)]="newGroup.name" name="name"
                            required pattern=".*\\S+.*" #nameInput="ngModel"
-                           (blur)="newGroup.name = trim(newGroup.name)">
+                           (blur)="onGroupNameBlur(newGroup.name)">
                     <form-errors [control]="nameInput"></form-errors>
                 </form-field>
 
@@ -92,10 +94,7 @@ export class GroupCreate {
         this.location.back();
     }
 
-    trim(input: string) {
-        if (input && input.length > 0) {
-            return input.trim();
-        }
-        return input;
+    onGroupNameBlur(name: string): void {
+        this.newGroup.name = trim(name);
     }
 }

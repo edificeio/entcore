@@ -100,9 +100,6 @@ button {
   transition: background 0.25s, color 0.25s, border 0.25s;
   line-height: 1.5em;
   color: $grey-dark;
-  & ~ & {
-    margin: 0 10px;
-  }
   &.input-inline {
     margin-left: 10px;
   }

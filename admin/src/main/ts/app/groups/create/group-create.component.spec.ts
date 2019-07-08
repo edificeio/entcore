@@ -124,10 +124,4 @@ describe('GroupCreate', () => {
             expect(mockLocation.back).toHaveBeenCalled();
         });
     });
-
-    describe('trim', () => {
-        it(`should trim 'test '`, () => {
-            expect(component.trim('test ')).toBe('test');
-        });
-    });
 });
