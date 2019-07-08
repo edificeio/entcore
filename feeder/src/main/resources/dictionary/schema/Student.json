@@ -170,11 +170,11 @@
 			"type": "login-alias",
 			"validator": "loginAlias"
 		},
-		"startDate" : {
+		"startDateClasses" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
 		},
-		"endDate" : {
+		"endDateClasses" : {
 			"type" : "array-string",
 			"validator" : "notEmpty"
 		}

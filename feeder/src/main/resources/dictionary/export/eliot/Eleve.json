@@ -20,6 +20,6 @@
 	"relative" : { "attribute" : "ENTElevePersRelEleve" },
 	"mergedExternalIds" : { "attribute" : "ENTManuelPersonJointure" },
 	"ine" : { "attribute" : "ENTEleveINE" },
-	"startDate" : { "attribute" : "ENTEleveDateEntree" },
-	"endDate" : { "attribute" : "ENTEleveDateSortie" }
+	"startDateClasses" : { "attribute" : "ENTEleveDateEntreeClasses" },
+	"endDateClasses" : { "attribute" : "ENTEleveDateSortieClasses" }
 }
