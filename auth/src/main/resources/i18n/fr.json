@@ -39,7 +39,6 @@
     "auth.title": "Authentification",
     "auth.welcome": "Bienvenue !",
     "auth.welcome.p1": "Bienvenue sur Ent-Core, le moteur d'ENT versatile basé sur la JVM !",
-    "auth.welcome.p2": "",
     "auth.welcome.p3": "Lors de votre première connexion, munissez-vous de l'identifiant et du code d'activation distribués par votre établissement. Cliquez ensuite sur \"Activer mon compte\" sous le bouton \"Connexion\". Lors des connexions suivantes, saisissez directement votre identifiant et le mot de passe choisi.",
     "browser.not.supported.download": "Afin d'avoir une expérience d'utilisation optimale, nous vous conseillons de télécharger l'un des navigateurs supportés ci-dessous : ",
     "browser.not.supported.title": "Votre navigateur n'est pas supporté",
