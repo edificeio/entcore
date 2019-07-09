@@ -217,6 +217,7 @@
     "massmail.mail.done" : "Publipostage mail effectué ",
     "massmail.pdf.done" : "Publipostage PDF effectué ",
     "massmail.pdf.one": "1 par page",
+    "massmail.pdf.two": "2 par page",
     "massmail.pdf.eight": "8 par page",
     "massmail.error" :  "Erreur lors du publipostage",
     "massmail.sorttitle" : "Triez votre publipostage PDF :",

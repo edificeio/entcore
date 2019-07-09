@@ -411,7 +411,7 @@ public class StructureController extends BaseController {
 			public void handle(final UserInfos infos) {
 
 				//PDF
-				if("pdf".equals(type) || isSimplePdf){
+				if("pdf".equals(type) || "newPdf".equals(type) || isSimplePdf){
 					massMailService.massmailUsers(structureId, filter, true, isSimplePdf, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
 						public void handle(Either<String, JsonArray> result) {
 							if(result.isLeft()){
@@ -489,6 +489,7 @@ public class StructureController extends BaseController {
 								JsonArray users = result.right().getValue();
 								switch (type) {
 									case "pdf":
+									case "newPdf":
 									case "simplePdf":
 										massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, "massmail", type, users);
 										break;

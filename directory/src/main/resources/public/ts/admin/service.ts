@@ -4,7 +4,7 @@ import { ClassRoom, User, UserTypes, Network, School, SchoolApiResult, Group, En
 export type ClassAdminPreferences = { selectedClassId?: string }
 
 let preferences: ClassAdminPreferences = null;
-export type ReportType = "pdf" | "simplePdf" | "mail" | "csv";
+export type ReportType = "pdf" | "newPdf" | "simplePdf" | "mail" | "csv";
 const cleanObject = (obj) => {
     for (let i in obj) {
         if (obj[i] == null || obj[i] == undefined) {

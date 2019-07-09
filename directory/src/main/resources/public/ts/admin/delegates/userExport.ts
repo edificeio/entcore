@@ -167,7 +167,7 @@ export function ExportDelegate($scope: ExportDelegateScope) {
                     type = "csv";
                     break;
                 case ExportTypes.Detail:
-                    type = "pdf";
+                    type = "newPdf";
                     break;
                 case ExportTypes.Simple:
                     type = "simplePdf";
