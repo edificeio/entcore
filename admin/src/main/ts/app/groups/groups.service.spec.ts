@@ -44,7 +44,7 @@ describe('GroupsService', () => {
             expect(request.request.method).toBe('DELETE');
             expect(mockGroupStore.structure.groups.data.length).toBe(1);
         })
-    })
+    });
 
     describe('update', () => {
         it('should call PUT /directory/group/groupId1 when given group with id "groupId1" and update group name with "group1" in groupsStore.group and groupsStore.structure.groups', () => {
@@ -55,5 +55,5 @@ describe('GroupsService', () => {
             expect(mockGroupStore.group.name).toBe('newName');
             expect(mockGroupStore.structure.groups.data.find(g => g.id === 'groupId1').name).toBe('newName');
         });
-    })
+    });
 });
