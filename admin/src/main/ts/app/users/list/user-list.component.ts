@@ -6,6 +6,7 @@ import { UserListService, UserlistFiltersService } from '../../core/services'
 import { UserModel } from '../../core/store/models'
 
 import { UsersStore } from '../users.store';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'user-list',
@@ -43,7 +44,7 @@ import { UsersStore } from '../users.store';
             <strong class="badge">{{ nbUser }} <s5l>list.results.users</s5l></strong>
             <a class="button is-primary is-pulled-right" aria-hidden="true"
                 [title]="'filters' | translate"
-                [ngClass]="{'is-active': filtersOn()}"
+                [ngClass]="{'is-active': filtersOn(), 'is-selected': isFilterSelected(), 'is-clickable': !isFilterSelected()}"
                 (click)="companionChange.emit('filter')">
                 <s5l>filters</s5l>
                 <i class="fa fa-chevron-right" aria-hidden="true"></i>
@@ -106,7 +107,8 @@ export class UserList implements OnInit, OnDestroy, AfterViewChecked {
         private cdRef: ChangeDetectorRef,
         private usersStore: UsersStore,
         public userListService: UserListService,
-        public listFiltersService: UserlistFiltersService){}
+        public listFiltersService: UserlistFiltersService,
+        private router: Router){}
 
     ngOnInit() {
         this.filtersUpdatesSubscriber = this.listFiltersService.updateSubject.subscribe(() => this.cdRef.markForCheck());
@@ -140,5 +142,9 @@ export class UserList implements OnInit, OnDestroy, AfterViewChecked {
 
     filtersOn(): boolean {
         return this.listFiltersService.filters.some(f => f.outputModel && f.outputModel.length > 0);
+    }
+
+    isFilterSelected(): boolean {
+        return this.router.url.indexOf('/users/filter') > -1;
     }
 }
