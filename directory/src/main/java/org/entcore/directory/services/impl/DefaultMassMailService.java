@@ -59,6 +59,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         final String templateNamePrefix;
         if ("pdf".equals(type)) {
             templateNamePrefix = "massmail.pdf";
+            if (!users.isEmpty()) {
+                users.getJsonObject(users.size() - 1).put("end", true);
+            }
             templateProps.put("users", users);
         } else if ("newPdf".equals(type)) {
             templateNamePrefix = "massmail_new" + File.separator +"massmail_new.pdf";
