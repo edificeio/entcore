@@ -101,25 +101,27 @@ import { trim } from '../../shared/utils/string';
         
         <lightbox [show]="renameLightboxDisplayed" (onClose)="this.renameConfirmationClicked.next('cancel')">
             <h2><s5l>group.rename.lightbox.title</s5l></h2>
-            <form #renameForm="ngForm">
-                <form-field label="group.rename.lightbox.name">
-                    <input type="text" [(ngModel)]="groupNewName" name="groupNewName"
-                            required pattern=".*\\S+.*" #groupNewNameInput="ngModel"
-                            (blur)="onGroupNameBlur(groupNewName)">
-                    <form-errors [control]="groupNewNameInput"></form-errors>
-                </form-field>
-                
-                <div class="is-display-flex has-flex-end">
-                    <button type="button" class="cancel" (click)="renameConfirmationClicked.next('cancel')">
-                        {{ 'cancel' | translate }}
-                    </button>
-                    <button type="button" class="confirm has-left-margin-10" 
-                        (click)="renameConfirmationClicked.next('confirm')"
-                        [disabled]="renameForm.pristine || renameForm.invalid">
-                        {{ 'confirm' | translate }}
-                    </button>
-                </div>
-            </form>
+            <div class="rename-lightbox__form">
+                <form #renameForm="ngForm">
+                    <form-field label="group.rename.lightbox.name">
+                        <input type="text" [(ngModel)]="groupNewName" name="groupNewName"
+                                required pattern=".*\\S+.*" #groupNewNameInput="ngModel"
+                                (blur)="onGroupNameBlur(groupNewName)">
+                        <form-errors [control]="groupNewNameInput"></form-errors>
+                    </form-field>
+                    
+                    <div class="is-display-flex has-flex-end">
+                        <button type="button" class="cancel" (click)="renameConfirmationClicked.next('cancel')">
+                            {{ 'cancel' | translate }}
+                        </button>
+                        <button type="button" class="confirm has-left-margin-10" 
+                            (click)="renameConfirmationClicked.next('confirm')"
+                            [disabled]="renameForm.pristine || renameForm.invalid">
+                            {{ 'confirm' | translate }}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </lightbox>
     `,
     styles: [
@@ -131,7 +133,8 @@ import { trim } from '../../shared/utils/string';
         '.lct-communication-rule__switch, .lct-communication-rule__text {vertical-align: middle;}',
         '.lct-communication-rule__can-communicate .lct-communication-rule__switch {color: mediumseagreen;}',
         '.lct-communication-rule__cannot-communicate .lct-communication-rule__switch {color: indianred;}',
-        '.button--with-icon {align-items: center; display: inline-flex;}'
+        '.button--with-icon {align-items: center; display: inline-flex;}',
+        '.rename-lightbox__form {min-width: 500px;}'
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
