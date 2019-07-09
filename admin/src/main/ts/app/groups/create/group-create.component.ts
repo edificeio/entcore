@@ -7,7 +7,7 @@ import { GroupsStore } from '../groups.store';
 import { GroupModel } from '../../core/store/models';
 import { NotifyService, SpinnerService } from '../../core/services';
 
-import { trim } from '../../shared/utils/string'
+import { trim } from '../../shared/utils/string';
 
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/mergeMap';
