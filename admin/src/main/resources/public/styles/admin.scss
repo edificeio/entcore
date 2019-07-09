@@ -426,7 +426,20 @@ i.group_add {
   &.is-active {
     color: white;
     background-color: $accent;
-    box-shadow: 0 0 10px rgba($accent, 0.25);
+    box-shadow: 0 0 10px rgba($accent, 1);
+  }
+
+  &.is-selected {
+    color: white;
+    background-color: $accent;
+    cursor: default;
+    i {
+      cursor: default !important;
+    }
+  }
+
+  &.is-clickable {
+    cursor: pointer;
   }
 
   &.is-info {
