@@ -90,7 +90,7 @@ import { SelectOption } from '../../shared/ux/components/multi-select.component'
                         <s5l>massmail.modeltitle</s5l>
                     </p>
                     <mono-select [(ngModel)]="templateModel"
-                                 [options]="[{value: 'pdf', label: 'massmail.pdf.one'}, {value: 'simplePdf', label: 'massmail.pdf.eight'}]">
+                                 [options]="[{value: 'pdf', label: 'massmail.pdf.one'}, {value: 'newPdf', label: 'massmail.pdf.two'}, {value: 'simplePdf', label: 'massmail.pdf.eight'}]">
                     </mono-select>
                 </div>
                 <div class="mailing__publish">
@@ -226,7 +226,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
 
     public firstSort: "none" | "profile" | "classname" = 'none';
     public secondSort: "none" | "profile" | "classname" = 'none';
-    public templateModel: "pdf" | "simplePdf" = 'pdf';
+    public templateModel: "pdf" | "simplePdf" | "newPdf" = 'pdf';
     public secondSortOptions: SelectOption<string>[] = [{value: 'none', label: 'massmail.none'}];
 
     translate = (...args) => {
@@ -338,7 +338,7 @@ export class MassMailComponent implements OnInit, OnDestroy {
             return
         }
 
-        if (type.indexOf("pdf") > -1 || type.indexOf("simplePdf") > -1) {
+        if (type.toLowerCase().includes("pdf")) {
             this.ajaxDownload(blob, this.translate("massmail.filename") + ".pdf");
             this.ns.success("massmail.pdf.done");
         } else {

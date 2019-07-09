@@ -25,10 +25,7 @@ import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.services.MassMailService;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -57,12 +54,15 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
     public void massMailTypePdf(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users) {
 
-        final JsonObject templateProps = new JsonObject().put("hostname", Renders.getHost(request));
+        final JsonObject templateProps = new JsonObject().put("hostname", Renders.getHost(request)).put("host",Renders.getScheme(request));
 
         final String templateNamePrefix;
         if ("pdf".equals(type)) {
             templateNamePrefix = "massmail.pdf";
             templateProps.put("users", users);
+        } else if ("newPdf".equals(type)) {
+            templateNamePrefix = "massmail_new" + File.separator +"massmail_new.pdf";
+            templateProps.put("users", users).put("A5",true);
         } else if ("simplePdf".equals(type)) {
             templateNamePrefix = "massmail_simple.pdf";
             List list = users.getList();
@@ -345,7 +345,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
         if (groupClasses) {
             withStr += ", collect(distinct c.name) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
-            returnStr += ", classes, classname, isInClass ";
+            returnStr += ", classes, classname, isInClass, CASE count(classes) WHEN 0 THEN null ELSE head(classes) END as firstClass, CASE WHEN size(classes) < 2 THEN null ELSE tail(classes) END as otherClasses ";
         } else {
             withStr += ", c.name as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
             returnStr += ", classname, isInClass ";
@@ -495,17 +495,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
 
     private Future<String> getLanguage(UserInfos user, HttpServerRequest request) {
         Future<String> future = Future.future();
-        NotificationUtils.getUsersPreferences(eb, new JsonArray().add(user.getUserId()), "language: uac.language", userList -> {
-            String navLang = getOrElse(I18n.acceptLanguage(request), "fr");
-            if (userList == null) {
-                log.error("[DefaultMassMailService] Issue while retrieving users preferences.");
-                future.complete(navLang);
-                return;
-            }
-            JsonObject userPref = userList.isEmpty()?new JsonObject():userList.getJsonObject(0);
-            String langage = getOrElse(userPref.getString("language"), navLang);
-            future.complete(langage);
-        });
+        String navLang = getOrElse(I18n.acceptLanguage(request), "fr");
+        future.complete(navLang);
         return future;
     }
 
