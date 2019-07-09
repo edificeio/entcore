@@ -20,7 +20,6 @@ describe('GroupsService', () => {
             ]
         } as GroupCollection;
         mockGroupStore = {structure: mockStructure} as GroupsStore;
-                generateMockGroupModel('groupId1', 'ManualGroup'),
         mockGroupStore.group = generateMockGroupModel('groupId1', 'ManualGroup');
         
         TestBed.configureTestingModule({
@@ -33,7 +32,7 @@ describe('GroupsService', () => {
         groupsService = TestBed.get(GroupsService);
         groupsService.groupsStore = mockGroupStore;
         httpTestingController = TestBed.get(HttpTestingController);
-    })
+    });
 
     describe('delete', () => {
         it('should call DELETE /directory/group/groupId1 when given group with id "groupId1" and remove "groupId1" from groupsStore', () => {
@@ -49,7 +48,7 @@ describe('GroupsService', () => {
 
     describe('update', () => {
         it('should call PUT /directory/group/groupId1 when given group with id "groupId1" and update group name with "group1" in groupsStore.group and groupsStore.structure.groups', () => {
-            groupsService.update({id: 'groupId1', name: 'newName'} as GroupModel).subscribe();
+            groupsService.update({id: 'groupId1', name: 'newName'}).subscribe();
             const request = httpTestingController.expectOne('/directory/group/groupId1');
             request.flush({});
             expect(request.request.method).toBe('PUT');

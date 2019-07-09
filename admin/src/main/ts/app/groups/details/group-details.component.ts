@@ -195,7 +195,7 @@ export class GroupDetails implements OnInit, OnDestroy {
 
         this.renameSubscription = this.renameButtonClicked
             .mergeMap(() => this.renameGroup())
-            .subscribe()
+            .subscribe();
         
         this.groupNewName = this.groupsStore.group.name;
     }
