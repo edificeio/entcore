@@ -62,7 +62,7 @@ interface ServiceInfo {
 export class ServicesListComponent {
     // TODO extract from router 
     @Input()
-    serviceName: 'applications' | 'connectors' | 'widgets';
+    serviceName: 'applications' | 'connectors';
     @Input()
     selectedItem: ApplicationModel | ConnectorModel;
 
@@ -84,7 +84,7 @@ export class ServicesListComponent {
 
         SessionModel.getSession().then(session => {
             if (!this.serviceName) {
-                throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors" | "widgets"')
+                throw new Error('Input property serviceName is undefined. It must be set with one of "applications" | "connectors"')
             }
             this.routeSubscriber = routing.observe(this.route, "data").subscribe((data: Data) => {
                 if (data[this.collectionRef[this.serviceName].routeData]) {
