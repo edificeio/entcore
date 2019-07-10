@@ -35,8 +35,7 @@ export class ServicesComponent implements OnInit, OnDestroy {
 
     tabs: Array<{ label: string, view: string, disabled: boolean }> = [
         {label: 'Applications', view: 'applications', disabled: false},
-        {label: 'Connecteurs', view: 'connectors', disabled: false},
-        {label: 'Widgets', view: 'widgets', disabled: true}
+        {label: 'Connecteurs', view: 'connectors', disabled: false}
     ];
 
     constructor(

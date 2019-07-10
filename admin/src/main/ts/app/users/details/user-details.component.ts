@@ -83,6 +83,9 @@ import { Config } from '../../core/resolvers/Config';
                     <div>
                         <img [src]="imgSrc" (load)="imgLoad()">
                     </div>
+                </div>
+
+                <div class="right" *ngIf="!user.deleteDate">
                     <div>
                         <button (click)="deleteImg()"
                                 [disabled]="spinner.isLoading('portal-content') || !imgSrc || !imgLoaded"
@@ -91,11 +94,10 @@ import { Config } from '../../core/resolvers/Config';
                             <i class="fa fa-times-circle"></i>
                         </button>
                     </div>
-                    <div>
+                    <div *ngIf="isUnblocked()">
                         <button (click)="toggleUserBlock()"
                                 [disabled]="spinner.isLoading('portal-content')"
-                                class="relative"
-                                *ngIf="isUnblocked()">
+                                class="relative">
                             <s5l [s5l-params]="[details.blocked]">
                                 toggle.account
                             </s5l>
@@ -124,18 +126,12 @@ import { Config } from '../../core/resolvers/Config';
                             <strong>{{ 'user.remove.disclaimer.confirm' | translate }}</strong>
                         </lightbox-confirm>
                     </div>
-                </div>
-
-                <div class="right" *ngIf="!user.deleteDate">
-                    <button class="big" (click)="openUserCommunication()">
-                        <s5l>users.details.button.comm.rules</s5l>
-                        <i class="fa fa-podcast"></i>
-                    </button>
-
-                    <button class="big" disabled title="En construction">
-                        <s5l>users.details.button.app.rights</s5l>
-                        <i class="fa fa-th"></i>
-                    </button>
+                    <div>
+                        <button (click)="openUserCommunication()">
+                            <s5l>users.details.button.comm.rules</s5l>
+                            <i class="fa fa-podcast"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
