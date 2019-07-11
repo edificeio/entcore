@@ -265,6 +265,7 @@
   "editor.option.font": "Police",
   "editor.option.fontSize": "Taille de police",
   "editor.option.format": "Styles",
+  "editor.option.edumedia": "Ressources interactives Edumedia",
   "editor.add.row": "Ajouter une ligne",
   "editor.add.column": "Ajouter une colonne",
   "editor.remove.row": "Supprimer la ligne",
