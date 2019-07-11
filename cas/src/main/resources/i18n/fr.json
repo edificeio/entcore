@@ -34,5 +34,7 @@
   "LabomepRegisteredService.name" : "LaboMEP",
   "LabomepRegisteredService.description" : "Service CAS spécifique <a href='http://www.labomep.net/' target='_blank'>LaboMEP</a>, préparation de séances de mathématiques",
   "AcademicSuffixRegisteredService.name" : "OGIL/Césame",
-  "AcademicSuffixRegisteredService.description" : "Service CAS spécifique pour Ogil et Césame"
+  "AcademicSuffixRegisteredService.description" : "Service CAS spécifique pour Ogil et Césame",
+  "UuidRegisteredService.name" : "Moodle",
+  "UuidRegisteredService.description" :  "Renvoie uniquement l'identifiant interne au client CAS."
 }
