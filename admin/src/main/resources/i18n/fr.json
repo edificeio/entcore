@@ -709,5 +709,6 @@
     "group.communication.groups-that-group-can-communicate-with": "Groupes visibles",
     "group.communication.groups-that-can-communicate-with-group": "Groupes pouvant voir le groupe sélectionné",
     "group.communication.current-group": "Groupe sélectionné",
-    "group.details.button.comm.rules": "Règles de communication du groupe"
+    "group.details.button.comm.rules": "Règles de communication du groupe",
+    "create.flash.message": "Créer un message flash"
 }
