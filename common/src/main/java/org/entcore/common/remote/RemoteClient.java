@@ -49,6 +49,7 @@ public class RemoteClient {
 			final HttpClientOptions options = new HttpClientOptions()
 					.setDefaultHost(uri.getHost())
 					.setDefaultPort(uri.getPort())
+					.setSsl("https".equals(uri.getScheme()))
 					.setMaxPoolSize(j.getInteger("poolSize", 5))
 					.setKeepAlive(j.getBoolean("keepAlive", true));
 			clients.put(attr, vertx.createHttpClient(options));
