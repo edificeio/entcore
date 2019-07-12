@@ -19,7 +19,7 @@ Installer le [Git](http://git-scm.com/) et lancer la commande suivante dans un t
 
 * __JSE 7__
 * __Gralde 1.6__ (http://www.gradle.org/downloads)
-* __Vert.x 2.O.0__ final (http://vertx.io/downloads.html)
+* __Vert.x 2.O.0__ final (https://vertx.io/download/)
 * __Neo4j 2__ (http://www.neo4j.org/download/linux)
 * __MongoDB 2.4__ (http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian/)
 
