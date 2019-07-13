@@ -46,8 +46,8 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 
 public class DefaultCommunicationService implements CommunicationService {
 
-	private final Neo4j neo4j = Neo4j.getInstance();
-	private static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
+	protected final Neo4j neo4j = Neo4j.getInstance();
+	protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
 
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
