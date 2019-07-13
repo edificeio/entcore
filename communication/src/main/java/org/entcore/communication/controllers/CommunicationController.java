@@ -53,7 +53,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class CommunicationController extends BaseController {
 
-	private final CommunicationService communicationService = new DefaultCommunicationService();
+	private CommunicationService communicationService;
 
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -457,6 +457,10 @@ public class CommunicationController extends BaseController {
 	public void removeCommunicationRules(HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		communicationService.removeRules(structureId, defaultResponseHandler(request));
+	}
+
+	public void setCommunicationService(CommunicationService communicationService) {
+		this.communicationService = communicationService;
 	}
 
 	private class Params {
