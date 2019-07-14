@@ -38,7 +38,7 @@ import 'trumbowyg/plugins/history/trumbowyg.history.js'
                     <date-picker [(ngModel)]="message.endDate"></date-picker>
                 </form-field>
                 <form-field label="management.message.flash.profiles">
-                    <multi-combo style="z-index: 20;"
+                    <multi-combo
                         [comboModel]="comboModel"
                         [(outputModel)]="message.profiles"
                         [title]="'management.message.flash.chose.profiles' | translate">
