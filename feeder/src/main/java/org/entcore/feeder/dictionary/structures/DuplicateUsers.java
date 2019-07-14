@@ -945,15 +945,17 @@ public class DuplicateUsers {
 			final JsonObject j2 = (JsonObject) o2;
 			if (isEmpty(j1.getString("relSource"))) {
 				if (isNotEmpty(j2.getString("relSource"))) {
-					return 1;
+					return -1;
 				} else {
-					return j2.getString("created").compareTo(j1.getString("created"));
+					return getOrElse(j2.getString("created"), "0")
+							.compareTo(getOrElse(j1.getString("created"), "0"));
 				}
 			} else {
 				if (isEmpty(j2.getString("relSource"))) {
-					return -1;
+					return 1;
 				} else {
-					return j2.getString("created").compareTo(j1.getString("created"));
+					return getOrElse(j2.getString("created"), "0")
+							.compareTo(getOrElse(j1.getString("created"), "0"));
 				}
 			}
 		}
