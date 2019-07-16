@@ -148,7 +148,6 @@
     "mobilePhone": "Téléphone portable",
     "structures": "Établissement(s)",
     "city": "Ville",
-    "functions":"Fonctions",
     "classCategories":"Catégorie de classe",
     "moduleName":"Nom du Module",
     "scholarshipHolder":"Boursier",
@@ -355,11 +354,10 @@
     "import.step1.deleteAccountOption": "Pré-supprimer les comptes des utilisateurs absents des fichiers",
     "import.step1.transitionOption": "Changement d'année scolaire",
     "import.classesChecking.warning.create.1" : "La classe {{value}} n'a pas été reconnue ou associée à une classe existante : la classe {{value}} sera créée",
-    // import : step 4 : Report
+
     "import.report": "Rapport intermédiaire",
     "import.report.success":"Vos fichiers sont valides, vous pouvez valider votre import !",
     "line" : "Ligne",
-    "classes" : "Classe(s)",
     "operation" : "Opération",
     "import.report.warning.hasErrors" : "Vos fichiers contiennent une ou plusieurs lignes avec des erreurs. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
     "import.report.warning.hasToDelete" : "Attention, certains utilisateurs vont être supprimés.",
@@ -369,24 +367,24 @@
     "empty.lastName":"pas de prénom",
     "empty.firstName":"pas de nom",
     "empty.birthDate":"pas de date de naissaince",
-    // import : step 5 : Finish
+
     "import.finish":"Import effectué avec succès !",
     "import.finish.success":"<i class=\"fa fa-check-circle\"></i> L'import s'est correctement déroulé !",
     "import.finish.otherImport":"Effectuer un autre import",
     "import.finish.usersList":"Accéder à la liste des utilisateurs",
     "import.finish.report":"Télécharger le rapport d'import",
-    // import : cancel
+
     "import.cancel.header" : "Annuler l'import ?",
     "import.cancel.message":"Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données importées et modifiées dans l'assistant d'import seront perdues. Êtes-vous sûr de vouloir annuler l'import ?",
     "import.cancel.confirm":"Annuler l'import",
     "import.cancel.backToImport":"Retour à l'import",
-    // import : warning
+
     "import.file.warning" : "Ce fichier contient des avertissements qui ne bloquent pas le chargement du fichier",
     "import.global.warning" : "Les avertissements sont affichés en orange avec ce symbole : <i class=\"fa fa-exclamation-circle is-warning\"></i> Vous pouvez passer à l'étape suivante.",
     "import.warning.":"",
     "missing.student.soft" : "Elève inconnu",
     "missing.student.soft.message" : "Votre fichier contient <strong>{{errorNumber}}  parent(s) avec des élèves non reconnus</strong>. Si vous poursuivez l'import, le compte parent sera créé mais sans lien avec le compte élève.",
-    // import : errors
+
     "import.error.importIdNotFound":"La référence de l'import est inconnue",
     "import.error.noColumnsMappingFound":"Les données d'association de champs de colonnes sont indisponibles. Vérifiez que vos fichiers possèdent bien une ligne d'entête",
     "import.error.malformedFiles": "Les erreurs affichées en rouge bloquent l'import des fichiers : <strong>Vous devez apporter des modifications aux fichiers</strong>",
@@ -398,7 +396,7 @@
     "missing.attribute.message": "<strong>{{errorNumber}} champ(s) obligatoire(s) ne sont pas renseigné(s)</strong>",
     "invalid.value" : "Valeur invalide",
     "invalid.value.message" : "<strong>{{errorNumber}} champ(s) sont renseigné(s) avec une valeur invalide (ex : mauvais format de date de naisssance)</strong>",
-    //import : info
+
     "import.info.file.0": "Notice d'utilisation de l'import de fichiers CSV",
     "import.info.file.1":"Si vous souhaitez importer des utilisateurs à partir de fichiers csv constitués à la main ou issus d'un logiciel, vous devez suivre les consignes suivantes :",
     "import.info.file.2":"- Un fichier doit être constitué pour chaque type de profils d'utilisateurs (enseignants, élèves, parents, personnels, invités).",
