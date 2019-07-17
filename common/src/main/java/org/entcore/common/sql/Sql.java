@@ -105,6 +105,22 @@ public class Sql {
 		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
+	public void upsert(String table, JsonArray fields, JsonArray values, JsonArray conflictFields,
+					   JsonArray updateFields, String returning,
+					   Handler<Message<JsonObject>> handler) {
+		JsonObject j = new JsonObject()
+				.put("action", "upsert")
+				.put("table", table)
+				.put("fields", fields)
+				.put("values", values)
+				.put("conflictFields", conflictFields)
+				.put("updateFields", updateFields);
+		if (returning != null && !returning.trim().isEmpty()) {
+			j.put("returning", returning);
+		}
+		eb.send(address, j, handlerToAsyncHandler(handler));
+	}
+
 	public void select(String table, JsonArray fields, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "select")
