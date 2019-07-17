@@ -9,6 +9,7 @@ import 'rxjs/add/observable/of';
 describe('SmartUsersComparisonComponent', () => {
     let fixture: ComponentFixture<SmartUsersComparisonComponent>;
     let component: SmartUsersComparisonComponent;
+    let markForCheck: jasmine.Spy;
     let userService: UserService;
 
     beforeEach(() => {
@@ -24,6 +25,7 @@ describe('SmartUsersComparisonComponent', () => {
         }).compileComponents();
         fixture = TestBed.createComponent(SmartUsersComparisonComponent);
         component = fixture.componentInstance;
+        markForCheck = spyOn((component as any).changeDetectorRef, 'markForCheck');
     }));
 
     it('should create the SmartUsersComparisonComponent component', async(() => {
@@ -37,6 +39,7 @@ describe('SmartUsersComparisonComponent', () => {
         expect((userService.fetch as jasmine.Spy).calls.count()).toBe(2);
         expect((userService.fetch as jasmine.Spy).calls.argsFor(0)).toEqual(['user1']);
         expect((userService.fetch as jasmine.Spy).calls.argsFor(1)).toEqual(['user2']);
+        expect(markForCheck).toHaveBeenCalled();
     }));
 
     it('should fetch the user overviews when the given user ids change', async(() => {
@@ -46,7 +49,9 @@ describe('SmartUsersComparisonComponent', () => {
         expect((userService.fetch as jasmine.Spy).calls.count()).toBe(2);
         expect((userService.fetch as jasmine.Spy).calls.argsFor(0)).toEqual(['user3']);
         expect((userService.fetch as jasmine.Spy).calls.argsFor(1)).toEqual(['user4']);
+        expect(markForCheck).toHaveBeenCalled();
     }));
+
 });
 
 @Component({
