@@ -48,7 +48,9 @@ import { UsersStore } from '../../../users.store';
                         <i class="fa fa-arrow-right"></i>
                         <i class="fa fa-arrow-left"></i>
                     </button>
-                    <button class="actions-list__button" (click)="compare(duplicate.id)"
+                    <button class="actions-list__button"
+                            *ngIf="findVisibleStruct(duplicate.structures)"
+                            (click)="compare(duplicate.id)"
                             [disabled]="spinner.isLoading(duplicate.id)">
                         <spinner-cube class="button-spinner"
                                       waitingFor="duplicate.id"></spinner-cube>

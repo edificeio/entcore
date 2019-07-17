@@ -1,9 +1,10 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { UserOverview } from './user-overview.component';
 import { UserService } from './user.service';
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/switchMap';
+import 'rxjs/add/observable/forkJoin';
 import 'rxjs/add/operator/do';
 
 interface Users<K> {
@@ -32,7 +33,10 @@ export class SmartUsersComparisonComponent implements OnInit, OnChanges {
 
     private usersChanged: Subject<Users<string>> = new Subject();
 
-    constructor(private userService: UserService) {
+    constructor(
+        private userService: UserService,
+        private changeDetectorRef: ChangeDetectorRef
+    ) {
         this.usersChanged.asObservable()
             .do(() => {
                 this.user1overview = null;
@@ -42,6 +46,7 @@ export class SmartUsersComparisonComponent implements OnInit, OnChanges {
             .subscribe(users => {
                 this.user1overview = users.user1;
                 this.user2overview = users.user2;
+                this.changeDetectorRef.markForCheck();
             });
     }
 
