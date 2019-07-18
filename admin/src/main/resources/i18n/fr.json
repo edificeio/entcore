@@ -357,7 +357,7 @@
 
     "import.report": "Rapport intermédiaire",
     "import.report.success":"Vos fichiers sont valides, vous pouvez valider votre import !",
-    "line" : "Ligne",
+    "line" : "N°",
     "operation" : "Opération",
     "import.report.warning.hasErrors" : "Vos fichiers contiennent une ou plusieurs lignes avec des erreurs. Vous pouvez les afficher en cliquant sur les bouttons ci-dessous",
     "import.report.warning.hasToDelete" : "Attention, certains utilisateurs vont être supprimés.",
@@ -368,8 +368,9 @@
     "empty.firstName":"pas de nom",
     "empty.birthDate":"pas de date de naissaince",
 
-    "import.finish":"Import effectué avec succès !",
-    "import.finish.success":"<i class=\"fa fa-check-circle\"></i> L'import s'est correctement déroulé !",
+    "import.finish":"Import effectué",
+    "import.finish.success":"L'import s'est correctement déroulé.",
+    "import.finish.error": "Erreur lors de l'import",
     "import.finish.otherImport":"Effectuer un autre import",
     "import.finish.usersList":"Accéder à la liste des utilisateurs",
     "import.finish.report":"Télécharger le rapport d'import",
