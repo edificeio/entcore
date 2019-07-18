@@ -28,67 +28,83 @@ export class StepComponent {
 @Component({
     selector: 'wizard',
     template: `
-        <nav class="steps-progress-menu">
-            <ul>
-                <li *ngFor="let step of steps" 
-                    [class.active]="step.isActived"
-                    [class.finish]="step.isFinished">
-                    {{step.name}}
-                </li>
-            </ul>
-        </nav>
-        <section class="steps-content">
-            <ng-content select="step"></ng-content>
-            <nav class="steps-nav-button" *ngIf="activeStep < steps.length - 1">
-                <button class="cancel" 
-                    (click)="cancel.emit()"
-                    [title]="'cancel' | translate">
-                    {{ 'cancel' | translate }}
-                </button>
-                <button class="previous" 
-                    (click)="onPreviousStep()" 
-                    *ngIf="activeStep > 0" 
-                    [title]="'previous' | translate">
-                    {{ 'previous' | translate }}
-                </button>
-                <button class="next" 
-                    (click)="onNextStep()" 
-                    [disabled]="!canDoNext"
-                    [title]="'next' | translate">
-                    {{ 'next' | translate }}
-                </button>
+        <div class="wizard">
+            <nav class="wizard-menu">
+                <h2 class="wizard-menu__title"><s5l>wizard.steps</s5l></h2>
+                <ul>
+                    <li *ngFor="let step of steps" 
+                        [class.active]="step.isActived"
+                        [class.finish]="step.isFinished">
+                        {{step.name}}
+                    </li>
+                </ul>
             </nav>
-        </section>
+            <section class="wizard-content">
+                <ng-content select="step"></ng-content>
+                <nav class="wizard-content-nav" *ngIf="activeStep < steps.length - 1">
+                    <button class="wizard-content-nav__button cancel" 
+                        (click)="cancel.emit()"
+                        [title]="'cancel' | translate">
+                        {{ 'cancel' | translate }}
+                    </button>
+                    <button class="wizard-content-nav__button previous" 
+                        (click)="onPreviousStep()" 
+                        *ngIf="activeStep > 0" 
+                        [title]="'previous' | translate">
+                        {{ 'previous' | translate }}
+                    </button>
+                    <button class="wizard-content-nav__button wizard-content-nav__button--next" 
+                        (click)="onNextStep()" 
+                        [disabled]="!canDoNext"
+                        [title]="'next' | translate">
+                        {{ 'next' | translate }}
+                    </button>
+                </nav>
+            </section>
+        </div>
     `,
     styles: [`
-        :host {
-            display: block;
-            overflow: auto;
-            background-color: #ccc;
+        .wizard {
+            display: flex;
         }
-        section.steps-content {
-            float: right;
-            width: 75%;
-            background: #fff;
+        .wizard-menu {
+            background: #5b6472;
+            flex: 0 0 240px;
         }
-        nav.steps-progress-menu {
-            float: left;
-            width: 24%;
-            background-color: transparent;
+        .wizard-menu ul {
+            padding: 10px 30px;
         }
-        nav.steps-progress-menu ul li {
+        .wizard-menu ul li {
+            color: #eaedf2;
             list-style-type: none;
-            padding: 7px;
+            padding: 5px 0;
         }
-        nav.steps-progress-menu ul li.active,
-        nav.steps-progress-menu ul li.finish {
+        .wizard-menu ul li.active,
+        .wizard-menu ul li.finish {
             font-weight: bold;
+            color: white;
         }
-        nav.steps-progress-menu ul li.finish {
+        .wizard-menu ul li.finish {
             color: green;
         }
-        nav.steps-nav-button {
+        .wizard-menu__title {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: white;
+            padding: 25px 0 0 10px;
+        }
+        .wizard-content {
+            background: #fff;
+            flex: auto;
+        }
+        .wizard-content-nav {
             text-align : right;
+        }
+        .wizard-content-nav__button {
+            margin: 10px 0;
+        }
+        .wizard-content-nav__button--next {
+            margin-right: 16px;
         }
     `]
 })

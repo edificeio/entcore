@@ -776,5 +776,6 @@
     "group.details.button.comm.rules": "Règles de communication du groupe",
     "create.flash.message": "Créer un message flash",
     "searchengine": "Recherche Transverse",
-    "empty.birthDate" : "Aucune"
+    "empty.birthDate" : "Aucune",
+    "wizard.steps": "Étapes :"
 }

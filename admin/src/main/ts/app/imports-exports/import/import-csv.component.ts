@@ -154,8 +154,7 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                     </tr>
                     <tr>
                         <th></th>
-                        <th>
-                        </th>
+                        <th></th>
                         <th>
                             <input type="text" [(ngModel)]="report.columnFilter.lastName" [attr.placeholder]="'search' | translate"/>
                         </th>
@@ -235,10 +234,10 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
                                 #editBirthDate
                             />
                         </td>
-                        <td class="clickable"><span ellipsis="expand">{{user.login}}</span></td>
+                        <td class="clickable"><span>{{user.login}}</span></td>
                         <td>{{ report.getTranslatedProfiles(user.profiles, translate) }}</td>
-                        <td><span ellipsis="expand">{{user.externalId}}</span></td>
-                        <td class="clickable"><span ellipsis="expand">{{user.classesStr}}</span></td>
+                        <td><span>{{user.externalId}}</span></td>
+                        <td class="clickable"><span>{{user.classesStr}}</span></td>
                     </tr>
                 </tbody>
             </table>
@@ -265,11 +264,11 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
         div.pager { padding: 1em 0 }
         a:hover { cursor: pointer; }
         .report-filter .button { margin-right: .5rem; }
-        table.report { display: block; max-height : 500px; overflow: scroll; }
+        table.report {width: auto;}
         table.report tr.state-delete { background: #fdd; }
-        table.report td.clickable:hover { border: 2px dashed orange; cursor:pointer; }
-        table.report td.is-danger { border: 2px dashed red; }
-        table.report td.is-success { border: 2px dashed green; }
+        table.report td.clickable:hover { border: 1px dashed #ff8352; cursor:pointer; }
+        table.report td.is-danger { border: 2px dashed indianred; }
+        table.report td.is-success { border: 2px dashed mediumseagreen; }
         table.report td input[disabled] { background : transparent; border:0; cursor:pointer; }
         table.report td i.fa-pencil { float: right; display: none }
     `]
