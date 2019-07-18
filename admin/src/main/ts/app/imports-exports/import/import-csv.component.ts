@@ -10,9 +10,6 @@ import { NotifyService } from '../../core/services/notify.service'
 import { Messages } from './messages.model'
 import { ObjectURLDirective } from '../../shared/ux/directives/object-url.directive'
 
-type GlobalError = { message:string, profile:{}, reset:Function }
-type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Guest?:{}, dbClasses:string[]}
-
 @Component({
     selector: 'import-csv',
     template : `
@@ -243,20 +240,32 @@ type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Gu
             </table>
         </step>
         <step #step5 name="{{ 'import.finish' | translate }}" [class.active]="step5.isActived">
-            <message-box style="font-size: 1.5em;" [type]="'success'" [messages]="['import.finish.success']">
-                <a object-url>{{ 'import.finish.report' | translate }}</a>
-            </message-box>
-            <button 
-                (click)="cancel()"
-                [title]="'import.finish.otherImport' | translate">
-                {{ 'import.finish.otherImport' | translate }}
-            </button>
-            <button
-                [routerLink]="'/admin/' + importInfos.structureId + '/users'"
-                [queryParams]="{sync: true}"
-                [title]="'import.finish.usersList' | translate">
-                {{ 'import.finish.usersList' | translate }}
-            </button>
+            <div *ngIf="globalError.message else noGlobalError">
+                <h2>{{ 'import.finish.error' | translate }}</h2>            
+                <message-box [type]="'danger'" [messages]="[globalError.message]"></message-box>
+                <button 
+                    (click)="cancel()"
+                    [title]="'import.finish.otherImport' | translate">
+                    {{ 'import.finish.otherImport' | translate }}
+                </button>
+            </div>
+            <ng-template #noGlobalError>
+                <h2>{{ 'import.finish' | translate }}</h2>            
+                <message-box [type]="'success'" [messages]="['import.finish.success']">
+                    <a object-url>{{ 'import.finish.report' | translate }}</a>
+                </message-box>
+                <button 
+                    (click)="cancel()"
+                    [title]="'import.finish.otherImport' | translate">
+                    {{ 'import.finish.otherImport' | translate }}
+                </button>
+                <button
+                    [routerLink]="'/admin/' + importInfos.structureId + '/users'"
+                    [queryParams]="{sync: true}"
+                    [title]="'import.finish.usersList' | translate">
+                    {{ 'import.finish.usersList' | translate }}
+                </button>
+            </ng-template>
         </step>
     </wizard>
     `,
@@ -737,16 +746,19 @@ export class ImportCSV implements OnInit, OnDestroy {
     private async import() {
         this.globalError.reset();
         let data = await this.spinner.perform('portal-content', ImportCSVService.import(this.report.importId));
-        if (data.error) {
-            this.globalError.message = data.error;
+        if (data.errors && data.errors.errors) {
+            this.globalError.message = data.errors.errors['error.global'];
         } else {
             // TODO maybe set objectURL directive by @input
             this.objectURLEl.create(
                 new Blob([JSON.stringify(data,null, '\t')], { type: 'text/json' }), 
                 this.translate('import.finish.report')
             );
-            this.wizardEl.doNextStep();
-            this.cdRef.markForCheck();
         }
+        this.wizardEl.doNextStep();
+        this.cdRef.markForCheck();
     }
 }
+
+type GlobalError = { message:string, profile:{}, reset:Function }
+type ClassesMapping = {Student?:{}, Teacher?:{}, Relatives?:{}, Personnel?:{},Guest?:{}, dbClasses:string[]}
