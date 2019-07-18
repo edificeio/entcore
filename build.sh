@@ -112,41 +112,57 @@ adminV2GradleInstall () {
 }
 
 adminV2NodeClean () {
-  echo "[buildNode] Get branch name from git..."
-  BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+  echo "[buildNode] Get branch name from GIT_BRANCH var..."
+  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
+    echo "[buildNode] Get branch name from git branch..."
+    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Branch name should not be empty!"
+      exit -1
+    fi
   fi
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-clean"
 }
 
 adminV2NodeBuildDev () {
-  echo "[buildNode] Get branch name from git..."
-  BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+  echo "[buildNode] Get branch name from GIT_BRANCH var..."
+  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
+    echo "[buildNode] Get branch name from git branch..."
+    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Branch name should not be empty!"
+      exit -1
+    fi
   fi
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-build-dev"
 }
 
 adminV2NodeBuildProd () {
-  echo "[buildNode] Get branch name from git..."
-  BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+  echo "[buildNode] Get branch name from GIT_BRANCH var..."
+  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
+    echo "[buildNode] Get branch name from git branch..."
+    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Branch name should not be empty!"
+      exit -1
+    fi
   fi
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-build"
 }
 
 adminV2NodeDevServer () {
-  echo "[buildNode] Get branch name from git..."
-  BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+  echo "[buildNode] Get branch name from GIT_BRANCH var..."
+  BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
   if [ "$BRANCH_NAME" = "" ]; then
-    echo "[buildNode] Branch name should not be empty!"
-    exit -1
+    echo "[buildNode] Get branch name from git branch..."
+    BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
+    if [ "$BRANCH_NAME" = "" ]; then
+      echo "[buildNode] Branch name should not be empty!"
+      exit -1
+    fi
   fi
   docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install && npm rm --no-save entcore && npm install --no-save entcore@$BRANCH_NAME && node_modules/gulp/bin/gulp.js adminV2-dev-server"
 }
