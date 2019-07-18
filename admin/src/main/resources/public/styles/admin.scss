@@ -364,7 +364,7 @@ table {
   tbody {
     tr {
       &:hover {
-        background-color: $accent-light;
+        background-color: $grey-light;
       }
       td {
         overflow: hidden;
@@ -2307,33 +2307,7 @@ div.legend-square.outlined, input.outlined {
   z-index: 0;
 }
 
-/* <table> 
-* TODO : manage fix header style
-*/
-table {
-    border-collapse: collapse;
-    thead
-    {
-        color: white;
-        background: $main;
-        font-weight: bolder;
-        th {
-            padding: 10px;
-        }
-    }
-    tbody
-    {
-        tr > td {
-            padding: 6px;
-            font-size: 0.95em;
-            border-bottom: 1px solid grey;
-            text-align: left;
-        }
-    }
-}
-
 /* <message-sticker> */
-
 message-sticker {
     i.fa {
         transition: color 0.25s;
@@ -2342,46 +2316,5 @@ message-sticker {
         &.is-danger { color: red; }
         &.is-warning { color: orange; }
         &:hover { color: $accent;}
-    }
-}
-
-/* <wizard> */
-wizard {
-    background: $main-light !important;
-    button {
-        background-color: $button-bg;
-        padding: 10px 10px;
-        &:hover {
-            background-color: $button-bg-hover ;
-        }
-    }
-    label {
-        min-width: 200px;
-        display: inline-block;
-    }
-
-    nav.steps-progress-menu {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: $main-light;
-        li { 
-            padding: 5px 0;
-            &.active { 
-                color : white; 
-            }
-        }
-    }
-    nav.steps-nav-button {
-        padding : 10px;
-    }
-    step {
-        min-height: 300px;
-        padding: 10px;
-        h2 {
-            margin-top: 5px;
-            font-size : 1.6em;
-            font-weight : bold;
-            color: $main-dark;
-        }
     }
 }
