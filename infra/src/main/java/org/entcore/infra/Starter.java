@@ -30,11 +30,9 @@ import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.utils.MapFactory;
-import org.entcore.infra.controllers.AntiVirusController;
-import org.entcore.infra.controllers.EmbedController;
-import org.entcore.infra.controllers.EventStoreController;
-import org.entcore.infra.controllers.MonitoringController;
+import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
@@ -120,6 +118,15 @@ public class Starter extends BaseServer {
 		addController(eventStoreController);
 		addController(new MonitoringController());
 		addController(new EmbedController());
+		if (config.getJsonObject("node-pdf-generator") != null) {
+			try {
+				PdfController pdfController = new PdfController();
+				pdfController.setPdfGenerator(new PdfFactory(vertx));
+				addController(pdfController);
+			} catch (Exception e) {
+				log.error("Error loading pdf controller.", e);
+			}
+		}
 		if (config.getBoolean("antivirus", false)) {
 			ClamAvService antivirusService = new ClamAvService();
 			antivirusService.setVertx(vertx);
