@@ -49,6 +49,7 @@ import org.vertx.java.busmods.BusModBase;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -401,7 +402,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			@Override
 			public void handle(final AsyncResult<ImportValidator> event) {
 				if (event.succeeded()) {
-					event.result().validate(new Handler<JsonObject>() {
+					final List<String> admlStructures = (message.body().getJsonArray("adml-structures") != null) ?
+							message.body().getJsonArray("adml-structures").getList() : null;
+					event.result().validate(admlStructures, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event2) {
 							sendOK(message, new JsonObject().put("result", ((Report) event.result()).getResult()));
@@ -462,7 +465,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (path == null && !"CSV".equals(source)) {
 			path = config.getString("import-files");
 		}
-		v.validate(path, new Handler<JsonObject>() {
+		final List<String> admlStructures = (message.body().getJsonArray("adml-structures") != null) ?
+				message.body().getJsonArray("adml-structures").getList() : null;
+		v.validate(path, admlStructures, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject result) {
 				final Report r = (Report) v;

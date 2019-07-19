@@ -22,11 +22,13 @@ package org.entcore.feeder;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
+import java.util.List;
+
 public interface ImportValidator {
 
-	void validate(Handler<JsonObject> handler);
+	void validate(List<String> admlStructures, Handler<JsonObject> handler);
 
-	void validate(String path, Handler<JsonObject> handler);
+	void validate(String path, List<String> admlStructures, Handler<JsonObject> handler);
 
 	boolean isValid();
 

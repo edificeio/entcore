@@ -109,7 +109,14 @@ public class ImportController extends BaseController {
 			@Override
 			public void handle(AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.validate(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+					UserUtils.getUserInfos(eb, request, user -> {
+						if (user != null) {
+							importService.validate(event.result(), user,
+									reportResponseHandler(vertx, event.result().getPath(), request));
+						} else {
+							unauthorized(request, "invalid.user");
+						}
+					});
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}
@@ -122,8 +129,14 @@ public class ImportController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void validateWithId(final HttpServerRequest request) {
 		String importId = request.params().get("id");
-		importService.validate(importId, reportResponseHandler(vertx,
-				config.getString("wizard-path", "/tmp") + File.separator + importId, request));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if (user != null) {
+				importService.validate(importId, user, reportResponseHandler(vertx,
+						config.getString("wizard-path", "/tmp") + File.separator + importId, request));
+			} else {
+				unauthorized(request, "invalid.user");
+			}
+		});
 	}
 
 	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
