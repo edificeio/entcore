@@ -1,4 +1,4 @@
-import { ng, quota, template } from 'entcore';
+	import { ng, quota, template } from 'entcore';
 import http from 'axios';
 import { models, workspaceService, Document } from "../services";
 
