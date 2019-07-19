@@ -413,7 +413,7 @@
     "import.info.transition.2":"- Toutes les classes absentes du fichier vont être supprimées  ",
     "import.info.transition.3":"- Les classes et les groupes de classes existants seront supprimés. ",
     "import.info.transition.4":"- Les partages associés à ces classes et ces groupes seront également supprimés",
-    "import.info.transition.5":"- Les règles de communication seront réinitialisées (retour aux règles par défaut)",
+    "import.info.transition.5":"- Les règles de communication des groupes classes uniquement seront réinitialisées (retour aux règles par défaut)",
     "import.info.deleteAccount.1":"Les comptes des utilisateurs qui ne figurent pas dans les fichiers seront automatiquement pré-supprimés. Ces utilisateurs pourront continuer à accéder à l'ENT pour récupérer leurs données pendant un délai de 90 jours. Leurs comptes seront définitivement supprimés après ce délai.",
     "import.info.columns.Student":"Le fichier Elèves doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong>, <strong>Date de naissance</strong> et <strong>Classes</strong>",
     "import.info.columns.Relative":"Le fichier Parents doit contenir au moins les champs <strong>Nom</strong>, <strong>Prénom</strong> et <strong>Identifiant(s) enfant(s)(Childexternalid)</strong>",
