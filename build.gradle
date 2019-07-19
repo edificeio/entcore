@@ -1,7 +1,5 @@
-import groovy.json.JsonSlurper
-import groovy.json.JsonOutput
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
+import org.gradle.api.tasks.testing.logging.TestLogEvent 
 
 plugins {
   id 'java'
@@ -67,6 +65,7 @@ subprojects {
     testCompile "io.vertx:vertx-unit:$vertxVersion"
     testCompile "io.vertx:vertx-codegen:$vertxVersion"
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.mockito:mockito-core:2.+"
   }
 
   test {

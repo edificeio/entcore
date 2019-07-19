@@ -24,6 +24,7 @@ import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
 import org.entcore.registry.controllers.AppRegistryController;
 import org.entcore.registry.controllers.ExternalApplicationController;
+import org.entcore.registry.controllers.LibraryController;
 import org.entcore.registry.controllers.WidgetController;
 import org.entcore.registry.filters.AppRegistryFilter;
 import org.entcore.registry.services.impl.NopAppRegistryEventService;
@@ -36,6 +37,7 @@ public class AppRegistry extends BaseServer {
 		addController(new AppRegistryController());
 		addController(new ExternalApplicationController());
 		addController(new WidgetController());
+		addController(new LibraryController());
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
