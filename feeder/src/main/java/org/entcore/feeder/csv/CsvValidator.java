@@ -21,6 +21,7 @@ package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
 import org.entcore.feeder.dictionary.structures.Structure;
@@ -77,11 +78,11 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	public void columnsMapping(final String p, final Handler<JsonObject> handler) {
-		process(p, CsvValidationProcessType.COLUMN_MAPPING, handler);
+		process(p, CsvValidationProcessType.COLUMN_MAPPING, null, handler);
 	}
 
 	public void classesMapping(final String p, final Handler<JsonObject> handler) {
-		process(p, CsvValidationProcessType.CLASSES_MAPPING, new Handler<JsonObject>() {
+		process(p, CsvValidationProcessType.CLASSES_MAPPING, null, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
 				if (isNotEmpty(getStructureExternalId())) {
@@ -146,14 +147,14 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	@Override
-	public void validate(final Handler<JsonObject> handler) {
+	public void validate(List<String> admlStructures, final Handler<JsonObject> handler) {
 		exportFiles(new Handler<AsyncResult<String>>() {
 			@Override
 			public void handle(AsyncResult<String> event) {
 				if (event.succeeded()) {
 					clearBeforeValidation();
 					clearBeforeValidation();
-					validate(event.result(), new Handler<JsonObject>() {
+					validate(event.result(), admlStructures, new Handler<JsonObject>() {
 						@Override
 						public void handle(JsonObject event) {
 							updateErrors(new Handler<Message<JsonObject>>() {
@@ -176,8 +177,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	@Override
-	public void validate(final String p, final Handler<JsonObject> handler) {
-		process(p, CsvValidationProcessType.VALIDATE, handler);
+	public void validate(final String p, List<String> admlStructures, final Handler<JsonObject> handler) {
+		process(p, CsvValidationProcessType.VALIDATE, admlStructures, handler);
 	}
 
 	@Override
@@ -202,7 +203,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		}
 	}
 
-	private void process(final String p, final CsvValidationProcessType processType, final Handler<JsonObject>  handler) {
+	private void process(final String p, final CsvValidationProcessType processType,
+			List<String> admlStructures, final Handler<JsonObject> handler) {
 		vertx.fileSystem().readDir(p, new Handler<AsyncResult<List<String>>>() {
 			@Override
 			public void handle(AsyncResult<List<String>> event) {
@@ -248,7 +250,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 														};
 														switch (processType) {
 															case VALIDATE:
-																checkFile(file, profile, charset, h);
+																checkFile(file, profile, charset, admlStructures, h);
 																break;
 															case COLUMN_MAPPING:
 																checkColumnsMapping(file, profile, charset, h);
@@ -356,7 +358,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		}
 	}
 
-	private void checkFile(final String path, final String profile, final String charset, final Handler<JsonObject> handler) {
+	private void checkFile(final String path, final String profile, final String charset,
+			List<String> admlStructures, final Handler<JsonObject> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
 		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
@@ -381,18 +384,18 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						}
 					} else if (structureId != null && !structureId.trim().isEmpty()) {
 						findUsersEnabled = false;
-						findUsers(path, profile, columns, charset, handler);
+						findUsers(path, profile, admlStructures, columns, charset, handler);
 					} else {
 						validateFile(path, profile, columns, null, charset, handler);
 					}
 				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
 						externalIds.add(strings[filterExternalId.get()]);
-					} else if (findUsersEnabled) { // TODO add check to empty lines
+					} else if (findUsersEnabled) {
 						findUsersEnabled = false;
 						final int eii = filterExternalId.get();
 						filterExternalId.set(-1);
-						findUsers(path, profile, columns, eii, charset, handler);
+						findUsers(path, profile, admlStructures, columns, eii, charset, handler);
 					}
 				}
 				i++;
@@ -404,7 +407,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			return;
 		}
 		if (filterExternalId.get() >= 0) {
-			filterExternalIdExists(externalIds, new Handler<JsonArray>() {
+			filterExternalIdExists(admlStructures, profile, externalIds, new Handler<JsonArray>() {
 				@Override
 				public void handle(JsonArray externalIdsExists) {
 					if (externalIdsExists != null) {
@@ -418,11 +421,13 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		}
 	}
 
-	private void findUsers(final String path, final String profile, List<String> columns, String charset, final Handler<JsonObject> handler) {
-		findUsers(path, profile, columns, -1, charset, handler);
+	private void findUsers(final String path, final String profile, List<String> admlStructures,
+			List<String> columns, String charset, final Handler<JsonObject> handler) {
+		findUsers(path, profile, admlStructures, columns, -1, charset, handler);
 	}
 
-	private void findUsers(final String path, final String profile, List<String> columns, int eii, final String charset, final Handler<JsonObject> handler) {
+	private void findUsers(final String path, final String profile, List<String> admlStructures,
+			List<String> columns, int eii, final String charset, final Handler<JsonObject> handler) {
 		mappingFinder.findExternalIds(structureId, path, profile, columns, eii, charset, new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray errors) {
@@ -444,25 +449,54 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					handler.handle(result);
 				} else {
 					//validateFile(path, profile, columns, null, handler);
-					checkFile(path, profile, charset, handler);
+					checkFile(path, profile, charset, admlStructures, handler);
 				}
 			}
 		});
 	}
 
-	private void filterExternalIdExists(JsonArray externalIds, final Handler<JsonArray> handler) {
-		String query = "MATCH (u:User) where u.externalId in {externalIds} return collect(u.externalId) as ids";
-		TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("externalIds", externalIds), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonArray result = event.body().getJsonArray("result");
-				if ("ok".equals(event.body().getString("status")) && result.size() == 1) {
-					handler.handle(result.getJsonObject(0).getJsonArray("ids"));
+	private void filterExternalIdExists(List<String> admlStructures, String profile,
+			JsonArray externalIds, final Handler<JsonArray> handler) {
+		final JsonObject params = new JsonObject().put("externalIds", externalIds);
+		try {
+			final TransactionHelper tx = TransactionManager.getTransaction();
+			final String query =
+					"MATCH (u:User) " +
+					"WHERE u.externalId in {externalIds} " +
+					"RETURN COLLECT(u.externalId) as ids";
+			tx.add(query, params);
+			if (admlStructures != null && admlStructures.size() > 0) {
+				final String q =
+						"MATCH (u:User)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+						"WHERE u.externalId in {externalIds} " +
+						"RETURN COLLECT(distinct s.id) as structureIds";
+				tx.add(q, params);
+			}
+			tx.commit(event -> {
+				JsonArray results = event.body().getJsonArray("results");
+				if ("ok".equals(event.body().getString("status")) && results != null) {
+					if (admlStructures != null && admlStructures.size() > 0) {
+						final JsonArray usedStructures = results.getJsonArray(1)
+								.getJsonObject(0).getJsonArray("structureIds");
+						if (admlStructures.containsAll(usedStructures.getList())) {
+							handler.handle(results.getJsonArray(0)
+									.getJsonObject(0).getJsonArray("ids"));
+						} else {
+							addError(profile, "externalId.used.in.not.adml.structure");
+							handler.handle(null);
+						}
+					} else {
+						handler.handle(results.getJsonArray(0)
+								.getJsonObject(0).getJsonArray("ids"));
+					}
 				} else {
 					handler.handle(null);
 				}
-			}
-		});
+			});
+		} catch (TransactionException e) {
+			log.error("Error opening filterExternalId transaction.", e);
+			handler.handle(null);
+		}
 	}
 
 	private void parseErrors(String key, JsonArray invalidColumns, String profile, final Handler<JsonObject> handler) {

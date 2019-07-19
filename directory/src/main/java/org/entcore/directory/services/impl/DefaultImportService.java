@@ -25,10 +25,10 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.mongodb.MongoDbResult;
+import org.entcore.common.user.UserInfos;
 import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.ImportService;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -38,9 +38,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import java.util.Map;
+
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
+import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
 public class DefaultImportService implements ImportService {
 
@@ -58,10 +62,13 @@ public class DefaultImportService implements ImportService {
 	}
 
 	@Override
-	public void validate(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
+	public void validate(ImportInfos importInfos, UserInfos user, final Handler<Either<JsonObject, JsonObject>> handler) {
 		try {
-			JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
-					.put("action", "validate");
+			final AdmlValidate admlValidate = new AdmlValidate(user, handler).invoke();
+			if (admlValidate.is()) return;
+			final JsonObject action = new JsonObject(mapper.writeValueAsString(importInfos))
+					.put("action", "validate")
+					.put("adml-structures", admlValidate.getAdmlStructures());
 			eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> res) {
@@ -94,8 +101,13 @@ public class DefaultImportService implements ImportService {
 	}
 
 	@Override
-	public void validate(String importId, final Handler<Either<JsonObject, JsonObject>> handler) {
-		JsonObject action = new JsonObject().put("action", "validateWithId").put("id", importId);
+	public void validate(String importId, UserInfos user, final Handler<Either<JsonObject, JsonObject>> handler) {
+		final AdmlValidate admlValidate = new AdmlValidate(user, handler).invoke();
+		if (admlValidate.is()) return;
+		final JsonObject action = new JsonObject()
+				.put("action", "validateWithId")
+				.put("id", importId)
+				.put("adml-structures", admlValidate.getAdmlStructures());
 		sendCommand(handler, action);
 	}
 
@@ -229,6 +241,51 @@ public class DefaultImportService implements ImportService {
 				}
 			}
 		}));
+	}
+
+	private class AdmlValidate {
+		private boolean myResult;
+		private UserInfos user;
+		private Handler<Either<JsonObject, JsonObject>> handler;
+		private JsonArray admlStructures;
+
+		public AdmlValidate(UserInfos user, Handler<Either<JsonObject, JsonObject>> handler) {
+			this.user = user;
+			this.handler = handler;
+		}
+
+		boolean is() {
+			return myResult;
+		}
+
+		public JsonArray getAdmlStructures() {
+			return admlStructures;
+		}
+
+		public AdmlValidate invoke() {
+			Map<String, UserInfos.Function> functions = user.getFunctions();
+			if (functions == null || functions.isEmpty()) {
+				handler.handle(new Either.Left<>(new JsonObject()
+						.put("global", new JsonArray().add("not.admin.user"))));
+				myResult = true;
+				return this;
+			}
+			if (functions.containsKey(SUPER_ADMIN)) {
+				admlStructures = null;
+			} else {
+				final UserInfos.Function adminLocal = functions.get(ADMIN_LOCAL);
+				if (adminLocal != null && adminLocal.getScope() != null) {
+					admlStructures = new JsonArray(adminLocal.getScope());
+				} else {
+					handler.handle(new Either.Left<>(new JsonObject()
+							.put("global", new JsonArray().add("not.admin.user"))));
+					myResult = true;
+					return this;
+				}
+			}
+			myResult = false;
+			return this;
+		}
 	}
 
 }
