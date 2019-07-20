@@ -173,6 +173,8 @@ public class ProfileColumnsMapper {
 				.put("boursier", "scholarshipHolder")
 				.put("transport", "transport")
 				.put("statut", "status")
+				.put("regroupement(s)", "groups")
+				.put("regroupement", "groups")
 				.put("persreleleve", "relative");
 		JsonObject relativeMapping = baseMappings.copy()
 				.put("nomresponsable", "lastName")
