@@ -69,5 +69,6 @@
   "report.errors" : "Erreurs",
   "report.loadedFiles" : "Fichiers chargés",
   "validator.errorWithLine" : "Ligne {0} : {1}",
-  "invalid.child.mapping" : "Ligne {0} : valeur(s) invalide(s) associée(s) au(x) champs {1} "
+  "invalid.child.mapping" : "Ligne {0} : valeur(s) invalide(s) associée(s) au(x) champs {1} ",
+  "duplicate.externalId.in.file" : "Ligne {0} : identifiant {1} dupliqué dans le fichier."
 }
