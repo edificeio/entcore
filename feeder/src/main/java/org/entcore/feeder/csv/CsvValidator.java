@@ -362,7 +362,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 			List<String> admlStructures, final Handler<JsonObject> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger filterExternalId = new AtomicInteger(-1);
-		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
+		final Set<String> externalIds = new HashSet<>();
 		try {
 			CSVReader csvParser = getCsvReader(path, charset);
 
@@ -390,7 +390,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					}
 				} else if (filterExternalId.get() >= 0 && !emptyLine(strings)) {
 					if (strings[filterExternalId.get()] != null && !strings[filterExternalId.get()].isEmpty()) {
-						externalIds.add(strings[filterExternalId.get()]);
+						if (!externalIds.add(strings[filterExternalId.get()])) {
+							addErrorByFile(profile, "duplicate.externalId.in.file",
+									"" + (i+1), strings[filterExternalId.get()]);
+						}
 					} else if (findUsersEnabled) {
 						findUsersEnabled = false;
 						final int eii = filterExternalId.get();
@@ -456,8 +459,8 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	}
 
 	private void filterExternalIdExists(List<String> admlStructures, String profile,
-			JsonArray externalIds, final Handler<JsonArray> handler) {
-		final JsonObject params = new JsonObject().put("externalIds", externalIds);
+			Set<String> externalIds, final Handler<JsonArray> handler) {
+		final JsonObject params = new JsonObject().put("externalIds", new JsonArray(new ArrayList<>(externalIds)));
 		try {
 			final TransactionHelper tx = TransactionManager.getTransaction();
 			final String query =
