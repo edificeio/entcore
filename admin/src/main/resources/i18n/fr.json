@@ -778,5 +778,7 @@
     "create.flash.message": "Créer un message flash",
     "searchengine": "Recherche Transverse",
     "empty.birthDate" : "Aucune",
-    "wizard.steps": "Étapes :"
+    "wizard.steps": "Étapes :",
+    "csv.file.too.long" : "Fichier trop volumineux. La taille maximum est d'un méga-octets par fichier.",
+    "csv.file.size.error": "Erreur lors du calcul de la taille du fichier."
 }
