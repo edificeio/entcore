@@ -567,6 +567,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							if (v.isEmpty() && !c.startsWith("child")) continue;
 
 							switch (validator.getType(c)) {
+								case "login-alias":
 								case "string":
 									if ("birthDate".equals(c)) {
 										Matcher m = frenchDatePatter.matcher(v);

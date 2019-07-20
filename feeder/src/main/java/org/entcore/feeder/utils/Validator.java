@@ -134,7 +134,11 @@ public class Validator {
 						err = validBoolean(attr, value, acceptLanguage);
 						break;
 					case "login-alias" :
-						err = validLoginAlias(attr, value, validator, acceptLanguage);
+						if (conserveChildAttributes) {
+							err = null;
+						} else {
+							err = validLoginAlias(attr, value, validator, acceptLanguage);
+						}
 						break;
 					default:
 						err = i18n.translate("missing.type.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, type);

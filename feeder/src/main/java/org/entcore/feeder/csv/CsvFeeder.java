@@ -323,6 +323,7 @@ public class CsvFeeder implements Feed {
 						if ((v.isEmpty() && !c.startsWith("child")) ||
 								("classes".equals(c) && isNotEmpty(structure.getOverrideClass()))) continue;
 						switch (validator.getType(c)) {
+							case "login-alias":
 							case "string":
 								if ("birthDate".equals(c)) {
 									Matcher m = frenchDatePatter.matcher(v);

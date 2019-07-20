@@ -148,6 +148,7 @@ public class ProfileColumnsMapper {
 				.put("courriel", "email")
 				.put("sexe", "gender")
 				.put("ine", "ine")
+				.put("login", "loginAlias")
 				.put("importid", "importId")
 				.put("identifiantclasse", "ignore")
 				.put("dateinscription", "ignore")
