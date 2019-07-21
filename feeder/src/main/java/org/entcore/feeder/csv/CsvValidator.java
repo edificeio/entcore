@@ -220,55 +220,14 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							final List<String> importFiles = event.result();
 							Collections.sort(importFiles, Collections.reverseOrder());
 							if (event.succeeded() && importFiles.size() > 0) {
-								final Handler[] handlers = new Handler[importFiles.size() + 1];
-								handlers[handlers.length -1] = new Handler<Void>() {
-									@Override
-									public void handle(Void v) {
-										handler.handle(result);
-									}
-								};
-								for (int i = importFiles.size() - 1; i >= 0; i--) {
-									final int j = i;
-									handlers[i] = new Handler<Void>() {
-										@Override
-										public void handle(Void v) {
-											final String file = importFiles.get(j);
-											log.info(processType.name() + " file : " + file);
-											findUsersEnabled = true;
-											final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
-											CSVUtil.getCharset(vertx, file, new Handler<String>(){
-
-												@Override
-												public void handle(String charset) {
-													if (profiles.containsKey(profile)) {
-														log.info("Charset : " + charset);
-														Handler<JsonObject> h = new Handler<JsonObject>() {
-															@Override
-															public void handle(JsonObject event) {
-																handlers[j + 1].handle(null);
-															}
-														};
-														switch (processType) {
-															case VALIDATE:
-																checkFile(file, profile, charset, admlStructures, h);
-																break;
-															case COLUMN_MAPPING:
-																checkColumnsMapping(file, profile, charset, h);
-																break;
-															case CLASSES_MAPPING:
-																checkClassesMapping(file, profile, charset, h);
-																break;
-														}
-													} else {
-														addError("unknown.profile");
-														handler.handle(result);
-													}
-												}
-											});
-										}
-									};
+								if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream()
+										.anyMatch(f -> f.endsWith("Relative"))) {
+									loadStudentExternalIdMapping(structureId, h -> {
+										processFiles(importFiles, handler, processType, path, admlStructures);
+									});
+								} else {
+									processFiles(importFiles, handler, processType, path, admlStructures);
 								}
-								handlers[0].handle(null);
 							} else {
 								addError("error.list.files");
 								handler.handle(result);
@@ -280,6 +239,84 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					handler.handle(result);
 				}
 			}
+		});
+	}
+
+	protected void processFiles(List<String> importFiles, Handler<JsonObject> handler, CsvValidationProcessType processType, String path, List<String> admlStructures) {
+		final Handler[] handlers = new Handler[importFiles.size() + 1];
+		handlers[handlers.length -1] = new Handler<Void>() {
+			@Override
+			public void handle(Void v) {
+				handler.handle(result);
+			}
+		};
+		for (int i = importFiles.size() - 1; i >= 0; i--) {
+			final int j = i;
+			handlers[i] = new Handler<Void>() {
+				@Override
+				public void handle(Void v) {
+					final String file = importFiles.get(j);
+					log.info(processType.name() + " file : " + file);
+					findUsersEnabled = true;
+					final String profile = file.substring(path.length() + 1).replaceFirst(".csv", "");
+					CSVUtil.getCharset(vertx, file, new Handler<String>(){
+
+						@Override
+						public void handle(String charset) {
+							if (profiles.containsKey(profile)) {
+								log.info("Charset : " + charset);
+								Handler<JsonObject> h = new Handler<JsonObject>() {
+									@Override
+									public void handle(JsonObject event) {
+										handlers[j + 1].handle(null);
+									}
+								};
+								switch (processType) {
+									case VALIDATE:
+										checkFile(file, profile, charset, admlStructures, h);
+										break;
+									case COLUMN_MAPPING:
+										checkColumnsMapping(file, profile, charset, h);
+										break;
+									case CLASSES_MAPPING:
+										checkClassesMapping(file, profile, charset, h);
+										break;
+								}
+							} else {
+								addError("unknown.profile");
+								handler.handle(result);
+							}
+						}
+					});
+				}
+			};
+		}
+		handlers[0].handle(null);
+	}
+
+	private void loadStudentExternalIdMapping(String structure, Handler<Void> handler) {
+		final String query =
+				"MATCH (s:Structure {externalId:{externalId}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
+				"WHERE head(u.profiles) = 'Student' " +
+				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"RETURN u.externalId as externalId, u.surname as surname, " +
+				"u.lastName as lastName, u.firstName as firstName, u.email as email, u.title as title, " +
+				"u.homePhone as homePhone, u.mobile as mobile, c.name as className ";
+		TransactionManager.getNeo4jHelper().execute(query, new JsonObject().put("externalId", structure), r -> {
+			final JsonArray res = r.body().getJsonArray("result");
+			if ("ok".equals(r.body().getString("status")) && res != null) {
+				final Structure struct = new Structure(new JsonObject().put("externalId", structure));
+				for (Object o: res) {
+					if (!(o instanceof JsonObject)) continue;
+					final JsonObject user = (JsonObject) o;
+					final String externalId = user.getString("externalId");
+					final String ca = user.getString("className");
+					studentExternalIdMapping.put(getHashMapping(user, ca, struct, defaultStudentSeed), externalId);
+					studentExternalIdMapping.put(externalId, externalId);
+					classesNamesMapping.put(externalId, ca);
+				}
+			}
+			handler.handle(null);
 		});
 	}
 
